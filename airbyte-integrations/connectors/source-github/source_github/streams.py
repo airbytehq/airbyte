@@ -1460,8 +1460,6 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     API documentation: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
     """
 
-    primary_key = ["id", "run_attempt"]
-
     # key for accessing slice value from record
     record_slice_key = ["repository", "full_name"]
 
@@ -1492,6 +1490,77 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         break_point = None
         # the state is updated only in the end of the sync as records are sorted in reverse order
+        new_state = self.state
+        if start_point:
+            break_point = (ab_datetime_parse(start_point) - timedelta(days=self.re_run_period)).isoformat()
+        for record in super(SemiIncrementalMixin, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            cursor_value = record[self.cursor_field]
+            created_at = record["created_at"]
+            if not start_point or cursor_value > start_point:
+                yield record
+                new_state = self._get_updated_state(new_state, record)
+            if break_point and created_at < break_point:
+                break
+        self.state = new_state
+
+
+class WorkflowRunAttempts(SemiIncrementalMixin, GithubStream):
+    """
+    Get all workflow run attempts for a GitHub repository.
+    This stream fetches every attempt of each workflow run, allowing users to track re-runs.
+    API documentation: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt
+    """
+
+    primary_key = ["id", "run_attempt"]
+
+    # key for accessing slice value from record
+    record_slice_key = ["repository", "full_name"]
+
+    # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
+    re_run_period = 32  # days
+
+    def __init__(self, parent: WorkflowRuns, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        # First get all workflow runs, then for each run we'll fetch all attempts
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for parent_record in parent_records:
+                # For each workflow run, create slices for each attempt
+                run_id = parent_record["id"]
+                run_attempt = parent_record["run_attempt"]  # This tells us the max attempt number
+                for attempt_num in range(1, run_attempt + 1):
+                    yield {"repository": stream_slice["repository"], "run_id": run_id, "attempt_number": attempt_num}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/runs/{stream_slice['run_id']}/attempts/{stream_slice['attempt_number']}"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        # The attempts endpoint returns a single workflow run object, not an array
+        record = response.json()
+        yield record
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        # Similar logic to WorkflowRuns for handling incremental sync with re-run period
+        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        break_point = None
         new_state = self.state
         if start_point:
             break_point = (ab_datetime_parse(start_point) - timedelta(days=self.re_run_period)).isoformat()

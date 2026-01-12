@@ -67,7 +67,7 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_run_attempts`, `workflow_runs`, `workflows`.
 
 - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`, `tags`, `teams`, `users`
 
@@ -154,6 +154,8 @@ This connector outputs the following incremental streams:
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
+   **Note:** The `workflow_runs` stream only returns the latest attempt for each workflow run. To capture all attempts (including re-runs), use the `workflow_run_attempts` stream instead. The `workflow_run_attempts` stream fetches every attempt of each workflow run and uses a composite primary key `[id, run_attempt]` to preserve all attempts as separate records.
+
 3. Other 19 incremental streams are also incremental but with one difference, they:
 
    - read all records;
@@ -225,7 +227,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.0 | 2026-01-20 | [70305](https://github.com/airbytehq/airbyte/pull/70305) | **Breaking Change**: Changes primary key for `workflow_runs` stream from `[id]` to `[id, run_attempt]` to preserve all workflow run attempts. |
+| 2.2.0 | 2026-01-20 | [70305](https://github.com/airbytehq/airbyte/pull/70305) | Add new `workflow_run_attempts` stream to capture all workflow run attempts including re-runs. |
 | 2.1.6 | 2025-12-16 | [70729](https://github.com/airbytehq/airbyte/pull/70729) | Update dependencies |
 | 2.1.5 | 2025-12-02 | [70286](https://github.com/airbytehq/airbyte/pull/70286) | Update dependencies |
 | 2.1.4 | 2025-11-25 | [69887](https://github.com/airbytehq/airbyte/pull/69887) | Update dependencies |
