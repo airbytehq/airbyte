@@ -242,7 +242,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.10.19 | 2025-12-16 | [70517](https://github.com/airbytehq/airbyte/pull/70517) | Update dependencies |
+| 1.10.19 | 2025-12-18 | [70517](https://github.com/airbytehq/airbyte/pull/70517) | Update dependencies |
 | 1.10.18 | 2025-12-09 | [70444](https://github.com/airbytehq/airbyte/pull/70444) | Add user-configurable API rate limit option for Search Analytics streams |
 | 1.10.17 | 2025-11-25 | [70059](https://github.com/airbytehq/airbyte/pull/70059) | Update dependencies |
 | 1.10.16 | 2025-11-18 | [69392](https://github.com/airbytehq/airbyte/pull/69392) | Update dependencies |
@@ -251,11 +251,11 @@ Google Search Console only retains data for websites from the last 16 months. An
 | 1.10.13 | 2025-10-14 | [68004](https://github.com/airbytehq/airbyte/pull/68004) | Update dependencies |
 | 1.10.12 | 2025-10-07 | [67263](https://github.com/airbytehq/airbyte/pull/67263) | Update dependencies |
 | 1.10.11 | 2025-09-30 | [65384](https://github.com/airbytehq/airbyte/pull/65384) | Update dependencies |
-| 1.10.10 | 2025-09-10 | [66010](https://github.com/airbytehq/airbyte/pull/66010) | Update to CDK v7 |
+| 1.10.10 | 2025-09-16 | [66010](https://github.com/airbytehq/airbyte/pull/66010) | Update to CDK v7 |
 | 1.10.9 | 2025-08-09 | [64584](https://github.com/airbytehq/airbyte/pull/64584) | Update dependencies |
 | 1.10.8 | 2025-08-02 | [64187](https://github.com/airbytehq/airbyte/pull/64187) | Update dependencies |
 | 1.10.7 | 2025-07-26 | [63877](https://github.com/airbytehq/airbyte/pull/63877) | Update dependencies |
-| 1.10.6 | 2025-07-22 | [63720](https://github.com/airbytehq/airbyte/pull/63720) | Ignore 403 "insufficient permission" errors |
+| 1.10.6 | 2025-07-23 | [63720](https://github.com/airbytehq/airbyte/pull/63720) | Ignore 403 "insufficient permission" errors |
 | 1.10.5 | 2025-07-19 | [63471](https://github.com/airbytehq/airbyte/pull/63471) | Update dependencies |
 | 1.10.4 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
 | 1.10.3 | 2025-07-12 | [63094](https://github.com/airbytehq/airbyte/pull/63094) | Update dependencies |
