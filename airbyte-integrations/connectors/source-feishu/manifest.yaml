@@ -86,27 +86,7 @@ streams:
             type:
               - object
               - "null"
-            properties:
-              全量时间:
-                type:
-                  - number
-                  - "null"
-              启动时间:
-                type:
-                  - number
-                  - "null"
-              提测时间:
-                type:
-                  - number
-                  - "null"
-              灰度时间:
-                type:
-                  - number
-                  - "null"
-              迭代版本:
-                type:
-                  - string
-                  - "null"
+            additionalProperties: true
           record_id:
             type: string
         additionalProperties: true
@@ -153,7 +133,14 @@ spec:
           https://open.larksuite.com for global.
         order: 3
         title: Lark Host
+        description: >-
+          Base URL of the Feishu/Lark Open Platform. Use
+          https://open.feishu.cn for Feishu (China mainland) accounts and
+          https://open.larksuite.com for Lark (international) accounts.
         default: https://open.feishu.cn
+        examples:
+          - https://open.feishu.cn
+          - https://open.larksuite.com
       page_size:
         type: number
         description: "Number of records per request. Max: 500. Default: 100."
