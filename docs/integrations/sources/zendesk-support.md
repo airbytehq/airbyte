@@ -189,7 +189,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.10.18 | 2025-12-16 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
+| 4.10.18 | 2025-12-18 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
 | 4.10.17 | 2025-12-02 | [70066](https://github.com/airbytehq/airbyte/pull/70066) | Update dependencies |
 | 4.10.16 | 2025-11-18 | [69538](https://github.com/airbytehq/airbyte/pull/69538) | Update dependencies |
 | 4.10.15 | 2025-10-29 | [68945](https://github.com/airbytehq/airbyte/pull/68945) | Update dependencies |
@@ -199,8 +199,8 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 4.10.11 | 2025-09-24 | [66461](https://github.com/airbytehq/airbyte/pull/66461) | Update dependencies |
 | 4.10.10 | 2025-09-09 | [65729](https://github.com/airbytehq/airbyte/pull/65729) | Update dependencies |
 | 4.10.9 | 2025-08-26 | [65558](https://github.com/airbytehq/airbyte/pull/65558) | Update dependencies |
-| 4.10.8 | 2025-08-23 | [65403](https://github.com/airbytehq/airbyte/pull/65403) | Update dependencies |
-| 4.10.7 | 2025-08-09 | [64867](https://github.com/airbytehq/airbyte/pull/64867) | Update dependencies |
+| 4.10.8 | 2025-08-24 | [65403](https://github.com/airbytehq/airbyte/pull/65403) | Update dependencies |
+| 4.10.7 | 2025-08-10 | [64867](https://github.com/airbytehq/airbyte/pull/64867) | Update dependencies |
 | 4.10.6 | 2025-08-02 | [64366](https://github.com/airbytehq/airbyte/pull/64366) | Update dependencies |
 | 4.10.5 | 2025-07-26 | [64067](https://github.com/airbytehq/airbyte/pull/64067) | Update dependencies |
 | 4.10.4 | 2025-07-20 | [63673](https://github.com/airbytehq/airbyte/pull/63673) | Update dependencies |
