@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.schema
 
+import io.airbyte.cdk.load.message.Meta
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -16,9 +17,14 @@ class ColumnNameResolver(
     /**
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
+     *
+     * Pre-populates the set of existing column names with Airbyte's reserved internal column names
+     * (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, _airbyte_generation_id) to prevent
+     * user columns from colliding with these reserved names.
      */
     fun getColumnNameMapping(inputColumNames: Set<String>): Map<String, String> {
-        val processedColumnNames = mutableSetOf<String>()
+        // Pre-populate with Airbyte's reserved column names to prevent collisions
+        val processedColumnNames = Meta.COLUMN_NAMES.toMutableSet()
         val columnMappings = mutableMapOf<String, String>()
 
         inputColumNames.forEach { columnName ->

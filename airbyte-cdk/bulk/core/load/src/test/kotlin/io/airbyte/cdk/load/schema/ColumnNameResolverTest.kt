@@ -143,4 +143,58 @@ class ColumnNameResolverTest {
         assertEquals("valid_name_1", result["valid_name_1"])
         assertEquals("valid_name_2", result["valid_name_2"])
     }
+
+    @Test
+    fun `handles collision with reserved Airbyte column names`() {
+        val resolver = ColumnNameResolver(mapper)
+        // User columns that match Airbyte's reserved internal column names
+        val columns = setOf("_airbyte_meta", "_airbyte_raw_id", "normal_column")
+
+        every { mapper.toColumnName("_airbyte_meta") } returns "_airbyte_meta"
+        every { mapper.toColumnName("_airbyte_raw_id") } returns "_airbyte_raw_id"
+        every { mapper.toColumnName("normal_column") } returns "normal_column"
+        every { mapper.toColumnName("_airbyte_meta_1") } returns "_airbyte_meta_1"
+        every { mapper.toColumnName("_airbyte_raw_id_1") } returns "_airbyte_raw_id_1"
+        every { mapper.colsConflict(any(), any()) } answers { args[0] == args[1] }
+
+        val result = resolver.getColumnNameMapping(columns)
+
+        assertEquals(3, result.size)
+        // Reserved column names should be renamed to avoid collision with Airbyte internal columns
+        assertEquals("_airbyte_meta_1", result["_airbyte_meta"])
+        assertEquals("_airbyte_raw_id_1", result["_airbyte_raw_id"])
+        assertEquals("normal_column", result["normal_column"])
+    }
+
+    @Test
+    fun `handles collision with all reserved Airbyte column names`() {
+        val resolver = ColumnNameResolver(mapper)
+        // User columns that match all of Airbyte's reserved internal column names
+        val columns =
+            setOf(
+                "_airbyte_meta",
+                "_airbyte_raw_id",
+                "_airbyte_extracted_at",
+                "_airbyte_generation_id"
+            )
+
+        every { mapper.toColumnName("_airbyte_meta") } returns "_airbyte_meta"
+        every { mapper.toColumnName("_airbyte_raw_id") } returns "_airbyte_raw_id"
+        every { mapper.toColumnName("_airbyte_extracted_at") } returns "_airbyte_extracted_at"
+        every { mapper.toColumnName("_airbyte_generation_id") } returns "_airbyte_generation_id"
+        every { mapper.toColumnName("_airbyte_meta_1") } returns "_airbyte_meta_1"
+        every { mapper.toColumnName("_airbyte_raw_id_1") } returns "_airbyte_raw_id_1"
+        every { mapper.toColumnName("_airbyte_extracted_at_1") } returns "_airbyte_extracted_at_1"
+        every { mapper.toColumnName("_airbyte_generation_id_1") } returns "_airbyte_generation_id_1"
+        every { mapper.colsConflict(any(), any()) } answers { args[0] == args[1] }
+
+        val result = resolver.getColumnNameMapping(columns)
+
+        assertEquals(4, result.size)
+        // All reserved column names should be renamed
+        assertEquals("_airbyte_meta_1", result["_airbyte_meta"])
+        assertEquals("_airbyte_raw_id_1", result["_airbyte_raw_id"])
+        assertEquals("_airbyte_extracted_at_1", result["_airbyte_extracted_at"])
+        assertEquals("_airbyte_generation_id_1", result["_airbyte_generation_id"])
+    }
 }
