@@ -21,7 +21,6 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
     @get:Throws(Exception::class) override val config: JsonNode
         get() = testdb.integrationTestConfigBuilder()
             .withSchemas("public")
-//            .withoutSsl()
             .withSsl(mutableMapOf(MODE_KEY to "disable"))
             .withXminReplication()
             .build()
