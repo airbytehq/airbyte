@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "Red",
+    "slug": "red",
+    "description": "",
+    "menu_order": 0,
+    "count": 5
+  },
+  {
+    "id": 2,
+    "name": "Blue",
+    "slug": "blue",
+    "description": "",
+    "menu_order": 1,
+    "count": 3
+  }
+]

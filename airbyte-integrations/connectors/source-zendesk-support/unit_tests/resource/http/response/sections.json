@@ -1,0 +1,30 @@
+{
+  "sections": [
+    {
+      "id": 12345,
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/help_center/sections/12345.json",
+      "html_url": "https://d3v-airbyte.zendesk.com/hc/en-us/sections/12345",
+      "category_id": 67890,
+      "position": 0,
+      "sorting": "manual",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z",
+      "name": "Getting Started",
+      "description": "Getting started section",
+      "locale": "en-us",
+      "source_locale": "en-us",
+      "outdated": false,
+      "parent_section_id": null,
+      "theme_template": "section_page"
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": null,
+    "before_cursor": null
+  },
+  "links": {
+    "prev": null,
+    "next": null
+  }
+}

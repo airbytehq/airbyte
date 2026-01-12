@@ -225,7 +225,8 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.0 | 2025-12-02 | [70305](https://github.com/airbytehq/airbyte/pull/70305) | **Breaking Change**: Changes primary key for `workflow_runs` stream from `[id]` to `[id, run_attempt]` to preserve all workflow run attempts. |
+| 3.0.0 | 2026-01-20 | [70305](https://github.com/airbytehq/airbyte/pull/70305) | **Breaking Change**: Changes primary key for `workflow_runs` stream from `[id]` to `[id, run_attempt]` to preserve all workflow run attempts. |
+| 2.1.6 | 2025-12-16 | [70729](https://github.com/airbytehq/airbyte/pull/70729) | Update dependencies |
 | 2.1.5 | 2025-12-02 | [70286](https://github.com/airbytehq/airbyte/pull/70286) | Update dependencies |
 | 2.1.4 | 2025-11-25 | [69887](https://github.com/airbytehq/airbyte/pull/69887) | Update dependencies |
 | 2.1.3 | 2025-11-18 | [69421](https://github.com/airbytehq/airbyte/pull/69421) | Update dependencies |
