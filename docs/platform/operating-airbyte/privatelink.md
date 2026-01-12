@@ -38,7 +38,7 @@ Airbyte's PrivateLink implementation ensures that only sync jobs from your works
 
 ### Single tenant or multi tenant
 
-Airbyte Cloud is multi-tenant cloud software, regardless of whether you use PrivateLink. However, PrivateLink can feel like a single-tenant experience due to the lack of a shared public endpoint and strong isolation at your network boundary. With our without PrivateLink, all sync jobs in Airbyte use separate Kubernetes pods. This pod-level isolation further helps ensure data syncs from one organizaton are never exposed to another organizaton. Your syncs never run in their pods, and their syncs never run in your pods.
+Airbyte Cloud is multi-tenant cloud software, regardless of whether you use PrivateLink. However, PrivateLink can feel like a single-tenant experience due to the lack of a shared public endpoint and strong isolation at your network boundary. With or without PrivateLink, all sync jobs in Airbyte use separate Kubernetes pods. This pod-level isolation further helps ensure data syncs from one organizaton are never exposed to another organizaton. Your syncs never run in their pods, and their syncs never run in your pods.
 
 ### Availability and supported regions
 
