@@ -22,6 +22,12 @@ on:
         required: false
 
 run-name: "Force Merge PR #${{ github.event.inputs.pr }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
   # Cancel any previous runs on the same branch if they are still in progress
@@ -154,7 +160,7 @@ jobs:
               - type: context
                 elements:
                   - type: mrkdwn
-                    text: "Initiated by: ${{ github.actor }} | <https://github.com/${{ github.repository }}/issues/${{ github.event.inputs.pr }}#issuecomment-${{ github.event.inputs.comment-id }}|View command>"
+                    text: "Initiated by: ${{ github.actor }} | <https://github.com/${{ github.repository }}/pull/${{ github.event.inputs.pr }}|View PR>"
 
       - name: Append failure comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
