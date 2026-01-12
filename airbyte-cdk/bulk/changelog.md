@@ -1,3 +1,7 @@
+## Version 0.1.101
+
+load cdk: Introduce scope and oauth server uri attributes in iceberg polaris spec
+
 ## Version 0.1.100
 
 load cdk: allow override of socket count in dest connectors
