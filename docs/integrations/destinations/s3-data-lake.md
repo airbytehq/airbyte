@@ -237,6 +237,8 @@ To authenticate with Apache Polaris, follow these steps.
     - **Catalog Name**: The name of the catalog you created in Polaris (e.g., `quickstart_catalog`)
     - **Client ID**: The OAuth Client ID provided when creating the principal
     - **Client Secret**: The OAuth Client Secret provided when creating the principal
+    - **OAuth Scope**: The OAuth scope for authentication. This must be in the format `PRINCIPAL_ROLE:<role_name>`, where `<role_name>` is the name of the principal role you created in Polaris. For example: `PRINCIPAL_ROLE:catalog_admin`
+    - **OAuth2 Server URI**: The OAuth2 token endpoint URI for your Polaris server. For example: `https://polaris.example.com/oauth/tokens`
     - **Default namespace**: The namespace to be used for table identifiers when the destination namespace is set to "Destination-defined" or "Source-defined"
 
 5. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
@@ -375,7 +377,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.42  | 2025-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Implement support for scope and OAuth server URI attributes for Polaris catalog                                                 |
+| 0.3.42  | 2026-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Implement support for scope and OAuth server URI attributes for Polaris catalog                                                 |
 | 0.3.41  | 2025-11-06 | [69232](https://github.com/airbytehq/airbyte/pull/69232) | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns                                                        |
 | 0.3.40  | 2025-11-01 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61.                                                                                                     |
 | 0.3.39  | 2025-10-16 | [68108](https://github.com/airbytehq/airbyte/pull/68108)   | Implement Polaris support                                                                                                       |
