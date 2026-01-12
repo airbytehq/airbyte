@@ -1,6 +1,16 @@
-## Version 0.1.98
+## Version 0.1.100
 
 load cdk: allow override of socket count in dest connectors
+
+## Version 0.1.99
+
+load cdk: Enforce maximum parallelism for final aggregate flushes.
+
+## Version 0.1.98
+
+**Extract CDK**
+
+* Fix a bug causing query limit pull a negative number of rows.
 
 ## Version 0.1.97
 

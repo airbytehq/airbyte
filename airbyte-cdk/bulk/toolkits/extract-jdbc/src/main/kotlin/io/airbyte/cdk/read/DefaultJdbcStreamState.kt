@@ -29,10 +29,16 @@ class DefaultJdbcStreamState(
         get() = fetchSize ?: sharedState.constants.defaultFetchSize
 
     override val limit: Long
-        get() =
-            (fetchSizeOrDefault * transient.get().limitState.current).let {
-                sharedState.constants.maxSequentialQueryLimit?.coerceAtMost(it) ?: it
-            }
+        get() {
+            val fetchSize = fetchSizeOrDefault.toLong()
+            val current = transient.get().limitState.current
+
+            // Prevent overflow: use Math.multiplyExact which throws on overflow
+            val product =
+                runCatching { Math.multiplyExact(fetchSize, current) }.getOrElse { Long.MAX_VALUE }
+
+            return sharedState.constants.maxSequentialQueryLimit?.coerceAtMost(product) ?: product
+        }
 
     private val transient = AtomicReference(Transient.initial)
 
