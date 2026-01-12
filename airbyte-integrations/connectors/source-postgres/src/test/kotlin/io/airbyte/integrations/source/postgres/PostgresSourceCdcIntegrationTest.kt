@@ -62,14 +62,12 @@ class PostgresSourceCdcIntegrationTest {
                 )
             }
 
-
         private val testdb: PostgresTestDatabase = PostgresTestDatabase.`in`(this.serverImage)
 
         protected val serverImage: BaseImage
             get() = BaseImage.POSTGRES_17
 
-        val config: PostgresSourceConfigurationSpecification =
-            config(testdb.container)
+        val config: PostgresSourceConfigurationSpecification = config(testdb.container)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(PostgresSourceConfigurationFactory().make(config))

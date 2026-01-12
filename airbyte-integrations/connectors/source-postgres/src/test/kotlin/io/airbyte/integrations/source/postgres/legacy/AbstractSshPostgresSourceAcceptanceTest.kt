@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -29,14 +33,14 @@ import org.jooq.DSLContext
 import org.jooq.SQLDialect
 
 abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() {
-    private val bastion: SshBastionContainer =
-        SshBastionContainer()
+    private val bastion: SshBastionContainer = SshBastionContainer()
     private lateinit var testdb: PostgresTestDatabase
 
     @Throws(Exception::class)
     private fun populateDatabaseTestData() {
         val outerConfig: JsonNode =
-            testdb.integrationTestConfigBuilder()
+            testdb
+                .integrationTestConfigBuilder()
                 .withSchemas("public")
                 .withoutSsl()
                 .with("tunnel_method", bastion.getTunnelMethod(this.tunnelMethod, false)!!)
@@ -50,9 +54,13 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
                     .query<Any?>(
                         ContextQueryFunction { ctx: DSLContext? ->
                             ctx!!.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
-                            ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
+                            ctx.fetch(
+                                "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                            )
                             ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
-                            ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');")
+                            ctx.fetch(
+                                "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
+                            )
                             null
                         },
                     )
@@ -62,13 +70,16 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
 
     abstract val tunnelMethod: SshTunnel.TunnelMethod
 
-    // todo (cgardens) - dynamically create data by generating a database with a random name instead of
+    // todo (cgardens) - dynamically create data by generating a database with a random name instead
+    // of
     // requiring data to already be in place.
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
-        testdb = PostgresTestDatabase.`in`(PostgresTestDatabase.BaseImage.POSTGRES_17,
-            PostgresTestDatabase.ContainerModifier.NETWORK
-        )
+        testdb =
+            PostgresTestDatabase.`in`(
+                PostgresTestDatabase.BaseImage.POSTGRES_17,
+                PostgresTestDatabase.ContainerModifier.NETWORK
+            )
         bastion.initAndStartBastion(testdb.container.network)
         populateDatabaseTestData()
     }
@@ -80,9 +91,10 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
     override val config: JsonNode
         get() {
             try {
-                return testdb.integrationTestConfigBuilder()
+                return testdb
+                    .integrationTestConfigBuilder()
                     .withSchemas("public")
-//                    .withoutSsl()
+                    //                    .withoutSsl()
                     .withSsl(mutableMapOf(MODE_KEY to "disable"))
                     .with("tunnel_method", bastion.getTunnelMethod(this.tunnelMethod, true)!!)
                     .build()
@@ -94,54 +106,58 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
         }
 
     override val configuredCatalog: ConfiguredAirbyteCatalog
-        get() = ConfiguredAirbyteCatalog().withStreams(
-            Lists.newArrayList<ConfiguredAirbyteStream?>(
-                ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList<String?>("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(
-                        CatalogHelpers.createAirbyteStream(
-                            STREAM_NAME, SCHEMA_NAME,
-                            Field.of("id", JsonSchemaType.INTEGER),
-                            Field.of("name", JsonSchemaType.STRING),
-                        )
-                            .withSupportedSyncModes(
-                                Lists.newArrayList<SyncMode?>(
-                                    SyncMode.FULL_REFRESH,
-                                    SyncMode.INCREMENTAL,
-                                ),
-                            )
-                            .withSourceDefinedPrimaryKey(
-                                List.of<MutableList<String?>?>(
-                                    mutableListOf<String?>("id"),
-                                ),
+        get() =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    Lists.newArrayList<ConfiguredAirbyteStream?>(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withStream(
+                                CatalogHelpers.createAirbyteStream(
+                                        STREAM_NAME,
+                                        SCHEMA_NAME,
+                                        Field.of("id", JsonSchemaType.INTEGER),
+                                        Field.of("name", JsonSchemaType.STRING),
+                                    )
+                                    .withSupportedSyncModes(
+                                        Lists.newArrayList<SyncMode?>(
+                                            SyncMode.FULL_REFRESH,
+                                            SyncMode.INCREMENTAL,
+                                        ),
+                                    )
+                                    .withSourceDefinedPrimaryKey(
+                                        List.of<MutableList<String?>?>(
+                                            mutableListOf<String?>("id"),
+                                        ),
+                                    ),
+                            ),
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withStream(
+                                CatalogHelpers.createAirbyteStream(
+                                        STREAM_NAME2,
+                                        SCHEMA_NAME,
+                                        Field.of("id", JsonSchemaType.INTEGER),
+                                        Field.of("name", JsonSchemaType.STRING),
+                                    )
+                                    .withSupportedSyncModes(
+                                        Lists.newArrayList<SyncMode?>(
+                                            SyncMode.FULL_REFRESH,
+                                            SyncMode.INCREMENTAL,
+                                        ),
+                                    )
+                                    .withSourceDefinedPrimaryKey(
+                                        List.of<MutableList<String?>?>(
+                                            mutableListOf<String?>("id"),
+                                        ),
+                                    ),
                             ),
                     ),
-                ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList<String?>("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(
-                        CatalogHelpers.createAirbyteStream(
-                            STREAM_NAME2, SCHEMA_NAME,
-                            Field.of("id", JsonSchemaType.INTEGER),
-                            Field.of("name", JsonSchemaType.STRING),
-                        )
-                            .withSupportedSyncModes(
-                                Lists.newArrayList<SyncMode?>(
-                                    SyncMode.FULL_REFRESH,
-                                    SyncMode.INCREMENTAL,
-                                ),
-                            )
-                            .withSourceDefinedPrimaryKey(
-                                List.of<MutableList<String?>?>(
-                                    mutableListOf<String?>("id"),
-                                ),
-                            ),
-                    ),
-            ),
-        )
+                )
 
     override val state: JsonNode?
         get() = Jsons.jsonNode<HashMap<Any?, Any?>?>(HashMap<Any?, Any?>())

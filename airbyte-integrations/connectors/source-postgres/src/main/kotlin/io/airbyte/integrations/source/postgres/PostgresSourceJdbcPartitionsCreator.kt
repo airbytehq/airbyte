@@ -146,7 +146,10 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
     }
 
     /** Get total relation size in bytes for a given table - this includes toast data. */
-    @SuppressFBWarnings(value = ["SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"], justification = "testing")
+    @SuppressFBWarnings(
+        value = ["SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"],
+        justification = "testing"
+    )
     private fun totalRelationSize(stream: Stream): Long {
         val sql = "SELECT pg_total_relation_size(?)"
         return querySingleValue(

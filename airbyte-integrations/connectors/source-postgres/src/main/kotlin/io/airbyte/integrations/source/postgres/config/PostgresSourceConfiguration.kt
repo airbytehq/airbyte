@@ -27,14 +27,12 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.io.File
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -291,12 +289,11 @@ constructor(
 
         extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
         // Save CA certificate to a temporary file
-        val caCertFileURI: URI =
-            saveCACertificate {
-                val caCertFile = Files.createTempFile(null, null)
-                Files.write(caCertFile, sslData.caCertificate.toByteArray(StandardCharsets.UTF_8)).also { it.toFile().deleteOnExit()}
-
-            }
+        val caCertFileURI: URI = saveCACertificate {
+            val caCertFile = Files.createTempFile(null, null)
+            Files.write(caCertFile, sslData.caCertificate.toByteArray(StandardCharsets.UTF_8))
+                .also { it.toFile().deleteOnExit() }
+        }
         extraJdbcProperties[TRUST_KEY_STORE_URL] = Paths.get(caCertFileURI).toString()
 
         if (sslData.clientCertificate.isNullOrBlank() || sslData.clientKey.isNullOrBlank()) {

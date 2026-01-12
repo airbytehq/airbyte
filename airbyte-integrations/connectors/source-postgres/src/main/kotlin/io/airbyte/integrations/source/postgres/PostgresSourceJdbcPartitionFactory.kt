@@ -428,7 +428,10 @@ open class PostgresSourceJdbcPartitionFactory(
         return cursor to cursors[cursorLabel]!!
     }
 
-    @SuppressFBWarnings(value = ["SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"], justification = "testing")
+    @SuppressFBWarnings(
+        value = ["SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"],
+        justification = "testing"
+    )
     private fun relationSize(stream: Stream): Long {
         val sql = "SELECT pg_relation_size(?)"
         return querySingleValue(

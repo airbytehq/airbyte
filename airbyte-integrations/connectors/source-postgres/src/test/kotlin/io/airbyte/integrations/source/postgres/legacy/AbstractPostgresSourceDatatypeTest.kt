@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.legacy
 
 import io.airbyte.cdk.test.fixtures.legacy.AbstractSourceDatabaseTypeTest
@@ -8,8 +12,7 @@ import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil
 import io.airbyte.protocol.models.JsonSchemaType
 import java.util.*
 
-abstract class AbstractPostgresSourceDatatypeTest :
-    AbstractSourceDatabaseTypeTest() {
+abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTest() {
     protected lateinit var testdb: PostgresTestDatabase
 
     override val nameSpace: String
@@ -137,12 +140,22 @@ abstract class AbstractPostgresSourceDatatypeTest :
                     .sourceType(type)
                     .airbyteType(JsonSchemaType.STRING)
                     .addInsertValues(
-                        "'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
-                        "''", "null", "'\\xF0\\x9F\\x9A\\x80'",
+                        "'a'",
+                        "'abc'",
+                        "'Миші йдуть на південь, не питай чому;'",
+                        "'櫻花分店'",
+                        "''",
+                        "null",
+                        "'\\xF0\\x9F\\x9A\\x80'",
                     )
                     .addExpectedValues(
-                        "a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                        null, "\\xF0\\x9F\\x9A\\x80",
+                        "a",
+                        "abc",
+                        "Миші йдуть на південь, не питай чому;",
+                        "櫻花分店",
+                        "",
+                        null,
+                        "\\xF0\\x9F\\x9A\\x80",
                     )
                     .build(),
             )
@@ -163,12 +176,20 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .sourceType("cidr")
                 .airbyteType(JsonSchemaType.STRING)
                 .addInsertValues(
-                    "null", "'192.168.100.128/25'", "'192.168/24'", "'192.168.1'",
-                    "'128.1'", "'2001:4f8:3:ba::/64'",
+                    "null",
+                    "'192.168.100.128/25'",
+                    "'192.168/24'",
+                    "'192.168.1'",
+                    "'128.1'",
+                    "'2001:4f8:3:ba::/64'",
                 )
                 .addExpectedValues(
-                    null, "192.168.100.128/25", "192.168.0.0/24", "192.168.1.0/24",
-                    "128.1.0.0/16", "2001:4f8:3:ba::/64",
+                    null,
+                    "192.168.100.128/25",
+                    "192.168.0.0/24",
+                    "192.168.1.0/24",
+                    "128.1.0.0/16",
+                    "2001:4f8:3:ba::/64",
                 )
                 .build(),
         )
@@ -202,7 +223,7 @@ abstract class AbstractPostgresSourceDatatypeTest :
                         "'1987.12.01'",
                         /*"'-InFinITy'",
                         "'InFinITy'",*/
-                    )
+                        )
                     .addExpectedValues(
                         "1999-01-08",
                         "1991-02-10 BC",
@@ -210,7 +231,7 @@ abstract class AbstractPostgresSourceDatatypeTest :
                         "1987-12-01",
                         /*"-Infinity",
                         "Infinity",*/
-                    )
+                        )
                     .build(),
             )
         }
@@ -299,7 +320,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .sourceType("macaddr")
                 .airbyteType(JsonSchemaType.STRING)
                 .addInsertValues(
-                    "null", "'08:00:2b:01:02:03'", "'08-00-2b-01-02-04'",
+                    "null",
+                    "'08:00:2b:01:02:03'",
+                    "'08-00-2b-01-02-04'",
                     "'08002b:010205'",
                 )
                 .addExpectedValues(
@@ -316,20 +339,24 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .sourceType("macaddr8")
                 .airbyteType(JsonSchemaType.STRING)
                 .addInsertValues(
-                    "null", "'08:00:2b:01:02:03:04:05'", "'08-00-2b-01-02-03-04-06'",
+                    "null",
+                    "'08:00:2b:01:02:03:04:05'",
+                    "'08-00-2b-01-02-03-04-06'",
                     "'08002b:0102030407'",
                 )
                 .addExpectedValues(
-                    null, "08:00:2b:01:02:03:04:05", "08:00:2b:01:02:03:04:06",
+                    null,
+                    "08:00:2b:01:02:03:04:05",
+                    "08:00:2b:01:02:03:04:06",
                     "08:00:2b:01:02:03:04:07",
                 )
                 .build(),
         )
 
         /*
-     * Verify NUMERIC/DECIMAL Datatypes has - the default precision of 131089 (See PostgresConverter) -
-     * unspecified scale - any decimal value is preserved
-     */
+         * Verify NUMERIC/DECIMAL Datatypes has - the default precision of 131089 (See PostgresConverter) -
+         * unspecified scale - any decimal value is preserved
+         */
         addDataTypeTestData(
             TestDataHolder.builder()
                 .sourceType("numeric")
@@ -426,8 +453,10 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .sourceType("polygon")
                 .airbyteType(JsonSchemaType.STRING)
                 .addInsertValues(
-                    "'((3,7),(15,18))'", "'((0,0),(0,0))'",
-                    "'((0,0),(999999999999999999999999,0))'", "null",
+                    "'((3,7),(15,18))'",
+                    "'((0,0),(0,0))'",
+                    "'((0,0),(999999999999999999999999,0))'",
+                    "null",
                 )
                 .addExpectedValues(
                     "((3.0,7.0),(15.0,18.0))",
@@ -483,16 +512,19 @@ abstract class AbstractPostgresSourceDatatypeTest :
         }
 
         // time without time zone
-        for (fullSourceType in mutableSetOf<String?>(
-            "time",
-            "time without time zone",
-            "time without time zone not null default now()",
-        )) {
+        for (fullSourceType in
+            mutableSetOf<String?>(
+                "time",
+                "time without time zone",
+                "time without time zone not null default now()",
+            )) {
             addDataTypeTestData(
                 TestDataHolder.builder()
                     .sourceType("time")
                     .fullSourceDataType(fullSourceType)
-                    .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE) // time column will ignore time zone
+                    .airbyteType(
+                        JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE
+                    ) // time column will ignore time zone
                     .addInsertValues(
                         "'13:00:01.010'",
                         "'13:00:02.000001+8'",
@@ -521,7 +553,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 TestDataHolder.builder()
                     .sourceType("time")
                     .fullSourceDataType(fullSourceType)
-                    .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE) // time column will ignore time zone
+                    .airbyteType(
+                        JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE
+                    ) // time column will ignore time zone
                     .addInsertValues("null")
                     .addExpectedValues(null as String?)
                     .build(),
@@ -529,11 +563,12 @@ abstract class AbstractPostgresSourceDatatypeTest :
         }
 
         // timestamp without time zone
-        for (fullSourceType in mutableSetOf<String?>(
-            "timestamp",
-            "timestamp without time zone",
-            "timestamp without time zone default now()",
-        )) {
+        for (fullSourceType in
+            mutableSetOf<String?>(
+                "timestamp",
+                "timestamp without time zone",
+                "timestamp without time zone default now()",
+            )) {
             addDataTypeTestData(
                 TestDataHolder.builder()
                     .sourceType("timestamp")
@@ -541,14 +576,19 @@ abstract class AbstractPostgresSourceDatatypeTest :
                     .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
                     .addInsertValues(
                         "TIMESTAMP '2004-10-19 10:23:00'",
-                        "TIMESTAMP '2004-10-19 10:23:54.123456'",  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from
+                        "TIMESTAMP '2004-10-19 10:23:54.123456'", // A random BCE date. Old enough
+                        // that converting it to/from an
+                        // Instant results in
+                        // discrepancies from
                         // inconsistent leap year handling
-                        "TIMESTAMP '3004-10-19 10:23:54.123456 BC'",  // The earliest possible timestamp in CE
-                        "TIMESTAMP '0001-01-01 00:00:00.000000'",  // The last possible timestamp in BCE
+                        "TIMESTAMP '3004-10-19 10:23:54.123456 BC'", // The earliest possible
+                        // timestamp in CE
+                        "TIMESTAMP '0001-01-01 00:00:00.000000'", // The last possible timestamp in
+                        // BCE
                         "TIMESTAMP '0001-12-31 23:59:59.999999 BC'",
                         "'epoch'",
                         /*"'-InFinITy'", "'InFinITy'",*/
-                    )
+                        )
                     .addExpectedValues(
                         "2004-10-19T10:23:00.000000",
                         "2004-10-19T10:23:54.123456",
@@ -557,7 +597,7 @@ abstract class AbstractPostgresSourceDatatypeTest :
                         "0001-12-31T23:59:59.999999 BC",
                         "1970-01-01T00:00:00.000000",
                         /*"-Infinity", "Infinity",*/
-                    )
+                        )
                     .build(),
             )
         }
@@ -585,10 +625,29 @@ abstract class AbstractPostgresSourceDatatypeTest :
                     .addInsertValues(
                         // 10:23-08 == 18:23Z
                         "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:00-08'",
-                        "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54.123456-08'",  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from
+                        "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54.123456-08'", // A random BCE
+                        // date. Old
+                        // enough that
+                        // converting it
+                        // to/from an
+                        // Instant
+                        // results in
+                        // discrepancies
+                        // from
                         // inconsistent leap year handling
-                        "TIMESTAMP WITH TIME ZONE '3004-10-19 10:23:54.123456-08 BC'",  // The earliest possible timestamp in CE (16:00-08 == 00:00Z)
-                        "TIMESTAMP WITH TIME ZONE '0001-12-31 16:00:00.000000-08 BC'",  // The last possible timestamp in BCE (15:59-08 == 23:59Z)
+                        "TIMESTAMP WITH TIME ZONE '3004-10-19 10:23:54.123456-08 BC'", // The
+                        // earliest
+                        // possible
+                        // timestamp
+                        // in CE
+                        // (16:00-08
+                        // == 00:00Z)
+                        "TIMESTAMP WITH TIME ZONE '0001-12-31 16:00:00.000000-08 BC'", // The last
+                        // possible
+                        // timestamp
+                        // in BCE
+                        // (15:59-08
+                        // == 23:59Z)
                         "TIMESTAMP WITH TIME ZONE '0001-12-31 15:59:59.999999-08 BC'",
                         "null", /*"'-InFinITy'", "'InFinITy'",*/
                     )
@@ -618,7 +677,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .sourceType("tsvector")
                 .airbyteType(JsonSchemaType.STRING)
                 .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
-                .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
+                .addExpectedValues(
+                    "'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7"
+                )
                 .build(),
         )
 
@@ -637,7 +698,8 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(JsonSchemaType.STRING)
                 .addInsertValues(
                     "XMLPARSE (DOCUMENT '<?xml version=\"1.0\"?><book><title>Manual</title><chapter>...</chapter></book>')",
-                    "null", "''",
+                    "null",
+                    "''",
                 )
                 .addExpectedValues(
                     "<book><title>Manual</title><chapter>...</chapter></book>",
@@ -696,14 +758,15 @@ abstract class AbstractPostgresSourceDatatypeTest :
                              "weight"    => "11.2 ounces"'
                              
                              """.trimIndent(),
-                    /*null,*/ //TODO: check here
-                )
+                    /*null,*/
+                    // TODO: check here
+                    )
                 .addExpectedValues(
                     """
                 {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}
                 """.trimIndent(),
                     /*null,*/
-                )
+                    )
                 .build(),
         )
     }
@@ -715,15 +778,20 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(JsonSchemaType.NUMBER)
                 .addInsertValues(
                     "null",
-                    "'999.99'", "'1,001.01'", "'-1,000'",
-                    "'$999.99'", "'$1001.01'",
-                    "'-$1,000'", // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
-                    // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+                    "'999.99'",
+                    "'1,001.01'",
+                    "'-1,000'",
+                    "'$999.99'",
+                    "'$1001.01'",
+                    "'-$1,000'", // max values for Money type: "-92233720368547758.08",
+                    // "92233720368547758.07"
+                    // Debezium has wrong parsing for values more than 999999999999999 and less than
+                    // -999999999999999
                     // https://github.com/airbytehq/airbyte/issues/7338
                     /* "'-92233720368547758.08'", "'92233720368547758.07'" */
-                )
+                    )
                 .addExpectedValues(
-                    null,  // Double#toString method is necessary here because sometimes the output
+                    null, // Double#toString method is necessary here because sometimes the output
                     // has unexpected decimals, e.g. Double.toString(-1000) is -1000.0
                     "999.99",
                     "1001.01",
@@ -752,7 +820,8 @@ abstract class AbstractPostgresSourceDatatypeTest :
                         "'13:00:04Z'",
                         "'13:00:05.012345Z+8'",
                         "'13:00:06.00000Z-8'",
-                    ) // A time value without time zone will use the time zone set on the database, which is Z-7,
+                    ) // A time value without time zone will use the time zone set on the database,
+                    // which is Z-7,
                     // so 13:00:01 is returned as 13:00:01-07.
                     .addExpectedValues(
                         null,
@@ -818,7 +887,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
+                                )
                                 .build(),
                         )
                         .build(),
@@ -835,7 +906,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
+                                )
                                 .build(),
                         )
                         .build(),
@@ -852,7 +925,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
+                                )
                                 .build(),
                         )
                         .build(),
@@ -869,7 +944,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
+                                )
                                 .build(),
                         )
                         .build(),
@@ -886,13 +963,19 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
+                                )
                                 .build(),
                         )
                         .build(),
                 )
-                .addInsertValues("'{someeeeee loooooooooong teeeeext,vvvvvvveeeeeeeeeeeruyyyyyyyyy looooooooooooooooong teeeeeeeeeeeeeeext}'")
-                .addExpectedValues("[\"someeeeee loooooooooong teeeeext\",\"vvvvvvveeeeeeeeeeeruyyyyyyyyy looooooooooooooooong teeeeeeeeeeeeeeext\"]")
+                .addInsertValues(
+                    "'{someeeeee loooooooooong teeeeext,vvvvvvveeeeeeeeeeeruyyyyyyyyy looooooooooooooooong teeeeeeeeeeeeeeext}'"
+                )
+                .addExpectedValues(
+                    "[\"someeeeee loooooooooong teeeeext\",\"vvvvvvveeeeeeeeeeeruyyyyyyyyy looooooooooooooooong teeeeeeeeeeeeeeext\"]"
+                )
                 .build(),
         )
 
@@ -903,7 +986,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
+                                )
                                 .build(),
                         )
                         .build(),
@@ -915,9 +1000,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
 
         for (type in mutableSetOf<String?>("numeric", "decimal")) {
             /*
-       * Verify NUMERIC[]/DECIMAL[] Datatypes has - the default precision of 131089 (See
-       * PostgresConverter) - unspecified scale - any decimal value is preserved
-       */
+             * Verify NUMERIC[]/DECIMAL[] Datatypes has - the default precision of 131089 (See
+             * PostgresConverter) - unspecified scale - any decimal value is preserved
+             */
             addDataTypeTestData(
                 TestDataHolder.builder()
                     .sourceType(String.format("%s_array", type))
@@ -930,7 +1015,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                     .airbyteType(
                         JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                             .withItems(
-                                JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER)
+                                JsonSchemaType.builder(
+                                        JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
+                                    )
                                     .build(),
                             )
                             .build(),
@@ -940,9 +1027,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                     .build(),
             )
             /*
-       * Verify NUMERIC(`anyNumber`)[]/DECIMAL(`anyNumber`)[] Datatypes has default scale of 0 if the
-       * Precision is set
-       */
+             * Verify NUMERIC(`anyNumber`)[]/DECIMAL(`anyNumber`)[] Datatypes has default scale of 0 if the
+             * Precision is set
+             */
             addDataTypeTestData(
                 TestDataHolder.builder()
                     .sourceType(String.format("%s_array", type))
@@ -955,7 +1042,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                     .airbyteType(
                         JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                             .withItems(
-                                JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER)
+                                JsonSchemaType.builder(
+                                        JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
+                                    )
                                     .build(),
                             )
                             .build(),
@@ -977,7 +1066,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                     .airbyteType(
                         JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                             .withItems(
-                                JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER)
+                                JsonSchemaType.builder(
+                                        JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
+                                    )
                                     .build(),
                             )
                             .build(),
@@ -996,7 +1087,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
+                                )
                                 .build(),
                         )
                         .build(),
@@ -1013,7 +1106,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
+                                )
                                 .build(),
                         )
                         .build(),
@@ -1030,7 +1125,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
+                                )
                                 .build(),
                         )
                         .build(),
@@ -1047,7 +1144,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
+                                )
                                 .build(),
                         )
                         .build(),
@@ -1064,7 +1163,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN
+                                )
                                 .build(),
                         )
                         .build(),
@@ -1081,7 +1182,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN
+                                )
                                 .build(),
                         )
                         .build(),
@@ -1098,7 +1201,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .airbyteType(
                     JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
                         .withItems(
-                            JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING)
+                            JsonSchemaType.builder(
+                                    JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.STRING
+                                )
                                 .build(),
                         )
                         .build(),
@@ -1135,7 +1240,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                         .withItems(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
                         .build(),
                 )
-                .addInsertValues("'{13:00:01,13:00:02+8,13:00:03-8,13:00:04Z,13:00:05.000000+8,13:00:00Z-8}'")
+                .addInsertValues(
+                    "'{13:00:01,13:00:02+8,13:00:03-8,13:00:04Z,13:00:05.000000+8,13:00:00Z-8}'"
+                )
                 .addExpectedValues(
                     "[\"13:00:01\",\"13:00:02\",\"13:00:03\",\"13:00:04\",\"13:00:05\",\"13:00:00.000000\"]",
                 )
@@ -1151,7 +1258,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                         .withItems(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
                         .build(),
                 )
-                .addInsertValues("'{null,13:00:01,13:00:00+8,13:00:03-8,13:00:04Z,13:00:05.012345Z+8,13:00:06.00000Z-8,13:00}'")
+                .addInsertValues(
+                    "'{null,13:00:01,13:00:00+8,13:00:03-8,13:00:04Z,13:00:05.012345Z+8,13:00:06.00000Z-8,13:00}'"
+                )
                 .addExpectedValues(
                     "[null,\"13:00:01-07:00\",\"13:00:00.000000+08:00\",\"13:00:03-08:00\",\"13:00:04Z\",\"13:00:05.012345-08:00\",\"13:00:06+08:00\",\"13:00:00.000000-07:00\"]",
                 )
@@ -1168,7 +1277,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                         .build(),
                 )
                 .addInsertValues("'{null,2004-10-19 10:23:00-08,2004-10-19 10:23:54.123456-08}'")
-                .addExpectedValues("[null,\"2004-10-19T18:23:00.000000Z\",\"2004-10-19T18:23:54.123456Z\"]")
+                .addExpectedValues(
+                    "[null,\"2004-10-19T18:23:00.000000Z\",\"2004-10-19T18:23:54.123456Z\"]"
+                )
                 .build(),
         )
 
@@ -1181,8 +1292,12 @@ abstract class AbstractPostgresSourceDatatypeTest :
                         .withItems(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
                         .build(),
                 )
-                .addInsertValues("'{null,2004-10-19 10:23:00,2004-10-19 10:23:54.123456,3004-10-19 10:23:54.123456 BC}'")
-                .addExpectedValues("[null,\"2004-10-19T10:23:00.000000\",\"2004-10-19T10:23:54.123456\",\"3004-10-19T10:23:54.123456 BC\"]")
+                .addInsertValues(
+                    "'{null,2004-10-19 10:23:00,2004-10-19 10:23:54.123456,3004-10-19 10:23:54.123456 BC}'"
+                )
+                .addExpectedValues(
+                    "[null,\"2004-10-19T10:23:00.000000\",\"2004-10-19T10:23:54.123456\",\"3004-10-19T10:23:54.123456 BC\"]"
+                )
                 .build(),
         )
     }
@@ -1194,7 +1309,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                 .fullSourceDataType("NUMERIC(28,2)")
                 .airbyteType(JsonSchemaType.NUMBER)
                 .addInsertValues(
-                    "'123'", "null", "'14525.22'",
+                    "'123'",
+                    "null",
+                    "'14525.22'",
                 ) // Postgres source does not support these special values yet
                 // https://github.com/airbytehq/airbyte/issues/8902
                 // "'infinity'", "'-infinity'", "'nan'"
@@ -1210,7 +1327,9 @@ abstract class AbstractPostgresSourceDatatypeTest :
                     .fullSourceDataType("NUMERIC(20,7)")
                     .airbyteType(JsonSchemaType.NUMBER)
                     .addInsertValues(
-                        "'123'", "null", "'1234567890.1234567'",
+                        "'123'",
+                        "null",
+                        "'1234567890.1234567'",
                     ) // Postgres source does not support these special values yet
                     // https://github.com/airbytehq/airbyte/issues/8902
                     // "'infinity'", "'-infinity'", "'nan'"

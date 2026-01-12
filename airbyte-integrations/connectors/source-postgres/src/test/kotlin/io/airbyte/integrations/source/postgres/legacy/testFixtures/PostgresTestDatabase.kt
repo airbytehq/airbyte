@@ -1,5 +1,8 @@
-package io.airbyte.integrations.source.postgres.legacy.testFixtures
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
 
+package io.airbyte.integrations.source.postgres.legacy.testFixtures
 
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.test.fixtures.legacy.DatabaseDriver
@@ -20,7 +23,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
         PostgreSQLContainer<*>,
         PostgresTestDatabase,
         PostgresTestDatabase.PostgresConfigBuilder,
-        >(
+    >(
         container,
     ) {
     enum class BaseImage(reference: String, majorVersion: Int) {
@@ -73,17 +76,15 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
     }
 
     /**
-     * Close resources held by this instance. This deliberately avoids dropping the database, which is
-     * really expensive in Postgres. This is because a DROP DATABASE in Postgres triggers a CHECKPOINT.
-     * Call [.dropDatabaseAndUser] to explicitly drop the database and the user.
+     * Close resources held by this instance. This deliberately avoids dropping the database, which
+     * is really expensive in Postgres. This is because a DROP DATABASE in Postgres triggers a
+     * CHECKPOINT. Call [.dropDatabaseAndUser] to explicitly drop the database and the user.
      */
     override fun inContainerUndoBootstrapCmd(): Stream<String> {
         return Stream.empty<String>()
     }
 
-    /**
-     * Drop the database owned by this instance.
-     */
+    /** Drop the database owned by this instance. */
     fun dropDatabaseAndUser() {
         execInContainer(
             psqlCmd(
@@ -100,9 +101,12 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
         return Stream.concat<String>(
             Stream.of<String>(
                 "psql",
-                "-d", container.getDatabaseName(),
-                "-U", container.getUsername(),
-                "-v", "ON_ERROR_STOP=1",
+                "-d",
+                container.getDatabaseName(),
+                "-U",
+                container.getUsername(),
+                "-v",
+                "ON_ERROR_STOP=1",
                 "-a",
             ),
             sql.flatMap<String?> { stmt: String? -> Stream.of<String?>("-c", stmt) },
@@ -117,21 +121,26 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
 
     private var cachedCerts: Certificates? = null
 
-    @get:Synchronized val certificates: Certificates
+    @get:Synchronized
+    val certificates: Certificates
         get() {
             if (cachedCerts == null) {
                 val caCert: String
                 val clientKey: String
                 val clientCert: String
                 try {
-                    caCert = container.execInContainer("su", "-c", "cat ca.crt").getStdout()
-                        .trim { it <= ' ' }
+                    caCert =
+                        container.execInContainer("su", "-c", "cat ca.crt").getStdout().trim {
+                            it <= ' '
+                        }
                     clientKey =
-                        container.execInContainer("su", "-c", "cat client.key").getStdout()
-                            .trim { it <= ' ' }
+                        container.execInContainer("su", "-c", "cat client.key").getStdout().trim {
+                            it <= ' '
+                        }
                     clientCert =
-                        container.execInContainer("su", "-c", "cat client.crt").getStdout()
-                            .trim { it <= ' ' }
+                        container.execInContainer("su", "-c", "cat client.crt").getStdout().trim {
+                            it <= ' '
+                        }
                 } catch (e: IOException) {
                     throw UncheckedIOException(e)
                 } catch (e: InterruptedException) {
@@ -160,8 +169,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
         get() = withNamespace("publication")
 
     fun withReplicationSlot(): PostgresTestDatabase? {
-        return this
-            .with(
+        return this.with(
                 "SELECT pg_create_logical_replication_slot('%s', 'pgoutput');",
                 this.replicationSlotName,
             )
@@ -169,8 +177,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
     }
 
     fun withPublicationForAllTables(): PostgresTestDatabase? {
-        return this
-            .with("CREATE PUBLICATION %s FOR ALL TABLES;", this.publicationName)
+        return this.with("CREATE PUBLICATION %s FOR ALL TABLES;", this.publicationName)
             .onClose("DROP PUBLICATION %s CASCADE;", this.publicationName)
     }
 
@@ -194,8 +201,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
             LsnCommitBehaviour: String = "While reading Data",
             cdcCursorFailBehaviour: String = RESYNC_DATA_OPTION
         ): PostgresConfigBuilder {
-            return this
-                .with("is_test", true)
+            return this.with("is_test", true)
                 .with(
                     "replication_method",
                     Jsons.jsonNode<ImmutableMap<Any, Any>?>(
@@ -225,22 +231,21 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
     }
 
     override fun close() {
-//        PostgresDebeziumStateUtil.disposeInitialState() // TODO: check here
+        //        PostgresDebeziumStateUtil.disposeInitialState() // TODO: check here
         super.close()
     }
 
     companion object {
         @Suppress("deprecation")
-        fun `in`(
-            baseImage: BaseImage,
-            vararg modifiers: ContainerModifier?
-        ): PostgresTestDatabase {
+        fun `in`(baseImage: BaseImage, vararg modifiers: ContainerModifier?): PostgresTestDatabase {
             val methodNames =
                 Stream.of<ContainerModifier>(
-                    *modifiers,
-                ).map<String?> { im: ContainerModifier -> im.methodName }.toList()
+                        *modifiers,
+                    )
+                    .map<String?> { im: ContainerModifier -> im.methodName }
+                    .toList()
                     .toTypedArray<String>()
-            val container: PostgreSQLContainer<*>  =
+            val container: PostgreSQLContainer<*> =
                 PostgresContainerFactory().shared(baseImage.reference, *methodNames)
             return PostgresTestDatabase(container).initialized()
         }

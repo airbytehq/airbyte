@@ -97,7 +97,11 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
                 StrictPrimitivePartialMatcher(),
             )
         val diff: JsonDiff = DiffGenerator.diff(expected, actual, jsonMatcher)
-        Assertions.assertEquals("", OnlyErrorDiffViewer.from(diff).toString(), "Expected spec output by integration to be equal to spec provided by test runner")
+        Assertions.assertEquals(
+            "",
+            OnlyErrorDiffViewer.from(diff).toString(),
+            "Expected spec output by integration to be equal to spec provided by test runner"
+        )
     }
 
     /**

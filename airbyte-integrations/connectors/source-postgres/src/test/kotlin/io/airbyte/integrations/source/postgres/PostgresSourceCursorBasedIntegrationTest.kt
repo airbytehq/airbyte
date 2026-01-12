@@ -95,8 +95,7 @@ class PostgresSourceCursorBasedIntegrationTest {
                 )
             }
 
-        val config: PostgresSourceConfigurationSpecification =
-            config(testdb.container)
+        val config: PostgresSourceConfigurationSpecification = config(testdb.container)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(PostgresSourceConfigurationFactory().make(config))
