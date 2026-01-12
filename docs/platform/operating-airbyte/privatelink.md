@@ -1,10 +1,8 @@
 ---
-products: cloud
+products: enterprise-flex
 ---
 
 # PrivateLink
-
-<!-- Confirm which subscriptions include PrivateLink -->
 
 PrivateLink allows Airbyte Cloud to securely connect to your data sources and destinations without using the public internet or exposing IPs. Traffic between Airbyte and your resources stays entirely within your cloud provider's private network, providing enhanced security for organizations with strict network isolation requirements.
 
@@ -48,9 +46,7 @@ Airbyte Cloud is multi-tenant cloud software, regardless of whether you use Priv
 | Azure          | Private Endpoint / Private Link | No        |
 | GCP            | Private Service Connect         | No        |
 
-The following regions are supported.
-
-<!-- Contact Airbyte to confirm which regions are currently supported for PrivateLink connections. -->
+We currently offer regions in the US and EU.
 
 ### Limitations
 
