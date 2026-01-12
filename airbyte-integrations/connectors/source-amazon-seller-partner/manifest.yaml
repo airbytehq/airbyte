@@ -2747,6 +2747,16 @@ api_budget:
         - method: GET
           url_path_pattern: "reports/2021-06-30/documents/[^/]+$"
 
+    # SP-API Finances v0
+    # ListFinancialEvents: Rate 0.5 rps, Burst 30
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT2S
+      matchers:
+        - method: GET
+          url_path_pattern: "finances/v0/financialEvents(\\?.*)?$"
+
   # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
 
