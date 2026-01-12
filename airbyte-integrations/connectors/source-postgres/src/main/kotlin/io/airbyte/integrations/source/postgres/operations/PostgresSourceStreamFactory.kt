@@ -5,13 +5,17 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.discover.AirbyteStreamFactory
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.DataOrMetaField
+import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
@@ -19,13 +23,18 @@ import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.integrations.source.postgres.cdc.PostgresSourceCdcMetaFields
 import io.airbyte.integrations.source.postgres.cdc.PostgresSourceCdcPosition
 import io.airbyte.integrations.source.postgres.cdc.PostgresSourceDebeziumOperations
+import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
+import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.SyncMode
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
+class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFactory) :
+    JdbcAirbyteStreamFactory {
 
     override val globalCursor: DataOrMetaField = PostgresSourceCdcMetaFields.CDC_LSN
 
@@ -36,6 +45,7 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
             CommonMetaField.CDC_DELETED_AT,
         )
 
+    val viewsBySchema: MutableMap<String, List<String>> = mutableMapOf()
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
@@ -94,4 +104,59 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
                 PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
             )
     }
+
+    override fun create(
+        config: SourceConfiguration,
+        discoveredStream: DiscoveredStream
+    ): AirbyteStream {
+        val postgresConfig = config as PostgresSourceConfiguration
+        val isCdc = config.isCdc()
+        val hasPK = hasValidPrimaryKey(discoveredStream)
+        val hasPotentialCursorFields = hasPotentialCursorFields(discoveredStream)
+        val isXmin = postgresConfig.incrementalConfiguration is XminIncrementalConfiguration
+        var isView = false
+        discoveredStream.id.namespace?.let { namespace ->
+            // TO-DO: unify views queries for all schemas in a single query.
+            isView =
+                viewsBySchema
+                    .getOrPut(namespace) { getViewsInSchema(namespace) }
+                    .contains(discoveredStream.id.name) == true
+        }
+
+        val supportsIncremental =
+            when {
+                isXmin -> !isView
+                isCdc -> hasPK
+                else -> hasPotentialCursorFields
+            }
+        val syncModes =
+            when {
+                supportsIncremental -> listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                else -> listOf(SyncMode.FULL_REFRESH)
+            }
+        val primaryKey: List<List<String>> =
+            if (isCdc || hasPK) discoveredStream.primaryKeyColumnIDs else emptyList()
+        val stream =
+            AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
+                if (isCdc && hasPK) {
+                    decorateAirbyteStream(this)
+                }
+                supportedSyncModes = syncModes
+                sourceDefinedPrimaryKey = primaryKey
+                sourceDefinedCursor = (isCdc || isXmin) && hasPK
+                isResumable = hasPK
+            }
+        return stream
+    }
+
+    private fun getViewsInSchema(schema: String): List<String> =
+        jdbcConnectionFactory.get().use { conn ->
+            val query = "SELECT viewname FROM pg_catalog.pg_views WHERE schemaname = ?"
+            conn.prepareStatement(query).use { stmt ->
+                stmt.setString(1, schema)
+                stmt.executeQuery().use { rs ->
+                    generateSequence { if (rs.next()) rs.getString("viewname") else null }.toList()
+                }
+            }
+        }
 }
