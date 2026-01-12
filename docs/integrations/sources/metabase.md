@@ -77,7 +77,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| 2.1.38 | 2025-12-16 | [70765](https://github.com/airbytehq/airbyte/pull/70765) | Update dependencies |
+| 2.1.38 | 2025-12-18 | [70765](https://github.com/airbytehq/airbyte/pull/70765) | Update dependencies |
 | 2.1.37 | 2025-11-25 | [70109](https://github.com/airbytehq/airbyte/pull/70109) | Update dependencies |
 | 2.1.36 | 2025-11-18 | [69556](https://github.com/airbytehq/airbyte/pull/69556) | Update dependencies |
 | 2.1.35 | 2025-10-29 | [69057](https://github.com/airbytehq/airbyte/pull/69057) | Update dependencies |
@@ -85,7 +85,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 | 2.1.33 | 2025-10-14 | [67829](https://github.com/airbytehq/airbyte/pull/67829) | Update dependencies |
 | 2.1.32 | 2025-10-07 | [67388](https://github.com/airbytehq/airbyte/pull/67388) | Update dependencies |
 | 2.1.31 | 2025-09-30 | [66335](https://github.com/airbytehq/airbyte/pull/66335) | Update dependencies |
-| 2.1.30 | 2025-09-09 | [65815](https://github.com/airbytehq/airbyte/pull/65815) | Update dependencies |
+| 2.1.30 | 2025-09-10 | [65815](https://github.com/airbytehq/airbyte/pull/65815) | Update dependencies |
 | 2.1.29 | 2025-08-23 | [65218](https://github.com/airbytehq/airbyte/pull/65218) | Update dependencies |
 | 2.1.28 | 2025-08-09 | [64780](https://github.com/airbytehq/airbyte/pull/64780) | Update dependencies |
 | 2.1.27 | 2025-08-02 | [64288](https://github.com/airbytehq/airbyte/pull/64288) | Update dependencies |
