@@ -246,19 +246,19 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.15.14 | 2025-12-16 | [70638](https://github.com/airbytehq/airbyte/pull/70638) | Update dependencies |
+| 5.15.14 | 2025-12-18 | [70638](https://github.com/airbytehq/airbyte/pull/70638) | Update dependencies |
 | 5.15.13 | 2025-11-25 | [70048](https://github.com/airbytehq/airbyte/pull/70048) | Update dependencies |
 | 5.15.12 | 2025-11-18 | [69580](https://github.com/airbytehq/airbyte/pull/69580) | Update dependencies |
 | 5.15.11 | 2025-10-29 | [68994](https://github.com/airbytehq/airbyte/pull/68994) | Update dependencies |
 | 5.15.10 | 2025-10-21 | [68527](https://github.com/airbytehq/airbyte/pull/68527) | Update dependencies |
 | 5.15.9 | 2025-10-14 | [67472](https://github.com/airbytehq/airbyte/pull/67472) | Update dependencies |
 | 5.15.8 | 2025-09-30 | [66891](https://github.com/airbytehq/airbyte/pull/66891) | Update dependencies |
-| 5.15.7 | 2025-09-23 | [66367](https://github.com/airbytehq/airbyte/pull/66367) | Update dependencies |
+| 5.15.7 | 2025-09-24 | [66367](https://github.com/airbytehq/airbyte/pull/66367) | Update dependencies |
 | 5.15.6 | 2025-09-09 | [66115](https://github.com/airbytehq/airbyte/pull/66115) | Update dependencies |
 | 5.15.5 | 2025-08-24 | [65489](https://github.com/airbytehq/airbyte/pull/65489) | Update dependencies |
-| 5.15.4 | 2025-08-09 | [64840](https://github.com/airbytehq/airbyte/pull/64840) | Update dependencies |
+| 5.15.4 | 2025-08-10 | [64840](https://github.com/airbytehq/airbyte/pull/64840) | Update dependencies |
 | 5.15.3 | 2025-08-04 | [64484](https://github.com/airbytehq/airbyte/pull/64484) | Fix memory issue by moving schema loaders out of $parameters |
-| 5.15.2 | 2025-08-02 | [64439](https://github.com/airbytehq/airbyte/pull/64439) | Update dependencies |
+| 5.15.2 | 2025-08-03 | [64439](https://github.com/airbytehq/airbyte/pull/64439) | Update dependencies |
 | 5.15.1 | 2025-07-26 | [60561](https://github.com/airbytehq/airbyte/pull/60561) | Update dependencies |
 | 5.15.0 | 2025-07-23 | [63743](https://github.com/airbytehq/airbyte/pull/63743) | Promoting release candidate 5.15.0-rc.1 to a main version. |
 | 5.15.0-rc.1 | 2025-07-21 | [63370](https://github.com/airbytehq/airbyte/pull/63370)     | Migrate to manifest-only format.                                                                                                                                                                                              |
