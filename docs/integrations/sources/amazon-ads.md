@@ -169,8 +169,8 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 7.3.11 | 2026-01-09 | [71266](https://github.com/airbytehq/airbyte/pull/71266) | fix(source-amazon-ads): Cap start date to 60 days to match Amazon Ads API limitation |
-| 7.3.10 | 2025-12-16 | [70937](https://github.com/airbytehq/airbyte/pull/70937) | Update dependencies |
+| 7.3.11 | 2026-01-12 | [71266](https://github.com/airbytehq/airbyte/pull/71266) | fix(source-amazon-ads): Cap start date to 60 days to match Amazon Ads API limitation |
+| 7.3.10 | 2025-12-19 | [70937](https://github.com/airbytehq/airbyte/pull/70937) | Update dependencies |
 | 7.3.9 | 2025-12-11 | [69836](https://github.com/airbytehq/airbyte/pull/69836) | Increase max concurrency to 20 and add rate limits documentation |
 | 7.3.8 | 2025-11-25 | [69911](https://github.com/airbytehq/airbyte/pull/69911) | Update dependencies |
 | 7.3.7 | 2025-10-29 | [69040](https://github.com/airbytehq/airbyte/pull/69040) | Update dependencies |
@@ -241,7 +241,7 @@ If you need better sync performance and are not experiencing rate limiting error
 | 4.0.0      | 2023-12-28 | [33817](https://github.com/airbytehq/airbyte/pull/33817) | Fix schema for streams: `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords`                                                                                        |
 | 3.4.2      | 2023-12-12 | [33361](https://github.com/airbytehq/airbyte/pull/33361) | Fix unexpected crash when handling error messages which don't have `requestId` field                                                                                   |
 | 3.4.1      | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                        |
-| 3.4.0      | 2023-06-09 | [25913](https://github.com/airbytehq/airbyte/pull/26203) | Add Stream `DisplayCreatives`                                                                                                                                          |
+| 3.4.0      | 2023-06-09 | [26203](https://github.com/airbytehq/airbyte/pull/26203) | Add Stream `DisplayCreatives`                                                                                                                                          |
 | 3.3.0      | 2023-09-22 | [30679](https://github.com/airbytehq/airbyte/pull/30679) | Fix unexpected column for `SponsoredProductCampaigns` and `SponsoredBrandsKeywords`                                                                                    |
 | 3.2.0      | 2023-09-18 | [30517](https://github.com/airbytehq/airbyte/pull/30517) | Add suggested streams; fix unexpected column issue                                                                                                                     |
 | 3.1.2      | 2023-08-16 | [29233](https://github.com/airbytehq/airbyte/pull/29233) | Add filter for Marketplace IDs                                                                                                                                         |
@@ -287,7 +287,7 @@ If you need better sync performance and are not experiencing rate limiting error
 | 0.1.5      | 2022-04-08 | [11430](https://github.com/airbytehq/airbyte/pull/11430) | Add support OAuth2.0                                                                                                                                                   |
 | 0.1.4      | 2022-02-21 | [10513](https://github.com/airbytehq/airbyte/pull/10513) | Increasing REPORT_WAIT_TIMEOUT for supporting report generation which takes longer time                                                                                |
 | 0.1.3      | 2021-12-28 | [8388](https://github.com/airbytehq/airbyte/pull/8388)   | Add retry if recoverable error occurred for reporting stream processing                                                                                                |
-| 0.1.2      | 2021-10-01 | [6367](https://github.com/airbytehq/airbyte/pull/6461)   | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback                                                        |
+| 0.1.2      | 2021-10-01 | [6461](https://github.com/airbytehq/airbyte/pull/6461)   | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback                                                        |
 | 0.1.1      | 2021-09-22 | [6367](https://github.com/airbytehq/airbyte/pull/6367)   | Add seller and vendor filters to profiles stream                                                                                                                       |
 | 0.1.0      | 2021-08-13 | [5023](https://github.com/airbytehq/airbyte/pull/5023)   | Initial version                                                                                                                                                        |
 >>>>>>> master
