@@ -524,7 +524,7 @@ module.exports = {
             },
             {
               type: "doc",
-              id: "operating-airbyte/security/privatelink",
+              id: "operating-airbyte/privatelink",
             },
           ],
         },
