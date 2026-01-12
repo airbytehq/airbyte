@@ -1,0 +1,38 @@
+{
+  "automations": [
+    {
+      "id": 12345,
+      "url": "https://company.zendesk.com/api/v2/automations/12345.json",
+      "title": "Close ticket 4 days after status is set to solved",
+      "active": true,
+      "position": 1,
+      "conditions": {
+        "all": [
+          {
+            "field": "status",
+            "operator": "is",
+            "value": "solved"
+          }
+        ],
+        "any": []
+      },
+      "actions": [
+        {
+          "field": "status",
+          "value": "closed"
+        }
+      ],
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": null,
+    "before_cursor": null
+  },
+  "links": {
+    "prev": null,
+    "next": null
+  }
+}

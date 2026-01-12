@@ -1,0 +1,17 @@
+{
+  "list": [
+    {
+      "hosted_page": {
+        "id": "hosted_page_001",
+        "type": "checkout_new",
+        "url": "https://test-site.chargebee.com/pages/v3/hosted_page_001",
+        "state": "created",
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "hosted_page",
+        "cf_page_template": "Standard",
+        "cf_tracking_id": "UTM12345"
+      }
+    }
+  ]
+}

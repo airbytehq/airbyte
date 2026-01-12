@@ -2,6 +2,65 @@
 
 * Field replaced by EmittedField
 * CDC Position objects now implement PartiallyOrdered rather than Comparable
+
+## Version 0.1.102
+
+load cdk: add schema regression test
+
+## Version 0.1.101
+
+load cdk: Introduce scope and oauth server uri attributes in iceberg polaris spec
+
+## Version 0.1.100
+
+load cdk: allow override of socket count in dest connectors
+
+## Version 0.1.99
+
+load cdk: Enforce maximum parallelism for final aggregate flushes.
+
+## Version 0.1.98
+
+**Extract CDK**
+
+* Fix a bug causing query limit pull a negative number of rows.
+
+## Version 0.1.97
+
+load cdk: slightly refactor schema mapper suite
+
+## Version 0.1.96
+
+**Extract CDK**
+
+* Allow setting an upper limit for the number of rows pulled in a single query for a sequential partition read.
+
+## Version 0.1.95
+
+load cdk: add schema mapper test suite
+
+## Version 0.1.94
+
+extract cdk: fix trigger table handling of empty change tables
+
+## Version 0.1.93
+
+**Load CDK**
+
+* Add KDoc documentation to core destination interfaces: Aggregate, AggregateFactory and RecordDTO.
+
+## Version 0.1.92
+
+load cdk: datacoercion suite calls ValueCoercer.map
+
+## Version 0.1.91
+
+load cdk: upsert records test uses proper target schema
+
+## Version 0.1.90
+
+load cdk: components tests: data coercion tests cover all data types
+
 ## Version 0.1.89
 
 load cdk: components tests: data coercion tests for int+number

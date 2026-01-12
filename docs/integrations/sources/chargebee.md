@@ -104,6 +104,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.25 | 2025-12-16 | [70665](https://github.com/airbytehq/airbyte/pull/70665) | Update dependencies |
 | 0.10.24 | 2025-11-25 | [69940](https://github.com/airbytehq/airbyte/pull/69940) | Update dependencies |
 | 0.10.23 | 2025-11-18 | [69621](https://github.com/airbytehq/airbyte/pull/69621) | Update dependencies |
 | 0.10.22 | 2025-10-29 | [68902](https://github.com/airbytehq/airbyte/pull/68902) | Update dependencies |
@@ -137,7 +138,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 | 0.7.1       | 2024-11-04 | [48133](https://github.com/airbytehq/airbyte/pull/48133) | Fix `error message pattern` to handle `Product 1.0` related errors                                                                                                     |
 | 0.7.0       | 2024-10-30 | [47978](https://github.com/airbytehq/airbyte/pull/47978) | Upgrade the CDK and startup files to sync incremental streams concurrently                                                                                             |
 | 0.6.18      | 2024-10-31 | [47099](https://github.com/airbytehq/airbyte/pull/47099) | Update dependencies                                                                                                                                                    |
-| 0.6.17      | 2024-10-28 | [46846](https://github.com/airbytehq/airbyte/pull/47387) | Update CDK dependencies to yield parent records more frequently                                                                                                        |
+| 0.6.17      | 2024-10-28 | [47387](https://github.com/airbytehq/airbyte/pull/47387) | Update CDK dependencies to yield parent records more frequently                                                                                                        |
 | 0.6.16      | 2024-10-12 | [46846](https://github.com/airbytehq/airbyte/pull/46846) | Update dependencies                                                                                                                                                    |
 | 0.6.15      | 2024-10-05 | [46478](https://github.com/airbytehq/airbyte/pull/46478) | Update dependencies                                                                                                                                                    |
 | 0.6.14      | 2024-10-03 | [46343](https://github.com/airbytehq/airbyte/pull/46343) | Added `incremental dependency` for substreams with `Incremental` parent streams                                                                                        |

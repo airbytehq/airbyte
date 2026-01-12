@@ -1,15 +1,19 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.client
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
@@ -26,6 +30,11 @@ import javax.sql.DataSource
 private val log = KotlinLogging.logger {}
 
 @Singleton
+@SuppressFBWarnings(
+    value = ["SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"],
+    justification =
+        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement."
+)
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
@@ -52,6 +61,29 @@ class PostgresAirbyteClient(
             }
             null
         }
+
+    override suspend fun namespaceExists(namespace: String): Boolean {
+        return executeQuery(
+            """
+            SELECT EXISTS(
+                SELECT 1 FROM information_schema.schemata
+                WHERE schema_name = '$namespace'
+            )
+            """
+        ) { rs -> rs.next() && rs.getBoolean(1) }
+    }
+
+    override suspend fun tableExists(table: TableName): Boolean {
+        return executeQuery(
+            """
+            SELECT EXISTS(
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = '${table.namespace}'
+                AND table_name = '${table.name}'
+            )
+            """
+        ) { rs -> rs.next() && rs.getBoolean(1) }
+    }
 
     override suspend fun createNamespace(namespace: String) {
         try {
@@ -171,14 +203,26 @@ class PostgresAirbyteClient(
     }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
-        TODO("Not yet implemented")
+        val columnsInDb = getColumnsFromDbForDiscovery(tableName)
+        val hasAllAirbyteColumns = columnsInDb.keys.containsAll(COLUMN_NAMES)
+
+        if (!hasAllAirbyteColumns) {
+            val message =
+                "The target table ($tableName) already exists in the destination, but does not contain Airbyte's internal columns. Airbyte can only sync to Airbyte-controlled tables. To fix this error, you must either delete the target table or add a prefix in the connection configuration in order to sync to a separate table in the destination."
+            log.error { message }
+            throw ConfigErrorException(message)
+        }
+
+        // Filter out Airbyte columns
+        val userColumns = columnsInDb.filterKeys { it !in COLUMN_NAMES }
+        return TableSchema(userColumns)
     }
 
     override fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): TableSchema {
-        TODO("Not yet implemented")
+        return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
 
     override suspend fun applyChangeset(
@@ -188,8 +232,72 @@ class PostgresAirbyteClient(
         expectedColumns: TableColumns,
         columnChangeset: ColumnChangeset
     ) {
-        TODO("Not yet implemented")
+        if (
+            columnChangeset.columnsToAdd.isNotEmpty() ||
+                columnChangeset.columnsToDrop.isNotEmpty() ||
+                columnChangeset.columnsToChange.isNotEmpty()
+        ) {
+            log.info { "Summary of the table alterations:" }
+            log.info { "Added columns: ${columnChangeset.columnsToAdd}" }
+            log.info { "Deleted columns: ${columnChangeset.columnsToDrop}" }
+            log.info { "Modified columns: ${columnChangeset.columnsToChange}" }
+
+            // Convert from TableColumns format to Column format
+            val columnsToAdd =
+                columnChangeset.columnsToAdd
+                    .map { (name, type) -> Column(name, type.type, type.nullable) }
+                    .toSet()
+            val columnsToRemove =
+                columnChangeset.columnsToDrop
+                    .map { (name, type) -> Column(name, type.type, type.nullable) }
+                    .toSet()
+            val columnsToModify =
+                columnChangeset.columnsToChange
+                    .map { (name, change) ->
+                        Column(name, change.newType.type, change.newType.nullable)
+                    }
+                    .toSet()
+            val columnsInDb =
+                (columnChangeset.columnsToRetain +
+                        columnChangeset.columnsToDrop +
+                        columnChangeset.columnsToChange.mapValues { it.value.originalType })
+                    .map { (name, type) -> Column(name, type.type, type.nullable) }
+                    .toSet()
+
+            execute(
+                sqlGenerator.matchSchemas(
+                    tableName = tableName,
+                    columnsToAdd = columnsToAdd,
+                    columnsToRemove = columnsToRemove,
+                    columnsToModify = columnsToModify,
+                    columnsInDb = columnsInDb,
+                    recreatePrimaryKeyIndex = false,
+                    primaryKeyColumnNames = emptyList(),
+                    recreateCursorIndex = false,
+                    cursorColumnName = null,
+                )
+            )
+        }
     }
+
+    /**
+     * Gets columns from the database including their types for schema discovery. Unlike
+     * [getColumnsFromDb], this returns all columns including Airbyte metadata columns.
+     */
+    private fun getColumnsFromDbForDiscovery(tableName: TableName): Map<String, ColumnType> =
+        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
+            val columnsInDb: MutableMap<String, ColumnType> = mutableMapOf()
+            while (rs.next()) {
+                val columnName = rs.getString(COLUMN_NAME_COLUMN)
+                val dataType = rs.getString("data_type")
+                // PostgreSQL's information_schema always returns 'YES' or 'NO' for is_nullable
+                val isNullable = rs.getString("is_nullable") == "YES"
+
+                columnsInDb[columnName] = ColumnType(normalizePostgresType(dataType), isNullable)
+            }
+
+            columnsInDb
+        }
 
     /**
      * Checks if the primary key index matches the current stream configuration. If the primary keys

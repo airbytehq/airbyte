@@ -246,6 +246,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.15.14 | 2025-12-16 | [70638](https://github.com/airbytehq/airbyte/pull/70638) | Update dependencies |
 | 5.15.13 | 2025-11-25 | [70048](https://github.com/airbytehq/airbyte/pull/70048) | Update dependencies |
 | 5.15.12 | 2025-11-18 | [69580](https://github.com/airbytehq/airbyte/pull/69580) | Update dependencies |
 | 5.15.11 | 2025-10-29 | [68994](https://github.com/airbytehq/airbyte/pull/68994) | Update dependencies |
@@ -420,7 +421,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | 0.1.11      | 2021-05-30 | [3744](https://github.com/airbytehq/airbyte/pull/3744)       | Fix types in schema                                                                                                                                                                                                           |
 | 0.1.10      | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728)       | Update data types to be number instead of int                                                                                                                                                                                 |
 | 0.1.9       | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367)       | Add acceptance tests for connected accounts                                                                                                                                                                                   |
-| 0.1.8       | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368)       | Bump CDK connectors                                                                                                                                                                                                           |
+| 0.1.8       | 2021-05-11 | [3368](https://github.com/airbytehq/airbyte/pull/3368)       | Bump CDK connectors                                                                                                                                                                                                           |
 
 </details>
 

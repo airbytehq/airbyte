@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.component
@@ -607,7 +607,7 @@ interface TableOperationsSuite {
         val targetTableSchema =
             schemaFactory.make(
                 targetTable,
-                Fixtures.TEST_INTEGER_SCHEMA.properties,
+                Fixtures.ID_TEST_WITH_CDC_SCHEMA.properties,
                 Dedupe(
                     primaryKey = listOf(listOf(Fixtures.ID_FIELD)),
                     cursor = listOf(Fixtures.TEST_FIELD),
