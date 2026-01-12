@@ -52,4 +52,9 @@ class DispatcherBeanFactory {
     @Named("streamFinalizeDispatcher")
     @Singleton
     fun streamFinalizeDispatcher() = Dispatchers.Default.limitedParallelism(10)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Named("finalFlushDispatcher")
+    @Singleton
+    fun finalFlushDispatcher() = Dispatchers.Default.limitedParallelism(10)
 }

@@ -25,11 +25,13 @@ import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlin.math.min
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 
@@ -39,6 +41,8 @@ import kotlinx.coroutines.flow.Flow
  */
 @Factory
 class InputBeanFactory {
+    private val log = KotlinLogging.logger {}
+
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
     @Singleton
     fun sockets(
@@ -47,14 +51,29 @@ class InputBeanFactory {
         bufferSizeBytes: Int,
         @Value("\${airbyte.destination.core.data-channel.socket-connection-timeout-ms}")
         socketConnectionTimeoutMs: Long,
-    ): List<ClientSocket> =
-        socketPaths.map {
+        socketConfig: DataFlowSocketConfig? = null,
+    ): List<ClientSocket> {
+        val effectiveSocketPaths =
+            if (socketConfig != null) {
+                val effectiveCount = min(socketConfig.numSockets, socketPaths.size)
+                log.info {
+                    "Connector requested ${socketConfig.numSockets} sockets, " +
+                        "platform provided ${socketPaths.size}, using $effectiveCount"
+                }
+                socketPaths.take(effectiveCount)
+            } else {
+                log.info { "Using all ${socketPaths.size} sockets provided by platform" }
+                socketPaths
+            }
+
+        return effectiveSocketPaths.map {
             ClientSocket(
                 socketPath = it,
                 bufferSizeBytes = bufferSizeBytes,
                 connectTimeoutMs = socketConnectionTimeoutMs,
             )
         }
+    }
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
     @Named("inputStreams")
@@ -136,6 +155,7 @@ class InputBeanFactory {
         aggregatePublishingConfig: AggregatePublishingConfig,
         @Named("aggregationDispatcher") aggregationDispatcher: CoroutineDispatcher,
         @Named("flushDispatcher") flushDispatcher: CoroutineDispatcher,
+        @Named("finalFlushDispatcher") finalFlushDispatcher: CoroutineDispatcher,
     ): List<DataFlowPipeline> =
         inputFlows.map {
             val aggStore = aggregateStoreFactory.make()
@@ -145,6 +165,7 @@ class InputBeanFactory {
                     aggStore,
                     stateHistogramStore,
                     statsStore,
+                    finalFlushDispatcher,
                 )
 
             DataFlowPipeline(
