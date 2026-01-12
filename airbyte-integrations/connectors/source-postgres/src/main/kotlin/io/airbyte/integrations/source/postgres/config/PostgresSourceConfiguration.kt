@@ -94,6 +94,8 @@ sealed interface IncrementalConfiguration
 
 data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
 
+data object XminIncrementalConfiguration : IncrementalConfiguration
+
 data class CdcIncrementalConfiguration(
     val initialLoadTimeout: Duration,
     val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
@@ -228,6 +230,7 @@ constructor(
         when (incrementalSpec) {
             StandardReplicationMethodConfigurationSpecification ->
                 UserDefinedCursorIncrementalConfiguration
+            XminReplicationMethodConfigurationSpecification -> XminIncrementalConfiguration
             is CdcReplicationMethodConfigurationSpecification -> {
                 val initialLoadTimeout: Duration =
                     Duration.ofHours(incrementalSpec.initialLoadTimeoutHours!!.toLong())

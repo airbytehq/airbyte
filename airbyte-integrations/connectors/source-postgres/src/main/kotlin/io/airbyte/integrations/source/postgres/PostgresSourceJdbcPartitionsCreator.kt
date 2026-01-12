@@ -58,12 +58,12 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         recordMapper: (SelectQuerier.ResultRow) -> T,
     ): Sample<T> {
         val values = mutableListOf<T>()
-            val samplingQuery: SelectQuery = partition.samplingQuery(0)
-            selectQuerier.executeQuery(samplingQuery).use {
-                for (row in it) {
-                    values.add(recordMapper(row))
-                }
+        val samplingQuery: SelectQuery = partition.samplingQuery(0)
+        selectQuerier.executeQuery(samplingQuery).use {
+            for (row in it) {
+                values.add(recordMapper(row))
             }
+        }
         val kind: Sample.Kind = if (values.isEmpty()) Sample.Kind.EMPTY else Sample.Kind.LARGE
         log.info { "Sampled ${values.size} rows in ${kind.name} stream '${stream.label}'." }
         return Sample(values, kind, 0)
@@ -145,13 +145,17 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         return partitions.map { JdbcNonResumablePartitionReader(it) }
     }
 
-    /**
-     * Get total relation size in bytes for a given table - this icludes toast data.
-     */
+    /** Get total relation size in bytes for a given table - this includes toast data. */
     @SuppressFBWarnings(value = ["SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"], justification = "testing")
     private fun totalRelationSize(stream: Stream): Long {
-        val sql = "SELECT pg_total_relation_size('${ toQualifiedTableName(stream.namespace, stream.name) }')"
-        return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,
-            { rs -> return@querySingleValue rs.getLong(1) })
+        val sql = "SELECT pg_total_relation_size(?)"
+        return querySingleValue(
+            JdbcConnectionFactory(sharedState.configuration),
+            sql,
+            { stmt -> stmt.setString(1, toQualifiedTableName(stream.namespace, stream.name)) },
+            { rs ->
+                return@querySingleValue rs.getLong(1)
+            }
+        )
     }
 }

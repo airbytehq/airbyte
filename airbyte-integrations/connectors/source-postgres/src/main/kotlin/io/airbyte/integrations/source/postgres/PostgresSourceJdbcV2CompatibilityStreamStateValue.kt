@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatterBuilder
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
 import java.util.*
+import kotlin.collections.emptyMap
 
 data class PostgresSourceJdbcV2VersionOnlyStreamStateValue(
     @JsonProperty("version") val version: Int?,
@@ -35,12 +36,29 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
     @JsonProperty("relation_filenode") val filenode: Filenode?,
     @JsonProperty("cursor_field") val cursorField: List<String>?,
     @JsonProperty("cursor") val cursorValue: JsonNode?,
+    @JsonProperty("num_wraparound") val numWraparound: Long?,
+    @JsonProperty("xmin_raw_value") val xminRawValue: Long?,
+    @JsonProperty("xmin_xid_value") val xminXidValue: Long?,
 ) {
     companion object {
         fun toV3StateValue(
             v2: PostgresSourceJdbcV2CompatibilityStreamStateValue,
             stream: Stream
         ): PostgresSourceJdbcStreamStateValue {
+
+            // the internal incremental_state value
+            val incrementalState: PostgresSourceJdbcV2CompatibilityStreamStateValue? by lazy {
+                v2.incrementalState?.let {
+                    if (it.isNull || it.isEmpty) {
+                        return@let null
+                    }
+                    Jsons.treeToValue(
+                        it,
+                        PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java
+                    )
+                }
+            }
+
             val v3 =
                 PostgresSourceJdbcStreamStateValue(
                     version = 3,
@@ -53,29 +71,36 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                 buildCursorMap(stream, v2.cursorField, v2.cursorValue)
                             }
                             V2StateType.ctid.serialized ->
-                                v2.incrementalState?.let {
-                                    if (it.isNull || it.isEmpty) {
-                                        return@let emptyMap()
-                                    }
-                                    val incrementalState =
-                                        Jsons.treeToValue(
-                                            it,
-                                            PostgresSourceJdbcV2CompatibilityStreamStateValue::class
-                                                .java
-                                        )
-                                    when (incrementalState.stateType) {
+                                incrementalState?.let {
+                                    when (it.stateType) {
                                         V2StateType.cursor_based.serialized -> {
-                                            buildCursorMap(
-                                                stream,
-                                                incrementalState.cursorField,
-                                                incrementalState.cursorValue
-                                            )
+                                            buildCursorMap(stream, it.cursorField, it.cursorValue)
                                         }
                                         else -> emptyMap()
                                     }
                                 }
                                     ?: emptyMap()
-                            else -> emptyMap() // TODO: xmin not supported yet
+                            else -> emptyMap()
+                        },
+                    xmin =
+                        when (v2.stateType) {
+                            V2StateType.xmin.serialized ->
+                                v2.xminXidValue?.let { xminXid ->
+                                    Jsons.valueToTree(xminXid) as JsonNode
+                                }
+                            V2StateType.ctid.serialized -> {
+                                incrementalState?.let {
+                                    when (it.stateType) {
+                                        V2StateType.xmin.serialized -> {
+                                            it.xminXidValue?.let { xminXid ->
+                                                Jsons.valueToTree(xminXid) as JsonNode
+                                            }
+                                        }
+                                        else -> null
+                                    }
+                                }
+                            }
+                            else -> null
                         }
                 )
 
@@ -111,7 +136,7 @@ enum class V2StateType {
         when (this) {
             ctid -> StateType.CTID_BASED
             cursor_based -> StateType.CURSOR_BASED
-            xmin -> throw UnsupportedOperationException("xmin is not supported yet")
+            xmin -> StateType.XMIN_BASED
         }
 }
 
