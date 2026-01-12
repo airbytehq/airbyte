@@ -33,7 +33,7 @@ data:
     breakingChanges:
       3.0.0:
         message: "This release changes the primary key for the workflow_runs stream from [id] to [id, run_attempt] to correctly preserve all workflow run attempts. Users should reset the workflow_runs stream after upgrading to capture all historical attempts."
-        upgradeDeadline: "2026-01-02"
+        upgradeDeadline: "2026-02-02"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
