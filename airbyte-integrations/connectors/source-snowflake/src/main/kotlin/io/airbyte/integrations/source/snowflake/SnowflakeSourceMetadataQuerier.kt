@@ -44,15 +44,17 @@ import kotlin.use
  */
 class SnowflakeSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
-    val schema: String? = null,
 ) : MetadataQuerier by base {
     private val log = KotlinLogging.logger {}
 
+    private val config = base.config as SnowflakeSourceConfiguration
+    private val schemas = config.schemas
+
     fun TableName.namespace(): String? =
         when (base.constants.namespaceKind) {
-            NamespaceKind.CATALOG_AND_SCHEMA -> schema
+            NamespaceKind.CATALOG_AND_SCHEMA -> this.schema
             NamespaceKind.CATALOG -> catalog
-            NamespaceKind.SCHEMA -> schema
+            NamespaceKind.SCHEMA -> this.schema
         }
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
@@ -62,28 +64,58 @@ class SnowflakeSourceMetadataQuerier(
         log.info { "Querying column names for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = base.conn.metaData
-            memoizedTableNames
-                .filter { it.namespace() != null }
-                .map { it.catalog to it.schema }
-                .distinct()
-                .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val (tableName: TableName, metadata: ColumnMetadata) =
-                                columnMetadataFromResultSet(rs, isPseudoColumn = false)
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.add(joinedTableName to metadata)
-                        }
+
+            fun addColumnsFromQuery(
+                catalog: String?,
+                schema: String?,
+                tablePattern: String?,
+            ) {
+                dbmd.getColumns(catalog, schema, tablePattern, null).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        val (tableName: TableName, metadata: ColumnMetadata) =
+                            columnMetadataFromResultSet(rs, isPseudoColumn = false)
+                        val joinedTableName: TableName = joinMap[tableName] ?: continue
+                        results.add(joinedTableName to metadata)
                     }
                 }
+            }
+
+            val catalog = base.config.namespaces.first()
+
+            if (schemas.isEmpty()) {
+                if (base.tableFiltersBySchema.isEmpty()) {
+                    addColumnsFromQuery(catalog, null, null)
+                } else {
+                    // Apply filters where they exist
+                    for ((schemaName, patterns) in base.tableFiltersBySchema) {
+                        for (pattern in patterns) {
+                            addColumnsFromQuery(catalog, schemaName, pattern)
+                        }
+                    }
+                    // Also discover columns from unfiltered schemas
+                    addColumnsFromQuery(catalog, null, null)
+                }
+            } else {
+                for (schema in schemas) {
+                    val patterns = base.tableFiltersBySchema[schema]
+                    if (patterns != null && patterns.isNotEmpty()) {
+                        for (pattern in patterns) {
+                            addColumnsFromQuery(catalog, schema, pattern)
+                        }
+                    } else {
+                        addColumnsFromQuery(catalog, schema, null)
+                    }
+                }
+            }
             log.info { "Discovered ${results.size} column(s)." }
         } catch (e: Exception) {
             throw RuntimeException("Column name discovery query failed: ${e.message}", e)
         }
         return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
             (_, columnMetadataByTable: List<ColumnMetadata>) ->
-            columnMetadataByTable.filter { it.ordinal == null } +
-                columnMetadataByTable.filter { it.ordinal != null }.sortedBy { it.ordinal }
+            val deduplicatedColumns = columnMetadataByTable.distinctBy { it.name }
+            deduplicatedColumns.filter { it.ordinal == null } +
+                deduplicatedColumns.filter { it.ordinal != null }.sortedBy { it.ordinal }
         }
     }
 
@@ -175,17 +207,17 @@ class SnowflakeSourceMetadataQuerier(
                     return (1..meta.columnCount).map {
                         val type =
                             SystemType(
-                                typeName = swallow { meta.getColumnTypeName(it) },
+                                typeName = base.swallow { meta.getColumnTypeName(it) },
                                 typeCode = meta.getColumnType(it),
-                                precision = swallow { meta.getPrecision(it) },
-                                scale = swallow { meta.getScale(it) },
+                                precision = base.swallow { meta.getPrecision(it) },
+                                scale = base.swallow { meta.getScale(it) },
                             )
                         ColumnMetadata(
                             name = meta.getColumnName(it),
                             label = meta.getColumnLabel(it),
                             type = type,
                             nullable =
-                                when (swallow { meta.isNullable(it) }) {
+                                when (base.swallow { meta.isNullable(it) }) {
                                     ResultSetMetaData.columnNoNulls -> false
                                     ResultSetMetaData.columnNullable -> true
                                     else -> null
@@ -199,21 +231,12 @@ class SnowflakeSourceMetadataQuerier(
         }
     }
 
-    fun <T> swallow(supplier: () -> T): T? {
-        try {
-            return supplier()
-        } catch (e: Exception) {
-            log.debug(e) { "Metadata query triggered exception, ignoring value" }
-        }
-        return null
-    }
-
     override fun streamNamespaces(): List<String> =
-        memoizedTableNames.mapNotNull { it.schema }.distinct()
+        memoizedTableNames.mapNotNull { it.namespace() }.distinct()
 
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
         return memoizedTableNames
-            .filter { it.schema == streamNamespace }
+            .filter { it.namespace() == streamNamespace }
             .map { StreamDescriptor().withName(it.name).withNamespace(it.schema) }
             .map(StreamIdentifier::from)
     }
@@ -221,19 +244,16 @@ class SnowflakeSourceMetadataQuerier(
     fun findTableName(
         streamID: StreamIdentifier,
     ): TableName? =
-        memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
+        memoizedTableNames.find { it.name == streamID.name && it.namespace() == streamID.namespace }
 
     val memoizedTableNames: List<TableName> by lazy {
+        log.info { "Querying table names for catalog discovery." }
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = base.conn.metaData
 
-            log.info { "Querying table names for Snowflake source." }
-            for (namespace in
-                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
-                // Query all schemas in the current database
-                dbmd.getTables(namespace, schema, null, arrayOf("TABLE", "VIEW")).use {
-                    rs: ResultSet ->
+            fun addTablesFromQuery(catalog: String?, schema: String?, pattern: String?) {
+                dbmd.getTables(catalog, schema, pattern, null).use { rs: ResultSet ->
                     while (rs.next()) {
                         val tableName =
                             TableName(
@@ -242,15 +262,74 @@ class SnowflakeSourceMetadataQuerier(
                                 name = rs.getString("TABLE_NAME"),
                                 type = rs.getString("TABLE_TYPE") ?: "",
                             )
-                        // Filter out system schemas
-                        if (!EXCLUDED_NAMESPACES.contains(tableName.schema?.uppercase())) {
+                        // Filter out system schemas, invalid schemas, and tables with invalid names
+                        val schemaName = tableName.schema
+                        val tableNameStr = tableName.name
+                        if (
+                            schemaName !=
+                                "\"\"" && // Filter out schema containing two double-quotes
+                            !tableNameStr.startsWith(
+                                    "\"\""
+                                ) && // Filter out table names starting with two double-quotes
+                                !EXCLUDED_NAMESPACES.contains(schemaName?.uppercase())
+                        ) {
                             allTables.add(tableName)
                         }
                     }
                 }
             }
+
+            val catalog = base.config.namespaces.first()
+
+            if (schemas.isEmpty()) {
+                if (base.tableFiltersBySchema.isEmpty()) {
+                    addTablesFromQuery(catalog, null, null)
+                } else {
+                    for ((schemaName, patterns) in base.tableFiltersBySchema) {
+                        for (pattern in patterns) {
+                            addTablesFromQuery(catalog, schemaName, pattern)
+                        }
+                    }
+
+                    val filteredSchemaNames =
+                        base.tableFiltersBySchema.keys.map { it.uppercase() }.toSet()
+                    dbmd.getTables(catalog, null, null, null).use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val tableName =
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                )
+                            val schemaName = tableName.schema
+                            val tableNameStr = tableName.name
+                            if (
+                                schemaName != "\"\"" &&
+                                    !tableNameStr.startsWith("\"\"") &&
+                                    !filteredSchemaNames.contains(schemaName?.uppercase()) &&
+                                    !EXCLUDED_NAMESPACES.contains(schemaName?.uppercase())
+                            ) {
+                                allTables.add(tableName)
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (schema in schemas) {
+                    val patterns = base.tableFiltersBySchema[schema]
+                    if (patterns != null && patterns.isNotEmpty()) {
+                        for (pattern in patterns) {
+                            addTablesFromQuery(catalog, schema, pattern)
+                        }
+                    } else {
+                        addTablesFromQuery(catalog, schema, null)
+                    }
+                }
+            }
             log.info { "Discovered ${allTables.size} tables and views." }
-            return@lazy allTables.toList()
+
+            return@lazy allTables.toList().sortedBy { "${it.namespace()}.${it.name}.${it.type}" }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
         }
@@ -264,30 +343,27 @@ class SnowflakeSourceMetadataQuerier(
         try {
             val dbmd: DatabaseMetaData = base.conn.metaData
 
-            memoizedTableNames
-                .map { it.catalog to it.schema }
-                .distinct()
-                .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getPrimaryKeys(catalog, schema, null).use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val primaryKey =
-                                PrimaryKeyRow(
-                                    name = rs.getString("PK_NAME"),
-                                    columnName = rs.getString("COLUMN_NAME"),
-                                    ordinal = rs.getInt("KEY_SEQ"),
-                                )
-                            val tableName =
-                                TableName(
-                                    catalog = rs.getString("TABLE_CAT"),
-                                    schema = rs.getString("TABLE_SCHEM"),
-                                    name = rs.getString("TABLE_NAME"),
-                                    type = "",
-                                )
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.getOrPut(joinedTableName) { mutableListOf() }.add(primaryKey)
-                        }
+            memoizedTableNames.forEach { table ->
+                dbmd.getPrimaryKeys(table.catalog, table.schema, null).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        val primaryKey =
+                            PrimaryKeyRow(
+                                name = rs.getString("PK_NAME"),
+                                columnName = rs.getString("COLUMN_NAME"),
+                                ordinal = rs.getInt("KEY_SEQ"),
+                            )
+                        val tableName =
+                            TableName(
+                                catalog = rs.getString("TABLE_CAT"),
+                                schema = rs.getString("TABLE_SCHEM"),
+                                name = rs.getString("TABLE_NAME"),
+                                type = "",
+                            )
+                        val joinedTableName: TableName = joinMap[tableName] ?: continue
+                        results.getOrPut(joinedTableName) { mutableListOf() }.add(primaryKey)
                     }
                 }
+            }
             log.info { "Discovered ${results.size} primary keys." }
             return@lazy results.mapValues { (_, pkCols: MutableList<PrimaryKeyRow>) ->
                 pkCols.sortedBy { it.ordinal }.map { listOf(it.columnName) }
@@ -329,7 +405,7 @@ class SnowflakeSourceMetadataQuerier(
                         checkQueries,
                         jdbcConnectionFactory,
                     )
-                return SnowflakeSourceMetadataQuerier(base, config.schema)
+                return SnowflakeSourceMetadataQuerier(base)
             }
         }
 

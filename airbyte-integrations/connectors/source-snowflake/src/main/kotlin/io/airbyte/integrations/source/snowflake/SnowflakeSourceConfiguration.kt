@@ -5,6 +5,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -31,7 +32,8 @@ data class SnowflakeSourceConfiguration(
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String> = emptySet(),
-    val schema: String? = null,
+    val schemas: List<String> = emptyList(),
+    override val tableFilters: List<TableFilter>,
     val incremental: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
@@ -114,6 +116,21 @@ class SnowflakeSourceConfigurationFactory :
 
         val jdbcUrlFmt = "jdbc:snowflake://%s"
 
+        val tableFilters = pojo.tableFilters ?: emptyList()
+
+        // Handle both new 'schemas' field and legacy 'schema' field for backwards compatibility
+        val schemas: List<String> =
+            when {
+                !pojo.schemas.isNullOrEmpty() -> pojo.schemas!!
+                pojo.schema != null -> listOf(pojo.schema!!)
+                else -> emptyList() // Empty = discover all schemas
+            }
+
+        // Validate table filters if schemas are specified
+        if (schemas.isNotEmpty()) {
+            JdbcSourceConfiguration.validateTableFilters(schemas.toSet(), tableFilters)
+        }
+
         val checkpointTargetInterval: Duration =
             Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0)
         if (!checkpointTargetInterval.isPositive) {
@@ -130,7 +147,8 @@ class SnowflakeSourceConfigurationFactory :
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
-            schema = pojo.schema,
+            schemas = schemas,
+            tableFilters = tableFilters,
             incremental = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,

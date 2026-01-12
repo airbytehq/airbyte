@@ -19,6 +19,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.TableFilter
 import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.ConfigurationProperties
 import jakarta.inject.Singleton
@@ -79,13 +80,30 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":4}""")
     lateinit var database: String
 
-    @JsonProperty("schema")
-    @JsonSchemaTitle("Schema")
+    @JsonProperty("schemas")
+    @JsonSchemaTitle("Schemas")
     @JsonPropertyDescription(
-        "The source Snowflake schema tables. Leave empty to access tables from multiple schemas."
+        "The list of schemas to sync from. If not specified, all accessible schemas will be synced."
     )
     @JsonSchemaInject(json = """{"order":5}""")
+    var schemas: List<String>? = null
+
+    @JsonProperty("schema")
+    @JsonPropertyDescription(
+        "Deprecated: Use 'schemas' instead. The source Snowflake schema tables. " +
+            "This field is kept for backwards compatibility with existing connections."
+    )
+    @JsonSchemaInject(json = """{"airbyte_hidden":true}""")
     var schema: String? = null
+
+    @JsonProperty("table_filters")
+    @JsonSchemaTitle("Table Filters")
+    @JsonPropertyDescription(
+        "Optional filters to include only specific tables from the schema. " +
+            "Works in combination with the 'Schema' config above."
+    )
+    @JsonSchemaInject(json = """{"order":6}""")
+    var tableFilters: List<TableFilter>? = null
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
@@ -94,7 +112,7 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
             "formatted as 'key=value' pairs separated by the symbol '&'. " +
             "(example: key1=value1&key2=value2&key3=value3).",
     )
-    @JsonSchemaInject(json = """{"order":6}""")
+    @JsonSchemaInject(json = """{"order":7}""")
     var jdbcUrlParams: String? = null
 
     @JsonIgnore
@@ -115,7 +133,7 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("cursor")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":7,"display_type":"radio"}""")
+    @JsonSchemaInject(json = """{"order":8,"display_type":"radio"}""")
     // We make this nullable to make the old config compatible with this new one. Ideally it
     // shouldn't be null.
     fun getIncrementalConfigurationSpecificationValue(): IncrementalConfigurationSpecification? =
@@ -123,21 +141,21 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":8}""")
+    @JsonSchemaInject(json = """{"order":9}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
-    @JsonSchemaInject(json = """{"order":9}""")
+    @JsonSchemaInject(json = """{"order":10}""")
     @JsonSchemaDefault("1")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
-    @JsonSchemaInject(json = """{"order":10}""")
+    @JsonSchemaInject(json = """{"order":11}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +
