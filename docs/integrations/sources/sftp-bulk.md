@@ -144,11 +144,11 @@ If enabled, sends subdirectory folder structure along with source file names to 
 
 Depending on your **File Type** selection, you are presented with a few configuration options specific to that file type.
 
-For JSONL, Parquet, and Document File Type formats, you can specify the **Glob** pattern used to specify which files should be selected from the file system. If your provided Folder Path already ends in a slash, you need to add that double slash to the glob where appropriate.
+### Glob patterns
 
-For example, assuming your folder path is not set in the connector configuration and your files are located in the root folder, use a glob pattern like `//my_prefix_*.csv` to specify your file. If your files are in a folder, include the folder in your glob pattern, like `//my_folder/my_prefix_*.csv`.
+You can specify a **Glob** pattern to select which files should be synced from the file system. Glob patterns work with all supported file types including CSV, Avro, JSONL, Parquet, Excel, and Document formats.
 
-If your files are in a folder, include the folder in your glob pattern, like `my_folder/my_prefix_*.csv`.
+If your files are in a subfolder, include the folder in your glob pattern, like `my_folder/my_prefix_*.csv`. Use `**` to match files recursively in subdirectories, like `**/*.csv`.
 
 ## Supported sync modes
 

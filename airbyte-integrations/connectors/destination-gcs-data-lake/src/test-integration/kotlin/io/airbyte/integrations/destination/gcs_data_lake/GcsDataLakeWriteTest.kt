@@ -78,7 +78,8 @@ class BigLakeWriteTest :
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = emptyTableSchema
             )
         // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
         // So these two streams will collide.
@@ -121,7 +122,8 @@ class BigLakeWriteTest :
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = emptyTableSchema
             )
         val firstStream =
             makeStream(

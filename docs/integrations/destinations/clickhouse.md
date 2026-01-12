@@ -36,7 +36,7 @@ If you use a different cursor column type, like `string`, the connector falls ba
 
 :::warning
 
-Airbyte's ClickHouse connector leveragese the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine to handle deduplication.
+Airbyte's ClickHouse connector leverages the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine to handle deduplication.
 To guarantee deduplicated results at query time, you can add the `FINAL` operator to your query string. For example:
 
 ```sql
