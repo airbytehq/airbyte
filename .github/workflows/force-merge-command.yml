@@ -144,7 +144,7 @@ jobs:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           method: chat.postMessage
           payload: |
-            channel: ${{ vars.FORCE_MERGE_SLACK_CHANNEL_ID }}
+            channel: C04928XA0LB
             text: "PR force-merged: ${{ steps.job-vars.outputs.pr_title }}"
             blocks:
               - type: section
