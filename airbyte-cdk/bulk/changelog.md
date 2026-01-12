@@ -1,3 +1,7 @@
+## Version 0.1.100
+
+load cdk: allow override of socket count in dest connectors
+
 ## Version 0.1.99
 
 load cdk: Enforce maximum parallelism for final aggregate flushes.
