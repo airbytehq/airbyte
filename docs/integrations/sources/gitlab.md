@@ -112,7 +112,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.4.18 | 2025-12-16 | [70698](https://github.com/airbytehq/airbyte/pull/70698) | Update dependencies |
+| 4.4.18 | 2025-12-18 | [70698](https://github.com/airbytehq/airbyte/pull/70698) | Update dependencies |
 | 4.4.17 | 2025-12-11 | [70839](https://github.com/airbytehq/airbyte/pull/70839) | Change check stream from projects to groups to fix timeout for large GitLab organizations |
 | 4.4.16 | 2025-11-25 | [69875](https://github.com/airbytehq/airbyte/pull/69875) | Update dependencies |
 | 4.4.15 | 2025-11-18 | [69411](https://github.com/airbytehq/airbyte/pull/69411) | Update dependencies |
@@ -121,7 +121,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 | 4.4.12 | 2025-10-14 | [68000](https://github.com/airbytehq/airbyte/pull/68000) | Update dependencies |
 | 4.4.11 | 2025-10-07 | [67266](https://github.com/airbytehq/airbyte/pull/67266) | Update dependencies |
 | 4.4.10 | 2025-09-30 | [66076](https://github.com/airbytehq/airbyte/pull/66076) | Update dependencies |
-| 4.4.9 | 2025-09-08 | [65997](https://github.com/airbytehq/airbyte/pull/65997) | Update dependencies |
+| 4.4.9 | 2025-09-10 | [65997](https://github.com/airbytehq/airbyte/pull/65997) | Update dependencies |
 | 4.4.8 | 2025-08-26 | [65556](https://github.com/airbytehq/airbyte/pull/65556) | Update dependencies |
 | 4.4.7 | 2025-08-23 | [65362](https://github.com/airbytehq/airbyte/pull/65362) | Update dependencies |
 | 4.4.6 | 2025-08-09 | [64579](https://github.com/airbytehq/airbyte/pull/64579) | Update dependencies |
