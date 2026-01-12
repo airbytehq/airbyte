@@ -8,6 +8,8 @@ import { Navattic } from "@site/src/components/Navattic";
 import { ProductInformation } from "@site/src/components/ProductInformation";
 import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
 import { SpecSchema } from "@site/src/components/SpecSchema";
+import { SourceRequestSchema } from "@site/src/components/SourceRequestSchema";
+import { SourceResponseSchema } from "@site/src/components/SourceResponseSchema";
 import MDXComponents from "@theme-original/MDXComponents";
 import { CardWithIcon } from "../../components/Card/Card";
 import { CopyPageButton } from "../../components/CopyPageButton/CopyPageButton";
@@ -27,6 +29,8 @@ export default {
   HeaderDecoration,
   Navattic,
   SpecSchema,
+  SourceRequestSchema,
+  SourceResponseSchema,
   PyAirbyteExample,
   ProductInformation,
   Details,

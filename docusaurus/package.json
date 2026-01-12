@@ -10,16 +10,18 @@
     "node": ">=20 <25"
   },
   "scripts": {
-    "prepare-registry-cache": "node src/scripts/prepare-registry-cache.js",
-    "gen-embedded-api-docs": "pnpm exec docusaurus clean-api-docs all && pnpm exec docusaurus gen-api-docs all",
-    "prepare-embedded-api": "pnpm run gen-embedded-api-docs && node src/scripts/embedded-api/prepare-embedded-api-spec.js && pnpm prettier --write src/data/embedded_api_spec.json",
+    "prepare-registry-cache": "NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/prepare-registry-cache.js",
+    "prepare-embedded-api": "NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/embedded-api/prepare-embedded-api-spec.js && NODE_OPTIONS='--max-old-space-size=4096' pnpm prettier --write src/data/embedded_api_spec.json && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus clean-api-docs embedded-api --plugin-id embedded-api && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus gen-api-docs embedded-api --plugin-id embedded-api",
+    "prepare-public-api": "NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/public-api/prepare-public-api-spec.js && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus clean-api-docs public-api --plugin-id public-api && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus gen-api-docs public-api --plugin-id public-api",
     "cleanup-cache": "node src/scripts/cleanup-cache.js",
-    "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-embedded-api",
+    "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-embedded-api && pnpm run prepare-public-api",
     "postbuild": "pnpm run cleanup-cache",
-    "prestart": "pnpm run prepare-registry-cache && pnpm run prepare-embedded-api",
+    "prestart": "pnpm run prepare-registry-cache && pnpm run prepare-embedded-api && pnpm run prepare-public-api",
     "docusaurus": "docusaurus",
-    "start": "node src/scripts/fetchSchema.js && docusaurus start --port 3005",
-    "build": "node src/scripts/fetchSchema.js && docusaurus build",
+    "start": " node src/scripts/fetchSchema.js && docusaurus start --port 3005",
+    "start:debug": "echo '🐛 DEBUG MODE - Detailed timing information' && NODE_OPTIONS='--max-old-space-size=8192' npm run prebuild -- 2>&1 | tee build-timing.log && NODE_OPTIONS='--max-old-space-size=8192' docusaurus start --port 3005",
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' node src/scripts/fetchSchema.js && NODE_OPTIONS='--max-old-space-size=8192' docusaurus build",
+    "build:debug": "echo '🐛 DEBUG MODE - Detailed timing information' && NODE_OPTIONS='--max-old-space-size=8192' npm run prebuild -- 2>&1 | tee build-timing.log && NODE_OPTIONS='--max-old-space-size=8192' docusaurus build 2>&1 | tee -a build-timing.log",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
@@ -115,6 +117,8 @@
     "@saucelabs/theme-github-codeblock": "^0.3.0",
     "@seriousme/openapi-schema-validator": "^2.5.0",
     "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "async": "2.6.4",
@@ -129,12 +133,14 @@
     "cssnano-preset-advanced": "6.0.2",
     "dayjs": "^1.11.11",
     "del": "6.1.1",
-    "docusaurus-plugin-openapi-docs": "^4.5.1",
+    "docusaurus-plugin-openapi-docs": "4.5.1",
     "docusaurus-theme-openapi-docs": "^4.5.1",
     "dotenv": "^16.4.5",
     "html-loader": "^4.2.0",
+    "html-react-parser": "^5.2.11",
     "js-yaml": "^4.1.0",
     "json-schema-faker": "^0.5.8",
+    "json-schema-ref-parser": "^9.0.9",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",
     "nth-check": "2.0.1",
@@ -180,7 +186,13 @@
   },
   "devDependencies": {
     "@rsdoctor/cli": "^1.3.4",
+    "@types/node": "^24.10.2",
     "prettier": "3.5.3"
   },
-  "packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638"
+  "packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638",
+  "pnpm": {
+    "patchedDependencies": {
+      "docusaurus-plugin-openapi-docs@4.5.1": "patches/docusaurus-plugin-openapi-docs@4.5.1.patch"
+    }
+  }
 }

@@ -883,6 +883,95 @@
         }
       }
     },
+    "/api/v1/agents/chat/templates/sources": {
+      "post": {
+        "tags": ["Agents - Source Template Creator"],
+        "summary": "Post source template creator chat message",
+        "description": "Post a new message to a source template creation chat thread",
+        "operationId": "create_agents_chat_templates_sources",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatPostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageEvent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/agents/discovery/{source_definition_id}": {
       "post": {
         "tags": ["Agents - Discovery"],
@@ -1281,6 +1370,109 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ConnectorExecuteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connectors/instances_for_user": {
+      "get": {
+        "summary": "Get Connector Instances For User",
+        "description": "List connector instances for a user by name.\n\nThis endpoint:\n1. Finds the user by name and organization_id\n2. Lists all connector instances for that user\n3. Optionally filters by definition_id\n\nArgs:\n    username: Name of the user\n    user_info: Authenticated user information from token\n    repository: Connector instance repository\n    workspace_repository: Workspace repository\n    definition_id: Optional connector definition ID to filter by\n\nReturns:\n    ConnectorInstancesListResponse with list of instances\n\nRaises:\n    HTTPException: 404 if user not found",
+        "operationId": "list_connectors_instances_for_user",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "external_user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "External User Id"
+            }
+          },
+          {
+            "name": "definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Definition Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorInstancesListResponse"
                 }
               }
             }
@@ -8937,6 +9129,107 @@
         }
       }
     },
+    "/api/v1/internal/account/organizations/{organization_id}/stripe-portal": {
+      "post": {
+        "tags": ["Organizations"],
+        "summary": "Get Stripe Portal Link",
+        "description": "Get a link to the Stripe customer portal using the configured Stripe API keys.\n\nThis endpoint uses the environment's STRIPE_API_KEY instead of Airbyte Cloud's,\nallowing different Stripe configurations per environment (test keys for dev/staging,\nproduction keys for prod).\n\nSupports three flows:\n- portal: General billing portal access (manage subscriptions, view invoices)\n- payment_method: Update payment method specifically\n- setup: Initial Stripe checkout to collect payment method",
+        "operationId": "create_internal_account_organizations_organization_id_stripe_portal",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to get Stripe portal link for.",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to get Stripe portal link for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPortalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerPortalResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/internal/account/organizations/{organization_id}/subscription": {
       "get": {
         "tags": ["Organizations"],
@@ -9812,6 +10105,190 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ListJobsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/jobs/demo": {
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Create Demo Job",
+        "description": "Create and run a demo job that looks up a source definition id by name.\n\nThe job is triggered via Porter's job service.",
+        "operationId": "create_internal_jobs_demo",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Name"
+            }
+          },
+          {
+            "name": "num_failures",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Num Failures"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoJobCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/notifications/sync/success": {
+      "post": {
+        "tags": ["Internal Notifications"],
+        "summary": "Sync Success Notification",
+        "description": "Handle sync success notification from Airbyte.\n\nThis endpoint is called by Airbyte when a sync job completes successfully.\nIt verifies the encrypted workspace token, then delegates to the cache\nbuilder to validate ownership and create views.",
+        "operationId": "create_internal_notifications_sync_success",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Encrypted workspace token for verification",
+              "title": "Token"
+            },
+            "description": "Encrypted workspace token for verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncSuccessNotification"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Internal Notifications Sync Success"
                 }
               }
             }
@@ -12370,7 +12847,7 @@
                   "$ref": "#/components/schemas/FuzzyCondition"
                 },
                 {
-                  "$ref": "#/components/schemas/SemanticCondition"
+                  "$ref": "#/components/schemas/KeywordCondition"
                 },
                 {
                   "$ref": "#/components/schemas/NotCondition"
@@ -12432,7 +12909,7 @@
                   "$ref": "#/components/schemas/FuzzyCondition"
                 },
                 {
-                  "$ref": "#/components/schemas/SemanticCondition"
+                  "$ref": "#/components/schemas/KeywordCondition"
                 },
                 {
                   "$ref": "#/components/schemas/NotCondition"
@@ -13494,6 +13971,21 @@
         "title": "ConnectorInstanceResponse",
         "description": "Response model for connector instance retrieval."
       },
+      "ConnectorInstancesListResponse": {
+        "properties": {
+          "instances": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectorInstanceResponse"
+            },
+            "type": "array",
+            "title": "Instances"
+          }
+        },
+        "type": "object",
+        "required": ["instances"],
+        "title": "ConnectorInstancesListResponse",
+        "description": "Response model for listing connector instances."
+      },
       "ConnectorSpecification": {
         "properties": {
           "documentationUrl": {
@@ -13990,6 +14482,18 @@
         "required": ["tool_call_id", "tool_name", "result"],
         "title": "DeferredToolResult",
         "description": "Result from a deferred tool execution provided by the UI."
+      },
+      "DemoJobCreateResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Job Id"
+          }
+        },
+        "type": "object",
+        "required": ["job_id"],
+        "title": "DemoJobCreateResponse"
       },
       "DestinationDefinitionListItem": {
         "properties": {
@@ -14927,13 +15431,13 @@
             },
             "type": "object",
             "title": "Fuzzy",
-            "description": "Fuzzy match: {field_name: pattern}"
+            "description": "Ordered word match (case-insensitive, punctuation ignored): {field_name: pattern}"
           }
         },
         "type": "object",
         "required": ["fuzzy"],
         "title": "FuzzyCondition",
-        "description": "Fuzzy text match."
+        "description": "Ordered word text match."
       },
       "GetDriveItem": {
         "properties": {
@@ -15261,6 +15765,22 @@
         "required": ["message", "traceback"],
         "title": "JobErrorException"
       },
+      "KeywordCondition": {
+        "properties": {
+          "keyword": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Keyword",
+            "description": "Keyword match (case-insensitive, punctuation ignored): {field_name: pattern}"
+          }
+        },
+        "type": "object",
+        "required": ["keyword"],
+        "title": "KeywordCondition",
+        "description": "Keyword text match (any word present)."
+      },
       "LikeCondition": {
         "properties": {
           "like": {
@@ -15387,7 +15907,7 @@
                 "$ref": "#/components/schemas/FuzzyCondition"
               },
               {
-                "$ref": "#/components/schemas/SemanticCondition"
+                "$ref": "#/components/schemas/KeywordCondition"
               },
               {
                 "$ref": "#/components/schemas/NotCondition"
@@ -15532,7 +16052,7 @@
                   "$ref": "#/components/schemas/FuzzyCondition"
                 },
                 {
-                  "$ref": "#/components/schemas/SemanticCondition"
+                  "$ref": "#/components/schemas/KeywordCondition"
                 },
                 {
                   "$ref": "#/components/schemas/NotCondition"
@@ -15688,6 +16208,18 @@
                 "type": "null"
               }
             ]
+          },
+          "trialEndsAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trialendsat"
           }
         },
         "type": "object",
@@ -16356,7 +16888,7 @@
                 "$ref": "#/components/schemas/FuzzyCondition"
               },
               {
-                "$ref": "#/components/schemas/SemanticCondition"
+                "$ref": "#/components/schemas/KeywordCondition"
               },
               {
                 "$ref": "#/components/schemas/NotCondition"
@@ -16911,10 +17443,6 @@
             "title": "Hits",
             "default": []
           },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
           "next_cursor": {
             "anyOf": [
               {
@@ -16939,7 +17467,6 @@
           }
         },
         "type": "object",
-        "required": ["total"],
         "title": "SearchResponse",
         "description": "Response schema for search endpoint."
       },
@@ -16954,22 +17481,6 @@
         ],
         "title": "SecretMigrationStatus",
         "description": "Status of secret storage migration during organization enrollment.\n\n- NOT_STARTED: Migration has not been initiated (should not appear in practice)\n- IN_PROGRESS: Migration is currently running\n- COMPLETED: Secrets successfully migrated from default to organization-specific storage\n- FAILED: Migration encountered an error (enrollment continues, status tracked for monitoring)\n- NOT_APPLICABLE: No migration needed (CUSTOMER_OWNED storage, or no default secrets to migrate)"
-      },
-      "SemanticCondition": {
-        "properties": {
-          "semantic": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Semantic",
-            "description": "Semantic search: {field_name: pattern}"
-          }
-        },
-        "type": "object",
-        "required": ["semantic"],
-        "title": "SemanticCondition",
-        "description": "AI-powered natural language search."
       },
       "SonarCatalogInput": {
         "properties": {
@@ -17320,6 +17831,11 @@
         },
         "type": "object",
         "title": "SourceCheckConfigUpdateRequest"
+      },
+      "SourceConfigTemplateMode": {
+        "type": "string",
+        "enum": ["DIRECT", "REPLICATION", "MULTI"],
+        "title": "SourceConfigTemplateMode"
       },
       "SourceCreateRequest": {
         "properties": {
@@ -17975,6 +18491,17 @@
               }
             ],
             "description": "\nCustomizations for the source template. If stream_whitelist is provided, only the specified streams will be synced.\nIf stream_customizations are provided, and stream fields specified will override the default settings for only that\nfield. Where any streams fields are not specified, the default settings will be used.\n"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceConfigTemplateMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Mode for the source template. Defaults to REPLICATION if not provided."
           }
         },
         "type": "object",
@@ -19237,6 +19764,176 @@
         "type": "string",
         "enum": ["archived", "certified", "community", "none"],
         "title": "SupportLevel"
+      },
+      "SyncSuccessConnection": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessConnection"
+      },
+      "SyncSuccessData": {
+        "properties": {
+          "workspace": {
+            "$ref": "#/components/schemas/SyncSuccessWorkspace"
+          },
+          "connection": {
+            "$ref": "#/components/schemas/SyncSuccessConnection"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SyncSuccessSource"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/SyncSuccessDestination"
+          },
+          "jobId": {
+            "type": "integer",
+            "title": "Jobid"
+          },
+          "startedAt": {
+            "type": "string",
+            "title": "Startedat"
+          },
+          "finishedAt": {
+            "type": "string",
+            "title": "Finishedat"
+          },
+          "bytesEmitted": {
+            "type": "integer",
+            "title": "Bytesemitted"
+          },
+          "bytesCommitted": {
+            "type": "integer",
+            "title": "Bytescommitted"
+          },
+          "recordsEmitted": {
+            "type": "integer",
+            "title": "Recordsemitted"
+          },
+          "recordsCommitted": {
+            "type": "integer",
+            "title": "Recordscommitted"
+          },
+          "bytesEmittedFormatted": {
+            "type": "string",
+            "title": "Bytesemittedformatted"
+          },
+          "bytesCommittedFormatted": {
+            "type": "string",
+            "title": "Bytescommittedformatted"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "durationInSeconds": {
+            "type": "integer",
+            "title": "Durationinseconds"
+          },
+          "durationFormatted": {
+            "type": "string",
+            "title": "Durationformatted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace",
+          "connection",
+          "source",
+          "destination",
+          "jobId",
+          "startedAt",
+          "finishedAt",
+          "bytesEmitted",
+          "bytesCommitted",
+          "recordsEmitted",
+          "recordsCommitted",
+          "bytesEmittedFormatted",
+          "bytesCommittedFormatted",
+          "success",
+          "durationInSeconds",
+          "durationFormatted"
+        ],
+        "title": "SyncSuccessData"
+      },
+      "SyncSuccessDestination": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessDestination"
+      },
+      "SyncSuccessNotification": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SyncSuccessData"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "SyncSuccessNotification"
+      },
+      "SyncSuccessSource": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessSource"
+      },
+      "SyncSuccessWorkspace": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessWorkspace"
       },
       "TagSelectionMode": {
         "type": "string",
