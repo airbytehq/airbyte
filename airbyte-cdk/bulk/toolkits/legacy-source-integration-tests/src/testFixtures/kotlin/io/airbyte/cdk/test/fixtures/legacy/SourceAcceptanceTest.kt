@@ -98,11 +98,6 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             )
         val diff: JsonDiff = DiffGenerator.diff(expected, actual, jsonMatcher)
         Assertions.assertEquals("", OnlyErrorDiffViewer.from(diff).toString(), "Expected spec output by integration to be equal to spec provided by test runner")
-        /*Assertions.assertEquals(
-            spec,
-            runSpec(),
-            "Expected spec output by integration to be equal to spec provided by test runner"
-        )*/
     }
 
     /**
@@ -292,7 +287,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         assert(Objects.nonNull(latestState))
         val secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState))
         Assertions.assertTrue(
-            secondSyncRecords.size <= configuredCatalog.streams.size,
+            secondSyncRecords.size == configuredCatalog.streams.size,
             "Expected the second incremental sync to produce no records when given the first sync's output state."
         )
     }

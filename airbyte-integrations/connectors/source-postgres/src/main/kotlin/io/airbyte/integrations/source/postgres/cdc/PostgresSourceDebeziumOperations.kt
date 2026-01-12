@@ -87,7 +87,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
         }
     }
 
-    //    val cdcConfig = config.cdc!!
+        val cdcConfig = config.cdc!!
 
     val commonPropertiesBuilder =
         DebeziumPropertiesBuilder()
@@ -106,10 +106,10 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
             .with("converters", "datetime")
             .with("datetime.type", PostgresDebeziumDatetimeConverter::class.java.name)
             .with("include.unknown.datatypes", "true")
-            //            .with("flush.lsn.source", cdcConfig.debeziumCommitsLsn.toString())
+            .with("flush.lsn.source", cdcConfig.debeziumCommitsLsn.toString())
             .with("plugin.name", "pgoutput")
-    //            .with("slot.name", cdcConfig.replicationSlot)
-    //            .with("publication.name", cdcConfig.publication)
+            .with("slot.name", cdcConfig.replicationSlot)
+            .with("publication.name", cdcConfig.publication)
     // TODO: heartbeat.action.query
     // TODO: SSL support
 
