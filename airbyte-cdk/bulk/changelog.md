@@ -1,3 +1,9 @@
+## Version 0.1.103
+
+**Load CDK**
+
+* Fix: Prevent user columns from colliding with reserved Airbyte column names (`_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_meta`, `_airbyte_generation_id`). User columns with these names are now automatically renamed with a `_1` suffix.
+
 ## Version 0.1.102
 
 load cdk: add schema regression test
