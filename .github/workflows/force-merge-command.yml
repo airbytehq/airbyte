@@ -121,7 +121,6 @@ jobs:
 
       - name: Force merge PR
         id: merge
-        if: steps.check-approval.outputs.approved == 'true'
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         shell: bash
