@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.check
@@ -23,7 +23,7 @@ import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManag
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
-import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -36,6 +36,7 @@ class SnowflakeChecker(
     private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val columnManager: SnowflakeColumnManager,
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
 ) : DestinationCheckerV2 {
 
     override fun check() {
@@ -45,6 +46,7 @@ class SnowflakeChecker(
                     AirbyteValue.from(UUID.randomUUID().toString()),
                 Meta.AirbyteMetaFields.EXTRACTED_AT.fieldName to
                     AirbyteValue.from(OffsetDateTime.now()),
+                Meta.COLUMN_NAME_AB_LOADED_AT to AirbyteValue.from(OffsetDateTime.now()),
                 Meta.AirbyteMetaFields.META.fieldName to
                     AirbyteValue.from(emptyMap<String, String>()),
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
@@ -116,7 +118,7 @@ class SnowflakeChecker(
                         snowflakeConfiguration = snowflakeConfiguration,
                         columnSchema = tableSchema.columnSchema,
                         columnManager = columnManager,
-                        snowflakeRecordFormatter = SnowflakeSchemaRecordFormatter(),
+                        snowflakeRecordFormatter = snowflakeRecordFormatter,
                     )
 
                 snowflakeInsertBuffer.accumulate(data)
