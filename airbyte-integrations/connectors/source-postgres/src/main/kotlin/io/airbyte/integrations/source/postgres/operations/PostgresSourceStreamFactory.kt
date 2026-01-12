@@ -117,9 +117,10 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         var isView = false
         discoveredStream.id.namespace?.let { namespace ->
             // TO-DO: unify views queries for all schemas in a single query.
-            isView = viewsBySchema.getOrPut(namespace) {
-                getViewsInSchema(namespace)
-            }.contains(discoveredStream.id.name) == true
+            isView =
+                viewsBySchema
+                    .getOrPut(namespace) { getViewsInSchema(namespace) }
+                    .contains(discoveredStream.id.name) == true
         }
 
         val supportsIncremental =
