@@ -134,6 +134,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.4.1 | 2025-12-16 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
 | 0.4.0 | 2025-11-23 | [68194](https://github.com/airbytehq/airbyte/pull/68194) | Remove expensive
 calculation fields from tasksessions, add more streams, including task profitability |
 | 0.3.9 | 2025-11-25 | [70176](https://github.com/airbytehq/airbyte/pull/70176) | Update dependencies |
@@ -151,7 +152,7 @@ calculation fields from tasksessions, add more streams, including task profitabi
 | 0.2.2 | 2025-08-26 | [65534](https://github.com/airbytehq/airbyte/pull/65534) | Add extra_fields to property stream |
 | 0.2.1 | 2025-08-24 | [65445](https://github.com/airbytehq/airbyte/pull/65445) | Update dependencies |
 | 0.2.0 | 2025-08-22 | | Update task profitability stream to use start_date parameter |
-| 0.0.11 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/65061) | Add users and task profitability streams |
+| 0.0.11 | 2025-08-14 | [65061](https://github.com/airbytehq/airbyte/pull/65061) | Add users and task profitability streams |
 | 0.0.10 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.9 | 2025-08-13 | [64170](https://github.com/airbytehq/airbyte/pull/64170) | adds cursor pagination, incremental sync and rate limiting |
 | 0.0.8 | 2025-08-09 | [64845](https://github.com/airbytehq/airbyte/pull/64845) | Update dependencies |

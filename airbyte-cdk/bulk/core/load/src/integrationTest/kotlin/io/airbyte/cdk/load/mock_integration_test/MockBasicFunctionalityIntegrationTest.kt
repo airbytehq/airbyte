@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.mock_integration_test
@@ -484,18 +484,4 @@ class MockBasicFunctionalityIntegrationTestSocketJsonl :
     BaseMockBasicFunctionalityIntegrationTest(
         DataChannelMedium.SOCKET,
         DataChannelFormat.JSONL,
-    )
-
-@Disabled("we don't use flatbuffers")
-class MockBasicFunctionalityIntegrationTestStdioFlatbuffer :
-    BaseMockBasicFunctionalityIntegrationTest(
-        DataChannelMedium.STDIO,
-        DataChannelFormat.FLATBUFFERS,
-    )
-
-@Disabled("we don't use flatbuffers")
-class MockBasicFunctionalityIntegrationTestSocketFlatbuffer :
-    BaseMockBasicFunctionalityIntegrationTest(
-        DataChannelMedium.SOCKET,
-        DataChannelFormat.FLATBUFFERS,
     )

@@ -91,6 +91,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.25 | 2025-12-16 | [70496](https://github.com/airbytehq/airbyte/pull/70496) | Update dependencies |
 | 1.2.24 | 2025-11-25 | [70061](https://github.com/airbytehq/airbyte/pull/70061) | Update dependencies |
 | 1.2.23 | 2025-11-18 | [69372](https://github.com/airbytehq/airbyte/pull/69372) | Update dependencies |
 | 1.2.22 | 2025-10-29 | [68814](https://github.com/airbytehq/airbyte/pull/68814) | Update dependencies |
@@ -167,7 +168,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 | 0.1.8 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions                                                                                                                                         |
 | 0.1.6 | 2021-11-14 | [7952](https://github.com/airbytehq/airbyte/pull/7952)   | Implement OAuth 2.0 support                                                                                                                                            |
 | 0.1.5 | 2021-09-28 | [5747](https://github.com/airbytehq/airbyte/pull/5747)   | Update schema date-time fields                                                                                                                                         |
-| 0.1.4   | 2021-06-22 | [5701](https://github.com/airbytehq/airbyte/pull/5071)   | Harvest normalization failure: fixing the schemas                                                                                                                      |
+| 0.1.4   | 2021-06-22 | [5071](https://github.com/airbytehq/airbyte/pull/5071)   | Harvest normalization failure: fixing the schemas                                                                                                                      |
 | 0.1.3   | 2021-06-22 | [4274](https://github.com/airbytehq/airbyte/pull/4274)   | Fix wrong data type on `statement_key` in `clients` stream                                                                                                             |
 | 0.1.2   | 2021-06-07 | [4222](https://github.com/airbytehq/airbyte/pull/4222)   | Correct specification parameter name                                                                                                                                   |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                                                        |

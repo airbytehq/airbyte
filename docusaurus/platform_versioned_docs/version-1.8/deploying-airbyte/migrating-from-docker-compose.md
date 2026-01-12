@@ -4,38 +4,16 @@ products: oss-community
 
 # Migrating from Docker Compose
 
-<!-- This topic has been preserved from the original Quickstart guide, unchanged. It may be used later in rewritten deployment docs. -->
+:::warning
 
-:::note
-
-If you're using an external database or secret manager you don't need to run `--migrate` flag.
-You must create the `secrets.yaml` and `values.yaml` and then run `abctl local install --values ./values.yaml --secret ./secrets.yaml`.
-Please check [instructions](integrations/database.md) to setup the external database as example.
+Migration from Docker Compose is no longer supported. The `--migrate` flag has been deprecated and removed from `abctl`.
 
 :::
 
-If you have data that you would like to migrate from an existing docker compose instance follow the steps below:
+If you were previously running Airbyte using Docker Compose, we recommend performing a fresh deployment of Airbyte. Docker Compose deployments are no longer supported.
 
-1. Make sure that you have stopped the instance running in docker compose, this may require the following command:
+To get started with a fresh installation, see the [Quickstart guide](../using-airbyte/getting-started/oss-quickstart.md) or the [Deploy Airbyte](deploying-airbyte.md) section for more deployment options.
 
-```
-docker compose stop
-```
+If you need to preserve your existing connection configurations, you can manually recreate them in your new Airbyte instance. Historical sync data from your Docker Compose deployment cannot be migrated to the new installation.
 
-2. Make sure that you have the latest version of abctl by running the following command:
-
-```
-curl -LsfS https://get.airbyte.com | bash -
-```
-
-3. Run abctl with the migrate flag set with the following command:
-
-```
-abctl local install --migrate
-```
-
-:::note
-
-If you're using a version of Airbyte that you've installed with `abctl`, you can find instructions on upgrading your Airbyte installation [here](../operator-guides/upgrading-airbyte.md#upgrading-with-abctl).
-
-:::
+For users with an external database, you can configure your new installation to use the same database. See the [database integration documentation](integrations/database.md) for setup instructions.

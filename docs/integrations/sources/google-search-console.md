@@ -242,6 +242,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.10.19 | 2025-12-16 | [70517](https://github.com/airbytehq/airbyte/pull/70517) | Update dependencies |
 | 1.10.18 | 2025-12-09 | [70444](https://github.com/airbytehq/airbyte/pull/70444) | Add user-configurable API rate limit option for Search Analytics streams |
 | 1.10.17 | 2025-11-25 | [70059](https://github.com/airbytehq/airbyte/pull/70059) | Update dependencies |
 | 1.10.16 | 2025-11-18 | [69392](https://github.com/airbytehq/airbyte/pull/69392) | Update dependencies |
@@ -271,7 +272,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 | 1.7.0       | 2025-06-05 | [61332](https://github.com/airbytehq/airbyte/pull/61332) | Migrate search_by_keyword streams to low-code                                                                                                                          |
 | 1.6.0       | 2025-06-04 | [61380](https://github.com/airbytehq/airbyte/pull/61380) | Promoting release candidate 1.6.0-rc.1 to a main version.                                                                                                              |
 | 1.6.0-rc.1  | 2025-06-02 | [60928](https://github.com/airbytehq/airbyte/pull/60928) | Migrate `search_analytics_by_country`, `sites`, and `sitemaps` to low-code                                                                                             |
-| 1.5.18      | 2025-05-28 | [54426](https://github.com/airbytehq/airbyte/pull/58121) | Prevent KeyError raise on check connetion when account does not have access to any site. Better Error message                                                          |
+| 1.5.18      | 2025-05-28 | [58121](https://github.com/airbytehq/airbyte/pull/58121) | Prevent KeyError raise on check connetion when account does not have access to any site. Better Error message                                                          |
 | 1.5.17      | 2025-05-10 | [54946](https://github.com/airbytehq/airbyte/pull/54946) | Update dependencies                                                                                                                                                    |
 | 1.5.16      | 2025-05-09 | [59737](https://github.com/airbytehq/airbyte/pull/59737) | Promoting release candidate 1.5.16-rc.1 to a main version.                                                                                                             |
 | 1.5.16-rc.1 | 2025-05-02 | [59140](https://github.com/airbytehq/airbyte/pull/59140) | Migrate to CDK V6                                                                                                                                                      |
