@@ -148,8 +148,13 @@ definitions:
           record_filter:
             condition: >-
               {%- set requested_profiles = config.get("profiles", []) -%}
+              {%- set requested_profile_names = config.get("profile_names", []) -%}
               {%- set requested_marketplace_ids = config.get("marketplace_ids", []) -%}
-              {{ record["profileId"] in requested_profiles or record["accountInfo"]["marketplaceStringId"] in requested_marketplace_ids if requested_profiles or requested_marketplace_ids else True }}
+              {%- set has_filters = requested_profiles or requested_profile_names or requested_marketplace_ids -%}
+              {%- set matches_profile_id = record["profileId"] in requested_profiles -%}
+              {%- set matches_profile_name = record["accountInfo"]["name"] in requested_profile_names -%}
+              {%- set matches_marketplace_id = record["accountInfo"]["marketplaceStringId"] in requested_marketplace_ids -%}
+              {{ matches_profile_id or matches_profile_name or matches_marketplace_id if has_filters else True }}
         paginator:
           type: NoPagination
 
@@ -3456,19 +3461,31 @@ spec:
           supports only profiles with seller and vendor type, profiles with agency
           type will be ignored. See <a
           href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a>
-          for more details. Note: If Marketplace IDs are also selected, profiles
-          will be selected if they match the Profile ID OR the Marketplace ID.
+          for more details. Note: If Marketplace IDs or Profile Names are also selected, profiles
+          will be selected if they match the Profile ID OR the Marketplace ID OR the Profile Name.
         order: 6
         type: array
         items:
           type: integer
+      profile_names:
+        title: Profile Names
+        description: >-
+          Profile Names you want to fetch data for. You can use Profile Names instead of
+          Profile IDs for easier configuration. The name corresponds to the account name
+          shown in the Amazon Ads console. Note: If Profile IDs or Marketplace IDs are also
+          selected, profiles will be selected if they match the Profile ID OR the Marketplace ID
+          OR the Profile Name.
+        order: 7
+        type: array
+        items:
+          type: string
       marketplace_ids:
         title: Marketplace IDs
         description: >-
-          Marketplace IDs you want to fetch data for. Note: If Profile IDs are
+          Marketplace IDs you want to fetch data for. Note: If Profile IDs or Profile Names are
           also selected, profiles will be selected if they match the Profile ID OR
-          the Marketplace ID.
-        order: 7
+          the Marketplace ID OR the Profile Name.
+        order: 8
         type: array
         items:
           type: string
@@ -3481,7 +3498,7 @@ spec:
         examples:
           - 3
           - 10
-        order: 8
+        order: 9
         type: integer
       num_workers:
         type: integer
@@ -3493,7 +3510,7 @@ spec:
           - 2
           - 3
         description: The number of worker threads to use for the sync.
-        order: 9
+        order: 10
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
