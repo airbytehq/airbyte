@@ -327,6 +327,7 @@ class InputBeanFactoryTest {
                 aggregatePublishingConfig = aggregatePublishingConfig,
                 aggregationDispatcher = aggregationDispatcher,
                 flushDispatcher = flushDispatcher,
+                finalFlushDispatcher = flushDispatcher,
             )
 
         // Then
@@ -364,6 +365,7 @@ class InputBeanFactoryTest {
                 aggregatePublishingConfig = aggregatePublishingConfig,
                 aggregationDispatcher = aggregationDispatcher,
                 flushDispatcher = flushDispatcher,
+                finalFlushDispatcher = flushDispatcher,
             )
 
         // Then
@@ -416,6 +418,7 @@ class InputBeanFactoryTest {
                 aggregatePublishingConfig = aggregatePublishingConfig,
                 aggregationDispatcher = aggregationDispatcher,
                 flushDispatcher = flushDispatcher,
+                finalFlushDispatcher = flushDispatcher,
             )
 
         // Then
