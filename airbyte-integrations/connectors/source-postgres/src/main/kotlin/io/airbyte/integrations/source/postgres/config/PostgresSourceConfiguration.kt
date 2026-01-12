@@ -36,6 +36,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileSystems
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.UUID
@@ -171,20 +172,7 @@ constructor(
 
         val sslJdbcProperties: Map<String, String> = pojo.getEncryptionValue()!!.jdbcProperties()
         jdbcProperties.putAll(sslJdbcProperties)
-//        jdbcProperties["ssl"] = "true"
-
         log.info { "SSL mode: ${sslJdbcProperties["sslmode"]}" }
-//        log.info { "*** $sslJdbcProperties" }
-//        log.info { "*** $jdbcProperties" }
-//        log.info { "*** ${File(sslJdbcProperties["sslrootcert"]).readText()}" }
-
-        // Validate SSL certificate files if present
-//        sslJdbcProperties["sslrootcert"]?.let { certPath ->
-//            validateCertificateFile(certPath, "CA certificate")
-//        }
-//        sslJdbcProperties["sslkey"]?.let { keystorePath ->
-//            validateKeyStore(keystorePath, sslJdbcProperties["sslpassword"], "client certificate")
-//        }
 
         // Configure cursor.
         val incremental: IncrementalConfiguration =
@@ -299,11 +287,14 @@ constructor(
                 ?: UUID.randomUUID().toString()
 
         extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
-        // Save CA certificate to temporary file
-        val caCertFile = Files.createTempFile("ca_cert_", ".crt")
-        Files.write(caCertFile, sslData.caCertificate.toByteArray(StandardCharsets.UTF_8))
-        caCertFile.toFile().deleteOnExit()
-        extraJdbcProperties[TRUST_KEY_STORE_URL] = caCertFile.toAbsolutePath().toString()
+        // Save CA certificate to a temporary file
+        val caCertFileURI: URI =
+            saveCACertificate {
+                val caCertFile = Files.createTempFile(null, null)
+                Files.write(caCertFile, sslData.caCertificate.toByteArray(StandardCharsets.UTF_8)).also { it.toFile().deleteOnExit()}
+
+            }
+        extraJdbcProperties[TRUST_KEY_STORE_URL] = Paths.get(caCertFileURI).toString()
 
         if (sslData.clientCertificate.isNullOrBlank() || sslData.clientKey.isNullOrBlank()) {
             // if Client cert is not available - done
@@ -349,7 +340,25 @@ constructor(
         return keyStoreUrl
     }
 
-    private fun validateCertificateFile(certPath: String, kind: String) {
+    private fun saveCACertificate(uriSupplier: () -> Path): URI {
+        val caCertPath: Path =
+            try {
+                uriSupplier()
+            } catch (ex: Exception) {
+                throw ConfigErrorException("Failed to create CA certificate file", ex)
+            }
+        val caCertUrl: URI =
+            try {
+                caCertPath.toUri()
+            } catch (ex: MalformedURLException) {
+                throw ConfigErrorException("Unable to get a URI for certificate file", ex)
+            }
+        log.debug { "URI for certificate file is $caCertUrl" }
+        return caCertUrl
+    }
+
+    // Debug functions to validate encryption functionality
+    /*private fun validateCertificateFile(certPath: String, kind: String) {
         try {
             val certFile = File(certPath)
             if (!certFile.exists()) {
@@ -432,7 +441,7 @@ constructor(
             }
             throw ConfigErrorException("Failed to read $kind keystore at $keystorePath", ex)
         }
-    }
+    }*/
 
     companion object {
         const val TRUST_KEY_STORE_URL: String = "sslrootcert"
