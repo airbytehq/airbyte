@@ -420,6 +420,10 @@ class CheckpointManager(
     }
 
     suspend fun awaitAllCheckpointsFlushed() {
+        val startTime = System.currentTimeMillis()
+        val timeoutMillis = 5 * 60 * 1000L // 5 minutes
+        var iterationCount = 0
+
         while (true) {
             val allCheckpointsFlushed =
                 storedCheckpointsLock.withLock {
@@ -429,7 +433,75 @@ class CheckpointManager(
                 log.info { "All checkpoints flushed" }
                 break
             }
-            log.info { "Waiting for all checkpoints to flush" }
+
+            val elapsedMillis = System.currentTimeMillis() - startTime
+            if (elapsedMillis > timeoutMillis) {
+                // Timeout reached - log detailed diagnostic information
+                val diagnosticInfo = buildString {
+                    appendLine("Checkpoint flush timeout after ${elapsedMillis / 1000} seconds")
+                    appendLine("Pending global checkpoints: ${globalCheckpoints.size}")
+                    globalCheckpoints.forEach { (key, holder) ->
+                        val sourceStats = holder.checkpointMessage.value.sourceStats
+                        appendLine(
+                            "  Global checkpoint $key: recordCount=${sourceStats?.recordCount ?: 0}"
+                        )
+                    }
+                    appendLine("Pending stream checkpoints:")
+                    streamCheckpoints.forEach { (stream, checkpoints) ->
+                        if (checkpoints.isNotEmpty()) {
+                            appendLine(
+                                "  Stream $stream: ${checkpoints.size} pending checkpoint(s)"
+                            )
+                            checkpoints.forEach { (key, checkpointMessage) ->
+                                val sourceStats = checkpointMessage.value.sourceStats
+                                appendLine(
+                                    "    Checkpoint $key: recordCount=${sourceStats?.recordCount ?: 0}, " +
+                                        "rejectedRecordCount=${sourceStats?.rejectedRecordCount ?: 0}"
+                                )
+                            }
+                        }
+                    }
+                    // Log state from StreamManager for each pending stream
+                    appendLine("Stream manager states:")
+                    streamCheckpoints.forEach { (stream, pendingCheckpoints) ->
+                        if (pendingCheckpoints.isNotEmpty()) {
+                            try {
+                                val manager = syncManager.getStreamManager(stream)
+                                appendLine("  Stream $stream:")
+                                pendingCheckpoints.forEach { (checkpointKey, _) ->
+                                    val checkpointId = checkpointKey.checkpointId
+                                    val readCount =
+                                        manager.readCountForCheckpoint(checkpointId) ?: 0L
+                                    val persistedCount =
+                                        manager.persistedRecordCountForCheckpoint(checkpointId)
+                                    appendLine(
+                                        "    Checkpoint $checkpointId: readCount=$readCount, " +
+                                            "persistedCount=$persistedCount, match=${readCount == persistedCount}"
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                appendLine("  Stream $stream: Unable to get manager (${e.message})")
+                            }
+                        }
+                    }
+                }
+                log.error { diagnosticInfo }
+                throw IllegalStateException(
+                    "Checkpoint flush timeout after ${elapsedMillis / 1000} seconds. " +
+                        "This indicates a record count mismatch between source and destination. " +
+                        "See logs above for diagnostic details."
+                )
+            }
+
+            // Log more frequently as we approach timeout
+            if (iterationCount % 60 == 0 || elapsedMillis > timeoutMillis - 60000) {
+                log.info {
+                    "Waiting for all checkpoints to flush " +
+                        "(${elapsedMillis / 1000}s elapsed, ${streamCheckpoints.values.sumOf { it.size }} pending)"
+                }
+            }
+
+            iterationCount++
             // Not usually a fan of busywaiting, but it's extremely unlikely we
             // get here without more than a handful of stragglers
             delay(1000L)
