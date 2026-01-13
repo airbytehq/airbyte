@@ -509,6 +509,27 @@ class Releases(SemiIncrementalMixin, GithubStream):
 
     cursor_field = "created_at"
 
+    # GitHub API limits pagination to 10,000 results maximum
+    # With 100 results per page (default), this means max 100 pages
+    # https://docs.github.com/en/rest/releases/releases#list-releases
+    MAX_PAGE_NUMBER = 100
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Override to stop pagination at page 100 (10,000 results) to avoid GitHub API 422 error.
+        GitHub's REST API has a hard limit of 10,000 results for list endpoints.
+        """
+        token = super().next_page_token(response)
+        if token:
+            page = int(token.get("page", 0))
+            if page > self.MAX_PAGE_NUMBER:
+                self.logger.warning(
+                    f"Stopping pagination at page {self.MAX_PAGE_NUMBER} due to GitHub API limit of 10,000 results. "
+                    "Some releases may not be synced."
+                )
+                return None
+        return token
+
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record, stream_slice=stream_slice)
 
