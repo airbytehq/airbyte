@@ -61,15 +61,31 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 
 #### Create a custom app
 
-Authentication to the Shopify API requires a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
+Authentication to the Shopify API requires a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). There are two ways to create a custom app depending on when you're setting it up:
+
+##### Option 1: Using an existing custom app (created before January 1, 2026)
+
+If you already have a custom app created in your Shopify admin, you can continue using it. Follow these steps to find your Admin API Access Token:
 
 1. Log in to your Shopify account.
-2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
-3. Select a name for your new app.
-4. Select **Configure Admin API scopes**.
-5. Grant access to the [following list of scopes](#scopes-required-for-custom-app). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc ).
-6. Click **Install app** to give this app access to your data.
-7. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. You are now ready to set up the source in Airbyte!
+2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps**.
+3. Select your existing custom app.
+4. Go to **API Credentials** to copy the **Admin API Access Token**. You are now ready to set up the source in Airbyte!
+
+##### Option 2: Creating a new app via Dev Dashboard (after January 1, 2026)
+
+Starting January 1, 2026, Shopify no longer allows creating new custom apps directly in the Shopify admin. New apps must be created using the [Shopify Dev Dashboard](https://shopify.dev/docs/apps/build/dev-dashboard/create-apps-using-dev-dashboard).
+
+1. Go to the [Shopify Dev Dashboard](https://partners.shopify.com/) and log in.
+2. Follow the [Dev Dashboard app creation guide](https://shopify.dev/docs/apps/build/dev-dashboard/create-apps-using-dev-dashboard) to create a new app.
+3. Configure the required [API scopes](#custom-app-scopes) for your app.
+4. Install the app on your store.
+5. Use the [client credentials grant](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/client-credentials-grant) to obtain an access token using your Client ID and Client Secret.
+6. Use the obtained access token as the **API Password** in Airbyte.
+
+:::note
+Access tokens obtained via the client credentials grant expire after 24 hours. You will need to regenerate the token periodically or consider using Airbyte Cloud with OAuth authentication for a more seamless experience.
+:::
 
 #### Connect using API Password
 
