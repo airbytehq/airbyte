@@ -13,6 +13,7 @@ import io.debezium.connector.postgresql.PostgresValueConverter
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
 import io.debezium.time.Conversions
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.sql.SQLException
@@ -29,8 +30,6 @@ import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaBuilder
 import org.postgresql.jdbc.PgArray
 import org.postgresql.util.PGInterval
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, RelationalColumn?> {
     private val DATE_TYPES =
@@ -407,11 +406,12 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun getArray(x: Any): Array<Any?>? {
         try {
-            return (x as PgArray).getArray() as Array<Any?>?
+            return (x as PgArray).array as Array<Any?>?
         } catch (e: SQLException) {
-            LOGGER.error("Failed to convert PgArray:" + e)
+            log.error { "Failed to convert PgArray:$e" }
             throw RuntimeException(e)
         }
     }
@@ -595,8 +595,7 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(PostgresDebeziumDatetimeConverter::class.java)
+        private val log = KotlinLogging.logger {}
 
         private fun convertDefaultValue(field: RelationalColumn): Any? {
             if (field.isOptional()) {

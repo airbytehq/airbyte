@@ -191,6 +191,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
         commonPropertiesBuilder.withStreams(streams).buildMap()
 
+    @Suppress("UNCHECKED_CAST")
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
