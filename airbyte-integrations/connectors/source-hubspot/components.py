@@ -16,7 +16,6 @@ from airbyte_cdk import (
     RecordSelector,
     SimpleRetriever,
 )
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
@@ -28,7 +27,6 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilte
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedBoolean, InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
-from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
     ExponentialBackoffStrategy,
@@ -40,7 +38,6 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
