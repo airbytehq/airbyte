@@ -13,7 +13,6 @@ import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
@@ -29,6 +28,8 @@ import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
+import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.debezium.connector.postgresql.PostgresConnector
 import io.debezium.connector.postgresql.connection.Lsn
@@ -40,14 +41,21 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.collections.component1
 import kotlin.collections.component2
+import kotlin.use
 import org.apache.kafka.connect.source.SourceRecord
 
 @Singleton
-class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) :
+class PostgresSourceDebeziumOperations(
+    private val config: PostgresSourceConfiguration,
+    private val connectionFactory: PostgresSourceJdbcConnectionFactory,
+    private val replicationSlotManager: ReplicationSlotManager,
+) :
     CdcPartitionsCreatorDebeziumOperations<PostgresSourceCdcPosition>,
     CdcPartitionReaderDebeziumOperations<PostgresSourceCdcPosition> {
 
     private val log = KotlinLogging.logger {}
+    private val cdcConfig: CdcIncrementalConfiguration by lazy { config.cdc!! }
+    private val startupState: StartupState = getStartupState(connectionFactory)
 
     companion object {
         const val STATE = "state"
@@ -80,14 +88,62 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
             check(offset.wrapped.size == 1) { "Debezium offset has unrecognized format" }
             val value = offset.wrapped.values.first()
             val lsn = value[LSN]?.asLong()
+            val lsnCommit = value[LSN_COMMIT]?.asLong()
             return PostgresSourceCdcPosition(
                 lsn = Lsn.valueOf(lsn),
-                lsnCommit = null, // not present in state
+                lsnCommit = Lsn.valueOf(lsnCommit),
             )
         }
-    }
 
-    val cdcConfig = config.cdc!!
+        data class StartupState(val txId: Long, val lsn: Long, val time: Instant)
+
+        private object StartupStateHolder {
+            var startupState: StartupState? = null
+        }
+
+        // Ensure these are fetched only once for correctness.
+        private fun getStartupState(
+            connectionFactory: PostgresSourceJdbcConnectionFactory
+        ): StartupState {
+            return StartupStateHolder.startupState
+                ?: synchronized(StartupStateHolder) {
+                    if (StartupStateHolder.startupState != null) {
+                        return StartupStateHolder.startupState!!
+                    }
+                    val txId: Long
+                    val lsn: Long
+                    // TODO: We should get the timestamp from the DB, not the application.
+                    //  The previous implementation on the Java CDK also used an application
+                    // timestamp.
+                    val time: Instant = Instant.now()
+                    connectionFactory.get().use { connection ->
+                        connection.createStatement().use {
+                            it.execute(
+                                "SELECT CASE WHEN pg_is_in_recovery() THEN txid_snapshot_xmin(txid_current_snapshot()) ELSE txid_current() END AS pg_current_txid;"
+                            )
+                            check(it.resultSet.next()) { "Query for txid produced no results" }
+                            check(it.resultSet.isLast) {
+                                "Query for txid produced more than one result"
+                            }
+                            txId = it.resultSet!!.getLong(1)
+                        }
+                        connection.createStatement().use {
+                            // pg version >= 10. For versions < 10 use query select * from
+                            // pg_current_xlog_location()
+                            it.execute(
+                                "SELECT CASE WHEN pg_is_in_recovery() THEN pg_last_wal_receive_lsn() ELSE pg_current_wal_lsn() END AS pg_current_wal_lsn;"
+                            )
+                            check(it.resultSet.next()) { "Query for lsn produced no results" }
+                            check(it.resultSet.isLast) {
+                                "Query for lsn produced more than one result"
+                            }
+                            lsn = Lsn.valueOf(it.resultSet!!.getString(1)).asLong()
+                        }
+                    }
+                    StartupState(txId, lsn, time).also { StartupStateHolder.startupState = it }
+                }
+        }
+    }
 
     val commonPropertiesBuilder =
         DebeziumPropertiesBuilder()
@@ -112,38 +168,17 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
             .with("publication.name", cdcConfig.publication)
     // TODO: heartbeat.action.query
     // TODO: SSL support
+    // TODO: airbyte.heartbeat.timeout.seconds
 
-    // Ensure these are fetched only once for correctness.
-    // This class is a @Singleton and "lazy" is synchronized.
-    val startupState: StartupState by lazy {
-        val txId: Long
-        val lsn: Long
-        // TODO: Take timestamp from DB, not application
-        val time: Instant = Instant.now()
-        JdbcConnectionFactory(config).get().use { connection ->
-            connection.createStatement().use {
-                it.execute(
-                    "SELECT CASE WHEN pg_is_in_recovery() THEN txid_snapshot_xmin(txid_current_snapshot()) ELSE txid_current() END AS pg_current_txid;"
-                )
-                check(it.resultSet.next()) { "Query for txid produced no results" }
-                check(it.resultSet.isLast) { "Query for txid produced more than one result" }
-                txId = it.resultSet!!.getLong(1)
-            }
-            connection.createStatement().use {
-                // pg version >= 10. For versions < 10 use query select * from
-                // pg_current_xlog_location()
-                it.execute(
-                    "SELECT CASE WHEN pg_is_in_recovery() THEN pg_last_wal_receive_lsn() ELSE pg_current_wal_lsn() END AS pg_current_wal_lsn;"
-                )
-                check(it.resultSet.next()) { "Query for lsn produced no results" }
-                check(it.resultSet.isLast) { "Query for lsn produced more than one result" }
-                lsn = Lsn.valueOf(it.resultSet!!.getString(1)).asLong()
-            }
-        }
-        StartupState(txId, lsn, time)
+    override fun startup(offset: DebeziumOffset) {
+        // Need to validate replication slot even on cold start.
+        // Debezium will retry in a loop if its invalid.
+        // TODO: Honor configured InvalidCdcCursorPositionBehavior
+        //  https://github.com/airbytehq/airbyte-internal-issues/issues/15680
+        validate(offset)
+        advanceReplicationSlot(offset)
+        advanceLsn()
     }
-
-    data class StartupState(val txId: Long, val lsn: Long, val time: Instant = Instant.now())
 
     override fun position(offset: DebeziumOffset): PostgresSourceCdcPosition {
         return Companion.position(offset)
@@ -170,7 +205,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
         commonPropertiesBuilder.withStreams(streams).buildMap()
 
     override fun deserializeState(opaqueStateValue: OpaqueStateValue): DebeziumWarmStartState {
-        val debeziumState: DebeziumOffset =
+        val debeziumOffset: DebeziumOffset =
             try {
                 deserializeStateUnvalidated(opaqueStateValue)
             } catch (e: Exception) {
@@ -179,17 +214,57 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
                     "Error deserializing incumbent state value: ${e.message}"
                 )
             }
-        return validate(debeziumState)
+        return ValidDebeziumWarmStartState(debeziumOffset, null)
     }
 
-    private fun validate(offset: DebeziumOffset): DebeziumWarmStartState {
-        // TODO: check that binlog position is available on replication slot
-        return ValidDebeziumWarmStartState(offset, null)
+    // Commit the minimum of lsn_proc and lsn_commit to the replication slot
+    private fun advanceReplicationSlot(offset: DebeziumOffset) {
+        if (cdcConfig.debeziumCommitsLsn) return
+        check(offset.wrapped.size == 1) { "Debezium offset has unrecognized format" }
+        val value = offset.wrapped.values.first()
+        val lsnProc = Lsn.valueOf(value[LSN_PROC]?.asLong())
+        val lsnCommit = Lsn.valueOf(value[LSN_COMMIT]?.asLong())
+        val lsnToAdvanceTo = listOfNotNull(lsnProc, lsnCommit).minOrNull() ?: return
+        replicationSlotManager.advanceLsn(lsnToAdvanceTo)
+    }
+
+    private fun validate(offset: DebeziumOffset) {
+        val lsn =
+            position(offset).lsn
+                ?: throw IllegalArgumentException("Offset does not contain LSN: $offset")
+        replicationSlotManager.validate(lsn)
+    }
+
+    // For PG < v15, force the DB to advance its LSN beyond the startup LSN
+    private fun advanceLsn() {
+        connectionFactory.get().use { connection ->
+            if (connection.metaData.databaseMajorVersion < 15) return
+            connection.autoCommit = false
+            try {
+                connection.createStatement().use {
+                    it.execute("DROP aggregate IF EXISTS EPHEMERAL_HEARTBEAT(float4)")
+                }
+                connection.createStatement().use {
+                    it.execute(
+                        "CREATE AGGREGATE EPHEMERAL_HEARTBEAT(float4)" +
+                            "(SFUNC = float4pl, STYPE = float4)"
+                    )
+                }
+                connection.createStatement().use {
+                    it.execute("DROP aggregate EPHEMERAL_HEARTBEAT(float4)")
+                }
+                connection.commit()
+            } catch (e: Exception) {
+                connection.rollback()
+                throw e
+            }
+        }
     }
 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
         commonPropertiesBuilder.withStreams(streams).buildMap()
 
+    @Suppress("UNCHECKED_CAST")
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
@@ -211,11 +286,10 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
                 }
                 else -> {
                     val codec: JsonCodec<*> = field.type.jsonEncoder as JsonCodec<*>
-                    @Suppress("UNCHECKED_CAST")
                     resultRow[field.id] =
                         FieldValueEncoder(
                             codec.decode(data[field.id]),
-                            field.type.jsonEncoder as JsonCodec<Any>,
+                            field.type.jsonEncoder as JsonCodec<Any?>,
                         )
                 }
             }
