@@ -294,13 +294,24 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/answeredScorecards"
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  basic_authenticator:
+    type: BasicHttpAuthenticator
+    username: "{{ config['credentials']['access_key'] }}"
+    password: "{{ config['credentials']['access_key_secret'] }}"
   base_requester:
     type: HttpRequester
     url_base: https://api.gong.io/v2/
     authenticator:
-      type: BasicHttpAuthenticator
-      username: "{{ config[\"access_key\"] }}"
-      password: "{{ config[\"access_key_secret\"] }}"
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+      authenticators:
+        OAuth2.0: "#/definitions/bearer_authenticator"
+        APIKey: "#/definitions/basic_authenticator"
 
 streams:
   - $ref: "#/definitions/streams/users"
@@ -314,22 +325,53 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - access_key
-      - access_key_secret
+    required: []
     properties:
-      access_key:
-        type: string
-        description: Gong Access Key
-        title: Gong Access Key
-        airbyte_secret: true
+      credentials:
+        type: object
+        title: Authentication
+        description: Choose how to authenticate to Gong.
         order: 0
-      access_key_secret:
-        type: string
-        description: Gong Access Key Secret
-        title: Gong Access Key Secret
-        airbyte_secret: true
-        order: 1
+        oneOf:
+          - type: object
+            title: Authenticate via Gong (OAuth)
+            required:
+              - access_token
+            properties:
+              auth_type:
+                type: string
+                const: OAuth2.0
+                order: 0
+              access_token:
+                type: string
+                title: Access Token
+                description: >-
+                  The OAuth access token for Gong API. See the <a
+                  href="https://help.gong.io/docs/create-an-app-for-gong">Gong
+                  docs</a> for more information on generating this token.
+                airbyte_secret: true
+            additionalProperties: true
+          - type: object
+            title: Authenticate with API Key
+            required:
+              - access_key
+              - access_key_secret
+            properties:
+              auth_type:
+                type: string
+                const: APIKey
+                order: 0
+              access_key:
+                type: string
+                title: Access Key
+                description: Gong Access Key
+                airbyte_secret: true
+              access_key_secret:
+                type: string
+                title: Access Key Secret
+                description: Gong Access Key Secret
+                airbyte_secret: true
+            additionalProperties: true
       start_date:
         type: string
         description: >-
@@ -341,8 +383,46 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2018-02-18T08:00:00Z"
-        order: 2
+        order: 1
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: OAuth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
 
 metadata:
   autoImportSchema:
