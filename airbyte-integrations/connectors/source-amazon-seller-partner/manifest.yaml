@@ -221,8 +221,9 @@ spec:
         order: 12
       financial_events_step:
         title: Financial Events Step Size
-        description: 'The time window size for fetching financial events data in chunks.
-          Options include hourly (1H, 6H, 12H) and daily (1D, 7D, 14D, 30D, 60D, 90D, 180D)
+        description: 'The time window size for fetching financial events data in chunks
+          for the ListFinancialEvents and ListFinancialEventGroups streams. Options
+          include hourly (1H, 6H, 12H) and daily (1D, 7D, 14D, 30D, 60D, 90D, 180D)
           granularity.
 
 
