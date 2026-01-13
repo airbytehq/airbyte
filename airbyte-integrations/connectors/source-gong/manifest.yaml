@@ -250,6 +250,14 @@ definitions:
           http_method: POST
           request_parameters:
             fromDateTime: "{{ config['start_date'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    error_message_contains: found corresponding to the provided filters
         record_selector:
           type: RecordSelector
           extractor:
