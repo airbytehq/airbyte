@@ -20,6 +20,7 @@ class PostgresTableOperationsTest(
     override val client: PostgresAirbyteClient,
     override val testClient: PostgresTestTableOperationsClient,
 ) : TableOperationsSuite {
+    override val airbyteMetaColumnMapping = PostgresComponentTestFixtures.airbyteMetaColumnMapping
 
     @Inject override lateinit var schemaFactory: TableSchemaFactory
 

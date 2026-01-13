@@ -7,9 +7,12 @@ package io.airbyte.integrations.destination.postgres.component
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsFixtures
 import io.airbyte.cdk.load.component.TableSchema
+import io.airbyte.cdk.load.message.Meta
 
 object PostgresComponentTestFixtures {
     // PostgreSQL uses lowercase column names by default (no transformation needed)
+    val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it }
+
     val testMapping = TableOperationsFixtures.TEST_MAPPING
     val idAndTestMapping = TableOperationsFixtures.ID_AND_TEST_MAPPING
     val idTestWithCdcMapping = TableOperationsFixtures.ID_TEST_WITH_CDC_MAPPING
@@ -28,6 +31,8 @@ object PostgresComponentTestFixtures {
                 "time_ntz" to ColumnType("time", true),
                 "array" to ColumnType("jsonb", true),
                 "object" to ColumnType("jsonb", true),
+                "union" to ColumnType("jsonb", true),
+                "legacy_union" to ColumnType("jsonb", true),
                 "unknown" to ColumnType("jsonb", true),
             )
         )

@@ -23,6 +23,7 @@ class PostgresTableSchemaEvolutionTest(
     override val testClient: PostgresTestTableOperationsClient,
     override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
+    override val airbyteMetaColumnMapping = PostgresComponentTestFixtures.airbyteMetaColumnMapping
 
     @Test
     fun `discover recognizes all data types`() {

@@ -132,7 +132,8 @@ class PostgresTestTableOperationsClient(
                 statement.setObject(index, localDate)
             }
             is io.airbyte.cdk.load.data.TimeWithTimezoneValue -> {
-                statement.setString(index, value.value.toString())
+                val offsetTime = java.time.OffsetTime.parse(value.value.toString())
+                statement.setObject(index, offsetTime)
             }
             is io.airbyte.cdk.load.data.TimeWithoutTimezoneValue -> {
                 val localTime = java.time.LocalTime.parse(value.value.toString())
@@ -205,6 +206,28 @@ class PostgresTestTableOperationsClient(
                                                 DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
                                                     localDateTime
                                                 )
+                                        }
+                                    }
+                                    "timetz" -> {
+                                        // TIME WITH TIME ZONE - format as ISO offset time
+                                        // Don't convert timezone - just format as-is
+                                        val value =
+                                            resultSet.getObject(i, java.time.OffsetTime::class.java)
+                                        if (value != null) {
+                                            val formattedTime =
+                                                DateTimeFormatter.ISO_OFFSET_TIME.format(value)
+                                            row[columnName] = formattedTime
+                                        }
+                                    }
+                                    "time",
+                                    "time without time zone" -> {
+                                        // TIME WITHOUT TIME ZONE - format as ISO local time
+                                        val value =
+                                            resultSet.getObject(i, java.time.LocalTime::class.java)
+                                        if (value != null) {
+                                            val formattedTime =
+                                                DateTimeFormatter.ISO_LOCAL_TIME.format(value)
+                                            row[columnName] = formattedTime
                                         }
                                     }
                                     "jsonb",
