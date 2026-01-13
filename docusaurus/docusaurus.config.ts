@@ -84,33 +84,6 @@ const config: Config = {
       "data-cookieless": "1",
       "data-auto-identify": "1",
     },
-    {
-      src: "https://widget.kapa.ai/kapa-widget.bundle.js",
-      async: true,
-      "data-website-id": "894ff9ab-1c3d-48d3-a014-aa0f52d0b113",
-      "data-project-name": "Airbyte",
-      "data-project-color": "#615EFF",
-      "data-project-logo": "https://docs.airbyte.com/img/favicon.png",
-      "data-modal-title": "Ask anything about Airbyte",
-      "data-modal-disclaimer": "AI can make mistakes. Verify critical information. Using the MCP server requires logging in with Google.",
-      "data-modal-example-questions": "What's Airbyte?,How do I try Airbyte Cloud?,Help me build a connector,Help me troubleshoot something",
-      "data-button-hide": "true",
-      "data-modal-override-open-selector-ask-ai": ".kapa-ai-trigger",
-      "data-mcp-enabled": "true",
-      "data-mcp-server-url": "https://airbyte.mcp.kapa.ai",
-      "data-modal-x-offset": "0.5rem",
-      "data-modal-y-offset": "0.5rem",
-      "data-modal-with-overlay": "false",
-      "data-modal-lock-scroll": "false",
-      "data-modal-inner-max-width": "500px",
-      "data-modal-inner-flex-direction": "column",
-      "data-modal-inner-justify-content": "end",
-      "data-modal-inner-position-left": "auto",
-      "data-modal-inner-position-top": "0",
-      "data-modal-inner-position-right": "0",
-      "data-modal-inner-position-bottom": "0",
-      "data-modal-size": "calc(100vh - 1rem)",
-    },
   ],
   headTags: [
     {
@@ -352,6 +325,9 @@ const config: Config = {
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
+    markpromptProjectKey:
+      process.env.MARKPROMPT_PROJECT_KEY ||
+      "sk_test_cbPFAzAxUvafRj6l1yjzrESu0bRpzQGK",
   },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
