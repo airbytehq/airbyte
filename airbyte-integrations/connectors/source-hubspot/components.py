@@ -874,7 +874,7 @@ class HubspotCRMSearchPaginationStrategyForBatchedStream(HubspotCRMSearchPaginat
         Otherwise, it stops after first page read, because last_page_size < page_size.
 
         """
-        last_page_size = last_page_size * self.page_size
+        last_page_size = len(response.json()["results"])
         return super().next_page_token(response, last_page_size, last_record, last_page_token_value)
 
 
