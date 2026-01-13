@@ -6,6 +6,10 @@ This page contains the setup guide and reference information for the [Facebook M
 
 </HideInUI>
 
+:::tip Looking for Facebook Pages?
+This connector is for the **Facebook Marketing API** (ads, campaigns, ad insights). If you need to sync **Facebook Page** data (posts, page insights, engagement metrics), use the [Facebook Pages connector](./facebook-pages.md) instead.
+:::
+
 ## Prerequisites
 
 - A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
