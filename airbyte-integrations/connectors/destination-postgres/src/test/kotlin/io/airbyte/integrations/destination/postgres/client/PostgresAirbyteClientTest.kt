@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
-
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
@@ -54,12 +53,7 @@ internal class PostgresAirbyteClientTest {
         every { postgresConfiguration.legacyRawTablesOnly } returns false
         every { columnManager.getMetaColumnNames() } returns emptySet()
         client =
-            PostgresAirbyteClient(
-                dataSource,
-                sqlGenerator,
-                columnManager,
-                postgresConfiguration
-            )
+            PostgresAirbyteClient(dataSource, sqlGenerator, columnManager, postgresConfiguration)
     }
 
     @Test

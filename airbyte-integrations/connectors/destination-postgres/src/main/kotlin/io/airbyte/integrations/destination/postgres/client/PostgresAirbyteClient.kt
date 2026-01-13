@@ -19,7 +19,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
-
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
@@ -165,12 +164,14 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val columnsInDb = getColumnsFromDb(tableName)
-        // In raw tables mode, schema is stored in _airbyte_data so user columns are empty from DB perspective
-        val columnsInStream = if (postgresConfiguration.legacyRawTablesOnly) {
-            emptyMap()
-        } else {
-            stream.tableSchema.columnSchema.finalSchema
-        }
+        // In raw tables mode, schema is stored in _airbyte_data so user columns are empty from DB
+        // perspective
+        val columnsInStream =
+            if (postgresConfiguration.legacyRawTablesOnly) {
+                emptyMap()
+            } else {
+                stream.tableSchema.columnSchema.finalSchema
+            }
 
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)
@@ -201,8 +202,6 @@ class PostgresAirbyteClient(
             )
         )
     }
-
-
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
         val columnsInDb = getColumnsFromDbForDiscovery(tableName)
