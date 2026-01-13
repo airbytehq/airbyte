@@ -294,6 +294,63 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/answeredScorecards"
+    transcripts:
+      type: DeclarativeStream
+      name: transcripts
+      primary_key:
+        - callId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calls/transcript
+          http_method: POST
+          request_body_json:
+            filter:
+              fromDateTime: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - callTranscripts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.records.cursor }}"
+            stop_condition: "{{ 'records' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: _airbyte_extracted_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: filter.fromDateTime
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - _airbyte_extracted_at
+              value: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transcripts"
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
@@ -319,6 +376,7 @@ streams:
   - $ref: "#/definitions/streams/extensiveCalls"
   - $ref: "#/definitions/streams/scorecards"
   - $ref: "#/definitions/streams/answeredScorecards"
+  - $ref: "#/definitions/streams/transcripts"
 
 spec:
   type: Spec
@@ -458,6 +516,7 @@ metadata:
     extensiveCalls: false
     scorecards: false
     answeredScorecards: false
+    transcripts: false
   yamlComponents:
     streams:
       calls:
@@ -466,6 +525,8 @@ metadata:
       extensiveCalls:
         - incrementalSync
       answeredScorecards:
+        - incrementalSync
+      transcripts:
         - incrementalSync
   testedStreams:
     users:
@@ -1459,3 +1520,59 @@ schemas:
           - string
         description: Type indicating the visibility permissions for the answered
           scorecard.
+  transcripts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      callId:
+        type:
+          - string
+        description: Unique identifier for the call associated with the transcript.
+      transcript:
+        type:
+          - "null"
+          - array
+        description: Array of transcript segments containing speaker information and text.
+        items:
+          type: object
+          properties:
+            speakerId:
+              type:
+                - "null"
+                - string
+              description: Unique identifier for the speaker in this segment.
+            topic:
+              type:
+                - "null"
+                - string
+              description: Topic or subject of this transcript segment.
+            sentences:
+              type:
+                - "null"
+                - array
+              description: Array of sentences in this transcript segment.
+              items:
+                type: object
+                properties:
+                  start:
+                    type:
+                      - "null"
+                      - number
+                    description: Start time of the sentence in milliseconds.
+                  end:
+                    type:
+                      - "null"
+                      - number
+                    description: End time of the sentence in milliseconds.
+                  text:
+                    type:
+                      - "null"
+                      - string
+                    description: The transcribed text of the sentence.
+      _airbyte_extracted_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp when the record was extracted by Airbyte.
+        format: date-time
