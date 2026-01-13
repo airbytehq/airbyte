@@ -114,9 +114,7 @@ class ShopifyAuthenticator(TokenAuthenticator):
         Tokens are refreshed proactively before expiry to avoid mid-sync failures.
         """
         should_refresh = (
-            self._access_token is None
-            or self._token_expiry is None
-            or time.time() > self._token_expiry - self.TOKEN_REFRESH_BUFFER_SECONDS
+            self._access_token is None or self._token_expiry is None or time.time() > self._token_expiry - self.TOKEN_REFRESH_BUFFER_SECONDS
         )
 
         if should_refresh:
