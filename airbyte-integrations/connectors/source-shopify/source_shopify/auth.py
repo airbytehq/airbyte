@@ -83,31 +83,26 @@ class ShopifyAuthenticator(TokenAuthenticator):
             response.raise_for_status()
         except requests.exceptions.HTTPError:
             if response.status_code == 401:
-                error_message = "Invalid client credentials. Please verify your Client ID and Client Secret."
+                raise ClientCredentialsTokenError("Invalid client credentials. Please verify your Client ID and Client Secret.")
             elif response.status_code == 403:
-                error_message = "Access denied. Please ensure your app is installed on the store and has the required scopes."
+                raise ClientCredentialsTokenError(
+                    "Access denied. Please ensure your app is installed on the store and has the required scopes."
+                )
             elif response.status_code == 404:
-                error_message = f"Store '{shop}' not found. Please verify your shop name."
+                raise ClientCredentialsTokenError(f"Store '{shop}' not found. Please verify your shop name.")
             else:
-                error_message = f"HTTP error {response.status_code} while exchanging client credentials."
-            logger.error(error_message)
-            raise ClientCredentialsTokenError(error_message)
+                raise ClientCredentialsTokenError(f"HTTP error {response.status_code} while exchanging client credentials.")
         except requests.exceptions.RequestException:
-            error_message = "Network error while exchanging client credentials. Please check your network connection."
-            logger.error(error_message)
-            raise ClientCredentialsTokenError(error_message)
+            raise ClientCredentialsTokenError("Network error while exchanging client credentials. Please check your network connection.")
 
         try:
             result = response.json()
             access_token = result["access_token"]
             expires_in = result.get("expires_in", 86399)
             expiry_time = time.time() + expires_in
-            logger.info("Successfully obtained access token, expires in %d seconds", expires_in)
             return access_token, expiry_time
         except (KeyError, ValueError):
-            error_message = "Invalid response from Shopify token endpoint. Missing or malformed access_token."
-            logger.error(error_message)
-            raise ClientCredentialsTokenError(error_message)
+            raise ClientCredentialsTokenError("Invalid response from Shopify token endpoint. Missing or malformed access_token.")
 
     def _get_client_credentials_token(self) -> str:
         """
