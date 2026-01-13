@@ -940,4 +940,66 @@ internal class PostgresAirbyteClientTest {
             }
         }
     }
+
+    @Test
+    fun testTableExistsDropsTableAndReturnsFalse() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val existsResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getBoolean(1) } returns true
+                every { close() } just Runs
+            }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns existsResultSet
+                every { execute(any()) } returns true
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.dropTable(tableName) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            val result = client.tableExists(tableName)
+            assertEquals(false, result)
+            verify(exactly = 1) { statement.execute(MOCK_SQL_QUERY) }
+            verify(exactly = 2) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testTableExistsReturnsFalseWhenNotExists() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val existsResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getBoolean(1) } returns false
+                every { close() } just Runs
+            }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns existsResultSet
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            val result = client.tableExists(tableName)
+            assertEquals(false, result)
+            verify(exactly = 0) { statement.execute(any()) }
+            verify(exactly = 1) { mockConnection.close() }
+        }
+    }
 }

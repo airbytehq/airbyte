@@ -74,15 +74,21 @@ class PostgresAirbyteClient(
     }
 
     override suspend fun tableExists(table: TableName): Boolean {
-        return executeQuery(
-            """
+        val exists =
+            executeQuery(
+                """
             SELECT EXISTS(
                 SELECT 1 FROM information_schema.tables
                 WHERE table_schema = '${table.namespace}'
                 AND table_name = '${table.name}'
             )
             """
-        ) { rs -> rs.next() && rs.getBoolean(1) }
+            ) { rs -> rs.next() && rs.getBoolean(1) }
+
+        if (exists) {
+            dropTable(table)
+        }
+        return false
     }
 
     override suspend fun createNamespace(namespace: String) {
