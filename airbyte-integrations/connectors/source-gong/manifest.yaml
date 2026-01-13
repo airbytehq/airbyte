@@ -22,6 +22,15 @@ definitions:
           http_method: GET
           request_parameters:
             fromDateTime: "{{ config['start_date'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
         record_selector:
           type: RecordSelector
           extractor:
@@ -114,6 +123,15 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: calls/extensive
           http_method: POST
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
           request_body_json:
             filter:
               fromDateTime: "{{ config['start_date'] }}"
@@ -212,6 +230,15 @@ definitions:
           http_method: GET
           request_parameters:
             fromDateTime: "{{ config['start_date'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
         record_selector:
           type: RecordSelector
           extractor:
@@ -250,6 +277,15 @@ definitions:
           http_method: POST
           request_parameters:
             fromDateTime: "{{ config['start_date'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
         record_selector:
           type: RecordSelector
           extractor:
@@ -272,9 +308,7 @@ definitions:
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.IncrementalSingleBodyFilterCursor
+        type: DatetimeBasedCursor
         cursor_field: reviewTime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -289,7 +323,9 @@ definitions:
         start_time_option:
           type: RequestOption
           inject_into: body_json
-          field_name: filter, reviewFromDate
+          field_path:
+            - filter
+            - reviewFromDate
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -353,13 +389,18 @@ metadata:
     answeredScorecards: false
   yamlComponents:
     streams:
+      users:
+        - errorHandler
       calls:
         - errorHandler
         - incrementalSync
       extensiveCalls:
+        - errorHandler
         - incrementalSync
+      scorecards:
+        - errorHandler
       answeredScorecards:
-        - incrementalSync
+        - errorHandler
   testedStreams:
     users:
       streamHash: c6b2bab08397024790447b2ea909e5e2056b3778
