@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs_data_lake.write
@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.gcs_data_lake.write
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
@@ -33,7 +32,6 @@ class GcsDataLakeStreamLoader(
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil,
     private val icebergUtil: IcebergUtil,
-    private val columnNameMapper: ColumnNameMapper,
     private val stagingBranchName: String,
     private val mainBranchName: String,
     private val streamStateStore: StreamStateStore<GcsDataLakeStreamState>,
@@ -75,7 +73,10 @@ class GcsDataLakeStreamLoader(
                     return@map field
                 }
 
-                val mappedName = columnNameMapper.getMappedColumnName(stream, originalName)
+                // Get the mapped column name from the stream's table schema
+                val mappedName =
+                    stream.tableSchema.columnSchema.inputToFinalColumnNames[originalName]
+                        ?: originalName
 
                 if (mappedName != originalName) {
                     Types.NestedField.of(
@@ -130,7 +131,8 @@ class GcsDataLakeStreamLoader(
                         if (Meta.COLUMN_NAMES.contains(originalName)) {
                             originalName
                         } else {
-                            columnNameMapper.getMappedColumnName(stream, originalName)
+                            stream.tableSchema.columnSchema.inputToFinalColumnNames[originalName]
+                                ?: originalName
                         }
                     }
                 }
