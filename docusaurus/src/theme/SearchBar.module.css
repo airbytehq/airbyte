@@ -1,6 +1,6 @@
 .chatTrigger {
   color: var(--color-grey-900);
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
