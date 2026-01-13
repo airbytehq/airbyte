@@ -73,7 +73,7 @@ class TestGlobalExclusionsStream(TestCase):
                                             "marketing": {
                                                 "can_receive_email_marketing": False,
                                                 "consent": "UNSUBSCRIBED",
-                                                "suppression": {"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T10:00:00+00:00"},
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T10:00:00+00:00"}],
                                             }
                                         },
                                         "sms": {"marketing": {"can_receive_sms_marketing": False}},
@@ -131,7 +131,7 @@ class TestGlobalExclusionsStream(TestCase):
                                             "marketing": {
                                                 "can_receive_email_marketing": False,
                                                 "consent": "UNSUBSCRIBED",
-                                                "suppression": {"reason": "HARD_BOUNCE", "timestamp": "2024-05-31T10:00:00+00:00"},
+                                                "suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-05-31T10:00:00+00:00"}],
                                             }
                                         },
                                         "sms": {"marketing": {"can_receive_sms_marketing": False}},
@@ -159,7 +159,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         marketing = record["attributes"]["subscriptions"]["email"]["marketing"]
         assert "suppressions" in marketing
-        assert marketing["suppressions"]["reason"] == "HARD_BOUNCE"
+        assert marketing["suppressions"][0]["reason"] == "HARD_BOUNCE"
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker):
@@ -188,7 +188,7 @@ class TestGlobalExclusionsStream(TestCase):
                                     "subscriptions": {
                                         "email": {
                                             "marketing": {
-                                                "suppression": {"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T10:00:00+00:00"}
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T10:00:00+00:00"}]
                                             }
                                         },
                                         "sms": {"marketing": {}},
@@ -240,7 +240,7 @@ class TestGlobalExclusionsStream(TestCase):
                                     "subscriptions": {
                                         "email": {
                                             "marketing": {
-                                                "suppression": {"reason": "SPAM_COMPLAINT", "timestamp": "2024-05-31T09:00:00+00:00"}
+                                                "suppression": [{"reason": "SPAM_COMPLAINT", "timestamp": "2024-05-31T09:00:00+00:00"}]
                                             }
                                         },
                                         "sms": {"marketing": {}},
@@ -297,7 +297,7 @@ class TestGlobalExclusionsStream(TestCase):
                                 "subscriptions": {
                                     "email": {
                                         "marketing": {
-                                            "suppression": {"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T09:00:00+00:00"}
+                                            "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T09:00:00+00:00"}]
                                         }
                                     },
                                     "sms": {"marketing": {}},
@@ -319,7 +319,7 @@ class TestGlobalExclusionsStream(TestCase):
                                 "updated": "2024-05-31T11:00:00+00:00",
                                 "subscriptions": {
                                     "email": {
-                                        "marketing": {"suppression": {"reason": "HARD_BOUNCE", "timestamp": "2024-05-31T10:00:00+00:00"}}
+                                        "marketing": {"suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-05-31T10:00:00+00:00"}]}
                                     },
                                     "sms": {"marketing": {}},
                                 },
@@ -372,7 +372,7 @@ class TestGlobalExclusionsStream(TestCase):
                                         "subscriptions": {
                                             "email": {
                                                 "marketing": {
-                                                    "suppression": {"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T09:00:00+00:00"}
+                                                    "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T09:00:00+00:00"}]
                                                 }
                                             },
                                             "sms": {"marketing": {}},
