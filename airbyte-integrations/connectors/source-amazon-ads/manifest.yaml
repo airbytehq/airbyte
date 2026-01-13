@@ -3186,7 +3186,7 @@ definitions:
       datetime: >-
         {%- set today = today_utc() - duration('P1D') -%}
         {%- set user_start_date = config.get('start_date', today.strftime('%Y-%m-%d')) -%}
-        {%- set sixty_days_ago = today - duration('P60D') -%}
+        {%- set sixty_days_ago = today_utc() - duration('P60D') -%}
         "{{ max(user_start_date, sixty_days_ago.strftime('%Y-%m-%d')) }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
