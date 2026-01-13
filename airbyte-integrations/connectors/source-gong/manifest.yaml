@@ -510,34 +510,33 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
-
-config_normalization_rules:
-  type: ConfigNormalizationRules
-  config_migrations:
-    - type: ConfigMigration
-      description: |
-        Remaps the existing config authentication format to a new format
-        OLD: {"access_key": ..., "access_key_secret": ...}
-        NEW: {"credentials": {"access_key": ..., "access_key_secret": ..., "auth_type": "APIKey"}}
-      transformations:
-        - type: ConfigAddFields
-          fields:
-            - type: AddedFieldDefinition
-              path: ["credentials", "access_key"]
-              value: "{{ config['access_key'] }}"
-          condition: "{{ config.get('access_key', False) }}"
-        - type: ConfigAddFields
-          fields:
-            - type: AddedFieldDefinition
-              path: ["credentials", "access_key_secret"]
-              value: "{{ config['access_key_secret'] }}"
-          condition: "{{ config.get('access_key_secret', False) }}"
-        - type: ConfigAddFields
-          fields:
-            - type: AddedFieldDefinition
-              path: ["credentials", "auth_type"]
-              value: "APIKey"
-          condition: "{{ config.get('access_key', False) }}"
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Remaps the existing config authentication format to a new format
+          OLD: {"access_key": ..., "access_key_secret": ...}
+          NEW: {"credentials": {"access_key": ..., "access_key_secret": ..., "auth_type": "APIKey"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "access_key"]
+                value: "{{ config['access_key'] }}"
+            condition: "{{ config.get('access_key', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "access_key_secret"]
+                value: "{{ config['access_key_secret'] }}"
+            condition: "{{ config.get('access_key_secret', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "APIKey"
+            condition: "{{ config.get('access_key', False) }}"
 
 metadata:
   autoImportSchema:
