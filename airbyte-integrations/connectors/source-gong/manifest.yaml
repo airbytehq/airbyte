@@ -524,19 +524,19 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "access_key"]
                 value: "{{ config['access_key'] }}"
-            condition: "{{ config.get('access_key', False) }}"
+            condition: "{{ config.get('access_key', False) and not config.get('credentials', {}).get('access_key', False) }}"
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "access_key_secret"]
                 value: "{{ config['access_key_secret'] }}"
-            condition: "{{ config.get('access_key_secret', False) }}"
+            condition: "{{ config.get('access_key_secret', False) and not config.get('credentials', {}).get('access_key_secret', False) }}"
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "auth_type"]
                 value: "APIKey"
-            condition: "{{ config.get('access_key', False) }}"
+            condition: "{{ config.get('access_key', False) and not config.get('credentials', {}).get('auth_type', False) }}"
 
 metadata:
   autoImportSchema:
