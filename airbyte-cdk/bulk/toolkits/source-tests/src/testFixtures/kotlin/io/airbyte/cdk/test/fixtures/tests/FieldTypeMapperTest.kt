@@ -9,6 +9,7 @@ import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.test.fixtures.cleanup.TestAssetResourceNamer
 import io.airbyte.cdk.test.fixtures.connector.IntegrationTestOperations
 import io.airbyte.cdk.test.fixtures.connector.TestDbExecutor
 import io.airbyte.cdk.util.Jsons
@@ -47,10 +48,6 @@ abstract class FieldTypeMapperTest {
         return testCases.find { streamName.uppercase() in it.streamNamesToRecordData.keys }
     }
 
-    companion object {
-        lateinit var ops: IntegrationTestOperations
-    }
-
     @TestFactory
     @Timeout(300)
     fun tests(): Iterable<DynamicNode> {
@@ -67,8 +64,8 @@ abstract class FieldTypeMapperTest {
         val discoverAndReadAllTest: DynamicNode =
             DynamicTest.dynamicTest("discover-and-read-all", actual)
         val testCases: List<DynamicNode> =
-            allStreamNamesAndRecordData.keys.map { streamName: String ->
-                DynamicContainer.dynamicContainer(streamName, dynamicTests(actual, streamName))
+            testCases.map {
+                DynamicContainer.dynamicContainer(it.testName, dynamicTests(actual, it.tableName))
             }
         return listOf(discoverAndReadAllTest) + testCases
     }
@@ -95,7 +92,7 @@ abstract class FieldTypeMapperTest {
         }
         val testCase: TestCase = findTestCase(streamName)!!
         val jsonSchema: JsonNode = actualStream!!.jsonSchema?.get("properties")!!
-        val actualSchema: JsonNode? = jsonSchema[testCase.columnName.uppercase()]
+        val actualSchema: JsonNode? = jsonSchema[testCase.columnName]
         Assertions.assertNotNull(actualSchema)
         val expectedSchema: JsonNode = testCase.airbyteSchemaType.asJsonSchema()
         Assertions.assertEquals(expectedSchema, actualSchema)
@@ -213,25 +210,26 @@ abstract class FieldTypeMapperTest {
         val sqlType: String,
         val values: Map<String, String>,
         val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING,
+        val testName: String =
+            sqlType
+                .replace("\\[]".toRegex(), "_array")
+                .replace("[^a-zA-Z0-9]".toRegex(), " ")
+                .trim()
+                .replace(" +".toRegex(), "_")
+                .uppercase()
     ) {
-        val id: String
-            get() =
-                sqlType
-                    .replace("[^a-zA-Z0-9]".toRegex(), " ")
-                    .trim()
-                    .replace(" +".toRegex(), "_")
-                    .lowercase()
+        companion object {
+            val testAssetResourceNamer = TestAssetResourceNamer()
+        }
 
-        val tableName: String
-            get() = "tbl_$id"
+        val tableName = testAssetResourceNamer.getName()
 
-        val columnName: String
-            get() = "col_$id"
+        val columnName = "TYPE_COL"
 
         val dml: List<String>
             get() {
                 return values.keys.map {
-                    "INSERT INTO $namespace.$tableName ($columnName) VALUES ($it)"
+                    "INSERT INTO \"$namespace\".\"$tableName\" (\"$columnName\") VALUES ($it)"
                 }
             }
 
@@ -239,10 +237,150 @@ abstract class FieldTypeMapperTest {
             get() {
                 return mapOf(
                     tableName.uppercase() to
-                        values.values.map {
-                            Jsons.readTree("""{"${columnName.uppercase()}":$it}""")
-                        }
+                        values.values.map { Jsons.readTree("""{"${columnName}":$it}""") }
                 )
             }
     }
+
+    // pads the json string map values to a fixed length
+    protected fun Map<String, String>.withLength(length: Int): Map<String, String> {
+        return this.mapValues {
+            val currentLength = it.value.length - 2 // exclude the quotes
+            if (currentLength > length) {
+                throw IllegalArgumentException("$length is out of bounds")
+            } else {
+                // make it longer
+                it.value.replace("\"$".toRegex(), "\"".padStart(length - currentLength + 1))
+            }
+        }
+    }
+}
+
+object AnsiSql {
+
+    val intValues =
+        mapOf(
+            "null" to "null",
+            "1" to "1",
+            "0" to "0",
+            "-1" to "-1",
+            "2147483647" to "2147483647",
+            "-2147483648" to "-2147483648",
+        )
+
+    val smallIntValues =
+        mapOf(
+            "null" to "null",
+            "1" to "1",
+            "0" to "0",
+            "-1" to "-1",
+            "32767" to "32767",
+            "-32768" to "-32768",
+        )
+
+    val bigIntValues =
+        mapOf(
+            "null" to "null",
+            "1" to "1",
+            "0" to "0",
+            "-1" to "-1",
+            "9223372036854775807" to "9223372036854775807",
+            "-9223372036854775808" to "-9223372036854775808",
+        )
+
+    val decimalValues =
+        mapOf(
+            "null" to "null",
+            "123456789.123456789" to "123456789.123456789",
+            "-123456789.123456789" to "-123456789.123456789",
+            "0.000000001" to "0.000000001",
+            "9999999999.999999999" to "9999999999.999999999",
+            "-9999999999.999999999" to "-9999999999.999999999",
+        )
+
+    val realValues =
+        mapOf(
+            "null" to "null",
+            "3.402E+38" to "3.402E+38",
+            "-3.402E+38" to "-3.402E+38",
+            "1.175E-37" to "1.175E-37",
+            "0.0" to "0.0",
+        )
+
+    val doubleValues =
+        mapOf(
+            "null" to "null",
+            "1.7976931348623157E+308" to "1.7976931348623157E+308",
+            "-1.7976931348623157E+308" to "-1.7976931348623157E+308",
+            "2.2250738585072014E-308" to "2.2250738585072014E-308",
+            "0.0" to "0.0",
+        )
+
+    val booleanValues =
+        mapOf(
+            "null" to "null",
+            "true" to "true",
+            "false" to "false",
+        )
+
+    val charValues =
+        mapOf(
+            "null" to "null",
+            "'a'" to "\"a\"",
+            "'Z'" to "\"Z\"",
+            "'1'" to "\"1\"",
+            "' '" to "\" \"",
+        )
+
+    val varcharValues =
+        mapOf(
+            "null" to "null",
+            "'Hello'" to "\"Hello\"",
+            "'12345'" to "\"12345\"",
+            "' '" to "\" \"",
+            "''" to "\"\"",
+        )
+
+    val dateValues =
+        mapOf(
+            "null" to "null",
+            "'1000-01-01'" to "\"1000-01-01\"",
+            "'9999-12-31'" to "\"9999-12-31\"",
+        )
+
+    val timeValues =
+        mapOf(
+            "null" to "null",
+            "'00:00:00'" to "\"00:00:00.000000\"",
+            "'23:59:59'" to "\"23:59:59.000000\"",
+        )
+
+    val timestampValues =
+        mapOf(
+            "null" to "null",
+            "'1000-01-01 00:00:00'" to "\"1000-01-01T00:00:00.000000\"",
+            "'9999-12-31 23:59:59'" to "\"9999-12-31T23:59:59.000000\"",
+        )
+
+    val timestampWithTzValues =
+        mapOf(
+            "null" to "null",
+            "'1000-01-01 00:00:00'" to "\"1000-01-01T00:00:00.000000Z\"",
+            "'9999-12-31 23:59:59'" to "\"9999-12-31T23:59:59.000000Z\"",
+        )
+}
+
+object ExtendedSql {
+    val xmlValues =
+        mapOf(
+            "null" to "null",
+            "'<root><node>value</node></root>'" to "\"<root><node>value</node></root>\""
+        )
+
+    val jsonValues =
+        mapOf(
+            "'{}'" to "\"{}\"",
+            "'{\"k\": null}'" to "\"{\\\"k\\\": null}\"",
+            "'{\"k\": \"v\"}'" to "\"{\\\"k\\\": \\\"v\\\"}\""
+        )
 }

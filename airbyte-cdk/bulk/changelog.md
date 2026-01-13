@@ -1,3 +1,8 @@
+## WIP changes for Postgres (version number TBD)
+
+* Field replaced by EmittedField
+* CDC Position objects now implement PartiallyOrdered rather than Comparable
+
 ## Version 0.1.102
 
 load cdk: add schema regression test

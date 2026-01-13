@@ -14,6 +14,7 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.TextCodec
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
@@ -60,7 +61,7 @@ import org.junit.jupiter.api.extension.ExtendWith
  */
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 @ExtendWith(MockKExtension::class)
-abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
+abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoCloseable>(
     namespace: String?,
     val heartbeat: Duration = Duration.ofMillis(100),
     val timeout: Duration = Duration.ofSeconds(10),
@@ -73,7 +74,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace(namespace)),
-            schema = setOf(Field("v", IntFieldType), TestMetaFieldDecorator.GlobalCursor),
+            schema = setOf(EmittedField("v", IntFieldType), TestMetaFieldDecorator.GlobalCursor),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
             configuredCursor = TestMetaFieldDecorator.GlobalCursor,
@@ -290,7 +291,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     data class Update(override val id: Int, val v: Int) : Record
     data class Delete(override val id: Int, val ignore: Boolean = false) : Record
 
-    abstract inner class AbstractCdcPartitionsCreatorDbzOps<T : Comparable<T>> :
+    abstract inner class AbstractCdcPartitionsCreatorDbzOps<T : PartiallyOrdered<T>> :
         CdcPartitionsCreatorDebeziumOperations<T> {
 
         override fun deserializeState(opaqueStateValue: OpaqueStateValue): DebeziumWarmStartState {
@@ -318,7 +319,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         }
     }
 
-    abstract inner class AbstractCdcPartitionReaderDbzOps<T : Comparable<T>> :
+    abstract inner class AbstractCdcPartitionReaderDbzOps<T : PartiallyOrdered<T>> :
         CdcPartitionReaderDebeziumOperations<T> {
 
         override fun deserializeRecord(

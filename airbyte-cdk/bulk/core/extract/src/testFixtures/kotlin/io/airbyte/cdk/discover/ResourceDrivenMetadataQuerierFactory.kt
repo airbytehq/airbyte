@@ -37,7 +37,7 @@ class ResourceDrivenMetadataQuerierFactory(
                 level2.columns.map { (id: String, fullyQualifiedClassName: String) ->
                     val fieldType: FieldType =
                         Class.forName(fullyQualifiedClassName).kotlin.objectInstance as FieldType
-                    Field(id, fieldType)
+                    EmittedField(id, fieldType)
                 }
             map[streamID] = TestStreamMetadata(columns, level2.primaryKeys)
         }

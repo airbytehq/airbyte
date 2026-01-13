@@ -4,7 +4,8 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
+import io.airbyte.cdk.discover.NonEmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
@@ -41,7 +42,8 @@ interface SelectQuerier {
 
     interface ResultRow {
         val data: NativeRecordPayload
-        val changes: Map<Field, FieldValueChange>
+        val changes: Map<EmittedField, FieldValueChange>
+        val nonEmittedData: NativeRecordPayload
     }
 }
 
@@ -57,7 +59,8 @@ class JdbcSelectQuerier(
 
     data class ResultRow(
         override val data: NativeRecordPayload = mutableMapOf(),
-        override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
+        override var changes: MutableMap<EmittedField, FieldValueChange> = mutableMapOf(),
+        override var nonEmittedData: NativeRecordPayload = mutableMapOf(),
     ) : SelectQuerier.ResultRow
 
     class Result(
@@ -137,25 +140,36 @@ class JdbcSelectQuerier(
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
-                    @Suppress("UNCHECKED_CAST")
-                    resultRow.data[column.id] =
-                        FieldValueEncoder(
-                            jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
-                            jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>,
-                        )
+                    if (column is NonEmittedField) {
+                        @Suppress("UNCHECKED_CAST") // TODO: See if we can avoid an unchecked cast
+                        resultRow.nonEmittedData[column.id] =
+                            FieldValueEncoder(
+                                jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
+                                jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>,
+                            )
+                    } else {
+                        @Suppress("UNCHECKED_CAST")
+                        resultRow.data[column.id] =
+                            FieldValueEncoder(
+                                jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
+                                jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>,
+                            )
+                    }
                 } catch (e: Exception) {
-                    resultRow.data[column.id] =
-                        FieldValueEncoder(
-                            null,
-                            NullCodec // Use NullCodec for null values
-                        ) // Use NullCodec for null values
                     if (!hasLoggedException) {
                         log.warn(e) { "Error deserializing value in column $column." }
                         hasLoggedException = true
                     } else {
                         log.debug(e) { "Error deserializing value in column $column." }
                     }
-                    resultRow.changes.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
+                    if (column is EmittedField) {
+                        resultRow.changes[column] = FieldValueChange.RETRIEVAL_FAILURE_TOTAL
+                        resultRow.data[column.id] =
+                            FieldValueEncoder(
+                                null,
+                                NullCodec // Use NullCodec for null values
+                            ) // Use NullCodec for null values
+                    }
                 }
                 colIdx++
             }
@@ -185,6 +199,35 @@ class JdbcSelectQuerier(
                         conn = null
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Convenience function for executing a query that is expected to return exactly one row and
+ * extracting a single value from that row.
+ *
+ * @param jdbcConnectionFactory Factory for creating JDBC connections
+ * @param query SQL query string to execute (should return exactly one row)
+ * @param bindParameters Optional lambda to bind parameters to the PreparedStatement before
+ * execution
+ * @param withResultSet Lambda function to process the ResultSet and extract the desired value
+ * @return The value extracted from the single result row using the withRS function
+ */
+fun <T> querySingleValue(
+    jdbcConnectionFactory: JdbcConnectionFactory,
+    query: String,
+    bindParameters: ((PreparedStatement) -> Unit)?,
+    withResultSet: (ResultSet) -> T
+): T {
+    jdbcConnectionFactory.get().use { connection ->
+        connection.prepareStatement(query).use { stmt ->
+            bindParameters?.invoke(stmt)
+            stmt.executeQuery().use { rs ->
+                check(rs.next()) { "Query unexpectedly produced no results: [$query]" }
+                check(rs.isLast) { "Query unexpectedly produced more than one result: [$query]" }
+                return withResultSet(rs)
             }
         }
     }
