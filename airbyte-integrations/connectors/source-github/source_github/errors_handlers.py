@@ -103,6 +103,26 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                     error_message=log_message,
                 )
 
+            # Handle GitHub API 10,000 result limit error
+            # https://docs.github.com/en/rest/releases/releases#list-releases
+            if response_or_exception.status_code == 422:
+                try:
+                    response_json = response_or_exception.json()
+                    error_message = response_json.get("message", "")
+                    if "10000" in error_message:
+                        return ErrorResolution(
+                            response_action=ResponseAction.FAIL,
+                            failure_type=FailureType.system_error,
+                            error_message=(
+                                f"GitHub API limit reached: {error_message}. "
+                                "This repository has more releases than GitHub's API limit of 10,000 results. "
+                                "The connector has synced the maximum available releases. "
+                                "Consider disabling the 'releases' stream if this causes sync failures."
+                            ),
+                        )
+                except Exception:
+                    pass  # Fall through to default handling if JSON parsing fails
+
         return super().interpret_response(response_or_exception)
 
 
