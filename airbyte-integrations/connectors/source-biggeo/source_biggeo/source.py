@@ -87,10 +87,11 @@ class BigGeoStream(Stream):
 
     def read_records(
         self,
-        _sync_mode: str,
-        _cursor_field: Optional[List[str]] = None,
-        _stream_slice: Optional[Mapping[str, Any]] = None,
-        _stream_state: Optional[Mapping[str, Any]] = None,
+        sync_mode: str = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Read records from the BigGeo API using chunked pagination.
