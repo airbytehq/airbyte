@@ -223,18 +223,18 @@ spec:
         title: Financial Events Step Size
         description: 'The time window size for fetching financial events data in chunks
           for the ListFinancialEvents and ListFinancialEventGroups streams. Options
-          include hourly (1H, 6H, 12H) and daily (1D, 7D, 14D, 30D, 60D, 90D, 180D)
+          include hourly (1H, 6H, 12H) and daily (1, 7, 14, 30, 60, 90, 180 days)
           granularity.
 
 
-          - **Hourly step sizes (e.g., 1H, 6H)** are recommended for very high data volumes
+          - **Hourly step sizes (1H, 6H, 12H)** are recommended for very high data volumes
           where daily windows cause pagination token expiration (TTL errors). They fetch
           smaller chunks per request, reducing the risk of timeouts.
 
-          - **Daily step sizes (e.g., 1D, 7D)** are better for moderate data volumes.
+          - **Daily step sizes (1, 7 days)** are better for moderate data volumes.
           They balance sync speed with API efficiency.
 
-          - **Larger step sizes (e.g., 30D, 180D)** are better for smaller data volumes.
+          - **Larger step sizes (30, 180 days)** are better for smaller data volumes.
           They fetch more data per request, speeding up syncing and reducing the number
           of API calls.
 
@@ -246,14 +246,14 @@ spec:
         - '1H'
         - '6H'
         - '12H'
-        - '1D'
-        - '7D'
-        - '14D'
-        - '30D'
-        - '60D'
-        - '90D'
-        - '180D'
-        default: '180D'
+        - '1'
+        - '7'
+        - '14'
+        - '30'
+        - '60'
+        - '90'
+        - '180'
+        default: '180'
         order: 13
       num_workers:
         title: Number of Workers
@@ -377,15 +377,6 @@ spec:
                   {%- endfor -%}
                   {{- report_options_list -}}
             condition: "{{ config.get('report_options_list', False) }}"
-      - type: ConfigMigration
-        description: Starting from version with hourly granularity support, the `financial_events_step` property uses a suffix (H for hours, D for days). This migration adds the 'D' suffix to existing numeric values for backward compatibility.
-        transformations:
-          - type: ConfigAddFields
-            fields:
-              - type: AddedFieldDefinition
-                path: ["financial_events_step"]
-                value: "{{ config.get('financial_events_step') ~ 'D' }}"
-            condition: "{{ config.get('financial_events_step', False) and config.get('financial_events_step') | string not in ['1H', '6H', '12H', '1D', '7D', '14D', '30D', '60D', '90D', '180D'] }}"
     transformations:
       - type: ConfigAddFields
         fields:
@@ -891,7 +882,7 @@ definitions:
         end_time_option:
           field_name: FinancialEventGroupStartedBefore
           inject_into: request_parameter
-        step: "{% set step_value = config.get('financial_events_step', '180D') %}{% if step_value.endswith('H') %}PT{{ step_value[:-1] }}H{% else %}P{{ step_value[:-1] if step_value.endswith('D') else step_value }}D{% endif %}"
+        step: "{% set step_value = config.get('financial_events_step', '180') %}{% if step_value.endswith('H') %}PT{{ step_value[:-1] }}H{% else %}P{{ step_value }}D{% endif %}"
         cursor_granularity: "PT1S"
       retriever:
         type: SimpleRetriever
@@ -966,7 +957,7 @@ definitions:
         end_time_option:
           field_name: PostedBefore
           inject_into: request_parameter
-        step: "{% set step_value = config.get('financial_events_step', '180D') %}{% if step_value.endswith('H') %}PT{{ step_value[:-1] }}H{% else %}P{{ step_value[:-1] if step_value.endswith('D') else step_value }}D{% endif %}"
+        step: "{% set step_value = config.get('financial_events_step', '180') %}{% if step_value.endswith('H') %}PT{{ step_value[:-1] }}H{% else %}P{{ step_value }}D{% endif %}"
         cursor_granularity: "PT1S"
       transformations:
         - type: AddFields
