@@ -42,7 +42,6 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.dataflow.state.stats.StateAdditionalStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
@@ -1586,12 +1585,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
                             totalBytes = expectedBytes,
-                            additionalStats =
-                                if (useDataFlowPipeline)
-                                    StateAdditionalStatsStore.ObservabilityMetrics.entries
-                                        .associate { it.metricName to 0.0 }
-                                        .toMutableMap()
-                                else mutableMapOf(),
+                            additionalStats = mutableMapOf(),
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -5222,14 +5216,7 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
-    private fun expectedAdditionalStats(): AdditionalStats? =
-        if (useDataFlowPipeline) {
-            val expectedAdditionalStats = AdditionalStats()
-            StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
-                expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
-            }
-            expectedAdditionalStats
-        } else null
+    private fun expectedAdditionalStats(): AdditionalStats? = null
 
     protected fun namespaceMapperForMedium(): NamespaceMapper {
         return when (dataChannelMedium) {
