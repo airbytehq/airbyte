@@ -37,7 +37,7 @@ When a scheduled connection is first created, a sync is executed immediately aft
 
 If you prefer more precision in scheduling your sync, you can also use CRON scheduling to set a specific time of day or month.
 
-Airbyte uses the CRON scheduler from [Quartz](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html). We recommend reading their [documentation](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html) to understand the required formatting. You can also refer to these examples:
+Airbyte uses the CRON scheduler from [Quartz](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html). We recommend reading their [documentation](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html) to understand the required formatting. You can also refer to these examples:
 
 | Cron string          | Sync Timing                                            |
 | -------------------- | ------------------------------------------------------ |

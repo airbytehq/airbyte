@@ -405,8 +405,8 @@ Three Airbyte specific fields will be added to each Avro record:
 
 | Field                            | Schema             |                                          Document                                           |
 | :------------------------------- | :----------------- | :-----------------------------------------------------------------------------------------: |
-| `_airbyte_raw_id`                | `uuid`             |                 [link](http://avro.apache.org/docs/current/spec.html#UUID)                  |
-| `_airbyte_extracted_at`          | `timestamp-millis` | [link](http://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29) |
+| `_airbyte_raw_id`                | `uuid`             |                 [link](https://avro.apache.org/docs/current/spec.html#UUID)                  |
+| `_airbyte_extracted_at`          | `timestamp-millis` | [link](https://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29) |
 | `_airbyte_generation_id`         | `long`             |                     https://github.com/airbytehq/airbyte/issues/17011                       |
 | `_airbyte_meta`                  | `record`           |                                                                                             |
 
