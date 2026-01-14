@@ -8,15 +8,15 @@ The Stripe connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](#customers-list), [Create](#customers-create), [Get](#customers-get), [Update](#customers-update), [Delete](#customers-delete), [Search](#customers-search) |
-| Invoices | [List](#invoices-list), [Get](#invoices-get), [Search](#invoices-search) |
-| Charges | [List](#charges-list), [Get](#charges-get), [Search](#charges-search) |
-| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Search](#subscriptions-search) |
+| Customers | [List](#customers-list), [Create](#customers-create), [Get](#customers-get), [Update](#customers-update), [Delete](#customers-delete), [Api_search](#customers-api_search) |
+| Invoices | [List](#invoices-list), [Get](#invoices-get), [Api_search](#invoices-api_search) |
+| Charges | [List](#charges-list), [Get](#charges-get), [Api_search](#charges-api_search) |
+| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Api_search](#subscriptions-api_search) |
 | Refunds | [List](#refunds-list), [Create](#refunds-create), [Get](#refunds-get) |
-| Products | [List](#products-list), [Create](#products-create), [Get](#products-get), [Update](#products-update), [Delete](#products-delete), [Search](#products-search) |
+| Products | [List](#products-list), [Create](#products-create), [Get](#products-get), [Update](#products-update), [Delete](#products-delete), [Api_search](#products-api_search) |
 | Balance | [Get](#balance-get) |
 | Balance Transactions | [List](#balance-transactions-list), [Get](#balance-transactions-get) |
-| Payment Intents | [List](#payment-intents-list), [Get](#payment-intents-get), [Search](#payment-intents-search) |
+| Payment Intents | [List](#payment-intents-list), [Get](#payment-intents-get), [Api_search](#payment-intents-api_search) |
 | Disputes | [List](#disputes-list), [Get](#disputes-get) |
 | Payouts | [List](#payouts-list), [Get](#payouts-get) |
 
@@ -373,14 +373,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Customers Search
+#### Customers Api_search
 
 Search for customers using Stripe's Search Query Language.
 
 **Python SDK**
 
 ```python
-await stripe.customers.search(
+await stripe.customers.api_search(
     query="<str>"
 )
 ```
@@ -393,7 +393,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "customers",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -744,14 +744,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Invoices Search
+#### Invoices Api_search
 
 Search for invoices using Stripe's Search Query Language
 
 **Python SDK**
 
 ```python
-await stripe.invoices.search(
+await stripe.invoices.api_search(
     query="<str>"
 )
 ```
@@ -764,7 +764,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoices",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -1091,14 +1091,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Charges Search
+#### Charges Api_search
 
 Search for charges using Stripe's Search Query Language
 
 **Python SDK**
 
 ```python
-await stripe.charges.search(
+await stripe.charges.api_search(
     query="<str>"
 )
 ```
@@ -1111,7 +1111,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "charges",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -1413,14 +1413,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Subscriptions Search
+#### Subscriptions Api_search
 
 Search for subscriptions using Stripe's Search Query Language
 
 **Python SDK**
 
 ```python
-await stripe.subscriptions.search(
+await stripe.subscriptions.api_search(
     query="<str>"
 )
 ```
@@ -1433,7 +1433,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "subscriptions",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -2038,14 +2038,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Products Search
+#### Products Api_search
 
 Search for products using Stripe's Search Query Language.
 
 **Python SDK**
 
 ```python
-await stripe.products.search(
+await stripe.products.api_search(
     query="<str>"
 )
 ```
@@ -2058,7 +2058,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "products",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -2438,14 +2438,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Payment Intents Search
+#### Payment Intents Api_search
 
 Search for payment intents using Stripe's Search Query Language.
 
 **Python SDK**
 
 ```python
-await stripe.payment_intents.search(
+await stripe.payment_intents.api_search(
     query="<str>"
 )
 ```
@@ -2458,7 +2458,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "payment_intents",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
