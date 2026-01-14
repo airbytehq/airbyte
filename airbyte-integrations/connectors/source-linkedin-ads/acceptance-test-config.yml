@@ -5,7 +5,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_linkedin_ads/spec.yaml"
+      - spec_path: "manifest.yaml"
         config_path: "secrets/config_oauth.json"
   connection:
     tests:
