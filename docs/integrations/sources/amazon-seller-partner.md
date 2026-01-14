@@ -264,13 +264,14 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.2 | 2026-01-14 | [71526](https://github.com/airbytehq/airbyte/pull/71526) | Update dependencies |
 | 5.0.1 | 2025-12-11 | [70200](https://github.com/airbytehq/airbyte/pull/70200) | Fix financial events pagination causing 400 InvalidInput errors under rate limiting when syncing `ListFinancialEvents`, and align `ListFinancialEventGroups` pagination behavior |
-| 5.0.0 | 2025-12-03 | [69805](https://github.com/airbytehq/airbyte/pull/69805) | Remove deprecated FBA Subscribe and Save report types (GET_FBA_SNS_FORECAST_DATA and GET_FBA_SNS_PERFORMANCE_DATA)                                                                  |
+| 5.0.0 | 2025-12-08 | [69805](https://github.com/airbytehq/airbyte/pull/69805) | Remove deprecated FBA Subscribe and Save report types (GET_FBA_SNS_FORECAST_DATA and GET_FBA_SNS_PERFORMANCE_DATA) |
 | 4.9.1 | 2025-11-25 | [69935](https://github.com/airbytehq/airbyte/pull/69935) | Update dependencies |
 | 4.9.0 | 2025-11-10 | [66995](https://github.com/airbytehq/airbyte/pull/66995) | Add APIBudget for reports streams |
 | 4.8.4 | 2025-10-29 | [68678](https://github.com/airbytehq/airbyte/pull/68678) | Increase `maxSecondsBetweenMessages` to 14400 |
 | 4.8.3 | 2025-10-29 | [66030](https://github.com/airbytehq/airbyte/pull/66030) | Update dependencies |
-| 4.8.2 | 2025-09-17 | [66485](https://github.com/airbytehq/airbyte/pull/66485) | Upgrade to CDK v7 |
+| 4.8.2 | 2025-09-24 | [66485](https://github.com/airbytehq/airbyte/pull/66485) | Upgrade to CDK v7 |
 | 4.8.1 | 2025-08-16 | [65047](https://github.com/airbytehq/airbyte/pull/65047) | Update dependencies |
 | 4.8.0 | 2025-07-29 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
 | 4.7.2 | 2025-08-02 | [63032](https://github.com/airbytehq/airbyte/pull/63032) | Update dependencies |

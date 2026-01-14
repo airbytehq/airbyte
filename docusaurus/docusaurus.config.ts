@@ -325,14 +325,12 @@ const config: Config = {
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
-    markpromptProjectKey:
-      process.env.MARKPROMPT_PROJECT_KEY ||
-      "sk_test_cbPFAzAxUvafRj6l1yjzrESu0bRpzQGK",
   },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
+    require.resolve("./src/scripts/kapaWithOsanoConsent.js"),
   ],
 
   themeConfig: {

@@ -107,6 +107,6 @@ For the service's official API docs, see the [Zendesk-Support API reference](htt
 
 ## Version information
 
-- **Package version:** 0.18.33
+- **Package version:** 0.18.37
 - **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** e519b73d1e90df7073e48d3ed7e11a9fb1af3953
+- **Generated with Connector SDK commit SHA:** e6285db53fdc1d0dd43d30ef752a009226e47d48
