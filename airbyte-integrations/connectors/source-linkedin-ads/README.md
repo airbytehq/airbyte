@@ -33,14 +33,18 @@ to generate the necessary credentials. Then create a file `secrets/config.json` 
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 
 ### Running as a docker container
+To run the container, first navigate to the connector directory:
+```Bash
 
+cd airbyte-integrations/connectors/source-linkedin-ads
+```
 Then run any of the standard source connector commands:
 
 ```bash
 docker run --rm airbyte/source-linkedin-ads:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-linkedin-ads:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-linkedin-ads:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-linkedin-ads:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-linkedin-ads:dev check --config /secrets/config_oauth.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-linkedin-ads:dev discover --config /secrets/config_oauth.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-linkedin-ads:dev read --config /secrets/config_oauth.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Running the CI test suite
