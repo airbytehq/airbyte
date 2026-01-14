@@ -507,7 +507,7 @@ class PostgresAirbyteClient(
                         "JOIN pg_namespace dependent_ns ON dependent_view.relnamespace = dependent_ns.oid " +
                         "WHERE pg_depend.refobjid = 'your_schema.your_table'::regclass;"
                 log.error { message }
-                throw ConfigErrorException(message)
+                throw ConfigErrorException(message, e)
             }
             throw e
         }
