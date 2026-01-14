@@ -25,9 +25,11 @@ import java.time.temporal.ChronoField
  * constraints on the socket implementation guarantee that source and destination will always see
  * the same schema. Eventually this order needs to be set by the source with a header message.
  *
- * @deprecated This is inefficient and should not be used.
+ * @deprecated This is inefficient and should not be used. Use
+ * [io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter] instead.
+ * @see io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
  */
-@Deprecated("This is inefficient and should not be used.")
+@Deprecated("This is inefficient and should not be used. Use ProtobufConverter instead.")
 class AirbyteValueProtobufProxy(private val data: List<AirbyteValueProtobuf>) : AirbyteValueProxy {
     private val decoder = AirbyteValueProtobufDecoder()
 
