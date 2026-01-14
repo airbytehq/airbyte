@@ -206,11 +206,9 @@ constructor(
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
-        val namespaces: Set<String> = pojo.schemas
-            ?.filter { it.isNotBlank() }
-            ?.toSet()
-            ?.takeUnless { it.isEmpty() }
-            ?: setOf("public")
+        val namespaces: Set<String> =
+            pojo.schemas?.filter { it.isNotBlank() }?.toSet()?.takeUnless { it.isEmpty() }
+                ?: setOf("public")
 
         return PostgresSourceConfiguration(
             realHost = realHost,
