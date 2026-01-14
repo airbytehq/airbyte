@@ -65,8 +65,7 @@ def test_pixel_ids_request_parameter_format(pixel_id: str, expected_pixel_ids_pa
     rendered_pixel_ids = template.render(stream_partition={"pixel_id": pixel_id})
 
     assert rendered_pixel_ids == expected_pixel_ids_param, (
-        f"pixel_ids should be rendered as a JSON array string. "
-        f"Expected: {expected_pixel_ids_param}, Got: {rendered_pixel_ids}"
+        f"pixel_ids should be rendered as a JSON array string. " f"Expected: {expected_pixel_ids_param}, Got: {rendered_pixel_ids}"
     )
 
 
