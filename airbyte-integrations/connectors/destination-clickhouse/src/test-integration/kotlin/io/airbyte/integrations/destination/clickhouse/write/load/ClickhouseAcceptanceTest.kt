@@ -30,6 +30,7 @@ import io.airbyte.integrations.destination.clickhouse.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse.Utils
 import io.airbyte.integrations.destination.clickhouse.fixtures.ClickhouseExpectedRecordMapper
 import io.airbyte.integrations.destination.clickhouse.schema.toClickHouseCompatibleName
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificationOss
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
