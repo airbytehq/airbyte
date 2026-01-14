@@ -144,6 +144,16 @@ export function hasKapaConsent() {
 }
 
 /**
+ * Re-apply button visibility state after Docusaurus SPA navigation.
+ * This is called by Docusaurus on every route change.
+ */
+export function onRouteDidUpdate() {
+  if (consentGranted) {
+    showAskAiButton();
+  }
+}
+
+/**
  * Check if Osano is present
  */
 function isOsanoPresent() {
