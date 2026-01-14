@@ -38,6 +38,7 @@ The WordPress connector enables seamless data synchronization between your WordP
 
 | Version | Date       | Pull Request | Subject                                                                               |
 | ------- | ---------- | ------------ | ------------------------------------------------------------------------------------- |
+| 0.0.43 | 2026-01-14 | [71483](https://github.com/airbytehq/airbyte/pull/71483) | Update dependencies |
 | 0.0.42 | 2025-12-18 | [70682](https://github.com/airbytehq/airbyte/pull/70682) | Update dependencies |
 | 0.0.41 | 2025-11-25 | [70195](https://github.com/airbytehq/airbyte/pull/70195) | Update dependencies |
 | 0.0.40 | 2025-11-18 | [69649](https://github.com/airbytehq/airbyte/pull/69649) | Update dependencies |
