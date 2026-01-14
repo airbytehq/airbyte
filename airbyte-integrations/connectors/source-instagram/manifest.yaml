@@ -640,7 +640,7 @@ definitions:
           url: "https://graph.facebook.com/v23.0/me/accounts"
           http_method: GET
           request_parameters:
-            fields: id,instagram_business_account
+            fields: id,instagram_business_account{id,username}
           error_handler:
             type: DefaultErrorHandler
             max_retries: 5
@@ -655,7 +655,12 @@ definitions:
               - data
           record_filter:
             type: RecordFilter
-            condition: '{{ "instagram_business_account" in record }}'
+            condition: >-
+              {%- set has_business_account = "instagram_business_account" in record -%}
+              {%- set requested_usernames = config.get("account_usernames", []) -%}
+              {%- set account_username = record.get("instagram_business_account", {}).get("username", "") -%}
+              {%- set matches_username = account_username in requested_usernames if requested_usernames else true -%}
+              {{ has_business_account and matches_username }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -682,7 +687,8 @@ definitions:
                 - account
               value: >-
                 {{ { "business_account_id": record.get("instagram_business_account",
-                {}).get("id"), "page_id": record["id"] } }}
+                {}).get("id"), "page_id": record["id"], "username": record.get("instagram_business_account",
+                {}).get("username") } }}
         - type: RemoveFields
           field_pointers:
             - - instagram_business_account
@@ -787,6 +793,20 @@ spec:
           - 2
           - 3
         description: The number of worker threads to use for the sync.
+      account_usernames:
+        title: Account Usernames
+        description: >-
+          Instagram account usernames you want to fetch data for. You can use
+          Account Usernames instead of syncing all connected accounts for easier
+          configuration. The username corresponds to the Instagram handle shown
+          in the Instagram app (without the @ symbol). If left empty, data will
+          be synced for all connected Instagram Business accounts.
+        type: array
+        items:
+          type: string
+        examples:
+          - - "mycompany"
+            - "mybrand"
     required:
       - access_token
   supportsIncremental: true
@@ -1358,6 +1378,10 @@ schemas:
               - string
               - "null"
           page_id:
+            type:
+              - string
+              - "null"
+          username:
             type:
               - string
               - "null"
