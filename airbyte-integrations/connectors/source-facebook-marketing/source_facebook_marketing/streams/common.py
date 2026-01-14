@@ -10,6 +10,7 @@ from datetime import timedelta
 from typing import Any
 
 import backoff
+import requests
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import FailureType
@@ -98,6 +99,10 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         return bool(exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message()))
 
     def should_retry_api_error(exc):
+        # Always retry on network-level connection errors (e.g., RemoteDisconnected)
+        # These are transient errors that occur before the Facebook API can respond
+        if isinstance(exc, requests.exceptions.ConnectionError):
+            return True
         if isinstance(exc, FacebookRequestError):
             call_rate_limit_error = exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES
             temporary_oauth_error = exc.api_error_code() == FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE
