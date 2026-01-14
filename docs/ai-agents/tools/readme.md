@@ -57,39 +57,7 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-The decorator expands the docstring to include comprehensive documentation:
-
-```text
-Execute operations on GitHub.
-
-ENTITIES AND PARAMETERS:
-  issues:
-    - list(owner*, repo*, states?, per_page?, page?)
-    - get(owner*, repo*, issue_number*)
-  pull_requests:
-    - list(owner*, repo*, states?, per_page?, page?)
-    - get(owner*, repo*, pull_number*)
-  ...
-
-RESPONSE STRUCTURE:
-  - list/search: {data: [...], meta: {has_more: bool}}
-  - get: Returns entity directly (no envelope)
-  To paginate: pass starting_after=<last_id> while has_more is true
-
-EXAMPLE QUESTIONS:
-  - List the 10 most recent open issues in airbytehq/airbyte
-  - What pull requests are pending review?
-  ...
-
-FUNCTION PARAMETERS:
-  - entity: Entity name (string)
-  - action: Operation to perform (string)
-  - params: Operation parameters (dict) - see entity details above
-
-Parameter markers: * = required, ? = optional
-```
-
-This approach enables AI agents to correctly use connector tools without needing additional discovery calls. The agent can see all available operations and their parameter requirements directly in the tool description.
+The decorator automatically expands the docstring to include all available entities and actions, their required and optional parameters, response structure details, and pagination guidance. This gives the LLM everything it needs to correctly call the connector without additional discovery calls.
 
 ## Introspection capabilities
 
