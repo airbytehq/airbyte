@@ -23,7 +23,9 @@ def build_response(
 
 def get_account_response() -> HttpResponse:
     response = {
-        "data": [{"id": PAGE_ID, "name": "AccountName", "instagram_business_account": {"id": BUSINESS_ACCOUNT_ID, "username": "test_username"}}],
+        "data": [
+            {"id": PAGE_ID, "name": "AccountName", "instagram_business_account": {"id": BUSINESS_ACCOUNT_ID, "username": "test_username"}}
+        ],
         "paging": {"cursors": {"before": "before_token"}},
     }
     return build_response(body=response, status_code=HTTPStatus.OK)
@@ -38,7 +40,11 @@ def get_multiple_accounts_response() -> HttpResponse:
     response = {
         "data": [
             {"id": PAGE_ID, "name": "AccountName", "instagram_business_account": {"id": BUSINESS_ACCOUNT_ID, "username": "test_username"}},
-            {"id": SECOND_PAGE_ID, "name": "SecondAccount", "instagram_business_account": {"id": SECOND_BUSINESS_ACCOUNT_ID, "username": "second_username"}},
+            {
+                "id": SECOND_PAGE_ID,
+                "name": "SecondAccount",
+                "instagram_business_account": {"id": SECOND_BUSINESS_ACCOUNT_ID, "username": "second_username"},
+            },
         ],
         "paging": {"cursors": {"before": "before_token"}},
     }
