@@ -39,7 +39,7 @@ class AirbyteBulkConnectorExtension {
             } else {
                 addDependency("io.airbyte.bulk-cdk:bulk-cdk-toolkit-legacy-task-loader:$cdk")
             }
-            // Exclude core-load
+            // Exclude core-load (legacy-task-loader provides compatible version)
             if (core != null) {
                 project.configurations.all {
                     it.exclude module: "bulk-cdk-core-$core"
