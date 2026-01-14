@@ -241,7 +241,7 @@ module.exports = {
     {
       type: "category",
       collapsible: false,
-      label: "Airbyte Platform",
+      label: "Data replication platform",
       link: {
         type: "doc",
         id: "readme",
@@ -382,6 +382,7 @@ module.exports = {
               items: [
                 "organizations-workspaces/organizations/switch-organizations",
                 "cloud/managing-airbyte-cloud/manage-credits",
+                "cloud/managing-airbyte-cloud/manage-data-workers",
               ],
             },
             {
@@ -462,6 +463,7 @@ module.exports = {
           },
           items: [
             "enterprise-flex/getting-started",
+            "enterprise-flex/external-secrets",
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
           ],

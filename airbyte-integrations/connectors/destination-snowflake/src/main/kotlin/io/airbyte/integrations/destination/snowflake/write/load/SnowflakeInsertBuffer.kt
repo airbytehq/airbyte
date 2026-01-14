@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write.load
@@ -9,11 +9,12 @@ import de.siegmar.fastcsv.writer.CsvWriter
 import de.siegmar.fastcsv.writer.LineDelimiter
 import de.siegmar.fastcsv.writer.QuoteStrategies
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.OutputStream
@@ -36,10 +37,11 @@ private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
-    val columns: LinkedHashMap<String, String>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     val snowflakeConfiguration: SnowflakeConfiguration,
-    val snowflakeColumnUtils: SnowflakeColumnUtils,
+    val columnSchema: ColumnSchema,
+    private val columnManager: SnowflakeColumnManager,
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
@@ -56,12 +58,6 @@ class SnowflakeInsertBuffer(
             .quoteCharacter(CSV_QUOTE_CHARACTER)
             .lineDelimiter(CSV_LINE_DELIMITER)
             .quoteStrategy(QuoteStrategies.REQUIRED)
-
-    private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
-        when (snowflakeConfiguration.legacyRawTablesOnly) {
-            true -> SnowflakeRawRecordFormatter(columns, snowflakeColumnUtils)
-            else -> SnowflakeSchemaRecordFormatter(columns, snowflakeColumnUtils)
-        }
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (csvFilePath == null) {
@@ -92,7 +88,9 @@ class SnowflakeInsertBuffer(
                     "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..."
                 }
                 // Finally, copy the data from the staging table to the final table
-                snowflakeClient.copyFromStage(tableName, filePath.fileName.toString())
+                // Pass column names to ensure correct mapping even after ALTER TABLE operations
+                val columnNames = columnManager.getTableColumnNames(columnSchema)
+                snowflakeClient.copyFromStage(tableName, filePath.fileName.toString(), columnNames)
                 logger.info {
                     "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}."
                 }
@@ -117,7 +115,9 @@ class SnowflakeInsertBuffer(
 
     private fun writeToCsvFile(record: Map<String, AirbyteValue>) {
         csvWriter?.let {
-            it.writeRecord(snowflakeRecordFormatter.format(record).map { col -> col.toString() })
+            it.writeRecord(
+                snowflakeRecordFormatter.format(record, columnSchema).map { col -> col.toString() }
+            )
             recordCount++
             if ((recordCount % flushLimit) == 0) {
                 it.flush()

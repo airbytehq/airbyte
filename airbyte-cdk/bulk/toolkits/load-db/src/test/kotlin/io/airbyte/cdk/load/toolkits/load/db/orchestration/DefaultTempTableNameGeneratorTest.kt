@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.toolkits.load.db.orchestration
 
-import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
