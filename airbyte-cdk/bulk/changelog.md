@@ -1,3 +1,7 @@
+## Version 0.1.104
+
+load cdk: schema regression tests use .json extension
+
 ## Version 0.1.103
 
 load cdk: add table identifier regression test
