@@ -30,7 +30,6 @@ import io.airbyte.integrations.destination.clickhouse.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse.Utils
 import io.airbyte.integrations.destination.clickhouse.fixtures.ClickhouseExpectedRecordMapper
 import io.airbyte.integrations.destination.clickhouse.schema.toClickHouseCompatibleName
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificationOss
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -123,12 +122,7 @@ abstract class ClickhouseAcceptanceTest(
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
         configSpecClass = ClickhouseSpecificationOss::class.java,
-        dataDumper =
-            ClickhouseDataDumper { spec ->
-                val configOverrides = mutableMapOf<String, String>()
-                ClickhouseConfigurationFactory()
-                    .makeWithOverrides(spec as ClickhouseSpecificationOss, configOverrides)
-            },
+        dataDumper = ClickhouseDataDumper(),
         destinationCleaner = ClickhouseDataCleaner,
         recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
@@ -179,9 +173,7 @@ abstract class ClickhouseAcceptanceTest(
     }
 }
 
-class ClickhouseDataDumper(
-    private val configProvider: (ConfigurationSpecification) -> ClickhouseConfiguration
-) : DestinationDataDumper {
+class ClickhouseDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream
@@ -194,7 +186,8 @@ class ClickhouseDataDumper(
         val output = mutableListOf<OutputRecord>()
 
         val cleanedNamespace =
-            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}".toClickHouseCompatibleName()
+            (stream.mappedDescriptor.namespace ?: config.resolvedDatabase)
+                .toClickHouseCompatibleName()
         val cleanedStreamName = stream.mappedDescriptor.name.toClickHouseCompatibleName()
 
         val namespacedTableName = "$cleanedNamespace.$cleanedStreamName"
@@ -252,8 +245,8 @@ object ClickhouseDataCleaner : DestinationCleaner {
                     "hostname" to ClickhouseContainerHelper.getIpAddress()!!,
                     "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
                     "protocol" to "http",
-                    "username" to ClickhouseContainerHelper.getUsername()!!,
-                    "password" to ClickhouseContainerHelper.getPassword()!!,
+                    "username" to ClickhouseContainerHelper.getUsername(),
+                    "password" to ClickhouseContainerHelper.getPassword(),
                 )
             )
 
@@ -272,7 +265,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
 
                 client.query("DROP DATABASE IF EXISTS $databaseName").get()
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // swallow the exception, we don't want to fail the test suite if the cleanup fails
         }
     }
