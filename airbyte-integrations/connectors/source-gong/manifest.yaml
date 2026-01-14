@@ -471,6 +471,20 @@ spec:
       - auth_type
     predicate_value: OAuth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: https://app.gong.io/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&scope={{scope_value}}
+        access_token_url: https://app.gong.io/oauth2/generate-customer-token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+        access_token_params:
+          grant_type: authorization_code
+          redirect_uri: "{{ redirect_uri_value }}"
+          code: "{{ auth_code_value }}"
+        scope: api:calls:read:basic api:calls:read:extensive api:users:read api:stats:scorecards api:stats:interaction
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
