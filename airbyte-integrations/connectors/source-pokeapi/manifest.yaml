@@ -948,6 +948,7 @@ spec:
           - glastrier
           - spectrier
           - calyrex
+          - devinmon
         examples:
           - ditto
           - luxray
