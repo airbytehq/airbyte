@@ -175,6 +175,12 @@ class ObjectStoragePathFactory(
             PathVariable("STREAM_NAME") {
                 pathConfig.resolveNamesMethod(it.stream.mappedDescriptor.name)
             },
+            PathVariable("WORKSPACE_ID", """[a-fA-F0-9\\-]{36}""") {
+                System.getenv("WORKSPACE_ID") ?: ""
+            },
+            PathVariable("CONNECTION_ID", """[a-fA-F0-9\\-]{36}""") {
+                System.getenv("CONNECTION_ID") ?: ""
+            },
             PathVariable("YEAR", """\d{4}""") {
                 ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
             },
