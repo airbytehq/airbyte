@@ -466,6 +466,10 @@ definitions:
       extractor:
         type: DpathExtractor
         field_path: [ ]
+      record_filter:
+        type: RecordFilter
+        condition: >-
+          {{ config.get('channel_ids') is not defined or config.get('channel_ids') | length == 0 or record.get('channel_id') in config.get('channel_ids', []) }}
     partition_router:
       type: SubstreamPartitionRouter
       parent_stream_configs:
@@ -521,6 +525,17 @@ spec:
           specify which content owner's data to retrieve. If not provided, the
           API will use the channel associated with your OAuth credentials.
         order: 0
+      channel_ids:
+        type: array
+        items:
+          type: string
+        title: Channel IDs
+        description: >-
+          Optional list of channel IDs to filter the data. If provided, only
+          data for the specified channels will be returned. Channel IDs are
+          typically in the format 'UCxxxxxx'. If not provided, data for all
+          channels associated with your account will be returned.
+        order: 1
       credentials:
         type: object
         title: Authenticate via OAuth 2.0
