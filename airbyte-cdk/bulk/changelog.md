@@ -1,3 +1,12 @@
+## 0.1.104
+
+**Load CDK**
+
+* Add `legacy-task-loader` toolkit containing CDK 0.1.74 code for connectors not yet migrated to the modern tableSchema API
+* Add `useLegacyTaskLoader` option to `airbyteBulkConnector` plugin to automatically include the toolkit and exclude core-load
+* Rename `load-db` toolkit to `legacy-task-load-db`
+* Revert `load-db` to pre components era (cdk 0.1.52)
+
 ## Version 0.1.103
 
 load cdk: add table identifier regression test
