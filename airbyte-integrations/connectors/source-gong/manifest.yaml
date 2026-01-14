@@ -472,7 +472,7 @@ spec:
     predicate_value: OAuth2.0
     oauth_config_specification:
       oauth_connector_input_specification:
-        consent_url: https://app.gong.io/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&scope={{scope_value}}
+        consent_url: https://app.gong.io/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&scope={{scope_value | urlEncode}}
         access_token_url: https://app.gong.io/oauth2/generate-customer-token
         access_token_headers:
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
