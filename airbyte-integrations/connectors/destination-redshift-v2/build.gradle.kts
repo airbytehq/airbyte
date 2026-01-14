@@ -19,7 +19,7 @@ application {
     )
 }
 
-val hikariCpVersion = "6.2.1"
+val hikariCpVersion = "7.0.2"
 val redshiftJdbcVersion = "2.1.0.31"
 
 dependencies {
