@@ -14,6 +14,7 @@ This page contains the setup guide and reference information for the [Amazon Ads
 - Region
 - Start Date (Optional)
 - Profile IDs (Optional)
+- Profile Names (Optional)
 - Marketplace IDs (Optional)
 
 ## Setup guide
@@ -44,8 +45,9 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 7. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
 8. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 9. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
-11. Click **Set up source**.
+10. **Profile Names (Optional)** you want to fetch data for. You can use Profile Names instead of Profile IDs for easier configuration. The name corresponds to the account name shown in the Amazon Ads console.
+11. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs, Profile Names, or Marketplace IDs are selected, profiles will be selected if they match the Profile ID **OR** the Profile Name **OR** the Marketplace ID._
+12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -60,8 +62,9 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
 7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, yesterday's date is used. The date is treated in the timezone of the processed profile.
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
-10. Click **Set up source**.
+9. **Profile Names (Optional)** you want to fetch data for. You can use Profile Names instead of Profile IDs for easier configuration. The name corresponds to the account name shown in the Amazon Ads console.
+10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs, Profile Names, or Marketplace IDs are selected, profiles will be selected if they match the Profile ID **OR** the Profile Name **OR** the Marketplace ID._
+11. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -74,7 +77,8 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
 5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 6. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-7. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
+7. **Profile Names (Optional)** you want to fetch data for. You can use Profile Names instead of Profile IDs for easier configuration. The name corresponds to the account name shown in the Amazon Ads console.
+8. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs, Profile Names, or Marketplace IDs are selected, profiles will be selected if they match the Profile ID **OR** the Profile Name **OR** the Marketplace ID._
 <!-- /env:oss -->
 
 :::note
@@ -169,6 +173,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.4.0 | 2026-01-14 | [71319](https://github.com/airbytehq/airbyte/pull/71319) | Add profile_names filter option for easier configuration |
 | 7.3.11 | 2026-01-12 | [71266](https://github.com/airbytehq/airbyte/pull/71266) | Cap start date to 60 days to match Amazon Ads API limitation |
 | 7.3.10 | 2025-12-19 | [70937](https://github.com/airbytehq/airbyte/pull/70937) | Update dependencies |
 | 7.3.9 | 2025-12-11 | [69836](https://github.com/airbytehq/airbyte/pull/69836) | Increase max concurrency to 20 and add rate limits documentation |
