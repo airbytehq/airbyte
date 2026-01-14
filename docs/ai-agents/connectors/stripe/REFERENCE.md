@@ -8,15 +8,15 @@ The Stripe connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](#customers-list), [Get](#customers-get), [Search](#customers-search) |
-| Invoices | [List](#invoices-list), [Get](#invoices-get), [Search](#invoices-search) |
-| Charges | [List](#charges-list), [Get](#charges-get), [Search](#charges-search) |
-| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Search](#subscriptions-search) |
-| Refunds | [List](#refunds-list), [Get](#refunds-get) |
-| Products | [List](#products-list), [Get](#products-get), [Search](#products-search) |
+| Customers | [List](#customers-list), [Create](#customers-create), [Get](#customers-get), [Update](#customers-update), [Delete](#customers-delete), [Api_search](#customers-api_search) |
+| Invoices | [List](#invoices-list), [Get](#invoices-get), [Api_search](#invoices-api_search) |
+| Charges | [List](#charges-list), [Get](#charges-get), [Api_search](#charges-api_search) |
+| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Api_search](#subscriptions-api_search) |
+| Refunds | [List](#refunds-list), [Create](#refunds-create), [Get](#refunds-get) |
+| Products | [List](#products-list), [Create](#products-create), [Get](#products-get), [Update](#products-update), [Delete](#products-delete), [Api_search](#products-api_search) |
 | Balance | [Get](#balance-get) |
 | Balance Transactions | [List](#balance-transactions-list), [Get](#balance-transactions-get) |
-| Payment Intents | [List](#payment-intents-list), [Get](#payment-intents-get), [Search](#payment-intents-search) |
+| Payment Intents | [List](#payment-intents-list), [Get](#payment-intents-get), [Api_search](#payment-intents-api_search) |
 | Disputes | [List](#disputes-list), [Get](#disputes-get) |
 | Payouts | [List](#payouts-list), [Get](#payouts-get) |
 
@@ -107,6 +107,71 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Customers Create
+
+Creates a new customer object.
+
+**Python SDK**
+
+```python
+await stripe.customers.create()
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "customers",
+    "action": "create"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"customer"` |  |
+| `address` | `object \| null` |  |
+| `balance` | `integer` |  |
+| `business_name` | `string \| null` |  |
+| `cash_balance` | `object \| null` |  |
+| `created` | `integer` |  |
+| `currency` | `string \| null` |  |
+| `customer_account` | `string \| null` |  |
+| `default_currency` | `string \| null` |  |
+| `default_source` | `string \| null` |  |
+| `delinquent` | `boolean \| null` |  |
+| `description` | `string \| null` |  |
+| `discount` | `object \| null` |  |
+| `email` | `string \| null` |  |
+| `individual_name` | `string \| null` |  |
+| `invoice_credit_balance` | `object` |  |
+| `invoice_prefix` | `string \| null` |  |
+| `invoice_settings` | `object` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `name` | `string \| null` |  |
+| `next_invoice_sequence` | `integer \| null` |  |
+| `phone` | `string \| null` |  |
+| `preferred_locales` | `array \| null` |  |
+| `shipping` | `object \| null` |  |
+| `sources` | `object \| null` |  |
+| `subscriptions` | `object \| null` |  |
+| `tax_exempt` | `string \| null` |  |
+| `test_clock` | `string \| null` |  |
+
+
+</details>
+
 #### Customers Get
 
 Retrieves a Customer object.
@@ -183,14 +248,139 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Customers Search
+#### Customers Update
+
+Updates the specified customer by setting the values of the parameters passed.
+
+**Python SDK**
+
+```python
+await stripe.customers.update(
+    id="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "customers",
+    "action": "update",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The customer ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"customer"` |  |
+| `address` | `object \| null` |  |
+| `balance` | `integer` |  |
+| `business_name` | `string \| null` |  |
+| `cash_balance` | `object \| null` |  |
+| `created` | `integer` |  |
+| `currency` | `string \| null` |  |
+| `customer_account` | `string \| null` |  |
+| `default_currency` | `string \| null` |  |
+| `default_source` | `string \| null` |  |
+| `delinquent` | `boolean \| null` |  |
+| `description` | `string \| null` |  |
+| `discount` | `object \| null` |  |
+| `email` | `string \| null` |  |
+| `individual_name` | `string \| null` |  |
+| `invoice_credit_balance` | `object` |  |
+| `invoice_prefix` | `string \| null` |  |
+| `invoice_settings` | `object` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `name` | `string \| null` |  |
+| `next_invoice_sequence` | `integer \| null` |  |
+| `phone` | `string \| null` |  |
+| `preferred_locales` | `array \| null` |  |
+| `shipping` | `object \| null` |  |
+| `sources` | `object \| null` |  |
+| `subscriptions` | `object \| null` |  |
+| `tax_exempt` | `string \| null` |  |
+| `test_clock` | `string \| null` |  |
+
+
+</details>
+
+#### Customers Delete
+
+Permanently deletes a customer. It cannot be undone.
+
+**Python SDK**
+
+```python
+await stripe.customers.delete(
+    id="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "customers",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The customer ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"customer"` |  |
+| `deleted` | `boolean` |  |
+
+
+</details>
+
+#### Customers Api_search
 
 Search for customers using Stripe's Search Query Language.
 
 **Python SDK**
 
 ```python
-await stripe.customers.search(
+await stripe.customers.api_search(
     query="<str>"
 )
 ```
@@ -203,7 +393,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "customers",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -554,14 +744,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Invoices Search
+#### Invoices Api_search
 
 Search for invoices using Stripe's Search Query Language
 
 **Python SDK**
 
 ```python
-await stripe.invoices.search(
+await stripe.invoices.api_search(
     query="<str>"
 )
 ```
@@ -574,7 +764,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoices",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -901,14 +1091,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Charges Search
+#### Charges Api_search
 
 Search for charges using Stripe's Search Query Language
 
 **Python SDK**
 
 ```python
-await stripe.charges.search(
+await stripe.charges.api_search(
     query="<str>"
 )
 ```
@@ -921,7 +1111,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "charges",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -1223,14 +1413,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Subscriptions Search
+#### Subscriptions Api_search
 
 Search for subscriptions using Stripe's Search Query Language
 
 **Python SDK**
 
 ```python
-await stripe.subscriptions.search(
+await stripe.subscriptions.api_search(
     query="<str>"
 )
 ```
@@ -1243,7 +1433,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "subscriptions",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -1405,6 +1595,62 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Refunds Create
+
+When you create a new refund, you must specify a Charge or a PaymentIntent object on which to create it. Creating a new refund will refund a charge that has previously been created but not yet refunded.
+
+**Python SDK**
+
+```python
+await stripe.refunds.create()
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "refunds",
+    "action": "create"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"refund"` |  |
+| `amount` | `integer` |  |
+| `balance_transaction` | `string \| null` |  |
+| `charge` | `string \| null` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `description` | `string \| null` |  |
+| `destination_details` | `object \| null` |  |
+| `failure_balance_transaction` | `string \| null` |  |
+| `failure_reason` | `string \| null` |  |
+| `instructions_email` | `string \| null` |  |
+| `metadata` | `object \| null` |  |
+| `next_action` | `object \| null` |  |
+| `payment_intent` | `string \| null` |  |
+| `pending_reason` | `string \| null` |  |
+| `reason` | `string \| null` |  |
+| `receipt_number` | `string \| null` |  |
+| `source_transfer_reversal` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `transfer_reversal` | `string \| null` |  |
+
+
+</details>
+
 #### Refunds Get
 
 Retrieves the details of an existing refund
@@ -1553,6 +1799,62 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Products Create
+
+Creates a new product object. Your product's name, description, and other information will be displayed in all product and invoice displays.
+
+**Python SDK**
+
+```python
+await stripe.products.create()
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "products",
+    "action": "create"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"product"` |  |
+| `active` | `boolean` |  |
+| `attributes` | `array<string>` |  |
+| `created` | `integer` |  |
+| `default_price` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `features` | `array<object>` |  |
+| `images` | `array<string>` |  |
+| `livemode` | `boolean` |  |
+| `marketing_features` | `array<object>` |  |
+| `metadata` | `object` |  |
+| `name` | `string` |  |
+| `package_dimensions` | `object \| null` |  |
+| `shippable` | `boolean \| null` |  |
+| `statement_descriptor` | `string \| null` |  |
+| `tax_code` | `string \| null` |  |
+| `type` | `"good" \| "service"` |  |
+| `unit_label` | `string \| null` |  |
+| `updated` | `integer` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
 #### Products Get
 
 Retrieves the details of an existing product. Supply the unique product ID and Stripe will return the corresponding product information.
@@ -1620,14 +1922,130 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Products Search
+#### Products Update
+
+Updates the specific product by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
+
+**Python SDK**
+
+```python
+await stripe.products.update(
+    id="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "products",
+    "action": "update",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The product ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"product"` |  |
+| `active` | `boolean` |  |
+| `attributes` | `array<string>` |  |
+| `created` | `integer` |  |
+| `default_price` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `features` | `array<object>` |  |
+| `images` | `array<string>` |  |
+| `livemode` | `boolean` |  |
+| `marketing_features` | `array<object>` |  |
+| `metadata` | `object` |  |
+| `name` | `string` |  |
+| `package_dimensions` | `object \| null` |  |
+| `shippable` | `boolean \| null` |  |
+| `statement_descriptor` | `string \| null` |  |
+| `tax_code` | `string \| null` |  |
+| `type` | `"good" \| "service"` |  |
+| `unit_label` | `string \| null` |  |
+| `updated` | `integer` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
+#### Products Delete
+
+Deletes a product. Deleting a product is only possible if it has no prices associated with it.
+
+**Python SDK**
+
+```python
+await stripe.products.delete(
+    id="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "products",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The product ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"product"` |  |
+| `deleted` | `boolean` |  |
+
+
+</details>
+
+#### Products Api_search
 
 Search for products using Stripe's Search Query Language.
 
 **Python SDK**
 
 ```python
-await stripe.products.search(
+await stripe.products.api_search(
     query="<str>"
 )
 ```
@@ -1640,7 +2058,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "products",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -2020,14 +2438,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Payment Intents Search
+#### Payment Intents Api_search
 
 Search for payment intents using Stripe's Search Query Language.
 
 **Python SDK**
 
 ```python
-await stripe.payment_intents.search(
+await stripe.payment_intents.api_search(
     query="<str>"
 )
 ```
@@ -2040,7 +2458,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "payment_intents",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }

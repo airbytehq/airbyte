@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.write
@@ -35,7 +35,6 @@ import io.airbyte.cdk.load.test.util.SchemaDumper
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest.Companion.numberType
-import kotlin.collections.forEach
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
