@@ -8,13 +8,13 @@ This feature is useful when:
 - The source system's API doesn't support the search queries you need
 - You want faster, more reliable search responses
 
-## How It Works
+## How it works
 
 When you enable the Entity Cache:
 
-- **Data syncs automatically**. Data from your agent connectors syncs to Airbyte-managed storage on a configurable schedule
+- **Initial sync runs automatically**. Data from your agent connectors syncs to Airbyte-managed storage when you enable the cache
 - **Search becomes available**. Once the initial sync completes, AI agents can query your data
-- **Data stays fresh**. Subsequent syncs keep your cached data up to date
+- **Manual syncs keep data fresh**. Trigger additional syncs as needed to update your cached data
 
 Each connected source maintains its own isolated data store. Your data is only accessible to AI agents within your organization.
 
@@ -28,35 +28,18 @@ To enable the entity cache, follow these steps.
 
 Data must complete its first sync before the cache becomes operational. The setup process takes time to complete, according to the volume of data in your connected sources. You can continue using Airbyte while the cache is being configured.
 
-## Configure sync frequency
+## Sync frequency
 
-<!-- 
-This appears to be explicitly unset for the entity cache. Need to verify if there's an automatic sync.
-
-You can, optionally, configure how often your data syncs to the cache using a cron expression. If you don't specify a schedule, you need to manually resync data. To configure the sync schedule:
-
-1. In Airbyte's Agent Engine, click **Data replication**.
-
-2. Select **Airbyte Hosted Data**
-
-3. Enter a cron expression in the Sync Schedule field. The cron expression follows Quartz cron format. When you enter an expression, the system validates it and displays a human-readable description of the schedule (e.g., "Every day at 2:00 AM"). Examples of common schedules:
-
-    ```text
-    0 0 2 * * ? - Every day at 2:00 AM
-    0 0 */6 * * ? - Every 6 hours
-    0 0 0 * * MON - Every Monday at midnight
-    ```
-
-Leave the field empty if you want to run syncs manually. 
--->
+When you enable the Entity Cache, an initial sync runs automatically. After the initial sync completes, subsequent syncs must be triggered manually. Automatic scheduled syncs are not currently available for the Entity Cache.
 
 ## Which connectors use the cache
 
-All agent connectors that support direct data access use the entity cache if you've enabled it. These connectors are designed to work with the cache for search operations and have a `Direct` badge in the Airbyte's Agent Engine UI.
+All agent connectors support the Entity Cache. You can identify connector capabilities by the badges displayed on each connector card in the Agent Engine UI:
 
-Some connectors support both the entity cache and data replication. They can replicate data to a destination and use the entity cache for AI-powered search.
+- **Direct badge only**: The connector supports the Entity Cache for AI-powered search. Data replication to your own destination is not available.
+- **Direct and Replication badges**: The connector supports both the Entity Cache and data replication. You can use both features together.
 
-You can use both features together if your connector supports it.
+When you enable the Entity Cache, all connectors with a Direct badge will sync their data to the cache.
 
 ## Disable the Cache
 
@@ -76,6 +59,10 @@ When you disable the cache, the cached data is removed from Airbyte-managed stor
 - Check that the source has completed at least one sync.
 - Ensure the data you're searching for is in a stream that's being synced.
 
+### The cache toggle is not visible
+
+The **Cache connected source data for agentic search** toggle only appears for organizations with agent connectors configured. If you don't see this toggle, verify that you have at least one agent connector set up.
+
 ### Data seems stale
 
-Verify the last sync completed successfully.
+Verify the last sync completed successfully. If your data is out of date, trigger a manual sync to refresh the cache.
