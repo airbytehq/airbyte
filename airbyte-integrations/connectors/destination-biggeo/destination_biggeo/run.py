@@ -2,15 +2,12 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
-
-from .destination import DestinationBiggeo
+from destination_biggeo import DestinationBiggeo
 
 
 def run():
     """Run the destination."""
-    source = DestinationBiggeo()
-    launch(source, sys.argv[1:])
+    DestinationBiggeo().run(sys.argv[1:])
 
 
 if __name__ == "__main__":

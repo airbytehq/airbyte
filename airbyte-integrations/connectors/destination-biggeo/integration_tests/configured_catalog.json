@@ -2,31 +2,24 @@
   "streams": [
     {
       "stream": {
-        "name": "airbyte_acceptance_table",
+        "name": "test_stream",
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "json_schema": {
           "type": "object",
+          "additionalProperties": true,
           "properties": {
-            "column1": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
               "type": "string"
             },
-            "column2": {
+            "lat": {
               "type": "number"
             },
-            "column3": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_without_timezone"
-            },
-            "column4": {
+            "lon": {
               "type": "number"
-            },
-            "column5": {
-              "type": "array",
-              "items": {
-                "type": "integer"
-              }
             }
           }
         }

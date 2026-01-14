@@ -129,9 +129,6 @@ class DestinationBiggeo(Destination):
             """Send a batch of chunks to the BigGeo API."""
             nonlocal records_sent
 
-            if not chunks:
-                return
-
             payload = {
                 "sync_id": self.sync_id,
                 "table_name": stream_name,
@@ -204,9 +201,8 @@ class DestinationBiggeo(Destination):
                 else:
                     logger.info(f"Message type {message.type} not supported, skipping")
 
-            for stream_name, chunks in buffer.items():
-                if chunks:
-                    send_batch(stream_name, chunks, is_final=True)
+            for stream_name in streams:
+                send_batch(stream_name, buffer[stream_name], is_final=True)
 
             logger.info(f"Write completed. Total records sent: {records_sent}")
 
