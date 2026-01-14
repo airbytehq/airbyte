@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: be9ee02f-6efe-4970-979b-95f797a37188
-  dockerImageTag: 0.3.3
+  dockerImageTag: 0.3.4
   dockerRepository: airbyte/source-convertkit
   githubIssueLabel: source-convertkit
   icon: convertkit.svg
@@ -39,7 +39,7 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.3@sha256:826a053bc43678a94e307e32882ae776ecb847cf7b75031fe10dcdc664995dfb
   externalDocumentationUrls:
     - title: ConvertKit API reference
       url: https://developers.convertkit.com/
