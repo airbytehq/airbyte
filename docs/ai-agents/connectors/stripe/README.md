@@ -56,12 +56,12 @@ This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Search](./REFERENCE.md#customers-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [Search](./REFERENCE.md#customers-search) |
 | Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Search](./REFERENCE.md#invoices-search) |
 | Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [Search](./REFERENCE.md#charges-search) |
 | Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [Search](./REFERENCE.md#subscriptions-search) |
-| Refunds | [List](./REFERENCE.md#refunds-list), [Get](./REFERENCE.md#refunds-get) |
-| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Search](./REFERENCE.md#products-search) |
+| Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get) |
+| Products | [List](./REFERENCE.md#products-list), [Create](./REFERENCE.md#products-create), [Get](./REFERENCE.md#products-get), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [Search](./REFERENCE.md#products-search) |
 | Balance | [Get](./REFERENCE.md#balance-get) |
 | Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Get](./REFERENCE.md#balance-transactions-get) |
 | Payment Intents | [List](./REFERENCE.md#payment-intents-list), [Get](./REFERENCE.md#payment-intents-get), [Search](./REFERENCE.md#payment-intents-search) |
@@ -75,6 +75,6 @@ For the service's official API docs, see the [Stripe API reference](https://docs
 
 ## Version information
 
-- **Package version:** 0.5.35
-- **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** e80a226ece656f93854a8fd7a75aff502dadd2ae
+- **Package version:** 0.5.36
+- **Connector version:** 0.1.4
+- **Generated with Connector SDK commit SHA:** 24bb7379a0e88a66c9f9385a6c0e945d6d1b758a
