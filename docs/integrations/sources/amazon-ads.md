@@ -169,6 +169,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.12 | 2026-01-14 | [71502](https://github.com/airbytehq/airbyte/pull/71502) | Update dependencies |
 | 7.3.11 | 2026-01-12 | [71266](https://github.com/airbytehq/airbyte/pull/71266) | Cap start date to 60 days to match Amazon Ads API limitation |
 | 7.3.10 | 2025-12-19 | [70937](https://github.com/airbytehq/airbyte/pull/70937) | Update dependencies |
 | 7.3.9 | 2025-12-11 | [69836](https://github.com/airbytehq/airbyte/pull/69836) | Increase max concurrency to 20 and add rate limits documentation |
