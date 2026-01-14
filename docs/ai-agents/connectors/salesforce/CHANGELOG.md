@@ -1,5 +1,15 @@
 # Salesforce changelog
 
+## [0.1.30] - 2026-01-14
+- Updated connector definition (YAML version 1.0.4)
+- Source commit: e6285db5
+- SDK version: 0.1.0
+
+## [0.1.29] - 2026-01-14
+- Updated connector definition (YAML version 1.0.4)
+- Source commit: 31de238d
+- SDK version: 0.1.0
+
 ## [0.1.28] - 2026-01-13
 - Updated connector definition (YAML version 1.0.4)
 - Source commit: e80a226e

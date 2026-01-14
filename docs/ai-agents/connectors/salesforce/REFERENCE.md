@@ -8,15 +8,15 @@ The Salesforce connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](#accounts-list), [Get](#accounts-get), [Search](#accounts-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
-| Leads | [List](#leads-list), [Get](#leads-get), [Search](#leads-search) |
-| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [Search](#opportunities-search) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [Search](#tasks-search) |
-| Events | [List](#events-list), [Get](#events-get), [Search](#events-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Cases | [List](#cases-list), [Get](#cases-get), [Search](#cases-search) |
-| Notes | [List](#notes-list), [Get](#notes-get), [Search](#notes-search) |
+| Accounts | [List](#accounts-list), [Get](#accounts-get), [Api_search](#accounts-api_search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [Api_search](#contacts-api_search) |
+| Leads | [List](#leads-list), [Get](#leads-get), [Api_search](#leads-api_search) |
+| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [Api_search](#opportunities-api_search) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [Api_search](#tasks-api_search) |
+| Events | [List](#events-list), [Get](#events-get), [Api_search](#events-api_search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Api_search](#campaigns-api_search) |
+| Cases | [List](#cases-list), [Get](#cases-get), [Api_search](#cases-api_search) |
+| Notes | [List](#notes-list), [Get](#notes-get), [Api_search](#notes-api_search) |
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Query | [List](#query-list) |
@@ -135,7 +135,7 @@ Example: "Id,Name,Industry,AnnualRevenue,Website"
 
 </details>
 
-#### Accounts Search
+#### Accounts Api_search
 
 Search for accounts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields and objects.
@@ -145,7 +145,7 @@ Use SOQL (list action) for structured queries with specific field conditions.
 **Python SDK**
 
 ```python
-await salesforce.accounts.search(
+await salesforce.accounts.api_search(
     q="<str>"
 )
 ```
@@ -158,7 +158,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -304,7 +304,7 @@ Example: "Id,FirstName,LastName,Email,Phone,AccountId"
 
 </details>
 
-#### Contacts Search
+#### Contacts Api_search
 
 Search for contacts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -313,7 +313,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.contacts.search(
+await salesforce.contacts.api_search(
     q="<str>"
 )
 ```
@@ -326,7 +326,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -471,7 +471,7 @@ Example: "Id,FirstName,LastName,Email,Company,Status,LeadSource"
 
 </details>
 
-#### Leads Search
+#### Leads Api_search
 
 Search for leads using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -480,7 +480,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.leads.search(
+await salesforce.leads.api_search(
     q="<str>"
 )
 ```
@@ -493,7 +493,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "leads",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -638,7 +638,7 @@ Example: "Id,Name,Amount,StageName,CloseDate,AccountId"
 
 </details>
 
-#### Opportunities Search
+#### Opportunities Api_search
 
 Search for opportunities using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -647,7 +647,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.opportunities.search(
+await salesforce.opportunities.api_search(
     q="<str>"
 )
 ```
@@ -660,7 +660,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "opportunities",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -805,7 +805,7 @@ Example: "Id,Subject,Status,Priority,ActivityDate,WhoId,WhatId"
 
 </details>
 
-#### Tasks Search
+#### Tasks Api_search
 
 Search for tasks using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -814,7 +814,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.tasks.search(
+await salesforce.tasks.api_search(
     q="<str>"
 )
 ```
@@ -827,7 +827,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -972,7 +972,7 @@ Example: "Id,Subject,StartDateTime,EndDateTime,Location,WhoId,WhatId"
 
 </details>
 
-#### Events Search
+#### Events Api_search
 
 Search for events using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -981,7 +981,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.events.search(
+await salesforce.events.api_search(
     q="<str>"
 )
 ```
@@ -994,7 +994,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1139,7 +1139,7 @@ Example: "Id,Name,Type,Status,StartDate,EndDate,IsActive"
 
 </details>
 
-#### Campaigns Search
+#### Campaigns Api_search
 
 Search for campaigns using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1148,7 +1148,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.campaigns.search(
+await salesforce.campaigns.api_search(
     q="<str>"
 )
 ```
@@ -1161,7 +1161,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1308,7 +1308,7 @@ Example: "Id,CaseNumber,Subject,Status,Priority,ContactId,AccountId"
 
 </details>
 
-#### Cases Search
+#### Cases Api_search
 
 Search for cases using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1317,7 +1317,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.cases.search(
+await salesforce.cases.api_search(
     q="<str>"
 )
 ```
@@ -1330,7 +1330,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "cases",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1475,7 +1475,7 @@ Example: "Id,Title,Body,ParentId,OwnerId"
 
 </details>
 
-#### Notes Search
+#### Notes Api_search
 
 Search for notes using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1484,7 +1484,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.notes.search(
+await salesforce.notes.api_search(
     q="<str>"
 )
 ```
@@ -1497,7 +1497,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "notes",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }

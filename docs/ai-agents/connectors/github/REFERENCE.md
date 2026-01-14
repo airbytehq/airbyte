@@ -8,20 +8,20 @@ The Github connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Repositories | [Get](#repositories-get), [List](#repositories-list), [Search](#repositories-search) |
+| Repositories | [Get](#repositories-get), [List](#repositories-list), [Api_search](#repositories-api_search) |
 | Org Repositories | [List](#org-repositories-list) |
 | Branches | [List](#branches-list), [Get](#branches-get) |
 | Commits | [List](#commits-list), [Get](#commits-get) |
 | Releases | [List](#releases-list), [Get](#releases-get) |
-| Issues | [List](#issues-list), [Get](#issues-get), [Search](#issues-search) |
-| Pull Requests | [List](#pull-requests-list), [Get](#pull-requests-get), [Search](#pull-requests-search) |
+| Issues | [List](#issues-list), [Get](#issues-get), [Api_search](#issues-api_search) |
+| Pull Requests | [List](#pull-requests-list), [Get](#pull-requests-get), [Api_search](#pull-requests-api_search) |
 | Reviews | [List](#reviews-list) |
 | Comments | [List](#comments-list), [Get](#comments-get) |
 | Pr Comments | [List](#pr-comments-list), [Get](#pr-comments-get) |
 | Labels | [List](#labels-list), [Get](#labels-get) |
 | Milestones | [List](#milestones-list), [Get](#milestones-get) |
 | Organizations | [Get](#organizations-get), [List](#organizations-list) |
-| Users | [Get](#users-get), [List](#users-list), [Search](#users-search) |
+| Users | [Get](#users-get), [List](#users-list), [Api_search](#users-api_search) |
 | Teams | [List](#teams-list), [Get](#teams-get) |
 | Tags | [List](#tags-list), [Get](#tags-get) |
 | Stargazers | [List](#stargazers-list) |
@@ -113,7 +113,7 @@ If not provided, uses default fields.
  |
 
 
-#### Repositories Search
+#### Repositories Api_search
 
 Search for GitHub repositories using GitHub's powerful search syntax.
 Examples: "language:python stars:>1000", "topic:machine-learning", "org:facebook is:public"
@@ -122,7 +122,7 @@ Examples: "language:python stars:>1000", "topic:machine-learning", "org:facebook
 **Python SDK**
 
 ```python
-await github.repositories.search(
+await github.repositories.api_search(
     query="<str>"
 )
 ```
@@ -135,7 +135,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "repositories",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -536,14 +536,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `fields` | `array<string>` | No | Optional array of field names to select |
 
 
-#### Issues Search
+#### Issues Api_search
 
 Search for issues using GitHub's search syntax
 
 **Python SDK**
 
 ```python
-await github.issues.search(
+await github.issues.api_search(
     query="<str>"
 )
 ```
@@ -556,7 +556,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "issues",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -660,14 +660,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `fields` | `array<string>` | No | Optional array of field names to select |
 
 
-#### Pull Requests Search
+#### Pull Requests Api_search
 
 Search for pull requests using GitHub's search syntax
 
 **Python SDK**
 
 ```python
-await github.pull_requests.search(
+await github.pull_requests.api_search(
     query="<str>"
 )
 ```
@@ -680,7 +680,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "pull_requests",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -1241,14 +1241,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `fields` | `array<string>` | No | Optional array of field names to select |
 
 
-#### Users Search
+#### Users Api_search
 
 Search for GitHub users using search syntax
 
 **Python SDK**
 
 ```python
-await github.users.search(
+await github.users.api_search(
     query="<str>"
 )
 ```
@@ -1261,7 +1261,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
