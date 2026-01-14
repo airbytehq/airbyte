@@ -1,8 +1,6 @@
 ## Version 0.1.104
 
-**Load CDK**
-
-* Add WORKSPACE_ID and CONNECTION_ID path variables for object storage destinations. These variables read from environment variables passed by the platform and allow users to organize data by workspace and connection.
+Load CDK: Add WORKSPACE_ID and CONNECTION_ID path variables for object storage destinations. These variables read from environment variables passed by the platform and allow users to organize data by workspace and connection.
 
 ## Version 0.1.103
 
