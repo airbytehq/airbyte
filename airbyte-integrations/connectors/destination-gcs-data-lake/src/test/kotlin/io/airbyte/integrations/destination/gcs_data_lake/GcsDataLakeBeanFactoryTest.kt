@@ -45,14 +45,16 @@ internal class GcsDataLakeBeanFactoryTest {
             gcpLocation = "us-central1",
             gcsEndpoint = null,
             namespace = namespace,
-            gcsCatalogConfiguration = GcsCatalogConfiguration(
-                warehouseLocation = "gs://test-bucket/warehouse",
-                mainBranchName = "main",
-                catalogConfiguration = BigLakeCatalogConfiguration(
-                    catalogName = "test_catalog",
-                    gcpLocation = "us-central1",
+            gcsCatalogConfiguration =
+                GcsCatalogConfiguration(
+                    warehouseLocation = "gs://test-bucket/warehouse",
+                    mainBranchName = "main",
+                    catalogConfiguration =
+                        BigLakeCatalogConfiguration(
+                            catalogName = "test_catalog",
+                            gcpLocation = "us-central1",
+                        ),
                 ),
-            ),
         )
     }
 }
