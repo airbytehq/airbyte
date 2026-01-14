@@ -12,7 +12,7 @@ With hosted execution, sensitive API credentials never leave Airbyte Cloud, mult
 
 | Aspect                   | Local Mode                                     | Hosted Mode                                                |
 | ------------------------ | ---------------------------------------------- | ---------------------------------------------------------- |
-| **Credentials provided** | Actual API keys/tokens (e.g., Gong access key) | Airbyte Cloud OAuth credentials                            |
+| **Credentials provided** | Actual API keys/tokens (e.g., Gong access key) | Airbyte Cloud client credentials                           |
 | **Credential storage**   | Managed by you locally                         | Stored securely in Airbyte Cloud                           |
 | **API calls**            | Direct HTTP calls to external APIs             | Proxied through Airbyte Cloud                              |
 | **Setup complexity**     | Simpler - just need API credentials            | Requires Airbyte Cloud setup + connector instance creation |
@@ -40,7 +40,6 @@ Before using hosted execution mode, ensure you have:
 
 2. Airbyte credentials
 
-   - Organization ID
    - Client ID
    - Client Secret
 
@@ -49,7 +48,7 @@ Before using hosted execution mode, ensure you have:
 4. An installed agent connector package. For example:
 
    ```bash
-   pip install airbyte-ai-gong
+   uv pip install airbyte-ai-gong
    ```
 
    See [Connectors](../connectors) for a full list of connectors.
@@ -63,7 +62,7 @@ Before running operations in hosted mode, you must create a connector instance i
 Request an application token using your Airbyte client credentials:
 
 ```bash
-curl --location 'https://api.airbyte.com/v1/applications/token' \
+curl --location 'https://cloud.airbyte.com/api/v1/applications/token' \
   --header 'Content-Type: application/json' \
   --data '{
     "client_id": "<your_client_id>",
@@ -196,6 +195,67 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+```
+
+### API execution
+
+You can also execute connector operations directly via the REST API without using the Python SDK.
+
+#### Look up your connector instance
+
+First, retrieve your connector instance ID using your external user ID and connector definition ID:
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances_for_user?external_user_id=<your_workspace_name>&definition_id=32382e40-3b49-4b99-9c5c-4076501914e7' \
+  --header 'Authorization: Bearer <APPLICATION_TOKEN>'
+```
+
+The response contains your connector instance ID:
+
+```json
+{
+  "instances": [
+    {
+      "id": "<connector_instance_id>",
+      "name": "gong-connector"
+    }
+  ]
+}
+```
+
+#### Execute an operation
+
+Use the connector instance ID to execute operations:
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/<connector_instance_id>/execute' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
+  --data '{
+    "entity": "users",
+    "action": "list",
+    "params": {}
+  }'
+```
+
+The response contains the operation result:
+
+```json
+{
+  "result": [
+    {
+      "id": "user-123",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email_address": "john.doe@example.com"
+    }
+  ],
+  "connector_metadata": {
+    "pagination": {
+      "cursor": "next_page_cursor"
+    }
+  }
+}
 ```
 
 ## Troubleshooting
