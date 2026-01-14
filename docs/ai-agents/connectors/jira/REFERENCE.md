@@ -8,23 +8,23 @@ The Jira connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [Search](#issues-search), [Get](#issues-get) |
-| Projects | [Search](#projects-search), [Get](#projects-get) |
-| Users | [Get](#users-get), [List](#users-list), [Search](#users-search) |
-| Issue Fields | [List](#issue-fields-list), [Search](#issue-fields-search) |
+| Issues | [Api_search](#issues-api_search), [Get](#issues-get) |
+| Projects | [Api_search](#projects-api_search), [Get](#projects-get) |
+| Users | [Get](#users-get), [List](#users-list), [Api_search](#users-api_search) |
+| Issue Fields | [List](#issue-fields-list), [Api_search](#issue-fields-api_search) |
 | Issue Comments | [List](#issue-comments-list), [Get](#issue-comments-get) |
 | Issue Worklogs | [List](#issue-worklogs-list), [Get](#issue-worklogs-get) |
 
 ### Issues
 
-#### Issues Search
+#### Issues Api_search
 
 Retrieve issues based on JQL query with pagination support
 
 **Python SDK**
 
 ```python
-await jira.issues.search()
+await jira.issues.api_search()
 ```
 
 **API**
@@ -35,7 +35,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "issues",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
@@ -137,14 +137,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ### Projects
 
-#### Projects Search
+#### Projects Api_search
 
 Search and filter projects with advanced query parameters
 
 **Python SDK**
 
 ```python
-await jira.projects.search()
+await jira.projects.api_search()
 ```
 
 **API**
@@ -155,7 +155,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "projects",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
@@ -379,14 +379,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `maxResults` | `integer` | No | The maximum number of items to return per page (max 1000) |
 
 
-#### Users Search
+#### Users Api_search
 
 Search for users using a query string
 
 **Python SDK**
 
 ```python
-await jira.users.search()
+await jira.users.api_search()
 ```
 
 **API**
@@ -397,7 +397,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
@@ -439,14 +439,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 
 
-#### Issue Fields Search
+#### Issue Fields Api_search
 
 Search and filter issue fields with query parameters
 
 **Python SDK**
 
 ```python
-await jira.issue_fields.search()
+await jira.issue_fields.api_search()
 ```
 
 **API**
@@ -457,7 +457,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "issue_fields",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
