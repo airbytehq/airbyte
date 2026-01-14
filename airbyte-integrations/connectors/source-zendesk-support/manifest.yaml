@@ -56,6 +56,7 @@ definitions:
         page_size: "{{ config.get('page_size', 100) }}"
         cursor_value: '{{ response.get("next_page", {}) }}'
         stop_condition: "{{ last_page_size == 0 }}"
+        $parameters: {}
       page_token_option:
         type: RequestPath
 
@@ -111,6 +112,7 @@ definitions:
       cursor_value: "{{ response['links']['next'] }}"
       stop_condition: "{{ not response['meta']['has_more'] }}"
       page_size: "{{ config.get('page_size', 100) }}"
+      $parameters: {}
     page_token_option:
       type: RequestPath
     page_size_option:
@@ -132,6 +134,7 @@ definitions:
       # which could be `[]` but, `end_of_stream == false` and `after_url != null`
       stop_condition: '{{ response.get("end_of_stream") }}'
       page_size: "{{ config.get('page_size', 100) }}"
+      $parameters: {}
     page_token_option:
       type: RequestPath
 
@@ -146,6 +149,7 @@ definitions:
       cursor_value: '{{ response.get("next_page", {}) }}'
       stop_condition: '{{ response.get("end_of_stream") }}'
       page_size: "{{ config.get('page_size', 100) }}"
+      $parameters: {}
     page_token_option:
       type: RequestPath
 
@@ -293,6 +297,7 @@ definitions:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
           stop_condition: "{{ last_page_size == 0 }}"
+          $parameters: {}
         page_token_option:
           type: RequestPath
       record_selector:
@@ -497,6 +502,7 @@ definitions:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
           stop_condition: "{{ last_page_size == 0 }}"
+          $parameters: {}
         page_token_option:
           type: RequestPath
     schema_loader:
@@ -796,6 +802,7 @@ definitions:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
           stop_condition: "{{ last_page_size == 0 }}"
+          $parameters: {}
         page_token_option:
           type: RequestPath
     schema_loader:
@@ -864,6 +871,7 @@ definitions:
           page_size: 200
           cursor_value: "{{ response.get('before_url') }}"
           stop_condition: "{{ last_page_size == 0 }}"
+          $parameters: {}
         page_token_option:
           type: RequestPath
     incremental_sync:
@@ -948,6 +956,7 @@ definitions:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
           stop_condition: "{{ last_page_size == 0 }}"
+          $parameters: {}
         page_token_option:
           type: RequestPath
     schema_loader:
