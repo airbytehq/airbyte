@@ -346,7 +346,8 @@ definitions:
           refresh_token: "{{ config['credentials']['refresh_token'] }}"
           token_refresh_endpoint: https://app.gong.io/oauth2/generate-customer-token
           grant_type: refresh_token
-          use_client_credentials_in_refresh: false
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
           refresh_token_updater:
             refresh_token_name: refresh_token
             access_token_config_path:
