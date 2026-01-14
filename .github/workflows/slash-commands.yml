@@ -5,7 +5,8 @@ on:
 jobs:
   slashCommandDispatch:
     name: Dispatch
-    if: startsWith(github.event.comment.body, '/')
+    # Match commands starting with '/' or wrapped in backticks like '`/command`'
+    if: startsWith(github.event.comment.body, '/') || startsWith(github.event.comment.body, '`/')
     runs-on: ubuntu-24.04
     steps:
       - name: Authenticate as GitHub App
@@ -47,8 +48,26 @@ jobs:
           echo "ref=$REF" >> $GITHUB_OUTPUT
           echo "repo=$REPO" >> $GITHUB_OUTPUT
 
+      - name: Check for backtick-wrapped command
+        id: check-backticks
+        if: startsWith(github.event.comment.body, '`/')
+        run: |
+          echo "backticks_detected=true" >> $GITHUB_OUTPUT
+          echo "::warning::Command appears to be wrapped in backticks. Slash commands should not use markdown formatting."
+
+      - name: Post backtick warning comment
+        if: steps.check-backticks.outputs.backticks_detected == 'true'
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            > :warning: **Command not recognized**: Slash commands should not be wrapped in backticks or other markdown formatting.
+            >
+            > Please re-post your command without the backticks. For example, type `/bump-version` directly, not `` `/bump-version` ``.
+
       - name: Slash Command Dispatch (Workflow)
         id: scd
+        if: steps.check-backticks.outputs.backticks_detected != 'true'
         uses: peter-evans/slash-command-dispatch@f996d7b7aae9059759ac55e978cff76d91853301 # v3.0.2
         with:
           token: ${{ steps.get-app-token.outputs.token }}
