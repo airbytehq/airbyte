@@ -1,3 +1,7 @@
+## Version 0.1.103
+
+load cdk: add table identifier regression test
+
 ## Version 0.1.102
 
 load cdk: add schema regression test
