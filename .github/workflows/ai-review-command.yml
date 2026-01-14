@@ -1,10 +1,22 @@
 name: PR AI Review Command
 
 on:
-  issue_comment:
-    types: [created]
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo (owner/repo)"
+        required: false
+      gitref:
+        description: "Git ref"
+        required: false
+      pr:
+        description: "PR number"
+        required: true
+      comment-id:
+        description: "Comment ID"
+        required: false
 
-run-name: "PR AI Review for PR #${{ github.event.issue.number }}"
+run-name: "PR AI Review for PR #${{ inputs.pr }}"
 
 permissions:
   contents: read
@@ -13,11 +25,6 @@ permissions:
 
 jobs:
   pr-ai-review:
-    # Only run on PR comments that start with !pr_ai_review
-    if: |
-      github.event.issue.pull_request &&
-      github.event.issue.state == 'open' &&
-      startsWith(github.event.comment.body, '!pr_ai_review')
     runs-on: ubuntu-latest
     steps:
       - name: Get job variables
@@ -42,7 +49,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
-          PR_URL="${{ github.event.issue.pull_request.url }}"
+          PR_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ inputs.pr }}"
           PR_INFO=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$PR_URL")
           HEAD_SHA=$(echo "$PR_INFO" | jq -r '.head.sha')
           HEAD_REF=$(echo "$PR_INFO" | jq -r '.head.ref')
@@ -50,11 +57,12 @@ jobs:
           echo "head-ref=$HEAD_REF" >> $GITHUB_OUTPUT
 
       - name: Post start comment
+        if: ${{ inputs.comment-id }}
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ steps.get-app-token.outputs.token }}
-          comment-id: ${{ github.event.comment.id }}
-          issue-number: ${{ github.event.issue.number }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
           body: |
             > **PR AI Review Started**
             >
@@ -64,9 +72,8 @@ jobs:
       - name: Run PR AI Review
         uses: aaronsteers/devin-action@main
         with:
-          comment-id: ${{ github.event.comment.id }}
-          issue-number: ${{ github.event.issue.number }}
-          playbook-macro: "!pr_ai_review"
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
           start-message: |
