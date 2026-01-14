@@ -205,7 +205,6 @@ constructor(
                 SOCKET -> maxDBConnections ?: socketPaths.size
             }
         log.info { "Effective concurrency: $maxConcurrency" }
-        log.info { "*** namespace field: ${pojo.schemas?.toSet() ?: setOf("public")}"}
 
         val namespaces: Set<String> = pojo.schemas
             ?.filter { it.isNotBlank() }
