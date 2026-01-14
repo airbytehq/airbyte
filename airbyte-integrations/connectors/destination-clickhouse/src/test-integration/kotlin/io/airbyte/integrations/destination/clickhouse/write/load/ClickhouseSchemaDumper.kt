@@ -8,24 +8,15 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.test.util.FullTableSchema
 import io.airbyte.cdk.load.test.util.SchemaDumper
-import io.airbyte.integrations.destination.clickhouse.client.ClickhouseAirbyteClient
-import io.mockk.mockk
+import io.airbyte.integrations.destination.clickhouse.Utils
 import kotlinx.coroutines.future.await
 
-object ClickhouseSchemaDumper : SchemaDumper {
-    override suspend fun discoverSchema(
-        spec: ConfigurationSpecification,
-        namespace: String?,
-        name: String
-    ): FullTableSchema {
-        val config = ClickhouseSpecToConfig.specToConfig(spec)
-        val client = ClientProvider.getClient(config)
-        val airbyteClient =
-            ClickhouseAirbyteClient(
-                client,
-                sqlGenerator = mockk(),
-                tempTableNameGenerator = mockk(),
-            )
+class ClickhouseSchemaDumper(spec: ConfigurationSpecification) : SchemaDumper {
+    private val config = Utils.specToConfig(spec)
+    private val client = Utils.getClickhouseClient(spec)
+    private val airbyteClient = Utils.getClickhouseAirbyteClient(spec)
+
+    override suspend fun discoverSchema(namespace: String?, name: String): FullTableSchema {
         val tableName = TableName(namespace ?: config.resolvedDatabase, name)
         val tableSchema = airbyteClient.discoverSchema(tableName)
 
