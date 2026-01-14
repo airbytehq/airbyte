@@ -244,5 +244,6 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
+- Learn about [auto-generated tool descriptions](../tools/) to expose all connector operations with a single decorator instead of manually defining each tool.
 - Add more tools and agent connectors to your project. For GitHub, you can wrap additional operations (like search, comments, or commits) as tools. Explore other agent connectors in the [Airbyte agent connectors catalog](https://github.com/airbytehq/airbyte-agent-connectors) to give your agent access to more services.
 - Consider how you might like to expand your agent's capabilities. For example, you might want to trigger effects like sending a Slack message or an email based on the agent's findings. You aren't limited to the capabilities of Airbyte's agent connectors. You can use other libraries and integrations to build an increasingly robust agent ecosystem.
