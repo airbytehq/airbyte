@@ -171,10 +171,6 @@ The `@GithubConnector.describe` decorator automatically generates a comprehensiv
 
 With this single tool, your agent can access all of the connector's capabilities. The agent decides which entity and action to use based on your natural language questions.
 
-:::tip
-For fine-grained control over which operations are exposed, you can define individual tools with manual docstrings instead. See the [tools documentation](../tools/) for more details.
-:::
-
 ## Part 7: Run your project
 
 Now that your agent is configured with tools, update `main.py` and run your project.
