@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = ["load-db"]
+    toolkits = ["load-object-storage"]
 }
 
 sourceSets {

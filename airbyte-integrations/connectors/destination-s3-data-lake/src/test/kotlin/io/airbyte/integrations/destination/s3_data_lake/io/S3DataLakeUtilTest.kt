@@ -31,10 +31,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.cdk.load.schema.model.ColumnSchema
-import io.airbyte.cdk.load.schema.model.StreamTableSchema
-import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.AIRBYTE_CDC_DELETE_COLUMN
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
@@ -70,18 +66,6 @@ internal class S3DataLakeUtilTest {
     private lateinit var s3DataLakeUtil: S3DataLakeUtil
     private lateinit var icebergUtil: IcebergUtil
     private val tableIdGenerator = SimpleTableIdGenerator()
-
-    private val emptyTableSchema =
-        StreamTableSchema(
-            columnSchema =
-                ColumnSchema(
-                    inputSchema = mapOf(),
-                    inputToFinalColumnNames = mapOf(),
-                    finalSchema = mapOf(),
-                ),
-            importType = Append,
-            tableNames = TableNames(finalTableName = TableName("namespace", "test")),
-        )
 
     @BeforeEach
     fun setup() {
@@ -222,7 +206,6 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
-                tableSchema = emptyTableSchema,
             )
         val airbyteRecord =
             EnrichedDestinationRecordAirbyteValue(
@@ -287,7 +270,6 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
-                tableSchema = emptyTableSchema,
             )
         val airbyteRecord =
             EnrichedDestinationRecordAirbyteValue(
@@ -357,7 +339,6 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
-                tableSchema = emptyTableSchema,
             )
         val airbyteRecord =
             EnrichedDestinationRecordAirbyteValue(
@@ -526,7 +507,6 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
-                tableSchema = emptyTableSchema,
             )
         val schema = icebergUtil.toIcebergSchema(stream = stream)
         assertEquals(primaryKeys.toSet(), schema.identifierFieldNames())
@@ -630,7 +610,6 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
-                tableSchema = emptyTableSchema,
             )
         val schema = icebergUtil.toIcebergSchema(stream = stream)
         assertEquals(emptySet<String>(), schema.identifierFieldNames())

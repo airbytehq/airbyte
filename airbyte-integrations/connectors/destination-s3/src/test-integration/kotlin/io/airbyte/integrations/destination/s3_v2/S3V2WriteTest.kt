@@ -71,6 +71,11 @@ abstract class S3V2WriteTest(
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
     ) {
+    @Test
+    override fun testAppend() {
+        super.testAppend()
+    }
+
     @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {

@@ -8,6 +8,7 @@ plugins {
 airbyteBulkConnector {
     core = 'load'
     toolkits = ['load-object-storage', 'load-azure-blob-storage']
+    useLegacyTaskLoader = true
 }
 
 application {
