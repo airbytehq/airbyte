@@ -206,6 +206,13 @@ constructor(
             }
         log.info { "Effective concurrency: $maxConcurrency" }
         log.info { "*** namespace field: ${pojo.schemas?.toSet() ?: setOf("public")}"}
+
+        val namespaces: Set<String> = pojo.schemas
+            ?.filter { it.isNotBlank() }
+            ?.toSet()
+            ?.takeUnless { it.isEmpty() }
+            ?: setOf("public")
+
         return PostgresSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -214,7 +221,7 @@ constructor(
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             database = pojo.database,
-            namespaces = pojo.schemas?.toSet() ?: setOf("public"),
+            namespaces = namespaces,
             incrementalConfiguration = incremental,
             maxConcurrency = maxConcurrency,
             checkpointTargetInterval = checkpointTargetInterval,
