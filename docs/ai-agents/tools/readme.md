@@ -1,8 +1,10 @@
 # Tools
 
-Tools are external capabilities an AI agent can invoke. They allow agents to perceive, decide, and act beyond their training data. Think of Airbyte's agent connectors as collections of tools that fulfill this purpose.
+Tools are external capabilities an AI agent can invoke.
 
-## What tools do and why you need them
+## Why we need tools
+
+Tools allow agents to perceive, decide, and act beyond their training data. Think of Airbyte's agent connectors as collections of tools that fulfill this purpose.
 
 Large language models, by default, lack real-time knowledge, are stateless, and can't act on and verify facts. This places limits on their capabilities. Tools expand the capabilities of an LLM. Tools are callable functions, services, and interfaces that an AI agent can use to:
 
@@ -26,7 +28,7 @@ Generally, you want to use auto-generated descriptions unless you have a reason 
 
 You can manually define individual tools with hand-written docstrings. This approach works well when you want to expose only specific operations or need custom parameter handling. However, it requires writing and maintaining docstrings for each tool, and the agent only knows about the operations you define.
 
-```python
+```python title="agent.py"
 from pydantic_ai import Agent
 from airbyte_agent_github import GithubConnector
 
@@ -46,7 +48,7 @@ The docstring is the tool's description, which helps the LLM understand when to 
 
 For comprehensive tool coverage, use the `@Connector.describe` decorator. This decorator reads the connector's metadata and automatically generates a detailed docstring that includes all available entities, actions, parameters, and response structures.
 
-```python
+```python title="agent.py"
 from pydantic_ai import Agent
 from airbyte_agent_github import GithubConnector
 
@@ -62,13 +64,13 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 The decorator automatically expands the docstring to include all available entities and actions, their required and optional parameters, response structure details, and pagination guidance. This gives the LLM everything it needs to correctly call the connector without additional discovery calls.
 
-## Decorator ordering
+### Decorator order matters
 
 When using the `describe` decorator with agent frameworks like Pydantic AI or FastMCP, **decorator order matters**. The `@Connector.describe` decorator must be the **inner** decorator (closest to the function definition) because frameworks capture docstrings at decoration time.
 
 Correct ordering:
 
-```python
+```python title="agent.py"
 @agent.tool_plain        # Outer: framework decorator captures __doc__
 @GithubConnector.describe  # Inner: sets __doc__ before framework sees it
 async def github_execute(entity: str, action: str, params: dict | None = None):
@@ -85,7 +87,7 @@ Beyond the `describe` decorator, connectors provide programmatic introspection m
 
 Returns structured data about all available entities, their actions, and parameters.
 
-```python
+```python title="agent.py"
 entities = connector.list_entities()
 for entity in entities:
     print(f"{entity['entity_name']}: {entity['available_actions']}")
@@ -98,7 +100,7 @@ Each entity description includes the entity name, a description, available actio
 
 Returns the JSON schema for a specific entity. This is useful for understanding the structure of returned data.
 
-```python
+```python title="agent.py"
 schema = connector.entity_schema("customers")
 if schema:
     print(f"Customer properties: {list(schema.get('properties', {}).keys())}")
@@ -112,7 +114,7 @@ These examples show you how you can implement Airbyte connectors as tools.
 
 This example uses the `describe` decorator to maximize your agent's use of Stripe with minimal code and maintenance.
 
-```python
+```python title="agent.py"
 from pydantic_ai import Agent
 from airbyte_agent_stripe import StripeConnector
 from airbyte_agent_stripe.models import StripeAuthConfig
@@ -137,12 +139,18 @@ async def stripe_execute(entity: str, action: str, params: dict | None = None):
 
 You can register multiple connectors as separate tools, each with its own auto-generated description. The agent can then decide which connector to use based on the user's question and the tool descriptions.
 
-```python
+```python title="agent.py"
+from pydantic_ai import Agent
 from airbyte_agent_github import GithubConnector
 from airbyte_agent_hubspot import HubspotConnector
 
 github = GithubConnector(auth_config=...)
 hubspot = HubspotConnector(auth_config=...)
+
+agent = Agent(
+    "openai:gpt-4o",
+    system_prompt="You are a helpful assistant that can access data from different third-parties."
+)
 
 @agent.tool_plain
 @GithubConnector.describe
