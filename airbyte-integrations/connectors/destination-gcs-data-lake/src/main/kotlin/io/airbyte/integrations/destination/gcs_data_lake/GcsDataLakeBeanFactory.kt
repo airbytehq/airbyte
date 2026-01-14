@@ -8,6 +8,9 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.config.DataFlowSocketConfig
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -17,6 +20,10 @@ import jakarta.inject.Singleton
 @Factory
 class GcsDataLakeBeanFactory {
     private val log = KotlinLogging.logger {}
+
+    @Singleton
+    fun tempTableNameGenerator(config: GcsDataLakeConfiguration): TempTableNameGenerator =
+        DefaultTempTableNameGenerator(internalNamespace = config.namespace)
 
     @Singleton
     fun aggregatePublishingConfig(): AggregatePublishingConfig {
