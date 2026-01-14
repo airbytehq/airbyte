@@ -69,6 +69,7 @@ jobs:
             bump-version
             build-connector-images
             connector-performance
+            force-merge
             format-fix
             poe
             publish-connectors-prerelease
