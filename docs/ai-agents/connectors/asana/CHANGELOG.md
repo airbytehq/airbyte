@@ -1,5 +1,90 @@
 # Asana changelog
 
+## [0.19.39] - 2026-01-14
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: e6285db5
+- SDK version: 0.1.0
+
+## [0.19.38] - 2026-01-14
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: 31de238d
+- SDK version: 0.1.0
+
+## [0.19.37] - 2026-01-13
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: e80a226e
+- SDK version: 0.1.0
+
+## [0.19.36] - 2026-01-13
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: 78b1be67
+- SDK version: 0.1.0
+
+## [0.19.35] - 2026-01-11
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: e519b73d
+- SDK version: 0.1.0
+
+## [0.19.34] - 2026-01-09
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: 3c7bfdfd
+- SDK version: 0.1.0
+
+## [0.19.33] - 2026-01-09
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: 3bcb33e8
+- SDK version: 0.1.0
+
+## [0.19.32] - 2026-01-09
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: da9b741b
+- SDK version: 0.1.0
+
+## [0.19.31] - 2026-01-07
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: d023e05f
+- SDK version: 0.1.0
+
+## [0.19.30] - 2026-01-06
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: 0580c727
+- SDK version: 0.1.0
+
+## [0.19.29] - 2026-01-06
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: e0e2f989
+- SDK version: 0.1.0
+
+## [0.19.28] - 2026-01-05
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: 3e274293
+- SDK version: 0.1.0
+
+## [0.19.27] - 2025-12-22
+- Updated connector definition (YAML version 0.1.6)
+- Source commit: 0eb1b1c4
+- SDK version: 0.1.0
+
+## [0.19.26] - 2025-12-19
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: 12f6b994
+- SDK version: 0.1.0
+
+## [0.19.25] - 2025-12-19
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: 5d11bfdf
+- SDK version: 0.1.0
+
+## [0.19.24] - 2025-12-19
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: e996e848
+- SDK version: 0.1.0
+
+## [0.19.23] - 2025-12-19
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: 07f8a58d
+- SDK version: 0.1.0
+
 ## [0.19.22] - 2025-12-18
 - Updated connector definition (YAML version 0.1.4)
 - Source commit: f7c55d3e

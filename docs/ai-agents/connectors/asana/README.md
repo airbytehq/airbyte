@@ -7,18 +7,22 @@ teams, and users for project tracking, workload analysis, and productivity insig
 
 ## Example questions
 
+The Asana connector is optimized to handle prompts like these.
+
 - What tasks are assigned to me this week?
 - List all projects in my workspace
 - Summarize my team's workload and task completion rates
-- Show me the tasks for the [ProjectName] project
-- Who are the team members in my [TeamName] team?
-- Find all tasks related to [ClientName] across my workspaces
+- Show me the tasks for the \{project_name\} project
+- Who are the team members in my \{team_name\} team?
+- Find all tasks related to \{client_name\} across my workspaces
 - Analyze the most active projects in my workspace last month
 - Compare task completion rates between my different teams
 - Identify overdue tasks across all my projects
 - Show me details of my current workspace and its users
 
 ## Unsupported questions
+
+The Asana connector isn't currently able to handle prompts like these.
 
 - Create a new task for [TeamMember]
 - Update the priority of this task
@@ -35,11 +39,16 @@ uv pip install airbyte-agent-asana
 
 ## Usage
 
+This connector supports multiple authentication methods:
+
+### OAuth 2
+
 ```python
-from airbyte_agent_asana import AsanaConnector, AsanaAuthConfig
+from airbyte_agent_asana import AsanaConnector
+from airbyte_agent_asana.models import AsanaOauth2AuthConfig
 
 connector = AsanaConnector(
-  auth_config=AsanaAuthConfig(
+  auth_config=AsanaOauth2AuthConfig(
     access_token="...",
     refresh_token="...",
     client_id="...",
@@ -48,6 +57,21 @@ connector = AsanaConnector(
 )
 result = await connector.tasks.list()
 ```
+
+### Personal Access Token
+
+```python
+from airbyte_agent_asana import AsanaConnector
+from airbyte_agent_asana.models import AsanaPersonalAccessTokenAuthConfig
+
+connector = AsanaConnector(
+  auth_config=AsanaPersonalAccessTokenAuthConfig(
+    token="..."
+  )
+)
+result = await connector.tasks.list()
+```
+
 
 ## Full documentation
 
@@ -85,6 +109,6 @@ For the service's official API docs, see the [Asana API reference](https://devel
 
 ## Version information
 
-- **Package version:** 0.19.22
-- **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b
+- **Package version:** 0.19.39
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** e6285db53fdc1d0dd43d30ef752a009226e47d48

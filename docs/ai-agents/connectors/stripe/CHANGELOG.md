@@ -1,5 +1,90 @@
 # Stripe changelog
 
+## [0.5.38] - 2026-01-14
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: e6285db5
+- SDK version: 0.1.0
+
+## [0.5.37] - 2026-01-14
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: 31de238d
+- SDK version: 0.1.0
+
+## [0.5.36] - 2026-01-13
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: 24bb7379
+- SDK version: 0.1.0
+
+## [0.5.35] - 2026-01-13
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: e80a226e
+- SDK version: 0.1.0
+
+## [0.5.34] - 2026-01-13
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: 78b1be67
+- SDK version: 0.1.0
+
+## [0.5.33] - 2026-01-11
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: e519b73d
+- SDK version: 0.1.0
+
+## [0.5.32] - 2026-01-09
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: 3c7bfdfd
+- SDK version: 0.1.0
+
+## [0.5.31] - 2026-01-09
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: 3bcb33e8
+- SDK version: 0.1.0
+
+## [0.5.30] - 2026-01-09
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: da9b741b
+- SDK version: 0.1.0
+
+## [0.5.29] - 2026-01-07
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: d023e05f
+- SDK version: 0.1.0
+
+## [0.5.28] - 2026-01-06
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: 0580c727
+- SDK version: 0.1.0
+
+## [0.5.27] - 2026-01-06
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: e0e2f989
+- SDK version: 0.1.0
+
+## [0.5.26] - 2026-01-05
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: 3e274293
+- SDK version: 0.1.0
+
+## [0.5.25] - 2025-12-22
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: 0eb1b1c4
+- SDK version: 0.1.0
+
+## [0.5.24] - 2025-12-19
+- Updated connector definition (YAML version 0.1.2)
+- Source commit: 12f6b994
+- SDK version: 0.1.0
+
+## [0.5.23] - 2025-12-19
+- Updated connector definition (YAML version 0.1.2)
+- Source commit: 5d11bfdf
+- SDK version: 0.1.0
+
+## [0.5.22] - 2025-12-19
+- Updated connector definition (YAML version 0.1.2)
+- Source commit: e996e848
+- SDK version: 0.1.0
+
 ## [0.5.21] - 2025-12-18
 - Updated connector definition (YAML version 0.1.2)
 - Source commit: f7c55d3e

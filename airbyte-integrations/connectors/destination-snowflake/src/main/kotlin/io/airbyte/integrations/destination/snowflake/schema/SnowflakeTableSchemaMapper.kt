@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.schema
@@ -112,7 +112,7 @@ class SnowflakeTableSchemaMapper(
                     finalSchema =
                         mapOf(
                             Meta.COLUMN_NAME_DATA to
-                                ColumnType(SnowflakeDataType.OBJECT.typeName, false)
+                                ColumnType(SnowflakeDataType.VARIANT.typeName, false)
                         )
                 ),
             importType = tableSchema.importType,

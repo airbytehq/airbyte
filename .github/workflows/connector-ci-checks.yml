@@ -31,7 +31,7 @@ on:
     outputs:
       result:
         description: "The result of the checks, e.g. 'success' if successful."
-        value: ${{ jobs.connector-ci-checks-summary.result }}
+        value: ${{ jobs.connector-ci-checks-summary.outputs.result }}
       commit-sha:
         description: "The commit SHA of the current branch, used to report test results."
         value: ${{ jobs.generate-matrix.outputs.commit-sha }}
@@ -470,6 +470,8 @@ jobs:
       - pre-release-checks
       - connectors-lint
     runs-on: ubuntu-24.04
+    outputs:
+      result: ${{ steps.evaluate-status.outputs.result }}
     steps:
       - name: Evaluate Status
         id: evaluate-status
