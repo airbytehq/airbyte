@@ -204,6 +204,7 @@ If compaction runs simultaneously with the sync, it would delete files from the 
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 1.0.5   | 2026-01-14 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)         | Restore integration tests in CI. Workaround DI error.                                 |
 | 1.0.4   | 2026-01-12 | [71227](https://github.com/airbytehq/airbyte/pull/71227)     | Add speed mode support with PROTOBUF serialization                                    |
 | 1.0.3   | 2026-01-12 | [71258](https://github.com/airbytehq/airbyte/pull/71258)     | Migrate to TableSchemaMapper from deprecated ColumnNameMapper pattern                 |
 | 1.0.2   | 2025-11-13 | [69317](https://github.com/airbytehq/airbyte/pull/69317)     | Connector generally available                                                         |
