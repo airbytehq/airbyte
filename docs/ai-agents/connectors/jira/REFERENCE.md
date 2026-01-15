@@ -791,12 +791,12 @@ The Jira connector requires the following configuration variables. These variabl
 The Jira connector supports the following authentication methods.
 
 
-### Authentication
+### Jira API Token Authentication
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `username` | `str` | Yes | Authentication username |
-| `password` | `str` | Yes | Authentication password |
+| `username` | `str` | Yes | Your Atlassian account email address |
+| `password` | `str` | Yes | Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens |
 
 #### Example
 
@@ -805,8 +805,8 @@ The Jira connector supports the following authentication methods.
 ```python
 JiraConnector(
   auth_config=JiraAuthConfig(
-    username="<Authentication username>",
-    password="<Authentication password>"
+    username="<Your Atlassian account email address>",
+    password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
   )
 )
 ```
@@ -820,8 +820,8 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
 --data '{
   "connector_definition_id": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
   "auth_config": {
-    "username": "<Authentication username>",
-    "password": "<Authentication password>"
+    "username": "<Your Atlassian account email address>",
+    "password": "<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
   },
   "name": "My Jira Connector"
 }'
