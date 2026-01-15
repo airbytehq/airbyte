@@ -115,7 +115,7 @@ In the `Manage / Certificates & secrets` panel, click `Client Secrets` and creat
    1. If you are accessing through a Service Principal, choose the `Authenticate via Client Credentials`.
      0. See [above](#step-1-set-up-azure-blob-storage) regarding setting IAM role bindings for the Service Principal and getting detail of the app registration
      1. Enter the `Directory (tenant) ID` value from app registration in Azure Portal into the `Tenant ID` field.
-     2. Enter the `Application (client) ID` from Azure Portal into the `Tenant ID` field. Note this is **not** the secret ID
+     2. Enter the `Application (client) ID` from Azure Portal into the `Client ID` field. Note this is **not** the secret ID
      3. Enter the Secret `Value` from Azure Portal into the `Client Secret` field.
 8. Add a stream
    1. Write the **File Type**
@@ -311,8 +311,9 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.10 | 2026-01-14 | [71450](https://github.com/airbytehq/airbyte/pull/71450) | Update dependencies |
 | 0.8.9 | 2026-01-07 | [71000](https://github.com/airbytehq/airbyte/pull/71000) | Enable 'Copy raw files' delivery method for file transfers |
-| 0.8.8 | 2025-12-16 | [70804](https://github.com/airbytehq/airbyte/pull/70804) | Update dependencies |
+| 0.8.8 | 2025-12-18 | [70804](https://github.com/airbytehq/airbyte/pull/70804) | Update dependencies |
 | 0.8.7 | 2025-12-03 | [70316](https://github.com/airbytehq/airbyte/pull/70316) | Increase memory for check_connection to 4096Mi |
 | 0.8.6 | 2025-12-02 | [70291](https://github.com/airbytehq/airbyte/pull/70291) | Update dependencies |
 | 0.8.5 | 2025-11-25 | [69910](https://github.com/airbytehq/airbyte/pull/69910) | Update dependencies |
@@ -320,7 +321,7 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 | 0.8.3 | 2025-11-11 | [69269](https://github.com/airbytehq/airbyte/pull/69269) | Update dependencies |
 | 0.8.2 | 2025-11-04 | [69156](https://github.com/airbytehq/airbyte/pull/69156) | Update dependencies |
 | 0.8.1 | 2025-10-29 | [68376](https://github.com/airbytehq/airbyte/pull/68376) | Update dependencies |
-| 0.8.0 | 2025-10-23 | [68615](https://github.com/airbytehq/airbyte/pull/68615) | Update dependencies |
+| 0.8.0 | 2025-10-27 | [68615](https://github.com/airbytehq/airbyte/pull/68615) | Update dependencies |
 | 0.7.0 | 2025-10-27 | [68663](https://github.com/airbytehq/airbyte/pull/68663) | Promoting release candidate 0.7.0-rc.1 to a main version. |
 | 0.7.0-rc.1 | 2025-10-21 | [68161](https://github.com/airbytehq/airbyte/pull/68161) | Update to airbyte-cdk ^v7                                                                    |
 | 0.6.16     | 2025-10-14 | [68015](https://github.com/airbytehq/airbyte/pull/68015) | Update dependencies                                                                          |
