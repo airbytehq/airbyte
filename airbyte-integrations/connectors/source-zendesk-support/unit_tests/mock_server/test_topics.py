@@ -46,9 +46,7 @@ class TestTopicsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_topics_request(api_token_authenticator).build(),
-            TopicsResponseBuilder.topics_response()
-            .with_record(TopicsRecordBuilder.topics_record().with_cursor(RECENT_CURSOR))
-            .build(),
+            TopicsResponseBuilder.topics_response().with_record(TopicsRecordBuilder.topics_record().with_cursor(RECENT_CURSOR)).build(),
         )
 
         output = read_stream("topics", SyncMode.incremental, self._config)
