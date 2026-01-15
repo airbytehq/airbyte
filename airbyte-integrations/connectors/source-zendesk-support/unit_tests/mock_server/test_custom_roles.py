@@ -13,6 +13,8 @@ from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import CustomRolesRecordBuilder, CustomRolesResponseBuilder, ErrorResponseBuilder
 from .utils import get_log_messages_by_log_level, read_stream
 
+RECENT_CURSOR = ab_datetime_now().subtract(timedelta(days=1)).to_iso8601_string()
+
 
 class TestCustomRolesStreamFullRefresh(TestCase):
     """
@@ -46,7 +48,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_custom_roles_request(api_token_authenticator).build(),
-            CustomRolesResponseBuilder.custom_roles_response().with_record(CustomRolesRecordBuilder.custom_roles_record()).build(),
+            CustomRolesResponseBuilder.custom_roles_response().with_record(CustomRolesRecordBuilder.custom_roles_record().with_cursor(RECENT_CURSOR)).build(),
         )
 
         output = read_stream("custom_roles", SyncMode.incremental, self._config)
@@ -70,11 +72,11 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         )
 
         # Create records for page 1
-        record1 = CustomRolesRecordBuilder.custom_roles_record().with_id(1001)
-        record2 = CustomRolesRecordBuilder.custom_roles_record().with_id(1002)
+        record1 = CustomRolesRecordBuilder.custom_roles_record().with_id(1001).with_cursor(RECENT_CURSOR)
+        record2 = CustomRolesRecordBuilder.custom_roles_record().with_id(1002).with_cursor(RECENT_CURSOR)
 
         # Create record for page 2
-        record3 = CustomRolesRecordBuilder.custom_roles_record().with_id(1003)
+        record3 = CustomRolesRecordBuilder.custom_roles_record().with_id(1003).with_cursor(RECENT_CURSOR)
 
         # Page 1: has records and provides next_page URL
         http_mocker.get(

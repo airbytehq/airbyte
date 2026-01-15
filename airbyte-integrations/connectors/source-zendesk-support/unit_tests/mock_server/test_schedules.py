@@ -21,6 +21,8 @@ from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, SchedulesRecordBuilder, SchedulesResponseBuilder
 from .utils import get_log_messages_by_log_level, read_stream
 
+RECENT_CURSOR = ab_datetime_now().subtract(timedelta(days=1)).to_iso8601_string()
+
 
 class TestSchedulesStreamFullRefresh(TestCase):
     """
@@ -59,7 +61,7 @@ class TestSchedulesStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_schedules_request(api_token_authenticator).build(),
-            SchedulesResponseBuilder.schedules_response().with_record(SchedulesRecordBuilder.schedules_record()).build(),
+            SchedulesResponseBuilder.schedules_response().with_record(SchedulesRecordBuilder.schedules_record().with_cursor(RECENT_CURSOR)).build(),
         )
 
         output = read_stream("schedules", SyncMode.incremental, self._config)
@@ -86,11 +88,11 @@ class TestSchedulesStreamFullRefresh(TestCase):
         )
 
         # Create records for page 1
-        record1 = SchedulesRecordBuilder.schedules_record().with_id(1001)
-        record2 = SchedulesRecordBuilder.schedules_record().with_id(1002)
+        record1 = SchedulesRecordBuilder.schedules_record().with_id(1001).with_cursor(RECENT_CURSOR)
+        record2 = SchedulesRecordBuilder.schedules_record().with_id(1002).with_cursor(RECENT_CURSOR)
 
         # Create record for page 2
-        record3 = SchedulesRecordBuilder.schedules_record().with_id(1003)
+        record3 = SchedulesRecordBuilder.schedules_record().with_id(1003).with_cursor(RECENT_CURSOR)
 
         # Page 1: has records and provides next_page URL
         http_mocker.get(
