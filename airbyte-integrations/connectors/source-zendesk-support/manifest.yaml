@@ -188,7 +188,7 @@ definitions:
       primary_key: "id"
 
   user_fields_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -196,6 +196,7 @@ definitions:
     $parameters:
       name: "user_fields"
       path: "user_fields"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   tags_stream:
