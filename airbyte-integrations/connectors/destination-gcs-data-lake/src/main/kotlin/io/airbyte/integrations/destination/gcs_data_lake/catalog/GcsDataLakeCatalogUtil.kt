@@ -110,6 +110,7 @@ class GcsDataLakeCatalogUtil(
                 "credential" to credential,
                 "scope" to "PRINCIPAL_ROLE:ALL",
                 CatalogProperties.WAREHOUSE_LOCATION to catalogConfig.catalogName,
+                "header.Polaris-Realm" to catalogConfig.realm,
             )
 
         return polarisProperties +

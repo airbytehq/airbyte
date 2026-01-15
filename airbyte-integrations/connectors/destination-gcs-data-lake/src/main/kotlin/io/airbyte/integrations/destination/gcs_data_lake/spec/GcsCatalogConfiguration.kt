@@ -20,4 +20,5 @@ data class PolarisCatalogConfiguration(
     val catalogName: String,
     val clientId: String,
     val clientSecret: String,
+    val realm: String? = null,
 ) : GcsCatalogConfig

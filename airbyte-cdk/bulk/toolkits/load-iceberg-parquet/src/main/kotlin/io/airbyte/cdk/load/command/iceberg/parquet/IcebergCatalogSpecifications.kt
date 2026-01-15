@@ -99,6 +99,7 @@ interface IcebergCatalogSpecifications {
                         (catalogType as PolarisCatalogSpecification).clientSecret,
                         (catalogType as PolarisCatalogSpecification).scope,
                         (catalogType as PolarisCatalogSpecification).oauth2ServerUri,
+                        (catalogType as PolarisCatalogSpecification).realm,
                         (catalogType as PolarisCatalogSpecification).namespace,
                     )
             }
@@ -400,6 +401,27 @@ class PolarisCatalogSpecification(
     val oauth2ServerUri: String? = null,
 
     /**
+     * Polaris Realm for multi-realm deployments.
+     *
+     * Optional realm name for Apache Polaris multi-realm deployments. If not provided, defaults to
+     * the server's default realm (typically "POLARIS"). Required when connecting to a Polaris
+     * server with multiple realms configured.
+     */
+    @get:JsonSchemaTitle("Polaris Realm")
+    @get:JsonPropertyDescription(
+        "The Polaris realm name for multi-realm deployments. If not provided, defaults to the server's default realm."
+    )
+    @get:JsonProperty("realm")
+    @get:JsonSchemaInject(
+        json =
+            """{
+            "examples": ["POLARIS", "my-realm"],
+            "order":7
+        }""",
+    )
+    val realm: String? = null,
+
+    /**
      * The namespace to be used when building the Table identifier
      *
      * This namespace will only be used if the stream namespace is null, meaning when the
@@ -413,6 +435,6 @@ class PolarisCatalogSpecification(
            `Destination-defined` or `Source-defined`"""
     )
     @get:JsonProperty("namespace")
-    @JsonSchemaInject(json = """{"order":7}""")
+    @JsonSchemaInject(json = """{"order":8}""")
     val namespace: String,
 ) : CatalogType(catalogType)
