@@ -244,7 +244,10 @@ spec:
         type: string
         enum:
         - '1H'
+        - '2H'
+        - '4H'
         - '6H'
+        - '8H'
         - '12H'
         - '1D'
         - '7D'
