@@ -7,15 +7,13 @@ import TabItem from '@theme/TabItem';
 
 # Terraform provider
 
-Follow this tutorial to learn how to use Airbyte's Terraform Provider.
+Follow this tutorial to learn how to use Airbyte's Terraform Provider. If you don't need a tutorial, go straight to the [Terraform reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
 
 [Terraform](https://www.terraform.io/), developed by HashiCorp, is an Infrastructure as Code (IaC) tool that empowers you to define and provision infrastructure using a declarative configuration language. If you use Terraform to manage your infrastructure, you can use Airbyte's Terraform provider to automate and version control your Airbyte configuration as code. Airbyte's Terraform provider is built off [Airbyte's API](https://reference.airbyte.com).
 
-If you don't need a tutorial, go straight to the [Terraform docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
+## Limitations
 
-## Limitations and considerations
-
-The Airbyte Terraform provider supports connectors that are available in **both** self-managed and cloud plans. It doesn't support connectors that are only available in self-managed plans.
+The Airbyte Terraform provider supports connectors that are available in **both** Self-Managed and Cloud. It doesn't support connectors that are only available in Self-Managed versions of Airbyte.
 
 ## Requirements before you begin
 
@@ -23,11 +21,11 @@ Before starting this tutorial, make sure you have the following:
 
 - Basic familiarity with Terraform is helpful, but not required.
 
-- Install a code editor, like Visual Studio Code, optionally with a Terraform extension.
+- A code editor, like Visual Studio Code, optionally with a Terraform extension.
 
-- Ensure [Terraform is installed](https://developer.hashicorp.com/terraform/install) on your machine.
+- [Terraform installed](https://developer.hashicorp.com/terraform/install) on your machine.
 
-- Obtain your Airbyte credentials:
+- Your Airbyte credentials:
 
     - [An API application](/platform/using-airbyte/configuring-api-access) in Airbyte, your client ID, and your client secret.
 
@@ -37,11 +35,200 @@ Before starting this tutorial, make sure you have the following:
 
 - Source and destination credentials. This tutorial uses [Stripe](/integrations/sources/stripe) and [BigQuery](/integrations/destinations/bigquery), but you can substitute any other connector. Consult the documentation for those connectors to ensure you have what you need to connect.
 
-## Strongly typed versus weakly typed {#typing}
+## Terraform version 1.0 and later
 
-The Airbyte provider offers two types of resources, and there are benefits and drawbacks to both. Review this information before creating your sources and destinations.
+Since version 1.0 of our Terraform provider, Airbyte provides connectors as Terraform modules. This approach abstracts your own HCL code away from the needs of each connector, providing a layer of protection against changes in the resources themselves. If you are using Airbyte's Terraform provider for the first time, use version 1.0+ with modules. If you are using a version of the provider before 1.0, upgrade to 1.0 at your convenience.
 
-### Strongly typed configurations
+### Step 1: Set up the Terraform provider
+
+Download the Terraform provider and configure it to run with your Airbyte instance.
+
+1. Create a directory to house your Terraform project, navigate to it, and create a file named `main.tf`.
+
+2. Go to https://registry.terraform.io/providers/airbytehq/airbyte/latest.
+
+3. Click **Use Provider**, copy the code, and paste it into `main.tf`. It should look something like this:
+
+    ```hcl title="main.tf"
+    terraform {
+        required_providers {
+            airbyte = {
+            source = "airbytehq/airbyte"
+            version = "1.0.0"
+            }
+        }
+    }
+
+    provider "airbyte" {
+        # Configuration options
+    }
+    ```
+
+4. Configure the Airbyte provider to use your credentials, but don't put your sensitive data into `main.tf`. Instead, insert variables you'll populate later.
+
+    ```hcl title="main.tf"
+    terraform {
+        required_providers {
+            airbyte = {
+            source = "airbytehq/airbyte"
+            version = "1.0.0"
+            }
+        }
+    }
+
+    provider "airbyte" {
+        // highlight-start
+        client_id = var.client_id
+        client_secret = var.client_secret
+
+        # Include server_url if running locally
+        server_url = "http://localhost:8000/api/public/v1/"
+        // highlight-end
+    }
+    ```
+
+5. In your terminal, create a file named `variables.tf`. This file stores sensitive variables you don't want to appear in `main.tf`, plus other values you'll reuse often.
+
+6. Populate `variables.tf`. Define `client_id`, `client_secret`, and `workspace_id`.
+
+    ```hcl title="variables.tf"
+    variable "client_id" {
+        type = string
+        default = "YOUR_CLIENT_ID"
+    }
+
+    variable "client_secret" {
+        type = string
+        default = "YOUR_CLIENT_SECRET"
+    }
+
+    variable "workspace_id" {
+        type = string
+        default = "YOUR_AIRBYTE_WORKSPACE_ID"
+    }
+    ```
+
+7. Run `terraform init`. Terraform tells you it initialized successfully. If it didn't, check your code against the preceding code samples.
+
+8. Run `terraform plan`. Terraform tells you there are no changes.
+
+9. Run `terraform apply`. Terraform tells you there are no changes.
+
+### Step 2: Download modules
+
+1. View and search for modules at the [Airbyte Terraform Modules](https://airbytehq.github.io/airbyte-terraform-modules/) page. Each version of each connector has its own module.
+
+2. Download modules and place them in a location where you normally store Terraform modules. This tutorial uses the `source-stripe` and `destinaton-bigquery` modules. If you're using something else, download the source and destination module of your choice. They all work similarly.
+
+### Step 3: Create a source
+
+1. Add a source from which you want to get data. In this example, you add Stripe as a source. If you want to use a different source, you can find the corresponding module in the [module list](https://airbytehq.github.io/airbyte-terraform-modules/).
+
+    ```hcl main.tf
+    module "Stripe_module" {
+        source = "./modules/sources-source-stripe-5.15.4" # the location of your module
+
+        # variables for this module
+        name = "Stripe"
+        account_id = "<YOUR_ACCOUNT_ID>"
+        client_secret = "<YOUR_CLIENT_SECRET>"
+        start_date = "2023-07-01T00:00:00Z"
+        lookback_window_days = 0
+        slice_range = 365
+        workspace_id = var.workspace_id
+    }
+    ```
+    <!-- secret_id = var.client_secret - should not be mandatory -->
+    <!-- I am having some trouble figuring out how to know which variables are mandatory and which are not. You can sort of figure it out based on what's in the doc for that connector or the extension. -->
+
+    :::tip
+    The best way to know what variables a module requires is to use a good Terraform extension for your code editor. Otherwise, you can see what variables a module requires by looking at its `variables.tf` file. If in doubt, when you run `terraform plan`, the provider tells you if you've set anything incorrectly.
+    :::
+
+2. Run `terraform init` to initialize the module. Terraform tells you it initialized successfully. If it didn't, check your code against the preceding code sample.
+
+3. Run `terraform plan`. Terraform tells you it will add 1 resource.
+
+4. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
+
+Terraform adds the source to Airbyte. To see your new source, open your Airbyte workspace and click **Sources**. Or, use the [List sources](https://reference.airbyte.com/reference/listsources) API endpoint.
+
+### Step 4: Create a destination
+
+1. Add a destination to which you want to sync data. In this example, you add BigQuery as a destination. If you want to use a different destination, you can find the corresponding module in the [module list](https://airbytehq.github.io/airbyte-terraform-modules/).
+
+    ```hcl main.tf
+    module "BigQuery_module" {
+        source = "./modules/destinations-destination-bigquery-3.0.6"
+
+        # variables for this module
+        name = "BigQuery"
+        project_id = "<YOUR_PROJECT_ID>"
+        dataset_location = "us-central1"
+        dataset_id = "<YOUR_DATASET_ID>"
+        credentials_json = jsonencode({
+            "type"                        = "service_account",
+            "project_id"                  = "<YOUR_PROJECT_ID>",
+            "private_key_id"              = "<YOUR_PRIVATE_KEY_ID>",
+            "private_key"                 = "-----BEGIN PRIVATE KEY-----\n ... \n-----END PRIVATE KEY-----\n",
+            "client_email"                = "you@example.com",
+            "client_id"                   = "<YOUR_CLIENT_ID>",
+            "auth_uri"                    = "https://accounts.google.com/o/oauth2/auth",
+            "token_uri"                   = "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url" = "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url"        = "https://www.googleapis.com/robot/v1/metadata/x509/support@sandbox-392522.iam.gserviceaccount.com"
+        })
+        workspace_id = var.workspace_id
+    }
+    ```
+    <!-- secret_id = var.client_secret - should not be mandatory -->
+    <!-- I am having some trouble figuring out how to know which variables are mandatory and which are not. You can sort of figure it out based on what's in the doc for that connector or the extension. -->
+
+    :::note
+    For BigQuery, you must use a [service account](https://cloud.google.com/iam/docs/service-account-overview) with credentials provided as a JSON string.
+    :::
+
+    :::tip
+    The best way to know what variables a module requires is to use a good Terraform extension for your code editor. Otherwise, you can see what variables a module requires by looking at its `variables.tf` file. If in doubt, when you run `terraform plan`, the provider tells you if you've set anything incorrectly.
+    :::
+
+2. Run `terraform init` to initialize the module. Terraform tells you it initialized successfully. If it didn't, check your code against the preceding code sample.
+
+3. Run `terraform plan`. Terraform tells you it will add 1 resource.
+
+4. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
+
+Terraform adds the destination to Airbyte. To see your new destination, open your Airbyte workspace and click **Destinations**. Or, use the [List destinations](https://reference.airbyte.com/reference/listdestinations) API endpoint.
+
+### Step 5: Create a connection
+
+Create a connection from your source to your destination.
+
+1. Add your connection to `main.tf` using the [Airbyte connection](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/connection) resource.
+
+    ```hcl main.tf
+    resource "airbyte_connection" "stripe_to_bigquery_modules" {
+        name           = "Stripe to BigQuery"
+        source_id      = source-stripe.source_id
+        destination_id = destination-bigquery.destination_id
+    }
+    ```
+
+    This example connection will not sync automatically. The [reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/connection) describe a number of attributes you can use to schedule how and when your connections sync.
+
+2. Run `terraform plan`. Terraform tells you it will add 1 resource.
+
+3. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
+
+Terraform adds the connection to Airbyte. To see your new connection, open your Airbyte workspace and click **Connections**. Or, use the [List connections](https://reference.airbyte.com/reference/listconnections) API endpoint.
+
+## Terraform versions before 1.0
+
+### Strongly typed versus weakly typed {#typing}
+
+Versions of the Airbyte provider prior to version 1.0 offer two types of resources, and there are benefits and drawbacks to both. Review this information before creating your sources and destinations.
+
+#### Strongly typed configurations
 
 Resources with strongly typed configurations have strict rules about how you write configuration attributes. If they're written incorrectly, these resources prevent `terraform apply` from running.
 
@@ -53,15 +240,15 @@ These resources depend on the underlying Airbyte connectors. Connectors are cont
 
 Essentially, using this option creates an ongoing risk that upgrading the Terraform provider or a connector causes a breaking change.
 
-### Weakly typed (JSON) configurations
+#### Weakly typed (JSON) configurations
 
 Instead of using a connector-specific resource, you can use [`airbyte_source_custom`](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/source_custom) and [`airbyte_destination_custom`](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/destination_custom). These are normally Airbyte's resources for custom connectors, but you can use them with any existing Airbyte or Marketplace connector and write your configurations as JSON objects. These configurations are more robust when connectors change. Mismatches between a Terraform provider and a connector do not prevent `terraform apply` from running. The absence of a newly added configuration option might have no impact at all on your data and your use of that connector.
 
-The main issue with this method is that JSON can technically contain anything, and you could make a mistake that Terraform doesn't warn you about. 
+The main issue with this method is that JSON can technically contain anything, and you could make a mistake that Terraform doesn't warn you about.
 
 The best way to get a JSON object is to set up a new connector in Airbyte's UI, fill out all the fields, then click **Copy JSON**. You don't actually need to create the connector in the UI since you want to do this with Terraform, but you do need to get the JSON. Currently, Airbyte optimizes this JSON object for the API, and you need to make some adjustments to use it in Terraform. The examples later in this article demonstrate the expected format.
 
-### How to choose
+#### How to choose
 
 This tutorial demonstrates how to use both options.
 
@@ -69,7 +256,7 @@ This tutorial demonstrates how to use both options.
 
 - For custom connectors, only weakly typed JSON configurations are possible.
 
-## Step 1: Set up the Terraform provider
+### Step 1: Set up the Terraform provider (pre-1.0)
 
 Download the Terraform provider and configure it to run with your Airbyte instance.
 
@@ -144,7 +331,7 @@ Download the Terraform provider and configure it to run with your Airbyte instan
 
 9. Run `terraform apply`. Terraform tells you there are no changes.
 
-## Step 2: Create a source
+### Step 2: Create a source (pre-1.0)
 
 Add a source from which you want to get data. In this example, you add Stripe as a source. If you want to use a different source, you can find the code sample for the corresponding resource in the [Terraform provider reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
 
@@ -213,7 +400,7 @@ Add a source from which you want to get data. In this example, you add Stripe as
 
 Terraform adds the source to Airbyte. To see your new source, open your Airbyte workspace and click **Sources**. Or, use the [List sources](https://reference.airbyte.com/reference/listsources) API endpoint.
 
-## Step 3: Create a destination
+### Step 3: Create a destination (pre-1.0)
 
 Add a destination to which you want to send data. In this example, you add BigQuery as a destination. If you want to use a different destination, you can find the code sample for the corresponding resource in the [Terraform provider reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
 
@@ -294,7 +481,7 @@ Add a destination to which you want to send data. In this example, you add BigQu
 
 Terraform adds the destination to Airbyte. To see your new destination, open your Airbyte workspace and click **Destinations**. Or, use the [List destinations](https://reference.airbyte.com/reference/listdestinations) API endpoint.
 
-## Step 4: Create a connection
+### Step 4: Create a connection (pre-1.0)
 
 Create a connection from your source to your destination.
 
@@ -316,8 +503,8 @@ Terraform adds the connection to Airbyte. To see your new connection, open your 
 
 ## What's next?
 
-Congratulations! You created your first source, your first destination, and a connection between the two.
+You have created your first source, your first destination, and a connection between the two.
 
-- Continue building your sources, destinations, and connections for all your data using Airbyte's [Terraform docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
+- Continue building your sources, destinations, and connections for all your data using Airbyte's [Terraform docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs) and [Terraform modules](https://airbytehq.github.io/airbyte-terraform-modules/).
 
 - Check out the [Quickstarts repository](https://github.com/airbytehq/quickstarts). It's full of templates and shortcuts to help you build common data stacks using Terraform and Python.
