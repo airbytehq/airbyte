@@ -388,7 +388,7 @@ spec:
               - type: AddedFieldDefinition
                 path: ["financial_events_step"]
                 value: "{{ config.get('financial_events_step') ~ 'D' }}"
-            condition: "{{ config.get('financial_events_step', False) and config.get('financial_events_step') | string not in ['1H', '6H', '12H', '1D', '7D', '14D', '30D', '60D', '90D', '180D'] }}"
+            condition: "{{ config.get('financial_events_step', False) and config.get('financial_events_step') | string not in ['1H', '2H', '4H', '6H', '8H', '12H', '1D', '7D', '14D', '30D', '60D', '90D', '180D'] }}"
     transformations:
       - type: ConfigAddFields
         fields:
