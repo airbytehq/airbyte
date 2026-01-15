@@ -4,6 +4,9 @@ dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
 
+    // load-object-storage uses pipeline/task infrastructure from legacy-task-loader
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader')
+
     // TODO: Separate individual format types from the core format spec
     // and migrate them to their respective toolkits, so that these
     // dependencies can be removed.
