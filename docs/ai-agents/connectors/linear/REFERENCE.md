@@ -295,11 +295,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 The Linear connector supports the following authentication methods.
 
 
-### Authentication
+### Linear API Key Authentication
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | API authentication key |
+| `api_key` | `str` | Yes | Your Linear API key from Settings > API > Personal API keys |
 
 #### Example
 
@@ -308,7 +308,7 @@ The Linear connector supports the following authentication methods.
 ```python
 LinearConnector(
   auth_config=LinearAuthConfig(
-    api_key="<API authentication key>"
+    api_key="<Your Linear API key from Settings > API > Personal API keys>"
   )
 )
 ```
@@ -322,7 +322,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
 --data '{
   "connector_definition_id": "1c5d8316-ed42-4473-8fbc-2626f03f070c",
   "auth_config": {
-    "api_key": "<API authentication key>"
+    "api_key": "<Your Linear API key from Settings > API > Personal API keys>"
   },
   "name": "My Linear Connector"
 }'

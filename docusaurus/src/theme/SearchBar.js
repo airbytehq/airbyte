@@ -37,7 +37,7 @@ const AskAiIcon = () => {
 const AskAiButton = () => {
   return (
     <button
-      className={`${styles.chatTrigger} kapa-ai-trigger`}
+      className={`${styles.chatTrigger} kapa-ai-trigger kapa-ai-hidden`}
       onClick={() => {
         window.analytics?.track("ask_ai_button_clicked");
       }}
