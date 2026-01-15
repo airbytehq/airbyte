@@ -9,17 +9,24 @@ import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.ObjectMetadata
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
+import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
+import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
 import io.airbyte.integrations.destination.redshift_v2.spec.S3StagingConfiguration
 import io.airbyte.integrations.destination.redshift_v2.sql.RedshiftDataType
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
@@ -202,5 +209,21 @@ class RedshiftStagingAggregate(
             )
             .withRegion(s3Config.s3BucketRegion.ifEmpty { "us-east-1" })
             .build()
+    }
+}
+
+@Singleton
+class RedshiftAggregateFactory(
+    private val dataSource: DataSource,
+    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val config: RedshiftV2Configuration,
+    private val clock: Clock,
+    private val catalog: DestinationCatalog,
+) : AggregateFactory {
+    override fun create(key: StoreKey): Aggregate {
+        val tableName = streamStateStore.get(key)!!.tableName
+        val stream = catalog.getStream(key)
+        val finalSchema: Map<String, ColumnType> = stream.tableSchema.columnSchema.finalSchema
+        return RedshiftStagingAggregate(tableName, dataSource, config.s3Config, clock, finalSchema)
     }
 }

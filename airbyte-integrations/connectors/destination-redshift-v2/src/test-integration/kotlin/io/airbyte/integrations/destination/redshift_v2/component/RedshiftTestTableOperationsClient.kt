@@ -6,12 +6,12 @@ package io.airbyte.integrations.destination.redshift_v2.component
 
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.redshift_v2.client.RedshiftAirbyteClient
-import io.airbyte.integrations.destination.redshift_v2.dataflow.RedshiftAggregate
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -46,7 +46,7 @@ class RedshiftTestTableOperationsClient(
         // Get the actual table columns so we only insert columns that exist
         val tableColumns = getTableColumns(table)
 
-        val aggregate = RedshiftAggregate(table, dataSource)
+        val aggregate: Aggregate = TODO()
         records.forEach { record ->
             // Filter record to only include columns that exist in the table
             val filteredRecord =

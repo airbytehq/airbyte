@@ -103,27 +103,17 @@ class RedshiftV2Specification : ConfigurationSpecification() {
     property = "method",
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = StandardSpecification::class, name = "Standard"),
     JsonSubTypes.Type(value = S3StagingSpecification::class, name = "S3 Staging"),
 )
-sealed class UploadingMethodSpecification(
-    @Suppress("PropertyName") @param:JsonProperty("method") val method: UploadMethod
-) {
+sealed class UploadingMethodSpecification(@param:JsonProperty("method") val method: UploadMethod) {
     enum class UploadMethod(@get:JsonValue val methodName: String) {
-        STANDARD("Standard"),
         S3_STAGING("S3 Staging"),
     }
 }
 
-@JsonSchemaTitle("Standard Inserts")
-@JsonSchemaDescription(
-    "Direct database inserts. This method is slower but requires no additional cloud resources."
-)
-class StandardSpecification : UploadingMethodSpecification(UploadMethod.STANDARD)
-
 @JsonSchemaTitle("AWS S3 Staging")
 @JsonSchemaDescription(
-    "(recommended) Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability."
+    "Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability."
 )
 class S3StagingSpecification(
     @get:JsonSchemaTitle("S3 Bucket Name")

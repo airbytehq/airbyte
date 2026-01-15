@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift_v2.spec
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.SshTunnelConfiguration
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
@@ -24,7 +25,7 @@ data class RedshiftV2Configuration(
     val database: String,
     val schema: String,
     val jdbcUrlParams: String?,
-    val s3Config: S3StagingConfiguration?,
+    val s3Config: S3StagingConfiguration,
     /** Schema for internal/temp tables during sync operations. */
     val internalSchema: String,
     val dropCascade: Boolean,
@@ -64,21 +65,20 @@ class RedshiftV2ConfigurationFactory :
     override fun makeWithoutExceptionHandling(
         pojo: RedshiftV2Specification
     ): RedshiftV2Configuration {
+        if (pojo.uploadingMethod == null) {
+            throw ConfigErrorException("Expected nonnull uploading method config")
+        }
+        val uploadMethod = pojo.uploadingMethod as S3StagingSpecification
         val s3Config =
-            when (val uploadMethod = pojo.uploadingMethod) {
-                is S3StagingSpecification ->
-                    S3StagingConfiguration(
-                        s3BucketName = uploadMethod.s3BucketName,
-                        s3BucketPath = uploadMethod.s3BucketPath,
-                        s3BucketRegion = uploadMethod.s3BucketRegion,
-                        accessKeyId = uploadMethod.accessKeyId,
-                        secretAccessKey = uploadMethod.secretAccessKey,
-                        fileNamePattern = uploadMethod.fileNamePattern,
-                        purgeStagingData = uploadMethod.purgeStagingData ?: true,
-                    )
-                is StandardSpecification,
-                null -> null
-            }
+            S3StagingConfiguration(
+                s3BucketName = uploadMethod.s3BucketName,
+                s3BucketPath = uploadMethod.s3BucketPath,
+                s3BucketRegion = uploadMethod.s3BucketRegion,
+                accessKeyId = uploadMethod.accessKeyId,
+                secretAccessKey = uploadMethod.secretAccessKey,
+                fileNamePattern = uploadMethod.fileNamePattern,
+                purgeStagingData = uploadMethod.purgeStagingData ?: true,
+            )
 
         return RedshiftV2Configuration(
             realHost = pojo.host,
