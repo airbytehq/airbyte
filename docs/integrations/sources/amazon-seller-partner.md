@@ -68,7 +68,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
 10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
+11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
 12. Click `Set up source`.
 
 <!-- /env:cloud -->
@@ -87,7 +87,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
 8. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-9. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
+9. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
 10. Click `Set up source`.
 
 <!-- /env:oss -->
@@ -265,7 +265,7 @@ This configuration will sync partial data, until the source gets rate limited. O
 | 4.8.3 | 2025-10-29 | [66030](https://github.com/airbytehq/airbyte/pull/66030) | Update dependencies |
 | 4.8.2 | 2025-09-24 | [66485](https://github.com/airbytehq/airbyte/pull/66485) | Upgrade to CDK v7 |
 | 4.8.1 | 2025-08-16 | [65047](https://github.com/airbytehq/airbyte/pull/65047) | Update dependencies |
-| 4.8.0 | 2025-07-29 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
+| 4.8.0 | 2025-07-29 | [55195](https://github.com/airbytehq/airbyte/pull/55195) | Add VendorOrdersStatus stream |
 | 4.7.2 | 2025-08-02 | [63032](https://github.com/airbytehq/airbyte/pull/63032) | Update dependencies |
 | 4.7.1 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
 | 4.7.0 | 2025-07-08 | [62850](https://github.com/airbytehq/airbyte/pull/62850) | Promoting release candidate 4.7.0-rc.1 to a main version. |
