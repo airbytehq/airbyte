@@ -49,4 +49,4 @@ jobs:
 
             Once the PR has been tested and is ready for review, you can proceed to convert the PR to "ready for review" status by clicking the "Ready for review" button at the bottom of the PR page.
 
-            To skip this auto-draft behavior, include `[ready]` in your PR title or add one of these labels when creating the PR: `skip-draft-status`, `auto-merge`, or `auto-merge/bypass-ci-checks`.
+            To skip this auto-draft behavior, include `[ready]` in your PR title or add the `skip-draft-status` label when creating the PR.
