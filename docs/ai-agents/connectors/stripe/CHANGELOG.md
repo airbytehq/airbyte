@@ -1,5 +1,25 @@
 # Stripe changelog
 
+## [0.5.43] - 2026-01-15
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: 20b3afd9
+- SDK version: 0.1.0
+
+## [0.5.42] - 2026-01-15
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: b7138b41
+- SDK version: 0.1.0
+
+## [0.5.41] - 2026-01-15
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: 10173eb1
+- SDK version: 0.1.0
+
+## [0.5.40] - 2026-01-15
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: a23d9e7a
+- SDK version: 0.1.0
+
 ## [0.5.39] - 2026-01-14
 - Updated connector definition (YAML version 0.1.4)
 - Source commit: 7ef09816

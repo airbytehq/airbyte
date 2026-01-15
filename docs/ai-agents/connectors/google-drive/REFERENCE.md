@@ -1143,6 +1143,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `supportsAllDrives` | `boolean` | No | Whether the requesting application supports both My Drives and shared drives |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `startPageToken` | `string` |  |
+
+
+</details>
+
 ### About
 
 #### About Get
@@ -1174,6 +1187,30 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 |----------------|------|----------|-------------|
 | `fields` | `string` | No | Fields to include in the response (use * for all fields) |
 
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `user` | `object \| any` |  |
+| `storageQuota` | `object \| null` |  |
+| `importFormats` | `object \| null` |  |
+| `exportFormats` | `object \| null` |  |
+| `maxImportSizes` | `object \| null` |  |
+| `maxUploadSize` | `string \| null` |  |
+| `appInstalled` | `boolean \| null` |  |
+| `folderColorPalette` | `array \| null` |  |
+| `driveThemes` | `array \| null` |  |
+| `canCreateDrives` | `boolean \| null` |  |
+| `canCreateTeamDrives` | `boolean \| null` |  |
+| `teamDriveThemes` | `array \| null` |  |
+
+
+</details>
 
 
 
