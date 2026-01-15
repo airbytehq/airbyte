@@ -476,6 +476,7 @@ spec:
         access_token_url: https://app.gong.io/oauth2/generate-customer-token
         access_token_headers:
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: "application/x-www-form-urlencoded"
         access_token_params:
           grant_type: authorization_code
           redirect_uri: "{{ redirect_uri_value }}"
