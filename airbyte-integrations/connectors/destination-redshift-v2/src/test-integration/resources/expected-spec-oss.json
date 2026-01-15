@@ -64,23 +64,10 @@
       },
       "uploading_method" : {
         "oneOf" : [ {
-          "title" : "Standard Inserts",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Direct database inserts. This method is slower but requires no additional cloud resources.",
-          "properties" : {
-            "method" : {
-              "type" : "string",
-              "enum" : [ "Standard" ],
-              "default" : "Standard"
-            }
-          },
-          "required" : [ "method" ]
-        }, {
           "title" : "AWS S3 Staging",
           "type" : "object",
           "additionalProperties" : true,
-          "description" : "(recommended) Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability.",
+          "description" : "Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability.",
           "properties" : {
             "method" : {
               "type" : "string",
