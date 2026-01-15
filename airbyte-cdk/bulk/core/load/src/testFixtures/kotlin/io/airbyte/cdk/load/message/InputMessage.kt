@@ -29,7 +29,6 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
@@ -67,7 +66,6 @@ data class InputRecord(
     val emittedAtMs: Long,
     val meta: Meta?,
     val serialized: String,
-    val fileReference: AirbyteRecordMessageFileReference? = null,
     val checkpointId: CheckpointId? = null,
     val unknownFieldNames: Set<String> = emptySet(),
 ) : InputMessage {
@@ -77,7 +75,6 @@ data class InputRecord(
         data: String,
         emittedAtMs: Long,
         changes: MutableList<Meta.Change> = mutableListOf(),
-        fileReference: AirbyteRecordMessageFileReference? = null,
         checkpointId: CheckpointId? = null,
         unknownFieldNames: Set<String> = emptySet(),
     ) : this(
@@ -86,7 +83,6 @@ data class InputRecord(
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
         serialized = data,
-        fileReference,
         checkpointId,
         unknownFieldNames
     )
@@ -155,31 +151,11 @@ data class InputRecord(
                         if (meta != null) {
                             it.withMeta(meta.asProtocolObject())
                         }
-                        if (fileReference != null) {
-                            it.withFileReference(fileReference)
-                        }
                         if (checkpointId != null) {
                             it.additionalProperties[CHECKPOINT_ID_NAME] = checkpointId.value
                         }
                     }
             )
-}
-
-data class InputFile(
-    val file: DestinationFile,
-) : InputMessage {
-    constructor(
-        stream: DestinationStream,
-        emittedAtMs: Long,
-        fileMessage: DestinationFile.AirbyteRecordMessageFile,
-    ) : this(
-        DestinationFile(
-            stream,
-            emittedAtMs,
-            fileMessage,
-        )
-    )
-    override fun asProtocolMessage(): AirbyteMessage = file.asProtocolMessage()
 }
 
 sealed interface InputCheckpoint : InputMessage

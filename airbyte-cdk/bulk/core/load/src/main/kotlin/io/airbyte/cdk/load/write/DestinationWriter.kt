@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.state.DestinationFailure
 
 /**
  * Implementor interface. Every Destination must extend this and at least provide an implementation
@@ -19,6 +18,5 @@ interface DestinationWriter {
     fun createStreamLoader(stream: DestinationStream): StreamLoader
 
     // Called once at the end of the job, unconditionally.
-    // NOTE: we don't pass Success here, because it depends on this completing successfully.
-    suspend fun teardown(destinationFailure: DestinationFailure? = null) {}
+    suspend fun teardown(hadFailure: Boolean = false) {}
 }

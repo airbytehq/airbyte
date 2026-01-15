@@ -4,13 +4,6 @@
 
 package io.airbyte.cdk.load.state
 
-import io.airbyte.cdk.load.command.DestinationStream
-
-/**
- * These types are copied from the legacy CDK for compatibility. TODO: Reconsider these abstractions
- * as the modern dataflow architecture evolves.
- */
-
 /** Represents the ordering of a checkpoint. */
 @JvmInline value class CheckpointIndex(val value: Int)
 
@@ -50,20 +43,3 @@ data class CheckpointValue(
         return false
     }
 }
-
-/** Result of stream processing. */
-sealed interface StreamResult
-
-data class StreamProcessingFailed(val streamException: Exception) : StreamResult
-
-data object StreamProcessingSucceeded : StreamResult
-
-/** Result of destination processing. */
-sealed interface DestinationResult
-
-data object DestinationSuccess : DestinationResult
-
-data class DestinationFailure(
-    val cause: Exception,
-    val streamResults: Map<DestinationStream.Descriptor, StreamResult>
-) : DestinationResult

@@ -8,7 +8,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
@@ -201,8 +200,8 @@ class GcsDataLakeStreamLoader(
         streamStateStore.put(stream.mappedDescriptor, state)
     }
 
-    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        if (streamFailure == null) {
+    override suspend fun teardown(completedSuccessfully: Boolean) {
+        if (completedSuccessfully) {
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
             logger.info {

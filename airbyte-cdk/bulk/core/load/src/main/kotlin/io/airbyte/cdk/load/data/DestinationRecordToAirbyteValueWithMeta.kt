@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.getEmittedAtMs
 import java.util.*
@@ -82,24 +81,6 @@ fun Pair<AirbyteValue, List<Meta.Change>>.withAirbyteMeta(
             first,
             emittedAtMs,
             Meta(second),
-        )
-
-fun DestinationRecordAirbyteValue.dataWithAirbyteMeta(
-    stream: DestinationStream,
-    flatten: Boolean = false,
-    extractedAtAsTimestampWithTimezone: Boolean = false,
-    airbyteRawId: UUID,
-) =
-    DestinationRecordToAirbyteValueWithMeta(
-            stream = stream,
-            flatten = flatten,
-            extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
-            airbyteRawId = airbyteRawId,
-        )
-        .convert(
-            data,
-            emittedAtMs,
-            meta,
         )
 
 fun Meta.Change.toAirbyteValue(): ObjectValue =
