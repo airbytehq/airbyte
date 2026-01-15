@@ -77,9 +77,9 @@ def test_pixel_ids_request_parameter_format_with_cdk_interpolation(pixel_id: str
         f"pixel_ids should be a string, not {type(rendered_pixel_ids).__name__}. "
         f"The CDK's ast.literal_eval may have parsed it as a Python object."
     )
-    assert rendered_pixel_ids == expected_pixel_ids_param, (
-        f"pixel_ids should be rendered as a JSON array string. Expected: {expected_pixel_ids_param}, Got: {rendered_pixel_ids}"
-    )
+    assert (
+        rendered_pixel_ids == expected_pixel_ids_param
+    ), f"pixel_ids should be rendered as a JSON array string. Expected: {expected_pixel_ids_param}, Got: {rendered_pixel_ids}"
 
 
 def test_pixel_events_statistics_stream_exists():
