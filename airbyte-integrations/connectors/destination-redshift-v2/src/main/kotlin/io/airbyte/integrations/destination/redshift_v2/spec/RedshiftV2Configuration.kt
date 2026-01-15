@@ -5,21 +5,17 @@
 package io.airbyte.integrations.destination.redshift_v2.spec
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.command.SshTunnelConfiguration
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.write.db.DbConstants
-import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import jakarta.inject.Singleton
-import kotlin.time.Duration.Companion.seconds
 
 data class RedshiftV2Configuration(
-    override val realHost: String,
-    override val realPort: Int,
-    override val sshTunnel: SshTunnelMethodConfiguration?,
-    override val sshConnectionOptions: SshConnectionOptions,
+    val host: String,
+    val port: Int,
+    val tunnelMethod: SshTunnelMethodConfiguration,
     val username: String,
     val password: String,
     val database: String,
@@ -29,23 +25,18 @@ data class RedshiftV2Configuration(
     /** Schema for internal/temp tables during sync operations. */
     val internalSchema: String,
     val dropCascade: Boolean,
-) : DestinationConfiguration(), SshTunnelConfiguration {
+) : DestinationConfiguration() {
 
-    // These will be set after tunnel is established
-    var tunnelHost: String = realHost
-        internal set
-    var tunnelPort: Int = realPort
-        internal set
-
-    val jdbcUrl: String
-        get() {
-            val baseUrl = "jdbc:redshift://$tunnelHost:$tunnelPort/$database"
-            return if (jdbcUrlParams.isNullOrBlank()) {
-                baseUrl
+    /** Constructs JDBC URL from host:port endpoint and database. */
+    fun buildJdbcUrl(endpoint: String): String {
+        val queryString =
+            if (jdbcUrlParams.isNullOrBlank()) {
+                ""
             } else {
-                "$baseUrl?$jdbcUrlParams"
+                "?$jdbcUrlParams"
             }
-        }
+        return "jdbc:redshift://$endpoint/$database$queryString"
+    }
 }
 
 data class S3StagingConfiguration(
@@ -81,15 +72,9 @@ class RedshiftV2ConfigurationFactory :
             )
 
         return RedshiftV2Configuration(
-            realHost = pojo.host,
-            realPort = pojo.port,
-            sshTunnel = pojo.tunnelMethod ?: SshNoTunnelMethod,
-            sshConnectionOptions =
-                SshConnectionOptions(
-                    sessionHeartbeatInterval = 1.seconds,
-                    globalHeartbeatInterval = 2.seconds,
-                    idleTimeout = 0.seconds, // No timeout
-                ),
+            host = pojo.host,
+            port = pojo.port,
+            tunnelMethod = pojo.tunnelMethod ?: SshNoTunnelMethod,
             username = pojo.username,
             password = pojo.password,
             database = pojo.database,

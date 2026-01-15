@@ -11,7 +11,10 @@ import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.cdk.ssh.TunnelSession
+import io.airbyte.cdk.ssh.SshConnectionOptions
+import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
+import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.ssh.createTunnelSession
 import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
 import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2ConfigurationFactory
@@ -19,6 +22,7 @@ import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Specificat
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -53,26 +57,24 @@ class RedshiftV2BeanFactory {
     }
 
     /**
-     * Creates the SSH tunnel session if configured. The tunnel session manages the SSH connection
-     * lifecycle.
+     * The endpoint the client connects through.
+     *
+     * Either the raw Redshift instance endpoint or an SSH tunnel.
      */
     @Singleton
-    @Requires(property = Operation.PROPERTY, notEquals = "spec")
-    fun tunnelSession(
-        config: RedshiftV2Configuration,
-    ): TunnelSession {
-        log.info { "Creating tunnel session for ${config.realHost}:${config.realPort}" }
-        val remote = SshdSocketAddress(config.realHost, config.realPort)
-        val session = createTunnelSession(remote, config.sshTunnel, config.sshConnectionOptions)
-
-        // Update config with tunneled host/port
-        config.tunnelHost = session.address.hostString
-        config.tunnelPort = session.address.port
-        log.info {
-            "Tunnel session created, connecting via ${config.tunnelHost}:${config.tunnelPort}"
+    @Named("resolvedEndpoint")
+    fun resolvedEndpoint(config: RedshiftV2Configuration): String {
+        return when (val ssh = config.tunnelMethod) {
+            is SshKeyAuthTunnelMethod,
+            is SshPasswordAuthTunnelMethod -> {
+                val remote = SshdSocketAddress(config.host, config.port)
+                val sshConnectionOptions: SshConnectionOptions =
+                    SshConnectionOptions.fromAdditionalProperties(emptyMap())
+                val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
+                "${tunnel.address.hostName}:${tunnel.address.port}"
+            }
+            is SshNoTunnelMethod -> "${config.host}:${config.port}"
         }
-
-        return session
     }
 
     /**
@@ -101,10 +103,11 @@ class RedshiftV2BeanFactory {
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
     fun redshiftDataSource(
         config: RedshiftV2Configuration,
-        @Suppress("UNUSED_PARAMETER")
-        tunnelSession: TunnelSession, // Ensure tunnel is created first
+        @Named("resolvedEndpoint") endpoint: String,
     ): HikariDataSource {
-        log.info { "Creating Redshift DataSource with JDBC URL: ${config.jdbcUrl}" }
+        val redshiftJdbcUrl = config.buildJdbcUrl(endpoint)
+
+        log.info { "Creating Redshift DataSource with JDBC URL: $redshiftJdbcUrl" }
 
         val datasourceConfig =
             HikariConfig().apply {
@@ -116,7 +119,7 @@ class RedshiftV2BeanFactory {
                 leakDetectionThreshold = DATA_SOURCE_CONNECTION_TIMEOUT_MS + 10000L
                 maxLifetime = DATA_SOURCE_IDLE_TIMEOUT_MS + 10000L
                 driverClassName = "com.amazon.redshift.jdbc42.Driver"
-                jdbcUrl = config.jdbcUrl
+                jdbcUrl = redshiftJdbcUrl
                 username = config.username
                 password = config.password
             }

@@ -103,9 +103,10 @@ class RedshiftStagingBasicFunctionalityTest :
         }
 
         private fun createDataSource(config: RedshiftV2Configuration): DataSource {
+            val endpoint = "${config.host}:${config.port}"
             val hikariConfig =
                 HikariConfig().apply {
-                    jdbcUrl = config.jdbcUrl
+                    jdbcUrl = config.buildJdbcUrl(endpoint)
                     username = config.username
                     password = config.password
                     driverClassName = "com.amazon.redshift.jdbc42.Driver"
