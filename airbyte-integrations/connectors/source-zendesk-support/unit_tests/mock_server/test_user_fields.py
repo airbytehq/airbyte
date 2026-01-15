@@ -14,7 +14,7 @@ from .response_builder import ErrorResponseBuilder, UserFieldsRecordBuilder, Use
 from .utils import get_log_messages_by_log_level, read_stream
 
 
-RECENT_CURSOR = ab_datetime_now().subtract(timedelta(days=1)).to_iso8601_string()
+RECENT_CURSOR = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class TestUserFieldsStreamFullRefresh(TestCase):
