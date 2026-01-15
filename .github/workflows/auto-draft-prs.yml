@@ -39,8 +39,6 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            This PR has been automatically converted to **draft** status.
+            Thank you for creating this PR. As a policy to protect our engineers' time, we require all PRs to be created first in draft status. Your PR has been converted to draft status in respect for this policy.
 
-            When you're ready for review, click "Ready for review" at the bottom of the PR page.
-
-            To skip this auto-draft behavior in the future, include `[ready]` in your PR title.
+            Once the PR has been tested and is ready for review, you can proceed to convert the PR to "ready for review" status by clicking the "Ready for review" button at the bottom of the PR page.
