@@ -144,9 +144,9 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 <details>
   <summary>Expand to review</summary>
 
-
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.8.12     | 2026-01-15 | [70241](https://github.com/airbytehq/airbyte/pull/70241) | Fix `pixel_events_statistics` stream: `pixel_ids` format, `date_range` calculation, and add error handler to skip advertisers without pixel permissions               |
 | 4.8.11     | 2026-01-15 | [71773](https://github.com/airbytehq/airbyte/pull/71773) | Finalize progressive rollout for version 4.8.11                                                                                                                        |
 | 4.8.11-rc.1| 2025-11-14 | [65623](https://github.com/airbytehq/airbyte/pull/65623) | Fix missing deleted data on some streams                                                                                                                               |
 | 4.8.10     | 2025-11-04 | [69170](https://github.com/airbytehq/airbyte/pull/69170) | Revert api budget and concurrency back to a safe number                                                                                                                |
