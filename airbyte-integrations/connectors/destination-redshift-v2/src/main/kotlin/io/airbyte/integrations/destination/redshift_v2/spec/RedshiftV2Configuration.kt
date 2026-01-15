@@ -81,7 +81,7 @@ class RedshiftV2ConfigurationFactory :
             schema = pojo.schema,
             jdbcUrlParams = pojo.jdbcUrlParams,
             s3Config = s3Config,
-            internalSchema = DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
+            internalSchema = pojo.internalTableSchema ?: DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
             dropCascade = pojo.dropCascade ?: false,
         )
     }

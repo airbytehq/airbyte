@@ -142,6 +142,14 @@
         "order" : 2,
         "default" : false
       },
+      "raw_data_schema" : {
+        "type" : "string",
+        "description" : "The schema to use for internal Airbyte tables (default: airbyte_internal).",
+        "title" : "Internal Tables Schema",
+        "group" : "tables",
+        "order" : 3,
+        "default" : "airbyte_internal"
+      },
       "tunnel_method" : {
         "oneOf" : [ {
           "title" : "No Tunnel",

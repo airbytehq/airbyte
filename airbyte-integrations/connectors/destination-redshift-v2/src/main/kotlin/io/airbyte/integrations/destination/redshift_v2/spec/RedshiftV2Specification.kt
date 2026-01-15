@@ -14,6 +14,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
+import io.airbyte.cdk.load.table.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
@@ -87,6 +88,15 @@ class RedshiftV2Specification : ConfigurationSpecification() {
     )
     @JsonSchemaInject(json = """{"group": "tables", "order": 2, "default": false}""")
     var dropCascade: Boolean? = false
+
+    // use raw_data_schema for compat with existing configs
+    @JsonProperty("raw_data_schema")
+    @JsonSchemaTitle("Internal Tables Schema")
+    @JsonPropertyDescription(
+        "The schema to use for internal Airbyte tables (default: airbyte_internal)."
+    )
+    @JsonSchemaInject(json = """{"group": "tables", "order": 3, "default": "airbyte_internal"}""")
+    var internalTableSchema: String? = DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 
     @JsonProperty("tunnel_method")
     @JsonSchemaTitle("SSH Tunnel Method")
