@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.redshift_v2.spec
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import io.airbyte.cdk.load.write.db.DbConstants
+import io.airbyte.cdk.load.table.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import jakarta.inject.Singleton
@@ -81,7 +81,7 @@ class RedshiftV2ConfigurationFactory :
             schema = pojo.schema,
             jdbcUrlParams = pojo.jdbcUrlParams,
             s3Config = s3Config,
-            internalSchema = DbConstants.DEFAULT_RAW_TABLE_NAMESPACE,
+            internalSchema = DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
             dropCascade = pojo.dropCascade ?: false,
         )
     }
