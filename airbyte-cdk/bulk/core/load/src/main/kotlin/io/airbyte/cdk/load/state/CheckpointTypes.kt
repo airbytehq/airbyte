@@ -7,8 +7,8 @@ package io.airbyte.cdk.load.state
 import io.airbyte.cdk.load.command.DestinationStream
 
 /**
- * These types are copied from the legacy CDK for compatibility.
- * TODO: Reconsider these abstractions as the modern dataflow architecture evolves.
+ * These types are copied from the legacy CDK for compatibility. TODO: Reconsider these abstractions
+ * as the modern dataflow architecture evolves.
  */
 
 /** Represents the ordering of a checkpoint. */

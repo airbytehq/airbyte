@@ -88,7 +88,6 @@ class GlueWriteTest :
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
             )
         // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
         // So these two streams will collide.
@@ -134,7 +133,6 @@ class GlueWriteTest :
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
             )
 
         runSync(

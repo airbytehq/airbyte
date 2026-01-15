@@ -14,17 +14,7 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 
-/**
- * A check operation that is run before the destination is used.
- *
- * * Implementors must provide a [check] method that validates the configuration.
- * * Implementors may provide a [cleanup] method that is run after the check is complete.
- * * [check] should throw an exception if the configuration is invalid.
- * * [cleanup] should not throw exceptions.
- * * Implementors should not perform any side effects in the constructor.
- * * Implementors should not throw exceptions in the constructor.
- * * Implementors should not inject configuration; only use the config passed in [check].
- */
+// TODO: Deprecate in favor if v2
 interface DestinationChecker<C : DestinationConfiguration> {
     fun mockStream() =
         DestinationStream(
@@ -51,9 +41,4 @@ interface DestinationChecker<C : DestinationConfiguration> {
 
     fun check(config: C)
     fun cleanup(config: C) {}
-}
-
-// TODO the cleaner maybe should also be looking for old test tables, a la DestinationCleaner??
-fun interface CheckCleaner<C : DestinationConfiguration> {
-    fun cleanup(config: C, stream: DestinationStream)
 }
