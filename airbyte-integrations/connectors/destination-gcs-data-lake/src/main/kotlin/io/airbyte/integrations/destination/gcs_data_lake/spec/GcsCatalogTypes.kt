@@ -88,8 +88,6 @@ class PolarisCatalogSpec(
         "The Polaris realm name for multi-realm deployments. If not provided, defaults to the server's default realm."
     )
     @get:JsonProperty("realm")
-    @get:JsonSchemaInject(
-        json = """{"examples": ["POLARIS", "my-realm"], "order":5}"""
-    )
+    @get:JsonSchemaInject(json = """{"examples": ["POLARIS", "my-realm"], "order":5}""")
     val realm: String? = null,
 ) : GcsCatalogType(catalogType)
