@@ -37,7 +37,7 @@ Before starting this tutorial, make sure you have the following:
 
 ## Terraform version 1.0 and later
 
-Since version 1.0 of our Terraform provider, Airbyte provides connectors as Terraform modules. This approach abstracts your own HCL code away from the needs of each connector, providing a layer of protection against changes in the resources themselves. If you are using Airbyte's Terraform provider for the first time, use version 1.0+ with modules. If you are using a version of the provider before 1.0, upgrade to 1.0 at your convenience.
+Since version 1.0 of our Terraform provider, Airbyte provides ready-to-use code snippets for each connector. Visit the [Airbyte Terraform Modules](https://airbytehq.github.io/airbyte-terraform-modules/) page to find and copy snippets for any connector version. This approach simplifies configuration by providing pre-built HCL code that you can paste directly into your Terraform files. If you are using Airbyte's Terraform provider for the first time, use version 1.0+. If you are using a version of the provider before 1.0, upgrade to 1.0 at your convenience.
 
 ### Step 1: Set up the Terraform provider
 
@@ -114,85 +114,73 @@ Download the Terraform provider and configure it to run with your Airbyte instan
 
 9. Run `terraform apply`. Terraform tells you there are no changes.
 
-### Step 2: Download modules
+### Step 2: Create a source
 
-1. View and search for modules at the [Airbyte Terraform Modules](https://airbytehq.github.io/airbyte-terraform-modules/) page. Each version of each connector has its own module.
+1. Go to the [Airbyte Terraform Modules](https://airbytehq.github.io/airbyte-terraform-modules/) page. Each version of each connector has its own code snippet.
 
-2. Download modules and place them in a location where you normally store Terraform modules. This tutorial uses the `source-stripe` and `destinaton-bigquery` modules. If you're using something else, download the source and destination module of your choice. They all work similarly.
+2. Find the source connector you want to use. This tutorial uses Stripe, but you can use any source connector.
 
-### Step 3: Create a source
+3. Copy the code snippet for your chosen connector and paste it into `main.tf`. For Stripe, it looks like this:
 
-1. Add a source from which you want to get data. In this example, you add Stripe as a source. If you want to use a different source, you can find the corresponding module in the [module list](https://airbytehq.github.io/airbyte-terraform-modules/).
-
-    ```hcl main.tf
-    module "Stripe_module" {
-        source = "./modules/sources-source-stripe-5.15.4" # the location of your module
-
-        # variables for this module
-        name = "Stripe"
-        account_id = "<YOUR_ACCOUNT_ID>"
-        client_secret = "<YOUR_CLIENT_SECRET>"
-        start_date = "2023-07-01T00:00:00Z"
-        lookback_window_days = 0
-        slice_range = 365
-        workspace_id = var.workspace_id
+    ```hcl title="main.tf"
+    resource "airbyte_source" "stripe" {
+        workspace_id  = var.workspace_id
+        name          = "Stripe"
+        definition_id = "e094cb9a-26de-4645-8761-65c0c425d1de"  # Stripe connector
+        configuration = jsonencode({
+            account_id           = "<YOUR_ACCOUNT_ID>"
+            client_secret        = "<YOUR_CLIENT_SECRET>"
+            start_date           = "2023-07-01T00:00:00Z"
+            lookback_window_days = 0
+            slice_range          = 365
+        })
     }
     ```
-    <!-- secret_id = var.client_secret - should not be mandatory -->
-    <!-- I am having some trouble figuring out how to know which variables are mandatory and which are not. You can sort of figure it out based on what's in the doc for that connector or the extension. -->
 
     :::tip
-    The best way to know what variables a module requires is to use a good Terraform extension for your code editor. Otherwise, you can see what variables a module requires by looking at its `variables.tf` file. If in doubt, when you run `terraform plan`, the provider tells you if you've set anything incorrectly.
+    The [Airbyte Terraform Modules](https://airbytehq.github.io/airbyte-terraform-modules/) page shows all available configuration options for each connector. You can also find configuration details in the connector's documentation.
     :::
 
-2. Run `terraform init` to initialize the module. Terraform tells you it initialized successfully. If it didn't, check your code against the preceding code sample.
+4. Run `terraform plan`. Terraform tells you it will add 1 resource.
 
-3. Run `terraform plan`. Terraform tells you it will add 1 resource.
-
-4. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
+5. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
 
 Terraform adds the source to Airbyte. To see your new source, open your Airbyte workspace and click **Sources**. Or, use the [List sources](https://reference.airbyte.com/reference/listsources) API endpoint.
 
-### Step 4: Create a destination
+### Step 3: Create a destination
 
-1. Add a destination to which you want to sync data. In this example, you add BigQuery as a destination. If you want to use a different destination, you can find the corresponding module in the [module list](https://airbytehq.github.io/airbyte-terraform-modules/).
+1. On the [Airbyte Terraform Modules](https://airbytehq.github.io/airbyte-terraform-modules/) page, find the destination connector you want to use. This tutorial uses BigQuery.
 
-    ```hcl main.tf
-    module "BigQuery_module" {
-        source = "./modules/destinations-destination-bigquery-3.0.6"
+2. Copy the code snippet for your chosen connector and paste it into `main.tf`. For BigQuery, it looks like this:
 
-        # variables for this module
-        name = "BigQuery"
-        project_id = "<YOUR_PROJECT_ID>"
-        dataset_location = "us-central1"
-        dataset_id = "<YOUR_DATASET_ID>"
-        credentials_json = jsonencode({
-            "type"                        = "service_account",
-            "project_id"                  = "<YOUR_PROJECT_ID>",
-            "private_key_id"              = "<YOUR_PRIVATE_KEY_ID>",
-            "private_key"                 = "-----BEGIN PRIVATE KEY-----\n ... \n-----END PRIVATE KEY-----\n",
-            "client_email"                = "you@example.com",
-            "client_id"                   = "<YOUR_CLIENT_ID>",
-            "auth_uri"                    = "https://accounts.google.com/o/oauth2/auth",
-            "token_uri"                   = "https://oauth2.googleapis.com/token",
-            "auth_provider_x509_cert_url" = "https://www.googleapis.com/oauth2/v1/certs",
-            "client_x509_cert_url"        = "https://www.googleapis.com/robot/v1/metadata/x509/support@sandbox-392522.iam.gserviceaccount.com"
+    ```hcl title="main.tf"
+    resource "airbyte_destination" "bigquery" {
+        workspace_id  = var.workspace_id
+        name          = "BigQuery"
+        definition_id = "22f6c74f-5699-40ff-833c-4a879ea40133"  # BigQuery connector
+        configuration = jsonencode({
+            project_id       = "<YOUR_PROJECT_ID>"
+            dataset_location = "us-central1"
+            dataset_id       = "<YOUR_DATASET_ID>"
+            credentials_json = jsonencode({
+                "type"                        = "service_account",
+                "project_id"                  = "<YOUR_PROJECT_ID>",
+                "private_key_id"              = "<YOUR_PRIVATE_KEY_ID>",
+                "private_key"                 = "-----BEGIN PRIVATE KEY-----\n ... \n-----END PRIVATE KEY-----\n",
+                "client_email"                = "you@example.com",
+                "client_id"                   = "<YOUR_CLIENT_ID>",
+                "auth_uri"                    = "https://accounts.google.com/o/oauth2/auth",
+                "token_uri"                   = "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url" = "https://www.googleapis.com/oauth2/v1/certs",
+                "client_x509_cert_url"        = "https://www.googleapis.com/robot/v1/metadata/x509/support@sandbox-392522.iam.gserviceaccount.com"
+            })
         })
-        workspace_id = var.workspace_id
     }
     ```
-    <!-- secret_id = var.client_secret - should not be mandatory -->
-    <!-- I am having some trouble figuring out how to know which variables are mandatory and which are not. You can sort of figure it out based on what's in the doc for that connector or the extension. -->
 
     :::note
     For BigQuery, you must use a [service account](https://cloud.google.com/iam/docs/service-account-overview) with credentials provided as a JSON string.
     :::
-
-    :::tip
-    The best way to know what variables a module requires is to use a good Terraform extension for your code editor. Otherwise, you can see what variables a module requires by looking at its `variables.tf` file. If in doubt, when you run `terraform plan`, the provider tells you if you've set anything incorrectly.
-    :::
-
-2. Run `terraform init` to initialize the module. Terraform tells you it initialized successfully. If it didn't, check your code against the preceding code sample.
 
 3. Run `terraform plan`. Terraform tells you it will add 1 resource.
 
@@ -200,17 +188,17 @@ Terraform adds the source to Airbyte. To see your new source, open your Airbyte 
 
 Terraform adds the destination to Airbyte. To see your new destination, open your Airbyte workspace and click **Destinations**. Or, use the [List destinations](https://reference.airbyte.com/reference/listdestinations) API endpoint.
 
-### Step 5: Create a connection
+### Step 4: Create a connection
 
 Create a connection from your source to your destination.
 
 1. Add your connection to `main.tf` using the [Airbyte connection](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/connection) resource.
 
-    ```hcl main.tf
-    resource "airbyte_connection" "stripe_to_bigquery_modules" {
+    ```hcl title="main.tf"
+    resource "airbyte_connection" "stripe_to_bigquery" {
         name           = "Stripe to BigQuery"
-        source_id      = source-stripe.source_id
-        destination_id = destination-bigquery.destination_id
+        source_id      = airbyte_source.stripe.source_id
+        destination_id = airbyte_destination.bigquery.destination_id
     }
     ```
 
