@@ -10,13 +10,19 @@ error code 40002: "pixel_ids: Field must be set to array".
 
 See: https://github.com/airbytehq/oncall/issues/10291
 Fix PR: https://github.com/airbytehq/airbyte/pull/70241
+
+IMPORTANT: This test uses the CDK's JinjaInterpolation instead of standalone
+Jinja2 because the CDK applies ast.literal_eval to the rendered result, which
+can convert JSON-like strings into Python objects. The test must verify the
+actual behavior of the CDK interpolation to catch issues where the template
+produces a Python list instead of a JSON string.
 """
 
 from pathlib import Path
 
 import pytest
 import yaml
-from jinja2 import Environment
+from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 
 def get_manifest_path() -> Path:
@@ -46,13 +52,15 @@ def load_manifest() -> dict:
 def test_pixel_ids_request_parameter_format(pixel_id: str, expected_pixel_ids_param: str):
     """
     Test that the pixel_ids request parameter in the manifest.yaml is configured
-    to produce a JSON array string format.
+    to produce a JSON array string format when processed by the CDK.
 
     The TikTok API requires pixel_ids to be a JSON array like '["7577353199770828808"]',
     not a plain string like '7577353199770828808'.
 
-    This test verifies the manifest.yaml configuration produces the correct format
-    when the Jinja template is rendered with a pixel_id from the stream partition.
+    This test uses the CDK's JinjaInterpolation (not standalone Jinja2) because
+    the CDK applies ast.literal_eval to the rendered result. Without proper quoting,
+    a template like '["..."]' would be parsed as a Python list, which when converted
+    to a string becomes "['...']" (single quotes) instead of valid JSON.
     """
     manifest = load_manifest()
 
@@ -60,12 +68,17 @@ def test_pixel_ids_request_parameter_format(pixel_id: str, expected_pixel_ids_pa
     request_parameters = pixel_events_statistics_def["retriever"]["requester"]["request_parameters"]
     pixel_ids_template = request_parameters["pixel_ids"]
 
-    env = Environment()
-    template = env.from_string(pixel_ids_template)
-    rendered_pixel_ids = template.render(stream_partition={"pixel_id": pixel_id})
+    jinja = JinjaInterpolation()
+    config = {}
+    rendered_pixel_ids = jinja.eval(pixel_ids_template, config, stream_slice={"pixel_id": pixel_id})
 
+    assert isinstance(rendered_pixel_ids, str), (
+        f"pixel_ids should be a string, not {type(rendered_pixel_ids).__name__}. "
+        f"The CDK's ast.literal_eval may have parsed it as a Python object."
+    )
     assert rendered_pixel_ids == expected_pixel_ids_param, (
-        f"pixel_ids should be rendered as a JSON array string. " f"Expected: {expected_pixel_ids_param}, Got: {rendered_pixel_ids}"
+        f"pixel_ids should be rendered as a JSON array string. "
+        f"Expected: {expected_pixel_ids_param}, Got: {rendered_pixel_ids}"
     )
 
 
