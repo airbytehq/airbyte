@@ -10,8 +10,8 @@
 
 - Make sure to read our [CDC docs](/platform/understanding-airbyte/cdc) to see limitations that impact all databases using CDC replication.
 - Our CDC implementation uses at least once delivery for all change records.
-- To enable CDC with incremental sync, ensure the table has at least one primary key.
-  Tables without primary keys can still be replicated by CDC but only in Full Refresh mode.
+- CDC mode requires tables to have a primary key for proper data extraction. Tables without a primary key will have NULL values in data columns during CDC syncs.
+- UNIQUE KEY constraints are not equivalent to PRIMARY KEY for CDC purposes. If your table only has a UNIQUE KEY, use Standard replication mode instead.
 
 ### Vendor-Specific Connector Limitations
 
