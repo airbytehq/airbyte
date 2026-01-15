@@ -2201,7 +2201,7 @@ definitions:
         path: pixel/event/stats/
         http_method: GET
         request_parameters:
-          pixel_ids: '"[\"{{ stream_partition[''pixel_id''] }}\"]"'
+          pixel_ids: "{{ [stream_partition['pixel_id']] | string}}"
           date_range: >-
             {"start_date":{{
             day_delta(29, format='%Y-%m-%d') }},"end_date":{{ format_datetime(now_utc(),
