@@ -13,6 +13,7 @@ from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import CustomRolesRecordBuilder, CustomRolesResponseBuilder, ErrorResponseBuilder
 from .utils import get_log_messages_by_log_level, read_stream
 
+
 RECENT_CURSOR = ab_datetime_now().subtract(timedelta(days=1)).to_iso8601_string()
 
 
@@ -48,7 +49,9 @@ class TestCustomRolesStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_custom_roles_request(api_token_authenticator).build(),
-            CustomRolesResponseBuilder.custom_roles_response().with_record(CustomRolesRecordBuilder.custom_roles_record().with_cursor(RECENT_CURSOR)).build(),
+            CustomRolesResponseBuilder.custom_roles_response()
+            .with_record(CustomRolesRecordBuilder.custom_roles_record().with_cursor(RECENT_CURSOR))
+            .build(),
         )
 
         output = read_stream("custom_roles", SyncMode.incremental, self._config)
