@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse.check
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.insert.InsertResponse
 import com.clickhouse.data.ClickHouseFormat
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.PROTOCOL
 import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.PROTOCOL_ERR_MESSAGE
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
@@ -153,7 +154,7 @@ class ClickhouseCheckerTest {
                 username = username,
                 password = password,
                 enableJson = enableJson,
-                tunnelConfig = null,
+                tunnelConfig = SshNoTunnelMethod,
                 recordWindowSize = recordWindow,
             )
     }
