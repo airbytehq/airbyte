@@ -1011,7 +1011,7 @@ definitions:
             field_name: MaxResultsPerPage
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 10
             cursor_value: "{{ response.payload.NextToken }}"
       schema_loader:
         type: InlineSchemaLoader
