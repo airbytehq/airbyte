@@ -1,4 +1,4 @@
-## 0.1.106
+## Version 0.1.106
 
 **Load CDK**
 
@@ -9,7 +9,7 @@
 
 load cdk: schema regression tests use .json extension
 
-## 0.1.104
+## Version 0.1.104
 
 **Load CDK**
 
