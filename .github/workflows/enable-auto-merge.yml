@@ -40,10 +40,3 @@ jobs:
         run: |
           echo "Enabling auto-merge with squash strategy..."
           gh pr merge --auto --squash "$PR_NUMBER" --repo "${{ github.repository }}"
-
-      - name: Add comment confirming auto-merge
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Auto-merge has been enabled for this PR. It will be automatically merged once all required checks pass.
