@@ -1,3 +1,10 @@
+## Version 0.1.106
+
+**Load CDK**
+
+* Add `DEFAULT_AIRBYTE_INTERNAL_NAMESPACE` constant to `core-load` table package
+* Add README documentation to `legacy-task-loader` and `legacy-task-load-db` toolkits
+
 ## Version 0.1.105
 
 load cdk: schema regression tests use .json extension
