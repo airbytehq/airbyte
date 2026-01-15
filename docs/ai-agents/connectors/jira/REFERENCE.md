@@ -379,6 +379,29 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `maxResults` | `integer` | No | The maximum number of items to return per page (max 1000) |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `self` | `string` |  |
+| `accountId` | `string` |  |
+| `accountType` | `string` |  |
+| `emailAddress` | `string \| null` |  |
+| `avatarUrls` | `object` |  |
+| `displayName` | `string` |  |
+| `active` | `boolean` |  |
+| `timeZone` | `string \| null` |  |
+| `locale` | `string \| null` |  |
+| `expand` | `string \| null` |  |
+| `groups` | `object \| null` |  |
+| `applicationRoles` | `object \| null` |  |
+
+
+</details>
+
 #### Users Api_search
 
 Search for users using a query string
@@ -413,6 +436,29 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `property` | `string` | No | Property key to filter users |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `self` | `string` |  |
+| `accountId` | `string` |  |
+| `accountType` | `string` |  |
+| `emailAddress` | `string \| null` |  |
+| `avatarUrls` | `object` |  |
+| `displayName` | `string` |  |
+| `active` | `boolean` |  |
+| `timeZone` | `string \| null` |  |
+| `locale` | `string \| null` |  |
+| `expand` | `string \| null` |  |
+| `groups` | `object \| null` |  |
+| `applicationRoles` | `object \| null` |  |
+
+
+</details>
+
 ### Issue Fields
 
 #### Issue Fields List
@@ -438,6 +484,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `key` | `string \| null` |  |
+| `name` | `string` |  |
+| `custom` | `boolean \| null` |  |
+| `orderable` | `boolean \| null` |  |
+| `navigable` | `boolean \| null` |  |
+| `searchable` | `boolean \| null` |  |
+| `clauseNames` | `array \| null` |  |
+| `schema` | `object \| null` |  |
+| `untranslatedName` | `string \| null` |  |
+| `typeDisplayName` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `searcherKey` | `string \| null` |  |
+| `screensCount` | `integer \| null` |  |
+| `contextsCount` | `integer \| null` |  |
+| `isLocked` | `boolean \| null` |  |
+| `lastUsed` | `string \| null` |  |
+
+
+</details>
 
 #### Issue Fields Api_search
 
@@ -791,12 +865,12 @@ The Jira connector requires the following configuration variables. These variabl
 The Jira connector supports the following authentication methods.
 
 
-### Authentication
+### Jira API Token Authentication
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `username` | `str` | Yes | Authentication username |
-| `password` | `str` | Yes | Authentication password |
+| `username` | `str` | Yes | Your Atlassian account email address |
+| `password` | `str` | Yes | Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens |
 
 #### Example
 
@@ -805,8 +879,8 @@ The Jira connector supports the following authentication methods.
 ```python
 JiraConnector(
   auth_config=JiraAuthConfig(
-    username="<Authentication username>",
-    password="<Authentication password>"
+    username="<Your Atlassian account email address>",
+    password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
   )
 )
 ```
@@ -820,8 +894,8 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
 --data '{
   "connector_definition_id": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
   "auth_config": {
-    "username": "<Authentication username>",
-    "password": "<Authentication password>"
+    "username": "<Your Atlassian account email address>",
+    "password": "<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
   },
   "name": "My Jira Connector"
 }'
