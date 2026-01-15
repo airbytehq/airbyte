@@ -22,6 +22,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 
@@ -49,7 +50,7 @@ def load_manifest() -> dict:
         ),
     ],
 )
-def test_pixel_ids_request_parameter_format(pixel_id: str, expected_pixel_ids_param: str):
+def test_pixel_ids_request_parameter_format_with_cdk_interpolation(pixel_id: str, expected_pixel_ids_param: str):
     """
     Test that the pixel_ids request parameter in the manifest.yaml is configured
     to produce a JSON array string format when processed by the CDK.
