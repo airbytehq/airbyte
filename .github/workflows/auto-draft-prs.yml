@@ -1,0 +1,46 @@
+name: Auto-Draft PRs
+
+# This workflow automatically converts new PRs to draft status.
+# Rationale: Making a PR "ready for review" should be a conscious decision.
+# Authors can easily mark their PR as ready when appropriate.
+#
+# Opt-out: Include "[ready]" in the PR title to skip auto-draft conversion.
+
+on:
+  pull_request_target:
+    types:
+      - opened
+
+jobs:
+  auto-draft:
+    name: Convert PR to Draft
+    # Skip if:
+    # - PR is already a draft
+    # - PR title contains "[ready]" (opt-out)
+    # - PR is from a bot (Dependabot, etc.)
+    if: |
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.title, '[ready]') &&
+      github.event.pull_request.user.type != 'Bot'
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Convert PR to draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr ready --undo "$PR_NUMBER" --repo "${{ github.repository }}"
+
+      - name: Add comment explaining draft status
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            This PR has been automatically converted to **draft** status.
+
+            When you're ready for review, click "Ready for review" at the bottom of the PR page.
+
+            To skip this auto-draft behavior in the future, include `[ready]` in your PR title.
