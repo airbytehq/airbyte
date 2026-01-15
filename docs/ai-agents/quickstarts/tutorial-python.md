@@ -45,9 +45,9 @@ This creates a project with the following structure:
 my-ai-agent/
 ├── .gitignore
 ├── .python-version
-├── README.md
 ├── main.py
-└── pyproject.toml
+├── pyproject.toml
+└── README.md
 ```
 
 You create `.env` and `uv.lock` files in later steps, so don't worry about them yet.
@@ -163,7 +163,6 @@ Add the following code to `agent.py`.
 @agent.tool_plain
 @GithubConnector.describe
 async def github_execute(entity: str, action: str, params: dict | None = None):
-    """Execute operations on GitHub."""
     return await connector.execute(entity, action, params or {})
 ```
 
