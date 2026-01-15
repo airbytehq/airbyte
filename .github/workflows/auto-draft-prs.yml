@@ -4,7 +4,10 @@ name: Auto-Draft PRs
 # Rationale: Making a PR "ready for review" should be a conscious decision.
 # Authors can easily mark their PR as ready when appropriate.
 #
-# Opt-out: Include "[ready]" in the PR title, or add the "skip-draft-status" label.
+# Opt-out: Include "[ready]" in the PR title, or add one of these labels:
+#   - "skip-draft-status"
+#   - "auto-merge"
+#   - "auto-merge/bypass-ci-checks"
 
 on:
   pull_request_target:
@@ -17,12 +20,13 @@ jobs:
     # Skip if:
     # - PR is already a draft
     # - PR title contains "[ready]" (opt-out)
-    # - PR has "skip-draft-status" label (opt-out)
+    # - PR has opt-out label (skip-draft-status, auto-merge, auto-merge/bypass-ci-checks)
     # - PR is from a bot (Dependabot, etc.)
     if: |
       github.event.pull_request.draft == false &&
       !contains(github.event.pull_request.title, '[ready]') &&
       !contains(toJson(github.event.pull_request.labels.*.name), 'skip-draft-status') &&
+      !contains(toJson(github.event.pull_request.labels.*.name), 'auto-merge') &&
       github.event.pull_request.user.type != 'Bot'
     permissions:
       contents: read
@@ -45,4 +49,4 @@ jobs:
 
             Once the PR has been tested and is ready for review, you can proceed to convert the PR to "ready for review" status by clicking the "Ready for review" button at the bottom of the PR page.
 
-            To skip this auto-draft behavior, include `[ready]` in your PR title or add the `skip-draft-status` label when creating the PR.
+            To skip this auto-draft behavior, include `[ready]` in your PR title or add one of these labels when creating the PR: `skip-draft-status`, `auto-merge`, or `auto-merge/bypass-ci-checks`.
