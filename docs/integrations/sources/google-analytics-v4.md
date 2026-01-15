@@ -31,7 +31,7 @@ Google has discontinued Universal Analytics in favor of Google Analytics 4. Airb
 | 0.4.0 | 2024-07-01 | [40244](https://github.com/airbytehq/airbyte/pull/40244) | Deprecate the connector |
 | 0.3.3 | 2024-06-21 | [39940](https://github.com/airbytehq/airbyte/pull/39940) | Update dependencies |
 | 0.3.2 | 2024-06-04 | [38934](https://github.com/airbytehq/airbyte/pull/38934) | [autopull] Upgrade base image to v1.2.1 |
-| 0.3.1   | 2024-04-19 | [37432](https://github.com/airbytehq/airbyte/pull/36267) | Fix empty response error for test stream                                                     |
+| 0.3.1   | 2024-04-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Fix empty response error for test stream                                                     |
 | 0.3.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                              |
 | 0.2.5   | 2024-02-09 | [35101](https://github.com/airbytehq/airbyte/pull/35101) | Manage dependencies with Poetry.                                                             |
 | 0.2.4   | 2024-01-22 | [34323](https://github.com/airbytehq/airbyte/pull/34323) | Update setup dependencies                                                                    |
@@ -49,7 +49,7 @@ Google has discontinued Universal Analytics in favor of Google Analytics 4. Airb
 | 0.1.29  | 2022-10-12 | [17905](https://github.com/airbytehq/airbyte/pull/17905) | Handle exceeded daily quota gracefully                                                       |
 | 0.1.28  | 2022-09-24 | [16920](https://github.com/airbytehq/airbyte/pull/16920) | Added segments and filters to custom reports                                                 |
 | 0.1.27  | 2022-10-07 | [17717](https://github.com/airbytehq/airbyte/pull/17717) | Improve CHECK by using `ga:hits` metric.                                                     |
-| 0.1.26  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/15087) | Migrate to per-stream states.                                                                |
+| 0.1.26  | 2022-09-28 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | Migrate to per-stream states.                                                                |
 | 0.1.25  | 2022-07-27 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | Fix documentationUrl                                                                         |
 | 0.1.24  | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from schemas                                     |
 | 0.1.23  | 2022-07-22 | [14949](https://github.com/airbytehq/airbyte/pull/14949) | Add handle request daily quota error                                                         |

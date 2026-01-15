@@ -1,18 +1,22 @@
-# Salesforce
+# Salesforce full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Salesforce agent connector.
+
+## Supported entities and actions
+
+The Salesforce connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](#accounts-list), [Get](#accounts-get), [Search](#accounts-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
-| Leads | [List](#leads-list), [Get](#leads-get), [Search](#leads-search) |
-| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [Search](#opportunities-search) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [Search](#tasks-search) |
-| Events | [List](#events-list), [Get](#events-get), [Search](#events-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Cases | [List](#cases-list), [Get](#cases-get), [Search](#cases-search) |
-| Notes | [List](#notes-list), [Get](#notes-get), [Search](#notes-search) |
+| Accounts | [List](#accounts-list), [Get](#accounts-get), [Api_search](#accounts-api_search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [Api_search](#contacts-api_search) |
+| Leads | [List](#leads-list), [Get](#leads-get), [Api_search](#leads-api_search) |
+| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [Api_search](#opportunities-api_search) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [Api_search](#tasks-api_search) |
+| Events | [List](#events-list), [Get](#events-get), [Api_search](#events-api_search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Api_search](#campaigns-api_search) |
+| Cases | [List](#cases-list), [Get](#cases-get), [Api_search](#cases-api_search) |
+| Notes | [List](#notes-list), [Get](#notes-get), [Api_search](#notes-api_search) |
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Query | [List](#query-list) |
@@ -28,7 +32,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.accounts.list(
+await salesforce.accounts.list(
     q="<str>"
 )
 ```
@@ -49,7 +53,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -86,7 +90,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.accounts.get(
+await salesforce.accounts.get(
     id="<str>"
 )
 ```
@@ -107,7 +111,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -131,7 +135,7 @@ Example: "Id,Name,Industry,AnnualRevenue,Website"
 
 </details>
 
-#### Accounts Search
+#### Accounts Api_search
 
 Search for accounts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields and objects.
@@ -141,7 +145,7 @@ Use SOQL (list action) for structured queries with specific field conditions.
 **Python SDK**
 
 ```python
-salesforce.accounts.search(
+await salesforce.accounts.api_search(
     q="<str>"
 )
 ```
@@ -154,7 +158,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -162,7 +166,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -197,7 +201,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.contacts.list(
+await salesforce.contacts.list(
     q="<str>"
 )
 ```
@@ -218,7 +222,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -255,7 +259,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.contacts.get(
+await salesforce.contacts.get(
     id="<str>"
 )
 ```
@@ -276,7 +280,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -300,7 +304,7 @@ Example: "Id,FirstName,LastName,Email,Phone,AccountId"
 
 </details>
 
-#### Contacts Search
+#### Contacts Api_search
 
 Search for contacts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -309,7 +313,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.contacts.search(
+await salesforce.contacts.api_search(
     q="<str>"
 )
 ```
@@ -322,7 +326,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -330,7 +334,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -364,7 +368,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.leads.list(
+await salesforce.leads.list(
     q="<str>"
 )
 ```
@@ -385,7 +389,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -422,7 +426,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.leads.get(
+await salesforce.leads.get(
     id="<str>"
 )
 ```
@@ -443,7 +447,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -467,7 +471,7 @@ Example: "Id,FirstName,LastName,Email,Company,Status,LeadSource"
 
 </details>
 
-#### Leads Search
+#### Leads Api_search
 
 Search for leads using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -476,7 +480,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.leads.search(
+await salesforce.leads.api_search(
     q="<str>"
 )
 ```
@@ -489,7 +493,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "leads",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -497,7 +501,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -531,7 +535,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.opportunities.list(
+await salesforce.opportunities.list(
     q="<str>"
 )
 ```
@@ -552,7 +556,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -589,7 +593,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.opportunities.get(
+await salesforce.opportunities.get(
     id="<str>"
 )
 ```
@@ -610,7 +614,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -634,7 +638,7 @@ Example: "Id,Name,Amount,StageName,CloseDate,AccountId"
 
 </details>
 
-#### Opportunities Search
+#### Opportunities Api_search
 
 Search for opportunities using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -643,7 +647,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.opportunities.search(
+await salesforce.opportunities.api_search(
     q="<str>"
 )
 ```
@@ -656,7 +660,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "opportunities",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -664,7 +668,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -698,7 +702,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.tasks.list(
+await salesforce.tasks.list(
     q="<str>"
 )
 ```
@@ -719,7 +723,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -756,7 +760,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.tasks.get(
+await salesforce.tasks.get(
     id="<str>"
 )
 ```
@@ -777,7 +781,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -801,7 +805,7 @@ Example: "Id,Subject,Status,Priority,ActivityDate,WhoId,WhatId"
 
 </details>
 
-#### Tasks Search
+#### Tasks Api_search
 
 Search for tasks using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -810,7 +814,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.tasks.search(
+await salesforce.tasks.api_search(
     q="<str>"
 )
 ```
@@ -823,7 +827,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -831,7 +835,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -865,7 +869,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.events.list(
+await salesforce.events.list(
     q="<str>"
 )
 ```
@@ -886,7 +890,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -923,7 +927,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.events.get(
+await salesforce.events.get(
     id="<str>"
 )
 ```
@@ -944,7 +948,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -968,7 +972,7 @@ Example: "Id,Subject,StartDateTime,EndDateTime,Location,WhoId,WhatId"
 
 </details>
 
-#### Events Search
+#### Events Api_search
 
 Search for events using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -977,7 +981,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.events.search(
+await salesforce.events.api_search(
     q="<str>"
 )
 ```
@@ -990,7 +994,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -998,7 +1002,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1032,7 +1036,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.campaigns.list(
+await salesforce.campaigns.list(
     q="<str>"
 )
 ```
@@ -1053,7 +1057,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1090,7 +1094,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.campaigns.get(
+await salesforce.campaigns.get(
     id="<str>"
 )
 ```
@@ -1111,7 +1115,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1135,7 +1139,7 @@ Example: "Id,Name,Type,Status,StartDate,EndDate,IsActive"
 
 </details>
 
-#### Campaigns Search
+#### Campaigns Api_search
 
 Search for campaigns using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1144,7 +1148,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.campaigns.search(
+await salesforce.campaigns.api_search(
     q="<str>"
 )
 ```
@@ -1157,7 +1161,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1165,7 +1169,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1199,7 +1203,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.cases.list(
+await salesforce.cases.list(
     q="<str>"
 )
 ```
@@ -1220,7 +1224,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1258,7 +1262,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.cases.get(
+await salesforce.cases.get(
     id="<str>"
 )
 ```
@@ -1279,7 +1283,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1304,7 +1308,7 @@ Example: "Id,CaseNumber,Subject,Status,Priority,ContactId,AccountId"
 
 </details>
 
-#### Cases Search
+#### Cases Api_search
 
 Search for cases using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1313,7 +1317,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.cases.search(
+await salesforce.cases.api_search(
     q="<str>"
 )
 ```
@@ -1326,7 +1330,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "cases",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1334,7 +1338,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1368,7 +1372,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.notes.list(
+await salesforce.notes.list(
     q="<str>"
 )
 ```
@@ -1389,7 +1393,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1426,7 +1430,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.notes.get(
+await salesforce.notes.get(
     id="<str>"
 )
 ```
@@ -1447,7 +1451,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1471,7 +1475,7 @@ Example: "Id,Title,Body,ParentId,OwnerId"
 
 </details>
 
-#### Notes Search
+#### Notes Api_search
 
 Search for notes using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1480,7 +1484,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.notes.search(
+await salesforce.notes.api_search(
     q="<str>"
 )
 ```
@@ -1493,7 +1497,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "notes",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1501,7 +1505,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1536,7 +1540,7 @@ Note: ContentVersion does not support FIELDS(STANDARD), so specific fields must 
 **Python SDK**
 
 ```python
-salesforce.content_versions.list(
+await salesforce.content_versions.list(
     q="<str>"
 )
 ```
@@ -1557,7 +1561,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1599,7 +1603,7 @@ Use the download action to retrieve the actual file binary.
 **Python SDK**
 
 ```python
-salesforce.content_versions.get(
+await salesforce.content_versions.get(
     id="<str>"
 )
 ```
@@ -1620,7 +1624,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1682,7 +1686,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1704,7 +1708,7 @@ Note: Attachments are a legacy feature; consider using ContentVersion (Salesforc
 **Python SDK**
 
 ```python
-salesforce.attachments.list(
+await salesforce.attachments.list(
     q="<str>"
 )
 ```
@@ -1725,7 +1729,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1766,7 +1770,7 @@ Note: Attachments are a legacy feature; consider using ContentVersion for new im
 **Python SDK**
 
 ```python
-salesforce.attachments.get(
+await salesforce.attachments.get(
     id="<str>"
 )
 ```
@@ -1787,7 +1791,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1847,7 +1851,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1868,7 +1872,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.query.list(
+await salesforce.query.list(
     q="<str>"
 )
 ```
@@ -1889,7 +1893,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1920,18 +1924,16 @@ Examples:
 
 ## Configuration
 
-The connector requires the following configuration variables:
+The Salesforce connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
 
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
 | `instance_url` | `string` | Yes | https://login.salesforce.com | Your Salesforce instance URL (e.g., https://na1.salesforce.com) |
 
-These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
 
 ## Authentication
 
-The Salesforce connector supports the following authentication methods:
+The Salesforce connector supports the following authentication methods.
 
 
 ### Salesforce OAuth 2.0

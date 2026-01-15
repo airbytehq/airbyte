@@ -1,26 +1,30 @@
-# Jira
+# Jira full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Jira agent connector.
+
+## Supported entities and actions
+
+The Jira connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [Search](#issues-search), [Get](#issues-get) |
-| Projects | [Search](#projects-search), [Get](#projects-get) |
-| Users | [Get](#users-get), [List](#users-list), [Search](#users-search) |
-| Issue Fields | [List](#issue-fields-list), [Search](#issue-fields-search) |
+| Issues | [Api_search](#issues-api_search), [Get](#issues-get) |
+| Projects | [Api_search](#projects-api_search), [Get](#projects-get) |
+| Users | [Get](#users-get), [List](#users-list), [Api_search](#users-api_search) |
+| Issue Fields | [List](#issue-fields-list), [Api_search](#issue-fields-api_search) |
 | Issue Comments | [List](#issue-comments-list), [Get](#issue-comments-get) |
 | Issue Worklogs | [List](#issue-worklogs-list), [Get](#issue-worklogs-get) |
 
 ### Issues
 
-#### Issues Search
+#### Issues Api_search
 
 Retrieve issues based on JQL query with pagination support
 
 **Python SDK**
 
 ```python
-jira.issues.search()
+await jira.issues.api_search()
 ```
 
 **API**
@@ -31,12 +35,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "issues",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -81,7 +85,7 @@ Retrieve a single issue by its ID or key
 **Python SDK**
 
 ```python
-jira.issues.get(
+await jira.issues.get(
     issue_id_or_key="<str>"
 )
 ```
@@ -102,7 +106,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -133,14 +137,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ### Projects
 
-#### Projects Search
+#### Projects Api_search
 
 Search and filter projects with advanced query parameters
 
 **Python SDK**
 
 ```python
-jira.projects.search()
+await jira.projects.api_search()
 ```
 
 **API**
@@ -151,12 +155,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "projects",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -220,7 +224,7 @@ Retrieve a single project by its ID or key
 **Python SDK**
 
 ```python
-jira.projects.get(
+await jira.projects.get(
     project_id_or_key="<str>"
 )
 ```
@@ -241,7 +245,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -292,7 +296,7 @@ Retrieve a single user by their account ID
 **Python SDK**
 
 ```python
-jira.users.get(
+await jira.users.get(
     account_id="<str>"
 )
 ```
@@ -313,7 +317,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -351,7 +355,7 @@ Returns a paginated list of users
 **Python SDK**
 
 ```python
-jira.users.list()
+await jira.users.list()
 ```
 
 **API**
@@ -367,7 +371,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -375,14 +379,37 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `maxResults` | `integer` | No | The maximum number of items to return per page (max 1000) |
 
 
-#### Users Search
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `self` | `string` |  |
+| `accountId` | `string` |  |
+| `accountType` | `string` |  |
+| `emailAddress` | `string \| null` |  |
+| `avatarUrls` | `object` |  |
+| `displayName` | `string` |  |
+| `active` | `boolean` |  |
+| `timeZone` | `string \| null` |  |
+| `locale` | `string \| null` |  |
+| `expand` | `string \| null` |  |
+| `groups` | `object \| null` |  |
+| `applicationRoles` | `object \| null` |  |
+
+
+</details>
+
+#### Users Api_search
 
 Search for users using a query string
 
 **Python SDK**
 
 ```python
-jira.users.search()
+await jira.users.api_search()
 ```
 
 **API**
@@ -393,12 +420,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -409,6 +436,29 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `property` | `string` | No | Property key to filter users |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `self` | `string` |  |
+| `accountId` | `string` |  |
+| `accountType` | `string` |  |
+| `emailAddress` | `string \| null` |  |
+| `avatarUrls` | `object` |  |
+| `displayName` | `string` |  |
+| `active` | `boolean` |  |
+| `timeZone` | `string \| null` |  |
+| `locale` | `string \| null` |  |
+| `expand` | `string \| null` |  |
+| `groups` | `object \| null` |  |
+| `applicationRoles` | `object \| null` |  |
+
+
+</details>
+
 ### Issue Fields
 
 #### Issue Fields List
@@ -418,7 +468,7 @@ Returns a list of all custom and system fields
 **Python SDK**
 
 ```python
-jira.issue_fields.list()
+await jira.issue_fields.list()
 ```
 
 **API**
@@ -435,14 +485,42 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 
 
-#### Issue Fields Search
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `key` | `string \| null` |  |
+| `name` | `string` |  |
+| `custom` | `boolean \| null` |  |
+| `orderable` | `boolean \| null` |  |
+| `navigable` | `boolean \| null` |  |
+| `searchable` | `boolean \| null` |  |
+| `clauseNames` | `array \| null` |  |
+| `schema` | `object \| null` |  |
+| `untranslatedName` | `string \| null` |  |
+| `typeDisplayName` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `searcherKey` | `string \| null` |  |
+| `screensCount` | `integer \| null` |  |
+| `contextsCount` | `integer \| null` |  |
+| `isLocked` | `boolean \| null` |  |
+| `lastUsed` | `string \| null` |  |
+
+
+</details>
+
+#### Issue Fields Api_search
 
 Search and filter issue fields with query parameters
 
 **Python SDK**
 
 ```python
-jira.issue_fields.search()
+await jira.issue_fields.api_search()
 ```
 
 **API**
@@ -453,12 +531,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "issue_fields",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -513,7 +591,7 @@ Retrieve all comments for a specific issue
 **Python SDK**
 
 ```python
-jira.issue_comments.list(
+await jira.issue_comments.list(
     issue_id_or_key="<str>"
 )
 ```
@@ -534,7 +612,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -582,7 +660,7 @@ Retrieve a single comment by its ID
 **Python SDK**
 
 ```python
-jira.issue_comments.get(
+await jira.issue_comments.get(
     issue_id_or_key="<str>",
     comment_id="<str>"
 )
@@ -605,7 +683,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -645,7 +723,7 @@ Retrieve all worklogs for a specific issue
 **Python SDK**
 
 ```python
-jira.issue_worklogs.list(
+await jira.issue_worklogs.list(
     issue_id_or_key="<str>"
 )
 ```
@@ -666,7 +744,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -715,7 +793,7 @@ Retrieve a single worklog by its ID
 **Python SDK**
 
 ```python
-jira.issue_worklogs.get(
+await jira.issue_worklogs.get(
     issue_id_or_key="<str>",
     worklog_id="<str>"
 )
@@ -738,7 +816,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -775,26 +853,24 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ## Configuration
 
-The connector requires the following configuration variables:
+The Jira connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
 
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
 | `subdomain` | `string` | Yes | \{subdomain\} | Your Jira Cloud subdomain |
 
-These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
 
 ## Authentication
 
-The Jira connector supports the following authentication methods:
+The Jira connector supports the following authentication methods.
 
 
-### Authentication
+### Jira API Token Authentication
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `username` | `str` | Yes | Authentication username |
-| `password` | `str` | Yes | Authentication password |
+| `username` | `str` | Yes | Your Atlassian account email address |
+| `password` | `str` | Yes | Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens |
 
 #### Example
 
@@ -803,8 +879,8 @@ The Jira connector supports the following authentication methods:
 ```python
 JiraConnector(
   auth_config=JiraAuthConfig(
-    username="<Authentication username>",
-    password="<Authentication password>"
+    username="<Your Atlassian account email address>",
+    password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
   )
 )
 ```
@@ -818,8 +894,8 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
 --data '{
   "connector_definition_id": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
   "auth_config": {
-    "username": "<Authentication username>",
-    "password": "<Authentication password>"
+    "username": "<Your Atlassian account email address>",
+    "password": "<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
   },
   "name": "My Jira Connector"
 }'

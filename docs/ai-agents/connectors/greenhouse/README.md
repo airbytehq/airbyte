@@ -1,4 +1,4 @@
-# Airbyte Greenhouse AI Connector
+# Greenhouse agent connector
 
 Greenhouse is an applicant tracking system (ATS) that helps companies manage their
 hiring process. This connector provides access to candidates, applications, jobs,
@@ -6,26 +6,30 @@ offers, users, departments, offices, job posts, sources, and scheduled interview
 for recruiting analytics and talent acquisition insights.
 
 
-## Example Questions
+## Example questions
 
-- Show me candidates from [Company] who applied last month
+The Greenhouse connector is optimized to handle prompts like these.
+
+- Show me candidates from \{company\} who applied last month
 - What are the top 5 sources for our job applications this quarter?
 - List all open jobs in the Sales department
 - Analyze the interview schedules for our engineering candidates this week
-- Get details of recent job offers for [teamMember]
+- Get details of recent job offers for \{team_member\}
 - Compare the number of applications across different offices
 - Identify candidates who have multiple applications in our system
 - Show me upcoming scheduled interviews for our marketing positions
 - Summarize the candidate pipeline for our latest job posting
 - Find the most active departments in recruiting this month
 
-## Unsupported Questions
+## Unsupported questions
+
+The Greenhouse connector isn't currently able to handle prompts like these.
 
 - Create a new job posting for the marketing team
-- Schedule an interview for [candidate]
-- Update the status of [candidate]'s application
+- Schedule an interview for \{candidate\}
+- Update the status of \{candidate\}'s application
 - Delete a candidate profile
-- Send an offer letter to [candidate]
+- Send an offer letter to \{candidate\}
 - Edit the details of a job description
 
 ## Installation
@@ -44,10 +48,13 @@ connector = GreenhouseConnector(
     api_key="..."
   )
 )
-result = connector.candidates.list()
+result = await connector.candidates.list()
 ```
 
-## Documentation
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -65,14 +72,12 @@ result = connector.candidates.list()
 | Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Greenhouse API Reference](https://developers.greenhouse.io/harvest.html).
+For the service's official API docs, see the [Greenhouse API reference](https://developers.greenhouse.io/harvest.html).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.17.17
-
-**Connector Version:** 0.1.1
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.17.41
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 20b3afd9215174bb084af41e3174b78f114d86b5

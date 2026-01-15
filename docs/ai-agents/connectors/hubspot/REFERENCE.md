@@ -1,13 +1,17 @@
-# Hubspot
+# Hubspot full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Hubspot agent connector.
+
+## Supported entities and actions
+
+The Hubspot connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
-| Companies | [List](#companies-list), [Get](#companies-get), [Search](#companies-search) |
-| Deals | [List](#deals-list), [Get](#deals-get), [Search](#deals-search) |
-| Tickets | [List](#tickets-list), [Get](#tickets-get), [Search](#tickets-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [Api_search](#contacts-api_search) |
+| Companies | [List](#companies-list), [Get](#companies-get), [Api_search](#companies-api_search) |
+| Deals | [List](#deals-list), [Get](#deals-get), [Api_search](#deals-api_search) |
+| Tickets | [List](#tickets-list), [Get](#tickets-get), [Api_search](#tickets-api_search) |
 | Schemas | [List](#schemas-list), [Get](#schemas-get) |
 | Objects | [List](#objects-list), [Get](#objects-get) |
 
@@ -20,7 +24,7 @@ Returns a paginated list of contacts
 **Python SDK**
 
 ```python
-hubspot.contacts.list()
+await hubspot.contacts.list()
 ```
 
 **API**
@@ -36,7 +40,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -83,7 +87,7 @@ Get a single contact by ID
 **Python SDK**
 
 ```python
-hubspot.contacts.get(
+await hubspot.contacts.get(
     contact_id="<str>"
 )
 ```
@@ -104,7 +108,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -137,14 +141,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Contacts Search
+#### Contacts Api_search
 
 Search for contacts by filtering on properties, searching through associations, and sorting results.
 
 **Python SDK**
 
 ```python
-hubspot.contacts.search()
+await hubspot.contacts.api_search()
 ```
 
 **API**
@@ -155,12 +159,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -217,7 +221,7 @@ Retrieve all companies, using query parameters to control the information that g
 **Python SDK**
 
 ```python
-hubspot.companies.list()
+await hubspot.companies.list()
 ```
 
 **API**
@@ -233,7 +237,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -280,7 +284,7 @@ Get a single company by ID
 **Python SDK**
 
 ```python
-hubspot.companies.get(
+await hubspot.companies.get(
     company_id="<str>"
 )
 ```
@@ -301,7 +305,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -334,14 +338,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Companies Search
+#### Companies Api_search
 
 Search for companies by filtering on properties, searching through associations, and sorting results.
 
 **Python SDK**
 
 ```python
-hubspot.companies.search()
+await hubspot.companies.api_search()
 ```
 
 **API**
@@ -352,12 +356,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "companies",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -414,7 +418,7 @@ Returns a paginated list of deals
 **Python SDK**
 
 ```python
-hubspot.deals.list()
+await hubspot.deals.list()
 ```
 
 **API**
@@ -430,7 +434,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -477,7 +481,7 @@ Get a single deal by ID
 **Python SDK**
 
 ```python
-hubspot.deals.get(
+await hubspot.deals.get(
     deal_id="<str>"
 )
 ```
@@ -498,7 +502,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -531,14 +535,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Deals Search
+#### Deals Api_search
 
 Search deals with filters and sorting
 
 **Python SDK**
 
 ```python
-hubspot.deals.search()
+await hubspot.deals.api_search()
 ```
 
 **API**
@@ -549,12 +553,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "deals",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -611,7 +615,7 @@ Returns a paginated list of tickets
 **Python SDK**
 
 ```python
-hubspot.tickets.list()
+await hubspot.tickets.list()
 ```
 
 **API**
@@ -627,7 +631,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -674,7 +678,7 @@ Get a single ticket by ID
 **Python SDK**
 
 ```python
-hubspot.tickets.get(
+await hubspot.tickets.get(
     ticket_id="<str>"
 )
 ```
@@ -695,7 +699,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -728,14 +732,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Tickets Search
+#### Tickets Api_search
 
 Search for tickets by filtering on properties, searching through associations, and sorting results.
 
 **Python SDK**
 
 ```python
-hubspot.tickets.search()
+await hubspot.tickets.api_search()
 ```
 
 **API**
@@ -746,12 +750,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tickets",
-    "action": "search"
+    "action": "api_search"
 }'
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -808,7 +812,7 @@ Returns all custom object schemas to discover available custom objects
 **Python SDK**
 
 ```python
-hubspot.schemas.list()
+await hubspot.schemas.list()
 ```
 
 **API**
@@ -824,7 +828,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -869,7 +873,7 @@ Get the schema for a specific custom object type
 **Python SDK**
 
 ```python
-hubspot.schemas.get(
+await hubspot.schemas.get(
     object_type="<str>"
 )
 ```
@@ -890,7 +894,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -937,7 +941,7 @@ Read a page of objects. Control what is returned via the properties query param.
 **Python SDK**
 
 ```python
-hubspot.objects.list(
+await hubspot.objects.list(
     object_type="<str>"
 )
 ```
@@ -958,7 +962,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1006,7 +1010,7 @@ Read an Object identified by \{objectId\}. \{objectId\} refers to the internal o
 **Python SDK**
 
 ```python
-hubspot.objects.get(
+await hubspot.objects.get(
     object_type="<str>",
     object_id="<str>"
 )
@@ -1029,7 +1033,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1067,7 +1071,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ## Authentication
 
-The Hubspot connector supports the following authentication methods:
+The Hubspot connector supports the following authentication methods.
 
 
 ### OAuth2 Authentication
