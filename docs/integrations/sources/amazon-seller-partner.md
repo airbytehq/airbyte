@@ -264,7 +264,7 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.3 | 2026-01-15 | [71327](https://github.com/airbytehq/airbyte/pull/71327) | feat(source-amazon-seller-partner): Add pagination reset, rate limiting, and hourly granularity for ListFinancialEvents |
+| 5.1.0 | 2026-01-15 | [71327](https://github.com/airbytehq/airbyte/pull/71327) | Add rate limiting and hourly granularity options for ListFinancialEvents and ListFinancialEventGroups streams |
 | 5.0.2 | 2026-01-14 | [71526](https://github.com/airbytehq/airbyte/pull/71526) | Update dependencies |
 | 5.0.1 | 2025-12-11 | [70200](https://github.com/airbytehq/airbyte/pull/70200) | Fix financial events pagination causing 400 InvalidInput errors under rate limiting when syncing `ListFinancialEvents`, and align `ListFinancialEventGroups` pagination behavior |
 | 5.0.0 | 2025-12-08 | [69805](https://github.com/airbytehq/airbyte/pull/69805) | Remove deprecated FBA Subscribe and Save report types (GET_FBA_SNS_FORECAST_DATA and GET_FBA_SNS_PERFORMANCE_DATA) |
