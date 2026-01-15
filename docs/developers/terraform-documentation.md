@@ -78,16 +78,17 @@ Download the Terraform provider and configure it to run with your Airbyte instan
 
     provider "airbyte" {
         // highlight-start
-        client_id = var.client_id
+        client_id     = var.client_id
         client_secret = var.client_secret
+        token_url     = "https://api.airbyte.com/v1/applications/token"
 
-        # Include server_url if running locally
-        server_url = "http://localhost:8000/api/public/v1/"
+        # For local/self-hosted Airbyte, use server_url instead of token_url:
+        # server_url = "http://localhost:8000/api/public/v1/"
         // highlight-end
     }
     ```
 
-5. In your terminal, create a file named `variables.tf`. This file stores sensitive variables you don't want to appear in `main.tf`, plus other values you'll reuse often.
+5. In your terminal, create a file named `variables.tf`.This file stores sensitive variables you don't want to appear in `main.tf`, plus other values you'll reuse often.
 
 6. Populate `variables.tf`. Define `client_id`, `client_secret`, and `workspace_id`.
 
