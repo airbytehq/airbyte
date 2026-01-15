@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
-  dockerImageTag: 0.4.11
+  dockerImageTag: 0.4.12
   dockerRepository: airbyte/source-us-census
   githubIssueLabel: source-us-census
   icon: uscensus.svg
@@ -47,7 +47,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.1@sha256:b433ec72f88e69bd836f3c7c815c21bfeeeb32501aeabf586bc421875289e5e2
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.3@sha256:826a053bc43678a94e307e32882ae776ecb847cf7b75031fe10dcdc664995dfb
   externalDocumentationUrls:
     - title: US Census Bureau API
       url: https://www.census.gov/data/developers/data-sets.html
