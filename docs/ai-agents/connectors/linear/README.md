@@ -67,6 +67,6 @@ For the service's official API docs, see the [Linear API reference](https://line
 
 ## Version information
 
-- **Package version:** 0.19.45
+- **Package version:** 0.19.46
 - **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** fa9a3b02522ddc7458721472049976e295a0bd78
+- **Generated with Connector SDK commit SHA:** ca5acdda8030d8292c059c82f498a95b2227c106

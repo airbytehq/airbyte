@@ -8,26 +8,26 @@ The Zendesk-Support connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Tickets | [List](#tickets-list), [Get](#tickets-get) |
-| Users | [List](#users-list), [Get](#users-get) |
-| Organizations | [List](#organizations-list), [Get](#organizations-get) |
-| Groups | [List](#groups-list), [Get](#groups-get) |
-| Ticket Comments | [List](#ticket-comments-list) |
+| Tickets | [List](#tickets-list), [Get](#tickets-get), [Search](#tickets-search) |
+| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
+| Organizations | [List](#organizations-list), [Get](#organizations-get), [Search](#organizations-search) |
+| Groups | [List](#groups-list), [Get](#groups-get), [Search](#groups-search) |
+| Ticket Comments | [List](#ticket-comments-list), [Search](#ticket-comments-search) |
 | Attachments | [Get](#attachments-get), [Download](#attachments-download) |
-| Ticket Audits | [List](#ticket-audits-list), [List](#ticket-audits-list) |
-| Ticket Metrics | [List](#ticket-metrics-list) |
-| Ticket Fields | [List](#ticket-fields-list), [Get](#ticket-fields-get) |
-| Brands | [List](#brands-list), [Get](#brands-get) |
+| Ticket Audits | [List](#ticket-audits-list), [List](#ticket-audits-list), [Search](#ticket-audits-search) |
+| Ticket Metrics | [List](#ticket-metrics-list), [Search](#ticket-metrics-search) |
+| Ticket Fields | [List](#ticket-fields-list), [Get](#ticket-fields-get), [Search](#ticket-fields-search) |
+| Brands | [List](#brands-list), [Get](#brands-get), [Search](#brands-search) |
 | Views | [List](#views-list), [Get](#views-get) |
 | Macros | [List](#macros-list), [Get](#macros-get) |
 | Triggers | [List](#triggers-list), [Get](#triggers-get) |
 | Automations | [List](#automations-list), [Get](#automations-get) |
-| Tags | [List](#tags-list) |
-| Satisfaction Ratings | [List](#satisfaction-ratings-list), [Get](#satisfaction-ratings-get) |
+| Tags | [List](#tags-list), [Search](#tags-search) |
+| Satisfaction Ratings | [List](#satisfaction-ratings-list), [Get](#satisfaction-ratings-get), [Search](#satisfaction-ratings-search) |
 | Group Memberships | [List](#group-memberships-list) |
 | Organization Memberships | [List](#organization-memberships-list) |
 | Sla Policies | [List](#sla-policies-list), [Get](#sla-policies-get) |
-| Ticket Forms | [List](#ticket-forms-list), [Get](#ticket-forms-get) |
+| Ticket Forms | [List](#ticket-forms-list), [Get](#ticket-forms-get), [Search](#ticket-forms-search) |
 | Articles | [List](#articles-list), [Get](#articles-get) |
 | Article Attachments | [List](#article-attachments-list), [Get](#article-attachments-get), [Download](#article-attachments-download) |
 
@@ -46,7 +46,7 @@ await zendesk_support.tickets.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -138,7 +138,7 @@ await zendesk_support.tickets.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -208,6 +208,143 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Tickets Search
+
+Search and filter tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.tickets.search(
+    query={"filter": {"eq": {"allow_attachments": True}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tickets",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"allow_attachments": True}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `allow_attachments` | `boolean` | Boolean indicating whether attachments are allowed on the ticket |
+| `allow_channelback` | `boolean` | Boolean indicating whether agents can reply to the ticket through the original channel |
+| `assignee_id` | `integer` | Unique identifier of the agent currently assigned to the ticket |
+| `brand_id` | `integer` | Unique identifier of the brand associated with the ticket in multi-brand accounts |
+| `collaborator_ids` | `array` | Array of user identifiers who are collaborating on the ticket |
+| `created_at` | `string` | Timestamp indicating when the ticket was created |
+| `custom_fields` | `array` | Array of custom field values specific to the account's ticket configuration |
+| `custom_status_id` | `integer` | Unique identifier of the custom status applied to the ticket |
+| `deleted_ticket_form_id` | `integer` | Unique identifier of the ticket form if it was deleted after the ticket was created |
+| `description` | `string` | Initial description or content of the ticket when it was created |
+| `due_at` | `string` | Timestamp indicating when the ticket is due for completion or resolution |
+| `email_cc_ids` | `array` | Array of user identifiers who are CC'd on ticket email notifications |
+| `external_id` | `string` | External identifier for the ticket, used for integrations with other systems |
+| `fields` | `array` | Array of ticket field values including both system and custom fields |
+| `follower_ids` | `array` | Array of user identifiers who are following the ticket for updates |
+| `followup_ids` | `array` | Array of identifiers for follow-up tickets related to this ticket |
+| `forum_topic_id` | `integer` | Unique identifier linking the ticket to a forum topic if applicable |
+| `from_messaging_channel` | `boolean` | Boolean indicating whether the ticket originated from a messaging channel |
+| `generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export co... |
+| `group_id` | `integer` | Unique identifier of the agent group assigned to handle the ticket |
+| `has_incidents` | `boolean` | Boolean indicating whether this problem ticket has related incident tickets |
+| `id` | `integer` | Unique identifier for the ticket |
+| `is_public` | `boolean` | Boolean indicating whether the ticket is publicly visible |
+| `organization_id` | `integer` | Unique identifier of the organization associated with the ticket |
+| `priority` | `string` | Priority level assigned to the ticket (e.g., urgent, high, normal, low) |
+| `problem_id` | `integer` | Unique identifier of the problem ticket if this is an incident ticket |
+| `raw_subject` | `string` | Original unprocessed subject line before any system modifications |
+| `recipient` | `string` | Email address or identifier of the ticket recipient |
+| `requester_id` | `integer` | Unique identifier of the user who requested or created the ticket |
+| `satisfaction_rating` | `object | string` | Object containing customer satisfaction rating data for the ticket |
+| `sharing_agreement_ids` | `array` | Array of sharing agreement identifiers if the ticket is shared across Zendesk instances |
+| `status` | `string` | Current status of the ticket (e.g., new, open, pending, solved, closed) |
+| `subject` | `string` | Subject line of the ticket describing the issue or request |
+| `submitter_id` | `integer` | Unique identifier of the user who submitted the ticket on behalf of the requester |
+| `tags` | `array` | Array of tags applied to the ticket for categorization and filtering |
+| `ticket_form_id` | `integer` | Unique identifier of the ticket form used when creating the ticket |
+| `type` | `string` | Type of ticket (e.g., problem, incident, question, task) |
+| `updated_at` | `string` | Timestamp indicating when the ticket was last updated with a ticket event |
+| `url` | `string` | API URL to access the full ticket resource |
+| `via` | `object` | Object describing the channel and method through which the ticket was created |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.allow_attachments` | `boolean` | Boolean indicating whether attachments are allowed on the ticket |
+| `hits[].data.allow_channelback` | `boolean` | Boolean indicating whether agents can reply to the ticket through the original channel |
+| `hits[].data.assignee_id` | `integer` | Unique identifier of the agent currently assigned to the ticket |
+| `hits[].data.brand_id` | `integer` | Unique identifier of the brand associated with the ticket in multi-brand accounts |
+| `hits[].data.collaborator_ids` | `array` | Array of user identifiers who are collaborating on the ticket |
+| `hits[].data.created_at` | `string` | Timestamp indicating when the ticket was created |
+| `hits[].data.custom_fields` | `array` | Array of custom field values specific to the account's ticket configuration |
+| `hits[].data.custom_status_id` | `integer` | Unique identifier of the custom status applied to the ticket |
+| `hits[].data.deleted_ticket_form_id` | `integer` | Unique identifier of the ticket form if it was deleted after the ticket was created |
+| `hits[].data.description` | `string` | Initial description or content of the ticket when it was created |
+| `hits[].data.due_at` | `string` | Timestamp indicating when the ticket is due for completion or resolution |
+| `hits[].data.email_cc_ids` | `array` | Array of user identifiers who are CC'd on ticket email notifications |
+| `hits[].data.external_id` | `string` | External identifier for the ticket, used for integrations with other systems |
+| `hits[].data.fields` | `array` | Array of ticket field values including both system and custom fields |
+| `hits[].data.follower_ids` | `array` | Array of user identifiers who are following the ticket for updates |
+| `hits[].data.followup_ids` | `array` | Array of identifiers for follow-up tickets related to this ticket |
+| `hits[].data.forum_topic_id` | `integer` | Unique identifier linking the ticket to a forum topic if applicable |
+| `hits[].data.from_messaging_channel` | `boolean` | Boolean indicating whether the ticket originated from a messaging channel |
+| `hits[].data.generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export co... |
+| `hits[].data.group_id` | `integer` | Unique identifier of the agent group assigned to handle the ticket |
+| `hits[].data.has_incidents` | `boolean` | Boolean indicating whether this problem ticket has related incident tickets |
+| `hits[].data.id` | `integer` | Unique identifier for the ticket |
+| `hits[].data.is_public` | `boolean` | Boolean indicating whether the ticket is publicly visible |
+| `hits[].data.organization_id` | `integer` | Unique identifier of the organization associated with the ticket |
+| `hits[].data.priority` | `string` | Priority level assigned to the ticket (e.g., urgent, high, normal, low) |
+| `hits[].data.problem_id` | `integer` | Unique identifier of the problem ticket if this is an incident ticket |
+| `hits[].data.raw_subject` | `string` | Original unprocessed subject line before any system modifications |
+| `hits[].data.recipient` | `string` | Email address or identifier of the ticket recipient |
+| `hits[].data.requester_id` | `integer` | Unique identifier of the user who requested or created the ticket |
+| `hits[].data.satisfaction_rating` | `object | string` | Object containing customer satisfaction rating data for the ticket |
+| `hits[].data.sharing_agreement_ids` | `array` | Array of sharing agreement identifiers if the ticket is shared across Zendesk instances |
+| `hits[].data.status` | `string` | Current status of the ticket (e.g., new, open, pending, solved, closed) |
+| `hits[].data.subject` | `string` | Subject line of the ticket describing the issue or request |
+| `hits[].data.submitter_id` | `integer` | Unique identifier of the user who submitted the ticket on behalf of the requester |
+| `hits[].data.tags` | `array` | Array of tags applied to the ticket for categorization and filtering |
+| `hits[].data.ticket_form_id` | `integer` | Unique identifier of the ticket form used when creating the ticket |
+| `hits[].data.type` | `string` | Type of ticket (e.g., problem, incident, question, task) |
+| `hits[].data.updated_at` | `string` | Timestamp indicating when the ticket was last updated with a ticket event |
+| `hits[].data.url` | `string` | API URL to access the full ticket resource |
+| `hits[].data.via` | `object` | Object describing the channel and method through which the ticket was created |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Users
 
 #### Users List
@@ -223,7 +360,7 @@ await zendesk_support.users.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -314,7 +451,7 @@ await zendesk_support.users.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -383,6 +520,141 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Users Search
+
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.users.search(
+    query={"filter": {"eq": {"active": True}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"active": True}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `active` | `boolean` | Indicates if the user account is currently active |
+| `alias` | `string` | Alternative name or nickname for the user |
+| `chat_only` | `boolean` | Indicates if the user can only interact via chat |
+| `created_at` | `string` | Timestamp indicating when the user was created |
+| `custom_role_id` | `integer` | Identifier for a custom role assigned to the user |
+| `default_group_id` | `integer` | Identifier of the default group assigned to the user |
+| `details` | `string` | Additional descriptive information about the user |
+| `email` | `string` | Email address of the user |
+| `external_id` | `string` | External system identifier for the user, used for integrations |
+| `iana_time_zone` | `string` | IANA standard time zone identifier for the user |
+| `id` | `integer` | Unique identifier for the user |
+| `last_login_at` | `string` | Timestamp of the user's most recent login |
+| `locale` | `string` | Locale setting determining language and regional format preferences |
+| `locale_id` | `integer` | Identifier for the user's locale preference |
+| `moderator` | `boolean` | Indicates if the user has moderator privileges |
+| `name` | `string` | Display name of the user |
+| `notes` | `string` | Internal notes about the user, visible only to agents |
+| `only_private_comments` | `boolean` | Indicates if the user can only make private comments on tickets |
+| `organization_id` | `integer` | Identifier of the organization the user belongs to |
+| `permanently_deleted` | `boolean` | Indicates if the user has been permanently deleted from the system |
+| `phone` | `string` | Phone number of the user |
+| `photo` | `object` | Profile photo or avatar of the user |
+| `report_csv` | `boolean` | Indicates if the user receives reports in CSV format |
+| `restricted_agent` | `boolean` | Indicates if the agent has restricted access permissions |
+| `role` | `string` | Role assigned to the user defining their permissions level |
+| `role_type` | `integer` | Type classification of the user's role |
+| `shared` | `boolean` | Indicates if the user is shared across multiple accounts |
+| `shared_agent` | `boolean` | Indicates if the user is a shared agent across multiple brands or accounts |
+| `shared_phone_number` | `boolean` | Indicates if the phone number is shared with other users |
+| `signature` | `string` | Email signature text for the user |
+| `suspended` | `boolean` | Indicates if the user account is suspended |
+| `tags` | `array` | Labels or tags associated with the user for categorization |
+| `ticket_restriction` | `string` | Defines which tickets the user can access based on restrictions |
+| `time_zone` | `string` | Time zone setting for the user |
+| `two_factor_auth_enabled` | `boolean` | Indicates if two-factor authentication is enabled for the user |
+| `updated_at` | `string` | Timestamp indicating when the user was last updated |
+| `url` | `string` | API endpoint URL for accessing the user's detailed information |
+| `user_fields` | `object` | Custom field values specific to the user, stored as key-value pairs |
+| `verified` | `boolean` | Indicates if the user's identity has been verified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.active` | `boolean` | Indicates if the user account is currently active |
+| `hits[].data.alias` | `string` | Alternative name or nickname for the user |
+| `hits[].data.chat_only` | `boolean` | Indicates if the user can only interact via chat |
+| `hits[].data.created_at` | `string` | Timestamp indicating when the user was created |
+| `hits[].data.custom_role_id` | `integer` | Identifier for a custom role assigned to the user |
+| `hits[].data.default_group_id` | `integer` | Identifier of the default group assigned to the user |
+| `hits[].data.details` | `string` | Additional descriptive information about the user |
+| `hits[].data.email` | `string` | Email address of the user |
+| `hits[].data.external_id` | `string` | External system identifier for the user, used for integrations |
+| `hits[].data.iana_time_zone` | `string` | IANA standard time zone identifier for the user |
+| `hits[].data.id` | `integer` | Unique identifier for the user |
+| `hits[].data.last_login_at` | `string` | Timestamp of the user's most recent login |
+| `hits[].data.locale` | `string` | Locale setting determining language and regional format preferences |
+| `hits[].data.locale_id` | `integer` | Identifier for the user's locale preference |
+| `hits[].data.moderator` | `boolean` | Indicates if the user has moderator privileges |
+| `hits[].data.name` | `string` | Display name of the user |
+| `hits[].data.notes` | `string` | Internal notes about the user, visible only to agents |
+| `hits[].data.only_private_comments` | `boolean` | Indicates if the user can only make private comments on tickets |
+| `hits[].data.organization_id` | `integer` | Identifier of the organization the user belongs to |
+| `hits[].data.permanently_deleted` | `boolean` | Indicates if the user has been permanently deleted from the system |
+| `hits[].data.phone` | `string` | Phone number of the user |
+| `hits[].data.photo` | `object` | Profile photo or avatar of the user |
+| `hits[].data.report_csv` | `boolean` | Indicates if the user receives reports in CSV format |
+| `hits[].data.restricted_agent` | `boolean` | Indicates if the agent has restricted access permissions |
+| `hits[].data.role` | `string` | Role assigned to the user defining their permissions level |
+| `hits[].data.role_type` | `integer` | Type classification of the user's role |
+| `hits[].data.shared` | `boolean` | Indicates if the user is shared across multiple accounts |
+| `hits[].data.shared_agent` | `boolean` | Indicates if the user is a shared agent across multiple brands or accounts |
+| `hits[].data.shared_phone_number` | `boolean` | Indicates if the phone number is shared with other users |
+| `hits[].data.signature` | `string` | Email signature text for the user |
+| `hits[].data.suspended` | `boolean` | Indicates if the user account is suspended |
+| `hits[].data.tags` | `array` | Labels or tags associated with the user for categorization |
+| `hits[].data.ticket_restriction` | `string` | Defines which tickets the user can access based on restrictions |
+| `hits[].data.time_zone` | `string` | Time zone setting for the user |
+| `hits[].data.two_factor_auth_enabled` | `boolean` | Indicates if two-factor authentication is enabled for the user |
+| `hits[].data.updated_at` | `string` | Timestamp indicating when the user was last updated |
+| `hits[].data.url` | `string` | API endpoint URL for accessing the user's detailed information |
+| `hits[].data.user_fields` | `object` | Custom field values specific to the user, stored as key-value pairs |
+| `hits[].data.verified` | `boolean` | Indicates if the user's identity has been verified |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Organizations
 
 #### Organizations List
@@ -398,7 +670,7 @@ await zendesk_support.organizations.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -463,7 +735,7 @@ await zendesk_support.organizations.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -508,6 +780,93 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Organizations Search
+
+Search and filter organizations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.organizations.search(
+    query={"filter": {"eq": {"created_at": "<str>"}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "organizations",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"created_at": "<str>"}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `created_at` | `string` | Timestamp when the organization was created |
+| `deleted_at` | `string` | Timestamp when the organization was deleted |
+| `details` | `string` | Details about the organization, such as the address |
+| `domain_names` | `array` | Array of domain names associated with this organization for automatic user assignment |
+| `external_id` | `string` | Unique external identifier to associate the organization to an external record (case-insensitive) |
+| `group_id` | `integer` | ID of the group where new tickets from users in this organization are automatically assigned |
+| `id` | `integer` | Unique identifier automatically assigned when the organization is created |
+| `name` | `string` | Unique name for the organization (mandatory field) |
+| `notes` | `string` | Notes about the organization |
+| `organization_fields` | `object` | Key-value object for custom organization fields |
+| `shared_comments` | `boolean` | Boolean indicating whether end users in this organization can comment on each other's tickets |
+| `shared_tickets` | `boolean` | Boolean indicating whether end users in this organization can see each other's tickets |
+| `tags` | `array` | Array of tags associated with the organization |
+| `updated_at` | `string` | Timestamp of the last update to the organization |
+| `url` | `string` | The API URL of this organization |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.created_at` | `string` | Timestamp when the organization was created |
+| `hits[].data.deleted_at` | `string` | Timestamp when the organization was deleted |
+| `hits[].data.details` | `string` | Details about the organization, such as the address |
+| `hits[].data.domain_names` | `array` | Array of domain names associated with this organization for automatic user assignment |
+| `hits[].data.external_id` | `string` | Unique external identifier to associate the organization to an external record (case-insensitive) |
+| `hits[].data.group_id` | `integer` | ID of the group where new tickets from users in this organization are automatically assigned |
+| `hits[].data.id` | `integer` | Unique identifier automatically assigned when the organization is created |
+| `hits[].data.name` | `string` | Unique name for the organization (mandatory field) |
+| `hits[].data.notes` | `string` | Notes about the organization |
+| `hits[].data.organization_fields` | `object` | Key-value object for custom organization fields |
+| `hits[].data.shared_comments` | `boolean` | Boolean indicating whether end users in this organization can comment on each other's tickets |
+| `hits[].data.shared_tickets` | `boolean` | Boolean indicating whether end users in this organization can see each other's tickets |
+| `hits[].data.tags` | `array` | Array of tags associated with the organization |
+| `hits[].data.updated_at` | `string` | Timestamp of the last update to the organization |
+| `hits[].data.url` | `string` | The API URL of this organization |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Groups
 
 #### Groups List
@@ -523,7 +882,7 @@ await zendesk_support.groups.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -584,7 +943,7 @@ await zendesk_support.groups.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -624,6 +983,81 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Groups Search
+
+Search and filter groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.groups.search(
+    query={"filter": {"eq": {"created_at": "<str>"}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "groups",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"created_at": "<str>"}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `created_at` | `string` | Timestamp indicating when the group was created |
+| `default` | `boolean` | Indicates if the group is the default one for the account |
+| `deleted` | `boolean` | Indicates whether the group has been deleted |
+| `description` | `string` | The description of the group |
+| `id` | `integer` | Unique identifier automatically assigned when creating groups |
+| `is_public` | `boolean` | Indicates if the group is public (true) or private (false) |
+| `name` | `string` | The name of the group |
+| `updated_at` | `string` | Timestamp indicating when the group was last updated |
+| `url` | `string` | The API URL of the group |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.created_at` | `string` | Timestamp indicating when the group was created |
+| `hits[].data.default` | `boolean` | Indicates if the group is the default one for the account |
+| `hits[].data.deleted` | `boolean` | Indicates whether the group has been deleted |
+| `hits[].data.description` | `string` | The description of the group |
+| `hits[].data.id` | `integer` | Unique identifier automatically assigned when creating groups |
+| `hits[].data.is_public` | `boolean` | Indicates if the group is public (true) or private (false) |
+| `hits[].data.name` | `string` | The name of the group |
+| `hits[].data.updated_at` | `string` | Timestamp indicating when the group was last updated |
+| `hits[].data.url` | `string` | The API URL of the group |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Ticket Comments
 
 #### Ticket Comments List
@@ -641,7 +1075,7 @@ await zendesk_support.ticket_comments.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -695,6 +1129,97 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Ticket Comments Search
+
+Search and filter ticket comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.ticket_comments.search(
+    query={"filter": {"eq": {"attachments": []}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ticket_comments",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"attachments": []}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `attachments` | `array` | List of files or media attached to the comment |
+| `audit_id` | `integer` | Identifier of the audit record associated with this comment event |
+| `author_id` | `integer` | Identifier of the user who created the comment |
+| `body` | `string` | Content of the comment in its original format |
+| `created_at` | `string` | Timestamp when the comment was created |
+| `event_type` | `string` | Specific classification of the event within the ticket event stream |
+| `html_body` | `string` | HTML-formatted content of the comment |
+| `id` | `integer` | Unique identifier for the comment event |
+| `metadata` | `object` | Additional structured information about the comment not covered by standard fields |
+| `plain_body` | `string` | Plain text content of the comment without formatting |
+| `public` | `boolean` | Boolean indicating whether the comment is visible to end users or is an internal note |
+| `ticket_id` | `integer` | Identifier of the ticket to which this comment belongs |
+| `timestamp` | `integer` | Timestamp of when the event occurred in the incremental export stream |
+| `type` | `string` | Type of event, typically indicating this is a comment event |
+| `uploads` | `array` | Array of upload tokens or identifiers for files being attached to the comment |
+| `via` | `object` | Channel or method through which the comment was submitted |
+| `via_reference_id` | `integer` | Reference identifier for the channel through which the comment was created |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.attachments` | `array` | List of files or media attached to the comment |
+| `hits[].data.audit_id` | `integer` | Identifier of the audit record associated with this comment event |
+| `hits[].data.author_id` | `integer` | Identifier of the user who created the comment |
+| `hits[].data.body` | `string` | Content of the comment in its original format |
+| `hits[].data.created_at` | `string` | Timestamp when the comment was created |
+| `hits[].data.event_type` | `string` | Specific classification of the event within the ticket event stream |
+| `hits[].data.html_body` | `string` | HTML-formatted content of the comment |
+| `hits[].data.id` | `integer` | Unique identifier for the comment event |
+| `hits[].data.metadata` | `object` | Additional structured information about the comment not covered by standard fields |
+| `hits[].data.plain_body` | `string` | Plain text content of the comment without formatting |
+| `hits[].data.public` | `boolean` | Boolean indicating whether the comment is visible to end users or is an internal note |
+| `hits[].data.ticket_id` | `integer` | Identifier of the ticket to which this comment belongs |
+| `hits[].data.timestamp` | `integer` | Timestamp of when the event occurred in the incremental export stream |
+| `hits[].data.type` | `string` | Type of event, typically indicating this is a comment event |
+| `hits[].data.uploads` | `array` | Array of upload tokens or identifiers for files being attached to the comment |
+| `hits[].data.via` | `object` | Channel or method through which the comment was submitted |
+| `hits[].data.via_reference_id` | `integer` | Reference identifier for the channel through which the comment was created |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Attachments
 
 #### Attachments Get
@@ -712,7 +1237,7 @@ await zendesk_support.attachments.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -773,7 +1298,7 @@ async for chunk in zendesk_support.attachments.download(    attachment_id=0):# P
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -809,7 +1334,7 @@ await zendesk_support.ticket_audits.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -867,7 +1392,7 @@ await zendesk_support.ticket_audits.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -914,6 +1439,79 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Ticket Audits Search
+
+Search and filter ticket audits records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.ticket_audits.search(
+    query={"filter": {"eq": {"attachments": []}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ticket_audits",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"attachments": []}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `attachments` | `array` | Files or documents attached to the audit |
+| `author_id` | `integer` | The unique identifier of the user who created the audit |
+| `created_at` | `string` | Timestamp indicating when the audit was created |
+| `events` | `array` | Array of events that occurred in this audit, such as field changes, comments, or tag updates |
+| `id` | `integer` | Unique identifier for the audit record, automatically assigned when the audit is created |
+| `metadata` | `object` | Custom and system data associated with the audit |
+| `ticket_id` | `integer` | The unique identifier of the ticket associated with this audit |
+| `via` | `object` | Describes how the audit was created, providing context about the creation source |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.attachments` | `array` | Files or documents attached to the audit |
+| `hits[].data.author_id` | `integer` | The unique identifier of the user who created the audit |
+| `hits[].data.created_at` | `string` | Timestamp indicating when the audit was created |
+| `hits[].data.events` | `array` | Array of events that occurred in this audit, such as field changes, comments, or tag updates |
+| `hits[].data.id` | `integer` | Unique identifier for the audit record, automatically assigned when the audit is created |
+| `hits[].data.metadata` | `object` | Custom and system data associated with the audit |
+| `hits[].data.ticket_id` | `integer` | The unique identifier of the ticket associated with this audit |
+| `hits[].data.via` | `object` | Describes how the audit was created, providing context about the creation source |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Ticket Metrics
 
 #### Ticket Metrics List
@@ -929,7 +1527,7 @@ await zendesk_support.ticket_metrics.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -987,6 +1585,123 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Ticket Metrics Search
+
+Search and filter ticket metrics records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.ticket_metrics.search(
+    query={"filter": {"eq": {"agent_wait_time_in_minutes": {}}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ticket_metrics",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"agent_wait_time_in_minutes": {}}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `agent_wait_time_in_minutes` | `object` | Number of minutes the agent spent waiting during calendar and business hours |
+| `assigned_at` | `string` | Timestamp when the ticket was assigned |
+| `assignee_stations` | `integer` | Number of assignees the ticket had |
+| `assignee_updated_at` | `string` | Timestamp when the assignee last updated the ticket |
+| `created_at` | `string` | Timestamp when the metric record was created |
+| `custom_status_updated_at` | `string` | Timestamp when the ticket's custom status was last updated |
+| `first_resolution_time_in_minutes` | `object` | Number of minutes to the first resolution time during calendar and business hours |
+| `full_resolution_time_in_minutes` | `object` | Number of minutes to the full resolution during calendar and business hours |
+| `generated_timestamp` | `integer` | Timestamp of when record was last updated |
+| `group_stations` | `integer` | Number of groups the ticket passed through |
+| `id` | `integer` | Unique identifier for the ticket metric record |
+| `initially_assigned_at` | `string` | Timestamp when the ticket was initially assigned |
+| `instance_id` | `integer` | ID of the Zendesk instance associated with the ticket |
+| `latest_comment_added_at` | `string` | Timestamp when the latest comment was added |
+| `metric` | `string` | Ticket metrics data |
+| `on_hold_time_in_minutes` | `object` | Number of minutes on hold |
+| `reopens` | `integer` | Total number of times the ticket was reopened |
+| `replies` | `integer` | The number of public replies added to a ticket by an agent |
+| `reply_time_in_minutes` | `object` | Number of minutes to the first reply during calendar and business hours |
+| `reply_time_in_seconds` | `object` | Number of seconds to the first reply during calendar hours, only available for Messaging tickets |
+| `requester_updated_at` | `string` | Timestamp when the requester last updated the ticket |
+| `requester_wait_time_in_minutes` | `object` | Number of minutes the requester spent waiting during calendar and business hours |
+| `solved_at` | `string` | Timestamp when the ticket was solved |
+| `status` | `object` | The current status of the ticket (open, pending, solved, etc.). |
+| `status_updated_at` | `string` | Timestamp when the status of the ticket was last updated |
+| `ticket_id` | `integer` | Identifier of the associated ticket |
+| `time` | `string` | Time related to the ticket |
+| `type` | `string` | Type of ticket |
+| `updated_at` | `string` | Timestamp when the metric record was last updated |
+| `url` | `string` | The API url of the ticket metric |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.agent_wait_time_in_minutes` | `object` | Number of minutes the agent spent waiting during calendar and business hours |
+| `hits[].data.assigned_at` | `string` | Timestamp when the ticket was assigned |
+| `hits[].data.assignee_stations` | `integer` | Number of assignees the ticket had |
+| `hits[].data.assignee_updated_at` | `string` | Timestamp when the assignee last updated the ticket |
+| `hits[].data.created_at` | `string` | Timestamp when the metric record was created |
+| `hits[].data.custom_status_updated_at` | `string` | Timestamp when the ticket's custom status was last updated |
+| `hits[].data.first_resolution_time_in_minutes` | `object` | Number of minutes to the first resolution time during calendar and business hours |
+| `hits[].data.full_resolution_time_in_minutes` | `object` | Number of minutes to the full resolution during calendar and business hours |
+| `hits[].data.generated_timestamp` | `integer` | Timestamp of when record was last updated |
+| `hits[].data.group_stations` | `integer` | Number of groups the ticket passed through |
+| `hits[].data.id` | `integer` | Unique identifier for the ticket metric record |
+| `hits[].data.initially_assigned_at` | `string` | Timestamp when the ticket was initially assigned |
+| `hits[].data.instance_id` | `integer` | ID of the Zendesk instance associated with the ticket |
+| `hits[].data.latest_comment_added_at` | `string` | Timestamp when the latest comment was added |
+| `hits[].data.metric` | `string` | Ticket metrics data |
+| `hits[].data.on_hold_time_in_minutes` | `object` | Number of minutes on hold |
+| `hits[].data.reopens` | `integer` | Total number of times the ticket was reopened |
+| `hits[].data.replies` | `integer` | The number of public replies added to a ticket by an agent |
+| `hits[].data.reply_time_in_minutes` | `object` | Number of minutes to the first reply during calendar and business hours |
+| `hits[].data.reply_time_in_seconds` | `object` | Number of seconds to the first reply during calendar hours, only available for Messaging tickets |
+| `hits[].data.requester_updated_at` | `string` | Timestamp when the requester last updated the ticket |
+| `hits[].data.requester_wait_time_in_minutes` | `object` | Number of minutes the requester spent waiting during calendar and business hours |
+| `hits[].data.solved_at` | `string` | Timestamp when the ticket was solved |
+| `hits[].data.status` | `object` | The current status of the ticket (open, pending, solved, etc.). |
+| `hits[].data.status_updated_at` | `string` | Timestamp when the status of the ticket was last updated |
+| `hits[].data.ticket_id` | `integer` | Identifier of the associated ticket |
+| `hits[].data.time` | `string` | Time related to the ticket |
+| `hits[].data.type` | `string` | Type of ticket |
+| `hits[].data.updated_at` | `string` | Timestamp when the metric record was last updated |
+| `hits[].data.url` | `string` | The API url of the ticket metric |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Ticket Fields
 
 #### Ticket Fields List
@@ -1002,7 +1717,7 @@ await zendesk_support.ticket_fields.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1079,7 +1794,7 @@ await zendesk_support.ticket_fields.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1135,6 +1850,117 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Ticket Fields Search
+
+Search and filter ticket fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.ticket_fields.search(
+    query={"filter": {"eq": {"active": True}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ticket_fields",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"active": True}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `active` | `boolean` | Whether this field is currently available for use |
+| `agent_description` | `string` | A description of the ticket field that only agents can see |
+| `collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently u... |
+| `created_at` | `string` | Timestamp when the custom ticket field was created |
+| `custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger, containing name a... |
+| `custom_statuses` | `array` | List of customized ticket statuses, only present for system ticket fields of type custom_status |
+| `description` | `string` | Text describing the purpose of the ticket field to users |
+| `editable_in_portal` | `boolean` | Whether this field is editable by end users in Help Center |
+| `id` | `integer` | Unique identifier for the ticket field, automatically assigned when created |
+| `key` | `string` | Internal identifier or reference key for the field |
+| `position` | `integer` | The relative position of the ticket field on a ticket, controlling display order |
+| `raw_description` | `string` | The dynamic content placeholder if present, or the description value if not |
+| `raw_title` | `string` | The dynamic content placeholder if present, or the title value if not |
+| `raw_title_in_portal` | `string` | The dynamic content placeholder if present, or the title_in_portal value if not |
+| `regexp_for_validation` | `string` | For regexp fields only, the validation pattern for a field value to be deemed valid |
+| `removable` | `boolean` | If false, this field is a system field that must be present on all tickets |
+| `required` | `boolean` | If true, agents must enter a value in the field to change the ticket status to solved |
+| `required_in_portal` | `boolean` | If true, end users must enter a value in the field to create a request |
+| `sub_type_id` | `integer` | For system ticket fields of type priority and status, controlling available options |
+| `system_field_options` | `array` | Array of options for system ticket fields of type tickettype, priority, or status |
+| `tag` | `string` | For checkbox fields only, a tag added to tickets when the checkbox field is selected |
+| `title` | `string` | The title of the ticket field displayed to agents |
+| `title_in_portal` | `string` | The title of the ticket field displayed to end users in Help Center |
+| `type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, tagger,... |
+| `updated_at` | `string` | Timestamp when the custom ticket field was last updated |
+| `url` | `string` | The API URL for this ticket field resource |
+| `visible_in_portal` | `boolean` | Whether this field is visible to end users in Help Center |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.active` | `boolean` | Whether this field is currently available for use |
+| `hits[].data.agent_description` | `string` | A description of the ticket field that only agents can see |
+| `hits[].data.collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently u... |
+| `hits[].data.created_at` | `string` | Timestamp when the custom ticket field was created |
+| `hits[].data.custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger, containing name a... |
+| `hits[].data.custom_statuses` | `array` | List of customized ticket statuses, only present for system ticket fields of type custom_status |
+| `hits[].data.description` | `string` | Text describing the purpose of the ticket field to users |
+| `hits[].data.editable_in_portal` | `boolean` | Whether this field is editable by end users in Help Center |
+| `hits[].data.id` | `integer` | Unique identifier for the ticket field, automatically assigned when created |
+| `hits[].data.key` | `string` | Internal identifier or reference key for the field |
+| `hits[].data.position` | `integer` | The relative position of the ticket field on a ticket, controlling display order |
+| `hits[].data.raw_description` | `string` | The dynamic content placeholder if present, or the description value if not |
+| `hits[].data.raw_title` | `string` | The dynamic content placeholder if present, or the title value if not |
+| `hits[].data.raw_title_in_portal` | `string` | The dynamic content placeholder if present, or the title_in_portal value if not |
+| `hits[].data.regexp_for_validation` | `string` | For regexp fields only, the validation pattern for a field value to be deemed valid |
+| `hits[].data.removable` | `boolean` | If false, this field is a system field that must be present on all tickets |
+| `hits[].data.required` | `boolean` | If true, agents must enter a value in the field to change the ticket status to solved |
+| `hits[].data.required_in_portal` | `boolean` | If true, end users must enter a value in the field to create a request |
+| `hits[].data.sub_type_id` | `integer` | For system ticket fields of type priority and status, controlling available options |
+| `hits[].data.system_field_options` | `array` | Array of options for system ticket fields of type tickettype, priority, or status |
+| `hits[].data.tag` | `string` | For checkbox fields only, a tag added to tickets when the checkbox field is selected |
+| `hits[].data.title` | `string` | The title of the ticket field displayed to agents |
+| `hits[].data.title_in_portal` | `string` | The title of the ticket field displayed to end users in Help Center |
+| `hits[].data.type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, tagger,... |
+| `hits[].data.updated_at` | `string` | Timestamp when the custom ticket field was last updated |
+| `hits[].data.url` | `string` | The API URL for this ticket field resource |
+| `hits[].data.visible_in_portal` | `boolean` | Whether this field is visible to end users in Help Center |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Brands
 
 #### Brands List
@@ -1150,7 +1976,7 @@ await zendesk_support.brands.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1217,7 +2043,7 @@ await zendesk_support.brands.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1264,6 +2090,95 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Brands Search
+
+Search and filter brands records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.brands.search(
+    query={"filter": {"eq": {"active": True}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "brands",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"active": True}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `active` | `boolean` | Indicates whether the brand is set as active |
+| `brand_url` | `string` | The public URL of the brand |
+| `created_at` | `string` | Timestamp when the brand was created |
+| `default` | `boolean` | Indicates whether the brand is the default brand for tickets generated from non-branded channels |
+| `has_help_center` | `boolean` | Indicates whether the brand has a Help Center enabled |
+| `help_center_state` | `string` | The state of the Help Center, with allowed values of enabled, disabled, or restricted |
+| `host_mapping` | `string` | The host mapping configuration for the brand, visible only to administrators |
+| `id` | `integer` | Unique identifier automatically assigned when the brand is created |
+| `is_deleted` | `boolean` | Indicates whether the brand has been deleted |
+| `logo` | `string` | Brand logo image file represented as an Attachment object |
+| `name` | `string` | The name of the brand |
+| `signature_template` | `string` | The signature template used for the brand |
+| `subdomain` | `string` | The subdomain associated with the brand |
+| `ticket_form_ids` | `array` | Array of ticket form IDs that are available for use by this brand |
+| `updated_at` | `string` | Timestamp when the brand was last updated |
+| `url` | `string` | The API URL for accessing this brand resource |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.active` | `boolean` | Indicates whether the brand is set as active |
+| `hits[].data.brand_url` | `string` | The public URL of the brand |
+| `hits[].data.created_at` | `string` | Timestamp when the brand was created |
+| `hits[].data.default` | `boolean` | Indicates whether the brand is the default brand for tickets generated from non-branded channels |
+| `hits[].data.has_help_center` | `boolean` | Indicates whether the brand has a Help Center enabled |
+| `hits[].data.help_center_state` | `string` | The state of the Help Center, with allowed values of enabled, disabled, or restricted |
+| `hits[].data.host_mapping` | `string` | The host mapping configuration for the brand, visible only to administrators |
+| `hits[].data.id` | `integer` | Unique identifier automatically assigned when the brand is created |
+| `hits[].data.is_deleted` | `boolean` | Indicates whether the brand has been deleted |
+| `hits[].data.logo` | `string` | Brand logo image file represented as an Attachment object |
+| `hits[].data.name` | `string` | The name of the brand |
+| `hits[].data.signature_template` | `string` | The signature template used for the brand |
+| `hits[].data.subdomain` | `string` | The subdomain associated with the brand |
+| `hits[].data.ticket_form_ids` | `array` | Array of ticket form IDs that are available for use by this brand |
+| `hits[].data.updated_at` | `string` | Timestamp when the brand was last updated |
+| `hits[].data.url` | `string` | The API URL for accessing this brand resource |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Views
 
 #### Views List
@@ -1279,7 +2194,7 @@ await zendesk_support.views.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1347,7 +2262,7 @@ await zendesk_support.views.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1405,7 +2320,7 @@ await zendesk_support.macros.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1474,7 +2389,7 @@ await zendesk_support.macros.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1531,7 +2446,7 @@ await zendesk_support.triggers.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1597,7 +2512,7 @@ await zendesk_support.triggers.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1655,7 +2570,7 @@ await zendesk_support.automations.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1718,7 +2633,7 @@ await zendesk_support.automations.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1774,7 +2689,7 @@ await zendesk_support.tags.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1812,6 +2727,67 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Tags Search
+
+Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.tags.search(
+    query={"filter": {"eq": {"count": 0}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"count": 0}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `count` | `integer` | The number of times this tag has been used across resources |
+| `name` | `string` | The tag name string used to label and categorize resources |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.count` | `integer` | The number of times this tag has been used across resources |
+| `hits[].data.name` | `string` | The tag name string used to label and categorize resources |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Satisfaction Ratings
 
 #### Satisfaction Ratings List
@@ -1827,7 +2803,7 @@ await zendesk_support.satisfaction_ratings.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1894,7 +2870,7 @@ await zendesk_support.satisfaction_ratings.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1938,6 +2914,87 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Satisfaction Ratings Search
+
+Search and filter satisfaction ratings records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.satisfaction_ratings.search(
+    query={"filter": {"eq": {"assignee_id": 0}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "satisfaction_ratings",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"assignee_id": 0}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `assignee_id` | `integer` | The identifier of the agent assigned to the ticket at the time the rating was submitted |
+| `comment` | `string` | Optional comment provided by the requester with the rating |
+| `created_at` | `string` | Timestamp indicating when the satisfaction rating was created |
+| `group_id` | `integer` | The identifier of the group assigned to the ticket at the time the rating was submitted |
+| `id` | `integer` | Unique identifier for the satisfaction rating, automatically assigned upon creation |
+| `reason` | `string` | Free-text reason for a bad rating provided by the requester in a follow-up question |
+| `reason_id` | `integer` | Identifier for the predefined reason given for a negative rating, only applicable when score is '... |
+| `requester_id` | `integer` | The identifier of the ticket requester who submitted the satisfaction rating |
+| `score` | `string` | The satisfaction rating value: 'offered', 'unoffered', 'good', or 'bad' |
+| `ticket_id` | `integer` | The identifier of the ticket being rated |
+| `updated_at` | `string` | Timestamp indicating when the satisfaction rating was last updated |
+| `url` | `string` | The API URL of this satisfaction rating resource |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.assignee_id` | `integer` | The identifier of the agent assigned to the ticket at the time the rating was submitted |
+| `hits[].data.comment` | `string` | Optional comment provided by the requester with the rating |
+| `hits[].data.created_at` | `string` | Timestamp indicating when the satisfaction rating was created |
+| `hits[].data.group_id` | `integer` | The identifier of the group assigned to the ticket at the time the rating was submitted |
+| `hits[].data.id` | `integer` | Unique identifier for the satisfaction rating, automatically assigned upon creation |
+| `hits[].data.reason` | `string` | Free-text reason for a bad rating provided by the requester in a follow-up question |
+| `hits[].data.reason_id` | `integer` | Identifier for the predefined reason given for a negative rating, only applicable when score is '... |
+| `hits[].data.requester_id` | `integer` | The identifier of the ticket requester who submitted the satisfaction rating |
+| `hits[].data.score` | `string` | The satisfaction rating value: 'offered', 'unoffered', 'good', or 'bad' |
+| `hits[].data.ticket_id` | `integer` | The identifier of the ticket being rated |
+| `hits[].data.updated_at` | `string` | Timestamp indicating when the satisfaction rating was last updated |
+| `hits[].data.url` | `string` | The API URL of this satisfaction rating resource |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Group Memberships
 
 #### Group Memberships List
@@ -1953,7 +3010,7 @@ await zendesk_support.group_memberships.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2011,7 +3068,7 @@ await zendesk_support.organization_memberships.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2071,7 +3128,7 @@ await zendesk_support.sla_policies.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2131,7 +3188,7 @@ await zendesk_support.sla_policies.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2186,7 +3243,7 @@ await zendesk_support.ticket_forms.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2256,7 +3313,7 @@ await zendesk_support.ticket_forms.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2304,6 +3361,97 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Ticket Forms Search
+
+Search and filter ticket forms records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await zendesk_support.ticket_forms.search(
+    query={"filter": {"eq": {"active": True}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ticket_forms",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"active": True}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `active` | `boolean` | Indicates if the form is set as active |
+| `agent_conditions` | `array` | Array of condition sets for agent workspaces |
+| `created_at` | `string` | Timestamp when the ticket form was created |
+| `default` | `boolean` | Indicates if the form is the default form for this account |
+| `display_name` | `string` | The name of the form that is displayed to an end user |
+| `end_user_conditions` | `array` | Array of condition sets for end user products |
+| `end_user_visible` | `boolean` | Indicates if the form is visible to the end user |
+| `id` | `integer` | Unique identifier for the ticket form, automatically assigned when creating the form |
+| `in_all_brands` | `boolean` | Indicates if the form is available for use in all brands on this account |
+| `name` | `string` | The name of the ticket form |
+| `position` | `integer` | The position of this form among other forms in the account, such as in a dropdown |
+| `raw_display_name` | `string` | The dynamic content placeholder if present, or the display_name value if not |
+| `raw_name` | `string` | The dynamic content placeholder if present, or the name value if not |
+| `restricted_brand_ids` | `array` | IDs of all brands that this ticket form is restricted to |
+| `ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form, ordered to determine field display sequenc... |
+| `updated_at` | `string` | Timestamp of the last update to the ticket form |
+| `url` | `string` | URL of the ticket form |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.active` | `boolean` | Indicates if the form is set as active |
+| `hits[].data.agent_conditions` | `array` | Array of condition sets for agent workspaces |
+| `hits[].data.created_at` | `string` | Timestamp when the ticket form was created |
+| `hits[].data.default` | `boolean` | Indicates if the form is the default form for this account |
+| `hits[].data.display_name` | `string` | The name of the form that is displayed to an end user |
+| `hits[].data.end_user_conditions` | `array` | Array of condition sets for end user products |
+| `hits[].data.end_user_visible` | `boolean` | Indicates if the form is visible to the end user |
+| `hits[].data.id` | `integer` | Unique identifier for the ticket form, automatically assigned when creating the form |
+| `hits[].data.in_all_brands` | `boolean` | Indicates if the form is available for use in all brands on this account |
+| `hits[].data.name` | `string` | The name of the ticket form |
+| `hits[].data.position` | `integer` | The position of this form among other forms in the account, such as in a dropdown |
+| `hits[].data.raw_display_name` | `string` | The dynamic content placeholder if present, or the display_name value if not |
+| `hits[].data.raw_name` | `string` | The dynamic content placeholder if present, or the name value if not |
+| `hits[].data.restricted_brand_ids` | `array` | IDs of all brands that this ticket form is restricted to |
+| `hits[].data.ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form, ordered to determine field display sequenc... |
+| `hits[].data.updated_at` | `string` | Timestamp of the last update to the ticket form |
+| `hits[].data.url` | `string` | URL of the ticket form |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Articles
 
 #### Articles List
@@ -2319,7 +3467,7 @@ await zendesk_support.articles.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2388,7 +3536,7 @@ await zendesk_support.articles.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2452,7 +3600,7 @@ await zendesk_support.article_attachments.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2518,7 +3666,7 @@ await zendesk_support.article_attachments.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2577,7 +3725,7 @@ async for chunk in zendesk_support.article_attachments.download(    article_id=0
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2639,11 +3787,12 @@ ZendeskSupportConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "79c1aa37-dae3-42ae-b333-d1c105477715",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
     "access_token": "<OAuth 2.0 access token>",
     "refresh_token": "<OAuth 2.0 refresh token (optional)>"
@@ -2676,11 +3825,12 @@ ZendeskSupportConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "79c1aa37-dae3-42ae-b333-d1c105477715",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
     "email": "<Your Zendesk account email address>",
     "api_token": "<Your Zendesk API token from Admin Center>"

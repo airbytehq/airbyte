@@ -8,10 +8,10 @@ The Hubspot connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Api_search](#contacts-api_search) |
-| Companies | [List](#companies-list), [Get](#companies-get), [Api_search](#companies-api_search) |
-| Deals | [List](#deals-list), [Get](#deals-get), [Api_search](#deals-api_search) |
-| Tickets | [List](#tickets-list), [Get](#tickets-get), [Api_search](#tickets-api_search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Search](#contacts-search) |
+| Companies | [List](#companies-list), [Get](#companies-get), [API Search](#companies-api-search), [Search](#companies-search) |
+| Deals | [List](#deals-list), [Get](#deals-get), [API Search](#deals-api-search), [Search](#deals-search) |
+| Tickets | [List](#tickets-list), [Get](#tickets-get), [API Search](#tickets-api-search) |
 | Schemas | [List](#schemas-list), [Get](#schemas-get) |
 | Objects | [List](#objects-list), [Get](#objects-get) |
 
@@ -30,7 +30,7 @@ await hubspot.contacts.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -95,7 +95,7 @@ await hubspot.contacts.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -141,7 +141,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Contacts Api_search
+#### Contacts API Search
 
 Search for contacts by filtering on properties, searching through associations, and sorting results.
 
@@ -154,7 +154,7 @@ await hubspot.contacts.api_search()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -212,6 +212,75 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Contacts Search
+
+Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await hubspot.contacts.search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Boolean flag indicating whether the contact has been archived or deleted. |
+| `companies` | `array` | Associated company records linked to this contact. |
+| `createdAt` | `string` | Timestamp indicating when the contact was first created in the system. |
+| `id` | `string` | Unique identifier for the contact record. |
+| `properties` | `object` | Key-value object storing all contact properties and their values. |
+| `updatedAt` | `string` | Timestamp indicating when the contact record was last modified. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.archived` | `boolean` | Boolean flag indicating whether the contact has been archived or deleted. |
+| `hits[].data.companies` | `array` | Associated company records linked to this contact. |
+| `hits[].data.createdAt` | `string` | Timestamp indicating when the contact was first created in the system. |
+| `hits[].data.id` | `string` | Unique identifier for the contact record. |
+| `hits[].data.properties` | `object` | Key-value object storing all contact properties and their values. |
+| `hits[].data.updatedAt` | `string` | Timestamp indicating when the contact record was last modified. |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Companies
 
 #### Companies List
@@ -227,7 +296,7 @@ await hubspot.companies.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -292,7 +361,7 @@ await hubspot.companies.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -338,7 +407,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Companies Api_search
+#### Companies API Search
 
 Search for companies by filtering on properties, searching through associations, and sorting results.
 
@@ -351,7 +420,7 @@ await hubspot.companies.api_search()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -409,6 +478,75 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Companies Search
+
+Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await hubspot.companies.search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Indicates whether the company has been deleted and moved to the recycling bin |
+| `contacts` | `array` | Associated contact records linked to this company |
+| `createdAt` | `string` | Timestamp when the company record was created |
+| `id` | `string` | Unique identifier for the company record |
+| `properties` | `object` | Object containing all property values for the company |
+| `updatedAt` | `string` | Timestamp when the company record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.archived` | `boolean` | Indicates whether the company has been deleted and moved to the recycling bin |
+| `hits[].data.contacts` | `array` | Associated contact records linked to this company |
+| `hits[].data.createdAt` | `string` | Timestamp when the company record was created |
+| `hits[].data.id` | `string` | Unique identifier for the company record |
+| `hits[].data.properties` | `object` | Object containing all property values for the company |
+| `hits[].data.updatedAt` | `string` | Timestamp when the company record was last modified |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Deals
 
 #### Deals List
@@ -424,7 +562,7 @@ await hubspot.deals.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -489,7 +627,7 @@ await hubspot.deals.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -535,7 +673,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Deals Api_search
+#### Deals API Search
 
 Search deals with filters and sorting
 
@@ -548,7 +686,7 @@ await hubspot.deals.api_search()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -606,6 +744,79 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+#### Deals Search
+
+Search and filter deals records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await hubspot.deals.search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "deals",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Indicates whether the deal has been deleted and moved to the recycling bin |
+| `companies` | `array` | Collection of company records associated with the deal |
+| `contacts` | `array` | Collection of contact records associated with the deal |
+| `createdAt` | `string` | Timestamp when the deal record was originally created |
+| `id` | `string` | Unique identifier for the deal record |
+| `line_items` | `array` | Collection of product line items associated with the deal |
+| `properties` | `object` | Key-value object containing all deal properties and custom fields |
+| `updatedAt` | `string` | Timestamp when the deal record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.archived` | `boolean` | Indicates whether the deal has been deleted and moved to the recycling bin |
+| `hits[].data.companies` | `array` | Collection of company records associated with the deal |
+| `hits[].data.contacts` | `array` | Collection of contact records associated with the deal |
+| `hits[].data.createdAt` | `string` | Timestamp when the deal record was originally created |
+| `hits[].data.id` | `string` | Unique identifier for the deal record |
+| `hits[].data.line_items` | `array` | Collection of product line items associated with the deal |
+| `hits[].data.properties` | `object` | Key-value object containing all deal properties and custom fields |
+| `hits[].data.updatedAt` | `string` | Timestamp when the deal record was last modified |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Tickets
 
 #### Tickets List
@@ -621,7 +832,7 @@ await hubspot.tickets.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -686,7 +897,7 @@ await hubspot.tickets.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -732,7 +943,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Tickets Api_search
+#### Tickets API Search
 
 Search for tickets by filtering on properties, searching through associations, and sorting results.
 
@@ -745,7 +956,7 @@ await hubspot.tickets.api_search()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -818,7 +1029,7 @@ await hubspot.schemas.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -881,7 +1092,7 @@ await hubspot.schemas.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -949,7 +1160,7 @@ await hubspot.objects.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1019,7 +1230,7 @@ await hubspot.objects.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1081,7 +1292,7 @@ The Hubspot connector supports the following authentication methods.
 | `client_id` | `str` | Yes | Your HubSpot OAuth2 Client ID |
 | `client_secret` | `str` | Yes | Your HubSpot OAuth2 Client Secret |
 | `refresh_token` | `str` | Yes | Your HubSpot OAuth2 Refresh Token |
-| `access_token` | `str` | Yes | Your HubSpot OAuth2 Access Token (optional if refresh_token is provided) |
+| `access_token` | `str` | No | Your HubSpot OAuth2 Access Token (optional if refresh_token is provided) |
 
 #### Example
 
@@ -1101,11 +1312,12 @@ HubspotConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "36c891d9-4bd9-43ac-bad2-10e12756272c",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
     "client_id": "<Your HubSpot OAuth2 Client ID>",
     "client_secret": "<Your HubSpot OAuth2 Client Secret>",

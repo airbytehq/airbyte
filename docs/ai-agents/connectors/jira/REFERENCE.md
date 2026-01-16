@@ -8,16 +8,16 @@ The Jira connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [Api_search](#issues-api_search), [Get](#issues-get) |
-| Projects | [Api_search](#projects-api_search), [Get](#projects-get) |
-| Users | [Get](#users-get), [List](#users-list), [Api_search](#users-api_search) |
-| Issue Fields | [List](#issue-fields-list), [Api_search](#issue-fields-api_search) |
+| Issues | [API Search](#issues-api-search), [Get](#issues-get) |
+| Projects | [API Search](#projects-api-search), [Get](#projects-get) |
+| Users | [Get](#users-get), [List](#users-list), [API Search](#users-api-search) |
+| Issue Fields | [List](#issue-fields-list), [API Search](#issue-fields-api-search) |
 | Issue Comments | [List](#issue-comments-list), [Get](#issue-comments-get) |
 | Issue Worklogs | [List](#issue-worklogs-list), [Get](#issue-worklogs-get) |
 
 ### Issues
 
-#### Issues Api_search
+#### Issues API Search
 
 Retrieve issues based on JQL query with pagination support
 
@@ -30,7 +30,7 @@ await jira.issues.api_search()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -93,7 +93,7 @@ await jira.issues.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -137,7 +137,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ### Projects
 
-#### Projects Api_search
+#### Projects API Search
 
 Search and filter projects with advanced query parameters
 
@@ -150,7 +150,7 @@ await jira.projects.api_search()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -232,7 +232,7 @@ await jira.projects.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -304,7 +304,7 @@ await jira.users.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -361,7 +361,7 @@ await jira.users.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -402,7 +402,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Users Api_search
+#### Users API Search
 
 Search for users using a query string
 
@@ -415,7 +415,7 @@ await jira.users.api_search()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -474,7 +474,7 @@ await jira.issue_fields.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -513,7 +513,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Issue Fields Api_search
+#### Issue Fields API Search
 
 Search and filter issue fields with query parameters
 
@@ -526,7 +526,7 @@ await jira.issue_fields.api_search()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -599,7 +599,7 @@ await jira.issue_comments.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -669,7 +669,7 @@ await jira.issue_comments.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -731,7 +731,7 @@ await jira.issue_worklogs.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -802,7 +802,7 @@ await jira.issue_worklogs.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -888,11 +888,12 @@ JiraConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
     "username": "<Your Atlassian account email address>",
     "password": "<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
