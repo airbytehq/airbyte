@@ -124,6 +124,9 @@ connector = GongConnector(
     airbyte_client_id="<your_client_id>",
     airbyte_client_secret="<your_client_secret>",
 )
+
+# Execute connector operations
+...
 ```
 
 Once initialized, the connector works the same way as in local mode. The connector handles authentication and routing through Airbyte Cloud automatically.
