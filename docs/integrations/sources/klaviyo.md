@@ -15,8 +15,24 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 
 ### Step 1: Set up Klaviyo
 
-1. Create a [Klaviyo account](https://www.klaviyo.com)
-2. Create a [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3). Make sure you selected all [scopes](https://help.klaviyo.com/hc/en-us/articles/7423954176283) corresponding to the streams you would like to replicate. You can find which scope is required for a specific stream by navigating to the relevant API documentation for the streams Airbyte supports.
+1. Create a [Klaviyo account](https://www.klaviyo.com).
+2. Create a [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3). When creating your API key, you must select the [scopes](https://help.klaviyo.com/hc/en-us/articles/7423954176283) that correspond to the streams you want to replicate. The following table shows which scope is required for each stream:
+
+| Stream | Required Scope |
+|:-------|:---------------|
+| Campaigns | `campaigns:read` |
+| Campaigns Detailed | `campaigns:read` |
+| Email Templates | `templates:read` |
+| Events | `events:read` |
+| Events Detailed | `events:read` |
+| Flows | `flows:read` |
+| Global Exclusions | `profiles:read` |
+| Lists | `lists:read` |
+| Lists Detailed | `lists:read` |
+| Metrics | `metrics:read` |
+| Profiles | `profiles:read` |
+
+For example, if you want to sync the Campaigns, Events, and Profiles streams, you need to enable the `campaigns:read`, `events:read`, and `profiles:read` scopes on your API key.
 
 ### Step 2: Set up the Klaviyo connector in Airbyte
 
