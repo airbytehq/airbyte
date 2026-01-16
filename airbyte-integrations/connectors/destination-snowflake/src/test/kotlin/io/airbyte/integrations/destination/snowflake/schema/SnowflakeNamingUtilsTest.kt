@@ -27,7 +27,8 @@ internal class SnowflakeNamingUtilsTest {
 
     @Test
     fun `test dollar sign bigram replacement`() {
-        assertEquals("_TEST_", "\${test}".toSnowflakeCompatibleName())
+        // ${test} -> _test_ ($ replaced with _, { replaced with _, } replaced with _) -> __TEST_
+        assertEquals("__TEST_", "\${test}".toSnowflakeCompatibleName())
     }
 
     @ParameterizedTest
