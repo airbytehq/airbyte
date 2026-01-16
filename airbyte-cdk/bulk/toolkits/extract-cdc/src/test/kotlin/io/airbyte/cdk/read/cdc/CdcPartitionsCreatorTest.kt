@@ -105,8 +105,9 @@ class CdcPartitionsCreatorTest {
     fun testCreateWithDeserializedOffset() {
         every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
         every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
+        val mockSchemaHistory = DebeziumSchemaHistory(emptyList())
         val deserializedState =
-            ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = null)
+            ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = mockSchemaHistory)
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns deserializedState
         upperBoundReference.set(1_000_000L)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
@@ -120,8 +121,9 @@ class CdcPartitionsCreatorTest {
     fun testCreateNothing() {
         every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
         every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
+        val mockSchemaHistory = DebeziumSchemaHistory(emptyList())
         val deserializedState =
-            ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = null)
+            ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = mockSchemaHistory)
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns deserializedState
         upperBoundReference.set(1L)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
@@ -135,5 +137,24 @@ class CdcPartitionsCreatorTest {
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns
             AbortDebeziumWarmStartState("boom")
         assertThrows(ConfigErrorException::class.java) { runBlocking { creator.run() } }
+    }
+    @Test
+    fun testCreateWithResetState() {
+        every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
+        every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
+        every { globalFeedBootstrap.resetAll() } returns Unit
+        every { creatorOps.deserializeState(Jsons.objectNode()) } returns
+            ResetDebeziumWarmStartState("Schema history missing")
+        upperBoundReference.set(null)
+
+        val readers: List<PartitionReader> = runBlocking { creator.run() }
+
+        // Should return a synthetic partition reader
+        Assertions.assertEquals(1, readers.size)
+        val reader = readers.first() as CdcPartitionReader<*>
+        Assertions.assertTrue(reader.isInputStateSynthetic)
+        Assertions.assertEquals(syntheticOffset, reader.startingOffset)
+        // resetReason should be set
+        Assertions.assertEquals("Schema history missing", reset.get())
     }
 }
