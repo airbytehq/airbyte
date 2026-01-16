@@ -132,7 +132,6 @@ abstract class ClickhouseAcceptanceTest(
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRINGIFY,
         stringifyUnionObjects = true,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = true,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
@@ -165,11 +164,6 @@ abstract class ClickhouseAcceptanceTest(
         fun afterAll() {
             ClickhouseContainerHelper.stop()
         }
-    }
-
-    @Disabled("Clickhouse does not support file transfer, so this test is skipped.")
-    override fun testBasicWriteFile() {
-        // Clickhouse does not support file transfer, so this test is skipped.
     }
 }
 

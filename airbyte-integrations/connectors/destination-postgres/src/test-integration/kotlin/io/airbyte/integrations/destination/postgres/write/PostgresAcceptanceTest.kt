@@ -43,7 +43,6 @@ class PostgresAcceptanceTest :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
         stringifyUnionObjects = false,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = false,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,

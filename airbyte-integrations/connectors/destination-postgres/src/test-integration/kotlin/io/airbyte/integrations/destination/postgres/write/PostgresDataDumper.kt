@@ -10,10 +10,11 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.postgres.config.PostgresBeanFactory
-import io.airbyte.integrations.destination.postgres.db.PostgresFinalTableNameGenerator
+import io.airbyte.integrations.destination.postgres.schema.PostgresTableSchemaMapper
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import org.postgresql.util.PGobject
 
@@ -43,7 +44,11 @@ class PostgresDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
-        val tableNameGenerator = PostgresFinalTableNameGenerator(config)
+        val schemaMapper =
+            PostgresTableSchemaMapper(
+                config,
+                DefaultTempTableNameGenerator(),
+            )
         val dataSource =
             PostgresBeanFactory()
                 .postgresDataSource(
@@ -67,7 +72,7 @@ class PostgresDataDumper(
                 val statement = connection.createStatement()
 
                 // Use the FinalTableNameGenerator to get the correct table name
-                val tableName = tableNameGenerator.getTableName(stream.mappedDescriptor)
+                val tableName = schemaMapper.toFinalTableName(stream.mappedDescriptor)
                 val quotedTableName = "\"${tableName.namespace}\".\"${tableName.name}\""
 
                 // First check if the table exists

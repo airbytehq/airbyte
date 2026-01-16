@@ -61,7 +61,6 @@ class BigLakeWriteTest :
                                                 catalogConfiguration =
                                                     BigLakeCatalogConfiguration("", "")
                                             ),
-                                        numProcessRecordsWorkers = 1
                                     ),
                                     tempTableNameGenerator = DefaultTempTableNameGenerator(),
                                 )

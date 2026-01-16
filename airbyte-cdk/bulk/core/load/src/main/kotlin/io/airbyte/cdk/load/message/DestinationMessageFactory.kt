@@ -8,6 +8,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
@@ -21,11 +22,14 @@ import jakarta.inject.Singleton
 @Singleton
 class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
-    @Named("requireCheckpointIdOnRecordAndKeyOnState")
-    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
+    @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     private val namespaceMapper: NamespaceMapper,
     private val uuidGenerator: UUIDGenerator,
 ) {
+    // In socket mode, multiple sockets can run in parallel, which means that we
+    // depend on upstream to associate each record with the appropriate state message.
+    private val requireCheckpointIdOnRecordAndKeyOnState =
+        dataChannelMedium == DataChannelMedium.SOCKET
 
     fun fromAirbyteProtocolMessage(
         message: AirbyteMessage,
@@ -46,9 +50,7 @@ class DestinationMessageFactory(
                     if (requireCheckpointIdOnRecordAndKeyOnState) {
                         val idSource =
                             (message.record.additionalProperties[Meta.CHECKPOINT_ID_NAME]
-                                ?: throw IllegalStateException(
-                                    "Expected `partition_id` on record"
-                                ))
+                                ?: throw IllegalStateException("Expected `partition_id` on record"))
                         CheckpointId(idSource as String)
                     } else {
                         null

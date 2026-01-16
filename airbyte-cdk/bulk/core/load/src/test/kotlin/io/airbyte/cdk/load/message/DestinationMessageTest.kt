@@ -37,8 +37,6 @@ import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteProbeMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
-import io.mockk.mockk
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -48,7 +46,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class DestinationMessageTest {
@@ -116,24 +113,7 @@ internal class DestinationMessageTest {
 
     @Test
     fun testThrowOnIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(), incompleteStatusMessage)
-            }
-        assertTrue(
-            e.message!!.startsWith(
-                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
-            ),
-            "Exception message was wrong: ${e.message}",
-        )
-    }
-
-    @Test
-    fun testThrowOnFileIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(), incompleteStatusMessage)
-            }
+        val e = assertThrows<ConfigErrorException> { convert(factory(), incompleteStatusMessage) }
         assertTrue(
             e.message!!.startsWith(
                 "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
@@ -147,13 +127,6 @@ internal class DestinationMessageTest {
     fun testRoundTripRecord(message: AirbyteMessage) {
         val roundTripped = convert(factory(), message).asProtocolMessage()
         assertEquals(message, roundTripped)
-    }
-
-    @ParameterizedTest
-    @MethodSource("roundTrippableFileMessages")
-    fun testRoundTripFile(message: AirbyteMessage) {
-        val roundTripped = convert(factory(), message).asProtocolMessage()
-        Assertions.assertEquals(message, roundTripped)
     }
 
     // Checkpoint messages aren't round-trippable.
@@ -434,49 +407,6 @@ internal class DestinationMessageTest {
                         ),
                 )
                 .map { Arguments.of(it) }
-
-        @JvmStatic
-        fun roundTrippableFileMessages(): List<Arguments> {
-            val file =
-                mapOf(
-                    "file_url" to "file://foo/bar",
-                    "file_relative_path" to "foo/bar",
-                    "source_file_url" to "file://source/foo/bar",
-                    "modified" to 123L,
-                    "bytes" to 9001L,
-                )
-
-            return listOf(
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.RECORD)
-                        .withRecord(
-                            AirbyteRecordMessage()
-                                .withStream("name")
-                                .withNamespace("namespace")
-                                .withEmittedAt(1234)
-                                .withAdditionalProperty("file", file)
-                        ),
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.TRACE)
-                        .withTrace(
-                            AirbyteTraceMessage()
-                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                                .withEmittedAt(1234.0)
-                                .withStreamStatus(
-                                    AirbyteStreamStatusTraceMessage()
-                                        // Intentionally no "reasons" here - destinations never
-                                        // inspect that
-                                        // field, so it's not round-trippable
-                                        .withStreamDescriptor(descriptor.asProtocolObject())
-                                        .withStatus(
-                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                                .COMPLETE
-                                        )
-                                )
-                        ),
-                )
-                .map { Arguments.of(it) }
-        }
     }
 
     @Test

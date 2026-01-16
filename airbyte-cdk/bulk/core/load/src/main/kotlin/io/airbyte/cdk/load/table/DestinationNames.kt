@@ -4,10 +4,8 @@
 
 package io.airbyte.cdk.load.table
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
 
@@ -29,10 +27,14 @@ fun interface TempTableNameGenerator {
  */
 @Singleton
 open class DefaultTempTableNameGenerator(
-    @Named("internalNamespace") private val internalNamespace: String? = null,
-    @Named("affixLength") private val affixLength: Int = 8,
-    @Named("affixSeparator") private val affixSeparator: String = "",
-    @Named("hashLength") private val hashLength: Int = 32,
+    //    @Named("internalNamespace") private val internalNamespace: String? = null,
+    private val internalNamespace: String? = null,
+    //    @Named("affixLength") private val affixLength: Int = 8,
+    private val affixLength: Int = 8,
+    //    @Named("affixSeparator") private val affixSeparator: String = "",
+    private val affixSeparator: String = "",
+    //    @Named("hashLength") private val hashLength: Int = 32,
+    private val hashLength: Int = 32,
 ) : TempTableNameGenerator {
     override fun generate(originalName: TableName): TableName {
         val shortNamespace =

@@ -100,8 +100,4 @@ data class DestinationRecordRaw(
             airbyteRawId = airbyteRawId,
         )
     }
-
-    fun asDestinationRecordAirbyteProxy() {
-        TODO("Implement optimized interface here.")
-    }
 }

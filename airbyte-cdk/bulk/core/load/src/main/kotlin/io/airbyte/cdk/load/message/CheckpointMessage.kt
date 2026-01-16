@@ -21,8 +21,8 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 /**
  * Checkpoint message types.
  *
- * NOTE: This file was extracted from DestinationMessage.kt for better organization.
- * The checkpoint hierarchy is complex and important - bugs here are hard to catch.
+ * NOTE: This file was extracted from DestinationMessage.kt for better organization. The checkpoint
+ * hierarchy is complex and important - bugs here are hard to catch.
  */
 
 /** State. */
@@ -181,7 +181,9 @@ data class StreamCheckpoint(
             state = blob.deserializeToNode(),
         ),
         CheckpointMessage.Stats(sourceRecordCount),
-        destinationRecordCount?.let { CheckpointMessage.Stats(recordCount = it, additionalStats = additionalStats) },
+        destinationRecordCount?.let {
+            CheckpointMessage.Stats(recordCount = it, additionalStats = additionalStats)
+        },
         additionalProperties,
         serializedSizeBytes = 0L,
         checkpointKey = checkpointKey,
@@ -248,7 +250,8 @@ data class GlobalCheckpoint(
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
         this.additionalStats.putAll(additionalStats)
     }
-    override fun withDestinationStats(stats: CheckpointMessage.Stats) = copy(destinationStats = stats)
+    override fun withDestinationStats(stats: CheckpointMessage.Stats) =
+        copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -300,7 +303,8 @@ data class GlobalSnapshotCheckpoint(
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
         this.additionalStats.putAll(additionalStats)
     }
-    override fun withDestinationStats(stats: CheckpointMessage.Stats) = copy(destinationStats = stats)
+    override fun withDestinationStats(stats: CheckpointMessage.Stats) =
+        copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
