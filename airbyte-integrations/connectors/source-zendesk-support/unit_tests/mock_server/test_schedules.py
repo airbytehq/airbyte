@@ -82,7 +82,6 @@ class TestSchedulesStreamFullRefresh(TestCase):
             ZendeskSupportRequestBuilder.schedules_endpoint(api_token_authenticator)
             .with_page_size(100)
             .with_query_param("page", "2")
-            .with_any_query_params()
             .build()
         )
 

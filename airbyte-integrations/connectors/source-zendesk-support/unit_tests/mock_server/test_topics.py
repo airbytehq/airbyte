@@ -59,7 +59,7 @@ class TestTopicsStreamFullRefresh(TestCase):
         api_token_authenticator = self.get_authenticator(self._config)
 
         # Create the next page request first - this URL will be used in links.next
-        next_page_http_request = self._base_topics_request(api_token_authenticator).with_after_cursor("after-cursor").with_any_query_params().build()
+        next_page_http_request = self._base_topics_request(api_token_authenticator).with_after_cursor("after-cursor").build()
 
         http_mocker.get(
             self._base_topics_request(api_token_authenticator).with_any_query_params().build(),

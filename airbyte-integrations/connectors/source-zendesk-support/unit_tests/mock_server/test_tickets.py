@@ -69,7 +69,7 @@ class TestTicketsStreamFullRefresh(TestCase):
             .build(),
         )
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).with_any_query_params().build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).build(),
             TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_id(2)).build(),
         )
 
