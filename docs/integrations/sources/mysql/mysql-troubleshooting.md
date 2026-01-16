@@ -10,8 +10,8 @@
 
 - Make sure to read our [CDC docs](/platform/understanding-airbyte/cdc) to see limitations that impact all databases using CDC replication.
 - Our CDC implementation uses at least once delivery for all change records.
-- CDC mode requires tables to have a primary key for proper data extraction. Tables without a primary key will have NULL values in data columns during CDC syncs.
-- UNIQUE KEY constraints are not equivalent to PRIMARY KEY for CDC purposes. If your table only has a UNIQUE KEY, use Standard replication mode instead.
+- Tables without primary keys can still be replicated by CDC in Full Refresh | Overwrite mode. However, Full Refresh | Overwrite + Deduped mode requires a primary key - tables without a primary key will produce NULL values when deduplication is enabled.
+- UNIQUE KEY constraints are not recognized as primary keys for deduplication purposes. If your table only has a UNIQUE KEY and you need deduplication, either add a PRIMARY KEY to the table or use Standard replication mode instead.
 
 ### Vendor-Specific Connector Limitations
 
