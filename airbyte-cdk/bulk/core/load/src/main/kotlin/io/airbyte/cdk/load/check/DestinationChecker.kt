@@ -4,10 +4,16 @@
 
 package io.airbyte.cdk.load.check
 
-import io.airbyte.cdk.load.command.DestinationConfiguration
-
-// TODO: Deprecate in favor if v2
-interface DestinationChecker<C : DestinationConfiguration> {
-    fun check(config: C)
-    fun cleanup(config: C) {}
+/**
+ * A check operation that is run before the destination is used.
+ *
+ * * Implementors must provide a [check] method that validates the configuration.
+ * * Implementors may provide a [cleanup] method that is run after the check is complete.
+ * * [check] should throw an exception if the configuration is invalid.
+ * * [cleanup] should not throw exceptions.
+ * * Implementors should inject configuration via the constructor.
+ */
+interface DestinationChecker {
+    fun check()
+    fun cleanup() {}
 }

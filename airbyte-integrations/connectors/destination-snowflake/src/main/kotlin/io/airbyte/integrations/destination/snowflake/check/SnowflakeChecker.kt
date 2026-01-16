@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.check
 
-import io.airbyte.cdk.load.check.DestinationCheckerV2
+import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -37,7 +37,7 @@ class SnowflakeChecker(
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val columnManager: SnowflakeColumnManager,
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
-) : DestinationCheckerV2 {
+) : DestinationChecker {
 
     override fun check() {
         val data =
