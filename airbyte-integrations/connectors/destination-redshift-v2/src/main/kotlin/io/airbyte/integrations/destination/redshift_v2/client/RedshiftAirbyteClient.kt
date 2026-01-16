@@ -88,10 +88,8 @@ class RedshiftAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        val targetExists = countTable(targetTableName) != null
-
         log.info {
-            "overwriteTable: source=${sourceTableName.toPrettyString()}, target=${targetTableName.toPrettyString()}, targetExists=$targetExists"
+            "overwriteTable: source=${sourceTableName.toPrettyString()}, target=${targetTableName.toPrettyString()}"
         }
 
         // Redshift doesn't support ALTER TABLE SET SCHEMA, so we need different approaches
