@@ -27,13 +27,9 @@ fun interface TempTableNameGenerator {
  */
 @Singleton
 open class DefaultTempTableNameGenerator(
-    //    @Named("internalNamespace") private val internalNamespace: String? = null,
     private val internalNamespace: String? = null,
-    //    @Named("affixLength") private val affixLength: Int = 8,
     private val affixLength: Int = 8,
-    //    @Named("affixSeparator") private val affixSeparator: String = "",
     private val affixSeparator: String = "",
-    //    @Named("hashLength") private val hashLength: Int = 32,
     private val hashLength: Int = 32,
 ) : TempTableNameGenerator {
     override fun generate(originalName: TableName): TableName {
