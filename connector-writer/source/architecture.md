@@ -200,6 +200,35 @@ interface PartitionsCreator {
 | `JdbcSequentialPartitionsCreator` | One partition per round | Serial reading with resumability |
 | `JdbcConcurrentPartitionsCreator` | Multiple partitions per round | Parallel reading for large tables |
 
+### Partition (Core Concept)
+
+**Purpose:** Represents a discrete read operation targeting all or part of a table
+
+A partition is the fundamental unit of work in the bulk extraction model. It encapsulates:
+- **What to read:** Which portion of a table (entire table, PK range, cursor range, page range)
+- **How to read it:** Query structure, parameters, ordering requirements
+- **Progress tracking:** State values for checkpointing and resumability
+
+**Concrete Examples:**
+
+| Source Type | Partition Abstraction | Underlying Operation |
+|-------------|----------------------|---------------------|
+| **JDBC** | SELECT query with boundaries | `SELECT * FROM table WHERE pk >= ? AND pk < ? ORDER BY pk LIMIT ?` |
+| **CDC** | Change event stream segment | Debezium consumer reading from LSN/binlog position |
+| **API** | Paginated request | HTTP request with page token or offset |
+| **File** | File chunk or byte range | Read from byte offset to byte offset |
+
+For JDBC sources specifically, a partition translates directly to a SELECT query with:
+- **WHERE clauses** defining boundaries (PK ranges, cursor ranges, CTID ranges)
+- **ORDER BY clauses** ensuring consistent ordering
+- **LIMIT clauses** enabling resumability (for resumable partitions)
+
+The partition abstraction allows the CDK to:
+- **Split work** across multiple concurrent operations
+- **Track progress** independently for each unit of work
+- **Resume** from any checkpoint if interrupted
+- **Apply backpressure** by controlling partition creation rate
+
 ### PartitionReader (You Implement)
 
 **Purpose:** Read records from a partition and return checkpoint state
