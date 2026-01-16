@@ -1187,7 +1187,10 @@ The Gong connector supports the following authentication methods.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Your Gong OAuth2 Access Token. Token refresh is managed externally. |
+| `access_token` | `str` | No | Your Gong OAuth2 Access Token. |
+| `refresh_token` | `str` | Yes | Your Gong OAuth2 Refresh Token. Note: Gong uses single-use refresh tokens. |
+| `client_id` | `str` | Yes | Your Gong OAuth App Client ID. |
+| `client_secret` | `str` | Yes | Your Gong OAuth App Client Secret. |
 
 #### Example
 
@@ -1196,7 +1199,10 @@ The Gong connector supports the following authentication methods.
 ```python
 GongConnector(
   auth_config=GongOauth20AuthenticationAuthConfig(
-    access_token="<Your Gong OAuth2 Access Token. Token refresh is managed externally.>"
+    access_token="<Your Gong OAuth2 Access Token.>",
+    refresh_token="<Your Gong OAuth2 Refresh Token. Note: Gong uses single-use refresh tokens.>",
+    client_id="<Your Gong OAuth App Client ID.>",
+    client_secret="<Your Gong OAuth App Client Secret.>"
   )
 )
 ```
@@ -1210,7 +1216,10 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
 --data '{
   "connector_definition_id": "32382e40-3b49-4b99-9c5c-4076501914e7",
   "auth_config": {
-    "access_token": "<Your Gong OAuth2 Access Token. Token refresh is managed externally.>"
+    "access_token": "<Your Gong OAuth2 Access Token.>",
+    "refresh_token": "<Your Gong OAuth2 Refresh Token. Note: Gong uses single-use refresh tokens.>",
+    "client_id": "<Your Gong OAuth App Client ID.>",
+    "client_secret": "<Your Gong OAuth App Client Secret.>"
   },
   "name": "My Gong Connector"
 }'
