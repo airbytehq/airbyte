@@ -151,11 +151,8 @@ class RedshiftAirbyteClient(
                     }
                 }
             }
-        } catch (e: Exception) {
-            log.error(e) {
-                "Failed to retrieve the generation ID for table ${tableName.toPrettyString()}"
-            }
-            0L
+        } catch (e: SQLException) {
+            handleRedshiftPermissionError(e)
         }
 
     /**
