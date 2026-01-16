@@ -6,17 +6,16 @@ Hosted execution mode allows you to run agent connector operations through Airby
 
 ## Local mode vs hosted mode
 
-When you run connector operations locally, you provide API credentials to a third-party directly and run those operations in your local environment. This approach, while viable at first, reaches limits quickly when you're dealing with large numbers of customers who have their own environments and credentials. You may not want to manage these credentials and may not want to store them at all.
+When you run connector operations locally, you store API credentials locally and provide them directly to the API, running those connector operations in your local environment. This approach, while viable at first, reaches limits quickly when you're dealing with large numbers of customers who have their own environments and credentials. You may not want to manage these credentials and may not want to store them at all.
 
 With hosted execution, sensitive API credentials never leave Airbyte Cloud, multiple end-users can have separate credentials managed centrally, and credential lifecycle (refresh, rotation) is handled automatically.
 
-| Aspect                   | Local Mode                                     | Hosted Mode                                                |
-| ------------------------ | ---------------------------------------------- | ---------------------------------------------------------- |
-| **Credentials provided** | Actual API keys/tokens (e.g., Gong access key) | Airbyte Cloud client credentials                           |
-| **Credential storage**   | Managed by you locally                         | Stored securely in Airbyte Cloud                           |
-| **API calls**            | Direct HTTP calls to external APIs             | Proxied through Airbyte Cloud                              |
-| **Setup complexity**     | Simpler - just need API credentials            | Requires Airbyte Cloud setup + connector instance creation |
-| **Multi-tenancy**        | Manual credential management per user          | Built-in support via external_user_id                      |
+| Aspect                   | Local Mode                            | Hosted Mode                             |
+| ------------------------ | ------------------------------------- | --------------------------------------- |
+| **Credentials provided** | Actual API keys/tokens                | Airbyte Cloud client credentials        |
+| **Credential storage**   | Managed by you locally                | Stored securely in Airbyte Cloud        |
+| **API calls**            | Direct HTTP calls to external APIs    | Proxied through Airbyte Cloud           |
+| **Entity cache**         | Not available                         | Available                               |
 
 ### When to use local mode
 
@@ -53,7 +52,7 @@ Before using hosted execution mode, ensure you have:
 
    See [Connectors](../connectors) for a full list of connectors.
 
-## Setup: Create a connector instance
+## Setup: Create a connector
 
 Before running operations in hosted mode, you must create a connector instance in Airbyte Cloud. This stores your API credentials securely and associates them with a workspace.
 
@@ -85,29 +84,29 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
   }'
 ```
 
-### Step 3: Create the connector instance
+### Step 3: Create the connector
 
-Create a connector instance with your API credentials. The credentials are stored securely in Airbyte Cloud:
+Create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud.
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
-  --header 'Content-Type: application/json' \
-  --header 'Authorization: Bearer <SCOPED_TOKEN>' \
-  --data '{
-    "connector_definition_id": "32382e40-3b49-4b99-9c5c-4076501914e7",
-    "auth_config": {
-      "access_key": "<gong_access_key>",
-      "access_key_secret": "<gong_access_key_secret>"
-    },
-    "name": "gong-connector"
-  }'
+curl -X POST "https://api.airbyte.ai/v1/integrations/sources" \
+    -H "Authorization: Bearer {SCOPED_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "source_template_id": "{SOURCE_TEMPLATE_ID}",
+      "workspace_id": "{WORKSPACE_ID}",
+      "name": "...",
+      "auth_config": {
+         ...
+      }
+    }'
 ```
 
 Note the returned connector instance ID for reference.
 
 ## Run operations in hosted mode
 
-Once your connector instance is created, you can use the connector in hosted mode.
+Once you create your connector instance, you can use the connector in hosted mode.
 
 ### Initialize the connector
 
