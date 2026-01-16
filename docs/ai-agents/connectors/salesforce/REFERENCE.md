@@ -8,15 +8,15 @@ The Salesforce connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](#accounts-list), [Get](#accounts-get), [Search](#accounts-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
-| Leads | [List](#leads-list), [Get](#leads-get), [Search](#leads-search) |
-| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [Search](#opportunities-search) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [Search](#tasks-search) |
-| Events | [List](#events-list), [Get](#events-get), [Search](#events-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Cases | [List](#cases-list), [Get](#cases-get), [Search](#cases-search) |
-| Notes | [List](#notes-list), [Get](#notes-get), [Search](#notes-search) |
+| Accounts | [List](#accounts-list), [Get](#accounts-get), [API Search](#accounts-api-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search) |
+| Leads | [List](#leads-list), [Get](#leads-get), [API Search](#leads-api-search) |
+| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [API Search](#opportunities-api-search) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [API Search](#tasks-api-search) |
+| Events | [List](#events-list), [Get](#events-get), [API Search](#events-api-search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [API Search](#campaigns-api-search) |
+| Cases | [List](#cases-list), [Get](#cases-get), [API Search](#cases-api-search) |
+| Notes | [List](#notes-list), [Get](#notes-get), [API Search](#notes-api-search) |
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Query | [List](#query-list) |
@@ -40,7 +40,7 @@ await salesforce.accounts.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -98,7 +98,7 @@ await salesforce.accounts.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -135,7 +135,7 @@ Example: "Id,Name,Industry,AnnualRevenue,Website"
 
 </details>
 
-#### Accounts Search
+#### Accounts API Search
 
 Search for accounts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields and objects.
@@ -145,7 +145,7 @@ Use SOQL (list action) for structured queries with specific field conditions.
 **Python SDK**
 
 ```python
-await salesforce.accounts.search(
+await salesforce.accounts.api_search(
     q="<str>"
 )
 ```
@@ -153,12 +153,12 @@ await salesforce.accounts.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -209,7 +209,7 @@ await salesforce.contacts.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -267,7 +267,7 @@ await salesforce.contacts.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -304,7 +304,7 @@ Example: "Id,FirstName,LastName,Email,Phone,AccountId"
 
 </details>
 
-#### Contacts Search
+#### Contacts API Search
 
 Search for contacts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -313,7 +313,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.contacts.search(
+await salesforce.contacts.api_search(
     q="<str>"
 )
 ```
@@ -321,12 +321,12 @@ await salesforce.contacts.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -376,7 +376,7 @@ await salesforce.leads.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -434,7 +434,7 @@ await salesforce.leads.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -471,7 +471,7 @@ Example: "Id,FirstName,LastName,Email,Company,Status,LeadSource"
 
 </details>
 
-#### Leads Search
+#### Leads API Search
 
 Search for leads using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -480,7 +480,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.leads.search(
+await salesforce.leads.api_search(
     q="<str>"
 )
 ```
@@ -488,12 +488,12 @@ await salesforce.leads.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "leads",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -543,7 +543,7 @@ await salesforce.opportunities.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -601,7 +601,7 @@ await salesforce.opportunities.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -638,7 +638,7 @@ Example: "Id,Name,Amount,StageName,CloseDate,AccountId"
 
 </details>
 
-#### Opportunities Search
+#### Opportunities API Search
 
 Search for opportunities using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -647,7 +647,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.opportunities.search(
+await salesforce.opportunities.api_search(
     q="<str>"
 )
 ```
@@ -655,12 +655,12 @@ await salesforce.opportunities.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "opportunities",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -710,7 +710,7 @@ await salesforce.tasks.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -768,7 +768,7 @@ await salesforce.tasks.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -805,7 +805,7 @@ Example: "Id,Subject,Status,Priority,ActivityDate,WhoId,WhatId"
 
 </details>
 
-#### Tasks Search
+#### Tasks API Search
 
 Search for tasks using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -814,7 +814,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.tasks.search(
+await salesforce.tasks.api_search(
     q="<str>"
 )
 ```
@@ -822,12 +822,12 @@ await salesforce.tasks.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -877,7 +877,7 @@ await salesforce.events.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -935,7 +935,7 @@ await salesforce.events.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -972,7 +972,7 @@ Example: "Id,Subject,StartDateTime,EndDateTime,Location,WhoId,WhatId"
 
 </details>
 
-#### Events Search
+#### Events API Search
 
 Search for events using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -981,7 +981,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.events.search(
+await salesforce.events.api_search(
     q="<str>"
 )
 ```
@@ -989,12 +989,12 @@ await salesforce.events.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1044,7 +1044,7 @@ await salesforce.campaigns.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1102,7 +1102,7 @@ await salesforce.campaigns.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1139,7 +1139,7 @@ Example: "Id,Name,Type,Status,StartDate,EndDate,IsActive"
 
 </details>
 
-#### Campaigns Search
+#### Campaigns API Search
 
 Search for campaigns using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1148,7 +1148,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.campaigns.search(
+await salesforce.campaigns.api_search(
     q="<str>"
 )
 ```
@@ -1156,12 +1156,12 @@ await salesforce.campaigns.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1211,7 +1211,7 @@ await salesforce.cases.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1270,7 +1270,7 @@ await salesforce.cases.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1308,7 +1308,7 @@ Example: "Id,CaseNumber,Subject,Status,Priority,ContactId,AccountId"
 
 </details>
 
-#### Cases Search
+#### Cases API Search
 
 Search for cases using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1317,7 +1317,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.cases.search(
+await salesforce.cases.api_search(
     q="<str>"
 )
 ```
@@ -1325,12 +1325,12 @@ await salesforce.cases.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "cases",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1380,7 +1380,7 @@ await salesforce.notes.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1438,7 +1438,7 @@ await salesforce.notes.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1475,7 +1475,7 @@ Example: "Id,Title,Body,ParentId,OwnerId"
 
 </details>
 
-#### Notes Search
+#### Notes API Search
 
 Search for notes using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1484,7 +1484,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.notes.search(
+await salesforce.notes.api_search(
     q="<str>"
 )
 ```
@@ -1492,12 +1492,12 @@ await salesforce.notes.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "notes",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1548,7 +1548,7 @@ await salesforce.content_versions.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1611,7 +1611,7 @@ await salesforce.content_versions.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1673,7 +1673,7 @@ async for chunk in salesforce.content_versions.download(    id="<str>"):# Proces
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1716,7 +1716,7 @@ await salesforce.attachments.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1778,7 +1778,7 @@ await salesforce.attachments.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1838,7 +1838,7 @@ async for chunk in salesforce.attachments.download(    id="<str>"):# Process eac
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1880,7 +1880,7 @@ await salesforce.query.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1961,11 +1961,12 @@ SalesforceConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "b117307c-14b6-41aa-9422-947e34922962",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
     "refresh_token": "<OAuth refresh token for automatic token renewal>",
     "client_id": "<Connected App Consumer Key>",

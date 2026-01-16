@@ -1,0 +1,86 @@
+name: PR AI Review Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo (owner/repo)"
+        required: false
+      gitref:
+        description: "Git ref"
+        required: false
+      pr:
+        description: "PR number"
+        required: true
+      comment-id:
+        description: "Comment ID"
+        required: false
+
+run-name: "PR AI Review for PR #${{ inputs.pr }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  pr-ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get job variables
+        id: job-vars
+        run: |
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte,oncall"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Get PR details
+        id: pr-details
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          PR_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ inputs.pr }}"
+          PR_INFO=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$PR_URL")
+          HEAD_SHA=$(echo "$PR_INFO" | jq -r '.head.sha')
+          HEAD_REF=$(echo "$PR_INFO" | jq -r '.head.ref')
+          echo "head-sha=$HEAD_SHA" >> $GITHUB_OUTPUT
+          echo "head-ref=$HEAD_REF" >> $GITHUB_OUTPUT
+
+      - name: Post start comment
+        if: ${{ inputs.comment-id }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **PR AI Review Started**
+            >
+            > Evaluating connector PR for safety and quality.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Run PR AI Review
+        uses: aaronsteers/devin-action@main
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          start-message: |
+            **AI PR Review (Phase D)** starting...
+
+            Reviewing PR for connector safety and quality. Phase D adds MCP-based validation verification.
+            [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/pr_ai_review.md)
+          tags: |
+            ai-oncall
+            pr-review

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.command.iceberg.parquet
@@ -97,6 +97,8 @@ interface IcebergCatalogSpecifications {
                         (catalogType as PolarisCatalogSpecification).catalogName,
                         (catalogType as PolarisCatalogSpecification).clientId,
                         (catalogType as PolarisCatalogSpecification).clientSecret,
+                        (catalogType as PolarisCatalogSpecification).scope,
+                        (catalogType as PolarisCatalogSpecification).oauth2ServerUri,
                         (catalogType as PolarisCatalogSpecification).namespace,
                     )
             }
@@ -358,6 +360,46 @@ class PolarisCatalogSpecification(
     val clientSecret: String,
 
     /**
+     * OAuth Scope for Polaris authentication.
+     *
+     * Required for Open Catalog compatibility. Must be in the format PRINCIPAL_ROLE:<role_name>.
+     * For example: PRINCIPAL_ROLE:catalog_admin
+     */
+    @get:JsonSchemaTitle("OAuth Scope")
+    @get:JsonPropertyDescription(
+        "The OAuth scope for authentication. Must be in the format PRINCIPAL_ROLE:<role_name>."
+    )
+    @get:JsonProperty("scope")
+    @get:JsonSchemaInject(
+        json =
+            """{
+            "examples": ["PRINCIPAL_ROLE:catalog_admin"],
+            "order":5
+        }""",
+    )
+    val scope: String,
+
+    /**
+     * OAuth2 Server URI for Polaris authentication.
+     *
+     * Optional OAuth2 token endpoint URI. If not provided, a deprecation warning may be issued as
+     * this will become required in future versions.
+     */
+    @get:JsonSchemaTitle("OAuth2 Server URI")
+    @get:JsonPropertyDescription(
+        "The OAuth2 token endpoint URI. If not provided, a deprecation warning may be issued as this will become required in future versions."
+    )
+    @get:JsonProperty("oauth2_server_uri")
+    @get:JsonSchemaInject(
+        json =
+            """{
+            "examples": ["https://polaris.example.com/oauth/tokens"],
+            "order":6
+        }""",
+    )
+    val oauth2ServerUri: String? = null,
+
+    /**
      * The namespace to be used when building the Table identifier
      *
      * This namespace will only be used if the stream namespace is null, meaning when the
@@ -371,6 +413,6 @@ class PolarisCatalogSpecification(
            `Destination-defined` or `Source-defined`"""
     )
     @get:JsonProperty("namespace")
-    @JsonSchemaInject(json = """{"order":5}""")
+    @JsonSchemaInject(json = """{"order":7}""")
     val namespace: String,
 ) : CatalogType(catalogType)
