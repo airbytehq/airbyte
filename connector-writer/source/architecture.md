@@ -417,7 +417,7 @@ class MySqlSourceMetadataQuerier(
 
 ## JDBC Toolkit Deep Dive
 
-The JDBC toolkit (`airbyte-cdk/bulk/toolkits/extract-jdbc/`) provides battle-tested implementations for relational database sources.
+The JDBC toolkit (`airbyte-cdk/bulk/toolkits/extract-jdbc/`) provides stock implementations for relational database sources.
 
 ### JdbcPartitionFactory (Stock Implementation Provided)
 
@@ -1472,7 +1472,7 @@ WHERE xmin::text::bigint >= 1000 AND xmin::text::bigint <= 2000;
 
 **The Development Model:**
 
-The Extract Bulk CDK uses a **toolkit-first approach**. The JDBC and CDC toolkits provide complete, production-ready stock implementations. You extend and customize only what's specific to your database.
+The Extract Bulk CDK uses a **toolkit-first approach**. The JDBC and CDC toolkits provide stock implementations. You extend and customize only what's specific to your database.
 
 **What the CDK Core provides (automatic):**
 
