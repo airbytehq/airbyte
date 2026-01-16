@@ -191,7 +191,6 @@ abstract class SnowflakeAcceptanceTest(
         recordMangler = recordMapper,
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
-        useDataFlowPipeline = true,
     )
 
 fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {

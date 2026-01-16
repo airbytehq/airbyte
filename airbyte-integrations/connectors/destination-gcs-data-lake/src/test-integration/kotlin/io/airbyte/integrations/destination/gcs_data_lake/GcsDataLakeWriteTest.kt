@@ -85,7 +85,6 @@ class BigLakeWriteTest :
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = IcebergConfigUpdater,
-        useDataFlowPipeline = true
     ) {
 
     @Test

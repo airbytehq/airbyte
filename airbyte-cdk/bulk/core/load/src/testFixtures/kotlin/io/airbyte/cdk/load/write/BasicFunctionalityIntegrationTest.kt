@@ -345,7 +345,6 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
-    val useDataFlowPipeline: Boolean = false,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -1597,11 +1596,9 @@ abstract class BasicFunctionalityIntegrationTest(
                             totalRecords = 1L,
                             totalBytes = expectedBytes,
                             additionalStats =
-                                if (useDataFlowPipeline)
-                                    StateAdditionalStatsStore.ObservabilityMetrics.entries
-                                        .associate { it.metricName to 0.0 }
-                                        .toMutableMap()
-                                else mutableMapOf(),
+                                StateAdditionalStatsStore.ObservabilityMetrics.entries
+                                    .associate { it.metricName to 0.0 }
+                                    .toMutableMap(),
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -5186,14 +5183,13 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
-    private fun expectedAdditionalStats(): AdditionalStats? =
-        if (useDataFlowPipeline) {
-            val expectedAdditionalStats = AdditionalStats()
-            StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
-                expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
-            }
-            expectedAdditionalStats
-        } else null
+    private fun expectedAdditionalStats(): AdditionalStats {
+        val expectedAdditionalStats = AdditionalStats()
+        StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
+            expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
+        }
+        return expectedAdditionalStats
+    }
 
     fun namespaceMapperForMedium(): NamespaceMapper = dataChannelMedium.namespaceMapper()
 }

@@ -150,7 +150,6 @@ abstract class ClickhouseAcceptanceTest(
         dedupChangeUsesDefault = true,
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
-        useDataFlowPipeline = true,
     ) {
     companion object {
         @JvmStatic

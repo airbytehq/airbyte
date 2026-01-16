@@ -27,5 +27,4 @@ class DevNullBasicFunctionalityIntegrationTest :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
-        useDataFlowPipeline = true,
     )

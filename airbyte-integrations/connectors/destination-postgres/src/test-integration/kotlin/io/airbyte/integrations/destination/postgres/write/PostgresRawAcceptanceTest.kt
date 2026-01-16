@@ -57,7 +57,6 @@ class PostgresRawAcceptanceTest :
         nullEqualsUnset = false,
         configUpdater = PostgresConfigUpdater(),
         recordMangler = PostgresExpectedRawRecordMapper,
-        useDataFlowPipeline = true,
     ) {
     companion object {
         @JvmStatic

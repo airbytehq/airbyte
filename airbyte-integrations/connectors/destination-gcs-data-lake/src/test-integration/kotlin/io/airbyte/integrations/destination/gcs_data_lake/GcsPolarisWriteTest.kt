@@ -55,7 +55,6 @@ class GcsPolarisWriteTest :
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = io.airbyte.cdk.load.data.icerberg.parquet.IcebergConfigUpdater,
-        useDataFlowPipeline = true
     ) {
 
     @Test
