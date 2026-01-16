@@ -8,9 +8,8 @@ When you're working with an AI agent on tasks that involve Airbyte, the MCP serv
 
 The Airbyte knowledge MCP is helpful when your AI agent is:
 
-- Building a custom connector with the Connector Builder or low-code CDK
-- Working with Airbyte's Terraform provider or REST API
-- Configuring sources, destinations, or connections
+- Building a custom connector
+- Working with Airbyte's Terraform provider, REST API, or connection configuration
 - Troubleshooting sync errors or connection issues
 - Learning about Airbyte's architecture or deployment options
 
@@ -29,7 +28,7 @@ If you're using Cursor or VS Code, you can connect with one click through the As
 For Claude Desktop or Claude Code, run the following command:
 
 ```bash
-claude mcp add airbyte-knowledge https://airbyte.mcp.kapa.ai
+claude mcp add --transport http airbyte-docs https://airbyte.mcp.kapa.ai
 ```
 
 ### Other AI tools
@@ -47,4 +46,3 @@ Each authenticated user is limited to 40 requests per hour and 200 requests per 
 ## Additional resources
 
 - [Model Context Protocol documentation](https://modelcontextprotocol.io/)
-- [Airbyte documentation](https://docs.airbyte.com)
