@@ -8,16 +8,17 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 
 /**
- * ANSI reserved keywords that Snowflake rejects as column names even when quoted.
- * These must be prefixed with an underscore to be used as column names.
- * See: https://docs.snowflake.com/en/sql-reference/reserved-keywords
+ * ANSI reserved keywords that Snowflake rejects as column names even when quoted. These must be
+ * prefixed with an underscore to be used as column names. See:
+ * https://docs.snowflake.com/en/sql-reference/reserved-keywords
  */
-private val SNOWFLAKE_RESERVED_COLUMN_NAMES = setOf(
-    "CURRENT_DATE",
-    "CURRENT_TIME",
-    "CURRENT_TIMESTAMP",
-    "CURRENT_USER",
-)
+private val SNOWFLAKE_RESERVED_COLUMN_NAMES =
+    setOf(
+        "CURRENT_DATE",
+        "CURRENT_TIME",
+        "CURRENT_TIMESTAMP",
+        "CURRENT_USER",
+    )
 
 /**
  * Transforms a string to be compatible with Snowflake table and column names.

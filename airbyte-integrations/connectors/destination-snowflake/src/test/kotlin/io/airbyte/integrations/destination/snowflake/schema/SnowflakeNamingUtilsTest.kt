@@ -15,9 +15,7 @@ internal class SnowflakeNamingUtilsTest {
 
     @Test
     fun `test empty string throws exception`() {
-        assertThrows<ConfigErrorException> {
-            "".toSnowflakeCompatibleName()
-        }
+        assertThrows<ConfigErrorException> { "".toSnowflakeCompatibleName() }
     }
 
     @Test
