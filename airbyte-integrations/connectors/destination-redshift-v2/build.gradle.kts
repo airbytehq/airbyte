@@ -25,4 +25,8 @@ val redshiftJdbcVersion = "2.1.0.31"
 dependencies {
     implementation("com.amazon.redshift:redshift-jdbc42:$redshiftJdbcVersion")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
+
+    implementation("software.amazon.awssdk:s3:2.27.21")
+    implementation("software.amazon.awssdk.crt:aws-crt:0.30.11")
+    implementation("de.siegmar:fastcsv:4.0.0")
 }

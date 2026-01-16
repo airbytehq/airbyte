@@ -4,20 +4,17 @@
 
 package io.airbyte.integrations.destination.redshift_v2.dataflow
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import com.amazonaws.services.s3.model.ObjectMetadata
+import de.siegmar.fastcsv.writer.CsvWriter
+import de.siegmar.fastcsv.writer.LineDelimiter
+import de.siegmar.fastcsv.writer.QuoteStrategies
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.component.ColumnType
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
@@ -28,16 +25,24 @@ import io.airbyte.integrations.destination.redshift_v2.spec.S3StagingConfigurati
 import io.airbyte.integrations.destination.redshift_v2.sql.RedshiftDataType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.OutputStreamWriter
-import java.nio.charset.StandardCharsets
 import java.time.Clock
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
 import java.util.zip.GZIPOutputStream
 import javax.sql.DataSource
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.core.async.BlockingOutputStreamAsyncRequestBody
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.model.PutObjectResponse
 
 private val log = KotlinLogging.logger {}
+
+private val metaColumns = Meta.COLUMN_NAMES.toList()
+internal const val CSV_FIELD_SEPARATOR = ','
+internal const val CSV_QUOTE_CHARACTER = '"'
+internal val CSV_LINE_DELIMITER = LineDelimiter.LF
+private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
 /**
  * Accumulates and flushes records to Redshift via S3 staging and COPY command. Uses CSV format with
@@ -58,112 +63,77 @@ class RedshiftStagingAggregate(
             .filter { it.value.type == RedshiftDataType.SUPER.typeName }
             .keys
     }
-    private val columns: List<String> = tableSchema.columnSchema.finalSchema.keys.toList()
+    private val columns: List<String> =
+        metaColumns + tableSchema.columnSchema.finalSchema.keys.toList()
+    private val s3ObjectKey = generateS3Key()
 
-    private val buffer = mutableListOf<Map<String, AirbyteValue>>()
-    private val s3Client: AmazonS3 by lazy { createS3Client() }
+    // TODO this should be a bean
+    private val s3Client: S3AsyncClient = createS3Client()
+    private lateinit var responseFuture: CompletableFuture<PutObjectResponse>
+    private lateinit var csvPrinter: CsvWriter
 
     override fun accept(record: RecordDTO) {
-        buffer.add(record.fields)
+        if (!this::csvPrinter.isInitialized) {
+            val requestBody = BlockingOutputStreamAsyncRequestBody.builder().build()
+            responseFuture =
+                s3Client.putObject(
+                    { it.bucket(s3Config.s3BucketName).key(s3ObjectKey) },
+                    requestBody,
+                )
+            csvPrinter =
+                CsvWriter.builder()
+                    .bufferSize(CSV_WRITER_BUFFER_SIZE)
+                    .fieldSeparator(CSV_FIELD_SEPARATOR)
+                    .quoteCharacter(CSV_QUOTE_CHARACTER)
+                    .lineDelimiter(CSV_LINE_DELIMITER)
+                    .quoteStrategy(QuoteStrategies.REQUIRED)
+                    .build(
+                        GZIPOutputStream(requestBody.outputStream()).bufferedWriter(Charsets.UTF_8)
+                    )
+        }
+        val formattedRecord =
+            columns.map { columnName ->
+                // TODO handle nulls correctly
+                val value = record.fields[columnName]
+                if (columnName in superColumns && value != null) {
+                    value.toJson().serializeToString()
+                } else {
+                    value.toCsvValue().toString()
+                }
+            }
+        csvPrinter.writeRecord(formattedRecord)
     }
 
     override suspend fun flush() {
-        if (buffer.isEmpty()) return
-
-        val s3Key = generateS3Key()
-
         try {
-            log.info {
-                "Flushing ${buffer.size} records to S3: s3://${s3Config.s3BucketName}/$s3Key"
-            }
-
-            // Write records to gzipped CSV format
-            val csvData = writeToCsv(columns)
-
-            // Upload to S3 as binary (gzipped data)
-            val metadata =
-                ObjectMetadata().apply {
-                    contentLength = csvData.size.toLong()
-                    contentType = "application/gzip"
-                }
-            s3Client.putObject(
-                s3Config.s3BucketName,
-                s3Key,
-                ByteArrayInputStream(csvData),
-                metadata
-            )
-
-            // Execute COPY command
-            executeCopy(columns, s3Key)
-
-            log.info { "Successfully loaded ${buffer.size} records via COPY" }
+            log.info { "Flushing records to S3: s3://${s3Config.s3BucketName}/$s3ObjectKey" }
+            csvPrinter.close()
+            responseFuture.join()
+            executeCopy(columns, s3ObjectKey)
+            log.info { "COPY FROM s3://${s3Config.s3BucketName}/$s3ObjectKey complete" }
         } finally {
             // Cleanup S3 file if configured to purge
             if (s3Config.purgeStagingData) {
                 try {
-                    s3Client.deleteObject(s3Config.s3BucketName, s3Key)
+                    s3Client.deleteObject { it.bucket(s3Config.s3BucketName).key(s3ObjectKey) }
                 } catch (e: Exception) {
-                    log.warn(e) { "Failed to cleanup staging file: $s3Key" }
-                }
-            }
-            buffer.clear()
-        }
-    }
-
-    /**
-     * Writes records to CSV format, gzipped. Uses the CDK's toCsvValue() for proper type
-     * conversion. For SUPER columns, uses JSON serialization for ALL values (including primitives).
-     */
-    private fun writeToCsv(columns: List<String>): ByteArray {
-        val baos = ByteArrayOutputStream()
-        GZIPOutputStream(baos).use { gzip ->
-            OutputStreamWriter(gzip, StandardCharsets.UTF_8).use { writer ->
-                // Write header
-                writer.write(columns.joinToString(",") { "\"$it\"" })
-                writer.write("\n")
-
-                // Write data rows
-                buffer.forEach { record ->
-                    val row =
-                        columns.map { col ->
-                            val value = record[col]
-                            // For SUPER columns, JSON-serialize ALL values (including primitives
-                            // like strings)
-                            // This ensures that a StringValue("foo") becomes "\"foo\"" in the CSV,
-                            // which Redshift's SUPER type can parse as valid JSON.
-                            if (col in superColumns && value != null) {
-                                formatCsvField(value.toJson().serializeToString())
-                            } else {
-                                formatCsvField(value.toCsvValue())
-                            }
-                        }
-                    writer.write(row.joinToString(","))
-                    writer.write("\n")
+                    log.warn(e) { "Failed to cleanup staging file: $s3ObjectKey" }
                 }
             }
         }
-        return baos.toByteArray()
-    }
-
-    /** Formats a value for CSV output with proper quoting and escaping. */
-    private fun formatCsvField(value: Any): String {
-        val stringValue = value.toString()
-        // Always quote strings, escape internal quotes by doubling them
-        val escaped = stringValue.replace("\"", "\"\"").replace("\u0000", " ")
-        return "\"$escaped\""
     }
 
     private fun executeCopy(columns: List<String>, s3Key: String) {
         val columnList = columns.joinToString(", ") { "\"$it\"" }
         val s3Path = getFullS3Path(s3Key)
 
+        // TODO kill EMPTYASNULL, use `NULL AS <whatever>`
         val copyQuery =
             """
             COPY "${tableName.namespace}"."${tableName.name}" ($columnList)
             FROM '$s3Path'
             CREDENTIALS 'aws_access_key_id=${s3Config.accessKeyId};aws_secret_access_key=${s3Config.secretAccessKey}'
             CSV GZIP
-            IGNOREHEADER 1
             REGION '${s3Config.s3BucketRegion.ifEmpty { "us-east-1" }}'
             TIMEFORMAT 'auto'
             EMPTYASNULL
@@ -198,14 +168,12 @@ class RedshiftStagingAggregate(
         return "s3://${s3Config.s3BucketName}/$s3Key"
     }
 
-    private fun createS3Client(): AmazonS3 {
-        return AmazonS3ClientBuilder.standard()
-            .withCredentials(
-                AWSStaticCredentialsProvider(
-                    BasicAWSCredentials(s3Config.accessKeyId, s3Config.secretAccessKey)
-                )
-            )
-            .withRegion(s3Config.s3BucketRegion.ifEmpty { "us-east-1" })
+    private fun createS3Client(): S3AsyncClient {
+        return S3AsyncClient.crtBuilder()
+            .credentialsProvider {
+                AwsBasicCredentials.create(s3Config.accessKeyId, s3Config.secretAccessKey)
+            }
+            .region(Region.of(s3Config.s3BucketRegion.ifEmpty { "us-east-1" }))
             .build()
     }
 }
@@ -221,13 +189,12 @@ class RedshiftAggregateFactory(
     override fun create(key: StoreKey): Aggregate {
         val tableName = streamStateStore.get(key)!!.tableName
         val stream = catalog.getStream(key)
-        val finalSchema: Map<String, ColumnType> = stream.tableSchema.columnSchema.finalSchema
         return RedshiftStagingAggregate(
             tableName,
             dataSource,
             config.s3Config,
             clock,
-            stream.tableSchema
+            stream.tableSchema,
         )
     }
 }
