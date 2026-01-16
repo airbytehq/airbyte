@@ -57,7 +57,7 @@ Before using hosted execution mode, ensure you have:
 
 ## Authentication
 
-Before running operations in hosted mode, you must create a connector instance in Airbyte Cloud. This stores your API credentials securely and associates them with a workspace.
+Before running operations in hosted mode, you must create a connector in Airbyte Cloud. This stores your API credentials securely and associates them with a workspace.
 
 ### Step 1: Get an application token
 
@@ -126,72 +126,60 @@ connector = GongConnector(
 )
 ```
 
-Operations work the same way as local mode. The connector handles authentication and routing through Airbyte Cloud.
+Use the `@Connector.describe` decorator to expose the connector as a tool for your agent. The decorator automatically generates a comprehensive tool description from the connector's metadata.
 
 ```python title="agent.py"
-import asyncio
+from pydantic_ai import Agent
+from airbyte_ai_gong import GongConnector
 
-async def main():
-    connector = GongConnector(
-        external_user_id="<your_workspace_name>",
-        airbyte_client_id="<your_client_id>",
-        airbyte_client_secret="<your_client_secret>",
-    )
-    
-    # List users
-    result = await connector.users.list()
-    
-    print(f"Found {len(result.data)} users")
-    for user in result.data[:5]:
-        print(f"  - {user.first_name} {user.last_name} ({user.email_address})")
-    
-    # Handle pagination
-    if result.meta and result.meta.pagination:
-        print(f"Total records: {result.meta.pagination.total_records}")
+agent = Agent("openai:gpt-4o")
+connector = GongConnector(
+    external_user_id="<your_workspace_name>",
+    airbyte_client_id="<your_client_id>",
+    airbyte_client_secret="<your_client_secret>",
+)
 
-asyncio.run(main())
+@agent.tool_plain
+@GongConnector.describe
+async def gong_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
+
+The `@GongConnector.describe` decorator automatically expands the docstring to include all available entities and actions, their required and optional parameters, and response structure details. This gives the LLM everything it needs to correctly call the connector.
 
 ### Complete example
 
 ```python
 #!/usr/bin/env python3
-"""Example: Using Gong connector in hosted execution mode."""
+"""Example: Using Gong connector in hosted execution mode with an AI agent."""
 
 import asyncio
+from pydantic_ai import Agent
 from airbyte_ai_gong import GongConnector
 
 
+# Initialize connector in hosted mode
+connector = GongConnector(
+    external_user_id="customer-workspace-123",
+    airbyte_client_id="your_airbyte_client_id",
+    airbyte_client_secret="your_airbyte_client_secret",
+)
+
+# Create agent
+agent = Agent("openai:gpt-4o")
+
+# Register connector as a tool using the describe decorator
+@agent.tool_plain
+@GongConnector.describe
+async def gong_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+
 async def main():
-    # Initialize connector in hosted mode
-    connector = GongConnector(
-        external_user_id="customer-workspace-123",
-        airbyte_client_id="your_airbyte_client_id",
-        airbyte_client_secret="your_airbyte_client_secret",
-    )
-    
-    print(f"Connector: {connector.connector_name} v{connector.connector_version}")
-    
-    # Fetch users
-    print("Fetching users...")
-    result = await connector.users.list()
-    
-    if result.data:
-        print(f"Found {len(result.data)} users:")
-        for user in result.data[:5]:
-            print(f"  - {user.first_name} {user.last_name}")
-            print(f"    Email: {user.email_address}")
-            print(f"    Active: {user.active}")
-    
-    # Fetch calls with date filter
-    print("\nFetching recent calls...")
-    calls_result = await connector.calls.list(
-        from_date_time="2025-01-01T00:00:00Z",
-        to_date_time="2025-01-14T00:00:00Z"
-    )
-    
-    if calls_result.data:
-        print(f"Found {len(calls_result.data)} calls")
+    # The agent can now use the Gong connector to answer questions
+    result = await agent.run("List the users in Gong")
+    print(result.data)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -202,30 +190,30 @@ if __name__ == "__main__":
 
 You can execute connector operations directly via the REST API.
 
-First, retrieve your connector instance ID using your external user ID and connector definition ID:
+First, retrieve your connector ID using your external user ID and connector definition ID:
 
 ```bash title="Request"
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances_for_user?external_user_id=<your_workspace_name>&definition_id=32382e40-3b49-4b99-9c5c-4076501914e7' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/connectors_for_user?external_user_id=<your_workspace_name>&definition_id=32382e40-3b49-4b99-9c5c-4076501914e7' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>'
 ```
 
-The response contains your connector instance ID:
+The response contains your connector ID:
 
 ```json title="Response"
 {
-  "instances": [
+  "connectors": [
     {
-      "id": "<connector_instance_id>",
+      "id": "<connector_id>",
       "name": "gong-connector"
     }
   ]
 }
 ```
 
-Use the connector instance ID to execute operations:
+Use the connector ID to execute operations:
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/<connector_instance_id>/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
   --data '{
@@ -260,16 +248,16 @@ The response contains the operation result:
 
 ## Troubleshooting
 
-### No connector instance found for user
+### No connector found for user
 
-- Ensure you've created a connector instance for the workspace.
+- Ensure you've created a connector for the workspace.
 - Verify the `external_user_id` matches the `workspace_name` used during setup.
 
 ### Authentication errors (401/403)
 
 - Check that your Airbyte client ID and secret are correct.
 - Verify your application token hasn't expired.
-- Ensure the connector instance was created with valid API credentials.
+- Ensure the connector was created with valid API credentials.
 
 ### Token expiration
 
