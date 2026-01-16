@@ -114,76 +114,19 @@ Once you create your connector, you can use the connector in hosted mode.
 <Tabs>
 <TabItem value="python" label="Python" default>
 
-Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the external user ID (workspace name).
-
-```python title="agent.py"
-from airbyte_ai_gong import GongConnector
-
-connector = GongConnector(
-    external_user_id="<your_workspace_name>",
-    airbyte_client_id="<your_client_id>",
-    airbyte_client_secret="<your_client_secret>",
-)
-```
-
-Use the `@Connector.describe` decorator to expose the connector as a tool for your agent. The decorator automatically generates a comprehensive tool description from the connector's metadata.
-
-```python title="agent.py"
-from pydantic_ai import Agent
-from airbyte_ai_gong import GongConnector
-
-agent = Agent("openai:gpt-4o")
-connector = GongConnector(
-    external_user_id="<your_workspace_name>",
-    airbyte_client_id="<your_client_id>",
-    airbyte_client_secret="<your_client_secret>",
-)
-
-@agent.tool_plain
-@GongConnector.describe
-async def gong_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-The `@GongConnector.describe` decorator automatically expands the docstring to include all available entities and actions, their required and optional parameters, and response structure details. This gives the LLM everything it needs to correctly call the connector.
-
-### Complete example
+Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the external user ID (workspace name):
 
 ```python
-#!/usr/bin/env python3
-"""Example: Using Gong connector in hosted execution mode with an AI agent."""
-
-import asyncio
-from pydantic_ai import Agent
 from airbyte_ai_gong import GongConnector
 
-
-# Initialize connector in hosted mode
 connector = GongConnector(
-    external_user_id="customer-workspace-123",
-    airbyte_client_id="your_airbyte_client_id",
-    airbyte_client_secret="your_airbyte_client_secret",
+    external_user_id="<your_workspace_name>",
+    airbyte_client_id="<your_client_id>",
+    airbyte_client_secret="<your_client_secret>",
 )
-
-# Create agent
-agent = Agent("openai:gpt-4o")
-
-# Register connector as a tool using the describe decorator
-@agent.tool_plain
-@GongConnector.describe
-async def gong_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-
-
-async def main():
-    # The agent can now use the Gong connector to answer questions
-    result = await agent.run("List the users in Gong")
-    print(result.data)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
 ```
+
+Once initialized, the connector works the same way as in local mode. The connector handles authentication and routing through Airbyte Cloud automatically.
 
 </TabItem>
 <TabItem value="api" label="API">
