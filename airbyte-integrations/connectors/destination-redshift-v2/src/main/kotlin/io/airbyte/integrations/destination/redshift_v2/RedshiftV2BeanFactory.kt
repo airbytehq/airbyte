@@ -25,6 +25,8 @@ import java.nio.charset.StandardCharsets
 import java.sql.Connection
 import java.util.logging.Logger
 import javax.sql.DataSource
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.services.s3.S3AsyncClient
 
 private val log = KotlinLogging.logger {}
 
@@ -110,6 +112,19 @@ class RedshiftV2BeanFactory {
             }
 
         return HikariDataSource(datasourceConfig)
+    }
+
+    @Singleton
+    fun s3Client(config: RedshiftV2Configuration): S3AsyncClient {
+        return S3AsyncClient.crtBuilder()
+            .credentialsProvider {
+                AwsBasicCredentials.create(
+                    config.s3Config.accessKeyId,
+                    config.s3Config.secretAccessKey
+                )
+            }
+            .region(config.s3Config.s3BucketRegion)
+            .build()
     }
 
     @Singleton

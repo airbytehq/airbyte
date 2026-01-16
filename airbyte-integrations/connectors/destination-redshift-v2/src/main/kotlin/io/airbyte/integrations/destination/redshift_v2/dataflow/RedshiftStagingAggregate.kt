@@ -30,9 +30,7 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.zip.GZIPOutputStream
 import javax.sql.DataSource
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.core.async.BlockingOutputStreamAsyncRequestBody
-import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.model.PutObjectResponse
 
@@ -53,6 +51,7 @@ private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 class RedshiftStagingAggregate(
     private val tableName: TableName,
     private val dataSource: DataSource,
+    private val s3Client: S3AsyncClient,
     private val s3Config: S3StagingConfiguration,
     private val clock: Clock,
     private val tableSchema: StreamTableSchema,
@@ -67,8 +66,6 @@ class RedshiftStagingAggregate(
         metaColumns + tableSchema.columnSchema.finalSchema.keys.toList()
     private val s3ObjectKey = generateS3Key()
 
-    // TODO this should be a bean
-    private val s3Client: S3AsyncClient = createS3Client()
     private lateinit var responseFuture: CompletableFuture<PutObjectResponse>
     private lateinit var csvPrinter: CsvWriter
 
@@ -134,7 +131,7 @@ class RedshiftStagingAggregate(
             FROM '$s3Path'
             CREDENTIALS 'aws_access_key_id=${s3Config.accessKeyId};aws_secret_access_key=${s3Config.secretAccessKey}'
             CSV GZIP
-            REGION '${s3Config.s3BucketRegion.ifEmpty { "us-east-1" }}'
+            REGION '${s3Config.s3BucketRegion}'
             TIMEFORMAT 'auto'
             EMPTYASNULL
             STATUPDATE OFF
@@ -167,20 +164,12 @@ class RedshiftStagingAggregate(
     private fun getFullS3Path(s3Key: String): String {
         return "s3://${s3Config.s3BucketName}/$s3Key"
     }
-
-    private fun createS3Client(): S3AsyncClient {
-        return S3AsyncClient.crtBuilder()
-            .credentialsProvider {
-                AwsBasicCredentials.create(s3Config.accessKeyId, s3Config.secretAccessKey)
-            }
-            .region(Region.of(s3Config.s3BucketRegion.ifEmpty { "us-east-1" }))
-            .build()
-    }
 }
 
 @Singleton
 class RedshiftAggregateFactory(
     private val dataSource: DataSource,
+    private val s3Client: S3AsyncClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val config: RedshiftV2Configuration,
     private val clock: Clock,
@@ -192,6 +181,7 @@ class RedshiftAggregateFactory(
         return RedshiftStagingAggregate(
             tableName,
             dataSource,
+            s3Client,
             config.s3Config,
             clock,
             stream.tableSchema,

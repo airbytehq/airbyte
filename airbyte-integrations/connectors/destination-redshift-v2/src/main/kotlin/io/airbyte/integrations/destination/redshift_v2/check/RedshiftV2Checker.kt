@@ -116,7 +116,7 @@ class RedshiftV2Checker(
                     BasicAWSCredentials(s3Config.accessKeyId, s3Config.secretAccessKey)
                 )
             )
-            .withRegion(s3Config.s3BucketRegion.ifEmpty { "us-east-1" })
+            .withRegion(s3Config.s3BucketRegion.toString())
             .build()
 
     override fun cleanup(config: RedshiftV2Configuration) {

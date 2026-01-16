@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.table.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import jakarta.inject.Singleton
+import software.amazon.awssdk.regions.Region
 
 data class RedshiftV2Configuration(
     val host: String,
@@ -42,7 +43,7 @@ data class RedshiftV2Configuration(
 data class S3StagingConfiguration(
     val s3BucketName: String,
     val s3BucketPath: String?,
-    val s3BucketRegion: String,
+    val s3BucketRegion: Region,
     val accessKeyId: String,
     val secretAccessKey: String,
     val fileNamePattern: String?,
@@ -64,7 +65,7 @@ class RedshiftV2ConfigurationFactory :
             S3StagingConfiguration(
                 s3BucketName = uploadMethod.s3BucketName,
                 s3BucketPath = uploadMethod.s3BucketPath,
-                s3BucketRegion = uploadMethod.s3BucketRegion,
+                s3BucketRegion = Region.of(uploadMethod.s3BucketRegion.ifEmpty { "us-east-1" }),
                 accessKeyId = uploadMethod.accessKeyId,
                 secretAccessKey = uploadMethod.secretAccessKey,
                 fileNamePattern = uploadMethod.fileNamePattern,
