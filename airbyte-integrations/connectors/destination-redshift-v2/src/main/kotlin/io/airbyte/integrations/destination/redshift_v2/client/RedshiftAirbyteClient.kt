@@ -187,37 +187,6 @@ class RedshiftAirbyteClient(
         }
     }
 
-    internal fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> {
-        try {
-            val sql = sqlGenerator.describeTable(tableName.namespace, tableName.name)
-            dataSource.connection.use { connection ->
-                connection.createStatement().use { statement ->
-                    val resultSet = statement.executeQuery(sql)
-                    val columnsInDb = mutableMapOf<String, ColumnType>()
-
-                    while (resultSet.next()) {
-                        val columnName = resultSet.getString("column_name")
-                        if (airbyteColumnNames.contains(columnName)) {
-                            continue
-                        }
-                        val rawDataType =
-                            resultSet.getString("data_type").uppercase().takeWhile { char ->
-                                char != '('
-                            }
-                        val dataType = normalizeRedshiftType(rawDataType)
-                        val nullable = resultSet.getString("is_nullable") == "YES"
-
-                        columnsInDb[columnName] = ColumnType(dataType, nullable)
-                    }
-
-                    return columnsInDb
-                }
-            }
-        } catch (e: SQLException) {
-            handleRedshiftPermissionError(e)
-        }
-    }
-
     internal fun getColumnsFromStream(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
@@ -244,7 +213,33 @@ class RedshiftAirbyteClient(
     // ========================================
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
-        return TableSchema(getColumnsFromDb(tableName))
+        try {
+            val sql = sqlGenerator.describeTable(tableName.namespace, tableName.name)
+            dataSource.connection.use { connection ->
+                connection.createStatement().use { statement ->
+                    val resultSet = statement.executeQuery(sql)
+                    val columnsInDb = mutableMapOf<String, ColumnType>()
+
+                    while (resultSet.next()) {
+                        val columnName = resultSet.getString("column_name")
+                        if (airbyteColumnNames.contains(columnName)) {
+                            continue
+                        }
+                        val rawDataType =
+                            resultSet.getString("data_type").uppercase().takeWhile { char ->
+                                char != '('
+                            }
+                        val dataType = normalizeRedshiftType(rawDataType)
+                        val nullable = resultSet.getString("is_nullable") == "YES"
+
+                        columnsInDb[columnName] = ColumnType(dataType, nullable)
+                    }
+                    return TableSchema(columnsInDb)
+                }
+            }
+        } catch (e: SQLException) {
+            handleRedshiftPermissionError(e)
+        }
     }
 
     override fun computeSchema(
