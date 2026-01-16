@@ -22,8 +22,6 @@ definitions:
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     grant_type: refresh_token
     token_refresh_endpoint: "https://{{ config['subdomain'] }}.zendesk.com/oauth/tokens"
-    refresh_request_headers:
-      Content-Type: "application/json"
     refresh_request_body:
       grant_type: "refresh_token"
       refresh_token: "{{ config['credentials']['refresh_token'] }}"
