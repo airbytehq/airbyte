@@ -362,6 +362,10 @@ nav a.navbar__link--active {
   border-bottom: 3px solid var(--ifm-color-primary);
 }
 
+/* Hide Ask AI button until Osano consent is granted */
+.kapa-ai-hidden {
+  display: none !important;
+}
 
 /* Header with button styling */
 .header-with-button {
