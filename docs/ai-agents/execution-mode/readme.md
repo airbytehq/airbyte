@@ -91,13 +91,18 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
 
 Create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud.
 
+You'll need:
+
+- **source_template_id**: The ID of the source template for the connector type. List available templates by calling `GET /api/v1/embedded/source-templates` with your scoped token.
+- **workspace_id**: Your workspace ID. Retrieve it by calling `GET /api/v1/embedded/scoped-token/info` with your scoped token.
+
 ```bash
-curl -X POST "https://api.airbyte.ai/v1/integrations/sources" \
-    -H "Authorization: Bearer {SCOPED_TOKEN}" \
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/sources" \
+    -H "Authorization: Bearer <scoped_token>" \
     -H "Content-Type: application/json" \
     -d '{
-      "source_template_id": "{SOURCE_TEMPLATE_ID}",
-      "workspace_id": "{WORKSPACE_ID}",
+      "source_template_id": "<source_template_id>",
+      "workspace_id": "<workspace_id>",
       "name": "...",
       "auth_config": {
          ...
@@ -129,7 +134,7 @@ connector = GongConnector(
 ...
 ```
 
-Once initialized, the connector works the same way as in local mode. The connector handles authentication and routing through Airbyte Cloud automatically.
+Once initialized, the connector works the same way as in local mode. The SDK handles the token exchange (application token → scoped token) automatically, so you don't need to manage tokens manually.
 
 </TabItem>
 <TabItem value="api" label="API">
