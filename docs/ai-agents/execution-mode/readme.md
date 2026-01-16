@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Using agent connectors in hosted execution mode
 
 ## Overview
@@ -52,7 +55,7 @@ Before using hosted execution mode, ensure you have:
 
    See [Connectors](../connectors) for a full list of connectors.
 
-## Setup: Create a connector
+## Authentication
 
 Before running operations in hosted mode, you must create a connector instance in Airbyte Cloud. This stores your API credentials securely and associates them with a workspace.
 
@@ -84,7 +87,7 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
   }'
 ```
 
-### Step 3: Create the connector
+## Create a connector
 
 Create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud.
 
@@ -102,15 +105,16 @@ curl -X POST "https://api.airbyte.ai/v1/integrations/sources" \
     }'
 ```
 
-Note the returned connector instance ID for reference.
+Note the returned connector ID for reference.
 
 ## Run operations in hosted mode
 
-Once you create your connector instance, you can use the connector in hosted mode.
+Once you create your connector, you can use the connector in hosted mode.
 
-### Initialize the connector
+<Tabs>
+<TabItem value="python" label="Python" default>
 
-Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the external user ID (workspace name):
+Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the external user ID (workspace name).
 
 ```python title="agent.py"
 from airbyte_ai_gong import GongConnector
@@ -121,8 +125,6 @@ connector = GongConnector(
     airbyte_client_secret="<your_client_secret>",
 )
 ```
-
-### Execute operations
 
 Operations work the same way as local mode. The connector handles authentication and routing through Airbyte Cloud.
 
@@ -191,27 +193,25 @@ async def main():
     if calls_result.data:
         print(f"Found {len(calls_result.data)} calls")
 
-
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### API execution
+</TabItem>
+<TabItem value="api" label="API">
 
-You can also execute connector operations directly via the REST API without using the Python SDK.
-
-#### Look up your connector instance
+You can execute connector operations directly via the REST API.
 
 First, retrieve your connector instance ID using your external user ID and connector definition ID:
 
-```bash
+```bash title="Request"
 curl --location 'https://api.airbyte.ai/api/v1/connectors/instances_for_user?external_user_id=<your_workspace_name>&definition_id=32382e40-3b49-4b99-9c5c-4076501914e7' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>'
 ```
 
 The response contains your connector instance ID:
 
-```json
+```json title="Response"
 {
   "instances": [
     {
@@ -221,8 +221,6 @@ The response contains your connector instance ID:
   ]
 }
 ```
-
-#### Execute an operation
 
 Use the connector instance ID to execute operations:
 
@@ -256,6 +254,9 @@ The response contains the operation result:
   }
 }
 ```
+
+</TabItem>
+</Tabs>
 
 ## Troubleshooting
 
