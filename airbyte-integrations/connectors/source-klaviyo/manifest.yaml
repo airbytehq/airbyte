@@ -167,7 +167,7 @@ definitions:
           fields:
             - path:
                 - updated
-              value: "{{ ((record.get('attributes', {}).get('subscriptions', {}).get('email', {}).get('marketing', {}).get('suppression') or []) | first | default({})).get('timestamp') or none }}"
+              value: "{{ (record.attributes.subscriptions.email.marketing.suppression | default([]) | sort(attribute='timestamp', reverse=True) | first | default({})).timestamp }}"
         - type: AddFields
           fields:
             - path:
