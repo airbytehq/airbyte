@@ -1,6 +1,6 @@
 # Extract Bulk CDK Architecture
 
-**Summary:** The Airbyte Extract Bulk CDK is a Kotlin-based framework that orchestrates source connector read operations. You implement 4-6 database-specific components (configuration, metadata querier, partition factory, query generator). The CDK handles stream orchestration, state management, concurrency, and the Airbyte protocol. Result: Write ~6 custom components, get all sync modes (full refresh, incremental cursor-based, incremental CDC) with resumability for free.
+**Summary:** The Airbyte Extract Bulk CDK is a Kotlin-based framework that orchestrates source connector read operations. The JDBC and CDC toolkits provide stock implementations for all core components (configuration, metadata querier, partition factory, query generator, state management). Database connectors customize only what's needed for their specific dialect or features. The CDK handles stream orchestration, state management, concurrency, and the Airbyte protocol. Result: Extend toolkit defaults where needed, get all sync modes (full refresh, incremental cursor-based, incremental CDC) with resumability for free.
 
 ---
 
@@ -1083,28 +1083,54 @@ class PostgresSourceDebeziumOperations {
 
 ## What You Implement
 
-### Core Custom Components (Always)
+**Important:** The JDBC and CDC toolkits already provide stock implementations for all components. You only customize what's specific to your database dialect or unique features.
 
-| Component | Effort | Purpose | Lines of Code |
-|-----------|--------|---------|---------------|
-| **Configuration** | Low | Config spec + factory | 150-250 |
-| **Metadata Querier** | Low-Medium | Schema discovery (or extend JdbcMetadataQuerier) | 50-200 |
-| **Partition Factory** | High | Partition creation & splitting logic | 300-500 |
-| **Partition Types** | Medium | Define partition hierarchy | 200-400 |
-| **Query Generator** | Medium | SQL generation for your dialect | 200-300 |
-| **Field Type Mapper** | Low-Medium | Database type → FieldType mapping | 100-200 |
+### Core Components (Customize as Needed)
 
-### Optional Components (If Needed)
+| Component | Stock Implementation | When to Customize | Typical Effort |
+|-----------|---------------------|-------------------|----------------|
+| **Configuration** | Generic spec template | Always (database-specific params) | 150-250 LOC |
+| **Metadata Querier** | `JdbcMetadataQuerier` | Only if non-standard catalog API | 0-200 LOC (usually extend base) |
+| **Partition Factory** | Generic JDBC factory | Customize for PK vs CTID vs custom strategy | 100-500 LOC |
+| **Partition Types** | Standard partitions provided | Only if unique partition requirements | 0-400 LOC (often reuse) |
+| **Query Generator** | Default SQL generator | Customize for dialect (quoting, LIMIT syntax) | 100-300 LOC |
+| **Field Type Mapper** | Common type mappings | Add database-specific types | 50-200 LOC |
 
-| Component | When Needed | Lines of Code |
-|-----------|-------------|---------------|
-| **CDC Operations** | If CDC support | 300-500 |
-| **Custom PartitionsCreator** | If special partition strategy | 200-300 |
-| **Custom SelectQuerier** | If non-standard ResultSet handling | 100-200 |
-| **State Migration** | If upgrading from legacy connector | 100-200 |
-| **Custom Field Types** | If database-specific types (hstore, geometry, etc.) | 50-150 per type |
+### Optional Customizations
 
-**Total Effort:** ~1500-2500 lines of code (non-CDC), ~2000-3500 lines (with CDC)
+| Component | Stock Implementation | When to Customize | Typical Effort |
+|-----------|---------------------|-------------------|----------------|
+| **CDC Operations** | Debezium framework | Always if CDC needed (DB-specific) | 300-500 LOC |
+| **Custom PartitionsCreator** | Sequential + Concurrent creators | Only for advanced partition strategies | 0-300 LOC |
+| **Custom SelectQuerier** | Standard JDBC ResultSet handling | Only for special types or performance | 0-200 LOC |
+| **State Migration** | N/A | Only when upgrading from legacy | 100-200 LOC |
+| **Custom Field Types** | Common types (String, Int, etc.) | For DB-specific types (hstore, geometry) | 50-150 LOC per type |
+
+### Typical Implementation Patterns
+
+**Minimal Connector (Standard SQL Database):**
+- Extend `JdbcMetadataQuerier` as-is
+- Customize `Configuration` for connection params
+- Override `Query Generator` for identifier quoting
+- Add `Field Type Mapper` for any unique types
+- **Total:** ~300-500 lines of code
+
+**Standard Connector (MySQL-like):**
+- All minimal components
+- Customize `Partition Factory` for PK-based partitioning
+- Add partition types for snapshot + incremental
+- **Total:** ~800-1200 lines of code
+
+**Advanced Connector (Postgres-like):**
+- All standard components
+- Add CTID/XMIN partition types
+- Implement filenode tracking
+- Add custom field types (arrays, geometric types)
+- **Total:** ~1500-2500 lines of code
+
+**With CDC:**
+- Add any of above + CDC Operations
+- **Additional:** ~300-500 lines of code
 
 ---
 
@@ -1378,49 +1404,64 @@ WHERE xmin::text::bigint >= 1000 AND xmin::text::bigint <= 2000;
 
 ## Summary
 
-**What you must provide:**
+**The Development Model:**
 
-- [ ] Configuration (spec + factory)
-- [ ] Metadata Querier (schema discovery)
-- [ ] Partition Factory (decision logic)
-- [ ] Partition Types (define hierarchy)
-- [ ] Query Generator (SQL for your dialect)
-- [ ] Field Type Mapper (DB types → FieldTypes)
-- [ ] CDC Operations (if CDC enabled)
+The Extract Bulk CDK uses a **toolkit-first approach**. The JDBC and CDC toolkits provide complete, production-ready stock implementations. You extend and customize only what's specific to your database.
 
-**What the CDK provides:**
+**What the CDK Core provides (automatic):**
 
-- [ ] Source Runner (CLI, operation dispatch)
-- [ ] RootReader (feed orchestration, coroutines)
-- [ ] FeedReader (partition execution, state management)
-- [ ] StateManager (checkpoint tracking, emission)
-- [ ] Output handling (message serialization)
-- [ ] Resource management (connections, concurrency limits)
+- ✅ Source Runner (CLI, operation dispatch)
+- ✅ RootReader (feed orchestration, coroutines)
+- ✅ FeedReader (partition execution, state management)
+- ✅ StateManager (checkpoint tracking, emission)
+- ✅ Output handling (message serialization)
+- ✅ Resource management (connections, concurrency limits)
+- ✅ Exception handling framework
 
-**What JDBC Toolkit provides:**
+**What JDBC Toolkit provides (stock implementations):**
 
-- [ ] JdbcMetadataQuerier (JDBC-based discovery)
-- [ ] JdbcPartitionsCreator (sequential/concurrent execution)
-- [ ] JdbcPartitionReader (query execution, ResultSet streaming)
-- [ ] Sampling and fetch size calculation
-- [ ] Partition splitting algorithms
+- ✅ JdbcMetadataQuerier (JDBC-based discovery)
+- ✅ JdbcPartitionsCreator (sequential/concurrent execution)
+- ✅ JdbcPartitionReader (query execution, ResultSet streaming)
+- ✅ Standard partition types (snapshot, cursor, PK-based)
+- ✅ Sampling and fetch size calculation
+- ✅ Partition splitting algorithms (numeric, string, temporal)
+- ✅ Default query generator (standard SQL)
+- ✅ Common field types (String, Int, Long, Boolean, etc.)
 
-**What CDC Toolkit provides:**
+**What CDC Toolkit provides (stock implementations):**
 
-- [ ] CdcPartitionsCreator (Debezium engine lifecycle)
-- [ ] CdcPartitionReader (CDC event consumption)
-- [ ] State file management (Debezium offsets, schema history)
-- [ ] Heartbeat handling
+- ✅ CdcPartitionsCreator (Debezium engine lifecycle)
+- ✅ CdcPartitionReader (CDC event consumption)
+- ✅ State file management (Debezium offsets, schema history)
+- ✅ Heartbeat handling
+- ✅ Debezium configuration framework
 
-**Result:**
+**What you customize (only as needed):**
 
-- [ ] Full Refresh works (with/without resumability)
-- [ ] Incremental (cursor-based) works
-- [ ] Incremental (XMIN - Postgres) works
-- [ ] CDC works (if implemented)
-- [ ] State is tracked for resumability
-- [ ] Errors are properly classified
-- [ ] Concurrent reads for large tables
+- 🔧 Configuration (always - your database connection params)
+- 🔧 Query Generator (customize for SQL dialect: quoting, LIMIT syntax)
+- 🔧 Field Type Mapper (add database-specific types)
+- 🔧 Metadata Querier (extend if non-standard catalog API)
+- 🔧 Partition Factory (customize if special partitioning strategy)
+- 🔧 Partition Types (add if unique requirements like CTID, XMIN)
+- 🔧 CDC Operations (implement if CDC support needed)
+- 🔧 Custom Field Types (for hstore, geometry, arrays, etc.)
 
-**Effort:** ~1-2 weeks for experienced developer (core + JDBC toolkit + testing)
-**With CDC:** ~2-3 weeks (adds Debezium integration + validation)
+**Out-of-the-box capabilities:**
+
+- ✅ Full Refresh (with resumability if PK exists)
+- ✅ Incremental cursor-based (two-phase: snapshot → incremental)
+- ✅ CDC streaming (with Debezium)
+- ✅ State tracking and resumability
+- ✅ Automatic error classification
+- ✅ Concurrent reads for large tables
+- ✅ Adaptive fetch sizing
+- ✅ PK-based partition splitting
+
+**Typical implementation effort:**
+
+- **Minimal connector** (standard SQL, use all defaults): ~300-500 LOC, 2-3 days
+- **Standard connector** (MySQL-like, customize partitioning): ~800-1200 LOC, 1 week
+- **Advanced connector** (Postgres-like, custom types + partitions): ~1500-2500 LOC, 1-2 weeks
+- **With CDC** (add to any above): +300-500 LOC, +3-5 days
