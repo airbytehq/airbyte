@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.util.serializeToString
@@ -49,29 +50,26 @@ class RedshiftStagingAggregate(
     private val dataSource: DataSource,
     private val s3Config: S3StagingConfiguration,
     private val clock: Clock,
-    private val finalSchema: Map<String, ColumnType>,
+    private val tableSchema: StreamTableSchema,
 ) : Aggregate {
-
     // Columns that are SUPER type need JSON serialization for all values (including primitives)
     private val superColumns: Set<String> by lazy {
-        finalSchema.filter { it.value.type == RedshiftDataType.SUPER.typeName }.keys
+        tableSchema.columnSchema.finalSchema
+            .filter { it.value.type == RedshiftDataType.SUPER.typeName }
+            .keys
     }
+    private val columns: List<String> = tableSchema.columnSchema.finalSchema.keys.toList()
 
     private val buffer = mutableListOf<Map<String, AirbyteValue>>()
-    private var columnOrder: List<String>? = null
     private val s3Client: AmazonS3 by lazy { createS3Client() }
 
     override fun accept(record: RecordDTO) {
-        if (columnOrder == null) {
-            columnOrder = record.fields.keys.toList()
-        }
         buffer.add(record.fields)
     }
 
     override suspend fun flush() {
         if (buffer.isEmpty()) return
 
-        val columns = columnOrder ?: return
         val s3Key = generateS3Key()
 
         try {
@@ -224,6 +222,12 @@ class RedshiftAggregateFactory(
         val tableName = streamStateStore.get(key)!!.tableName
         val stream = catalog.getStream(key)
         val finalSchema: Map<String, ColumnType> = stream.tableSchema.columnSchema.finalSchema
-        return RedshiftStagingAggregate(tableName, dataSource, config.s3Config, clock, finalSchema)
+        return RedshiftStagingAggregate(
+            tableName,
+            dataSource,
+            config.s3Config,
+            clock,
+            stream.tableSchema
+        )
     }
 }
