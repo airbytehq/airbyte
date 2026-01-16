@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -164,3 +165,14 @@ data class Meta(
             AirbyteRecordMessageMetaChange().withField(field).withChange(change).withReason(reason)
     }
 }
+
+fun Meta.Change.toAirbyteValue(): ObjectValue =
+    ObjectValue(
+        linkedMapOf(
+            "field" to StringValue(field),
+            "change" to StringValue(change.name),
+            "reason" to StringValue(reason.name)
+        )
+    )
+
+fun List<Meta.Change>.toAirbyteValues(): List<ObjectValue> = map { it.toAirbyteValue() }
