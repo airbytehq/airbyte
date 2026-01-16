@@ -2,26 +2,24 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.snowflake.cdk
+package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.dataflow.DestinationLifecycle
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
-@Primary
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "write")
-class WriteOperationV2(
-    private val d: DestinationLifecycle,
+class WriteOperation(
+    private val destinationLifecycle: DestinationLifecycle,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
     override fun execute() {
-        log.info { "Running new pipe..." }
-        d.run()
-        log.info { "New pipe complete :tada:" }
+        log.info { "Running destination write..." }
+        destinationLifecycle.run()
+        log.info { "Destination write complete." }
     }
 }
