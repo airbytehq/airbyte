@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.redshift_v2.schema.toRedshiftCompatibleName
+import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.UUID
@@ -31,6 +32,7 @@ fun String.andLog(): String {
 class RedshiftSqlGenerator(
     private val columnUtils: RedshiftColumnUtils,
     private val sqlNameUtils: RedshiftSqlNameUtils,
+    private val config: RedshiftV2Configuration,
 ) {
     // Hard delete is always enabled for CDC - Redshift supports it
     private val hardDeleteEnabled: Boolean = true
@@ -89,7 +91,8 @@ class RedshiftSqlGenerator(
     }
 
     fun dropTable(tableName: TableName): String {
-        return "DROP TABLE IF EXISTS ${sqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        val cascadeModifier = if (config.dropCascade) "CASCADE" else ""
+        return "DROP TABLE IF EXISTS ${sqlNameUtils.fullyQualifiedName(tableName)}$cascadeModifier".andLog()
     }
 
     fun countTable(tableName: TableName): String {

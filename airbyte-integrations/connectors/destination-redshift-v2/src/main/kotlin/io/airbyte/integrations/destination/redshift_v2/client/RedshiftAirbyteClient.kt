@@ -15,7 +15,6 @@ import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
 import io.airbyte.integrations.destination.redshift_v2.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.redshift_v2.sql.RedshiftColumnUtils
 import io.airbyte.integrations.destination.redshift_v2.sql.RedshiftSqlGenerator
@@ -33,7 +32,6 @@ class RedshiftAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: RedshiftSqlGenerator,
     private val columnUtils: RedshiftColumnUtils,
-    private val config: RedshiftV2Configuration,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
 
     private val airbyteColumnNames = columnUtils.getFormattedDefaultColumnNames(false).toSet()
@@ -135,13 +133,7 @@ class RedshiftAirbyteClient(
     }
 
     override suspend fun dropTable(tableName: TableName) {
-        val dropSql =
-            if (config.dropCascade) {
-                "${sqlGenerator.dropTable(tableName)} CASCADE"
-            } else {
-                sqlGenerator.dropTable(tableName)
-            }
-        execute(dropSql)
+        execute(sqlGenerator.dropTable(tableName))
     }
 
     override suspend fun getGenerationId(tableName: TableName): Long =
