@@ -138,9 +138,16 @@ data class Stream(
 ) : Feed
 ```
 
-### PartitionsCreatorFactory (You Implement)
+### PartitionsCreatorFactory (Implement Only as Needed)
 
 **Purpose:** Create `PartitionsCreator` instances for a feed
+
+**When to Implement:**
+
+Most connectors can use the stock JDBC toolkit implementations directly. Only implement a custom factory when you need:
+- Custom partition decision logic
+- Database-specific partition types (like CTID, XMIN)
+- Special handling for CDC vs non-CDC modes
 
 **Your Implementation (Pattern):**
 
@@ -162,6 +169,8 @@ class MySourceJdbcPartitionsCreatorFactory(
     }
 }
 ```
+
+**Note:** For standard JDBC connectors, the toolkit provides a default factory that works out-of-the-box.
 
 ### PartitionsCreator (Toolkit or You Implement)
 
