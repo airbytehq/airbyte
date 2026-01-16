@@ -92,6 +92,7 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
 Create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud.
 
 You'll need:
+
 - **source_template_id**: The ID of the source template for the connector type. List available templates by calling `GET /api/v1/embedded/source-templates` with your scoped token.
 - **workspace_id**: Your workspace ID. Retrieve it by calling `GET /api/v1/embedded/scoped-token/info` with your scoped token.
 
