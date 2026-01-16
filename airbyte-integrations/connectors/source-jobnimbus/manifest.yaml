@@ -833,6 +833,14 @@ schemas:
         type:
           - string
           - "null"
+      source:
+        type:
+          - integer
+          - "null"
+      source_name:
+        type:
+          - string
+          - "null"
       zip:
         type:
           - string
