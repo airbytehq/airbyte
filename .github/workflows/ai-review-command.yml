@@ -74,6 +74,7 @@ jobs:
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
+          playbook-macro: "!pr_ai_review"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
           start-message: |
