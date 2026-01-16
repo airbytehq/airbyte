@@ -33,6 +33,43 @@ ReadOperation.execute()
           → Emit STATE messages
 ```
 
+**Sequential vs Concurrent Connectors:**
+
+Connectors can operate in two modes for reading partitions:
+
+| Mode | Within a Stream | Across Streams | Use Case |
+|------|----------------|----------------|----------|
+| **Sequential** | Partitions read serially (one after another) | Streams read concurrently (up to `maxConcurrency` threads) | Views, tables without PK, or databases with connection limits |
+| **Concurrent** | Partitions read in parallel (up to `maxConcurrency` threads) | Streams also read concurrently | Large tables with PK, high-throughput databases |
+
+**Key Points:**
+
+- **Sequential connectors** read partitions of a single stream (table) serially, but can still read partitions from *different* streams concurrently up to the configured `maxConcurrency` limit.
+- **Concurrent connectors** attempt to run different partitions of the *same* stream concurrently (ordered but parallel) up to the `maxConcurrency` limit, plus partitions from different streams.
+- Both modes respect the `maxConcurrency` configuration parameter (typically 8-10 concurrent operations).
+
+**Example Flow (Sequential Connector, maxConcurrency=4):**
+
+```
+Time →
+Stream A: [Partition 1] → [Partition 2] → [Partition 3]
+Stream B: [Partition 1] → [Partition 2]
+Stream C: [Partition 1] → [Partition 2] → [Partition 3] → [Partition 4]
+Stream D: [Partition 1]
+
+All 4 streams run concurrently, but within each stream, partitions are serial.
+```
+
+**Example Flow (Concurrent Connector, maxConcurrency=4):**
+
+```
+Time →
+Stream A: [Partition 1, 2, 3] ← all run concurrently
+Stream B: [Partition 1, 2] ← both run concurrently
+
+With maxConcurrency=4, Stream A might run 3 partitions + Stream B runs 1 partition = 4 concurrent operations
+```
+
 ### Data Flow Pipeline
 
 **Database → Airbyte Platform:**
