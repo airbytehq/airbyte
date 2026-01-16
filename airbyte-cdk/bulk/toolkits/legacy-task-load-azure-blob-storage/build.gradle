@@ -5,7 +5,7 @@ dependencies {
     api("com.azure:azure-storage-blob-batch:12.27.1")
     api("com.azure:azure-identity:1.13.2")
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-aws')
-    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage')
 
     testImplementation("io.mockk:mockk:1.13.16")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")

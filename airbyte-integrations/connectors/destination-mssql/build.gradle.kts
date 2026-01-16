@@ -11,7 +11,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-azure-blob-storage", "legacy-task-load-db")
+    toolkits = listOf("legacy-task-load-azure-blob-storage", "legacy-task-load-db")
     useLegacyTaskLoader = true
 }
 
