@@ -309,8 +309,3 @@ class RedshiftAirbyteClient(
         }
     }
 }
-
-fun DataSource.execute(query: String): ResultSet =
-    this.connection.use { connection ->
-        connection.createStatement().use { it.executeQuery(query) }
-    }
