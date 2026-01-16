@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
@@ -52,7 +53,7 @@ internal class DestinationMessageTest {
     private val uuidGenerator = UUIDGenerator()
 
     private fun factory(
-        requireCheckpointKey: Boolean = false,
+        dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
         namespaceMapper: NamespaceMapper = NamespaceMapper()
     ) =
         DestinationMessageFactory(
@@ -88,7 +89,7 @@ internal class DestinationMessageTest {
                     )
                 )
             ),
-            requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey,
+            dataChannelMedium = dataChannelMedium,
             namespaceMapper = namespaceMapper,
             uuidGenerator = uuidGenerator,
         )
@@ -221,7 +222,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
                 )
 
-        val factory = factory(requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val parsedMessage = convert(factory, inputMessage) as StreamCheckpoint
 
         assertNotNull(parsedMessage.checkpointKey)
@@ -263,7 +264,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
                 )
 
-        val factory = factory(requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val parsedMessage = convert(factory, inputMessage) as GlobalCheckpoint
 
         assertNotNull(parsedMessage.checkpointKey)
@@ -298,7 +299,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
                 )
 
-        val factory = factory(requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
 
         Assertions.assertThrows(IllegalStateException::class.java) {
             convert(factory, inputMessage)
@@ -329,7 +330,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
                 )
 
-        val factory = factory(requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
 
         Assertions.assertThrows(IllegalStateException::class.java) {
             convert(factory, inputMessage)
@@ -428,7 +429,7 @@ internal class DestinationMessageTest {
 
     @Test
     fun `message factory throws if required checkpoint key missing from state`() {
-        val factory = factory(requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val inputMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
@@ -450,7 +451,7 @@ internal class DestinationMessageTest {
 
     @Test
     fun `message factory throws if required checkpoint id missing from record`() {
-        val factory = factory(requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val inputMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
@@ -526,7 +527,7 @@ internal class DestinationMessageTest {
         val factory =
             DestinationMessageFactory(
                 catalog = catalog,
-                requireCheckpointIdOnRecordAndKeyOnState = true,
+                dataChannelMedium = DataChannelMedium.SOCKET,
                 namespaceMapper = NamespaceMapper(),
                 uuidGenerator = uuidGenerator,
             )
@@ -578,7 +579,7 @@ internal class DestinationMessageTest {
 
     @Test
     fun `message factory creates control message from protobuf-wrapped airbyte message`() {
-        val factory = factory(requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val inputStateMessage =
             AirbyteMessageProtobuf.newBuilder()
                 .setAirbyteProtocolMessage(
@@ -612,7 +613,7 @@ internal class DestinationMessageTest {
 
     @Test
     fun `message factory creates heartbeat from protobuf heartbeat`() {
-        val factory = factory(requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val heartbeatMessage =
             AirbyteMessageProtobuf.newBuilder()
                 .setProbe(AirbyteProbeMessageProtobuf.newBuilder().build())

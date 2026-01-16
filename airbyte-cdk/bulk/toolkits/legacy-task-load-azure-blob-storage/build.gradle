@@ -1,6 +1,6 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
-    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader')
     api("com.azure:azure-storage-blob:12.31.1")
     api("com.azure:azure-storage-blob-batch:12.27.1")
     api("com.azure:azure-identity:1.13.2")

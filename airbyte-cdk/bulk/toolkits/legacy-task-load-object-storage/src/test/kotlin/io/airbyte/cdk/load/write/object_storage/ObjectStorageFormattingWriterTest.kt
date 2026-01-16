@@ -18,10 +18,6 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.StandardByteArrayOutputStream
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.schema.model.ColumnSchema
-import io.airbyte.cdk.load.schema.model.StreamTableSchema
-import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -86,17 +82,6 @@ private val stream =
         minimumGenerationId = 0,
         syncId = 123,
         namespaceMapper = NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
-        tableSchema =
-            StreamTableSchema(
-                columnSchema =
-                    ColumnSchema(
-                        inputSchema = mapOf(),
-                        inputToFinalColumnNames = mapOf(),
-                        finalSchema = mapOf(),
-                    ),
-                importType = Append,
-                tableNames = TableNames(finalTableName = TableName("namespace", "test")),
-            ),
     )
 
 private val record =

@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.check
 
-import io.airbyte.cdk.load.command.DestinationStream
-
 /**
  * A check operation that is run before the destination is used.
  *
@@ -20,9 +18,4 @@ import io.airbyte.cdk.load.command.DestinationStream
 interface DestinationCheckerV2 {
     fun check()
     fun cleanup() {}
-}
-
-// TODO the cleaner maybe should also be looking for old test tables, a la DestinationCleaner??
-fun interface CheckCleanerV2 {
-    fun cleanup(stream: DestinationStream)
 }

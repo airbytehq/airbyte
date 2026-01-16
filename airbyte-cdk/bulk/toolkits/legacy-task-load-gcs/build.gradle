@@ -1,6 +1,6 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
-    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-gcp')
     // This is because we are building a client wrapper around S3.
