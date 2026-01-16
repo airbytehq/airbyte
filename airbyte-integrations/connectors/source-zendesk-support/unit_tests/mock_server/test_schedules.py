@@ -58,7 +58,7 @@ class TestSchedulesStreamFullRefresh(TestCase):
         api_token_authenticator = self.get_authenticator(self._config)
 
         http_mocker.get(
-            self._base_schedules_request(api_token_authenticator).build(),
+            self._base_schedules_request(api_token_authenticator).with_any_query_params().build(),
             SchedulesResponseBuilder.schedules_response().with_record(SchedulesRecordBuilder.schedules_record()).build(),
         )
 
@@ -82,6 +82,7 @@ class TestSchedulesStreamFullRefresh(TestCase):
             ZendeskSupportRequestBuilder.schedules_endpoint(api_token_authenticator)
             .with_page_size(100)
             .with_query_param("page", "2")
+            .with_any_query_params()
             .build()
         )
 
@@ -94,7 +95,7 @@ class TestSchedulesStreamFullRefresh(TestCase):
 
         # Page 1: has records and provides next_page URL
         http_mocker.get(
-            self._base_schedules_request(api_token_authenticator).build(),
+            self._base_schedules_request(api_token_authenticator).with_any_query_params().build(),
             SchedulesResponseBuilder.schedules_response(next_page_http_request)
             .with_record(record1)
             .with_record(record2)

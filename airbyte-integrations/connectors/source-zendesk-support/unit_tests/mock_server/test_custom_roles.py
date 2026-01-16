@@ -45,7 +45,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         api_token_authenticator = self.get_authenticator(self._config)
 
         http_mocker.get(
-            self._base_custom_roles_request(api_token_authenticator).build(),
+            self._base_custom_roles_request(api_token_authenticator).with_any_query_params().build(),
             CustomRolesResponseBuilder.custom_roles_response().with_record(CustomRolesRecordBuilder.custom_roles_record()).build(),
         )
 
@@ -66,7 +66,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
 
         # Build the next page request using the request builder
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator).with_query_param("page", "2").build()
+            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator).with_query_param("page", "2").with_any_query_params().build()
         )
 
         # Create records for page 1
@@ -78,7 +78,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
 
         # Page 1: has records and provides next_page URL
         http_mocker.get(
-            self._base_custom_roles_request(api_token_authenticator).build(),
+            self._base_custom_roles_request(api_token_authenticator).with_any_query_params().build(),
             CustomRolesResponseBuilder.custom_roles_response(next_page_http_request)
             .with_record(record1)
             .with_record(record2)
