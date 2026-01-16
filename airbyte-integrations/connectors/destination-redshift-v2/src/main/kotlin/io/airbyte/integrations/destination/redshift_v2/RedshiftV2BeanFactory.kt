@@ -11,11 +11,7 @@ import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.cdk.ssh.SshConnectionOptions
-import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
-import io.airbyte.cdk.ssh.SshNoTunnelMethod
-import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
-import io.airbyte.cdk.ssh.createTunnelSession
+import io.airbyte.cdk.ssh.startTunnelAndGetEndpoint
 import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
 import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2ConfigurationFactory
 import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Specification
@@ -29,7 +25,6 @@ import java.nio.charset.StandardCharsets
 import java.sql.Connection
 import java.util.logging.Logger
 import javax.sql.DataSource
-import org.apache.sshd.common.util.net.SshdSocketAddress
 
 private val log = KotlinLogging.logger {}
 
@@ -64,17 +59,7 @@ class RedshiftV2BeanFactory {
     @Singleton
     @Named("resolvedEndpoint")
     fun resolvedEndpoint(config: RedshiftV2Configuration): String {
-        return when (val ssh = config.tunnelMethod) {
-            is SshKeyAuthTunnelMethod,
-            is SshPasswordAuthTunnelMethod -> {
-                val remote = SshdSocketAddress(config.host, config.port)
-                val sshConnectionOptions: SshConnectionOptions =
-                    SshConnectionOptions.fromAdditionalProperties(emptyMap())
-                val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
-                "${tunnel.address.hostName}:${tunnel.address.port}"
-            }
-            is SshNoTunnelMethod -> "${config.host}:${config.port}"
-        }
+        return startTunnelAndGetEndpoint(config.tunnelMethod, config.host, config.port)
     }
 
     /**
