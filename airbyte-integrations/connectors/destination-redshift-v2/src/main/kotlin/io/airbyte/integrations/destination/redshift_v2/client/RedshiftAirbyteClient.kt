@@ -144,7 +144,7 @@ class RedshiftAirbyteClient(
                     if (resultSet.next()) {
                         resultSet.getLong(columnUtils.getGenerationIdColumnName())
                     } else {
-                        log.warn {
+                        log.info {
                             "No generation ID found for table ${tableName.toPrettyString()}, returning 0"
                         }
                         0L
