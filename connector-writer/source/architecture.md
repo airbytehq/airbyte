@@ -419,6 +419,76 @@ class MySqlSourceMetadataQuerier(
 
 The JDBC toolkit (`airbyte-cdk/bulk/toolkits/extract-jdbc/`) provides stock implementations for relational database sources.
 
+### JdbcPartition (Core Concept)
+
+**Purpose:** Represents a unit of work for reading data from a stream
+
+A partition defines:
+- **What data to read:** Table/stream, columns, WHERE clause
+- **How to read it:** Query parameters, ordering, limits
+- **How to track progress:** State values for resumability
+
+**Stock Partition Types:**
+
+The toolkit provides standard partition types that cover most use cases:
+
+| Partition Type | Use Case | Resumable | Query Pattern |
+|----------------|----------|-----------|---------------|
+| **SnapshotPartition** | Full refresh with PK | ✅ | `SELECT * FROM t WHERE pk > ? ORDER BY pk LIMIT ?` |
+| **NonResumableSnapshotPartition** | Views, no PK tables | ❌ | `SELECT * FROM t` |
+| **SnapshotWithCursorPartition** | Incremental cold start | ✅ | `SELECT * FROM t WHERE pk > ? AND cursor <= ? ORDER BY pk` |
+| **CursorIncrementalPartition** | Incremental warm start | ✅ | `SELECT * FROM t WHERE cursor > ? AND cursor <= ? ORDER BY cursor` |
+
+**Key Properties:**
+
+```kotlin
+interface JdbcPartition {
+    val stream: Stream
+    val completeState: OpaqueStateValue      // State when partition is done
+    fun incompleteState(): OpaqueStateValue  // State for mid-partition checkpoint
+
+    // Partition lifecycle
+    fun isSplittable(): Boolean              // Can this be split for concurrency?
+    fun isResumable(): Boolean               // Can this be interrupted and resumed?
+}
+```
+
+**Resumable vs Non-Resumable:**
+
+- **Resumable partitions** use LIMIT clauses with adaptive sizing, can checkpoint mid-read
+- **Non-resumable partitions** must complete in one execution, suitable for small tables/views
+
+**Splittable vs Non-Splittable:**
+
+- **Splittable partitions** can be divided into multiple concurrent partitions (by PK ranges, page numbers, etc.)
+- **Non-splittable partitions** must be read as a single unit
+
+**Custom Partition Types (Only if Needed):**
+
+Extend for database-specific features:
+
+```kotlin
+// Example: Postgres CTID-based partition
+class CtidBasedSnapshotPartition(
+    override val stream: Stream,
+    val lowerBound: Ctid?,
+    val upperBound: Ctid?,
+    val filenode: Filenode
+) : JdbcPartition {
+
+    override fun isSplittable() = true
+    override fun isResumable() = true
+
+    override val completeState = OpaqueStateValue(
+        JsonObject(
+            "ctid" to upperBound.toString(),
+            "filenode" to filenode.toString(),
+            "completed" to true
+        )
+    )
+}
+```
+
 ### JdbcPartitionFactory (Stock Implementation Provided)
 
 **Purpose:** Create and split partitions based on sync mode and state
