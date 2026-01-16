@@ -419,67 +419,85 @@ class MySqlSourceMetadataQuerier(
 
 The JDBC toolkit (`airbyte-cdk/bulk/toolkits/extract-jdbc/`) provides battle-tested implementations for relational database sources.
 
-### JdbcPartitionFactory (You Extend)
+### JdbcPartitionFactory (Stock Implementation Provided)
 
 **Purpose:** Create and split partitions based on sync mode and state
 
-**Key Responsibilities:**
+**Stock Implementation:**
 
-1. **Partition Creation:** Decide which partition type based on:
+The JDBC toolkit provides a complete `JdbcPartitionFactory` implementation that handles standard partition creation logic. Most connectors use this implementation directly without customization.
+
+**Key Responsibilities (Handled by Toolkit):**
+
+1. **Partition Creation:** Automatically decides partition type based on:
    - Sync mode (FULL_REFRESH or INCREMENTAL)
-   - Has state? (cold start vs warm start)
-   - Has primary key?
-   - Has cursor field?
-   - Is CDC mode?
+   - State presence (cold start vs warm start)
+   - Primary key availability
+   - Cursor field configuration
+   - CDC mode
 
-2. **Partition Splitting:** Break large partitions into smaller chunks for concurrency
+2. **Partition Splitting:** Automatically breaks large partitions into smaller chunks for concurrent reading
 
-3. **State Management:** Track per-stream state (cursor values, PK checkpoints, etc.)
+3. **State Management:** Tracks per-stream state (cursor values, PK checkpoints, etc.)
 
-**Implementation Pattern:**
+**When to Extend:**
+
+Only extend `JdbcPartitionFactory` if you need:
+- **Custom partition types** (e.g., CTID-based for Postgres, XMIN for Postgres)
+- **Database-specific split logic** (e.g., page-based splitting instead of PK-based)
+- **Special state validation** (e.g., filenode tracking for Postgres)
+
+**Extension Pattern (Only if Needed):**
 
 ```kotlin
 @Singleton
-class MySqlSourceJdbcPartitionFactory(
+class PostgresSourceJdbcPartitionFactory(
     override val sharedState: JdbcSharedState,
-    val operations: MySqlSourceOperations,
-    val config: MySqlSourceConfiguration,
-) : JdbcPartitionFactory<JdbcSharedState, JdbcStreamState, MySqlSourceJdbcPartition> {
+    val operations: PostgresSourceOperations,
+    val config: PostgresSourceConfiguration,
+) : JdbcPartitionFactory<JdbcSharedState, PostgresStreamState, PostgresJdbcPartition> {
 
-    override fun create(streamFeedBootstrap: StreamFeedBootstrap): MySqlSourceJdbcPartition? {
+    override fun create(streamFeedBootstrap: StreamFeedBootstrap): PostgresJdbcPartition? {
         val stream = streamFeedBootstrap.feed as Stream
         val state = streamFeedBootstrap.currentState
 
         // Cold start (no previous state)
         if (state == null) {
-            return when (stream.configuredSyncMode) {
-                FULL_REFRESH -> createFullRefreshPartition(stream)
-                INCREMENTAL -> createIncrementalPartition(stream)
+            return when {
+                // Postgres-specific: prefer CTID-based partitioning if available
+                hasFilenode(stream) ->
+                    CtidBasedSnapshotPartition(stream, filenode)
+
+                // Fall back to standard PK-based
+                stream.configuredPrimaryKey.isNotEmpty() ->
+                    PkBasedSnapshotPartition(stream)
+
+                else -> NonResumableSnapshotPartition(stream)
             }
         }
 
-        // Warm start (resume from state)
+        // Warm start: validate and resume
         return resumeFromState(stream, state)
     }
 
     override fun split(
-        unsplitPartition: MySqlSourceJdbcPartition,
+        unsplitPartition: PostgresJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>
-    ): List<MySqlSourceJdbcPartition> {
-        // Calculate split boundaries based on PK type
-        val boundaries = calculateSplitBoundaries(unsplitPartition)
+    ): List<PostgresJdbcPartition> {
+        return when (unsplitPartition) {
+            // CTID-based splitting (Postgres-specific)
+            is CtidBasedPartition -> splitByPageNumbers(unsplitPartition)
 
-        // Create multiple partitions with different ranges
-        return boundaries.map { (lower, upper) ->
-            MySqlSourceJdbcPartition(
-                lowerBound = lower,
-                upperBound = upper,
-                // ... other params
-            )
+            // Standard PK-based splitting (toolkit default)
+            else -> super.split(unsplitPartition, opaqueStateValues)
         }
     }
 }
 ```
+
+**For Standard Databases:**
+
+Most SQL databases (MySQL, MSSQL, etc.) work perfectly with the stock `JdbcPartitionFactory` and don't need any customization.
 
 ### Partition Decision Tree
 
