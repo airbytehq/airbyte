@@ -22,7 +22,6 @@ import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
@@ -46,10 +45,8 @@ _CLIENT_ID = "test_client_id"
 _CLIENT_SECRET = "test_client_secret"
 _INITIAL_REFRESH_TOKEN = "initial_refresh_token_rt1"
 _ROTATED_REFRESH_TOKEN = "rotated_refresh_token_rt2"
-_SECOND_ROTATED_REFRESH_TOKEN = "second_rotated_refresh_token_rt3"
 _INITIAL_ACCESS_TOKEN = "initial_access_token"
 _NEW_ACCESS_TOKEN = "new_access_token_after_refresh"
-_SECOND_NEW_ACCESS_TOKEN = "second_new_access_token_after_refresh"
 
 
 def _build_oauth_refresh_config(
