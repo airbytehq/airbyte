@@ -45,8 +45,10 @@ Connectors can operate in two modes for reading partitions:
 **Key Points:**
 
 - **Sequential connectors** read partitions of a single stream (table) serially, but can still read partitions from *different* streams concurrently up to the configured `maxConcurrency` limit.
-- **Concurrent connectors** attempt to run different partitions of the *same* stream concurrently (ordered but parallel) up to the `maxConcurrency` limit, plus partitions from different streams.
-- Both modes respect the `maxConcurrency` configuration parameter (typically 8-10 concurrent operations).
+- **Concurrent connectors** attempt to split each table into concurrent partitions. The splitting strategy varies by database:
+  - **Sampling-based:** Use `SELECT FROM TABLE SAMPLE` SQL commands to estimate table size and split by PK ranges
+  - **Database-specific:** Custom implementations (e.g., Postgres uses CTID/page-based splitting, MySQL uses PK range queries)
+- Both modes respect the `maxConcurrency` configuration parameter to limit total concurrent operations.
 
 **Example Flow (Sequential Connector, maxConcurrency=4):**
 
