@@ -3,8 +3,6 @@ import TabItem from '@theme/TabItem';
 
 # Using agent connectors in hosted execution mode
 
-## Overview
-
 Hosted execution mode allows you to run agent connector operations through Airbyte. In this mode, you still execute connectors and tool calls from your agent, but API credentials are stored securely in Airbyte Cloud, and the connector proxies all requests through Airbyte's infrastructure.
 
 ## Local mode vs hosted mode
@@ -50,7 +48,7 @@ Before using hosted execution mode, ensure you have:
 4. An installed agent connector package. For example:
 
    ```bash
-   uv pip install airbyte-ai-gong
+   uv pip install airbyte-agent-gong
    ```
 
    See [Connectors](../connectors) for a full list of connectors.
@@ -63,7 +61,7 @@ Before running operations in hosted mode, you must create a connector in Airbyte
 
 Request an application token using your Airbyte client credentials:
 
-```bash
+```bash title="Request"
 curl --location 'https://cloud.airbyte.com/api/v1/applications/token' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -72,13 +70,13 @@ curl --location 'https://cloud.airbyte.com/api/v1/applications/token' \
   }'
 ```
 
-Save the returned token for the next steps.
+Save the returned token for the next step.
 
 ### Step 2: Get a scoped token
 
-Request a scoped token for your workspace. The `workspace_name` becomes your `external_user_id` when using the connector:
+Create a scoped token for your workspace.
 
-```bash
+```bash title="Request"
 curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
@@ -86,6 +84,8 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
     "workspace_name": "<your_workspace_name>"
   }'
 ```
+
+<!-- In E2E testing, Devin expressed a great deal of confusion about what this was. I am also confused. I think this creates a new workspace, because it returns a random workspace ID. But I can't find the workspace in the org. I don't know why we're doing this. Presumably this allows customer to run connector operations in their own specific workspace? -->
 
 ## Create a connector
 
@@ -106,11 +106,16 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/sources" \
       "name": "...",
       "auth_config": {
          ...
+      },
+      "source_config": {
+         ...
       }
     }'
 ```
 
 Note the returned connector ID for reference.
+
+<!-- Devin and I both experienced failure at this step. The operation of the auth_config and source_config fields is completely ambiguous. There is no way to know what fields are required, what the schema is, or how to discover it (as far as I can tell). -->
 
 ## Run operations in hosted mode
 
@@ -135,6 +140,10 @@ connector = GongConnector(
 ```
 
 Once initialized, the connector works the same way as in local mode. The SDK handles the token exchange (application token → scoped token) automatically, so you don't need to manage tokens manually.
+
+<!-- Devin struggled with this. It was not successful with external_user_id. I think the workspace name you chose earlier for the scoped token is the external_user_id, at least that's the intent, but that doesn't seem to be the actual field the connector uses  -->
+
+<!-- Devin was never actually able to run this. It seems this still doesn't work. The HostedExecutor is configured to use `http://localhost:8001` instead of the Airbyte Cloud API. This means Python hosted mode DOES NOT WORK out of the box. The SDK needs to be configured with the correct API URL. The SDK is using wrong URL path: `/connectors/{id}/execute`. The correct path (per API docs) should be: `/api/v1/connectors/sources/{id}/execute`. Python SDK hosted mode is broken, but Devin believes the documentation shows the correct API paths. -->
 
 </TabItem>
 <TabItem value="api" label="API">
@@ -173,6 +182,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>
     "params": {}
   }'
 ```
+
+<!-- - The execute endpoint returns: "Unable to map source configuration to any supported auth scheme"
+- This suggests the credentials weren't stored correctly when creating the connector
+- The connector was created successfully (ID: 017a8b18-c1ad-4128-9a09-8944c1597267)
+- But the execute endpoint can't find the auth credentials
+- **POSSIBLE ISSUE**: The `source_config` structure I used may not have stored credentials correctly -->
 
 The response contains the operation result:
 
