@@ -1,5 +1,5 @@
 {
-  "api_key": "BG_-WVUFBN_zJrmGm2qml8Fk9tJ_cz5bsdNjcXR6Sb-tpc",
-  "data_source_name": "Cell towers 100k",
+  "api_key": "your-api-key-here",
+  "data_source_name": "your-data-source-name-here",
   "chunk_size": 1000
 }
