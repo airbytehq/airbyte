@@ -9,7 +9,7 @@ When you're working with an AI agent on tasks that involve Airbyte, the MCP serv
 The Airbyte knowledge MCP is helpful when your AI agent is:
 
 - Building a custom connector
-- Working with Airbyte's Terraform provider or REST API to configure sources, destinations, and connections
+- Working with PyAirbyte, Airbyte's Terraform provider, or REST API to configure sources, destinations, and connections
 - Troubleshooting sync errors or connection issues
 - Learning about Airbyte's architecture or deployment options
 
