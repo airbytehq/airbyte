@@ -22,8 +22,12 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.jupiter.api.AfterEach;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Timeout;
+
+@Timeout(value = 3, unit = TimeUnit.MINUTES)
 public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
