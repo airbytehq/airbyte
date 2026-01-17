@@ -42,11 +42,11 @@ module.exports = {
             type: "doc",
             id: 'mcp-servers/readme',
           },
-                    items: [
-                      'mcp-servers/airbyte-knowledge-mcp',
-                      'mcp-servers/pyairbyte-mcp',
-                      // 'mcp-servers/connector-builder-mcp',
-                    ],
+          items: [
+            'mcp-servers/airbyte-knowledge-mcp',
+            'mcp-servers/pyairbyte-mcp',
+            // 'mcp-servers/connector-builder-mcp',
+          ],
         },
       ],
     },
