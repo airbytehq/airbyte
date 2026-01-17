@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-s3")
+    toolkits = listOf("load-csv")
 }
 
 application {
