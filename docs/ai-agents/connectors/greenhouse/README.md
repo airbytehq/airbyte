@@ -78,6 +78,6 @@ For the service's official API docs, see the [Greenhouse API reference](https://
 
 ## Version information
 
-- **Package version:** 0.17.41
+- **Package version:** 0.17.47
 - **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** 20b3afd9215174bb084af41e3174b78f114d86b5
+- **Generated with Connector SDK commit SHA:** a50c8f71ed01cb9fd029c6c72d7523dbe2d5cec7
