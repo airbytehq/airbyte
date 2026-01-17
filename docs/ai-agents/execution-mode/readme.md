@@ -93,11 +93,11 @@ Create a connector with your API credentials. Airbyte stores these credentials s
 
 You'll need:
 
-- **source_template_id**: The ID of the source template for the connector type. List available templates by calling `GET /api/v1/embedded/source-templates` with your scoped token.
+- **source_template_id**: The ID of the source template for the connector type. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token.
 - **workspace_id**: Your workspace ID. Retrieve it by calling `GET /api/v1/embedded/scoped-token/info` with your scoped token.
 
 ```bash
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/sources" \
+curl -X POST "https://api.airbyte.ai/api/v1/embedded/sources" \
     -H "Authorization: Bearer <scoped_token>" \
     -H "Content-Type: application/json" \
     -d '{
