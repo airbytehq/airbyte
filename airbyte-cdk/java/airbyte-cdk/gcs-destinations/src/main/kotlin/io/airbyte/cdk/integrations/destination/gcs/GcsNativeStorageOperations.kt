@@ -164,7 +164,7 @@ class GcsNativeStorageOperations(
         val fileExtension: String = getExtension(recordsData.filename)
         val fullObjectKey = objectPath + partId + fileExtension
 
-        val metadata: MutableMap<String, String> = HashMap()
+        val metadata: MutableMap<String, String?> = HashMap()
         metadata[GENERATION_ID_USER_META_KEY] = generationId.toString()
 
         val blobId = BlobId.of(bucketName, fullObjectKey)

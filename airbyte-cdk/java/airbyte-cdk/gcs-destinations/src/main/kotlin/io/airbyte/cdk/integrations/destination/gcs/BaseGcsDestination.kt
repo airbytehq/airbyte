@@ -123,7 +123,7 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
                 nameTransformer,
                 gcsConfig.getNativeGcsClient(),
                 gcsConfig.bucketName,
-                gcsConfig.bucketPath
+                gcsConfig.bucketPath ?: ""
             )
         } else {
             // HMAC key authentication - use S3-compatible storage operations
