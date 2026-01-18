@@ -95,6 +95,9 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.16.10 | 2026-01-14 | [71461](https://github.com/airbytehq/airbyte/pull/71461) | Update dependencies |
+| 2.16.9 | 2025-12-18 | [70783](https://github.com/airbytehq/airbyte/pull/70783) | Update dependencies |
+| 2.16.8 | 2025-11-25 | [70028](https://github.com/airbytehq/airbyte/pull/70028) | Update dependencies |
 | 2.16.7 | 2025-11-18 | [69457](https://github.com/airbytehq/airbyte/pull/69457) | Update dependencies |
 | 2.16.6 | 2025-10-29 | [68983](https://github.com/airbytehq/airbyte/pull/68983) | Update dependencies |
 | 2.16.5 | 2025-10-21 | [68298](https://github.com/airbytehq/airbyte/pull/68298) | Update dependencies |
@@ -102,7 +105,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 | 2.16.3 | 2025-10-07 | [67517](https://github.com/airbytehq/airbyte/pull/67517) | Update dependencies |
 | 2.16.2 | 2025-09-30 | [66643](https://github.com/airbytehq/airbyte/pull/66643) | Update dependencies |
 | 2.16.1 | 2025-09-09 | [66070](https://github.com/airbytehq/airbyte/pull/66070) | Update dependencies |
-| 2.15.0 | 2025-09-04 | [65935](https://github.com/airbytehq/airbyte/pull/65935)    | Fix profile subscriptions
+| 2.15.0 | 2025-09-07 | [65935](https://github.com/airbytehq/airbyte/pull/65935)    | Fix profile subscriptions
 | 2.14.22 | 2025-08-25 | [65509](https://github.com/airbytehq/airbyte/pull/65509)       | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component                                                                       |\
 | 2.14.21 | 2025-08-23 | [65317](https://github.com/airbytehq/airbyte/pull/65317)   | Update dependencies                                                                                                                                                    |
 | 2.14.20 | 2025-08-09 | [64618](https://github.com/airbytehq/airbyte/pull/64618)   | Update dependencies                                                                                                                                                    |
@@ -197,8 +200,8 @@ contain the `predictive_analytics` field and workflows depending on this field w
 | 0.3.3   | 2023-10-13 | [31379](https://github.com/airbytehq/airbyte/pull/31379)   | Skip streams that the connector no longer has access to                                                                                                                |
 | 0.3.2   | 2023-06-20 | [27498](https://github.com/airbytehq/airbyte/pull/27498)   | Do not store state in the future                                                                                                                                       |
 | 0.3.1   | 2023-06-08 | [27162](https://github.com/airbytehq/airbyte/pull/27162)   | Anonymize check connection error message                                                                                                                               |
-| 0.3.0   | 2023-02-18 | [23236](https://github.com/airbytehq/airbyte/pull/23236)   | Add ` Email Templates` stream                                                                                                                                          |
-| 0.2.0   | 2023-03-13 | [22942](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream                                                                                                                                                  |
+| 0.3.0   | 2023-02-18 | [23236](https://github.com/airbytehq/airbyte/pull/23236)   | Add `Email Templates` stream                                                                                                                                          |
+| 0.2.0   | 2023-03-13 | [23968](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream                                                                                                                                                  |
 | 0.1.13  | 2023-02-13 | [22942](https://github.com/airbytehq/airbyte/pull/22942)   | Specified date formatting in specification                                                                                                                             |
 | 0.1.12  | 2023-01-30 | [22071](https://github.com/airbytehq/airbyte/pull/22071)   | Fix `Events` stream schema                                                                                                                                             |
 | 0.1.11  | 2023-01-27 | [22012](https://github.com/airbytehq/airbyte/pull/22012)   | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                            |

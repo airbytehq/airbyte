@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 4.8.11-rc.1
+  dockerImageTag: 4.8.12
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   externalDocumentationUrls:
@@ -20,6 +20,9 @@ data:
       type: api_reference
     - title: Changelog
       url: https://business-api.tiktok.com/portal/docs?id=1740029165513730
+      type: api_release_history
+    - title: TikTok Business API Documentation
+      url: https://business-api.tiktok.com/portal/docs?id=1740302848670722
       type: api_release_history
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
@@ -33,7 +36,7 @@ data:
       enabled: true
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message:

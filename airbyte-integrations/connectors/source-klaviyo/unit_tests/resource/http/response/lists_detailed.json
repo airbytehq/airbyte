@@ -1,0 +1,14 @@
+{
+  "type": "list",
+  "id": "list_001",
+  "attributes": {
+    "name": "Newsletter Subscribers",
+    "created": "2024-01-01T10:00:00+00:00",
+    "updated": "2024-01-15T12:30:00+00:00",
+    "opt_in_process": "single_opt_in",
+    "profile_count": 1500
+  },
+  "links": {
+    "self": "https://a.klaviyo.com/api/lists/list_001"
+  }
+}

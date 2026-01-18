@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.config
@@ -196,10 +196,6 @@ class DataChannelBeanFactory {
                 }
                 ProtobufDataChannelReader(destinationMessageFactory)
             }
-            else ->
-                throw IllegalArgumentException(
-                    "Unsupported data channel format: $dataChannelFormat"
-                )
         }
 
     /**
