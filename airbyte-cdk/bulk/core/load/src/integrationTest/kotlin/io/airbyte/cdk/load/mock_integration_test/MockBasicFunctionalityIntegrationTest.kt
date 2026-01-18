@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.mock_integration_test
@@ -165,6 +165,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val e =
             assertThrows<DestinationUncleanExitException> {
@@ -202,6 +203,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
 
         val returnedMessages =
@@ -324,7 +326,8 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                         namespaceDefinitionType = namespaceMappingConfig.namespaceDefinitionType,
                         streamPrefix = namespaceMappingConfig.streamPrefix,
                         namespaceFormat = namespaceMappingConfig.namespaceFormat
-                    )
+                    ),
+                tableSchema = emptyTableSchema,
             )
         namespaceValidator(
             stream.unmappedNamespace,
@@ -439,7 +442,7 @@ class MockBasicFunctionalityIntegrationTestStdioJsonl :
         DataChannelFormat.JSONL,
     )
 
-// Speed mode
+@Disabled
 class MockBasicFunctionalityIntegrationTestSocketProtobuf :
     BaseMockBasicFunctionalityIntegrationTest(
         DataChannelMedium.SOCKET,
@@ -481,18 +484,4 @@ class MockBasicFunctionalityIntegrationTestSocketJsonl :
     BaseMockBasicFunctionalityIntegrationTest(
         DataChannelMedium.SOCKET,
         DataChannelFormat.JSONL,
-    )
-
-@Disabled("we don't use flatbuffers")
-class MockBasicFunctionalityIntegrationTestStdioFlatbuffer :
-    BaseMockBasicFunctionalityIntegrationTest(
-        DataChannelMedium.STDIO,
-        DataChannelFormat.FLATBUFFERS,
-    )
-
-@Disabled("we don't use flatbuffers")
-class MockBasicFunctionalityIntegrationTestSocketFlatbuffer :
-    BaseMockBasicFunctionalityIntegrationTest(
-        DataChannelMedium.SOCKET,
-        DataChannelFormat.FLATBUFFERS,
     )

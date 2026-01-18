@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse.write.load
 
-import com.clickhouse.client.api.Client
-import com.clickhouse.client.api.ClientFaultCause
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta
@@ -28,12 +28,10 @@ import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.clickhouse.ClickhouseConfigUpdater
 import io.airbyte.integrations.destination.clickhouse.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse.Utils
-import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.fixtures.ClickhouseExpectedRecordMapper
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
+import io.airbyte.integrations.destination.clickhouse.schema.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificationOss
-import io.airbyte.integrations.destination.clickhouse.write.load.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.nio.file.Path
@@ -48,7 +46,30 @@ class ClickhouseDirectLoadWriterWithJson :
         SchematizedNestedValueBehavior.PASS_THROUGH,
         false,
     ) {
+    /**
+     * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
+     * inserted. If a previous row has a JSON with a column A, It is expected that the subsequent
+     * row, will have the column A. This test includes test case for schemaless type which aren't
+     * behaving like the other warehouses
+     */
+    @Disabled("Unfit for clickhouse with Json") override fun testContainerTypes() {}
 
+    @Test
+    override fun testDedupChangePk() {
+        super.testDedupChangePk()
+    }
+}
+
+class ClickhouseDirectLoadWriterWithJsonProto :
+    ClickhouseAcceptanceTest(
+        Utils.getConfigPath("valid_connection.json"),
+        SchematizedNestedValueBehavior.PASS_THROUGH,
+        false,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
     /**
      * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
      * inserted. If a previous row has a JSON with a column A, It is expected that the subsequent
@@ -63,6 +84,17 @@ class ClickhouseDirectLoadWriterWithoutJson :
         Utils.getConfigPath("valid_connection_no_json.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
+    )
+
+class ClickhouseDirectLoadWriterWithoutJsonProto :
+    ClickhouseAcceptanceTest(
+        Utils.getConfigPath("valid_connection_no_json.json"),
+        SchematizedNestedValueBehavior.STRINGIFY,
+        true,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
     )
 
 @Disabled("Requires local bastion and CH instance to pass")
@@ -81,17 +113,16 @@ class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
 abstract class ClickhouseAcceptanceTest(
     configPath: Path,
     schematizedObjectBehavior: SchematizedNestedValueBehavior,
-    stringifySchemalessObjects: Boolean
+    stringifySchemalessObjects: Boolean,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
         configSpecClass = ClickhouseSpecificationOss::class.java,
-        dataDumper =
-            ClickhouseDataDumper { spec ->
-                val configOverrides = mutableMapOf<String, String>()
-                ClickhouseConfigurationFactory()
-                    .makeWithOverrides(spec as ClickhouseSpecificationOss, configOverrides)
-            },
+        dataDumper = ClickhouseDataDumper(),
         destinationCleaner = ClickhouseDataCleaner,
         recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
@@ -112,11 +143,15 @@ abstract class ClickhouseAcceptanceTest(
                 numberCanBeLarge = false,
                 nestedFloatLosesPrecision = false,
             ),
-        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+        unknownTypesBehavior = unknownTypesBehavior,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
         dedupChangeUsesDefault = true,
-        testSpeedModeStatsEmission = false,
+        dataChannelFormat = dataChannelFormat,
+        dataChannelMedium = dataChannelMedium,
+        useDataFlowPipeline = true,
     ) {
     companion object {
         @JvmStatic
@@ -138,22 +173,21 @@ abstract class ClickhouseAcceptanceTest(
     }
 }
 
-class ClickhouseDataDumper(
-    private val configProvider: (ConfigurationSpecification) -> ClickhouseConfiguration
-) : DestinationDataDumper {
+class ClickhouseDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val config = configProvider(spec)
-        val client = getClient(config)
+        val config = Utils.specToConfig(spec)
+        val client = Utils.getClickhouseClient(config)
 
         val isDedup = stream.importType is Dedupe
 
         val output = mutableListOf<OutputRecord>()
 
         val cleanedNamespace =
-            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}".toClickHouseCompatibleName()
+            (stream.mappedDescriptor.namespace ?: config.resolvedDatabase)
+                .toClickHouseCompatibleName()
         val cleanedStreamName = stream.mappedDescriptor.name.toClickHouseCompatibleName()
 
         val namespacedTableName = "$cleanedNamespace.$cleanedStreamName"
@@ -211,14 +245,14 @@ object ClickhouseDataCleaner : DestinationCleaner {
                     "hostname" to ClickhouseContainerHelper.getIpAddress()!!,
                     "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
                     "protocol" to "http",
-                    "username" to ClickhouseContainerHelper.getUsername()!!,
-                    "password" to ClickhouseContainerHelper.getPassword()!!,
+                    "username" to ClickhouseContainerHelper.getUsername(),
+                    "password" to ClickhouseContainerHelper.getPassword(),
                 )
             )
 
     override fun cleanup() {
         try {
-            val client = getClient(config)
+            val client = Utils.getClickhouseClient(config)
 
             val query = "select * from system.databases where name like 'test%'"
 
@@ -231,7 +265,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
 
                 client.query("DROP DATABASE IF EXISTS $databaseName").get()
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // swallow the exception, we don't want to fail the test suite if the cleanup fails
         }
     }
@@ -261,16 +295,4 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
         changes = changes,
         syncId = metaJson["sync_id"].longValue(),
     )
-}
-
-object ClientProvider {
-    fun getClient(config: ClickhouseConfiguration): Client {
-        return Client.Builder()
-            .setPassword(config.password)
-            .setUsername(config.username)
-            .addEndpoint(config.endpoint)
-            .setDefaultDatabase(config.resolvedDatabase)
-            .retryOnFailures(ClientFaultCause.None)
-            .build()
-    }
 }

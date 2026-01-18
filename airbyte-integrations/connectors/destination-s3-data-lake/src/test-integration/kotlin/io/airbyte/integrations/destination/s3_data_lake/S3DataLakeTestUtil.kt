@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_data_lake
@@ -49,7 +49,7 @@ object S3DataLakeTestUtil {
 
     fun getCatalog(
         config: S3DataLakeConfiguration,
-        awsAssumeRoleCredentials: AwsAssumeRoleCredentials
+        awsAssumeRoleCredentials: AwsAssumeRoleCredentials?
     ): Catalog {
         val icebergUtil = IcebergUtil(SimpleTableIdGenerator())
         val s3DataLakeUtil = S3DataLakeUtil(icebergUtil, awsAssumeRoleCredentials)

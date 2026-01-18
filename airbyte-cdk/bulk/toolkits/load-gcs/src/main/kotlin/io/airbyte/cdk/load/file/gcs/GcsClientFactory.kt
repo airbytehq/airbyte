@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.file.gcs
@@ -58,7 +58,6 @@ class GcsClientFactory(
                                         )
                                 },
                                 assumeRoleCredentials = null,
-                                null
                             )
                             .make(),
                     config = config,

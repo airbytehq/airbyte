@@ -104,7 +104,12 @@ None!
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
-| 6.2.33 | 2025-09-02 | [65914](https://github.com/airbytehq/airbyte/pull/65914) | Upgrade CDK to 6.28.0 and remove pendulum dependency |
+| 6.2.38 | 2025-11-12 | [69289](https://github.com/airbytehq/airbyte/pull/69289) | Add externalDocumentationUrls field to metadata |
+| 6.2.37 | 2025-10-21 | [68572](https://github.com/airbytehq/airbyte/pull/68572) | Update dependencies |
+| 6.2.36 | 2025-10-14 | [67806](https://github.com/airbytehq/airbyte/pull/67806) | Update dependencies |
+| 6.2.35 | 2025-10-07 | [67290](https://github.com/airbytehq/airbyte/pull/67290) | Update dependencies |
+| 6.2.34 | 2025-09-30 | [65779](https://github.com/airbytehq/airbyte/pull/65779) | Update dependencies |
+| 6.2.33 | 2025-09-03 | [65914](https://github.com/airbytehq/airbyte/pull/65914) | Upgrade CDK to 6.28.0 and remove pendulum dependency |
 | 6.2.32 | 2025-08-23 | [65273](https://github.com/airbytehq/airbyte/pull/65273) | Update dependencies |
 | 6.2.31 | 2025-08-16 | [65006](https://github.com/airbytehq/airbyte/pull/65006) | Update dependencies |
 | 6.2.30 | 2025-08-09 | [64799](https://github.com/airbytehq/airbyte/pull/64799) | Update dependencies |
@@ -156,7 +161,7 @@ None!
 | 5.0.1       | 2023-01-08 | [34033](https://github.com/airbytehq/airbyte/pull/34033)                                                              | Add standard entrypoints for usage with AirbyteLib                                                              |
 | 5.0.0       | 2023-08-08 | [29213](https://github.com/airbytehq/airbyte/pull/29213)                                                              | Change all `*id` fields and `products.year` to be integer                                                       |
 | 4.0.0       | 2023-07-19 | [28485](https://github.com/airbytehq/airbyte/pull/28485)                                                              | Bump to test publication                                                                                        |
-| 3.0.2       | 2023-07-07 | [27807](https://github.com/airbytehq/airbyte/pull/28060)                                                              | Bump to test publication                                                                                        |
+| 3.0.2       | 2023-07-07 | [28060](https://github.com/airbytehq/airbyte/pull/28060)                                                              | Bump to test publication                                                                                        |
 | 3.0.1       | 2023-06-28 | [27807](https://github.com/airbytehq/airbyte/pull/27807)                                                              | Fix bug with purchase stream updated_at                                                                         |
 | 3.0.0       | 2023-06-23 | [27684](https://github.com/airbytehq/airbyte/pull/27684)                                                              | Stream cursor is now `updated_at` & remove `records_per_sync` option                                            |
 | 2.1.0       | 2023-05-08 | [25903](https://github.com/airbytehq/airbyte/pull/25903)                                                              | Add user.address (object)                                                                                       |
@@ -173,7 +178,7 @@ None!
 | 0.1.5       | 2022-06-10 | [13695](https://github.com/airbytehq/airbyte/pull/13695)                                                              | Emit timestamps in the proper ISO format                                                                        |
 | 0.1.4       | 2022-05-27 | [13298](https://github.com/airbytehq/airbyte/pull/13298)                                                              | Test publication flow                                                                                           |
 | 0.1.3       | 2022-05-27 | [13248](https://github.com/airbytehq/airbyte/pull/13248)                                                              | Add options for records_per_sync and page_size                                                                  |
-| 0.1.2       | 2022-05-26 | [13248](https://github.com/airbytehq/airbyte/pull/13293)                                                              | Test publication flow                                                                                           |
+| 0.1.2       | 2022-05-26 | [13293](https://github.com/airbytehq/airbyte/pull/13293)                                                              | Test publication flow                                                                                           |
 | 0.1.1       | 2022-05-26 | [13235](https://github.com/airbytehq/airbyte/pull/13235)                                                              | Publish for AMD and ARM (M1 Macs) & remove User.birthdate                                                       |
 | 0.1.0       | 2022-04-12 | [11738](https://github.com/airbytehq/airbyte/pull/11738)                                                              | The Faker Source is created                                                                                     |
 

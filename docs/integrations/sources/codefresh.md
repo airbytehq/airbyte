@@ -36,6 +36,15 @@ It provides streams like agents, builds, audit, analytics etc.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2026-01-14 | [71730](https://github.com/airbytehq/airbyte/pull/71730) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70650](https://github.com/airbytehq/airbyte/pull/70650) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [69925](https://github.com/airbytehq/airbyte/pull/69925) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69619](https://github.com/airbytehq/airbyte/pull/69619) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68921](https://github.com/airbytehq/airbyte/pull/68921) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68488](https://github.com/airbytehq/airbyte/pull/68488) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [68074](https://github.com/airbytehq/airbyte/pull/68074) | Update dependencies |
+| 0.0.35 | 2025-10-07 | [67189](https://github.com/airbytehq/airbyte/pull/67189) | Update dependencies |
+| 0.0.34 | 2025-09-30 | [65772](https://github.com/airbytehq/airbyte/pull/65772) | Update dependencies |
 | 0.0.33 | 2025-08-23 | [65284](https://github.com/airbytehq/airbyte/pull/65284) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64739](https://github.com/airbytehq/airbyte/pull/64739) | Update dependencies |
 | 0.0.31 | 2025-07-26 | [64032](https://github.com/airbytehq/airbyte/pull/64032) | Update dependencies |

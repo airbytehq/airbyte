@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.pipeline
 
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.flowOn
@@ -21,18 +21,20 @@ class DataFlowPipeline(
     private val flush: DataFlowStage,
     private val state: DataFlowStage,
     private val completionHandler: PipelineCompletionHandler,
-    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+    private val aggregatePublishingConfig: AggregatePublishingConfig,
+    private val aggregationDispatcher: CoroutineDispatcher,
+    private val flushDispatcher: CoroutineDispatcher,
 ) {
     suspend fun run() {
         input
             .map(parse::apply)
             .transform { aggregate.apply(it, this) }
-            .buffer(capacity = memoryAndParallelismConfig.maxBufferedAggregates)
-            .flowOn(Dispatchers.Default)
+            .buffer(capacity = aggregatePublishingConfig.maxBufferedAggregates)
+            .flowOn(aggregationDispatcher)
             .map(flush::apply)
             .map(state::apply)
             .onCompletion { completionHandler.apply(it) }
-            .flowOn(Dispatchers.IO)
+            .flowOn(flushDispatcher)
             .collect {}
     }
 }

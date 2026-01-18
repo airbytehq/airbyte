@@ -32,4 +32,8 @@ data:
   ab_internal:
     sl: 100
     ql: 100
+  externalDocumentationUrls:
+    - title: Plausible Analytics API
+      url: https://plausible.io/docs/stats-api
+      type: api_reference
 metadataSpecVersion: "1.0"

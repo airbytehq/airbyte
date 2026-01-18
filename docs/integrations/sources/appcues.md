@@ -45,6 +45,15 @@ To set up the Appcues source connector, you'll need your Appcues [`API Key` and 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ----- | ---------------- |
+| 0.0.38 | 2026-01-14 | [71414](https://github.com/airbytehq/airbyte/pull/71414) | Update dependencies |
+| 0.0.37 | 2025-12-18 | [70797](https://github.com/airbytehq/airbyte/pull/70797) | Update dependencies |
+| 0.0.36 | 2025-11-25 | [69888](https://github.com/airbytehq/airbyte/pull/69888) | Update dependencies |
+| 0.0.35 | 2025-11-18 | [69557](https://github.com/airbytehq/airbyte/pull/69557) | Update dependencies |
+| 0.0.34 | 2025-10-29 | [68911](https://github.com/airbytehq/airbyte/pull/68911) | Update dependencies |
+| 0.0.33 | 2025-10-21 | [68402](https://github.com/airbytehq/airbyte/pull/68402) | Update dependencies |
+| 0.0.32 | 2025-10-14 | [67964](https://github.com/airbytehq/airbyte/pull/67964) | Update dependencies |
+| 0.0.31 | 2025-10-07 | [67164](https://github.com/airbytehq/airbyte/pull/67164) | Update dependencies |
+| 0.0.30 | 2025-09-30 | [65645](https://github.com/airbytehq/airbyte/pull/65645) | Update dependencies |
 | 0.0.29 | 2025-08-23 | [65329](https://github.com/airbytehq/airbyte/pull/65329) | Update dependencies |
 | 0.0.28 | 2025-08-09 | [64643](https://github.com/airbytehq/airbyte/pull/64643) | Update dependencies |
 | 0.0.27 | 2025-07-26 | [63798](https://github.com/airbytehq/airbyte/pull/63798) | Update dependencies |

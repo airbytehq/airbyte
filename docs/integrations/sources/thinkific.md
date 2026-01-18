@@ -30,7 +30,14 @@ Airbyte connector for Thinkific, allowing you to seamlessly sync data like users
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.25 | 2025-08-23 | [65406](https://github.com/airbytehq/airbyte/pull/65406) | Update dependencies |
+| 0.0.32 | 2026-01-14 | [71573](https://github.com/airbytehq/airbyte/pull/71573) | Update dependencies |
+| 0.0.31 | 2025-12-18 | [70739](https://github.com/airbytehq/airbyte/pull/70739) | Update dependencies |
+| 0.0.30 | 2025-12-02 | [70285](https://github.com/airbytehq/airbyte/pull/70285) | Update dependencies |
+| 0.0.29 | 2025-11-18 | [69526](https://github.com/airbytehq/airbyte/pull/69526) | Update dependencies |
+| 0.0.28 | 2025-10-29 | [68997](https://github.com/airbytehq/airbyte/pull/68997) | Update dependencies |
+| 0.0.27 | 2025-10-07 | [67459](https://github.com/airbytehq/airbyte/pull/67459) | Update dependencies |
+| 0.0.26 | 2025-09-30 | [66890](https://github.com/airbytehq/airbyte/pull/66890) | Update dependencies |
+| 0.0.25 | 2025-08-24 | [65406](https://github.com/airbytehq/airbyte/pull/65406) | Update dependencies |
 | 0.0.24 | 2025-08-16 | [64993](https://github.com/airbytehq/airbyte/pull/64993) | Update dependencies |
 | 0.0.23 | 2025-07-26 | [63994](https://github.com/airbytehq/airbyte/pull/63994) | Update dependencies |
 | 0.0.22 | 2025-07-05 | [62713](https://github.com/airbytehq/airbyte/pull/62713) | Update dependencies |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.message
@@ -12,10 +12,10 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.data.protobuf.toAirbyteValue
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import java.util.*
+import java.util.SequencedMap
+import java.util.UUID
 import kotlin.collections.LinkedHashMap
 
 data class DestinationRecordRaw(
@@ -47,7 +47,7 @@ data class DestinationRecordRaw(
             stream = stream,
             data =
                 if (rawData is DestinationRecordProtobufSource) {
-                    rawData.toAirbyteValue(stream.airbyteValueProxyFieldAccessors)
+                    throw RuntimeException("DestinationRecordProtobufSource not supported")
                 } else asJsonRecord().toAirbyteValue(),
             emittedAtMs = rawData.emittedAtMs,
             meta = rawData.sourceMeta,

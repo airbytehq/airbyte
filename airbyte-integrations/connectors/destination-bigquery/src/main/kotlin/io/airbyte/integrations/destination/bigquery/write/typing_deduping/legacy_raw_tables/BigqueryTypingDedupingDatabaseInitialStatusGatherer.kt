@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables
@@ -9,12 +9,12 @@ import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.TableId
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
-import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.FinalTableInitialStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.RawTableInitialStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingDatabaseInitialStatus
+import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
 
 class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQuery) :
     DatabaseInitialStatusGatherer<TypingDedupingDatabaseInitialStatus> {
@@ -97,7 +97,7 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
             val tempRawTableState =
                 getInitialRawTableState(
                     tableNames.rawTableName!!,
-                    TableNames.TMP_TABLE_SUFFIX,
+                    TMP_TABLE_SUFFIX,
                 )
             TypingDedupingDatabaseInitialStatus(
                 finalTableStatus,

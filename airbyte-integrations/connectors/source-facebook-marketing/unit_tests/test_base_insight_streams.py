@@ -2,19 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
-import pendulum
 import pytest
 from freezegun import freeze_time
-from pendulum import duration
 from source_facebook_marketing.spec import ValidBreakdowns
 from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
+from source_facebook_marketing.utils import DateInterval
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 
 
 @pytest.fixture(name="api")
@@ -25,18 +25,18 @@ def api_fixture(mocker):
 
 
 @pytest.fixture(name="old_start_date")
-def old_start_date_fixture() -> pendulum.DateTime:
-    return pendulum.now() - duration(months=37 + 1)
+def old_start_date_fixture() -> AirbyteDateTime:
+    return ab_datetime_now() - timedelta(days=(1123))
 
 
 @pytest.fixture(name="recent_start_date")
-def recent_start_date_fixture() -> pendulum.DateTime:
-    return pendulum.now() - duration(days=10)
+def recent_start_date_fixture() -> AirbyteDateTime:
+    return ab_datetime_now() - timedelta(days=10)
 
 
 @pytest.fixture(name="start_date")
-def start_date_fixture() -> pendulum.DateTime:
-    return pendulum.now() - duration(months=12)
+def start_date_fixture() -> AirbyteDateTime:
+    return ab_datetime_now() - timedelta(days=12 * 30)
 
 
 @pytest.fixture(name="async_manager_mock")
@@ -116,7 +116,7 @@ class TestBaseInsightsStream:
         rec = mocker.Mock()
         rec.export_all_data.return_value = {}
         job.get_result.return_value = [rec, rec, rec]
-        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
+        job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
@@ -147,7 +147,7 @@ class TestBaseInsightsStream:
 
         job = mocker.Mock(spec=AsyncJob)
         job.get_result.return_value = [rec, rec, rec]
-        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
+        job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
@@ -177,7 +177,7 @@ class TestBaseInsightsStream:
 
         job = mocker.Mock(spec=AsyncJob)
         job.get_result.return_value = [rec_without_account, rec_with_account]
-        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
+        job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
@@ -311,7 +311,7 @@ class TestBaseInsightsStream:
 
     def test_stream_slices_no_state(self, api, async_manager_mock, start_date, some_config):
         """Stream will use start_date when there is not state"""
-        end_date = start_date + duration(weeks=2)
+        end_date = start_date + timedelta(weeks=2)
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
@@ -333,12 +333,12 @@ class TestBaseInsightsStream:
         generated_jobs = list(kwargs["jobs"])
         assert len(generated_jobs) == (end_date - start_date).days + 1
         assert generated_jobs[0].interval.start == start_date.date()
-        assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
+        assert generated_jobs[1].interval.start == start_date.date() + timedelta(days=1)
 
     def test_stream_slices_no_state_close_to_now(self, api, async_manager_mock, recent_start_date, some_config):
         """Stream will use start_date when there is not state and start_date within 28d from now"""
         start_date = recent_start_date
-        end_date = pendulum.now()
+        end_date = ab_datetime_now()
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
@@ -360,12 +360,12 @@ class TestBaseInsightsStream:
         generated_jobs = list(kwargs["jobs"])
         assert len(generated_jobs) == (end_date - start_date).days + 1
         assert generated_jobs[0].interval.start == start_date.date()
-        assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
+        assert generated_jobs[1].interval.start == start_date.date() + timedelta(days=1)
 
     def test_stream_slices_with_state(self, api, async_manager_mock, start_date, some_config):
         """Stream will use cursor_value from state when there is state"""
-        end_date = start_date + duration(days=10)
-        cursor_value = start_date + duration(days=5)
+        end_date = start_date + timedelta(days=10)
+        cursor_value = start_date + timedelta(days=5)
         state = {AdsInsights.cursor_field: cursor_value.date().isoformat()}
         stream = AdsInsights(
             api=api,
@@ -387,15 +387,15 @@ class TestBaseInsightsStream:
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
         # assert that we sync all periods including insight_lookback_period
-        assert len(generated_jobs) == (end_date.date() - start_date).days + 1
+        assert len(generated_jobs) == (end_date.date() - start_date.date()).days + 1
         assert generated_jobs[0].interval.start == start_date.date()
-        assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
+        assert generated_jobs[1].interval.start == start_date.date() + timedelta(days=1)
 
     def test_stream_slices_with_state_close_to_now(self, api, async_manager_mock, recent_start_date, some_config):
         """Stream will use start_date when close to now and start_date close to now"""
         start_date = recent_start_date
-        end_date = pendulum.now()
-        cursor_value = end_date - duration(days=1)
+        end_date = ab_datetime_now()
+        cursor_value = end_date - timedelta(days=1)
         state = {AdsInsights.cursor_field: cursor_value.date().isoformat()}
         stream = AdsInsights(
             api=api,
@@ -416,22 +416,22 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date.date() - start_date).days + 1
+        assert len(generated_jobs) == (end_date.date() - start_date.date()).days + 1
         assert generated_jobs[0].interval.start == start_date.date()
-        assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
+        assert generated_jobs[1].interval.start == start_date.date() + timedelta(days=1)
 
     @pytest.mark.parametrize("state_format", ["old_format", "new_format"])
     def test_stream_slices_with_state_and_slices(self, api, async_manager_mock, start_date, some_config, state_format):
         """Stream will use cursor_value from state, but will skip saved slices"""
-        end_date = start_date + duration(days=40)
-        cursor_value = start_date + duration(days=32)
+        end_date = start_date + timedelta(days=40)
+        cursor_value = start_date + timedelta(days=32)
 
         if state_format == "old_format":
             state = {
                 AdsInsights.cursor_field: cursor_value.date().isoformat(),
                 "slices": [
-                    (cursor_value + duration(days=1)).date().isoformat(),
-                    (cursor_value + duration(days=3)).date().isoformat(),
+                    (cursor_value + timedelta(days=1)).date().isoformat(),
+                    (cursor_value + timedelta(days=3)).date().isoformat(),
                 ],
             }
         else:
@@ -439,8 +439,8 @@ class TestBaseInsightsStream:
                 "unknown_account": {
                     AdsInsights.cursor_field: cursor_value.date().isoformat(),
                     "slices": [
-                        (cursor_value + duration(days=1)).date().isoformat(),
-                        (cursor_value + duration(days=3)).date().isoformat(),
+                        (cursor_value + timedelta(days=1)).date().isoformat(),
+                        (cursor_value + timedelta(days=3)).date().isoformat(),
                     ],
                 }
             }
@@ -467,7 +467,7 @@ class TestBaseInsightsStream:
             len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
         ), "should be 37 slices because we ignore slices which are within insights_lookback_period"
         assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
-        assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
+        assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + timedelta(days=1)
 
     def test_get_json_schema(self, api, some_config):
         stream = AdsInsights(
@@ -537,6 +537,172 @@ class TestBaseInsightsStream:
             ]
         )
 
+    @pytest.mark.parametrize(
+        "custom_fields, expected_in_schema, expected_not_in_schema",
+        [
+            pytest.param(
+                ["conversion_leads", "cost_per_objective_result"],
+                ["conversion_leads", "cost_per_objective_result", "date_start", "date_stop", "account_id", "ad_id"],
+                [],
+                id="extra_fields_from_custom_schema",
+            ),
+            pytest.param(
+                ["account_id", "impressions", "conversion_leads"],
+                ["account_id", "impressions", "conversion_leads", "date_start", "date_stop", "ad_id"],
+                [],
+                id="mix_of_base_and_extra_fields",
+            ),
+            pytest.param(
+                ["video_thruplay_watched_actions", "objective_result_rate"],
+                ["video_thruplay_watched_actions", "objective_result_rate", "date_start", "date_stop", "account_id", "ad_id"],
+                [],
+                id="ads_action_stats_and_ads_insights_result_fields",
+            ),
+            pytest.param(
+                ["marketing_messages_delivered", "adset_end"],
+                ["marketing_messages_delivered", "adset_end", "date_start", "date_stop", "account_id", "ad_id"],
+                [],
+                id="numeric_and_string_extra_fields",
+            ),
+        ],
+    )
+    def test_get_json_schema_custom_with_extra_fields(self, api, some_config, custom_fields, expected_in_schema, expected_not_in_schema):
+        """Test that custom insights streams include extra fields from ads_insights_custom_fields.json"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=custom_fields,
+            insights_lookback_window=28,
+        )
+
+        schema = stream.get_json_schema()
+
+        for field in expected_in_schema:
+            assert field in schema["properties"], f"Expected field '{field}' to be in schema"
+        for field in expected_not_in_schema:
+            assert field not in schema["properties"], f"Expected field '{field}' to NOT be in schema"
+
+    def test_get_json_schema_builtin_not_changed(self, api, some_config):
+        """Test that built-in Ads Insights stream (no custom fields) does not include extra fields"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+
+        schema = stream.get_json_schema()
+
+        # These fields should NOT be in the built-in schema (they are only in ads_insights_custom_fields.json)
+        extra_fields = ["conversion_leads", "cost_per_objective_result", "video_thruplay_watched_actions"]
+        for field in extra_fields:
+            assert field not in schema["properties"], f"Extra field '{field}' should NOT be in built-in schema"
+
+        # But standard fields should still be present
+        assert "account_id" in schema["properties"]
+        assert "impressions" in schema["properties"]
+        assert "actions" in schema["properties"]
+
+    def test_fields_custom_with_objective_results(self, api, some_config):
+        """Test that objective_results field is included in schema when requested in custom fields"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["objective_results", "impressions"],
+            insights_lookback_window=28,
+        )
+
+        schema = stream.get_json_schema()
+        assert "objective_results" in schema["properties"], "objective_results should be in schema when requested"
+        assert "impressions" in schema["properties"], "impressions should be in schema when requested"
+
+    @pytest.mark.parametrize(
+        "custom_fields, record, expected_record",
+        [
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="rename_results_to_objective_results",
+            ),
+            pytest.param(
+                ["objective_results", "results", "impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_results_also_requested",
+            ),
+            pytest.param(
+                ["impressions", "clicks"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_objective_results_not_requested",
+            ),
+            pytest.param(
+                None,
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_for_builtin_stream",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"impressions": 100, "clicks": 50},
+                {"impressions": 100, "clicks": 50},
+                id="no_rename_when_results_not_in_record",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_objective_results_already_in_record",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100, "spend": 50.5},
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100, "spend": 50.5},
+                id="rename_preserves_other_fields",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [], "impressions": 100},
+                {"objective_results": [], "impressions": 100},
+                id="rename_empty_results_array",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [{"action_type": "a", "value": "1"}, {"action_type": "b", "value": "2"}], "impressions": 100},
+                {"objective_results": [{"action_type": "a", "value": "1"}, {"action_type": "b", "value": "2"}], "impressions": 100},
+                id="rename_multiple_results_items",
+            ),
+            pytest.param(
+                ["impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_objective_results_not_in_custom_fields",
+            ),
+        ],
+    )
+    def test_objective_results_renamed_from_results(self, api, some_config, custom_fields, record, expected_record):
+        """Test that results field is renamed to objective_results when appropriate conditions are met.
+
+        See: https://github.com/airbytehq/oncall/issues/10126
+        """
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=custom_fields,
+            insights_lookback_window=28,
+        )
+
+        transformed_record = stream._transform_objective_results(record)
+        assert transformed_record == expected_record
+
     def test_level_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,
@@ -573,7 +739,7 @@ class TestBaseInsightsStream:
         [
             ("2024-01-01", "2024-02-29", "2024-02-19", 10),
             ("2024-01-01", "2024-02-29", "2024-02-01", 28),
-            ("2018-01-01", "2020-02-29", "2021-02-01", 28),
+            ("2018-01-01", "2020-02-29", "2021-02-02", 28),
         ],
         ids=[
             "with_stream_state in 37 month interval__stream_state_minus_lookback_10_expected",
@@ -585,10 +751,10 @@ class TestBaseInsightsStream:
     def test_start_date_with_lookback_window(
         self, api, some_config, config_start_date: str, saved_cursor_date: str, expected_start_date: str, lookback_window: int
     ):
-        start_date = pendulum.parse(config_start_date)
-        end_date = start_date + duration(days=10)
+        start_date = ab_datetime_parse(config_start_date)
+        end_date = start_date + timedelta(days=10)
         state = (
-            {"unknown_account": {AdsInsights.cursor_field: pendulum.parse(saved_cursor_date).isoformat()}} if saved_cursor_date else None
+            {"unknown_account": {AdsInsights.cursor_field: ab_datetime_parse(saved_cursor_date).isoformat()}} if saved_cursor_date else None
         )
         stream = AdsInsights(
             api=api,
@@ -598,7 +764,7 @@ class TestBaseInsightsStream:
             insights_lookback_window=lookback_window,
         )
         stream.state = state
-        assert stream._get_start_date().get("unknown_account").to_date_string() == expected_start_date
+        assert str(stream._get_start_date().get("unknown_account")) == expected_start_date
 
     @pytest.mark.parametrize(
         "breakdowns, record, expected_record",
@@ -677,8 +843,8 @@ class TestBaseInsightsStream:
         ),
     )
     def test_transform_breakdowns(self, api, some_config, breakdowns, record, expected_record):
-        start_date = pendulum.parse("2024-01-01")
-        end_date = start_date + duration(days=10)
+        start_date = ab_datetime_parse("2024-01-01")
+        end_date = start_date + timedelta(days=10)
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
@@ -707,8 +873,8 @@ class TestBaseInsightsStream:
         ),
     )
     def test_primary_keys(self, api, some_config, breakdowns, expect_pks):
-        start_date = pendulum.parse("2024-01-01")
-        end_date = start_date + duration(days=10)
+        start_date = ab_datetime_parse("2024-01-01")
+        end_date = start_date + timedelta(days=10)
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
@@ -749,8 +915,8 @@ class TestBaseInsightsStream:
         ),
     )
     def test_object_pk_added_to_schema(self, api, some_config, breakdowns, expect_pks):
-        start_date = pendulum.parse("2024-01-01")
-        end_date = start_date + duration(days=10)
+        start_date = ab_datetime_parse("2024-01-01")
+        end_date = start_date + timedelta(days=10)
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],

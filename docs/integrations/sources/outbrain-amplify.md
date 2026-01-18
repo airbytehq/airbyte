@@ -2,29 +2,29 @@
 
 ## Sync overview
 
-This source can sync data for the [Outbrain Amplify API](https://amplifyv01.docs.apiary.io/#reference/authentications). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+This source can sync data for the [Outbrain Amplify API](https://amplifyv01.docs.apiary.io/#reference/authentications). It supports Full Refresh syncs only. The connector will copy all rows in the tables and columns you set up for replication every time a sync is run.
 
 ### Output schema
 
-This Source is capable of syncing the following core Streams:
+This Source is capable of syncing the following streams:
 
-- marketers stream.
-- campaigns by marketers stream.-Incremental
-- campaigns geo-location stream.
-- promoted links for campaigns stream.
-- promoted links sequence for campaigns stream.
-- budgets for marketers stream.
-- performance report campaigns by marketers stream.
-- performance report periodic by marketers stream.
-- performance report periodic by marketers campaign stream.
-- performance report periodic content by promoted links campaign stream.
-- performance report marketers by publisher stream.
-- performance report publishers by campaigns stream.
-- performance report marketers by platforms stream.
-- performance report marketers campaigns by platforms stream.
-- performance report marketers by geo performance stream.
-- performance report marketers campaigns by geo stream.
-- performance report marketers by Interest stream.
+- **marketers** - List of marketers
+- **campaigns** - Campaigns by marketers
+- **campaigns_geo_location** - Campaign geo-location targeting
+- **promoted_links** - Promoted links for campaigns
+- **promoted_links_sequences** - Promoted links sequences for campaigns
+- **budgets** - Budgets for marketers
+- **performance_campaigns** - Performance statistics for campaigns by marketers
+- **performance_periodic** - Periodic performance statistics by marketers
+- **performance_periodic_campaigns** - Periodic performance statistics by campaigns
+- **performance_promoted_links** - Periodic performance statistics by promoted links
+- **performance_publishers** - Performance statistics by publisher
+- **performance_publishers_campaigns** - Performance statistics by publishers and campaigns
+- **performance_platforms** - Performance statistics by platform
+- **performance_platforms_campaigns** - Performance statistics by platforms and campaigns
+- **performance_geo** - Performance statistics by geo location
+- **performance_geo_campaigns** - Performance statistics by geo location and campaigns
+- **performance_interests** - Performance statistics by interest
 
 ### Data type mapping
 
@@ -41,7 +41,7 @@ This Source is capable of syncing the following core Streams:
 | Feature           | Supported?\(Yes/No\) | Notes |
 | :---------------- | :------------------- | :---- |
 | Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | Yes                  |       |
+| Incremental Sync  | No                   |       |
 | Namespaces        | No                   |       |
 
 ### Performance considerations
@@ -52,11 +52,32 @@ The Outbrain Amplify connector should not run into Outbrain Amplify API limitati
 
 ### Requirements
 
-- Credentials and start-date.
+- Outbrain Amplify account credentials (either username/password or access token)
+- Start date for data replication
 
 ### Setup guide
 
-Specify credentials and a start date.
+1. **Authentication**: You can authenticate using either:
+   - **Access Token**: Provide your Outbrain Amplify API access token
+   - **Username and Password**: Provide your Outbrain Amplify username and password
+
+2. **Start Date** (required): Specify the date from which you want to start syncing data in YYYY-MM-DD format (e.g., 2017-01-25). Any data before this date will not be replicated.
+
+3. **End Date** (optional): Optionally specify an end date in YYYY-MM-DD format to limit data replication to a specific time range.
+
+4. **Report Granularity** (optional): Choose the granularity for periodic reports:
+   - daily (default)
+   - weekly
+   - monthly
+
+5. **Geo Location Breakdown** (optional): Choose the granularity for geo-location data:
+   - country
+   - region (default)
+   - subregion
+
+6. **Conversion Count** (optional): Define how conversions are counted in reports:
+   - conversion_time (default) - Count conversions by the time they occurred
+   - click/view_time - Count conversions by the time of the click or view that led to them
 
 ## Changelog
 
@@ -65,6 +86,11 @@ Specify credentials and a start date.
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.2.21 | 2025-10-14 | [67754](https://github.com/airbytehq/airbyte/pull/67754) | Update dependencies |
+| 0.2.20 | 2025-10-07 | [67079](https://github.com/airbytehq/airbyte/pull/67079/) | Fix broken pagination. |
+| 0.2.19 | 2025-10-07 | [67354](https://github.com/airbytehq/airbyte/pull/67354) | Update dependencies |
+| 0.2.18 | 2025-09-30 | [66383](https://github.com/airbytehq/airbyte/pull/66383) | Update dependencies |
+| 0.2.17 | 2025-09-09 | [65847](https://github.com/airbytehq/airbyte/pull/65847) | Update dependencies |
 | 0.2.16 | 2025-08-23 | [65178](https://github.com/airbytehq/airbyte/pull/65178) | Update dependencies |
 | 0.2.15 | 2025-08-16 | [64979](https://github.com/airbytehq/airbyte/pull/64979) | Update dependencies |
 | 0.2.14 | 2025-08-09 | [64678](https://github.com/airbytehq/airbyte/pull/64678) | Update dependencies |

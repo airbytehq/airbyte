@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_data_lake.io
@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.PolarisCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
@@ -34,6 +35,9 @@ import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
+import org.apache.iceberg.rest.auth.OAuth2Properties.CREDENTIAL
+import org.apache.iceberg.rest.auth.OAuth2Properties.OAUTH2_SERVER_URI
+import org.apache.iceberg.rest.auth.OAuth2Properties.SCOPE
 import org.projectnessie.client.NessieConfigConstants
 
 private const val AWS_REGION = "aws.region"
@@ -96,6 +100,9 @@ class S3DataLakeUtil(
                 //                System.setProperty(AWS_REGION, region)
                 buildRestProperties(config, catalogConfig, s3Properties, region)
             }
+            is PolarisCatalogConfiguration -> {
+                buildPolarisProperties(config, catalogConfig, s3Properties, region)
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"
@@ -129,6 +136,40 @@ class S3DataLakeUtil(
             )
 
         return restProperties + s3Properties
+    }
+
+    private fun buildPolarisProperties(
+        config: S3DataLakeConfiguration,
+        catalogConfig: PolarisCatalogConfiguration,
+        s3Properties: Map<String, String>,
+        region: String?
+    ): Map<String, String> {
+        val awsAccessKeyId =
+            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
+                "AWS Access Key ID is required for Polaris configuration"
+            }
+        val awsSecretAccessKey =
+            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
+                "AWS Secret Access Key is required for Polaris configuration"
+            }
+
+        val credential =
+            "${requireNotNull(catalogConfig.clientId)}:${requireNotNull(catalogConfig.clientSecret)}"
+        val restProperties =
+            mapOfNotNull(
+                CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_REST,
+                AwsClientProperties.CLIENT_REGION to region,
+                URI to catalogConfig.serverUri,
+                CREDENTIAL to credential,
+                SCOPE to catalogConfig.scope,
+                OAUTH2_SERVER_URI to catalogConfig.oauth2ServerUri,
+                CatalogProperties.WAREHOUSE_LOCATION to catalogConfig.catalogName,
+                S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
+                S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+            )
+
+        return restProperties +
+            s3Properties.filterKeys { it != CatalogProperties.WAREHOUSE_LOCATION }
     }
 
     private fun buildS3Properties(
@@ -196,12 +237,10 @@ class S3DataLakeUtil(
                 AwsClientProperties.CLIENT_REGION to region,
             )
 
+        val roleArn = catalogConfig.awsArnRoleConfiguration.roleArn
         val clientProperties =
-            if (catalogConfig.awsArnRoleConfiguration.roleArn != null) {
-                buildRoleBasedClientProperties(
-                    catalogConfig.awsArnRoleConfiguration.roleArn!!,
-                    config
-                )
+            if (!roleArn.isNullOrBlank()) {
+                buildRoleBasedClientProperties(roleArn, config)
             } else {
                 buildKeyBasedClientProperties(config)
             }

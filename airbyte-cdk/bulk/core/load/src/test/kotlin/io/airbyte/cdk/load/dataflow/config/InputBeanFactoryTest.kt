@@ -1,19 +1,23 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.config
 
+import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStoreFactory
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.input.DataFlowPipelineInputFlow
-import io.airbyte.cdk.load.dataflow.input.DestinationMessageInputFlow
+import io.airbyte.cdk.load.dataflow.input.JsonDestinationMessageInputFlow
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.stats.CommittedStatsStore
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.file.ClientSocket
+import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -22,6 +26,7 @@ import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.io.ByteArrayInputStream
+import kotlinx.coroutines.CoroutineDispatcher
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -33,6 +38,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 class InputBeanFactoryTest {
 
     @MockK private lateinit var deserializer: ProtocolMessageDeserializer
+
+    @MockK private lateinit var destinationMessageFactory: DestinationMessageFactory
 
     @MockK private lateinit var stateStore: StateStore
 
@@ -50,7 +57,15 @@ class InputBeanFactoryTest {
 
     @MockK private lateinit var stateHistogramStore: StateHistogramStore
 
-    private var memoryAndParallelismConfig = MemoryAndParallelismConfig()
+    @MockK private lateinit var emittedStatsStore: EmittedStatsStore
+
+    @MockK private lateinit var committedStatsStore: CommittedStatsStore
+
+    @MockK private lateinit var aggregationDispatcher: CoroutineDispatcher
+
+    @MockK private lateinit var flushDispatcher: CoroutineDispatcher
+
+    private var aggregatePublishingConfig = AggregatePublishingConfig()
 
     private lateinit var factory: InputBeanFactory
 
@@ -76,7 +91,8 @@ class InputBeanFactoryTest {
             factory.sockets(
                 socketPaths = socketPaths,
                 bufferSizeBytes = bufferSizeBytes,
-                socketConnectionTimeoutMs = socketConnectionTimeoutMs
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = null
             )
 
         // Then
@@ -98,12 +114,92 @@ class InputBeanFactoryTest {
             factory.sockets(
                 socketPaths = socketPaths,
                 bufferSizeBytes = bufferSizeBytes,
-                socketConnectionTimeoutMs = socketConnectionTimeoutMs
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = null
             )
 
         // Then
         assertEquals(1, result.size)
         assertEquals("/tmp/single.socket", result[0].socketPath)
+    }
+
+    @Test
+    fun `sockets should limit to configured numSockets when less than available`() {
+        // Given
+        val socketPaths = listOf("/tmp/socket1", "/tmp/socket2", "/tmp/socket3", "/tmp/socket4")
+        val bufferSizeBytes = 8192
+        val socketConnectionTimeoutMs = 5000L
+        val socketConfig =
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = 2
+            }
+
+        // When
+        val result =
+            factory.sockets(
+                socketPaths = socketPaths,
+                bufferSizeBytes = bufferSizeBytes,
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = socketConfig
+            )
+
+        // Then
+        assertEquals(2, result.size)
+        assertEquals("/tmp/socket1", result[0].socketPath)
+        assertEquals("/tmp/socket2", result[1].socketPath)
+    }
+
+    @Test
+    fun `sockets should use all available when configured numSockets exceeds available`() {
+        // Given
+        val socketPaths = listOf("/tmp/socket1", "/tmp/socket2")
+        val bufferSizeBytes = 8192
+        val socketConnectionTimeoutMs = 5000L
+        val socketConfig =
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = 10
+            }
+
+        // When
+        val result =
+            factory.sockets(
+                socketPaths = socketPaths,
+                bufferSizeBytes = bufferSizeBytes,
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = socketConfig
+            )
+
+        // Then
+        assertEquals(2, result.size)
+        assertEquals("/tmp/socket1", result[0].socketPath)
+        assertEquals("/tmp/socket2", result[1].socketPath)
+    }
+
+    @Test
+    fun `sockets should use exact count when configured numSockets equals available`() {
+        // Given
+        val socketPaths = listOf("/tmp/socket1", "/tmp/socket2", "/tmp/socket3")
+        val bufferSizeBytes = 8192
+        val socketConnectionTimeoutMs = 5000L
+        val socketConfig =
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = 3
+            }
+
+        // When
+        val result =
+            factory.sockets(
+                socketPaths = socketPaths,
+                bufferSizeBytes = bufferSizeBytes,
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = socketConfig
+            )
+
+        // Then
+        assertEquals(3, result.size)
+        assertEquals("/tmp/socket1", result[0].socketPath)
+        assertEquals("/tmp/socket2", result[1].socketPath)
+        assertEquals("/tmp/socket3", result[2].socketPath)
     }
 
     @Test
@@ -169,10 +265,16 @@ class InputBeanFactoryTest {
         // Given
         val inputStream1 = ByteArrayInputStream("stream1".toByteArray())
         val inputStream2 = ByteArrayInputStream("stream2".toByteArray())
-        val inputStreams = listOf(inputStream1, inputStream2)
+        val inputStreams = ConnectorInputStreams(listOf(inputStream1, inputStream2))
 
         // When
-        val result = factory.messageFlows(inputStreams, deserializer)
+        val result =
+            factory.messageFlows(
+                inputStreams,
+                DataChannelFormat.JSONL,
+                deserializer,
+                destinationMessageFactory
+            )
 
         // Then
         assertEquals(2, result.size)
@@ -183,8 +285,8 @@ class InputBeanFactoryTest {
     @Test
     fun `inputFlows should create DataFlowPipelineInputFlow for each message flow`() {
         // Given
-        val messageFlow1 = mockk<DestinationMessageInputFlow>()
-        val messageFlow2 = mockk<DestinationMessageInputFlow>()
+        val messageFlow1 = mockk<JsonDestinationMessageInputFlow>()
+        val messageFlow2 = mockk<JsonDestinationMessageInputFlow>()
         val messageFlows = listOf(messageFlow1, messageFlow2)
 
         // When
@@ -193,7 +295,8 @@ class InputBeanFactoryTest {
                 messageFlows = messageFlows,
                 stateStore = stateStore,
                 stateKeyClient = stateKeyClient,
-                completionTracker = completionTracker
+                completionTracker = completionTracker,
+                statsStore = emittedStatsStore,
             )
 
         // Then
@@ -220,7 +323,11 @@ class InputBeanFactoryTest {
                 state = stateStage,
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig
+                statsStore = committedStatsStore,
+                aggregatePublishingConfig = aggregatePublishingConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
+                finalFlushDispatcher = flushDispatcher,
             )
 
         // Then
@@ -254,7 +361,11 @@ class InputBeanFactoryTest {
                 state = stateStage,
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig
+                statsStore = committedStatsStore,
+                aggregatePublishingConfig = aggregatePublishingConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
+                finalFlushDispatcher = flushDispatcher,
             )
 
         // Then
@@ -276,16 +387,23 @@ class InputBeanFactoryTest {
 
         every { aggregateStoreFactory.make() } returns mockk()
 
-        val inputStreams = listOf(mockInputStream1, mockInputStream2)
+        val inputStreams = ConnectorInputStreams(listOf(mockInputStream1, mockInputStream2))
 
-        val messageFlows = factory.messageFlows(inputStreams, deserializer)
+        val messageFlows =
+            factory.messageFlows(
+                inputStreams,
+                DataChannelFormat.JSONL,
+                deserializer,
+                destinationMessageFactory
+            )
 
         val inputFlows =
             factory.inputFlows(
                 messageFlows = messageFlows,
                 stateStore = stateStore,
                 stateKeyClient = stateKeyClient,
-                completionTracker = completionTracker
+                completionTracker = completionTracker,
+                statsStore = emittedStatsStore,
             )
 
         val pipes =
@@ -296,7 +414,11 @@ class InputBeanFactoryTest {
                 state = stateStage,
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig
+                statsStore = committedStatsStore,
+                aggregatePublishingConfig = aggregatePublishingConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
+                finalFlushDispatcher = flushDispatcher,
             )
 
         // Then

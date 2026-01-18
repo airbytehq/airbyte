@@ -1,0 +1,113 @@
+# Autodoc Workflow
+#
+# This workflow automatically triggers documentation updates for connectors
+# when changes are pushed to master. It uses Devin AI to review connector changes and
+# update the corresponding user documentation to ensure it stays current with code changes.
+#
+# Workflow triggers:
+# - Only on pushes to master branch
+# - Excludes bot-authored pushes to prevent automation loops
+# - Processes any connector with metadata.yaml changes
+#
+# Limitations:
+# - The workflow only identifies one connector per push (the first metadata.yaml found)
+# - However, Devin AI is usually smart enough to detect and document all changed connectors
+#   in a multi-connector push, even if the workflow only explicitly identifies one
+
+name: Autodoc
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update-connector-documentation:
+    name: Update connector documentation with AI
+    runs-on: ubuntu-latest
+    # Only run for human authors, exclude bot accounts
+    if: |
+      !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.actor) &&
+      !endsWith(github.actor, '[bot]')
+
+    steps:
+      # Step 1: Get the pushed code
+      - name: Checkout pushed code
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0 # Full history needed for comprehensive analysis
+
+      # Step 2: Analyze what files were changed in this push
+      - name: Get files changed in this push
+        id: push-files
+        run: |
+          # Verify jq is available (pre-installed on GitHub runners, but check defensively)
+          if ! command -v jq &> /dev/null; then
+            echo "::error::jq is required but not found. Please ensure the runner image includes jq."
+            exit 1
+          fi
+
+          BEFORE="${{ github.event.before }}"
+          SHA="${{ github.sha }}"
+
+          # Handle edge cases where github.event.before may be invalid
+          # (e.g., all-zeros for first push, or commit not present locally after force push)
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "⚠️  No valid 'before' commit (first push or force push) - using first parent as fallback"
+            BEFORE="${SHA}^"
+          elif ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            echo "⚠️  'before' commit not found locally - using first parent as fallback"
+            BEFORE="${SHA}^"
+          fi
+
+          echo "🔍 Fetching files changed in push from $BEFORE to $SHA..."
+          FILES=$(git diff --name-only "$BEFORE" "$SHA" 2>/dev/null | jq -R -s -c 'split("\n")[:-1]') || FILES="[]"
+
+          if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
+            echo "ℹ️  No files changed in this push - skipping documentation update."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "files=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "✅ Successfully fetched changed files list"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+      # Step 3: Check if this push affects a connector
+      - name: Check for connector changes
+        if: steps.push-files.outputs.has_changes == 'true'
+        id: check-connector
+        run: |
+          echo "🔍 Checking if push contains connector changes..."
+
+          # Parse the changed files from Step 2
+          CHANGED_FILES='${{ steps.push-files.outputs.files }}'
+
+          # Filter for connector metadata.yaml files in the changed files using jq
+          METADATA_FILE=$(echo "$CHANGED_FILES" | jq -r '.[] | select(test("airbyte-integrations/connectors/.*/metadata\\.yaml$"))' | head -n 1)
+
+          if [ -z "$METADATA_FILE" ]; then
+            echo "ℹ️  No connector metadata.yaml file found in changed files - this push doesn't affect connectors"
+            echo "connector_changed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "📋 Found connector metadata file: $METADATA_FILE"
+          echo "✅ Connector change detected - documentation update needed"
+          echo "connector_changed=true" >> $GITHUB_OUTPUT
+
+      # Step 4: Trigger AI documentation update for connector changes
+      - name: Start AI documentation update session
+        if: steps.check-connector.outputs.connector_changed == 'true'
+        env:
+          PROMPT_TEXT: "The commit to review is ${{ github.sha }}. This commit was pushed to master and may contain connector changes that need documentation updates."
+        uses: aaronsteers/devin-action@98d15ae93d1848914f5ab8e9ce45341182958d27 # v0.1.7 - Pinned to specific commit for security
+        with:
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          playbook-macro: "!connectordocs" # Use the connector documentation playbook
+          prompt-text: ${{ env.PROMPT_TEXT }}
+          tags: |
+            area/documentation
+            team/documentation

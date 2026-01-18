@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test
 @Property(name = "airbyte.connector.config.cursor.cursor_method", value = "cdc")
 @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
 @Property(name = "airbyte.connector.data-channel.medium", value = "STDIO")
+@Property(name = "airbyte.connector.data-channel.format", value = "JSONL")
 class StateManagerGlobalStatesTest {
     @Inject lateinit var config: SourceConfiguration
 

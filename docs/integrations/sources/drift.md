@@ -56,6 +56,15 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.42 | 2026-01-14 | [71604](https://github.com/airbytehq/airbyte/pull/71604) | Update dependencies |
+| 0.4.41 | 2025-12-18 | [70549](https://github.com/airbytehq/airbyte/pull/70549) | Update dependencies |
+| 0.4.40 | 2025-11-25 | [70156](https://github.com/airbytehq/airbyte/pull/70156) | Update dependencies |
+| 0.4.39 | 2025-11-18 | [69358](https://github.com/airbytehq/airbyte/pull/69358) | Update dependencies |
+| 0.4.38 | 2025-10-29 | [68752](https://github.com/airbytehq/airbyte/pull/68752) | Update dependencies |
+| 0.4.37 | 2025-10-21 | [68571](https://github.com/airbytehq/airbyte/pull/68571) | Update dependencies |
+| 0.4.36 | 2025-10-14 | [67732](https://github.com/airbytehq/airbyte/pull/67732) | Update dependencies |
+| 0.4.35 | 2025-10-07 | [67278](https://github.com/airbytehq/airbyte/pull/67278) | Update dependencies |
+| 0.4.34 | 2025-09-30 | [65764](https://github.com/airbytehq/airbyte/pull/65764) | Update dependencies |
 | 0.4.33 | 2025-08-23 | [65302](https://github.com/airbytehq/airbyte/pull/65302) | Update dependencies |
 | 0.4.32 | 2025-08-09 | [64363](https://github.com/airbytehq/airbyte/pull/64363) | Update dependencies |
 | 0.4.31 | 2025-07-26 | [63987](https://github.com/airbytehq/airbyte/pull/63987) | Update dependencies |

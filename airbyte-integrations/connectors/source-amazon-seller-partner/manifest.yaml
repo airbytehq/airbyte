@@ -164,8 +164,6 @@ spec:
               - GET_FBA_INVENTORY_PLANNING_DATA
               - GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA
               - GET_FBA_REIMBURSEMENTS_DATA
-              - GET_FBA_SNS_FORECAST_DATA
-              - GET_FBA_SNS_PERFORMANCE_DATA
               - GET_FBA_STORAGE_FEE_CHARGES_DATA
               - GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING
               - GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
@@ -222,34 +220,43 @@ spec:
         default: false
         order: 12
       financial_events_step:
-        title: Financial Events Step Size (in days)
-        description: 'The time window size (in days) for fetching financial events data
-          in chunks. Options are 1 day, 7 days, 14 days, 30 days, 60 days, and 190 days,
-          based on API limitations.
+        title: Financial Events Step Size
+        description: 'The time window size for fetching financial events data in chunks
+          for the ListFinancialEvents and ListFinancialEventGroups streams. Options
+          include hourly (1H, 6H, 12H) and daily (1D, 7D, 14D, 30D, 60D, 90D, 180D)
+          granularity.
 
 
-          - **Smaller step sizes (e.g., 1 day)** are better for large data volumes.
-          They fetch smaller chunks per request, reducing the risk of timeouts or overwhelming
-          the API, though more requests may slow syncing and increase the chance of
-          hitting rate limits.
+          - **Hourly step sizes (e.g., 1H, 6H)** are recommended for very high data volumes
+          where daily windows cause pagination token expiration (TTL errors). They fetch
+          smaller chunks per request, reducing the risk of timeouts.
 
-          - **Larger step sizes (e.g., 14 days)** are better for smaller data volumes.
+          - **Daily step sizes (e.g., 1D, 7D)** are better for moderate data volumes.
+          They balance sync speed with API efficiency.
+
+          - **Larger step sizes (e.g., 30D, 180D)** are better for smaller data volumes.
           They fetch more data per request, speeding up syncing and reducing the number
-          of API calls, which minimizes strain on rate limits.
+          of API calls.
 
 
           Select a step size that matches your data volume to optimize syncing speed
           and API performance.'
         type: string
         enum:
-        - '1'
-        - '7'
-        - '14'
-        - '30'
-        - '60'
-        - '90'
-        - '180'
-        default: '180'
+        - '1H'
+        - '2H'
+        - '4H'
+        - '6H'
+        - '8H'
+        - '12H'
+        - '1D'
+        - '7D'
+        - '14D'
+        - '30D'
+        - '60D'
+        - '90D'
+        - '180D'
+        default: '180D'
         order: 13
       num_workers:
         title: Number of Workers
@@ -373,6 +380,15 @@ spec:
                   {%- endfor -%}
                   {{- report_options_list -}}
             condition: "{{ config.get('report_options_list', False) }}"
+      - type: ConfigMigration
+        description: Starting from version with hourly granularity support, the `financial_events_step` property uses a suffix (H for hours, D for days). This migration adds the 'D' suffix to existing numeric values for backward compatibility.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["financial_events_step"]
+                value: "{{ config.get('financial_events_step') ~ 'D' }}"
+            condition: "{{ config.get('financial_events_step', False) and config.get('financial_events_step') | string not in ['1H', '2H', '4H', '6H', '8H', '12H', '1D', '7D', '14D', '30D', '60D', '90D', '180D'] }}"
     transformations:
       - type: ConfigAddFields
         fields:
@@ -856,7 +872,6 @@ definitions:
       name: ListFinancialEventGroups
       primary_key:
         - FinancialEventGroupId
-      ignore_stream_slicer_parameters_on_paginated_requests: false
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: FinancialEventGroupStart
@@ -879,10 +894,11 @@ definitions:
         end_time_option:
           field_name: FinancialEventGroupStartedBefore
           inject_into: request_parameter
-        step: "P{{ config.get('financial_events_step', 180) }}D"
+        step: "{% set step_value = config.get('financial_events_step', '180D') %}{% if step_value.endswith('H') %}PT{{ step_value[:-1] }}H{% else %}P{{ step_value[:-1] if step_value.endswith('D') else step_value }}D{% endif %}"
         cursor_granularity: "PT1S"
       retriever:
         type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: true
         requester:
           $ref: "#/definitions/base_requester"
           path: "finances/v0/financialEventGroups"
@@ -931,7 +947,6 @@ definitions:
       type: DeclarativeStream
       name: ListFinancialEvents
       primary_key: []
-      ignore_stream_slicer_parameters_on_paginated_requests: false
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: PostedBefore
@@ -954,7 +969,7 @@ definitions:
         end_time_option:
           field_name: PostedBefore
           inject_into: request_parameter
-        step: "P{{ config.get('financial_events_step', 180) }}D"
+        step: "{% set step_value = config.get('financial_events_step', '180D') %}{% if step_value.endswith('H') %}PT{{ step_value[:-1] }}H{% else %}P{{ step_value[:-1] if step_value.endswith('D') else step_value }}D{% endif %}"
         cursor_granularity: "PT1S"
       transformations:
         - type: AddFields
@@ -963,6 +978,7 @@ definitions:
               value: "{{ stream_slice['end_time'] }}"
       retriever:
         type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: true
         requester:
           $ref: "#/definitions/base_requester"
           path: "finances/v0/financialEvents"
@@ -1771,90 +1787,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/get_flat_file_archived_orders_data_by_order_date"
-
-    get_fba_sns_performance_data:
-      type: DeclarativeStream
-      name: GET_FBA_SNS_PERFORMANCE_DATA
-      primary_key: []
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: dataEndTime
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
-        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
-        cursor_granularity: "PT1S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      retriever:
-        $ref: "#/definitions/basic_async_retriever"
-        creation_requester:
-          $ref: "#/definitions/basic_async_retriever/creation_requester"
-          request_body_json:
-            reportType: GET_FBA_SNS_PERFORMANCE_DATA
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
-            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
-      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
-      transformations:
-        - type: AddFields
-          fields:
-            - path: ["dataEndTime"]
-              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/get_fba_sns_performance_data"
-
-    get_fba_sns_forecast_data:
-      type: DeclarativeStream
-      name: GET_FBA_SNS_FORECAST_DATA
-      primary_key: []
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: dataEndTime
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
-        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
-        cursor_granularity: "PT1S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      retriever:
-        $ref: "#/definitions/basic_async_retriever"
-        creation_requester:
-          $ref: "#/definitions/basic_async_retriever/creation_requester"
-          request_body_json:
-            reportType: GET_FBA_SNS_FORECAST_DATA
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
-            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
-      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
-      transformations:
-        - type: AddFields
-          fields:
-            - path: ["dataEndTime"]
-              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/get_fba_sns_forecast_data"
 
     get_merchants_listings_fyp_report:
       type: DeclarativeStream
@@ -2795,6 +2727,49 @@ api_budget:
       matchers:
         - method: GET
           url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
+
+    # SP-API Reports v2021-06-30
+
+    # 1) Create report  (POST /reports/2021-06-30/reports)
+    #   Default: ~0.0167 rps (≈1/min), burst 15
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT1M
+      matchers:
+        - method: POST
+          url_path_pattern: "reports/2021-06-30/reports$"
+
+    # 2) Poll report status  (GET /reports/2021-06-30/reports/{reportId})
+    #   Default: 2 rps, burst 15
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 2
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "reports/2021-06-30/reports/[^/]+$"
+
+    # 3) Get report document metadata  (GET /reports/2021-06-30/documents/{documentId})
+    #   Default: ~0.0167 rps (≈1/min), burst 15
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "reports/2021-06-30/documents/[^/]+$"
+
+    # SP-API Finances v0
+    # ListFinancialEvents: Rate 0.5 rps, Burst 30
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT2S
+      matchers:
+        - method: GET
+          url_path_pattern: "finances/v0/financialEvents(\\?.*)?$"
+
   # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
 
@@ -2827,8 +2802,6 @@ streams:
   - $ref: "#/definitions/streams/get_fba_inventory_planning_data"
   - $ref: "#/definitions/streams/get_flat_file_returns_data_by_return_date"
   - $ref: "#/definitions/streams/get_flat_file_archived_orders_data_by_order_date"
-  - $ref: "#/definitions/streams/get_fba_sns_performance_data"
-  - $ref: "#/definitions/streams/get_fba_sns_forecast_data"
   - $ref: "#/definitions/streams/get_merchants_listings_fyp_report"
   - $ref: "#/definitions/streams/get_merchant_cancelled_listings_data"
   - $ref: "#/definitions/streams/get_merchant_listings_data_back_compat"
@@ -5524,245 +5497,6 @@ schemas:
         - string
       dataEndTime:
         description: The end time of the data
-        type:
-        - 'null'
-        - string
-        format: date
-  get_fba_sns_performance_data:
-    title: Subscribe and Save Performance Report
-    description: ''
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties:
-      offer-state:
-        description: Current state of the offer for the product.
-        type:
-        - 'null'
-        - string
-      snapshot-date:
-        description: Date and time when the snapshot of data is taken.
-        type:
-        - 'null'
-        - string
-        format: date-time
-      sku:
-        description: Stock Keeping Unit for the product.
-        type:
-        - 'null'
-        - string
-      fnsku:
-        description: Fulfillment Network SKU.
-        type:
-        - 'null'
-        - string
-      asin:
-        description: Unique identifier for the product ASIN.
-        type:
-        - 'null'
-        - string
-      product-name:
-        description: Name of the product.
-        type:
-        - 'null'
-        - string
-      country:
-        description: Country where the data is collected.
-        type:
-        - 'null'
-        - string
-      week-1-start-date:
-        description: Start date of week 1 in date-time format.
-        type:
-        - 'null'
-        - string
-        format: date-time
-      sns-units-shipped-week-1:
-        description: Units shipped on SNS for week 1.
-        type:
-        - 'null'
-        - string
-      oos-rate-week-1:
-        description: Out of stock rate for week 1.
-        type:
-        - 'null'
-        - string
-      sns-sale-price-week-1:
-        description: Sale price on SNS for week 1.
-        type:
-        - 'null'
-        - string
-      sns-discount-week-1:
-        description: Discount applied in week 1 on SNS.
-        type:
-        - 'null'
-        - string
-      sns-units-shipped-week-2:
-        description: Units shipped on SNS for week 2.
-        type:
-        - 'null'
-        - string
-      oos-rate-week-2:
-        description: Out of stock rate for week 2.
-        type:
-        - 'null'
-        - string
-      sns-sale-price-week-2:
-        description: Sale price on SNS for week 2.
-        type:
-        - 'null'
-        - string
-      sns-discount-week-2:
-        description: Discount applied in week 2 on SNS.
-        type:
-        - 'null'
-        - string
-      sns-units-shipped-week-3:
-        description: Units shipped on SNS for week 3.
-        type:
-        - 'null'
-        - string
-      oos-rate-week-3:
-        description: Out of stock rate for week 3.
-        type:
-        - 'null'
-        - string
-      sns-sale-price-week-3:
-        description: Sale price on SNS for week 3.
-        type:
-        - 'null'
-        - string
-      sns-discount-week-3:
-        description: Discount applied in week 3 on SNS.
-        type:
-        - 'null'
-        - string
-      sns-units-shipped-week-4:
-        description: Units shipped on SNS for week 4.
-        type:
-        - 'null'
-        - string
-      oos-rate-week-4:
-        description: Out of stock rate for week 4.
-        type:
-        - 'null'
-        - string
-      sns-sale-price-week-4:
-        description: Sale price on SNS for week 4.
-        type:
-        - 'null'
-        - string
-      sns-discount-week-4:
-        description: Discount applied in week 4 on SNS.
-        type:
-        - 'null'
-        - string
-      dataEndTime:
-        description: End time of the data in date format.
-        type:
-        - 'null'
-        - string
-        format: date
-  get_fba_sns_forecast_data:
-    title: Subscribe and Save Forecast Report
-    description: ''
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties:
-      offer-state:
-        description: Current state of the offer for the product.
-        type:
-        - 'null'
-        - string
-      snapshot-date:
-        description: Date and time when the snapshot of the data was taken.
-        type:
-        - 'null'
-        - string
-        format: date-time
-      sku:
-        description: Stock Keeping Unit (SKU) for the product.
-        type:
-        - 'null'
-        - string
-      fnsku:
-        description: Fulfillment Network SKU (FNSKU) for the product.
-        type:
-        - 'null'
-        - string
-      asin:
-        description: Unique identifier for the ASIN (Amazon Standard Identification Number).
-        type:
-        - 'null'
-        - string
-      estimated-avg-sns-discount-next-8-weeks:
-        description: Estimated average discount on Subscribe & Save units for the next
-          8 weeks.
-        type:
-        - 'null'
-        - string
-      product-name:
-        description: Name of the product associated with the ASIN.
-        type:
-        - 'null'
-        - string
-      country:
-        description: Country for which the forecast data is applicable.
-        type:
-        - 'null'
-        - string
-      active-subscriptions:
-        description: Number of active subscriptions for the ASIN in the specified country.
-        type:
-        - 'null'
-        - string
-      week-1-start-date:
-        description: Start date and time for week 1 of the forecast period.
-        type:
-        - 'null'
-        - string
-        format: date-time
-      scheduled-sns-units-week-1:
-        description: Number of scheduled Subscribe & Save units for week 1.
-        type:
-        - 'null'
-        - string
-      scheduled-sns-units-week-2:
-        description: Number of scheduled Subscribe & Save units for week 2.
-        type:
-        - 'null'
-        - string
-      scheduled-sns-units-week-3:
-        description: Number of scheduled Subscribe & Save units for week 3.
-        type:
-        - 'null'
-        - string
-      scheduled-sns-units-week-4:
-        description: Number of scheduled Subscribe & Save units for week 4.
-        type:
-        - 'null'
-        - string
-      scheduled-sns-units-week-5:
-        description: Number of scheduled Subscribe & Save units for week 5.
-        type:
-        - 'null'
-        - string
-      scheduled-sns-units-week-6:
-        description: Number of scheduled Subscribe & Save units for week 6.
-        type:
-        - 'null'
-        - string
-      scheduled-sns-units-week-7:
-        description: Number of scheduled Subscribe & Save units for week 7.
-        type:
-        - 'null'
-        - string
-      scheduled-sns-units-week-8:
-        description: Number of scheduled Subscribe & Save units for week 8.
-        type:
-        - 'null'
-        - string
-      dataEndTime:
-        description: End time for the forecast data, indicated in date format.
         type:
         - 'null'
         - string

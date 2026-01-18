@@ -1,14 +1,14 @@
 const { isEnterpriseConnectorDocsPage } = require("./utils");
 const { toAttributes } = require("../helpers/objects");
 const visit = require("unist-util-visit").visit;
-const { catalog } = require("../connector_registry");
+const { fetchRegistry } = require("../scripts/fetch-registry");
 
 const getEnterpriseConnectorVersion = async (dockerRepository) => {
   if (!dockerRepository) {
     return "No version information available";
   }
   try {
-    const registry = await catalog;
+    const registry = await fetchRegistry();
 
     const registryEntry = registry.find(
       (r) =>
@@ -52,6 +52,7 @@ const plugin = () => {
           dockerImageTag: version,
           github_url: undefined,
           originalTitle,
+          "enterprise-connector": vfile.data.frontMatter["enterprise-connector"] || true,
         };
 
         firstHeading = false;

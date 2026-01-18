@@ -86,18 +86,19 @@ In the `Manage / Certificates & secrets` panel, click `Client Secrets` and creat
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Azure Blob Storage from the Source type dropdown.
 4. Enter a name for the Azure Blob Storage connector.
-5. Enter the name of your Azure **Account**.
-6. Enter your Tenant ID and Click **Authenticate your Azure Blob Storage account**.
-7. Log in and authorize the Azure Blob Storage account.
-8. Enter the name of the **Container** containing your files to replicate.
-9. Add a stream
+5. Choose a [delivery method](/platform/using-airbyte/delivery-methods) for your data.
+6. Enter the name of your Azure **Account**.
+7. Enter your Tenant ID and Click **Authenticate your Azure Blob Storage account**.
+8. Log in and authorize the Azure Blob Storage account.
+9. Enter the name of the **Container** containing your files to replicate.
+10. Add a stream
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional)—If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-10. (Optional) Enter the endpoint to use for the data replication.
-11. (Optional) Enter the desired start date from which to begin replicating data.
+11. (Optional) Enter the endpoint to use for the data replication.
+12. (Optional) Enter the desired start date from which to begin replicating data.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -107,22 +108,23 @@ In the `Manage / Certificates & secrets` panel, click `Client Secrets` and creat
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Azure Blob Storage from the Source type dropdown.
 4. Enter a name for the Azure Blob Storage connector.
-5. Enter the name of your Azure **Storage Account** and **container**.
-6. Choose the Authentication method.
+5. Choose a [delivery method](/platform/using-airbyte/delivery-methods) for your data.
+6. Enter the name of your Azure **Storage Account** and **container**.
+7. Choose the Authentication method.
    1. If you are accessing through a Storage Account Key, choose `Authenticate via Storage Account Key` and enter the key.
    1. If you are accessing through a Service Principal, choose the `Authenticate via Client Credentials`.
      0. See [above](#step-1-set-up-azure-blob-storage) regarding setting IAM role bindings for the Service Principal and getting detail of the app registration
      1. Enter the `Directory (tenant) ID` value from app registration in Azure Portal into the `Tenant ID` field.
-     2. Enter the `Application (client) ID` from Azure Portal into the `Tenant ID` field. Note this is **not** the secret ID
+     2. Enter the `Application (client) ID` from Azure Portal into the `Client ID` field. Note this is **not** the secret ID
      3. Enter the Secret `Value` from Azure Portal into the `Client Secret` field.
-9. Add a stream
+8. Add a stream
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional)—If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-10. (Optional) Enter the endpoint to use for the data replication.
-11. (Optional) Enter the desired start date from which to begin replicating data.
+9. (Optional) Enter the endpoint to use for the data replication.
+10. (Optional) Enter the desired start date from which to begin replicating data.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -294,46 +296,70 @@ This connector utilizes the open source [Unstructured](https://unstructured-io.g
 
 The Azure Blob Storage connector should not encounter any [Microsoft API limitations](https://learn.microsoft.com/en-us/azure/storage/blobs/scalability-targets#scale-targets-for-blob-storage) under normal usage.
 
+### Copy raw files limitations
+
+When using the **Copy raw files** [delivery method](/platform/using-airbyte/delivery-methods):
+
+- Maximum file size: 1.5 GB per file
+- Requires Airbyte version 1.2.0 or later (1.7.0+ for metadata support)
+- Only works with file-based destinations that support file transfer
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.6.13 | 2025-08-23 | [65326](https://github.com/airbytehq/airbyte/pull/65326) | Update dependencies |
-| 0.6.12 | 2025-07-26 | [63800](https://github.com/airbytehq/airbyte/pull/63800) | Update dependencies |
-| 0.6.11 | 2025-07-19 | [63472](https://github.com/airbytehq/airbyte/pull/63472) | Update dependencies |
-| 0.6.10 | 2025-07-12 | [63067](https://github.com/airbytehq/airbyte/pull/63067) | Update dependencies |
-| 0.6.9 | 2025-07-05 | [62534](https://github.com/airbytehq/airbyte/pull/62534) | Update dependencies |
-| 0.6.8 | 2025-05-27 | [60867](https://github.com/airbytehq/airbyte/pull/60867) | Update dependencies |
-| 0.6.7 | 2025-05-24 | [60675](https://github.com/airbytehq/airbyte/pull/60675) | Update dependencies |
-| 0.6.6 | 2025-05-10 | [59806](https://github.com/airbytehq/airbyte/pull/59806) | Update dependencies |
-| 0.6.5 | 2025-05-03 | [59318](https://github.com/airbytehq/airbyte/pull/59318) | Update dependencies |
-| 0.6.4 | 2025-04-26 | [58728](https://github.com/airbytehq/airbyte/pull/58728) | Update dependencies |
-| 0.6.3 | 2025-04-19 | [58295](https://github.com/airbytehq/airbyte/pull/58295) | Update dependencies |
-| 0.6.2 | 2025-04-12 | [57627](https://github.com/airbytehq/airbyte/pull/57627) | Update dependencies |
-| 0.6.1 | 2025-04-05 | [43869](https://github.com/airbytehq/airbyte/pull/43869) | Update dependencies |
-| 0.6.0 | 2025-03-31 | [56466](https://github.com/airbytehq/airbyte/pull/56466) | Upgrading dependencies and CDK and Python to 3.11 |
-| 0.5.0 | 2025-01-02 | [50398](https://github.com/airbytehq/airbyte/pull/50398) | Add client_credentials auth for Azure Service Principals |
-| 0.4.4 | 2024-06-06 | [39275](https://github.com/airbytehq/airbyte/pull/39275) | [autopull] Upgrade base image to v1.2.2 |
-| 0.4.3 | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover |
-| 0.4.2 | 2024-04-23 | [37504](https://github.com/airbytehq/airbyte/pull/37504) | Update specification |
-| 0.4.1 | 2024-04-22 | [37467](https://github.com/airbytehq/airbyte/pull/37467) | Fix start date filter |
-| 0.4.0 | 2024-04-05 | [36825](https://github.com/airbytehq/airbyte/pull/36825) | Add oauth 2.0 support |
-| 0.3.6 | 2024-04-03 | [36542](https://github.com/airbytehq/airbyte/pull/36542) | Use Latest CDK; add integration tests |
-| 0.3.5 | 2024-03-26 | [36487](https://github.com/airbytehq/airbyte/pull/36487) | Manage dependencies with Poetry. |
-| 0.3.4 | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors |
-| 0.3.3 | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK |
-| 0.3.2 | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK |
-| 0.3.1 | 2024-01-10 | [34084](https://github.com/airbytehq/airbyte/pull/34084) | Fix bug for running check with document file format |
-| 0.3.0 | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411) | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
-| 0.2.5 | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key |
-| 0.2.4 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser |
-| 0.2.3 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
-| 0.2.2 | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types |
-| 0.2.1 | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.0 | 2023-10-10 | [31336](https://github.com/airbytehq/airbyte/pull/31336) | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files |
-| 0.1.0 | 2023-02-17 | [23222](https://github.com/airbytehq/airbyte/pull/23222) | Initial release with full-refresh and incremental sync with JSONL files |
+| Version    | Date       | Pull Request                                             | Subject                                                                                      |
+|:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.10 | 2026-01-14 | [71450](https://github.com/airbytehq/airbyte/pull/71450) | Update dependencies |
+| 0.8.9 | 2026-01-07 | [71000](https://github.com/airbytehq/airbyte/pull/71000) | Enable 'Copy raw files' delivery method for file transfers |
+| 0.8.8 | 2025-12-18 | [70804](https://github.com/airbytehq/airbyte/pull/70804) | Update dependencies |
+| 0.8.7 | 2025-12-03 | [70316](https://github.com/airbytehq/airbyte/pull/70316) | Increase memory for check_connection to 4096Mi |
+| 0.8.6 | 2025-12-02 | [70291](https://github.com/airbytehq/airbyte/pull/70291) | Update dependencies |
+| 0.8.5 | 2025-11-25 | [69910](https://github.com/airbytehq/airbyte/pull/69910) | Update dependencies |
+| 0.8.4 | 2025-11-18 | [69579](https://github.com/airbytehq/airbyte/pull/69579) | Update dependencies |
+| 0.8.3 | 2025-11-11 | [69269](https://github.com/airbytehq/airbyte/pull/69269) | Update dependencies |
+| 0.8.2 | 2025-11-04 | [69156](https://github.com/airbytehq/airbyte/pull/69156) | Update dependencies |
+| 0.8.1 | 2025-10-29 | [68376](https://github.com/airbytehq/airbyte/pull/68376) | Update dependencies |
+| 0.8.0 | 2025-10-27 | [68615](https://github.com/airbytehq/airbyte/pull/68615) | Update dependencies |
+| 0.7.0 | 2025-10-27 | [68663](https://github.com/airbytehq/airbyte/pull/68663) | Promoting release candidate 0.7.0-rc.1 to a main version. |
+| 0.7.0-rc.1 | 2025-10-21 | [68161](https://github.com/airbytehq/airbyte/pull/68161) | Update to airbyte-cdk ^v7                                                                    |
+| 0.6.16     | 2025-10-14 | [68015](https://github.com/airbytehq/airbyte/pull/68015) | Update dependencies                                                                          |
+| 0.6.15     | 2025-10-07 | [67171](https://github.com/airbytehq/airbyte/pull/67171) | Update dependencies                                                                          |
+| 0.6.14     | 2025-09-30 | [66167](https://github.com/airbytehq/airbyte/pull/66167) | Update dependencies                                                                          |
+| 0.6.13     | 2025-08-23 | [65326](https://github.com/airbytehq/airbyte/pull/65326) | Update dependencies                                                                          |
+| 0.6.12     | 2025-07-26 | [63800](https://github.com/airbytehq/airbyte/pull/63800) | Update dependencies                                                                          |
+| 0.6.11     | 2025-07-19 | [63472](https://github.com/airbytehq/airbyte/pull/63472) | Update dependencies                                                                          |
+| 0.6.10     | 2025-07-12 | [63067](https://github.com/airbytehq/airbyte/pull/63067) | Update dependencies                                                                          |
+| 0.6.9      | 2025-07-05 | [62534](https://github.com/airbytehq/airbyte/pull/62534) | Update dependencies                                                                          |
+| 0.6.8      | 2025-05-27 | [60867](https://github.com/airbytehq/airbyte/pull/60867) | Update dependencies                                                                          |
+| 0.6.7      | 2025-05-24 | [60675](https://github.com/airbytehq/airbyte/pull/60675) | Update dependencies                                                                          |
+| 0.6.6      | 2025-05-10 | [59806](https://github.com/airbytehq/airbyte/pull/59806) | Update dependencies                                                                          |
+| 0.6.5      | 2025-05-03 | [59318](https://github.com/airbytehq/airbyte/pull/59318) | Update dependencies                                                                          |
+| 0.6.4      | 2025-04-26 | [58728](https://github.com/airbytehq/airbyte/pull/58728) | Update dependencies                                                                          |
+| 0.6.3      | 2025-04-19 | [58295](https://github.com/airbytehq/airbyte/pull/58295) | Update dependencies                                                                          |
+| 0.6.2      | 2025-04-12 | [57627](https://github.com/airbytehq/airbyte/pull/57627) | Update dependencies                                                                          |
+| 0.6.1      | 2025-04-05 | [43869](https://github.com/airbytehq/airbyte/pull/43869) | Update dependencies                                                                          |
+| 0.6.0      | 2025-03-31 | [56466](https://github.com/airbytehq/airbyte/pull/56466) | Upgrading dependencies and CDK and Python to 3.11                                            |
+| 0.5.0      | 2025-01-02 | [50398](https://github.com/airbytehq/airbyte/pull/50398) | Add client_credentials auth for Azure Service Principals                                     |
+| 0.4.4      | 2024-06-06 | [39275](https://github.com/airbytehq/airbyte/pull/39275) | [autopull] Upgrade base image to v1.2.2                                                      |
+| 0.4.3      | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover                                            |
+| 0.4.2      | 2024-04-23 | [37504](https://github.com/airbytehq/airbyte/pull/37504) | Update specification                                                                         |
+| 0.4.1      | 2024-04-22 | [37467](https://github.com/airbytehq/airbyte/pull/37467) | Fix start date filter                                                                        |
+| 0.4.0      | 2024-04-05 | [36825](https://github.com/airbytehq/airbyte/pull/36825) | Add oauth 2.0 support                                                                        |
+| 0.3.6      | 2024-04-03 | [36542](https://github.com/airbytehq/airbyte/pull/36542) | Use Latest CDK; add integration tests                                                        |
+| 0.3.5      | 2024-03-26 | [36487](https://github.com/airbytehq/airbyte/pull/36487) | Manage dependencies with Poetry.                                                             |
+| 0.3.4      | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                            |
+| 0.3.3      | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK                                 |
+| 0.3.2      | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
+| 0.3.1      | 2024-01-10 | [34084](https://github.com/airbytehq/airbyte/pull/34084) | Fix bug for running check with document file format                                          |
+| 0.3.0      | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411) | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
+| 0.2.5      | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                                          |
+| 0.2.4      | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                                                            |
+| 0.2.3      | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                                          |
+| 0.2.2      | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types                                                    |
+| 0.2.1      | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image              |
+| 0.2.0      | 2023-10-10 | [31336](https://github.com/airbytehq/airbyte/pull/31336) | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files                        |
+| 0.1.0      | 2023-02-17 | [23222](https://github.com/airbytehq/airbyte/pull/23222) | Initial release with full-refresh and incremental sync with JSONL files                      |
 
 </details>

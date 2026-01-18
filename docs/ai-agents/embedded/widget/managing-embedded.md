@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 # Managing Airbyte Embedded
 
 ## Customer Workspaces
@@ -9,7 +5,6 @@ products: embedded
 Airbyte Embedded is built upon the Airbyte Platform. As the owner of your embedded instance, you access Airbyte via the standard sign-in. Each customer who configures a source via the Embedded Widget is automatically assigned a workspace. Within this workspace, data pipelines are created between the source and staging store, which you configured in the pre-requisite section of this guide. In this example, the staging store is S3.
 
 ![Selected workspaces.](./assets/embedded-workspaces.png)
-
 
 ## Enabling Connectors within the Widget
 

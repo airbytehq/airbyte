@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data
@@ -26,9 +26,9 @@ class AirbyteValueProxyTest {
             "integerField": 1234567890123456789,
             "numberField": 1234567890123456789.123456789,
             "dateField": "2023-10-01",
-            "timeWithTimezoneField": "12:34:56+00:00",
+            "timeWithTimezoneField": "12:34:56Z",
             "timeWithoutTimezoneField": "12:34:56",
-            "timestampWithTimezoneField": "2023-10-01T12:34:56+00:00",
+            "timestampWithTimezoneField": "2023-10-01T12:34:56Z",
             "timestampWithoutTimezoneField": "2023-10-01T12:34:56",
             "objectField": {"key": "value"},
             "arrayField": [1, 2, 3],
@@ -93,7 +93,23 @@ class AirbyteValueProxyTest {
             syncId = 1,
             includeFiles = false,
             schema = ALL_TYPES_SCHEMA,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                    tableNames =
+                        io.airbyte.cdk.load.schema.model.TableNames(
+                            finalTableName =
+                                io.airbyte.cdk.load.schema.model.TableName("namespace", "name")
+                        ),
+                    columnSchema =
+                        io.airbyte.cdk.load.schema.model.ColumnSchema(
+                            inputSchema = ALL_TYPES_SCHEMA.properties,
+                            inputToFinalColumnNames =
+                                ALL_TYPES_SCHEMA.properties.keys.associateWith { it },
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
 
     private fun ifNull(value: JsonNode?): JsonNode? {
@@ -137,7 +153,7 @@ class AirbyteValueProxyTest {
                 data.add(protoField)
             }
 
-            val proxy = AirbyteValueProtobufProxy(data)
+            @Suppress("DEPRECATION") val proxy = AirbyteValueProtobufProxy(data)
             validate(objectTree, proxy)
         }
     }

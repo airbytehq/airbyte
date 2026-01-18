@@ -46,3 +46,14 @@ def test_open_file_without_compression(remote_file, logger):
 
     with pytest.raises(OSError):
         reader.open_file(remote_file, FileReadMode.READ, None, logger)
+
+
+def test_upload(remote_file, logger):
+    reader = SourceGCSStreamReader()
+    reader._gcs_client = Mock()
+    reader._config = Mock()
+
+    file_record_data, file_reference = reader.upload(remote_file, "test_local_directory", logger)
+
+    assert file_record_data is not None
+    assert file_reference is not None

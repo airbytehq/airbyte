@@ -166,3 +166,101 @@ def test_get_report_record_timestamp_hourly(stream_name, mock_auth_token, mock_u
     source = get_source(TEST_CONFIG, state)
     output = read(source, TEST_CONFIG, catalog, state)
     assert "2023-01-01T15:00:00+00:00" == output.records[0].record.data["TimePeriod"]
+
+
+@pytest.mark.parametrize(
+    "test_name,config,custom_report_config,expected_name",
+    [
+        (
+            "camel_case_conversion_enabled_by_default",
+            {},  # Default config with no disable flag at custom report level
+            {"name": "MyCustomReport"},
+            "my_custom_report",
+        ),
+        (
+            "camel_case_conversion_enabled_explicitly",
+            {},
+            {"name": "CampaignPerformanceDaily", "disable_custom_report_names_camel_to_snake_conversion": False},
+            "campaign_performance_daily",
+        ),
+        (
+            "camel_case_conversion_disabled",
+            {},
+            {"name": "MyExactReportName", "disable_custom_report_names_camel_to_snake_conversion": True},
+            "MyExactReportName",
+        ),
+        (
+            "snake_case_unchanged_when_enabled",
+            {},
+            {"name": "already_snake_case"},
+            "already_snake_case",
+        ),
+        (
+            "snake_case_unchanged_when_disabled",
+            {},
+            {"name": "already_snake_case", "disable_custom_report_names_camel_to_snake_conversion": True},
+            "already_snake_case",
+        ),
+        (
+            "complex_camel_case_conversion_enabled",
+            {},
+            {"name": "MyVeryComplexReportNameWithManyWords"},
+            "my_very_complex_report_name_with_many_words",
+        ),
+        (
+            "complex_camel_case_conversion_disabled",
+            {},
+            {"name": "MyVeryComplexReportNameWithManyWords", "disable_custom_report_names_camel_to_snake_conversion": True},
+            "MyVeryComplexReportNameWithManyWords",
+        ),
+        (
+            "single_word_unchanged",
+            {},
+            {"name": "report"},
+            "report",
+        ),
+        (
+            "single_capital_word_converted",
+            {},
+            {"name": "Report"},
+            "report",
+        ),
+        (
+            "single_capital_word_unchanged_when_disabled",
+            {},
+            {"name": "Report", "disable_custom_report_names_camel_to_snake_conversion": True},
+            "Report",
+        ),
+    ],
+)
+def test_custom_report_name_conversion(test_name, config, custom_report_config, expected_name):
+    """Test that custom report name conversion works correctly based on configuration."""
+    # Base custom report configuration with required fields
+    base_custom_report = {
+        "reporting_object": "AccountPerformanceReportRequest",
+        "report_columns": ["AccountId", "AccountName", "Impressions", "Clicks"],
+        "report_aggregation": "Daily",
+    }
+
+    # Merge the test-specific config with the base config
+    custom_report = {**base_custom_report, **custom_report_config}
+
+    # Create the full config with custom_reports
+    full_config = {**TEST_CONFIG, **config, "custom_reports": [custom_report]}
+
+    # Get the source and its streams
+    source = get_source(full_config)
+    streams = source.streams(config=full_config)
+
+    # Find the custom report stream by checking all stream names
+    custom_stream = None
+    for stream in streams:
+        # Custom report streams should have the expected name
+        if stream.name == expected_name:
+            custom_stream = stream
+            break
+
+    assert (
+        custom_stream is not None
+    ), f"Expected custom report stream '{expected_name}' not found. Available streams: {[s.name for s in streams]}"
+    assert custom_stream.name == expected_name

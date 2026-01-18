@@ -1,0 +1,326 @@
+version: 6.51.0
+
+type: DeclarativeSource
+
+description: Connector for Stigg - a pricing and packaging infrastructure platform
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query GetCustomers($paging: CursorPaging) { customers(paging:
+              $paging) { edges { node { id customerId name email billingId
+              crmId createdAt updatedAt deletedAt additionalMetaData refId
+              defaultPaymentExpirationMonth defaultPaymentExpirationYear
+              defaultPaymentMethodLast4Digits defaultPaymentMethodType
+              hasPaymentMethod hasActiveSubscription totalActiveSubscription }
+              cursor } pageInfo { hasNextPage endCursor } totalCount } }
+            variables:
+              paging:
+                first: 25
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - customers
+              - edges
+              - "*"
+              - node
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"paging": {"first": 25, "after": "' +
+              response.data.customers.pageInfo.endCursor + '"}}'
+              if response.data.customers.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.customers.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query GetSubscriptions($paging: CursorPaging) {
+              subscriptions(paging: $paging) { edges { node { id subscriptionId
+              refId status startDate endDate createdAt cancellationDate
+              trialEndDate billingId billingLinkUrl crmId crmLinkUrl customerId
+              pricingType wasInTrial budgetExceeded currentBillingPeriodStart
+              currentBillingPeriodEnd effectiveEndDate additionalMetaData }
+              cursor } pageInfo { hasNextPage endCursor } } }
+            variables:
+              paging:
+                first: 25
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - subscriptions
+              - edges
+              - "*"
+              - node
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"paging": {"first": 25, "after": "' +
+              response.data.subscriptions.pageInfo.endCursor + '"}}'
+              if response.data.subscriptions.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.subscriptions.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptions"
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.stigg.io/graphql
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-API-KEY
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/subscriptions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: Your Stigg Server API Key. You can find this in your Stigg dashboard under Settings > API Keys.
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    customers: false
+    subscriptions: false
+  testedStreams: {}
+  assist:
+    docsUrl: https://api-docs.stigg.io/how-to-use-stigg-api
+
+schemas:
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      customerId:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      billingId:
+        type:
+          - string
+          - "null"
+      crmId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      deletedAt:
+        type:
+          - string
+          - "null"
+      additionalMetaData:
+        type:
+          - object
+          - "null"
+      refId:
+        type:
+          - string
+          - "null"
+      defaultPaymentExpirationMonth:
+        type:
+          - integer
+          - "null"
+      defaultPaymentExpirationYear:
+        type:
+          - integer
+          - "null"
+      defaultPaymentMethodLast4Digits:
+        type:
+          - string
+          - "null"
+      defaultPaymentMethodType:
+        type:
+          - string
+          - "null"
+      hasPaymentMethod:
+        type:
+          - boolean
+          - "null"
+      hasActiveSubscription:
+        type:
+          - boolean
+          - "null"
+      totalActiveSubscription:
+        type:
+          - integer
+          - "null"
+
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      subscriptionId:
+        type:
+          - string
+          - "null"
+      refId:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      cancellationDate:
+        type:
+          - string
+          - "null"
+      trialEndDate:
+        type:
+          - string
+          - "null"
+      billingId:
+        type:
+          - string
+          - "null"
+      billingLinkUrl:
+        type:
+          - string
+          - "null"
+      crmId:
+        type:
+          - string
+          - "null"
+      crmLinkUrl:
+        type:
+          - string
+          - "null"
+      customerId:
+        type:
+          - string
+          - "null"
+      pricingType:
+        type:
+          - string
+          - "null"
+      wasInTrial:
+        type:
+          - boolean
+          - "null"
+      budgetExceeded:
+        type:
+          - boolean
+          - "null"
+      currentBillingPeriodStart:
+        type:
+          - string
+          - "null"
+      currentBillingPeriodEnd:
+        type:
+          - string
+          - "null"
+      effectiveEndDate:
+        type:
+          - string
+          - "null"
+      additionalMetaData:
+        type:
+          - object
+          - "null"

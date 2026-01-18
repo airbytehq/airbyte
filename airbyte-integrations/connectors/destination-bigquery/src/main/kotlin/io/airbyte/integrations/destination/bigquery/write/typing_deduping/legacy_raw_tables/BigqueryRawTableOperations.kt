@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables
@@ -9,8 +9,8 @@ import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableResult
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingRawTableOperations
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.github.oshai.kotlinlogging.KotlinLogging

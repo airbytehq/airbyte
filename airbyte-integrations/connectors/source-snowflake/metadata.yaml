@@ -8,7 +8,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
-  dockerImageTag: 1.0.5
+  dockerImageTag: 1.0.8
   dockerRepository: airbyte/source-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   githubIssueLabel: source-snowflake
@@ -42,4 +42,17 @@ data:
     - language:java
   connectorTestSuitesOptions:
     - suite: acceptanceTests
+  externalDocumentationUrls:
+    - title: Snowflake documentation
+      url: https://docs.snowflake.com/
+      type: api_reference
+    - title: Snowflake server release notes and feature updates
+      url: https://docs.snowflake.com/en/release-notes/new-features
+      type: api_release_history
+    - title: Snowflake authentication
+      url: https://docs.snowflake.com/en/user-guide/admin-user-management
+      type: authentication_guide
+    - title: Snowflake Status
+      url: https://status.snowflake.com/
+      type: status_page
 metadataSpecVersion: "1.0"

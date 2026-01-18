@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.input
@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -27,6 +28,7 @@ class DataFlowPipelineInputFlow(
     private val stateStore: StateStore,
     private val stateKeyClient: StateKeyClient,
     private val completionTracker: StreamCompletionTracker,
+    private val statsStore: EmittedStatsStore,
 ) : Flow<DataFlowStageIO> {
     val log = KotlinLogging.logger {}
 
@@ -37,6 +39,9 @@ class DataFlowPipelineInputFlow(
             when (it) {
                 is CheckpointMessage -> stateStore.accept(it)
                 is DestinationRecord -> {
+                    // tally read count
+                    statsStore.increment(it.stream.unmappedDescriptor, 1, it.serializedSizeBytes)
+                    // wrap, annotate and pass to pipeline
                     val raw = it.asDestinationRecordRaw()
                     val io =
                         DataFlowStageIO(

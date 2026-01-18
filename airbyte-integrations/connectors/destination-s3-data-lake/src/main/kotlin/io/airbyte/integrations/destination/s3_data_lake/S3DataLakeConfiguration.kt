@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_data_lake
@@ -17,7 +17,6 @@ import jakarta.inject.Singleton
 
 const val DEFAULT_CATALOG_NAME = "airbyte"
 const val DEFAULT_STAGING_BRANCH = "airbyte_staging"
-const val TEST_NAMESPACE = "airbyte_test_namespace"
 const val TEST_TABLE = "airbyte_test_table"
 
 data class S3DataLakeConfiguration(
