@@ -15,9 +15,9 @@ object GcsCredentialConfigs {
                 credentialConfig["credential_type"].asText().uppercase(Locale.getDefault())
             )
 
-        if (credentialType == GcsCredentialType.HMAC_KEY) {
-            return GcsHmacKeyCredentialConfig(credentialConfig)
+        return when (credentialType) {
+            GcsCredentialType.HMAC_KEY -> GcsHmacKeyCredentialConfig(credentialConfig)
+            GcsCredentialType.SERVICE_ACCOUNT -> GcsServiceAccountCredentialConfig(credentialConfig)
         }
-        throw RuntimeException("Unexpected credential: " + Jsons.serialize(credentialConfig))
     }
 }

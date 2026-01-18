@@ -19,20 +19,33 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
   - **GCS Bucket Name**
     - See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
   - **GCS Bucket Region**
-  - **HMAC Key Access ID**
-    - See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
-    - We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
-      ```
-      storage.multipartUploads.abort
-      storage.multipartUploads.create
-      storage.objects.create
-      storage.objects.delete
-      storage.objects.get
-      storage.objects.list
-      ```
-      You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
-  - **Secret Access Key**
-    - Corresponding key to the above access ID.
+  - **Authentication** - Choose one of the following authentication methods:
+    - **Service Account Key (Recommended)**
+      - This is the recommended authentication method for server-to-server communication.
+      - Create a service account in the Google Cloud Console and download the JSON key file.
+      - See [this guide](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) for instructions on creating service account keys.
+      - The service account will require the following permissions for the bucket:
+        ```
+        storage.objects.create
+        storage.objects.delete
+        storage.objects.get
+        storage.objects.list
+        ```
+      - You can grant these permissions by going to the permissions tab in the GCS bucket and adding the service account email with the "Storage Object Admin" role, or by creating a custom role with the specific permissions listed above.
+    - **HMAC Key**
+      - See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
+      - We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
+        ```
+        storage.multipartUploads.abort
+        storage.multipartUploads.create
+        storage.objects.create
+        storage.objects.delete
+        storage.objects.get
+        storage.objects.list
+        ```
+      - You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
+      - **Access ID**: When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.
+      - **Secret Access Key**: Corresponding key to the above access ID.
 - Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
 
 ### Sync mode support
@@ -48,17 +61,19 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 
 ## Configuration
 
-| Parameter          |  Type   | Notes                                                                                                                                                                                                                                                                       |
-| :----------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GCS Bucket Name    | string  | Name of the bucket to sync data into.                                                                                                                                                                                                                                       |
-| GCS Bucket Path    | string  | Subdirectory under the above bucket to sync the data into.                                                                                                                                                                                                                  |
-| GCS Region         | string  | See [here](https://cloud.google.com/storage/docs/locations) for all region codes.                                                                                                                                                                                           |
-| HMAC Key Access ID | string  | HMAC key access ID . The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details. |
-| HMAC Key Secret    | string  | The corresponding secret for the access ID. It is a 40-character base-64 encoded string.                                                                                                                                                                                    |
-| Format             | object  | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema).                                                                                                                                               |
-| Part Size          | integer | Arg to configure a block size. Max allowed blocks by GCS = 10,000, i.e. max stream size = blockSize \* 10,000 blocks.                                                                                                                                                       |
+| Parameter                  |  Type   | Notes                                                                                                                                                                                                                                                                       |
+| :------------------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GCS Bucket Name            | string  | Name of the bucket to sync data into.                                                                                                                                                                                                                                       |
+| GCS Bucket Path            | string  | Subdirectory under the above bucket to sync the data into.                                                                                                                                                                                                                  |
+| GCS Region                 | string  | See [here](https://cloud.google.com/storage/docs/locations) for all region codes.                                                                                                                                                                                           |
+| Authentication             | object  | Choose between Service Account Key (recommended) or HMAC Key authentication.                                                                                                                                                                                                |
+| Service Account JSON Key   | string  | (Service Account auth) The JSON key for your Google Cloud service account. See [service account keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) for details.                                                                               |
+| HMAC Key Access ID         | string  | (HMAC auth) The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details.         |
+| HMAC Key Secret            | string  | (HMAC auth) The corresponding secret for the access ID. It is a 40-character base-64 encoded string.                                                                                                                                                                        |
+| Format                     | object  | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema).                                                                                                                                               |
+| Part Size                  | integer | Arg to configure a block size. Max allowed blocks by GCS = 10,000, i.e. max stream size = blockSize \* 10,000 blocks.                                                                                                                                                       |
 
-Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future, please [submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=) with your request.
+The connector supports two authentication methods: Service Account Key (recommended for server-to-server communication) and HMAC Key (for S3-compatible API access).
 
 Additionally, your bucket must be encrypted using a Google-managed encryption key (this is the default setting when creating a new bucket). We currently do not support buckets using customer-managed encryption keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
 
