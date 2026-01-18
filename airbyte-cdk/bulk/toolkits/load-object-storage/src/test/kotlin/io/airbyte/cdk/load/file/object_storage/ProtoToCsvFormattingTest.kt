@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc.
+ * Copyright (c) 2026 Airbyte, Inc.
  */
 package io.airbyte.cdk.load.file.object_storage
 
