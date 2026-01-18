@@ -48,17 +48,17 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Campaigns](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
-- [Campaigns Detailed](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
-- [Email Templates](https://developers.klaviyo.com/en/reference/get_templates)
-- [Events](https://developers.klaviyo.com/en/reference/get_events)
-- [Events Detailed](https://developers.klaviyo.com/en/reference/get_event)
-- [Flows](https://developers.klaviyo.com/en/reference/get_flows)
-- [GlobalExclusions](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
-- [Lists](https://developers.klaviyo.com/en/reference/get_lists)
-- [Lists Detailed](https://developers.klaviyo.com/en/reference/get_lists)
-- [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
-- [Profiles](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
+- [Campaigns](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
+- [Campaigns Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
+- [Email Templates](https://developers.klaviyo.com/en/v2024-10-15/reference/get_templates)
+- [Events](https://developers.klaviyo.com/en/v2024-10-15/reference/get_events)
+- [Events Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_event)
+- [Flows](https://developers.klaviyo.com/en/v2024-10-15/reference/get_flows)
+- [GlobalExclusions](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
+- [Lists](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
+- [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
+- [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
+- [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
 
 ## Performance considerations
 
