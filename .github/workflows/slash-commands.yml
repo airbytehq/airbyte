@@ -8,16 +8,8 @@ jobs:
     if: startsWith(github.event.comment.body, '/')
     runs-on: ubuntu-24.04
     steps:
-      - name: Get PR repo and ref
-        if: ${{ github.event.issue.pull_request }}
-        id: getref
-        run: |
-          pr_info="$(curl ${{ github.event.issue.pull_request.url }})"
-          echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
-          echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
-
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -25,9 +17,39 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
+      - name: Get PR repo and ref
+        if: ${{ github.event.issue.pull_request }}
+        id: getref
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_URL: ${{ github.event.issue.pull_request.url }}
+        run: |
+          set -euo pipefail
+          # Fetch PR info with authentication to avoid rate limiting
+          HTTP_CODE=$(curl -sS -w "%{http_code}" -o /tmp/pr_info.json \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "$PR_URL")
+
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "::error::Failed to fetch PR info: HTTP $HTTP_CODE"
+            cat /tmp/pr_info.json
+            exit 1
+          fi
+
+          # Extract fields with validation (jq -e fails if field is null)
+          REF=$(jq -er '.head.ref' /tmp/pr_info.json)
+          REPO=$(jq -er '.head.repo.full_name' /tmp/pr_info.json)
+
+          # Log parsed values for debugging
+          echo "::notice::Parsed PR metadata - repo: '$REPO', ref: '$REF'"
+
+          echo "ref=$REF" >> $GITHUB_OUTPUT
+          echo "repo=$REPO" >> $GITHUB_OUTPUT
+
       - name: Slash Command Dispatch (Workflow)
         id: scd
-        uses: peter-evans/slash-command-dispatch@v3
+        uses: peter-evans/slash-command-dispatch@f996d7b7aae9059759ac55e978cff76d91853301 # v3.0.2
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           permission: write
@@ -35,18 +57,26 @@ jobs:
           issue-type: both
 
           commands: |
+            ai-canary-prerelease
+            ai-docs-review
+            ai-create-docs-pr
+            ai-prove-fix
+            ai-release-watch
+            ai-review
             approve-regression-tests
-            bump-bulk-cdk-and-release-connectors
             bump-bulk-cdk-version
-            bump-cdk-version-and-merge
+            bump-progressive-rollout-version
             bump-version
             build-connector-images
             connector-performance
+            force-merge
             format-fix
             poe
+            publish-connectors-prerelease
             publish-java-cdk
             run-cat-tests
             run-connector-tests
+            run-regression-tests
             test-performance
             update-connector-cdk-version
 
@@ -62,7 +92,7 @@ jobs:
 
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
           comment-id: ${{ github.event.comment.id }}
           body: |

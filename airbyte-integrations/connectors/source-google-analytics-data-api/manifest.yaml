@@ -866,6 +866,7 @@ dynamic_streams:
           value: >
             {% set pivots = components_values.get("pivots") %}
             {% set cohort = components_values.get("cohortSpec") %}
+            {% set dimensionFilter = components_values.get("dimensionFilter") %}
               dimensions: []
               metrics: []
               returnPropertyQuota: True
@@ -883,6 +884,9 @@ dynamic_streams:
                 "{{ key }}": {{ value }}{% if not loop.last %},{% endif %}
                 {% endfor %}
               }
+              {% endif %}
+              {% if dimensionFilter %}
+              dimensionFilter: {{ dimensionFilter }}
               {% endif %}
         # This mapping update pagination conditionally as pivots are not support pagination
         - type: ComponentMappingDefinition
@@ -992,6 +996,11 @@ dynamic_streams:
               - startDate: "{{ '{{ stream_slice.start_time }}' }}"
                 endDate: "{{ '{{ stream_slice.end_time }}' }}"
             {% endif %}
+        # This mapping adds the dimensionFilter to the request parameters
+        - type: ComponentMappingDefinition
+          field_path:
+            [ "retriever", "requester", "request_body_json", "dimensionFilter" ]
+          value: "{{ components_values['dimensionFilter'] }}"
         # This mapping adds the incremental_sync component for streams that support incremental loads.
         # It is enabled if any of the following fields are present in the dimensions list:
         # "date", "yearWeek", "yearMonth", or "year"
@@ -3009,6 +3018,11 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    transformations:
+      - type: CustomConfigTransformation
+        class_name: source_declarative_manifest.components.DimensionFilterConfigTransformation
 
 # https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
 api_budget:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.jdbc
@@ -30,6 +30,7 @@ data class DefaultJdbcConstants(
     val maxMemoryBytesForTesting: Long? = null,
     /** Whether the namespace field denotes a JDBC schema or a JDBC catalog. */
     val namespaceKind: NamespaceKind = NamespaceKind.SCHEMA,
+    val maxSequentialQueryLimit: Long? = MAX_SEQUENTIAL_QUERY_LIMIT_NULL,
 ) {
 
     enum class NamespaceKind {
@@ -41,20 +42,21 @@ data class DefaultJdbcConstants(
     companion object {
 
         // Sampling defaults.
-        internal const val WITH_SAMPLING: Boolean = false
-        internal const val TABLE_SAMPLE_SIZE: Int = 1024
-        internal const val THROUGHPUT_BYTES_PER_SECOND: Long = 10L shl 20
+        const val WITH_SAMPLING: Boolean = false
+        const val TABLE_SAMPLE_SIZE: Int = 1024
+        const val THROUGHPUT_BYTES_PER_SECOND: Long = 10L shl 20
 
         // fetchSize defaults
-        internal const val FETCH_SIZE_LOWER_BOUND: Int = 10
-        internal const val DEFAULT_FETCH_SIZE: Int = 1_000
-        internal const val FETCH_SIZE_UPPER_BOUND: Int = 10_000_000
+        const val FETCH_SIZE_LOWER_BOUND: Int = 10
+        const val DEFAULT_FETCH_SIZE: Int = 1_000
+        const val FETCH_SIZE_UPPER_BOUND: Int = 10_000_000
 
         // Memory estimate defaults.
-        internal const val RECORD_OVERHEAD_BYTES = 16L
-        internal const val FIELD_OVERHEAD_BYTES = 16L
+        const val RECORD_OVERHEAD_BYTES = 16L
+        const val FIELD_OVERHEAD_BYTES = 16L
         // We're targeting use of 60% of the available memory in order to allow
         // for some headroom for other garbage collection.
-        internal const val MEM_CAPACITY_RATIO: Double = 0.6
+        const val MEM_CAPACITY_RATIO: Double = 0.6
+        val MAX_SEQUENTIAL_QUERY_LIMIT_NULL: Long? = null
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.jdbc
 
 import java.io.ByteArrayInputStream
@@ -321,7 +321,7 @@ data object TimeAccessor : JdbcAccessor<LocalTime> {
     override fun get(
         rs: ResultSet,
         colIdx: Int,
-    ): LocalTime? = rs.getTime(colIdx)?.takeUnless { rs.wasNull() }?.toLocalTime()
+    ): LocalTime? = rs.getObject(colIdx, LocalTime::class.java)?.takeUnless { rs.wasNull() }
 
     override fun set(
         stmt: PreparedStatement,

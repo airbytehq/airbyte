@@ -64,16 +64,11 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 6. Log in and Authorize to your Amazon Seller Partner account.
 7. For `Start Date`, enter the date in `YYYY-MM-DD` format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
 8. For `End Date`, enter the date in `YYYY-MM-DD` format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
-9. **Financial Events Step Size**: Select the time window size for fetching financial events data. Options (in days) include:
-   - 1
-   - 7
-   - 14
-   - 30
-   - 60
-   - 90
-   - 180 (default)
+9. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
+   - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
+   - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
 10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
+11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
 12. Click `Set up source`.
 
 <!-- /env:cloud -->
@@ -88,16 +83,11 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
 5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
-7. **Financial Events Step Size**: Select the time window size for fetching financial events data. Options include (in days):
-   - 1
-   - 7
-   - 14
-   - 30
-   - 60
-   - 90
-   - 180 (default)
+7. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
+   - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
+   - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
 8. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-9. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
+9. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
 10. Click `Set up source`.
 
 <!-- /env:oss -->
@@ -189,9 +179,10 @@ but with different options for the `sellingProgram` parameter - `FRESH` and `RET
 
 Information about rate limits you may find [here](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
 
-- Use the **Financial Events Step Size** configuration:
-  - **Smaller step sizes** (e.g., `P1D` or 1 day) are ideal for large data volumes to avoid timeouts and reduce the risk of hitting rate limits.
-  - **Larger step sizes** (e.g., `P14D` or 14 days) are more efficient for smaller data volumes, reducing the number of API calls.
+- Use the **Financial Events Step Size** configuration for the ListFinancialEvents and ListFinancialEventGroups streams:
+  - **Hourly step sizes** (e.g., `1H`, `6H`) are recommended for high-volume sellers experiencing pagination token expiration (TTL errors). They fetch smaller chunks per request, reducing the risk of timeouts.
+  - **Daily step sizes** (e.g., `1D`, `7D`) are better for moderate data volumes, balancing sync speed with API efficiency.
+  - **Larger step sizes** (e.g., `30D`, `180D`) are more efficient for smaller data volumes, reducing the number of API calls.
 
 ## Data type map
 
@@ -241,6 +232,21 @@ For now the waiting logic only work for the following streams:
 
 Create a separate connection for streams which usually fail with error above "Failed to retrieve the report..." and disable sync of these streams in the first connection with streams which don't fail because of the error. Adjust the sync time of these two connection to do not overlap. It's recommended to have a time break between syncs in the connections.
 
+### Rate Limit issue for Report Streams
+
+Syncing Report Streams sometimes may fail due to rate limits.
+
+The Amazon Seller Partner source connector makes requests according to the limits mentioned in the [SP API docs](https://developer-docs.amazon.com/sp-api/lang-pt_BR/docs/reports-api-rate-limits).
+But actual Rate Limits could be differ from ones mentioned in the docs. See [Usage Plans and Rate Limits](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits) for more information.
+Depending on actual rate limits the Amazon Seller Partner source connector can receive "rate limited" responses, unfortunately there is no way to find actual rate limits values for account.
+
+We recommend next steps to overcome the rate limits issue:
+
+1. Depending on your amount of data per [Period In Days](https://docs.airbyte.com/integrations/sources/amazon-seller-partner#reference) adjust this value to reduce time of processing the report on API Side. If creation of the report takes more than 1 hour it's recommended to set lower value for `Period In Days` setting.
+2. Configure affected Report Stream to read data incrementally, use Incremental Sync mode (Append). This will prevent the source of rereading already fetched data and make the source to read new data starting from state cursor value. See [Incremental Sync Mode - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) for more information.
+3. Set syncs to run every 24 hours.
+
+This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
 
 ## Changelog
 
@@ -249,9 +255,17 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.2 | 2025-09-17 | [66485](https://github.com/airbytehq/airbyte/pull/66485) | Upgrade to CDK v7 |
+| 5.1.0 | 2026-01-15 | [71327](https://github.com/airbytehq/airbyte/pull/71327) | Add rate limiting and hourly granularity options for ListFinancialEvents and ListFinancialEventGroups streams |
+| 5.0.2 | 2026-01-14 | [71526](https://github.com/airbytehq/airbyte/pull/71526) | Update dependencies |
+| 5.0.1 | 2025-12-11 | [70200](https://github.com/airbytehq/airbyte/pull/70200) | Fix financial events pagination causing 400 InvalidInput errors under rate limiting when syncing `ListFinancialEvents`, and align `ListFinancialEventGroups` pagination behavior |
+| 5.0.0 | 2025-12-08 | [69805](https://github.com/airbytehq/airbyte/pull/69805) | Remove deprecated FBA Subscribe and Save report types (GET_FBA_SNS_FORECAST_DATA and GET_FBA_SNS_PERFORMANCE_DATA) |
+| 4.9.1 | 2025-11-25 | [69935](https://github.com/airbytehq/airbyte/pull/69935) | Update dependencies |
+| 4.9.0 | 2025-11-10 | [66995](https://github.com/airbytehq/airbyte/pull/66995) | Add APIBudget for reports streams |
+| 4.8.4 | 2025-10-29 | [68678](https://github.com/airbytehq/airbyte/pull/68678) | Increase `maxSecondsBetweenMessages` to 14400 |
+| 4.8.3 | 2025-10-29 | [66030](https://github.com/airbytehq/airbyte/pull/66030) | Update dependencies |
+| 4.8.2 | 2025-09-24 | [66485](https://github.com/airbytehq/airbyte/pull/66485) | Upgrade to CDK v7 |
 | 4.8.1 | 2025-08-16 | [65047](https://github.com/airbytehq/airbyte/pull/65047) | Update dependencies |
-| 4.8.0 | 2025-07-29 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
+| 4.8.0 | 2025-07-29 | [55195](https://github.com/airbytehq/airbyte/pull/55195) | Add VendorOrdersStatus stream |
 | 4.7.2 | 2025-08-02 | [63032](https://github.com/airbytehq/airbyte/pull/63032) | Update dependencies |
 | 4.7.1 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
 | 4.7.0 | 2025-07-08 | [62850](https://github.com/airbytehq/airbyte/pull/62850) | Promoting release candidate 4.7.0-rc.1 to a main version. |

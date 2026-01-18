@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.message
@@ -52,7 +52,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
-class DestinationMessageTest {
+internal class DestinationMessageTest {
     private val uuidGenerator = UUIDGenerator()
 
     private fun factory(
@@ -71,7 +71,25 @@ class DestinationMessageTest {
                         generationId = 42,
                         minimumGenerationId = 0,
                         syncId = 42,
-                        namespaceMapper = namespaceMapper
+                        namespaceMapper = namespaceMapper,
+                        tableSchema =
+                            io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                                tableNames =
+                                    io.airbyte.cdk.load.schema.model.TableNames(
+                                        finalTableName =
+                                            io.airbyte.cdk.load.schema.model.TableName(
+                                                descriptor.namespace ?: "default",
+                                                descriptor.name
+                                            )
+                                    ),
+                                columnSchema =
+                                    io.airbyte.cdk.load.schema.model.ColumnSchema(
+                                        inputSchema = mapOf(),
+                                        inputToFinalColumnNames = mapOf(),
+                                        finalSchema = mapOf(),
+                                    ),
+                                importType = Append,
+                            )
                     )
                 )
             ),
@@ -131,7 +149,7 @@ class DestinationMessageTest {
     @MethodSource("roundTrippableMessages")
     fun testRoundTripRecord(message: AirbyteMessage) {
         val roundTripped = convert(factory(false), message).asProtocolMessage()
-        Assertions.assertEquals(message, roundTripped)
+        assertEquals(message, roundTripped)
     }
 
     @ParameterizedTest
@@ -163,7 +181,7 @@ class DestinationMessageTest {
 
         val parsedMessage = convert(factory(false), inputMessage) as StreamCheckpoint
 
-        Assertions.assertEquals(
+        assertEquals(
             // we represent the state message ID as a long, but jackson sees that 1234 can be Int,
             // and Int(1234) != Long(1234). (and additionalProperties is just a Map<String, Any?>)
             // So we just compare the serialized protocol messages.
@@ -203,7 +221,7 @@ class DestinationMessageTest {
 
         val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
 
-        Assertions.assertEquals(
+        assertEquals(
             inputMessage
                 .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
                 .serializeToString(),
@@ -614,6 +632,14 @@ class DestinationMessageTest {
     @Test
     fun `message factory creates record from protobuf`() {
         // Note: can't be a mock or `schemaInAirbyteProxyOrder` won't return the correct value
+        val streamSchema =
+            ObjectType(
+                properties =
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        "name" to FieldType(StringType, nullable = true)
+                    )
+            )
         val stream =
             DestinationStream(
                 unmappedNamespace = "namespace",
@@ -622,15 +648,24 @@ class DestinationMessageTest {
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 1,
-                schema =
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "id" to FieldType(IntegerType, nullable = true),
-                                "name" to FieldType(StringType, nullable = true)
-                            )
-                    ),
-                namespaceMapper = NamespaceMapper()
+                schema = streamSchema,
+                namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                        tableNames =
+                            io.airbyte.cdk.load.schema.model.TableNames(
+                                finalTableName =
+                                    io.airbyte.cdk.load.schema.model.TableName("namespace", "name")
+                            ),
+                        columnSchema =
+                            io.airbyte.cdk.load.schema.model.ColumnSchema(
+                                inputSchema = streamSchema.properties,
+                                inputToFinalColumnNames =
+                                    streamSchema.properties.keys.associateWith { it },
+                                finalSchema = mapOf(),
+                            ),
+                        importType = Append,
+                    )
             )
         val catalog = DestinationCatalog(streams = listOf(stream))
 

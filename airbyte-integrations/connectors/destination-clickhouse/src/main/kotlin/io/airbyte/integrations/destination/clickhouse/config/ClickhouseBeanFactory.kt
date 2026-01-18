@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse.config
@@ -7,9 +7,9 @@ package io.airbyte.integrations.destination.clickhouse.config
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.internal.ServerSettings
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
-import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
@@ -21,6 +21,7 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificati
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.time.temporal.ChronoUnit
 import org.apache.sshd.common.util.net.SshdSocketAddress
 
 @Factory
@@ -59,6 +60,7 @@ class ClickhouseBeanFactory {
                 .setPassword(config.password)
                 .compressClientRequest(true)
                 .setClientName("airbyte-v2")
+                .setConnectTimeout(5, ChronoUnit.MINUTES)
 
         if (config.enableJson) {
             builder
@@ -87,9 +89,8 @@ class ClickhouseBeanFactory {
     fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
 
     @Singleton
-    fun getConfig(clickhouseConfiguration: ClickhouseConfiguration): MemoryAndParallelismConfig {
-        return MemoryAndParallelismConfig(
+    fun aggregatePublishingConfig(clickhouseConfiguration: ClickhouseConfiguration) =
+        AggregatePublishingConfig(
             maxRecordsPerAgg = clickhouseConfiguration.resolvedRecordWindowSize,
         )
-    }
 }

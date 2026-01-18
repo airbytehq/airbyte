@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.datagen.partitions
@@ -25,12 +25,6 @@ class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
         log.info { "Starting partition creation for stream: ${streamFeedBootstrap.feed.id}" }
 
         if (streamFeedBootstrap.currentState == DataGenStreamState.completeState) {
-            return null
-        }
-
-        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
-        // to read it
-        if (streamFeedBootstrap.currentState?.isNull == true) {
             return null
         }
 

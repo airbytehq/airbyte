@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.pipeline
@@ -67,7 +67,8 @@ class PipelineRunner(
         if (store.hasStates()) {
             val stateException =
                 IllegalStateException("Sync completed, but unflushed states were detected.")
-            log.info { "Destination Pipeline Completed — Exceptionally: $stateException" }
+            store.logStateInfo()
+            log.error { "Destination Pipeline Completed — Exceptionally: $stateException" }
             throw stateException
         }
 

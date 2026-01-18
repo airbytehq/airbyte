@@ -91,6 +91,14 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.26 | 2026-01-14 | [71693](https://github.com/airbytehq/airbyte/pull/71693) | Update dependencies |
+| 1.2.25 | 2025-12-18 | [70496](https://github.com/airbytehq/airbyte/pull/70496) | Update dependencies |
+| 1.2.24 | 2025-11-25 | [70061](https://github.com/airbytehq/airbyte/pull/70061) | Update dependencies |
+| 1.2.23 | 2025-11-18 | [69372](https://github.com/airbytehq/airbyte/pull/69372) | Update dependencies |
+| 1.2.22 | 2025-10-29 | [68814](https://github.com/airbytehq/airbyte/pull/68814) | Update dependencies |
+| 1.2.21 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 1.2.20 | 2025-10-21 | [61157](https://github.com/airbytehq/airbyte/pull/61157) | Update dependencies |
+| 1.2.19 | 2025-10-14 | [66013](https://github.com/airbytehq/airbyte/pull/66013) | Update to CDK v7 |
 | 1.2.18 | 2025-05-24 | [60670](https://github.com/airbytehq/airbyte/pull/60670) | Update dependencies |
 | 1.2.17 | 2025-05-10 | [59910](https://github.com/airbytehq/airbyte/pull/59910) | Update dependencies |
 | 1.2.16 | 2025-05-05 | [59215](https://github.com/airbytehq/airbyte/pull/59215) | Fix missing schema for `time_team`, `users`, `time_entries`, `company`, & `project_assignments` streams. |
@@ -161,7 +169,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 | 0.1.8 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions                                                                                                                                         |
 | 0.1.6 | 2021-11-14 | [7952](https://github.com/airbytehq/airbyte/pull/7952)   | Implement OAuth 2.0 support                                                                                                                                            |
 | 0.1.5 | 2021-09-28 | [5747](https://github.com/airbytehq/airbyte/pull/5747)   | Update schema date-time fields                                                                                                                                         |
-| 0.1.4   | 2021-06-22 | [5701](https://github.com/airbytehq/airbyte/pull/5071)   | Harvest normalization failure: fixing the schemas                                                                                                                      |
+| 0.1.4   | 2021-06-22 | [5071](https://github.com/airbytehq/airbyte/pull/5071)   | Harvest normalization failure: fixing the schemas                                                                                                                      |
 | 0.1.3   | 2021-06-22 | [4274](https://github.com/airbytehq/airbyte/pull/4274)   | Fix wrong data type on `statement_key` in `clients` stream                                                                                                             |
 | 0.1.2   | 2021-06-07 | [4222](https://github.com/airbytehq/airbyte/pull/4222)   | Correct specification parameter name                                                                                                                                   |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                                                        |

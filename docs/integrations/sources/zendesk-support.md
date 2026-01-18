@@ -189,11 +189,18 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.10.18 | 2025-12-18 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
+| 4.10.17 | 2025-12-02 | [70066](https://github.com/airbytehq/airbyte/pull/70066) | Update dependencies |
+| 4.10.16 | 2025-11-18 | [69538](https://github.com/airbytehq/airbyte/pull/69538) | Update dependencies |
+| 4.10.15 | 2025-10-29 | [68945](https://github.com/airbytehq/airbyte/pull/68945) | Update dependencies |
+| 4.10.14 | 2025-10-21 | [68408](https://github.com/airbytehq/airbyte/pull/68408) | Update dependencies |
+| 4.10.13 | 2025-10-14 | [68019](https://github.com/airbytehq/airbyte/pull/68019) | Update dependencies |
+| 4.10.12 | 2025-10-07 | [66850](https://github.com/airbytehq/airbyte/pull/66850) | Update dependencies |
 | 4.10.11 | 2025-09-24 | [66461](https://github.com/airbytehq/airbyte/pull/66461) | Update dependencies |
 | 4.10.10 | 2025-09-09 | [65729](https://github.com/airbytehq/airbyte/pull/65729) | Update dependencies |
 | 4.10.9 | 2025-08-26 | [65558](https://github.com/airbytehq/airbyte/pull/65558) | Update dependencies |
-| 4.10.8 | 2025-08-23 | [65403](https://github.com/airbytehq/airbyte/pull/65403) | Update dependencies |
-| 4.10.7 | 2025-08-09 | [64867](https://github.com/airbytehq/airbyte/pull/64867) | Update dependencies |
+| 4.10.8 | 2025-08-24 | [65403](https://github.com/airbytehq/airbyte/pull/65403) | Update dependencies |
+| 4.10.7 | 2025-08-10 | [64867](https://github.com/airbytehq/airbyte/pull/64867) | Update dependencies |
 | 4.10.6 | 2025-08-02 | [64366](https://github.com/airbytehq/airbyte/pull/64366) | Update dependencies |
 | 4.10.5 | 2025-07-26 | [64067](https://github.com/airbytehq/airbyte/pull/64067) | Update dependencies |
 | 4.10.4 | 2025-07-20 | [63673](https://github.com/airbytehq/airbyte/pull/63673) | Update dependencies |
@@ -336,7 +343,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 0.1.12      | 2022-01-25 | [9785](https://github.com/airbytehq/airbyte/pull/9785)   | Add additional log messages                                                                                                                                                                                                        |
 | 0.1.11      | 2021-12-21 | [8987](https://github.com/airbytehq/airbyte/pull/8987)   | Update connector fields title/description                                                                                                                                                                                          |
 | 0.1.9       | 2021-12-16 | [8616](https://github.com/airbytehq/airbyte/pull/8616)   | Adds Brands, CustomRoles and Schedules streams                                                                                                                                                                                     |
-| 0.1.8       | 2021-11-23 | [8050](https://github.com/airbytehq/airbyte/pull/8168)   | Adds TicketMetricEvents stream                                                                                                                                                                                                     |
+| 0.1.8       | 2021-11-23 | [8168](https://github.com/airbytehq/airbyte/pull/8168)   | Adds TicketMetricEvents stream                                                                                                                                                                                                     |
 | 0.1.7       | 2021-11-23 | [8058](https://github.com/airbytehq/airbyte/pull/8058)   | Added support of AccessToken authentication                                                                                                                                                                                        |
 | 0.1.6       | 2021-11-18 | [8050](https://github.com/airbytehq/airbyte/pull/8050)   | Fix wrong types for schemas, add TypeTransformer                                                                                                                                                                                   |
 | 0.1.5       | 2021-10-26 | [7679](https://github.com/airbytehq/airbyte/pull/7679)   | Add ticket_id and ticket_comments                                                                                                                                                                                                  |

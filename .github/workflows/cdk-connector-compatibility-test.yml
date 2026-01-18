@@ -14,28 +14,16 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
-          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
-          fetch-depth: 0
+          submodules: true # Needed for when airbyte-enterprise calls this workflow
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "zulu"
-          java-version: "21"
+      - name: Install yq
+        run: sudo snap install yq
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.14"
-
-      - name: Trigger changes on all connectors using bulk cdk # this is just an easy way to get a list of all bulk cdk connectors
-        run: ./gradlew upgradeCdk --cdkVersion=local
-
-      - name: Generate Connector Matrix from Changes
+      - name: Generate Connector Matrix
         id: generate-matrix
-        run: echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+        run: echo "connectors_matrix=$(tools/bin/bulk-cdk/get-certified-connectors.sh)" | tee -a $GITHUB_OUTPUT
 
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
@@ -50,19 +38,20 @@ jobs:
       DD_TAGS: "connector.name:${{ matrix.connector }}"
 
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      matrix:
+        connector: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
 
       # Java deps
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         if: matrix.connector
         with:
           distribution: zulu
@@ -71,14 +60,14 @@ jobs:
 
       # The default behaviour is read-only on PR branches and read/write on master.
       # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
         if: matrix.connector
         with:
           gradle-version: "8.14"
 
       - name: Install the latest version of uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install Poe
         if: matrix.connector
@@ -114,12 +103,40 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Check if move team should be notified
+        id: check-move-notify
+        if: always()
+        run: |
+          echo "should-notify=${{
+            github.event_name == 'schedule' &&
+            startsWith(matrix.connector, 'destination-') &&
+            (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
+          }}" >> $GITHUB_OUTPUT
+
       - name: Slack Notification on Failure
-        if: github.event_name == 'schedule' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
-        uses: slackapi/slack-github-action@v2.1.1
+        if: always() && steps.check-move-notify.outputs.should-notify == 'true'
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           method: chat.postMessage
           payload: |
-            channel: C09H56MT8J2 # jose-alert-test channel. The use of this channel is meant to be temporary while we evaluate the usefulness of these notifications.
+            channel: C09H56MT8J2
             text: "`${{ matrix.connector }}` connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
+
+      - name: Authenticate as GitHub App
+        if: always() && steps.check-move-notify.outputs.should-notify == 'true'
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2
+        id: app-token
+        with:
+          owner: "airbytehq"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Create Github Issue on Failure
+        if: always() && steps.check-move-notify.outputs.should-notify == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: tools/bin/bulk-cdk-compatibility-test/create-gh-issue.sh \
+          ${{ matrix.connector }} \
+          "https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}" \
+          ${{ github.sha }}

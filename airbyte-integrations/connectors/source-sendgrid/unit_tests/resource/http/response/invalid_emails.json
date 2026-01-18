@@ -1,0 +1,7 @@
+[
+  {
+    "created": 1704067200,
+    "email": "invalid@example.com",
+    "reason": "Mail domain mentioned in email address is unknown"
+  }
+]

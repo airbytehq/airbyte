@@ -1,9 +1,8 @@
 const { getFromPaths, toAttributes } = require("../helpers/objects");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 const {
-  getLatestPythonCDKVersion,
   parseCDKVersion,
-} = require("../connector_registry");
+} = require("../scripts/connector_registry");
 const visit = require("unist-util-visit").visit;
 
 /**
@@ -19,10 +18,12 @@ const plugin = () => {
     if (!docsPageInfo.isDocsPage) return;
 
     const registryEntry = await getRegistryEntry(vfile);
-
-    const latestPythonCdkVersion = await getLatestPythonCDKVersion();
-
     if (!registryEntry) return;
+
+    const rawCDKVersion = getFromPaths(
+      registryEntry,
+      "packageInfo_[oss|cloud].cdk_version",
+    );
 
     let firstHeading = true;
 
@@ -30,10 +31,6 @@ const plugin = () => {
       if (firstHeading && node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
 
-        const rawCDKVersion = getFromPaths(
-          registryEntry,
-          "packageInfo_[oss|cloud].cdk_version",
-        );
         const syncSuccessRate = getFromPaths(
           registryEntry,
           "generated_[oss|cloud].metrics.[all|cloud|oss].sync_success_rate",
@@ -49,7 +46,7 @@ const plugin = () => {
 
         const { version, isLatest, url } = parseCDKVersion(
           rawCDKVersion,
-          latestPythonCdkVersion,
+          null,
         );
 
         const attrDict = {
@@ -62,7 +59,7 @@ const plugin = () => {
           issue_url: registryEntry.issue_url,
           originalTitle,
           cdkVersion: version,
-          isLatestCDKString: boolToBoolString(isLatest),
+          ...(isLatest !== undefined && { isLatestCDKString: boolToBoolString(isLatest) }),
           cdkVersionUrl: url,
           syncSuccessRate,
           usageRate,

@@ -100,7 +100,9 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.17.1 | 2025-09-11 | [66090](https://github.com/airbytehq/airbyte/pull/66090) | Update to CDK v7 |
+| 0.17.3 | 2025-11-06 | [68680](https://github.com/airbytehq/airbyte/pull/68680) | Handle 404 errors gracefully for date ranges with no data |
+| 0.17.2 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 0.17.1 | 2025-09-15 | [66090](https://github.com/airbytehq/airbyte/pull/66090) | Update to CDK v7 |
 | 0.17.0 | 2025-09-05 | [65955](https://github.com/airbytehq/airbyte/pull/65955) | Promoting release candidate 0.17.0-rc.2 to a main version. |
 | 0.17.0-rc.2 | 2025-09-04 | [65936](https://github.com/airbytehq/airbyte/pull/65936) | Fix lookback window                                                                                                                                                    |
 | 0.17.0-rc.1 | 2025-08-20 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate to manifest-only                                                                                                                                               |
@@ -127,7 +129,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 | 0.11.7      | 2024-06-26 | [40527](https://github.com/airbytehq/airbyte/pull/40527) | Update dependencies                                                                                                                                                    |
 | 0.11.6      | 2024-06-22 | [40030](https://github.com/airbytehq/airbyte/pull/40030) | Update dependencies                                                                                                                                                    |
 | 0.11.5      | 2024-06-06 | [39252](https://github.com/airbytehq/airbyte/pull/39252) | [autopull] Upgrade base image to v1.2.2                                                                                                                                |
-| 0.11.4      | 2024-05-22 | [38559](https://github.com/airbytehq/airbyte/pull/38564) | Migrate authenticator to `requests_native_auth` package                                                                                                                |
+| 0.11.4      | 2024-05-22 | [38564](https://github.com/airbytehq/airbyte/pull/38564) | Migrate authenticator to `requests_native_auth` package                                                                                                                |
 | 0.11.3      | 2024-05-20 | [38262](https://github.com/airbytehq/airbyte/pull/38262) | Replace AirbyteLogger with logging.Logger                                                                                                                              |
 | 0.11.2      | 2024-04-19 | [36666](https://github.com/airbytehq/airbyte/pull/36666) | Updating to 0.80.0 CDK                                                                                                                                                 |
 | 0.11.1      | 2024-04-12 | [36666](https://github.com/airbytehq/airbyte/pull/36666) | Schema descriptions                                                                                                                                                    |

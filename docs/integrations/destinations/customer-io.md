@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Customer.io
 
 ## Overview
 
-The Customer.io destination connector allows you to sync data to Customer.io, a customer data management platform. This connector supports [data activation](/platform/next/move-data/elt-data-activation).
+The Customer.io destination connector allows you to sync data to Customer.io, a customer data management platform. This connector supports [data activation](/platform/move-data/elt-data-activation).
 
 ## Prerequisites
 
@@ -68,12 +68,13 @@ Here are the destination objects and their respective operations that are curren
 
 In order to configure this connector, you need to generate your Track API Key and obtain your Site ID from Customer.io (Workspace Settings → API and webhook credentials → Create Track API Key). Once this is done, provide both the Site ID and API Key in the connector's configuration and you are good to go.
 
-**Object Storage for Rejected Records**: This connector supports data activation and can optionally store [rejected records](/platform/next/move-data/rejected-records) in object storage (such as S3). Configure object storage in the connector settings to capture records that couldn't be synced to Customer.io due to schema validation issues or other errors.
+**Object Storage for Rejected Records**: This connector supports data activation and can optionally store [rejected records](/platform/move-data/rejected-records) in object storage (such as S3). Configure object storage in the connector settings to capture records that couldn't be synced to Customer.io due to schema validation issues or other errors.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                   |
 |:--------|:-----------|:----------------------------------------------------------|:----------------------------------------------------------|
+| 0.0.8 | 2025-11-05 | [69132](https://github.com/airbytehq/airbyte/pull/69132) | Upgrade to Bulk CDK 0.1.61. |
 | 0.0.7   | 2025-09-23 | [66571](https://github.com/airbytehq/airbyte/pull/66571)      | Fix person_identify in incremental mode                   |
 | 0.0.6   | 2025-09-16 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)      | Use low-code discover definition and pin to a CDK version |
 | 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)  | Update following breaking changes on spec                 |

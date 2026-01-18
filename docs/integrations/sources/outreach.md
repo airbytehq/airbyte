@@ -56,6 +56,14 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.22 | 2026-01-14 | [71668](https://github.com/airbytehq/airbyte/pull/71668) | Update dependencies |
+| 1.1.21 | 2025-12-18 | [70477](https://github.com/airbytehq/airbyte/pull/70477) | Update dependencies |
+| 1.1.20 | 2025-11-25 | [70117](https://github.com/airbytehq/airbyte/pull/70117) | Update dependencies |
+| 1.1.19 | 2025-11-18 | [69711](https://github.com/airbytehq/airbyte/pull/69711) | Update dependencies |
+| 1.1.18 | 2025-10-29 | [69003](https://github.com/airbytehq/airbyte/pull/69003) | Update dependencies |
+| 1.1.17 | 2025-10-21 | [68289](https://github.com/airbytehq/airbyte/pull/68289) | Update dependencies |
+| 1.1.16 | 2025-10-14 | [67764](https://github.com/airbytehq/airbyte/pull/67764) | Update dependencies |
+| 1.1.15 | 2025-10-07 | [61052](https://github.com/airbytehq/airbyte/pull/61052) | Update dependencies |
 | 1.1.14 | 2025-05-24 | [60532](https://github.com/airbytehq/airbyte/pull/60532) | Update dependencies |
 | 1.1.13 | 2025-05-10 | [60057](https://github.com/airbytehq/airbyte/pull/60057) | Update dependencies |
 | 1.1.12 | 2025-05-04 | [59050](https://github.com/airbytehq/airbyte/pull/59050) | Update dependencies |
@@ -67,7 +75,7 @@ List of available streams:
 | 1.1.6 | 2025-03-09 | [55180](https://github.com/airbytehq/airbyte/pull/55180) | 🐛 Source Outreach: remove stream_state interpolation |
 | 1.1.5 | 2025-03-08 | [55561](https://github.com/airbytehq/airbyte/pull/55561) | Update dependencies |
 | 1.1.4 | 2025-03-01 | [54611](https://github.com/airbytehq/airbyte/pull/54611) | Update dependencies |
-| 1.1.3 | 2025-02-24 | [53976](https://github.com/airbytehq/airbyte/pull/54654) | Lower mailings endpoint page size to 100 from 1000 |
+| 1.1.3 | 2025-02-24 | [54654](https://github.com/airbytehq/airbyte/pull/54654) | Lower mailings endpoint page size to 100 from 1000 |
 | 1.1.2 | 2025-02-15 | [53976](https://github.com/airbytehq/airbyte/pull/53976) | Update dependencies |
 | 1.1.1 | 2025-02-08 | [53480](https://github.com/airbytehq/airbyte/pull/53480) | Update dependencies |
 | 1.1.0 | 2025-02-05 | [47294](https://github.com/airbytehq/airbyte/pull/47294) | Migrate to manifest only format |

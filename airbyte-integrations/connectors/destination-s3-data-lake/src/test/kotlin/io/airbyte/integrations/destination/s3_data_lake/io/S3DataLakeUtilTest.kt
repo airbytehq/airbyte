@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_data_lake.io
@@ -9,6 +9,8 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
@@ -29,6 +31,10 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.AIRBYTE_CDC_DELETE_COLUMN
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
@@ -43,6 +49,7 @@ import org.apache.iceberg.CatalogProperties.FILE_IO_IMPL
 import org.apache.iceberg.CatalogProperties.URI
 import org.apache.iceberg.CatalogProperties.WAREHOUSE_LOCATION
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE
+import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
@@ -63,6 +70,18 @@ internal class S3DataLakeUtilTest {
     private lateinit var s3DataLakeUtil: S3DataLakeUtil
     private lateinit var icebergUtil: IcebergUtil
     private val tableIdGenerator = SimpleTableIdGenerator()
+
+    private val emptyTableSchema =
+        StreamTableSchema(
+            columnSchema =
+                ColumnSchema(
+                    inputSchema = mapOf(),
+                    inputToFinalColumnNames = mapOf(),
+                    finalSchema = mapOf(),
+                ),
+            importType = Append,
+            tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+        )
 
     @BeforeEach
     fun setup() {
@@ -203,6 +222,7 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
             )
         val airbyteRecord =
             EnrichedDestinationRecordAirbyteValue(
@@ -267,6 +287,7 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
             )
         val airbyteRecord =
             EnrichedDestinationRecordAirbyteValue(
@@ -336,6 +357,7 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
             )
         val airbyteRecord =
             EnrichedDestinationRecordAirbyteValue(
@@ -504,6 +526,7 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
             )
         val schema = icebergUtil.toIcebergSchema(stream = stream)
         assertEquals(primaryKeys.toSet(), schema.identifierFieldNames())
@@ -514,6 +537,78 @@ internal class S3DataLakeUtilTest {
         assertNotNull(schema.findField(COLUMN_NAME_AB_EXTRACTED_AT))
         assertNotNull(schema.findField(COLUMN_NAME_AB_META))
         assertNotNull(schema.findField(COLUMN_NAME_AB_GENERATION_ID))
+    }
+
+    // Helper function to create test configuration
+    private fun createGlueTestConfiguration(
+        roleArn: String? = null,
+        accessKeyId: String? = "access-key",
+        secretAccessKey: String? = "secret-access-key"
+    ): S3DataLakeConfiguration {
+        return S3DataLakeConfiguration(
+            awsAccessKeyConfiguration =
+                AWSAccessKeyConfiguration(
+                    accessKeyId = accessKeyId,
+                    secretAccessKey = secretAccessKey,
+                ),
+            s3BucketConfiguration =
+                S3BucketConfiguration(
+                    s3BucketName = "test",
+                    s3BucketRegion = S3BucketRegion.`us-east-1`.region,
+                    s3Endpoint = null,
+                ),
+            icebergCatalogConfiguration =
+                IcebergCatalogConfiguration(
+                    warehouseLocation = "s3://test/",
+                    mainBranchName = "main",
+                    catalogConfiguration =
+                        GlueCatalogConfiguration(
+                            glueId = "123456789012",
+                            awsArnRoleConfiguration = AWSArnRoleConfiguration(roleArn = roleArn),
+                            databaseName = "test_db"
+                        )
+                ),
+            numProcessRecordsWorkers = 1,
+        )
+    }
+
+    @Test
+    fun `testGlueCatalogPropertiesWithEmptyRoleArn`() {
+        // Empty string role_arn should be treated as null and use key-based authentication
+        val config = createGlueTestConfiguration(roleArn = "")
+        val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
+
+        // Verify it uses static credentials mode, not assume role mode
+        assertEquals(ICEBERG_CATALOG_TYPE_GLUE, catalogProperties[ICEBERG_CATALOG_TYPE])
+        assertEquals("s3://test/", catalogProperties[WAREHOUSE_LOCATION])
+        assertEquals("access-key", catalogProperties["s3.access-key-id"])
+        assertEquals("secret-access-key", catalogProperties["s3.secret-access-key"])
+        assertEquals(
+            "aws-creds-static-creds",
+            catalogProperties["client.credentials-provider.aws-creds-mode"]
+        )
+        assertEquals("access-key", catalogProperties["client.credentials-provider.access-key-id"])
+        assertEquals(
+            "secret-access-key",
+            catalogProperties["client.credentials-provider.secret-access-key"]
+        )
+    }
+
+    @Test
+    fun `testGlueCatalogPropertiesWithNullRoleArn`() {
+        // Null role_arn should use key-based authentication
+        val config = createGlueTestConfiguration(roleArn = null)
+        val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
+
+        // Verify it uses static credentials mode
+        assertEquals(ICEBERG_CATALOG_TYPE_GLUE, catalogProperties[ICEBERG_CATALOG_TYPE])
+        assertEquals("s3://test/", catalogProperties[WAREHOUSE_LOCATION])
+        assertEquals("access-key", catalogProperties["s3.access-key-id"])
+        assertEquals("secret-access-key", catalogProperties["s3.secret-access-key"])
+        assertEquals(
+            "aws-creds-static-creds",
+            catalogProperties["client.credentials-provider.aws-creds-mode"]
+        )
     }
 
     @Test
@@ -535,6 +630,7 @@ internal class S3DataLakeUtilTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
             )
         val schema = icebergUtil.toIcebergSchema(stream = stream)
         assertEquals(emptySet<String>(), schema.identifierFieldNames())

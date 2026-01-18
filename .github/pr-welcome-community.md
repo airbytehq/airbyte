@@ -5,6 +5,7 @@ Thank you for your contribution from **{{ .repo_name }}**! We're excited to have
 ### Helpful Resources
 
 - [PR Guidelines](https://docs.airbyte.com/contributing-to-airbyte): Check our guidelines for contributions.
+- [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes): Guide to breaking changes, migration guides, and upgrade deadlines.
 - [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development): Learn how to set up your environment and develop connectors locally.
 - If you enable [BYO Connector Credentials](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets) within your fork, you can view your test results [here](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml):
   [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/{{ .repo_name }}/run-connector-tests-command.yml?style=for-the-badge&label=Fork%20CI%20Status)](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml)
@@ -17,7 +18,10 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - `/bump-version` - Bumps connector versions.
 - `/run-connector-tests` - Runs connector tests.
 - `/run-cat-tests` - Runs CAT tests.
+- `/run-regression-tests` - Runs regression tests for the modified connector(s).
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
+- `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}`) for all modified connectors in the PR.
+- `/ai-review` - AI-powered PR review for connector safety and quality gates.
 
 If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
 

@@ -45,12 +45,17 @@ This mode throws an exception after receiving a configurable number of messages.
 <details>
   <summary>Expand to review</summary>
 
-The OSS and Cloud variants have the same version number starting from version `0.2.2`.
+The self-managed and Cloud variants have the same version number starting from version `0.2.2`.
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.9.0 | 2026-01-09 | [71264](https://github.com/airbytehq/airbyte/pull/71264) | Promoting release candidate 0.9.0-rc.2 to a main version. |
+| 0.9.0-rc.2  | 2026-01-08 | [71242](https://github.com/airbytehq/airbyte/pull/71242) | Add missing configuration bean.                                                              |
+| 0.9.0-rc.1  | 2026-01-08 | [71191](https://github.com/airbytehq/airbyte/pull/71191) | Migrate to modern dataflow CDK architecture.                                                 |
+| 0.8.6       | 2025-11-05 | [69128](https://github.com/airbytehq/airbyte/pull/69128) | Upgrade to Bulk CDK 0.1.61.                                                                  |
+| 0.8.5       | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation                                                    |
 | 0.8.4       | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684) | Pin to CDK artifact.                                                                         |
-| 0.8.3       | 2025-08-12 | [65999](https://github.com/airbytehq/airbyte/pull/65999) | Testing publishing flow.                                                                     |
+| 0.8.3       | 2025-09-08 | [65999](https://github.com/airbytehq/airbyte/pull/65999) | Testing publishing flow.                                                                     |
 | 0.8.2       | 2025-08-12 | [64897](https://github.com/airbytehq/airbyte/pull/64897) | Testing publishing flow.                                                                     |
 | 0.8.1       | 2025-07-30 | [64117](https://github.com/airbytehq/airbyte/pull/64117) | Re-release with latest CDK for socket related fixes.                                         |
 | 0.8.0       | 2025-06-17 | [61585](https://github.com/airbytehq/airbyte/pull/61585) | Upgrade dev null to the new data channel based architecture.                                 |
@@ -66,7 +71,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 | 0.7.18      | 2025-02-25 | [54179](https://github.com/airbytehq/airbyte/pull/54179) | Use new CDK interface; perf improvements, skip initial staging                               |
 | 0.7.17      | 2025-01-24 | [51600](https://github.com/airbytehq/airbyte/pull/51600) | Internal refactor                                                                            |
 | 0.7.16      | 2024-12-19 | [52076](https://github.com/airbytehq/airbyte/pull/52076) | Test improvements                                                                            |
-| 0.7.15      | 2024-12-19 | [49899](https://github.com/airbytehq/airbyte/pull/49931) | Non-functional CDK changes                                                                   |
+| 0.7.15      | 2024-12-19 | [49931](https://github.com/airbytehq/airbyte/pull/49931) | Non-functional CDK changes                                                                   |
 | 0.7.14      | 2024-12-20 | [49974](https://github.com/airbytehq/airbyte/pull/49974) | Non-functional CDK changes                                                                   |
 | 0.7.13      | 2024-12-18 | [49899](https://github.com/airbytehq/airbyte/pull/49899) | Use a base image: airbyte/java-connector-base:1.0.0                                          |
 | 0.7.12      | 2024-12-04 | [48794](https://github.com/airbytehq/airbyte/pull/48794) | Promoting release candidate 0.7.12-rc.2 to a main version.                                   |
