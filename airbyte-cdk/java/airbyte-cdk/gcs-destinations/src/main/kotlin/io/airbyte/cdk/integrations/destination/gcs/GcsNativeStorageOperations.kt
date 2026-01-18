@@ -13,10 +13,8 @@ import com.google.cloud.storage.StorageOptions
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.s3.BlobStorageOperations
-import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
-import java.io.InputStream
 import java.nio.channels.Channels
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -55,11 +53,10 @@ class GcsNativeStorageOperations(
 
         fun createStorageClient(serviceAccountJson: String): Storage {
             val credentials: GoogleCredentials =
-                ServiceAccountCredentials.fromStream(ByteArrayInputStream(serviceAccountJson.toByteArray()))
-            return StorageOptions.newBuilder()
-                .setCredentials(credentials)
-                .build()
-                .service
+                ServiceAccountCredentials.fromStream(
+                    ByteArrayInputStream(serviceAccountJson.toByteArray())
+                )
+            return StorageOptions.newBuilder().setCredentials(credentials).build().service
         }
     }
 
@@ -168,9 +165,7 @@ class GcsNativeStorageOperations(
         metadata[GENERATION_ID_USER_META_KEY] = generationId.toString()
 
         val blobId = BlobId.of(bucketName, fullObjectKey)
-        val blobInfo = BlobInfo.newBuilder(blobId)
-            .setMetadata(metadata)
-            .build()
+        val blobInfo = BlobInfo.newBuilder(blobId).setMetadata(metadata).build()
 
         recordsData.inputStream!!.use { inputStream ->
             val writer = storage.writer(blobInfo)
@@ -188,8 +183,7 @@ class GcsNativeStorageOperations(
 
     @Synchronized
     private fun getPartId(objectPath: String): String {
-        val partCount: AtomicInteger =
-            partCounts.computeIfAbsent(objectPath) { AtomicInteger(0) }
+        val partCount: AtomicInteger = partCounts.computeIfAbsent(objectPath) { AtomicInteger(0) }
         objectNameByPrefix.computeIfAbsent(objectPath) {
             val objectList = mutableSetOf<String>()
             val blobs = storage.list(bucketName, Storage.BlobListOption.prefix(objectPath))
@@ -311,10 +305,13 @@ class GcsNativeStorageOperations(
         val blobs = storage.list(bucketName, Storage.BlobListOption.prefix(objectPath))
         for (blob in blobs.iterateAll()) {
             if (regexFormat.matcher(blob.name).matches()) {
-                if (lastModifiedBlob == null ||
-                    (blob.updateTimeOffsetDateTime != null &&
-                        lastModifiedBlob.updateTimeOffsetDateTime != null &&
-                        blob.updateTimeOffsetDateTime.isAfter(lastModifiedBlob.updateTimeOffsetDateTime))
+                if (
+                    lastModifiedBlob == null ||
+                        (blob.updateTimeOffsetDateTime != null &&
+                            lastModifiedBlob.updateTimeOffsetDateTime != null &&
+                            blob.updateTimeOffsetDateTime.isAfter(
+                                lastModifiedBlob.updateTimeOffsetDateTime
+                            ))
                 ) {
                     lastModifiedBlob = blob
                 }
@@ -343,8 +340,7 @@ class GcsNativeStorageOperations(
                 .replace(Pattern.quote(FORMAT_VARIABLE_MILLISECOND).toRegex(), "[0-9]{4}")
                 .replace(Pattern.quote(FORMAT_VARIABLE_EPOCH).toRegex(), "[0-9]+")
                 .replace(Pattern.quote(FORMAT_VARIABLE_UUID).toRegex(), ".*")
-                .replace("/+".toRegex(), "/")
-                    + ".*"),
+                .replace("/+".toRegex(), "/") + ".*"),
         )
     }
 }

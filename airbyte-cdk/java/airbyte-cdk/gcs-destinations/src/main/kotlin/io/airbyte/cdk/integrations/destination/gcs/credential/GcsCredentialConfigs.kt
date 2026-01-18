@@ -4,7 +4,6 @@
 package io.airbyte.cdk.integrations.destination.gcs.credential
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.commons.json.Jsons
 import java.util.*
 
 object GcsCredentialConfigs {

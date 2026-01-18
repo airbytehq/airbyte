@@ -73,31 +73,34 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
         }
     }
 
-    private fun checkWithS3Client(destinationConfig: GcsDestinationConfig): AirbyteConnectionStatus {
+    private fun checkWithS3Client(
+        destinationConfig: GcsDestinationConfig
+    ): AirbyteConnectionStatus {
         val s3Client = destinationConfig.getS3Client()
 
         // Test single upload (for small files) permissions
         testSingleUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath!!)
 
         // Test multipart upload with stream transfer manager
-        testMultipartUpload(
-            s3Client,
-            destinationConfig.bucketName,
-            destinationConfig.bucketPath!!
-        )
+        testMultipartUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath!!)
 
         return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
     }
 
-    private fun checkWithNativeClient(destinationConfig: GcsDestinationConfig): AirbyteConnectionStatus {
+    private fun checkWithNativeClient(
+        destinationConfig: GcsDestinationConfig
+    ): AirbyteConnectionStatus {
         val storage = destinationConfig.getNativeGcsClient()
         val bucketName = destinationConfig.bucketName
         val bucketPath = destinationConfig.bucketPath ?: ""
 
         // Test bucket access by listing objects
         val testPrefix = if (bucketPath.isNotEmpty()) "$bucketPath/" else ""
-        storage.list(bucketName, com.google.cloud.storage.Storage.BlobListOption.prefix(testPrefix),
-            com.google.cloud.storage.Storage.BlobListOption.pageSize(1))
+        storage.list(
+            bucketName,
+            com.google.cloud.storage.Storage.BlobListOption.prefix(testPrefix),
+            com.google.cloud.storage.Storage.BlobListOption.pageSize(1)
+        )
 
         // Test write permission by creating and deleting a test object
         val testObjectName = "${testPrefix}_airbyte_connection_test_${System.currentTimeMillis()}"
@@ -106,7 +109,9 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
         storage.create(blobInfo, "test".toByteArray())
         storage.delete(blobId)
 
-        LOGGER.info { "Successfully verified GCS bucket access with Service Account authentication" }
+        LOGGER.info {
+            "Successfully verified GCS bucket access with Service Account authentication"
+        }
         return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
     }
 
@@ -117,18 +122,19 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
     ): AirbyteMessageConsumer? {
         val gcsConfig: GcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
 
-        val storageOperations: BlobStorageOperations = if (gcsConfig.isUsingNativeClient()) {
-            // Service Account authentication - use native GCS storage operations
-            GcsNativeStorageOperations(
-                nameTransformer,
-                gcsConfig.getNativeGcsClient(),
-                gcsConfig.bucketName,
-                gcsConfig.bucketPath ?: ""
-            )
-        } else {
-            // HMAC key authentication - use S3-compatible storage operations
-            GcsStorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig)
-        }
+        val storageOperations: BlobStorageOperations =
+            if (gcsConfig.isUsingNativeClient()) {
+                // Service Account authentication - use native GCS storage operations
+                GcsNativeStorageOperations(
+                    nameTransformer,
+                    gcsConfig.getNativeGcsClient(),
+                    gcsConfig.bucketName,
+                    gcsConfig.bucketPath ?: ""
+                )
+            } else {
+                // HMAC key authentication - use S3-compatible storage operations
+                GcsStorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig)
+            }
 
         return S3ConsumerFactory()
             .create(

@@ -25,10 +25,11 @@ import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfigFactory.getU
  * GCS destination configuration that supports both HMAC key authentication (via S3-compatible API)
  * and Service Account authentication (via native GCS client).
  *
- * For HMAC key authentication, this class extends S3DestinationConfig and uses the S3 client.
- * For Service Account authentication, use the companion object methods to get the native GCS client.
+ * For HMAC key authentication, this class extends S3DestinationConfig and uses the S3 client. For
+ * Service Account authentication, use the companion object methods to get the native GCS client.
  */
-class GcsDestinationConfig private constructor(
+class GcsDestinationConfig
+private constructor(
     bucketName: String,
     bucketPath: String,
     bucketRegion: String?,
@@ -54,10 +55,14 @@ class GcsDestinationConfig private constructor(
 
     fun getNativeGcsClient(): Storage {
         if (!useNativeClient) {
-            throw IllegalStateException("Native GCS client is only available for Service Account authentication")
+            throw IllegalStateException(
+                "Native GCS client is only available for Service Account authentication"
+            )
         }
         val serviceAccountCredential = gcsCredentialConfig as GcsServiceAccountCredentialConfig
-        return GcsNativeStorageOperations.createStorageClient(serviceAccountCredential.serviceAccountJson)
+        return GcsNativeStorageOperations.createStorageClient(
+            serviceAccountCredential.serviceAccountJson
+        )
     }
 
     override fun createS3Client(): AmazonS3 {
@@ -90,7 +95,8 @@ class GcsDestinationConfig private constructor(
         @JvmStatic
         fun getGcsDestinationConfig(config: JsonNode): GcsDestinationConfig {
             val credentialConfig = GcsCredentialConfigs.getCredentialConfig(config)
-            val useNativeClient = credentialConfig.credentialType == GcsCredentialType.SERVICE_ACCOUNT
+            val useNativeClient =
+                credentialConfig.credentialType == GcsCredentialType.SERVICE_ACCOUNT
 
             return GcsDestinationConfig(
                 config["gcs_bucket_name"].asText(),
