@@ -65,7 +65,7 @@ The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per
 | 0.2.0 | 2024-08-14 | [44085](https://github.com/airbytehq/airbyte/pull/44085) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43731](https://github.com/airbytehq/airbyte/pull/43731) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43680](https://github.com/airbytehq/airbyte/pull/43680) | Update dependencies |
-| 0.1.12 | 2024-08-06 | [42793](https://github.com/airbytehq/airbyte/pull/43048) | new API URL config option available |
+| 0.1.12 | 2024-08-06 | [43048](https://github.com/airbytehq/airbyte/pull/43048) | new API URL config option available |
 | 0.1.11 | 2024-08-03 | [43252](https://github.com/airbytehq/airbyte/pull/43252) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42793](https://github.com/airbytehq/airbyte/pull/42793) | Update dependencies |
 | 0.1.9 | 2024-07-20 | [41918](https://github.com/airbytehq/airbyte/pull/41918) | Update dependencies |
