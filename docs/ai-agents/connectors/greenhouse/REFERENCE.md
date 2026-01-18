@@ -36,7 +36,7 @@ await greenhouse.candidates.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -54,6 +54,43 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `page` | `integer` | No | Page number for pagination |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `first_name` | `string` |  |
+| `last_name` | `string` |  |
+| `company` | `string \| null` |  |
+| `title` | `string \| null` |  |
+| `created_at` | `string` |  |
+| `updated_at` | `string` |  |
+| `last_activity` | `string` |  |
+| `is_private` | `boolean` |  |
+| `photo_url` | `string \| null` |  |
+| `attachments` | `array<object>` |  |
+| `attachments[].filename` | `string` |  |
+| `attachments[].url` | `string` |  |
+| `attachments[].type` | `"resume" \| "cover_letter" \| "admin_only" \| "take_home_test" \| "offer_packet" \| "offer_letter" \| "signed_offer_letter" \| "other"` |  |
+| `attachments[].created_at` | `string` |  |
+| `application_ids` | `array<integer>` |  |
+| `phone_numbers` | `array<object>` |  |
+| `addresses` | `array<object>` |  |
+| `email_addresses` | `array<object>` |  |
+| `website_addresses` | `array<object>` |  |
+| `social_media_addresses` | `array<object>` |  |
+| `recruiter` | `object \| null` |  |
+| `coordinator` | `object \| null` |  |
+| `can_email` | `boolean` |  |
+| `tags` | `array<string>` |  |
+| `custom_fields` | `object` |  |
+
+
+</details>
+
 #### Candidates Get
 
 Get a single candidate by ID
@@ -69,7 +106,7 @@ await greenhouse.candidates.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -141,7 +178,7 @@ await greenhouse.applications.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -164,6 +201,42 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `status` | `"active" \| "rejected" \| "hired"` | No | Filter by application status |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `candidate_id` | `integer` |  |
+| `prospect` | `boolean` |  |
+| `applied_at` | `string` |  |
+| `rejected_at` | `string \| null` |  |
+| `last_activity_at` | `string` |  |
+| `location` | `object \| null` |  |
+| `source` | `object` |  |
+| `credited_to` | `object` |  |
+| `rejection_reason` | `object \| null` |  |
+| `rejection_details` | `object \| null` |  |
+| `jobs` | `array<object>` |  |
+| `job_post_id` | `integer \| null` |  |
+| `status` | `string` |  |
+| `current_stage` | `object \| null` |  |
+| `answers` | `array<object>` |  |
+| `prospective_office` | `object \| null` |  |
+| `prospective_department` | `object \| null` |  |
+| `prospect_detail` | `object` |  |
+| `attachments` | `array<object>` |  |
+| `attachments[].filename` | `string` |  |
+| `attachments[].url` | `string` |  |
+| `attachments[].type` | `"resume" \| "cover_letter" \| "admin_only" \| "take_home_test" \| "offer_packet" \| "offer_letter" \| "signed_offer_letter" \| "other"` |  |
+| `attachments[].created_at` | `string` |  |
+| `custom_fields` | `object` |  |
+
+
+</details>
+
 #### Applications Get
 
 Get a single application by ID
@@ -179,7 +252,7 @@ await greenhouse.applications.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -250,7 +323,7 @@ await greenhouse.jobs.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -268,6 +341,32 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `page` | `integer` | No | Page number for pagination |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `name` | `string` |  |
+| `requisition_id` | `string \| null` |  |
+| `notes` | `string \| null` |  |
+| `confidential` | `boolean` |  |
+| `status` | `string` |  |
+| `created_at` | `string` |  |
+| `opened_at` | `string` |  |
+| `closed_at` | `string \| null` |  |
+| `updated_at` | `string` |  |
+| `departments` | `array<object \| null>` |  |
+| `offices` | `array<object>` |  |
+| `custom_fields` | `object` |  |
+| `hiring_team` | `object` |  |
+| `openings` | `array<object>` |  |
+
+
+</details>
+
 #### Jobs Get
 
 Get a single job by ID
@@ -283,7 +382,7 @@ await greenhouse.jobs.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -344,7 +443,7 @@ await greenhouse.offers.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -365,6 +464,30 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `resolved_after` | `string` | No | Filter by offers resolved after this timestamp |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `version` | `integer` |  |
+| `application_id` | `integer` |  |
+| `job_id` | `integer` |  |
+| `candidate_id` | `integer` |  |
+| `opening` | `object \| null` |  |
+| `created_at` | `string` |  |
+| `updated_at` | `string` |  |
+| `sent_at` | `string \| null` |  |
+| `resolved_at` | `string \| null` |  |
+| `starts_at` | `string \| null` |  |
+| `status` | `string` |  |
+| `custom_fields` | `object` |  |
+
+
+</details>
+
 #### Offers Get
 
 Get a single offer by ID
@@ -380,7 +503,7 @@ await greenhouse.offers.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -439,7 +562,7 @@ await greenhouse.users.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -461,6 +584,31 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `updated_after` | `string` | No | Filter by users updated after this timestamp |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `name` | `string` |  |
+| `first_name` | `string` |  |
+| `last_name` | `string` |  |
+| `primary_email_address` | `string` |  |
+| `updated_at` | `string` |  |
+| `created_at` | `string` |  |
+| `disabled` | `boolean` |  |
+| `site_admin` | `boolean` |  |
+| `emails` | `array<string>` |  |
+| `employee_id` | `string \| null` |  |
+| `linked_candidate_ids` | `array<integer>` |  |
+| `offices` | `array<object>` |  |
+| `departments` | `array<object>` |  |
+
+
+</details>
+
 #### Users Get
 
 Get a single user by ID
@@ -476,7 +624,7 @@ await greenhouse.users.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -536,7 +684,7 @@ await greenhouse.departments.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -554,6 +702,24 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `page` | `integer` | No | Page number for pagination |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `name` | `string` |  |
+| `parent_id` | `integer \| null` |  |
+| `parent_department_external_id` | `string \| null` |  |
+| `child_ids` | `array<integer>` |  |
+| `child_department_external_ids` | `array<string>` |  |
+| `external_id` | `string \| null` |  |
+
+
+</details>
+
 #### Departments Get
 
 Get a single department by ID
@@ -569,7 +735,7 @@ await greenhouse.departments.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -622,7 +788,7 @@ await greenhouse.offices.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -640,6 +806,26 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `page` | `integer` | No | Page number for pagination |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `name` | `string` |  |
+| `location` | `object \| null` |  |
+| `primary_contact_user_id` | `integer \| null` |  |
+| `parent_id` | `integer \| null` |  |
+| `parent_office_external_id` | `string \| null` |  |
+| `child_ids` | `array<integer>` |  |
+| `child_office_external_ids` | `array<string>` |  |
+| `external_id` | `string \| null` |  |
+
+
+</details>
+
 #### Offices Get
 
 Get a single office by ID
@@ -655,7 +841,7 @@ await greenhouse.offices.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -710,7 +896,7 @@ await greenhouse.job_posts.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -730,6 +916,32 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `active` | `boolean` | No | Filter by active status |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `title` | `string` |  |
+| `location` | `object \| null` |  |
+| `internal` | `boolean` |  |
+| `external` | `boolean` |  |
+| `active` | `boolean` |  |
+| `live` | `boolean` |  |
+| `first_published_at` | `string \| null` |  |
+| `job_id` | `integer` |  |
+| `content` | `string \| null` |  |
+| `internal_content` | `string \| null` |  |
+| `updated_at` | `string` |  |
+| `created_at` | `string` |  |
+| `demographic_question_set_id` | `integer \| null` |  |
+| `questions` | `array<object>` |  |
+
+
+</details>
+
 #### Job Posts Get
 
 Get a single job post by ID
@@ -745,7 +957,7 @@ await greenhouse.job_posts.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -806,7 +1018,7 @@ await greenhouse.sources.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -824,6 +1036,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `page` | `integer` | No | Page number for pagination |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `name` | `string` |  |
+| `type` | `object \| null` |  |
+
+
+</details>
+
 ### Scheduled Interviews
 
 #### Scheduled Interviews List
@@ -839,7 +1065,7 @@ await greenhouse.scheduled_interviews.list()
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -863,6 +1089,30 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `ends_before` | `string` | No | Filter by interviews ending before this timestamp |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `application_id` | `integer` |  |
+| `external_event_id` | `string \| null` |  |
+| `created_at` | `string` |  |
+| `updated_at` | `string` |  |
+| `start` | `object \| null` |  |
+| `end` | `object \| null` |  |
+| `location` | `string \| null` |  |
+| `video_conferencing_url` | `string \| null` |  |
+| `status` | `string` |  |
+| `interview` | `object \| null` |  |
+| `organizer` | `object \| null` |  |
+| `interviewers` | `array<object>` |  |
+
+
+</details>
+
 #### Scheduled Interviews Get
 
 Get a single scheduled interview by ID
@@ -878,7 +1128,7 @@ await greenhouse.scheduled_interviews.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -943,7 +1193,7 @@ async for chunk in greenhouse.application_attachment.download(    id=0,    attac
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -987,7 +1237,7 @@ async for chunk in greenhouse.candidate_attachment.download(    id=0,    attachm
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1038,11 +1288,12 @@ GreenhouseConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "59f1e50a-331f-4f09-b3e8-2e8d4d355f44",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
     "api_key": "<Your Greenhouse Harvest API Key from the Dev Center>"
   },

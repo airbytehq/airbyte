@@ -29,6 +29,7 @@ API Reference: https://www.dingconnect.com/Api/Description
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.22 | 2026-01-14 | [71549](https://github.com/airbytehq/airbyte/pull/71549) | Update dependencies |
 | 0.0.21 | 2025-10-29 | [69007](https://github.com/airbytehq/airbyte/pull/69007) | Update dependencies |
 | 0.0.20 | 2025-09-30 | [66948](https://github.com/airbytehq/airbyte/pull/66948) | Update dependencies |
 | 0.0.19 | 2025-09-09 | [65838](https://github.com/airbytehq/airbyte/pull/65838) | Update dependencies |

@@ -463,6 +463,7 @@ module.exports = {
           },
           items: [
             "enterprise-flex/getting-started",
+            "enterprise-flex/external-secrets",
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
           ],
