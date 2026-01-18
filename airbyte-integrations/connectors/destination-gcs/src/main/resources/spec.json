@@ -78,10 +78,7 @@
           {
             "title": "Service Account Key",
             "description": "Use a Google Cloud Service Account JSON key for authentication. This is the recommended authentication method for server-to-server communication.",
-            "required": [
-              "credential_type",
-              "service_account"
-            ],
+            "required": ["credential_type", "service_account"],
             "properties": {
               "credential_type": {
                 "type": "string",
@@ -94,7 +91,9 @@
                 "title": "Service Account JSON Key",
                 "airbyte_secret": true,
                 "order": 0,
-                "examples": ["{\"type\": \"service_account\", \"project_id\": \"my-project\", ...}"],
+                "examples": [
+                  "{\"type\": \"service_account\", \"project_id\": \"my-project\", ...}"
+                ],
                 "multiline": true
               }
             }
