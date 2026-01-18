@@ -23,7 +23,7 @@
     },
     {
       "source": "/platform/using-airbyte/pyairbyte/getting-started",
-      "destination": "/developers/using-pyairbyte",
+      "destination": "/developers/pyairbyte",
       "statusCode": 301
     },
     {
@@ -267,8 +267,13 @@
       "statusCode": 301
     },
     {
+      "source": "/developers/using-pyairbyte",
+      "destination": "/developers/pyairbyte",
+      "statusCode": 301
+    },
+    {
       "source": "/pyairbyte",
-      "destination": "/developers/using-pyairbyte",
+      "destination": "/developers/pyairbyte",
       "statusCode": 301
     },
     {
@@ -594,6 +599,16 @@
     {
       "source": "/platform/developer-guides/licenses/:path*",
       "destination": "/community/licenses/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/embedded-api/sonar",
+      "destination": "/ai-agents/embedded/api-reference/sonar",
+      "statusCode": 301
+    },
+    {
+      "source": "/embedded-api/:path*",
+      "destination": "/ai-agents/embedded/api-reference/:path*",
       "statusCode": 301
     }
   ]
