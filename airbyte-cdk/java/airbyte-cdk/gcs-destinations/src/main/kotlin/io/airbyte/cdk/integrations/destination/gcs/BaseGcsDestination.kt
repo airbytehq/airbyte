@@ -128,7 +128,7 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
                 GcsNativeStorageOperations(
                     nameTransformer,
                     gcsConfig.getNativeGcsClient(),
-                    gcsConfig.bucketName,
+                    gcsConfig.bucketName!!,
                     gcsConfig.bucketPath ?: ""
                 )
             } else {
