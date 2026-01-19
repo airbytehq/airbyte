@@ -66,7 +66,10 @@ class TestCustomRolesStreamFullRefresh(TestCase):
 
         # Build the next page request using the request builder
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator).with_per_page(100).with_query_param("page", "2").build()
+            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator)
+            .with_per_page(100)
+            .with_query_param("page", "2")
+            .build()
         )
 
         # Create records for page 1
