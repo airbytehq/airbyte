@@ -45,6 +45,14 @@ The **Content Owner ID** field is for YouTube partners who participate in the [Y
 - If you are a YouTube partner with a content owner account, enter your content owner ID to retrieve data for channels managed under that account.
 - To find your content owner ID, you can check the URL when logged into the [YouTube Studio](https://studio.youtube.com/) (look for the `o=` parameter), use the [YouTube Content ID API](https://developers.google.com/youtube/partner/docs/v1/contentOwners/list), or contact your YouTube partner manager.
 
+### Channel IDs (Optional)
+
+The **Channel IDs** field allows you to filter the data to only include specific YouTube channels. This is useful if your account has access to multiple channels but you only want to sync data for certain ones.
+
+- If left empty, data for all channels associated with your account will be returned.
+- If provided, only data for the specified channel IDs will be included in the sync.
+- Channel IDs are typically in the format `UCxxxxxx`. You can find your channel ID in [YouTube Studio](https://studio.youtube.com/) under Settings > Channel > Advanced settings, or by visiting your channel page and looking at the URL.
+
 ## Supported sync modes
 
 The YouTube Analytics source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -96,6 +104,7 @@ The connector retrieves bulk report data from YouTube's reporting jobs, which mi
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 1.3.0 | 2026-01-14 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add optional channel_ids filter to filter data by specific channels |
 | 1.2.0 | 2026-01-14 | [71377](https://github.com/airbytehq/airbyte/pull/71377) | Promoting release candidate 1.2.0-rc.2 to a main version. |
 | 1.2.0-rc.2 | 2026-01-09 | [71244](https://github.com/airbytehq/airbyte/pull/71244) | Fix incorrect report_id key and remove additional error message |
 | 1.2.0-rc.1 | 2026-01-07 | [71169](https://github.com/airbytehq/airbyte/pull/71169) | Add optional content_owner_id config for multi-channel support and improve error handling |
