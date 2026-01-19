@@ -1495,7 +1495,7 @@ spec:
               - subdomain
       oauth_connector_input_specification:
         consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&scope={{scope_value}}&state={{state}}"
-        scope: "read write"
+        scope: read
         access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens"
         access_token_params:
           grant_type: authorization_code
