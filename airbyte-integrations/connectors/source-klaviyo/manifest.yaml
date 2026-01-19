@@ -346,7 +346,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P7D
         cursor_granularity: PT1S
-        lookback_window: "P{{ config.get('lookback_window', 1) }}D"
+        lookback_window: "P{{ config.get('lookback_window', 0) }}D"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
@@ -1012,9 +1012,9 @@ spec:
           events_detailed stream.
         title: Lookback Window (Days)
         minimum: 0
-        default: 1
+        default: 0
         examples:
-          - 1
+          - 0
           - 7
         order: 4
     additionalProperties: true
