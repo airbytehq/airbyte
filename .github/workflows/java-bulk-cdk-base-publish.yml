@@ -7,7 +7,6 @@ on:
       - master
     paths:
       - "airbyte-cdk/bulk/core/base/**"
-      - "airbyte-cdk/bulk/base-version.properties"
   workflow_dispatch:
 
 concurrency:

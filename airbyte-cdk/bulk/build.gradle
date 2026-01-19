@@ -14,7 +14,7 @@ plugins {
 }
 
 final var versionFile = file("version.properties")
-final var baseVersionFile = file("base-version.properties")
+final var baseVersionFile = file("core/base/version.properties")
 
 final var cdkVersion = {
     var props = new Properties()
