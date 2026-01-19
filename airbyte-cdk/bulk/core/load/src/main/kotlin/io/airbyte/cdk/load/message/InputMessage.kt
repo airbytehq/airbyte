@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.message
@@ -56,10 +56,6 @@ sealed interface InputMessage {
                     outputStream.write('\n'.code)
                 }
             DataChannelFormat.PROTOBUF -> asProtobuf().writeDelimitedTo(outputStream)
-            else ->
-                throw IllegalArgumentException(
-                    "Unsupported data channel format: $dataChannelFormat"
-                )
         }
         outputStream.flush()
     }

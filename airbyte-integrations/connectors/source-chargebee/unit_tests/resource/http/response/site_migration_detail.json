@@ -1,0 +1,16 @@
+{
+  "list": [
+    {
+      "site_migration_detail": {
+        "entity_id": "smd_001",
+        "entity_type": "customer",
+        "other_site_name": "old-site",
+        "entity_id_at_other_site": "old_cust_001",
+        "migrated_at": 1705312800,
+        "object": "site_migration_detail",
+        "cf_migration_batch": "Batch001",
+        "cf_migration_status": "Completed"
+      }
+    }
+  ]
+}

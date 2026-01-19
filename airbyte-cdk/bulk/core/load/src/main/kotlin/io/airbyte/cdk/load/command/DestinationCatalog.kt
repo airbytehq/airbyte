@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.command
@@ -104,17 +104,22 @@ class DefaultDestinationCatalogFactory {
         catalog: ConfiguredAirbyteCatalog,
         streamFactory: DestinationStreamFactory,
         tableNameResolver: TableNameResolver,
+        namespaceMapper: NamespaceMapper,
     ): DestinationCatalog {
-        val descriptors =
-            catalog.streams
-                .map { DestinationStream.Descriptor(it.stream.namespace, it.stream.name) }
-                .toSet()
-        val names = tableNameResolver.getTableNameMapping(descriptors)
+        // we resolve the table names with the properly mapped descriptors
+        val mappedDescriptors =
+            catalog.streams.map { namespaceMapper.map(it.stream.namespace, it.stream.name) }.toSet()
+        val names = tableNameResolver.getTableNameMapping(mappedDescriptors)
+
+        require(
+            names.size == catalog.streams.size,
+            { "Invariant violation: An incomplete table name mapping was generated." }
+        )
 
         return DestinationCatalog(
             streams =
                 catalog.streams.map {
-                    val key = DestinationStream.Descriptor(it.stream.namespace, it.stream.name)
+                    val key = namespaceMapper.map(it.stream.namespace, it.stream.name)
                     streamFactory.make(it, names[key]!!)
                 }
         )

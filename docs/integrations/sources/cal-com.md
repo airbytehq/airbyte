@@ -25,6 +25,8 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2026-01-14 | [71505](https://github.com/airbytehq/airbyte/pull/71505) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70624](https://github.com/airbytehq/airbyte/pull/70624) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [69968](https://github.com/airbytehq/airbyte/pull/69968) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69436](https://github.com/airbytehq/airbyte/pull/69436) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [68717](https://github.com/airbytehq/airbyte/pull/68717) | Update dependencies |
@@ -36,7 +38,7 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 | 0.0.32 | 2025-08-23 | [65345](https://github.com/airbytehq/airbyte/pull/65345) | Update dependencies |
 | 0.0.31 | 2025-08-09 | [64661](https://github.com/airbytehq/airbyte/pull/64661) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64423](https://github.com/airbytehq/airbyte/pull/64423) | Update dependencies |
-| 0.0.29 | 2025-06-26 | [64099](https://github.com/airbytehq/airbyte/pull/64099) | Add support for updatedAt, cancelledByEmail, rescheduledByEmail and cancellationReason fields in GET Bookings |
+| 0.0.29 | 2025-07-28 | [64099](https://github.com/airbytehq/airbyte/pull/64099) | Add support for updatedAt, cancelledByEmail, rescheduledByEmail and cancellationReason fields in GET Bookings |
 | 0.0.28 | 2025-07-26 | [63787](https://github.com/airbytehq/airbyte/pull/63787) | Update dependencies |
 | 0.0.27 | 2025-07-19 | [63486](https://github.com/airbytehq/airbyte/pull/63486) | Update dependencies |
 | 0.0.26 | 2025-07-12 | [63075](https://github.com/airbytehq/airbyte/pull/63075) | Update dependencies |

@@ -92,6 +92,7 @@ In Airbyte, configure the following fields:
 | **Warehouse Location**   | Yes        | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`)  |
 | **Catalog Type**         | Yes        | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`            |
 | **Main Branch Name**     | No         | Iceberg branch name (default: `main`)                                        |
+| **Default Namespace**    | No         | Default namespace for tables (for example: `default`, `airbyte_data`)        |
 
 ### BigLake-specific fields
 
@@ -100,7 +101,6 @@ When **Catalog Type** is set to `BigLake`, configure these additional fields:
 | Field                    | Required   | Description                                                          |
 |--------------------------|------------|----------------------------------------------------------------------|
 | **BigLake Catalog Name** | Yes        | Name of your BigLake catalog (from the setup step)                   |
-| **BigLake Database**     | Yes        | Default database/namespace for tables                                |
 
 ### Polaris-specific fields
 
@@ -204,6 +204,9 @@ If compaction runs simultaneously with the sync, it would delete files from the 
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 1.0.5   | 2026-01-14 | [71760](https://github.com/airbytehq/airbyte/pull/71760)     | Restore integration tests in CI. Workaround DI error.                                 |
+| 1.0.4   | 2026-01-12 | [71227](https://github.com/airbytehq/airbyte/pull/71227)     | Add speed mode support with PROTOBUF serialization                                    |
+| 1.0.3   | 2026-01-12 | [71258](https://github.com/airbytehq/airbyte/pull/71258)     | Migrate to TableSchemaMapper from deprecated ColumnNameMapper pattern                 |
 | 1.0.2   | 2025-11-13 | [69317](https://github.com/airbytehq/airbyte/pull/69317)     | Connector generally available                                                         |
 | 1.0.1   | 2025-11-13 | [69212](https://github.com/airbytehq/airbyte/pull/69212)     | Initial release of GCS Data Lake destination with BigLake and Polaris catalog support |
 

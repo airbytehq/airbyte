@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.sql
@@ -531,7 +531,7 @@ class PostgresDirectLoadSqlGenerator(
 
     fun getTableSchema(tableName: TableName): String =
         """
-        SELECT column_name, data_type
+        SELECT column_name, data_type, is_nullable
         FROM information_schema.columns
         WHERE table_schema = '${tableName.namespace}'
         AND table_name = '${tableName.name}';
@@ -628,7 +628,7 @@ class PostgresDirectLoadSqlGenerator(
                     else -> "USING ${getName(newColumn)}::$newType"
                 }
             clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(newColumn)} TYPE $newType $usingClause$dropTableSuffix;"
+                "ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(newColumn)} TYPE $newType $usingClause;"
             )
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.write
@@ -49,6 +49,7 @@ class PostgresWriter(
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val initialStatus = initialStatuses[stream]!!
         val realTableName = stream.tableSchema.tableNames.finalTableName!!
+
         val tempTableName = tempTableNameGenerator.generate(realTableName)
         val columnNameMapping =
             ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)
