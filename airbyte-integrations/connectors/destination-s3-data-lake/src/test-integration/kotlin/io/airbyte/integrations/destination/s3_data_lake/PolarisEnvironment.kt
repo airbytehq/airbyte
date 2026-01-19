@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_data_lake
@@ -114,6 +114,8 @@ object PolarisEnvironment {
           "catalog_name": "$CATALOG_NAME",
           "client_id": "$appClientId",
           "client_secret": "$appClientSecret",
+          "scope": "PRINCIPAL_ROLE:$PRINCIPAL_ROLE",
+          "oauth2_server_uri": "$OAUTH_TOKEN_URL",
           "namespace": "<DEFAULT_NAMESPACE_PLACEHOLDER>"
         },
         "s3_bucket_name": "$BUCKET",

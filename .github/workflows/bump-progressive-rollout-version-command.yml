@@ -1,0 +1,178 @@
+name: Bump connector version for progressive rollout
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number. This PR will be referenced in the changelog line."
+        type: number
+        required: false
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+
+      type:
+        description: "The type of bump to perform. One of 'major', 'minor', or 'patch'."
+        required: false
+        default: "patch"
+
+      changelog:
+        description: "Optional. The comment to add to the changelog. If not provided, the PR title will be used."
+        required: false
+        default: ""
+
+      # These must be declared, but they are unused and ignored.
+      # TODO: Infer 'repo' and 'gitref' from PR number on other workflows, so we can remove these.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Ref (Ignored)"
+        required: false
+
+run-name: "Bump connector version for progressive rollout in PR: #${{ github.event.inputs.pr }}"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
+  # Cancel any previous runs on the same branch if they are still in progress
+  cancel-in-progress: true
+
+jobs:
+  bump-progressive-rollout-version:
+    name: "Bump version of connectors for progressive rollout in this PR"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get job variables
+        id: job-vars
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+          echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
+          echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
+          echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
+      # permissions to add commits to our main repo as well as forks. This will only work on
+      # forks if the user installs the app into their fork. Until we document this as a clear
+      # path, we will have to keep using the PAT.
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          repository: ${{ steps.job-vars.outputs.repo }}
+          ref: ${{ steps.job-vars.outputs.branch }}
+          fetch-depth: 1
+          # Important that token is a PAT so that CI checks are triggered again.
+          # Without this we would be forever waiting on required checks to pass.
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+
+      - name: Append comment with job run link
+        # If comment-id is not provided, this will create a new
+        # comment with the job run link.
+        id: first-comment-action
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          issue-number: ${{ github.event.inputs.pr }}
+          body: |
+
+            > **Progressive Rollout Version Bump Started**
+            >
+            > This will bump the connector version with an RC suffix and enable progressive rollout.
+            > [Check job output.][1]
+
+            [1]: ${{ steps.job-vars.outputs.run-url }}
+
+      - name: Log changelog source
+        run: |
+          if [ -n "${{ github.event.inputs.changelog }}" ]; then
+            echo "Using user-provided changelog: ${{ github.event.inputs.changelog }}"
+          else
+            echo "Using PR title as changelog: ${{ steps.job-vars.outputs.pr_title }}"
+          fi
+
+      - name: Run airbyte-ci connectors --modified bump-version with --rc flag
+        uses: ./.github/actions/run-airbyte-ci
+        continue-on-error: true
+        with:
+          context: "manual"
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          git_repo_url: https://github.com/${{ steps.job-vars.outputs.repo }}.git
+          subcommand: |
+            connectors --modified bump-version \
+              ${{ github.event.inputs.type }} \
+              "${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || steps.job-vars.outputs.pr_title }}" \
+              --pr-number ${{ github.event.inputs.pr }} \
+              --rc
+
+      # This is helpful in the case that we change a previously committed generated file to be ignored by git.
+      - name: Remove any files that have been gitignored
+        run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
+
+      # Check for changes in git
+      - name: Check for changes
+        id: git-diff
+        run: |
+          git diff --quiet && echo "No changes to commit" || echo "changes=true" >> $GITHUB_OUTPUT
+        shell: bash
+
+      # Commit changes (if any)
+      - name: Commit changes
+        id: commit-step
+        if: steps.git-diff.outputs.changes == 'true'
+        run: |
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+          git add .
+          git commit -m "chore: bump-version for progressive rollout"
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Push changes to '(${{ steps.job-vars.outputs.repo }})'
+        if: steps.git-diff.outputs.changes == 'true'
+        run: |
+          git remote add contributor https://github.com/${{ steps.job-vars.outputs.repo }}.git
+          git push contributor HEAD:'${{ steps.job-vars.outputs.branch }}'
+
+      - name: Append success comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: steps.git-diff.outputs.changes == 'true'
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: hooray
+          body: |
+            > **Progressive Rollout Version Bump: SUCCESS**
+            >
+            > The connector version has been bumped with an RC suffix (e.g., `X.Y.Z-rc.1`).
+            > Changes applied successfully. (${{ steps.commit-step.outputs.sha }})
+            >
+            > **Next steps:**
+            > 1. Merge this PR to publish the RC version
+            > 2. Monitor the progressive rollout in production
+            > 3. When ready to promote, use the `finalize_rollout` workflow with `action=promote`
+            > 4. If issues arise, use `action=rollback` instead
+
+      - name: Append success comment (no-op)
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: steps.git-diff.outputs.changes != 'true'
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: "-1"
+          body: |
+            > Job completed successfully (no changes detected).
+            >
+            > This might happen if:
+            > - The connector already has an RC version
+            > - No modified connectors were detected in this PR
+
+      - name: Append failure comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: failure()
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > Job failed. Check the [workflow logs](${{ steps.job-vars.outputs.run-url }}) for details.

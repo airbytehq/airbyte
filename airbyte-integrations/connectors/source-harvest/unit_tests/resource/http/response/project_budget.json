@@ -1,0 +1,21 @@
+{
+  "results": [
+    {
+      "project_id": 1,
+      "project_name": "Website Redesign",
+      "client_id": 1,
+      "client_name": "ABC Corp",
+      "budget_is_monthly": false,
+      "budget_by": "project",
+      "is_active": true,
+      "budget": 10000.0,
+      "budget_spent": 4500.0,
+      "budget_remaining": 5500.0
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {}
+}

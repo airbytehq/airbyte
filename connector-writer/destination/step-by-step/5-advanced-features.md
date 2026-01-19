@@ -22,6 +22,7 @@ After completing this guide, you'll have a production-ready connector with:
 
 ---
 
+## Advanced Phase 1: Schema Evolution
 
 **Goal:** Automatically adapt to schema changes
 
@@ -33,7 +34,7 @@ After completing this guide, you'll have a production-ready connector with:
 3. **Change type**: Source changes field type → alter column (with casting)
 4. **Change nullability**: Source changes nullable → alter column constraints
 
-### Step 12.1: Implement discoverSchema()
+### Advanced Step 1: Implement discoverSchema()
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -90,7 +91,7 @@ private val AIRBYTE_META_COLUMNS = setOf(
 - **ClickHouse**: `system.columns` or client API `getTableSchema()`
 - **BigQuery**: `INFORMATION_SCHEMA.COLUMNS`
 
-### Step 12.2: Implement computeSchema()
+### Advanced Step 2: Implement computeSchema()
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -99,25 +100,23 @@ override fun computeSchema(
     stream: DestinationStream,
     columnNameMapping: ColumnNameMapping
 ): TableSchema {
-    val columns = stream.schema.asColumns()
-        .filter { (name, _) -> name !in AIRBYTE_META_COLUMNS }
-        .mapKeys { (name, _) -> columnNameMapping[name]!! }
-        .mapValues { (_, field) ->
-            val dbType = columnUtils.toDialectType(field.type)
-                .takeWhile { it != '(' }  // Strip precision
-            ColumnType(dbType, field.nullable)
-        }
-
-    return TableSchema(columns)
+    // Modern CDK pattern: schema is pre-computed by CDK using TableSchemaMapper
+    return TableSchema(stream.tableSchema.columnSchema.finalSchema)
 }
 ```
 
 **What this does:**
-- Converts Airbyte schema → database schema
-- Applies column name mapping (Phase 6 generators)
-- Uses ColumnUtils.toDialectType() from Phase 4
+- Returns the pre-computed final schema from the stream
+- CDK has already applied `TableSchemaMapper.toColumnType()` and `toColumnName()` to compute this
+- No manual type conversion needed - TableSchemaMapper handles it
 
-### Step 12.3: Implement alterTable() - ADD COLUMN
+**Why this is simpler than manual conversion:**
+- TableSchemaMapper (from Phase 3.1) defines type mappings
+- CDK calls mapper during catalog initialization
+- Result is stored in `stream.tableSchema.columnSchema.finalSchema`
+- `computeSchema()` just returns this pre-computed value
+
+### Advanced Step 3: Implement alterTable() - ADD COLUMN
 
 **File:** Update `client/{DB}SqlGenerator.kt`
 
@@ -154,7 +153,7 @@ fun alterTable(
 }
 ```
 
-### Step 12.4: Implement alterTable() - MODIFY COLUMN
+### Advanced Step 4: Implement alterTable() - MODIFY COLUMN
 
 **Add to alterTable():**
 
@@ -245,7 +244,7 @@ fun recreateTable(
 }
 ```
 
-### Step 12.5: Implement applyChangeset()
+### Advanced Step 5: Implement applyChangeset()
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -275,7 +274,7 @@ override suspend fun applyChangeset(
 }
 ```
 
-### Step 12.6: Implement ensureSchemaMatches()
+### Advanced Step 6: Implement ensureSchemaMatches()
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -303,13 +302,139 @@ override suspend fun ensureSchemaMatches(
 - If source schema changed since last sync, applies schema changes
 - Automatic - no user intervention needed
 
-### Step 12.7: Validate Schema Evolution
+### Advanced Step 7: Create TableSchemaEvolutionTest
+
+**File:** `src/test-integration/kotlin/.../component/{DB}TableSchemaEvolutionTest.kt`
+
+```kotlin
+package io.airbyte.integrations.destination.{db}.component
+
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchema
+import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
+import io.airbyte.cdk.load.component.TestTableOperationsClient
+import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import org.junit.jupiter.api.Test
+
+@MicronautTest(environments = ["component"])
+class {DB}TableSchemaEvolutionTest(
+    override val client: TableSchemaEvolutionClient,
+    override val opsClient: TableOperationsClient,
+    override val testClient: TestTableOperationsClient,
+    override val schemaFactory: TableSchemaFactory,
+) : TableSchemaEvolutionSuite {
+
+    // Provide expected schema for your database's type representations
+    // This validates that discoverSchema() and computeSchema() produce consistent results
+    private val expectedAllTypesSchema: TableSchema by lazy {
+        // Build expected schema based on your TableSchemaMapper.toColumnType() implementation
+        // Example for Postgres:
+        // TableSchema(mapOf(
+        //     "boolean_col" to ColumnType("boolean", true),
+        //     "integer_col" to ColumnType("bigint", true),
+        //     "number_col" to ColumnType("numeric", true),
+        //     "string_col" to ColumnType("character varying", true),
+        //     ...
+        // ))
+        TODO("Define expected schema for all types")
+    }
+
+    @Test
+    override fun `discover recognizes all data types`() {
+        super.`discover recognizes all data types`(expectedAllTypesSchema)
+    }
+
+    @Test
+    override fun `computeSchema handles all data types`() {
+        super.`computeSchema handles all data types`(expectedAllTypesSchema)
+    }
+
+    @Test
+    override fun `noop diff`() {
+        super.`noop diff`()
+    }
+
+    @Test
+    override fun `changeset is correct when adding a column`() {
+        super.`changeset is correct when adding a column`()
+    }
+
+    @Test
+    override fun `changeset is correct when dropping a column`() {
+        super.`changeset is correct when dropping a column`()
+    }
+
+    @Test
+    override fun `changeset is correct when changing a column's type`() {
+        super.`changeset is correct when changing a column's type`()
+    }
+
+    @Test
+    override fun `apply changeset - handle sync mode append`() {
+        super.`apply changeset - handle sync mode append`()
+    }
+
+    @Test
+    override fun `apply changeset - handle changing sync mode from append to dedup`() {
+        super.`apply changeset - handle changing sync mode from append to dedup`()
+    }
+
+    @Test
+    override fun `apply changeset - handle changing sync mode from dedup to append`() {
+        super.`apply changeset - handle changing sync mode from dedup to append`()
+    }
+
+    @Test
+    override fun `apply changeset - handle sync mode dedup`() {
+        super.`apply changeset - handle sync mode dedup`()
+    }
+
+    @Test
+    override fun `change from string type to unknown type`() {
+        super.`change from string type to unknown type`()
+    }
+
+    @Test
+    override fun `change from unknown type to string type`() {
+        super.`change from unknown type to string type`()
+    }
+}
+```
+
+**What each test validates:**
+
+| Test | What It Validates |
+|------|-------------------|
+| `discover recognizes all data types` | discoverSchema() correctly identifies existing table columns |
+| `computeSchema handles all data types` | computeSchema() produces correct schema from stream definition |
+| `noop diff` | No changes detected when schemas match |
+| `changeset is correct when adding a column` | Detects when new columns need to be added |
+| `changeset is correct when dropping a column` | Detects when columns should be dropped |
+| `changeset is correct when changing a column's type` | Detects type changes |
+| `apply changeset - handle sync mode *` | Schema evolution works across sync mode changes |
+| `change from string/unknown type` | Complex type transformations work |
+
+**Note:** This test validates both `TableSchemaEvolutionClient` AND `TableSchemaMapper` (via `computeSchema`).
+
+### Advanced Step 8: Validate Schema Evolution
 
 **Validate:**
 ```bash
-$ ./gradlew :destination-{db}:componentTest  # 12 tests should pass
-$ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
+$ ./gradlew :destination-{db}:componentTest --tests "*TableSchemaEvolutionTest*"
+$ ./gradlew :destination-{db}:componentTest  # All component tests should pass
+$ ./gradlew :destination-{db}:integrationTest  # Integration tests should pass
 ```
+
+**Common failures and fixes:**
+
+| Failure | Likely Cause | Fix |
+|---------|--------------|-----|
+| `discover recognizes all data types` fails | discoverSchema() returns wrong types | Check information_schema query and type name normalization |
+| `computeSchema handles all data types` fails | TableSchemaMapper.toColumnType() returns wrong types | Update type mapping in TableSchemaMapper |
+| Type mismatch between discover/compute | Inconsistent type names (e.g., "VARCHAR" vs "varchar") | Normalize type names in both methods |
+| `apply changeset` fails | ALTER TABLE syntax wrong for your database | Check SqlGenerator.alterTable() implementation |
 
 ✅ **Checkpoint:** Schema evolution works + all previous phases still work
 
@@ -317,7 +442,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 
 ---
 
-## Phase 13: Dedupe Mode
+## Advanced Phase 2: Dedupe Mode
 
 **Goal:** Support primary key deduplication
 
@@ -336,7 +461,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 - **Overwrite** (Phase 10): Swap tables
 - **Dedupe** (Phase 13): Upsert with primary key
 
-### Step 13.1: Implement upsertTable() in SQL Generator
+### Advanced Step 1: Implement upsertTable() in SQL Generator
 
 **Option A: MERGE Statement (Snowflake, SQL Server, BigQuery)**
 
@@ -500,7 +625,7 @@ fun upsertTable(...): List<String> {
 }
 ```
 
-### Step 13.2: Implement upsertTable() in Client
+### Advanced Step 2: Implement upsertTable() in Client
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -523,7 +648,7 @@ override suspend fun upsertTable(
 }
 ```
 
-### Step 13.3: Update Writer for Dedupe Mode
+### Advanced Step 3: Update Writer for Dedupe Mode
 
 **File:** Update `write/{DB}Writer.kt`
 
@@ -585,7 +710,7 @@ override fun createStreamLoader(stream: DestinationStream): StreamLoader {
   - DirectLoadTableDedupStreamLoader (incremental dedupe)
   - DirectLoadTableDedupTruncateStreamLoader (full refresh dedupe)
 
-### Step 13.4: Enable Tests
+### Advanced Step 4: Enable Tests
 
 **File:** Update `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -596,7 +721,7 @@ override fun `upsert tables`() {
 }
 ```
 
-### Step 13.5: Validate
+### Advanced Step 5: Validate
 
 **Validate:**
 ```bash
@@ -611,7 +736,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 
 ---
 
-## Phase 14: CDC Support (Optional)
+## Advanced Phase 3: CDC Support (Optional)
 
 **Goal:** Handle source deletions
 
@@ -624,7 +749,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
   - **Hard delete**: Remove record from destination
   - **Soft delete**: Keep record with deletion timestamp
 
-### Step 14.1: Add CDC Configuration
+### Advanced Step 1: Add CDC Configuration
 
 **File:** Update `spec/{DB}Specification.kt`
 
@@ -659,7 +784,7 @@ override fun makeWithoutExceptionHandling(pojo: {DB}Specification): {DB}Configur
 }
 ```
 
-### Step 14.2: Add CDC Logic to upsertTable()
+### Advanced Step 2: Add CDC Logic to upsertTable()
 
 **File:** Update `client/{DB}SqlGenerator.kt`
 
@@ -726,11 +851,11 @@ private val CDC_DELETED_AT_COLUMN = "_ab_cdc_deleted_at"
 - Skip INSERT for deleted records (don't re-insert deleted rows)
 - Soft delete: No special clauses (just upsert the deletion record with timestamp)
 
-### Step 14.3: Test CDC
+### Advanced Step 3: Test CDC
 
 CDC tests are typically included in integration tests automatically if you have CDC streams configured. No separate test enablement needed - the framework tests CDC if the stream has `_ab_cdc_deleted_at` column.
 
-### Step 14.4: Validate
+### Advanced Step 4: Validate
 
 **Validate:**
 ```bash
@@ -744,7 +869,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass (CDC tested
 
 ---
 
-## Phase 15: Optimization & Polish
+## Advanced Phase 4: Optimization & Polish
 
 **Goal:** Production-ready performance
 

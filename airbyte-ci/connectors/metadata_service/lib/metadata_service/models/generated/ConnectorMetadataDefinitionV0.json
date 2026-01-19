@@ -873,8 +873,7 @@
                     "type": "string",
                     "enum": [
                       "JSONL",
-                      "PROTOBUF",
-                      "FLATBUFFERS"
+                      "PROTOBUF"
                     ]
                   }
                 },
