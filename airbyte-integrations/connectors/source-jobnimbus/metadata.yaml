@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0b98589b-ccee-40fd-9e9d-28d94087b4e1
-  dockerImageTag: 0.0.42
+  dockerImageTag: 0.0.43
   dockerRepository: airbyte/source-jobnimbus
   githubIssueLabel: source-jobnimbus
   icon: icon.svg
