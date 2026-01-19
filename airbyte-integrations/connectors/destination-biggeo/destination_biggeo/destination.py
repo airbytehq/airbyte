@@ -129,6 +129,12 @@ class DestinationBiggeo(Destination):
             """Send a batch of chunks to the BigGeo API."""
             nonlocal records_sent
 
+            # Only send if there is at least one RECORD chunk or is_final
+            has_record = any(chunk.get("type") == "RECORD" for chunk in chunks)
+            if not has_record and not is_final:
+                logger.debug(f"Skipping send for stream '{stream_name}' - no RECORD chunks in batch.")
+                return
+
             payload = {
                 "sync_id": self.sync_id,
                 "table_name": stream_name,
@@ -141,12 +147,10 @@ class DestinationBiggeo(Destination):
             try:
                 response = self._make_api_request("POST", post_url, headers, payload)
                 result = response.json()
-
                 if result.get("success"):
                     records_processed = result.get("records_processed", 0)
                     records_sent += records_processed
                     logger.info(f"Successfully sent batch. Records processed: {records_processed}")
-
                     if is_final and result.get("path"):
                         logger.info(f"Data exported to: {result.get('path')}")
                 else:
