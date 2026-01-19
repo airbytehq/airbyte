@@ -64,18 +64,30 @@ def format_value(value, schema):
         if isinstance(value, int):
             return value
 
-        # Custom Marketo percent type fields can have decimals, so we drop them
-        decimal_index = value.find(".")
-        if decimal_index > 0:
-            value = value[:decimal_index]
-        return int(value)
+        try:
+            # Custom Marketo percent type fields can have decimals, so we drop them
+            decimal_index = value.find(".")
+            if decimal_index > 0:
+                value = value[:decimal_index]
+            return int(value)
+        except (ValueError, AttributeError):
+            # If conversion fails, return the original value as string to preserve data
+            return str(value)
     elif "string" in field_type:
         return str(value)
     elif "number" in field_type:
-        return float(value)
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            # If conversion fails, return the original value as string to preserve data
+            return str(value)
     elif "boolean" in field_type:
         if isinstance(value, bool):
             return value
-        return value.lower() == "true"
+        try:
+            return value.lower() == "true"
+        except AttributeError:
+            # If value doesn't have lower() method, return as-is
+            return bool(value)
 
     return value
