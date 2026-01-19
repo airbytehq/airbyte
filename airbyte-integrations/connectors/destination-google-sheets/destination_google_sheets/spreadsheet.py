@@ -43,7 +43,7 @@ class GoogleSheets:
             # Note: stream.rows returns the number of rows with content, but we need to
             # handle the case where there might be trailing empty rows from previous syncs
             total_rows = stream.rows
-            
+
             # If there are more than 1 row, delete all data rows (keeping header row if it exists)
             # This actually removes the cells, not just clears them, preventing accumulation
             if total_rows > 1:
