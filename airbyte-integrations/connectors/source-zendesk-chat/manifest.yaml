@@ -768,7 +768,7 @@ spec:
             path_in_connector_config: ["credentials", "client_secret"]
       oauth_connector_input_specification:
         scope: read chat
-        consent_url: https://{{subdomain}}.zendesk.com/oauth2/chat/authorizations/new?{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}
+        consent_url: https://{{subdomain}}.zendesk.com/oauth2/chat/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}
         access_token_url: https://{{subdomain}}.zendesk.com/oauth2/chat/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}
         extract_output: ["access_token", "refresh_token"]
       oauth_user_input_from_connector_config_specification:
