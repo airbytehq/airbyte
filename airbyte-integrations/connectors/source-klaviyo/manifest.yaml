@@ -212,7 +212,7 @@ definitions:
             include: metric,attributions
             filter: >-
               greater-or-equal(datetime,{{
-              stream_interval.start_time }}),less-or-equal(datetime,{{ stream_interval.end_time }})
+              stream_interval.start_time }}),less-than(datetime,{{ stream_interval.end_time }})
             sort: "datetime"
           request_headers:
             Accept: application/json
@@ -294,8 +294,8 @@ definitions:
             include: metric,attributions
             fields[metric]: name
             filter: >-
-              greater-than(datetime,{{
-              stream_interval.start_time }})
+              greater-or-equal(datetime,{{
+              stream_interval.start_time }}),less-than(datetime,{{ stream_interval.end_time }})
             sort: "datetime"
           request_headers:
             Accept: application/json
@@ -344,6 +344,9 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P7D
+        cursor_granularity: PT1S
+        lookback_window: "P{{ config.get('lookback_window', 0) }}D"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
@@ -1001,6 +1004,19 @@ spec:
           - 2
           - 3
         order: 3
+      lookback_window:
+        type: integer
+        description: >-
+          The number of days to look back when syncing data in incremental mode.
+          This helps capture any late-arriving data. Only applies to the
+          events_detailed stream.
+        title: Lookback Window (Days)
+        minimum: 0
+        default: 0
+        examples:
+          - 0
+          - 7
+        order: 4
     additionalProperties: true
 
 metadata:
