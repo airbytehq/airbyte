@@ -541,10 +541,11 @@ class Releases(SemiIncrementalMixin, GithubStream):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Union[Mapping[str, Any], AirbyteMessage]]:
+    ) -> Iterable[Mapping[str, Any]]:
         """
-        Override to emit a warning message when pagination limit is reached.
-        This ensures users are aware that not all releases were synced due to GitHub API limitations.
+        Override to fail the sync after loading records when pagination limit is reached.
+        This ensures users are explicitly notified that not all releases were synced due to GitHub API limitations,
+        while still loading the first 10,000 releases to the destination.
         """
         # Reset the flag for each slice
         self._pagination_limit_reached = False
@@ -554,20 +555,19 @@ class Releases(SemiIncrementalMixin, GithubStream):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         )
 
-        # After all records are yielded, emit a warning if we hit the pagination limit
+        # After all records are yielded, fail the sync if we hit the pagination limit
+        # This ensures the 10,000 records are loaded but the user is explicitly notified
         if self._pagination_limit_reached:
             repository = stream_slice.get("repository", "unknown") if stream_slice else "unknown"
-            yield AirbyteMessage(
-                type=MessageType.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.WARN,
-                    message=(
-                        f"GitHub API pagination limit reached for repository '{repository}'. "
-                        f"Only the first 10,000 releases (sorted by creation date, newest first) were synced. "
-                        f"This repository may have more releases that could not be retrieved due to GitHub API limitations. "
-                        f"See: https://docs.github.com/en/rest/releases/releases#list-releases"
-                    ),
+            raise AirbyteTracedException(
+                message=(
+                    f"GitHub API pagination limit reached for repository '{repository}'. "
+                    f"Only the first 10,000 releases (sorted by creation date, newest first) were synced to the destination. "
+                    f"This repository has more releases than GitHub's API limit allows. "
+                    f"See: https://docs.github.com/en/rest/releases/releases#list-releases"
                 ),
+                internal_message=f"GitHub API 10,000 result limit reached for repository '{repository}'",
+                failure_type=FailureType.system_error,
             )
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
