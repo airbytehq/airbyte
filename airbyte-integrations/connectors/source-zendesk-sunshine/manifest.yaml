@@ -333,6 +333,29 @@ definitions:
       oauth2:
         type: BearerAuthenticator
         api_token: "{{ config['credentials']['access_token']  }}"
+      oauth2_refresh:
+        type: OAuthAuthenticator
+        client_id: "{{ config['credentials']['client_id'] }}"
+        client_secret: "{{ config['credentials']['client_secret'] }}"
+        refresh_token: "{{ config['credentials']['refresh_token'] }}"
+        grant_type: refresh_token
+        token_refresh_endpoint: "https://{{ config['subdomain'] }}.zendesk.com/oauth/tokens"
+        refresh_request_body:
+          grant_type: "refresh_token"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+            - credentials
+            - access_token
+          token_expiry_date_config_path:
+            - credentials
+            - token_expiry_date
+          refresh_token_config_path:
+            - credentials
+            - refresh_token
 
 streams:
   - $ref: "#/definitions/streams/limits"
@@ -370,9 +393,13 @@ spec:
       credentials:
         type: object
         title: Authorization Method
+        description: >-
+          Zendesk allows three authentication methods. We recommend using `OAuth2.0 with Refresh Token`
+          for Airbyte Cloud users (recommended), `OAuth2.0 (Legacy)` for existing OAuth connections,
+          and `API Token` for Airbyte Open Source users.
         oneOf:
           - type: object
-            title: OAuth2.0
+            title: OAuth2.0 (Legacy)
             required:
               - auth_method
               - client_id
@@ -402,6 +429,56 @@ spec:
                 title: Access Token
                 airbyte_secret: true
           - type: object
+            title: OAuth2.0 with Refresh Token
+            required:
+              - auth_method
+              - client_id
+              - client_secret
+              - refresh_token
+            additionalProperties: true
+            properties:
+              auth_method:
+                type: string
+                const: oauth2_refresh
+                enum:
+                  - oauth2_refresh
+                default: oauth2_refresh
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: >-
+                  The OAuth client's ID. See <a
+                  href="https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/">Zendesk
+                  OAuth grant-type tokens documentation</a> for more information.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: >-
+                  The OAuth client secret. See <a
+                  href="https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/">Zendesk
+                  OAuth grant-type tokens documentation</a> for more information.
+                airbyte_secret: true
+              access_token:
+                type: string
+                title: Access Token
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: The date-time when the access token should be refreshed.
+                format: date-time
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: >-
+                  The refresh token used to obtain new access tokens. Note that Zendesk uses
+                  rotating refresh tokens - each refresh will return a new refresh token and
+                  invalidate the previous one.
+                airbyte_secret: true
+          - type: object
             title: API Token
             required:
               - auth_method
@@ -429,6 +506,77 @@ spec:
                 title: Email
         order: 2
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_method
+    predicate_value: oauth2_refresh
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          subdomain:
+            type: string
+            path_in_connector_config:
+              - subdomain
+      oauth_connector_input_specification:
+        consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&scope={{scope_value}}&state={{state}}"
+        scope: read
+        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens"
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{auth_code_value}}"
+          client_id: "{{client_id_value}}"
+          client_secret: "{{client_secret_value}}"
+          redirect_uri: "{{redirect_uri_value}}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - token_type
+          - expires_in
 
 metadata:
   autoImportSchema:
