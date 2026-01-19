@@ -16,6 +16,15 @@ definitions:
       api_token: "{{ config['api_key'] }}"
     request_parameters:
       created_after: "{{ config['start_date'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      response_filters:
+        - http_codes: [500, 502, 503, 504]
+          action: RETRY
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
