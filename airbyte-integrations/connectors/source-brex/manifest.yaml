@@ -396,24 +396,784 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: string
+      first_name:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      manager_id:
+        type:
+          - string
+          - "null"
+      department_id:
+        type:
+          - string
+          - "null"
+      location_id:
+        type:
+          - string
+          - "null"
+      title_id:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        additionalProperties:
+          type:
+            - string
+            - "null"
+      remote_display_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+
   departments:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - name
+
   vendors:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: string
+      company_name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      payment_accounts:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            details:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                payment_instrument_id:
+                  type:
+                    - string
+                    - "null"
+                routing_number:
+                  type:
+                    - string
+                    - "null"
+                account_number:
+                  type:
+                    - string
+                    - "null"
+                account_type:
+                  type:
+                    - string
+                    - "null"
+                account_class:
+                  type:
+                    - string
+                    - "null"
+                beneficiary_name:
+                  type:
+                    - string
+                    - "null"
+    required:
+      - id
+
   expenses:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: string
+      memo:
+        type:
+          - string
+          - "null"
+      location_id:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      address:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          country:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          coordinates:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              latitude:
+                type:
+                  - number
+                  - "null"
+              longitude:
+                type:
+                  - number
+                  - "null"
+          line1:
+            type:
+              - string
+              - "null"
+          line2:
+            type:
+              - string
+              - "null"
+      department_id:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      payment_posted_at:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      merchant_id:
+        type:
+          - string
+          - "null"
+      merchant:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          raw_descriptor:
+            type:
+              - string
+              - "null"
+          mcc:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      receipts:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            download_uris:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+      budget_id:
+        type:
+          - string
+          - "null"
+      budget:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      expense_type:
+        type:
+          - string
+          - "null"
+      original_amount:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      billing_amount:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      budget_amount:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      purchased_amount:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      usd_equivalent_amount:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      purchased_at:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      payment_status:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          department_id:
+            type:
+              - string
+              - "null"
+          location_id:
+            type:
+              - string
+              - "null"
+      payment:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          paymentInstrument:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+          statusReason:
+            type:
+              - string
+              - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                value_type:
+                  type:
+                    - string
+                    - "null"
+                data_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+      trip_id:
+        type:
+          - string
+          - "null"
+      spending_entity_id:
+        type:
+          - string
+          - "null"
+      spending_entity:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          billing_address:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              postal_code:
+                type:
+                  - string
+                  - "null"
+              phone_number:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          is_default:
+            type:
+              - boolean
+              - "null"
+      billing_entity_id:
+        type:
+          - string
+          - "null"
+      exported_at:
+        type:
+          - string
+          - "null"
+      integration_spending_entity_id:
+        type:
+          - string
+          - "null"
+      integration_billing_entity_id:
+        type:
+          - string
+          - "null"
+      review:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          compliance_status:
+            type:
+              - string
+              - "null"
+          reviewers:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              reviewer:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    first_name:
+                      type:
+                        - string
+                        - "null"
+                    last_name:
+                      type:
+                        - string
+                        - "null"
+                    department_id:
+                      type:
+                        - string
+                        - "null"
+                    location_id:
+                      type:
+                        - string
+                        - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+          approver:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              department_id:
+                type:
+                  - string
+                  - "null"
+              location_id:
+                type:
+                  - string
+                  - "null"
+          copilot_approver:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              department_id:
+                type:
+                  - string
+                  - "null"
+              location_id:
+                type:
+                  - string
+                  - "null"
+          approved_at:
+            type:
+              - string
+              - "null"
+      repayment:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          repayment_initiated_by:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              department_id:
+                type:
+                  - string
+                  - "null"
+              location_id:
+                type:
+                  - string
+                  - "null"
+          repayment_initiation_date:
+            type:
+              - string
+              - "null"
+      approved_at:
+        type:
+          - string
+          - "null"
+      submitted_at:
+        type:
+          - string
+          - "null"
+      completion_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - purchased_at
+
   budgets:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      budget_id:
+        type: string
+      account_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      parent_budget_id:
+        type:
+          - string
+          - "null"
+      owner_user_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      period_recurrence_type:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      spend_budget_status:
+        type:
+          - string
+          - "null"
+      limit_type:
+        type:
+          - string
+          - "null"
+    required:
+      - budget_id
