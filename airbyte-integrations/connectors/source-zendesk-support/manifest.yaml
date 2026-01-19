@@ -1493,6 +1493,21 @@ spec:
             type: string
             path_in_connector_config:
               - subdomain
+      oauth_connector_input_specification:
+        consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&scope={{scope_value}}&state={{state}}"
+        scope: "read write"
+        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens"
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{auth_code_value}}"
+          client_id: "{{client_id_value}}"
+          client_secret: "{{client_secret_value}}"
+          redirect_uri: "{{redirect_uri_value}}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - token_type
+          - expires_in
 
 schemas:
   article_attachments:
