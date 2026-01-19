@@ -212,7 +212,7 @@ definitions:
             include: metric,attributions
             filter: >-
               greater-or-equal(datetime,{{
-              stream_interval.start_time }}),less-or-equal(datetime,{{ stream_interval.end_time }})
+              stream_interval.start_time }}),less-than(datetime,{{ stream_interval.end_time }})
             sort: "datetime"
           request_headers:
             Accept: application/json
@@ -295,7 +295,7 @@ definitions:
             fields[metric]: name
             filter: >-
               greater-or-equal(datetime,{{
-              stream_interval.start_time }}),less-or-equal(datetime,{{ stream_interval.end_time }})
+              stream_interval.start_time }}),less-than(datetime,{{ stream_interval.end_time }})
             sort: "datetime"
           request_headers:
             Accept: application/json
