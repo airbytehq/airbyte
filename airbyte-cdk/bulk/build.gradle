@@ -14,10 +14,18 @@ plugins {
 }
 
 final var versionFile = file("version.properties")
+final var baseVersionFile = file("base-version.properties")
 
 final var cdkVersion = {
     var props = new Properties()
     versionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+// Base package has its own independent version
+final var baseVersion = {
+    var props = new Properties()
+    baseVersionFile.withInputStream(props::load)
     return props.getProperty('version', 'undefined')
 }()
 
@@ -82,6 +90,11 @@ allprojects {
             }
         }
     }
+}
+
+// Override base package to use its own independent version
+project(':airbyte-cdk:bulk:core:bulk-cdk-core-base') {
+    version = baseVersion
 }
 
 // Configure Dokka for all subprojects
@@ -193,6 +206,65 @@ tasks.register('bulkCdkBuild').configure {
 }
 tasks.register('bulkCdkPublish').configure {
     dependsOn allprojects.collect {it.tasks.named('publish')}
+}
+
+// Check that base version doesn't already exist in the repository
+tasks.register('checkBaseVersion') {
+    description = "Check that the base version doesn't exist"
+
+    doLast {
+        var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+        var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
+        var artifactUrl = "${groupIdUrl}/bulk-cdk-core-base"
+        var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
+
+        var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
+        try {
+            connection.setRequestMethod("GET")
+            connection.setDoInput(true)
+            var responseCode = connection.getResponseCode()
+            if (responseCode == 404) {
+                // Artifact doesn't exist yet, which is fine for first publish
+                println "Base artifact not found in repository (first publish)"
+                return
+            }
+            if (responseCode != 200) {
+                throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200 or 404.")
+            }
+            InputStream responseContent = connection.inputStream
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
+            DocumentBuilder builder = factory.newDocumentBuilder()
+            Document doc = builder.parse(responseContent)
+
+            doc.getDocumentElement().normalize()
+
+            XPath xpath = XPathFactory.newInstance().newXPath()
+
+            String expression = "/metadata/versioning/versions/version"
+
+            var versionNodes = xpath.compile(expression).evaluate(doc, XPathConstants.NODESET)
+            var allVersions = []
+            for (int i = 0; i < versionNodes.length; i++) {
+                allVersions.add(versionNodes.item(i).textContent)
+            }
+
+            if (allVersions.contains(baseVersion.toString())) {
+                throw new GradleException("Base version ${baseVersion} already exists in the repository")
+            }
+        } finally {
+            connection.disconnect()
+        }
+    }
+}
+
+// Build and publish tasks for base package only
+tasks.register('baseCdkBuild') {
+    description = "Build the base CDK package"
+    dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:build'
+}
+tasks.register('baseCdkPublish') {
+    description = "Publish the base CDK package"
+    dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:publish'
 }
 
 class BumpBulkCdkVersionTask extends DefaultTask {
