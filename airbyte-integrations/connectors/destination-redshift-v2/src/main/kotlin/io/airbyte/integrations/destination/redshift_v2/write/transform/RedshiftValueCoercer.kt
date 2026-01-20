@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.redshift_v2.write.transform
 
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
@@ -22,6 +23,9 @@ import java.math.BigInteger
  * Limits defined for datatypes in Redshift.
  * See https://docs.aws.amazon.com/redshift/latest/dg/c_Supported_data_types.html
  */
+
+// redshift's default null sentinel value is `\N`
+const val NULL_SENTINEL_VALUE = "\\N"
 
 // BIGINT: -9223372036854775808 to 9223372036854775807 (64-bit signed)
 val INT_MAX: BigInteger = Long.MAX_VALUE.toBigInteger()
@@ -45,9 +49,10 @@ internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
 @Singleton
 class RedshiftValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        // TODO replace nulls with sentinel value
         value.abValue =
-            if (
+            if (value.abValue is NullValue) {
+                StringValue(NULL_SENTINEL_VALUE)
+            } else if (
                 value.type.isArray ||
                     value.type.isObject ||
                     value.type is UnionType ||

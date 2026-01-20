@@ -106,7 +106,8 @@ class RedshiftStagingAggregate(
         val columnList = columns.joinToString(", ") { "\"$it\"" }
         val s3Path = getFullS3Path(s3Key)
 
-        // TODO kill EMPTYASNULL, use `NULL AS <whatever>`
+        // no explicit NULL AS param, since it defaults to '\\N` (which is what we want).
+        // See RedshiftValueCoercer#map()
         val copyQuery =
             """
             COPY "${tableName.namespace}"."${tableName.name}" ($columnList)
@@ -115,7 +116,6 @@ class RedshiftStagingAggregate(
             CSV GZIP
             REGION '${s3Config.s3BucketRegion}'
             TIMEFORMAT 'auto'
-            EMPTYASNULL
             STATUPDATE OFF
         """.trimIndent()
 

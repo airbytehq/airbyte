@@ -15,7 +15,6 @@ import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIV
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT32
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT64
 import io.airbyte.cdk.load.component.DataCoercionStringFixtures
-import io.airbyte.cdk.load.component.DataCoercionStringFixtures.EMPTY_STRING
 import io.airbyte.cdk.load.component.DataCoercionSuite
 import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
 import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
@@ -310,8 +309,7 @@ class RedshiftDataCoercionTest(
         @JvmStatic
         fun string() =
             DataCoercionStringFixtures.strings
-                // Filter out empty string if needed
-                .filter { it.name != EMPTY_STRING }
+                // TODO figure out the long strings thing
                 .toArgs()
     }
 }
