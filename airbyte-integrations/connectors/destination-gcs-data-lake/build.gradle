@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = ['load-iceberg-parquet', 'load-db']
+    toolkits = ['load-iceberg-parquet']
 }
 
 application {

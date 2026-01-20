@@ -7,7 +7,8 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = ['load-iceberg-parquet', 'load-aws']
+    toolkits = ['load-iceberg-parquet', 'legacy-task-load-s3']
+    useLegacyTaskLoader = true
 }
 
 application {
