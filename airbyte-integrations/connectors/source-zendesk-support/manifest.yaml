@@ -1457,12 +1457,6 @@ spec:
             path_in_connector_config:
               - credentials
               - refresh_token
-          token_expiry_date:
-            type: string
-            format: date-time
-            path_in_connector_config:
-              - credentials
-              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false
@@ -1496,12 +1490,10 @@ spec:
       oauth_connector_input_specification:
         consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}"
         scope: read
-        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&scope={{scope_value}}"
+        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scope_param}}"
         extract_output:
           - access_token
           - refresh_token
-          - token_type
-          - expires_in
 
 schemas:
   article_attachments:
