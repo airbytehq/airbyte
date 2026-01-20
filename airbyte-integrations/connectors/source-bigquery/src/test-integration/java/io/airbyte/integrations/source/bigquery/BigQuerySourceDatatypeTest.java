@@ -22,10 +22,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Timeout;
 
 public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
