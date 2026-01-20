@@ -198,6 +198,47 @@ internal class CatalogParserTest {
         Assertions.assertEquals("default_namespace", catalog.streams[0].id.originalNamespace)
     }
 
+    @Test
+    fun testEmptyStringCursorFieldTreatedAsNoCursor() {
+        val streamWithEmptyCursor =
+            ConfiguredAirbyteStream()
+                .withStream(
+                    AirbyteStream()
+                        .withNamespace("test_namespace")
+                        .withName("test_stream")
+                        .withJsonSchema(
+                            Jsons.deserialize(
+                                """
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {"type": "integer"},
+                                        "name": {"type": "string"}
+                                    }
+                                }
+                                """.trimIndent()
+                            )
+                        )
+                )
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+                .withCursorField(listOf(""))
+                .withPrimaryKey(listOf(listOf("id")))
+                .withGenerationId(0)
+                .withMinimumGenerationId(0)
+                .withSyncId(0)
+
+        val catalog =
+            parser.parseCatalog(
+                ConfiguredAirbyteCatalog().withStreams(listOf(streamWithEmptyCursor))
+            )
+
+        Assertions.assertTrue(
+            catalog.streams[0].cursor.isEmpty,
+            "Empty string cursor field should be treated as no cursor"
+        )
+    }
+
     companion object {
         private fun stream(
             namespace: String?,

@@ -165,7 +165,7 @@ constructor(
 
         require(stream.cursorField.size <= 1) { "Only top-level cursors are supported" }
         val cursor: Optional<ColumnId> =
-            if (stream.cursorField.isNotEmpty()) {
+            if (stream.cursorField.isNotEmpty() && stream.cursorField[0].isNotBlank()) {
                 Optional.of(sqlGenerator.buildColumnId(stream.cursorField[0]))
             } else {
                 Optional.empty()
