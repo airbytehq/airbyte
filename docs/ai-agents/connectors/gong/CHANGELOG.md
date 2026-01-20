@@ -1,5 +1,105 @@
 # Gong changelog
 
+## [0.19.55] - 2026-01-19
+- Updated connector definition (YAML version 0.1.10)
+- Source commit: 529cebb7
+- SDK version: 0.1.0
+
+## [0.19.54] - 2026-01-16
+- Updated connector definition (YAML version 0.1.10)
+- Source commit: c82e3439
+- SDK version: 0.1.0
+
+## [0.19.53] - 2026-01-16
+- Updated connector definition (YAML version 0.1.9)
+- Source commit: a50c8f71
+- SDK version: 0.1.0
+
+## [0.19.52] - 2026-01-16
+- Updated connector definition (YAML version 0.1.9)
+- Source commit: 49673b7b
+- SDK version: 0.1.0
+
+## [0.19.51] - 2026-01-16
+- Updated connector definition (YAML version 0.1.9)
+- Source commit: ca5acdda
+- SDK version: 0.1.0
+
+## [0.19.50] - 2026-01-16
+- Updated connector definition (YAML version 0.1.9)
+- Source commit: 3d109674
+- SDK version: 0.1.0
+
+## [0.19.49] - 2026-01-15
+- Updated connector definition (YAML version 0.1.8)
+- Source commit: fa9a3b02
+- SDK version: 0.1.0
+
+## [0.19.48] - 2026-01-15
+- Updated connector definition (YAML version 0.1.8)
+- Source commit: 61a2e822
+- SDK version: 0.1.0
+
+## [0.19.47] - 2026-01-15
+- Updated connector definition (YAML version 0.1.8)
+- Source commit: 69b2cf0a
+- SDK version: 0.1.0
+
+## [0.19.46] - 2026-01-15
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: 35211193
+- SDK version: 0.1.0
+
+## [0.19.45] - 2026-01-15
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: 20b3afd9
+- SDK version: 0.1.0
+
+## [0.19.44] - 2026-01-15
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: b7138b41
+- SDK version: 0.1.0
+
+## [0.19.43] - 2026-01-15
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: 10173eb1
+- SDK version: 0.1.0
+
+## [0.19.42] - 2026-01-15
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: a23d9e7a
+- SDK version: 0.1.0
+
+## [0.19.41] - 2026-01-14
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: 7ef09816
+- SDK version: 0.1.0
+
+## [0.19.40] - 2026-01-14
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: e6285db5
+- SDK version: 0.1.0
+
+## [0.19.39] - 2026-01-14
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: 31de238d
+- SDK version: 0.1.0
+
+## [0.19.38] - 2026-01-13
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: e80a226e
+- SDK version: 0.1.0
+
+## [0.19.37] - 2026-01-13
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: 78b1be67
+- SDK version: 0.1.0
+
+## [0.19.36] - 2026-01-13
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: 81dd03fc
+- SDK version: 0.1.0
+
 ## [0.19.35] - 2026-01-11
 - Updated connector definition (YAML version 0.1.6)
 - Source commit: e519b73d

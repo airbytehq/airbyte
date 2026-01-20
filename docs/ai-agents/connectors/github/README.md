@@ -76,20 +76,20 @@ This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [Search](./REFERENCE.md#repositories-search) |
+| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [Api_search](./REFERENCE.md#repositories-api_search) |
 | Org Repositories | [List](./REFERENCE.md#org-repositories-list) |
 | Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get) |
 | Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get) |
 | Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get) |
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Search](./REFERENCE.md#issues-search) |
-| Pull Requests | [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [Search](./REFERENCE.md#pull-requests-search) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Api_search](./REFERENCE.md#issues-api_search) |
+| Pull Requests | [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [Api_search](./REFERENCE.md#pull-requests-api_search) |
 | Reviews | [List](./REFERENCE.md#reviews-list) |
 | Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get) |
 | Pr Comments | [List](./REFERENCE.md#pr-comments-list), [Get](./REFERENCE.md#pr-comments-get) |
 | Labels | [List](./REFERENCE.md#labels-list), [Get](./REFERENCE.md#labels-get) |
 | Milestones | [List](./REFERENCE.md#milestones-list), [Get](./REFERENCE.md#milestones-get) |
 | Organizations | [Get](./REFERENCE.md#organizations-get), [List](./REFERENCE.md#organizations-list) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Search](./REFERENCE.md#users-search) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Api_search](./REFERENCE.md#users-api_search) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
 | Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get) |
 | Stargazers | [List](./REFERENCE.md#stargazers-list) |
@@ -105,6 +105,6 @@ For the service's official API docs, see the [Github API reference](https://docs
 
 ## Version information
 
-- **Package version:** 0.18.37
+- **Package version:** 0.18.53
 - **Connector version:** 0.1.7
-- **Generated with Connector SDK commit SHA:** e519b73d1e90df7073e48d3ed7e11a9fb1af3953
+- **Generated with Connector SDK commit SHA:** c46670b9e4ca5238c0372e143b44088a0d1a68ee
