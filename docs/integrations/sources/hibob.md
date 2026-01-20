@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the Hibob sourc
 
 ### Step 1: (For Airbyte Open Source) Setup a HiBob Account
 
-Setup and account in [HiBob](https://www.hibob.com/). 
+Set up an account in [HiBob](https://www.hibob.com/). 
 
 
 ### Step 2: (For Airbyte Open Source) Obtain an api key
