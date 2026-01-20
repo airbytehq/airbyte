@@ -105,6 +105,7 @@ If you encounter 403 errors, check the following:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.23 | 2026-01-20 | [72099](https://github.com/airbytehq/airbyte/pull/72099) | Update dependencies |
 | 1.3.22 | 2026-01-14 | [71536](https://github.com/airbytehq/airbyte/pull/71536) | Update dependencies |
 | 1.3.21 | 2025-12-18 | [70736](https://github.com/airbytehq/airbyte/pull/70736) | Update dependencies |
 | 1.3.20 | 2025-11-25 | [69988](https://github.com/airbytehq/airbyte/pull/69988) | Update dependencies |
