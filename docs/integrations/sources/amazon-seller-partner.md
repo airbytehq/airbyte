@@ -255,6 +255,7 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.2 | 2026-01-20 | [71037](https://github.com/airbytehq/airbyte/pull/71037) | Fix GB marketplace_id config transformation |
 | 5.1.1 | 2026-01-20 | [71991](https://github.com/airbytehq/airbyte/pull/71991) | Update dependencies |
 | 5.1.0 | 2026-01-15 | [71327](https://github.com/airbytehq/airbyte/pull/71327) | Add rate limiting and hourly granularity options for ListFinancialEvents and ListFinancialEventGroups streams |
 | 5.0.2 | 2026-01-14 | [71526](https://github.com/airbytehq/airbyte/pull/71526) | Update dependencies |
