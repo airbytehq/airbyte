@@ -51,6 +51,7 @@ jobs:
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
         with:
+          # 10 minute wait
           detached: true
 
       - name: Checkout Current Branch
