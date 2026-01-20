@@ -122,6 +122,7 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.27 | 2026-01-20 | [71304](https://github.com/airbytehq/airbyte/pull/71304) | Add  parameter to  stream |
 | 0.5.26 | 2025-12-16 | [70708](https://github.com/airbytehq/airbyte/pull/70708) | Update dependencies |
 | 0.5.25 | 2025-11-25 | [70138](https://github.com/airbytehq/airbyte/pull/70138) | Update dependencies |
 | 0.5.24 | 2025-11-18 | [69676](https://github.com/airbytehq/airbyte/pull/69676) | Update dependencies |
