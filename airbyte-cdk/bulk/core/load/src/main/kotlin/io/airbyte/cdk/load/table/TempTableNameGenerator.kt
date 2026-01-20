@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.table
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
 import jakarta.inject.Singleton
@@ -69,30 +68,4 @@ open class DefaultTempTableNameGenerator(
         val suffix = substring(length - n, length)
         return "$prefix$separator$suffix"
     }
-}
-
-sealed interface TableNameGenerator {
-    fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName
-}
-
-fun interface RawTableNameGenerator : TableNameGenerator
-
-// Commented out so CI won't be big mad
-// @Deprecated("Deprecated in favor of TableSchemaMapper")
-fun interface FinalTableNameGenerator : TableNameGenerator
-
-fun interface ColumnNameGenerator {
-    /**
-     * In some database/warehouses, there's a difference between how a name is _displayed_, and how
-     * the underlying engine actually treats it. For example, a column might be displayed as
-     * `CamelCaseColumn`, but the engine actually treats it as lowercase `camelcasecolumn`, or
-     * truncate it to `CamelCas`. Bigquery is an example of this: `create table foo (foo int, FOO
-     * int)` is invalid, because `foo` is duplicated.
-     *
-     * This is relevant for handling collisions between column names. We need to know what name will
-     * be displayed to the user, since that's what we'll use in queries - but we also need to know
-     * the "canonical" name to check whether two columns will collide.
-     */
-    data class ColumnName(val displayName: String, val canonicalName: String)
-    fun getColumnName(column: String): ColumnName
 }
