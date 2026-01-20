@@ -380,10 +380,12 @@ class Leads(MarketoExportBase):
         for describe_record in result:
             rest = describe_record.get("rest")
             if rest and "name" in rest:
-                self._field_metadata_cache.append({
-                    "name": rest["name"],
-                    "dataType": describe_record.get("dataType", "string"),
-                })
+                self._field_metadata_cache.append(
+                    {
+                        "name": rest["name"],
+                        "dataType": describe_record.get("dataType", "string"),
+                    }
+                )
 
         if not self._field_metadata_cache:
             self.logger.warning("No valid fields found in leads/describe response")

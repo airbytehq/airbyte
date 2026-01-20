@@ -419,15 +419,30 @@ def test_leads_stream_fields_warns_on_no_rest_fields(config, requests_mock, capl
                 "success": True,
                 "result": [
                     {"id": 1, "displayName": "Email", "dataType": "email", "rest": {"name": "email", "readOnly": False}},
-                    {"id": 2, "displayName": "Annual Revenue", "dataType": "currency", "rest": {"name": "annualRevenue", "readOnly": False}},
-                    {"id": 3, "displayName": "Number of Employees", "dataType": "integer", "rest": {"name": "numberOfEmployees", "readOnly": False}},
+                    {
+                        "id": 2,
+                        "displayName": "Annual Revenue",
+                        "dataType": "currency",
+                        "rest": {"name": "annualRevenue", "readOnly": False},
+                    },
+                    {
+                        "id": 3,
+                        "displayName": "Number of Employees",
+                        "dataType": "integer",
+                        "rest": {"name": "numberOfEmployees", "readOnly": False},
+                    },
                     {"id": 4, "displayName": "Is Customer", "dataType": "boolean", "rest": {"name": "isCustomer", "readOnly": False}},
                     {"id": 5, "displayName": "Created At", "dataType": "datetime", "rest": {"name": "createdAt", "readOnly": False}},
                     {"id": 6, "displayName": "Birth Date", "dataType": "date", "rest": {"name": "birthDate", "readOnly": False}},
                     {"id": 7, "displayName": "Score", "dataType": "score", "rest": {"name": "leadScore", "readOnly": False}},
                     {"id": 8, "displayName": "Urgency", "dataType": "float", "rest": {"name": "urgency", "readOnly": False}},
                     {"id": 9, "displayName": "Tags", "dataType": "array", "rest": {"name": "tags", "readOnly": False}},
-                    {"id": 10, "displayName": "Custom Field", "dataType": "unknown_type", "rest": {"name": "customField", "readOnly": False}},
+                    {
+                        "id": 10,
+                        "displayName": "Custom Field",
+                        "dataType": "unknown_type",
+                        "rest": {"name": "customField", "readOnly": False},
+                    },
                 ],
             },
             {
