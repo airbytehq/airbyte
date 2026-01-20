@@ -11,7 +11,7 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
-    implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'org.apache.commons:commons-lang3:3.20.0'
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
     implementation 'com.datadoghq:datadog-api-client:2.16.0'
