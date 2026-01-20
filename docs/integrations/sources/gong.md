@@ -47,6 +47,7 @@ Additionally, you can configure:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.5.1 | 2026-01-20 | [65382](https://github.com/airbytehq/airbyte/pull/65382) | Update dependencies |
 | 0.5.0 | 2026-01-16 | [71356](https://github.com/airbytehq/airbyte/pull/71356) | Add OAuth 2.0 authentication support with SelectiveAuthenticator |
 | 0.4.14 | 2026-01-13 | [71344](https://github.com/airbytehq/airbyte/pull/71344) | Add 404 error handlers and fix CDK import path |
 | 0.4.13 | 2025-08-09 | [64594](https://github.com/airbytehq/airbyte/pull/64594) | Update dependencies |
