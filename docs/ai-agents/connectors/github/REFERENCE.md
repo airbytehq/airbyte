@@ -1,28 +1,34 @@
-# Github
+# Github full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Github agent connector.
+
+## Supported entities and actions
+
+The Github connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Repositories | [Get](#repositories-get), [List](#repositories-list), [Search](#repositories-search) |
+| Repositories | [Get](#repositories-get), [List](#repositories-list), [API Search](#repositories-api-search) |
 | Org Repositories | [List](#org-repositories-list) |
 | Branches | [List](#branches-list), [Get](#branches-get) |
 | Commits | [List](#commits-list), [Get](#commits-get) |
 | Releases | [List](#releases-list), [Get](#releases-get) |
-| Issues | [List](#issues-list), [Get](#issues-get), [Search](#issues-search) |
-| Pull Requests | [List](#pull-requests-list), [Get](#pull-requests-get), [Search](#pull-requests-search) |
+| Issues | [List](#issues-list), [Get](#issues-get), [API Search](#issues-api-search) |
+| Pull Requests | [List](#pull-requests-list), [Get](#pull-requests-get), [API Search](#pull-requests-api-search) |
 | Reviews | [List](#reviews-list) |
 | Comments | [List](#comments-list), [Get](#comments-get) |
 | Pr Comments | [List](#pr-comments-list), [Get](#pr-comments-get) |
 | Labels | [List](#labels-list), [Get](#labels-get) |
 | Milestones | [List](#milestones-list), [Get](#milestones-get) |
 | Organizations | [Get](#organizations-get), [List](#organizations-list) |
-| Users | [Get](#users-get), [List](#users-list), [Search](#users-search) |
+| Users | [Get](#users-get), [List](#users-list), [API Search](#users-api-search) |
 | Teams | [List](#teams-list), [Get](#teams-get) |
 | Tags | [List](#tags-list), [Get](#tags-get) |
 | Stargazers | [List](#stargazers-list) |
 | Viewer | [Get](#viewer-get) |
 | Viewer Repositories | [List](#viewer-repositories-list) |
+| Projects | [List](#projects-list), [Get](#projects-get) |
+| Project Items | [List](#project-items-list) |
 
 ### Repositories
 
@@ -33,7 +39,7 @@ Gets information about a specific GitHub repository using GraphQL
 **Python SDK**
 
 ```python
-github.repositories.get(
+await github.repositories.get(
     owner="<str>",
     repo="<str>"
 )
@@ -42,7 +48,7 @@ github.repositories.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -56,7 +62,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -74,7 +80,7 @@ Returns a list of repositories for the specified user using GraphQL
 **Python SDK**
 
 ```python
-github.repositories.list(
+await github.repositories.list(
     username="<str>"
 )
 ```
@@ -82,7 +88,7 @@ github.repositories.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -95,7 +101,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -107,7 +113,7 @@ If not provided, uses default fields.
  |
 
 
-#### Repositories Search
+#### Repositories API Search
 
 Search for GitHub repositories using GitHub's powerful search syntax.
 Examples: "language:python stars:>1000", "topic:machine-learning", "org:facebook is:public"
@@ -116,7 +122,7 @@ Examples: "language:python stars:>1000", "topic:machine-learning", "org:facebook
 **Python SDK**
 
 ```python
-github.repositories.search(
+await github.repositories.api_search(
     query="<str>"
 )
 ```
@@ -124,12 +130,12 @@ github.repositories.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "repositories",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -137,15 +143,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `string` | Yes | GitHub repository search query. Examples:
-- "language:python stars:>1000"
-- "topic:machine-learning"
-- "org:facebook is:public"
- |
+| `query` | `string` | Yes | GitHub repository search query using GitHub's search syntax |
 | `limit` | `integer` | No | Number of results to return |
 | `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
 | `fields` | `array<string>` | No | Optional array of field names to select.
@@ -162,7 +164,7 @@ Returns a list of repositories for the specified organization using GraphQL
 **Python SDK**
 
 ```python
-github.org_repositories.list(
+await github.org_repositories.list(
     org="<str>"
 )
 ```
@@ -170,7 +172,7 @@ github.org_repositories.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -183,7 +185,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -202,7 +204,7 @@ Returns a list of branches for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.branches.list(
+await github.branches.list(
     owner="<str>",
     repo="<str>"
 )
@@ -211,7 +213,7 @@ github.branches.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -225,7 +227,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -243,7 +245,7 @@ Gets information about a specific branch using GraphQL
 **Python SDK**
 
 ```python
-github.branches.get(
+await github.branches.get(
     owner="<str>",
     repo="<str>",
     branch="<str>"
@@ -253,7 +255,7 @@ github.branches.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -268,7 +270,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -287,7 +289,7 @@ Returns a list of commits for the default branch using GraphQL
 **Python SDK**
 
 ```python
-github.commits.list(
+await github.commits.list(
     owner="<str>",
     repo="<str>"
 )
@@ -296,7 +298,7 @@ github.commits.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -310,7 +312,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -328,7 +330,7 @@ Gets information about a specific commit by SHA using GraphQL
 **Python SDK**
 
 ```python
-github.commits.get(
+await github.commits.get(
     owner="<str>",
     repo="<str>",
     sha="<str>"
@@ -338,7 +340,7 @@ github.commits.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -353,7 +355,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -372,7 +374,7 @@ Returns a list of releases for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.releases.list(
+await github.releases.list(
     owner="<str>",
     repo="<str>"
 )
@@ -381,7 +383,7 @@ github.releases.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -395,7 +397,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -413,7 +415,7 @@ Gets information about a specific release by tag name using GraphQL
 **Python SDK**
 
 ```python
-github.releases.get(
+await github.releases.get(
     owner="<str>",
     repo="<str>",
     tag="<str>"
@@ -423,7 +425,7 @@ github.releases.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -438,7 +440,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -457,7 +459,7 @@ Returns a list of issues for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.issues.list(
+await github.issues.list(
     owner="<str>",
     repo="<str>"
 )
@@ -466,7 +468,7 @@ github.issues.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -480,7 +482,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -499,7 +501,7 @@ Gets information about a specific issue using GraphQL
 **Python SDK**
 
 ```python
-github.issues.get(
+await github.issues.get(
     owner="<str>",
     repo="<str>",
     number=0
@@ -509,7 +511,7 @@ github.issues.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -524,7 +526,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -534,14 +536,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `fields` | `array<string>` | No | Optional array of field names to select |
 
 
-#### Issues Search
+#### Issues API Search
 
 Search for issues using GitHub's search syntax
 
 **Python SDK**
 
 ```python
-github.issues.search(
+await github.issues.api_search(
     query="<str>"
 )
 ```
@@ -549,12 +551,12 @@ github.issues.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "issues",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -562,14 +564,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `string` | Yes | GitHub issue search query. Examples:
-- "repo:owner/name is:issue is:open"
-- "repo:owner/name is:issue label:bug"
- |
+| `query` | `string` | Yes | GitHub issue search query using GitHub's search syntax |
 | `per_page` | `integer` | No | The number of results per page |
 | `after` | `string` | No | Cursor for pagination |
 | `fields` | `array<string>` | No | Optional array of field names to select |
@@ -584,7 +583,7 @@ Returns a list of pull requests for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.pull_requests.list(
+await github.pull_requests.list(
     owner="<str>",
     repo="<str>"
 )
@@ -593,7 +592,7 @@ github.pull_requests.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -607,7 +606,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -626,7 +625,7 @@ Gets information about a specific pull request using GraphQL
 **Python SDK**
 
 ```python
-github.pull_requests.get(
+await github.pull_requests.get(
     owner="<str>",
     repo="<str>",
     number=0
@@ -636,7 +635,7 @@ github.pull_requests.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -651,7 +650,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -661,14 +660,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `fields` | `array<string>` | No | Optional array of field names to select |
 
 
-#### Pull Requests Search
+#### Pull Requests API Search
 
 Search for pull requests using GitHub's search syntax
 
 **Python SDK**
 
 ```python
-github.pull_requests.search(
+await github.pull_requests.api_search(
     query="<str>"
 )
 ```
@@ -676,12 +675,12 @@ github.pull_requests.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "pull_requests",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -689,14 +688,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `string` | Yes | GitHub PR search query. Examples:
-- "repo:owner/name type:pr is:open"
-- "repo:owner/name type:pr author:username"
- |
+| `query` | `string` | Yes | GitHub pull request search query using GitHub's search syntax |
 | `per_page` | `integer` | No | The number of results per page |
 | `after` | `string` | No | Cursor for pagination |
 | `fields` | `array<string>` | No | Optional array of field names to select |
@@ -711,7 +707,7 @@ Returns a list of reviews for the specified pull request using GraphQL
 **Python SDK**
 
 ```python
-github.reviews.list(
+await github.reviews.list(
     owner="<str>",
     repo="<str>",
     number=0
@@ -721,7 +717,7 @@ github.reviews.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -736,7 +732,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -757,7 +753,7 @@ Returns a list of comments for the specified issue using GraphQL
 **Python SDK**
 
 ```python
-github.comments.list(
+await github.comments.list(
     owner="<str>",
     repo="<str>",
     number=0
@@ -767,7 +763,7 @@ github.comments.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -782,7 +778,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -806,7 +802,7 @@ where each comment includes both 'id' (node ID) and 'databaseId' (numeric ID).
 **Python SDK**
 
 ```python
-github.comments.get(
+await github.comments.get(
     id="<str>"
 )
 ```
@@ -814,7 +810,7 @@ github.comments.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -827,7 +823,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -844,7 +840,7 @@ Returns a list of comments for the specified pull request using GraphQL
 **Python SDK**
 
 ```python
-github.pr_comments.list(
+await github.pr_comments.list(
     owner="<str>",
     repo="<str>",
     number=0
@@ -854,7 +850,7 @@ github.pr_comments.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -869,7 +865,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -893,7 +889,7 @@ where each comment includes both 'id' (node ID) and 'databaseId' (numeric ID).
 **Python SDK**
 
 ```python
-github.pr_comments.get(
+await github.pr_comments.get(
     id="<str>"
 )
 ```
@@ -901,7 +897,7 @@ github.pr_comments.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -914,7 +910,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -931,7 +927,7 @@ Returns a list of labels for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.labels.list(
+await github.labels.list(
     owner="<str>",
     repo="<str>"
 )
@@ -940,7 +936,7 @@ github.labels.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -954,7 +950,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -972,7 +968,7 @@ Gets information about a specific label by name using GraphQL
 **Python SDK**
 
 ```python
-github.labels.get(
+await github.labels.get(
     owner="<str>",
     repo="<str>",
     name="<str>"
@@ -982,7 +978,7 @@ github.labels.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -997,7 +993,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1016,7 +1012,7 @@ Returns a list of milestones for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.milestones.list(
+await github.milestones.list(
     owner="<str>",
     repo="<str>"
 )
@@ -1025,7 +1021,7 @@ github.milestones.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1039,7 +1035,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1058,7 +1054,7 @@ Gets information about a specific milestone by number using GraphQL
 **Python SDK**
 
 ```python
-github.milestones.get(
+await github.milestones.get(
     owner="<str>",
     repo="<str>",
     number=0
@@ -1068,7 +1064,7 @@ github.milestones.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1083,7 +1079,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1102,7 +1098,7 @@ Gets information about a specific organization using GraphQL
 **Python SDK**
 
 ```python
-github.organizations.get(
+await github.organizations.get(
     org="<str>"
 )
 ```
@@ -1110,7 +1106,7 @@ github.organizations.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1123,7 +1119,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1138,7 +1134,7 @@ Returns a list of organizations the user belongs to using GraphQL
 **Python SDK**
 
 ```python
-github.organizations.list(
+await github.organizations.list(
     username="<str>"
 )
 ```
@@ -1146,7 +1142,7 @@ github.organizations.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1159,7 +1155,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1178,7 +1174,7 @@ Gets information about a specific user using GraphQL
 **Python SDK**
 
 ```python
-github.users.get(
+await github.users.get(
     username="<str>"
 )
 ```
@@ -1186,7 +1182,7 @@ github.users.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1199,7 +1195,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1214,7 +1210,7 @@ Returns a list of members for the specified organization using GraphQL
 **Python SDK**
 
 ```python
-github.users.list(
+await github.users.list(
     org="<str>"
 )
 ```
@@ -1222,7 +1218,7 @@ github.users.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1235,7 +1231,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1245,14 +1241,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `fields` | `array<string>` | No | Optional array of field names to select |
 
 
-#### Users Search
+#### Users API Search
 
 Search for GitHub users using search syntax
 
 **Python SDK**
 
 ```python
-github.users.search(
+await github.users.api_search(
     query="<str>"
 )
 ```
@@ -1260,12 +1256,12 @@ github.users.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "query": "<str>"
     }
@@ -1273,14 +1269,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `string` | Yes | GitHub user search query. Examples:
-- "location:san francisco"
-- "followers:>1000"
- |
+| `query` | `string` | Yes | GitHub user search query using GitHub's search syntax |
 | `limit` | `integer` | No | Number of results to return |
 | `after` | `string` | No | Cursor for pagination |
 | `fields` | `array<string>` | No | Optional array of field names to select |
@@ -1295,7 +1288,7 @@ Returns a list of teams for the specified organization using GraphQL
 **Python SDK**
 
 ```python
-github.teams.list(
+await github.teams.list(
     org="<str>"
 )
 ```
@@ -1303,7 +1296,7 @@ github.teams.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1316,7 +1309,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1333,7 +1326,7 @@ Gets information about a specific team using GraphQL
 **Python SDK**
 
 ```python
-github.teams.get(
+await github.teams.get(
     org="<str>",
     team_slug="<str>"
 )
@@ -1342,7 +1335,7 @@ github.teams.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1356,7 +1349,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1374,7 +1367,7 @@ Returns a list of tags for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.tags.list(
+await github.tags.list(
     owner="<str>",
     repo="<str>"
 )
@@ -1383,7 +1376,7 @@ github.tags.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1397,7 +1390,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1415,7 +1408,7 @@ Gets information about a specific tag by name using GraphQL
 **Python SDK**
 
 ```python
-github.tags.get(
+await github.tags.get(
     owner="<str>",
     repo="<str>",
     tag="<str>"
@@ -1425,7 +1418,7 @@ github.tags.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1440,7 +1433,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1459,7 +1452,7 @@ Returns a list of users who have starred the repository using GraphQL
 **Python SDK**
 
 ```python
-github.stargazers.list(
+await github.stargazers.list(
     owner="<str>",
     repo="<str>"
 )
@@ -1468,7 +1461,7 @@ github.stargazers.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1482,7 +1475,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1505,13 +1498,13 @@ the current user's profile, permissions, or associated resources.
 **Python SDK**
 
 ```python
-github.viewer.get()
+await github.viewer.get()
 ```
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1521,7 +1514,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1540,13 +1533,13 @@ automatically lists repositories for the current authenticated user.
 **Python SDK**
 
 ```python
-github.viewer_repositories.list()
+await github.viewer_repositories.list()
 ```
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1556,10 +1549,136 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
+| `per_page` | `integer` | No | The number of results per page |
+| `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+### Projects
+
+#### Projects List
+
+Returns a list of GitHub Projects V2 for the specified organization.
+Projects V2 are the new project boards that replaced classic projects.
+
+
+**Python SDK**
+
+```python
+await github.projects.list(
+    org="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "projects",
+    "action": "list",
+    "params": {
+        "org": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `org` | `string` | Yes | The organization login/username |
+| `per_page` | `integer` | No | The number of results per page |
+| `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+#### Projects Get
+
+Gets information about a specific GitHub Project V2 by number
+
+**Python SDK**
+
+```python
+await github.projects.get(
+    org="<str>",
+    project_number=0
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "projects",
+    "action": "get",
+    "params": {
+        "org": "<str>",
+        "project_number": 0
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `org` | `string` | Yes | The organization login/username |
+| `project_number` | `integer` | Yes | The project number |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+### Project Items
+
+#### Project Items List
+
+Returns a list of items (issues, pull requests, draft issues) in a GitHub Project V2.
+Each item includes its field values like Status, Priority, etc.
+
+
+**Python SDK**
+
+```python
+await github.project_items.list(
+    org="<str>",
+    project_number=0
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "project_items",
+    "action": "list",
+    "params": {
+        "org": "<str>",
+        "project_number": 0
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `org` | `string` | Yes | The organization login/username |
+| `project_number` | `integer` | Yes | The project number |
 | `per_page` | `integer` | No | The number of results per page |
 | `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
 | `fields` | `array<string>` | No | Optional array of field names to select |
@@ -1569,17 +1688,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ## Authentication
 
-The Github connector supports the following authentication methods:
+The Github connector supports the following authentication methods.
 
 
-### Authentication
+### OAuth 2
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | No | OAuth2 access token |
-| `refresh_token` | `str` | No | OAuth2 refresh token (optional) |
-| `client_id` | `str` | No | OAuth2 client ID (optional) |
-| `client_secret` | `str` | No | OAuth2 client secret (optional) |
+| `access_token` | `str` | Yes | OAuth 2.0 access token |
 
 #### Example
 
@@ -1587,11 +1703,8 @@ The Github connector supports the following authentication methods:
 
 ```python
 GithubConnector(
-  auth_config=GithubAuthConfig(
-    access_token="<OAuth2 access token>",
-    refresh_token="<OAuth2 refresh token (optional)>",
-    client_id="<OAuth2 client ID (optional)>",
-    client_secret="<OAuth2 client secret (optional)>"
+  auth_config=GithubOauth2AuthConfig(
+    access_token="<OAuth 2.0 access token>"
   )
 )
 ```
@@ -1599,16 +1712,49 @@ GithubConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
-    "access_token": "<OAuth2 access token>",
-    "refresh_token": "<OAuth2 refresh token (optional)>",
-    "client_id": "<OAuth2 client ID (optional)>",
-    "client_secret": "<OAuth2 client secret (optional)>"
+    "access_token": "<OAuth 2.0 access token>"
+  },
+  "name": "My Github Connector"
+}'
+```
+
+
+### Personal Access Token
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `token` | `str` | Yes | GitHub personal access token (fine-grained or classic) |
+
+#### Example
+
+**Python SDK**
+
+```python
+GithubConnector(
+  auth_config=GithubPersonalAccessTokenAuthConfig(
+    token="<GitHub personal access token (fine-grained or classic)>"
+  )
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
+  "auth_config": {
+    "token": "<GitHub personal access token (fine-grained or classic)>"
   },
   "name": "My Github Connector"
 }'

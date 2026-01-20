@@ -153,9 +153,9 @@ Syncing data with an hourly granularity often generates large data volumes and c
 | 1.5.20 | 2025-09-30 | [66898](https://github.com/airbytehq/airbyte/pull/66898) | Update dependencies |
 | 1.5.19 | 2025-09-24 | [66264](https://github.com/airbytehq/airbyte/pull/66264) | Update dependencies |
 | 1.5.18 | 2025-09-09 | [65393](https://github.com/airbytehq/airbyte/pull/65393) | Update dependencies |
-| 1.5.17 | 2025-08-14 | [64940](https://github.com/airbytehq/airbyte/pull/64940) | Re-release connector with fixed docker image entrypoint |
+| 1.5.17 | 2025-08-18 | [64940](https://github.com/airbytehq/airbyte/pull/64940) | Re-release connector with fixed docker image entrypoint |
 | 1.5.16 | 2025-08-11 | [63276](https://github.com/airbytehq/airbyte/pull/63276) | Fix start time for stats streams |
-| 1.5.15 | 2025-08-09 | [64480](https://github.com/airbytehq/airbyte/pull/64480) | Update dependencies |
+| 1.5.15 | 2025-08-10 | [64480](https://github.com/airbytehq/airbyte/pull/64480) | Update dependencies |
 | 1.5.14 | 2025-07-26 | [63088](https://github.com/airbytehq/airbyte/pull/63088) | Update dependencies |
 | 1.5.13 | 2025-07-02 | [62488](https://github.com/airbytehq/airbyte/pull/62488) | Fix end datetime to include today |
 | 1.5.12 | 2025-06-28 | [60513](https://github.com/airbytehq/airbyte/pull/60513) | Update dependencies |

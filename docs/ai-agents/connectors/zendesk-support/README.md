@@ -1,4 +1,4 @@
-# Airbyte Zendesk-Support AI Connector
+# Zendesk-Support agent connector
 
 Zendesk Support is a customer service platform that helps businesses manage support
 tickets, customer interactions, and help center content. This connector provides
@@ -7,46 +7,73 @@ triggers, macros, views, satisfaction ratings, SLA policies, and help center art
 for customer support analytics and service performance insights.
 
 
-## Example Questions
+## Example questions
+
+The Zendesk-Support connector is optimized to handle prompts like these.
 
 - Show me the tickets assigned to me last week
 - What are the top 5 support issues our organization has faced this month?
-- List all unresolved tickets for [customerX]
+- List all unresolved tickets for \{customer\}
 - Analyze the satisfaction ratings for our support team in the last 30 days
 - Compare ticket resolution times across different support groups
-- Show me the details of recent tickets tagged with [specific tag]
+- Show me the details of recent tickets tagged with \{tag\}
 - Identify the most common ticket fields used in our support workflow
 - Summarize the performance of our SLA policies this quarter
 
-## Unsupported Questions
+## Unsupported questions
 
-- Create a new support ticket for [customerX]
+The Zendesk-Support connector isn't currently able to handle prompts like these.
+
+- Create a new support ticket for \{customer\}
 - Update the priority of this ticket
-- Assign this ticket to [teamMember]
+- Assign this ticket to \{team_member\}
 - Delete these old support tickets
-- Send an automatic response to [customerX]
+- Send an automatic response to \{customer\}
 
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-zendesk-support
+uv pip install airbyte-agent-zendesk-support
 ```
 
 ## Usage
 
+This connector supports multiple authentication methods:
+
+### OAuth 2.0
+
 ```python
-from airbyte_ai_zendesk_support import ZendeskSupportConnector, ZendeskSupportAuthConfig
+from airbyte_agent_zendesk_support import ZendeskSupportConnector
+from airbyte_agent_zendesk_support.models import ZendeskSupportOauth20AuthConfig
 
 connector = ZendeskSupportConnector(
-  auth_config=ZendeskSupportAuthConfig(
+  auth_config=ZendeskSupportOauth20AuthConfig(
     access_token="...",
     refresh_token="..."
   )
 )
-result = connector.tickets.list()
+result = await connector.tickets.list()
 ```
 
-## Documentation
+### API Token
+
+```python
+from airbyte_agent_zendesk_support import ZendeskSupportConnector
+from airbyte_agent_zendesk_support.models import ZendeskSupportApiTokenAuthConfig
+
+connector = ZendeskSupportConnector(
+  auth_config=ZendeskSupportApiTokenAuthConfig(
+    email="...",
+    api_token="..."
+  )
+)
+result = await connector.tickets.list()
+```
+
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -74,14 +101,12 @@ result = connector.tickets.list()
 | Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Zendesk-Support API Reference](https://developer.zendesk.com/api-reference/ticketing/introduction/).
+For the service's official API docs, see the [Zendesk-Support API reference](https://developer.zendesk.com/api-reference/ticketing/introduction/).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.18.11
-
-**Connector Version:** 0.1.3
-
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+- **Package version:** 0.18.51
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** c46670b9e4ca5238c0372e143b44088a0d1a68ee

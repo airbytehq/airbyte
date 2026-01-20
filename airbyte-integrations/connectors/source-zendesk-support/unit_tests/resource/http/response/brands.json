@@ -1,0 +1,31 @@
+{
+  "brands": [
+    {
+      "id": 12345,
+      "url": "https://company.zendesk.com/api/v2/brands/12345.json",
+      "name": "My Brand",
+      "brand_url": "https://mybrand.zendesk.com",
+      "subdomain": "mybrand",
+      "host_mapping": null,
+      "has_help_center": true,
+      "help_center_state": "enabled",
+      "active": true,
+      "default": true,
+      "is_deleted": false,
+      "logo": null,
+      "ticket_form_ids": [],
+      "signature_template": "{{agent.signature}}",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": null,
+    "before_cursor": null
+  },
+  "links": {
+    "prev": null,
+    "next": null
+  }
+}

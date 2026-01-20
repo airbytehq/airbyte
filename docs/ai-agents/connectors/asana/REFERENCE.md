@@ -1,6 +1,10 @@
-# Asana
+# Asana full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Asana agent connector.
+
+## Supported entities and actions
+
+The Asana connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -18,23 +22,31 @@
 | Teams | [Get](#teams-get) |
 | Workspace Teams | [List](#workspace-teams-list) |
 | User Teams | [List](#user-teams-list) |
+| Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
+| Workspace Tags | [List](#workspace-tags-list) |
+| Tags | [Get](#tags-get) |
+| Project Sections | [List](#project-sections-list) |
+| Sections | [Get](#sections-get) |
+| Task Subtasks | [List](#task-subtasks-list) |
+| Task Dependencies | [List](#task-dependencies-list) |
+| Task Dependents | [List](#task-dependents-list) |
 
 ### Tasks
 
 #### Tasks List
 
-Returns a paginated list of tasks
+Returns a paginated list of tasks. Must include either a project OR a section OR a workspace AND assignee parameter.
 
 **Python SDK**
 
 ```python
-asana.tasks.list()
+await asana.tasks.list()
 ```
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -44,7 +56,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -87,7 +99,7 @@ Get a single task by its ID
 **Python SDK**
 
 ```python
-asana.tasks.get(
+await asana.tasks.get(
     task_gid="<str>"
 )
 ```
@@ -95,7 +107,7 @@ asana.tasks.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -108,7 +120,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -136,7 +148,7 @@ Returns all tasks in a project
 **Python SDK**
 
 ```python
-asana.project_tasks.list(
+await asana.project_tasks.list(
     project_gid="<str>"
 )
 ```
@@ -144,7 +156,7 @@ asana.project_tasks.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -157,7 +169,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -193,12 +205,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 #### Workspace Task Search List
 
-Returns tasks that match the specified search criteria. Note - This endpoint requires a premium Asana account.
+Returns tasks that match the specified search criteria. Note - This endpoint requires a premium Asana account. At least one search parameter must be provided.
 
 **Python SDK**
 
 ```python
-asana.workspace_task_search.list(
+await asana.workspace_task_search.list(
     workspace_gid="<str>"
 )
 ```
@@ -206,7 +218,7 @@ asana.workspace_task_search.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -219,7 +231,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -275,13 +287,13 @@ Returns a paginated list of projects
 **Python SDK**
 
 ```python
-asana.projects.list()
+await asana.projects.list()
 ```
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -291,7 +303,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -329,7 +341,7 @@ Get a single project by its ID
 **Python SDK**
 
 ```python
-asana.projects.get(
+await asana.projects.get(
     project_gid="<str>"
 )
 ```
@@ -337,7 +349,7 @@ asana.projects.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -350,7 +362,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -405,7 +417,7 @@ Returns all projects a task is in
 **Python SDK**
 
 ```python
-asana.task_projects.list(
+await asana.task_projects.list(
     task_gid="<str>"
 )
 ```
@@ -413,7 +425,7 @@ asana.task_projects.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -426,7 +438,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -464,7 +476,7 @@ Returns all projects for a team
 **Python SDK**
 
 ```python
-asana.team_projects.list(
+await asana.team_projects.list(
     team_gid="<str>"
 )
 ```
@@ -472,7 +484,7 @@ asana.team_projects.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -485,7 +497,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -524,7 +536,7 @@ Returns all projects in a workspace
 **Python SDK**
 
 ```python
-asana.workspace_projects.list(
+await asana.workspace_projects.list(
     workspace_gid="<str>"
 )
 ```
@@ -532,7 +544,7 @@ asana.workspace_projects.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -545,7 +557,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -584,13 +596,13 @@ Returns a paginated list of workspaces
 **Python SDK**
 
 ```python
-asana.workspaces.list()
+await asana.workspaces.list()
 ```
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -600,7 +612,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -635,7 +647,7 @@ Get a single workspace by its ID
 **Python SDK**
 
 ```python
-asana.workspaces.get(
+await asana.workspaces.get(
     workspace_gid="<str>"
 )
 ```
@@ -643,7 +655,7 @@ asana.workspaces.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -656,7 +668,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -688,13 +700,13 @@ Returns a paginated list of users
 **Python SDK**
 
 ```python
-asana.users.list()
+await asana.users.list()
 ```
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -704,7 +716,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -741,7 +753,7 @@ Get a single user by their ID
 **Python SDK**
 
 ```python
-asana.users.get(
+await asana.users.get(
     user_gid="<str>"
 )
 ```
@@ -749,7 +761,7 @@ asana.users.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -762,7 +774,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -795,7 +807,7 @@ Returns all users in a workspace
 **Python SDK**
 
 ```python
-asana.workspace_users.list(
+await asana.workspace_users.list(
     workspace_gid="<str>"
 )
 ```
@@ -803,7 +815,7 @@ asana.workspace_users.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -816,7 +828,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -854,7 +866,7 @@ Returns all users in a team
 **Python SDK**
 
 ```python
-asana.team_users.list(
+await asana.team_users.list(
     team_gid="<str>"
 )
 ```
@@ -862,7 +874,7 @@ asana.team_users.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -875,7 +887,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -913,7 +925,7 @@ Get a single team by its ID
 **Python SDK**
 
 ```python
-asana.teams.get(
+await asana.teams.get(
     team_gid="<str>"
 )
 ```
@@ -921,7 +933,7 @@ asana.teams.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -934,7 +946,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -966,7 +978,7 @@ Returns all teams in a workspace
 **Python SDK**
 
 ```python
-asana.workspace_teams.list(
+await asana.workspace_teams.list(
     workspace_gid="<str>"
 )
 ```
@@ -974,7 +986,7 @@ asana.workspace_teams.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -987,7 +999,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1025,7 +1037,7 @@ Returns all teams a user is a member of
 **Python SDK**
 
 ```python
-asana.user_teams.list(
+await asana.user_teams.list(
     user_gid="<str>",
     organization="<str>"
 )
@@ -1034,7 +1046,7 @@ asana.user_teams.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1048,7 +1060,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1078,18 +1090,585 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+### Attachments
+
+#### Attachments List
+
+Returns a list of attachments for an object (task, project, etc.)
+
+**Python SDK**
+
+```python
+await asana.attachments.list(
+    parent="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "attachments",
+    "action": "list",
+    "params": {
+        "parent": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `parent` | `string` | Yes | Globally unique identifier for the object to fetch attachments for (e.g., a task GID) |
+| `limit` | `integer` | No | Number of items to return per page |
+| `offset` | `string` | No | Pagination offset token |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `gid` | `string` |  |
+| `resource_type` | `string` |  |
+| `name` | `string` |  |
+| `resource_subtype` | `string` |  |
+
+
+**Meta**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page` | `object \| null` |  |
+
+</details>
+
+#### Attachments Get
+
+Get details for a single attachment by its GID
+
+**Python SDK**
+
+```python
+await asana.attachments.get(
+    attachment_gid="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "attachments",
+    "action": "get",
+    "params": {
+        "attachment_gid": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `attachment_gid` | `string` | Yes | Globally unique identifier for the attachment |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `gid` | `string` |  |
+| `resource_type` | `string` |  |
+| `name` | `string` |  |
+| `resource_subtype` | `string` |  |
+| `created_at` | `string` |  |
+| `download_url` | `string \| null` |  |
+| `permanent_url` | `string \| null` |  |
+| `host` | `string` |  |
+| `parent` | `object` |  |
+| `view_url` | `string \| null` |  |
+| `size` | `integer \| null` |  |
+
+
+</details>
+
+#### Attachments Download
+
+Downloads the file content of an attachment. This operation first retrieves the attachment
+metadata to get the download_url, then downloads the file from that URL.
+
+
+**Python SDK**
+
+```python
+async for chunk in asana.attachments.download(    attachment_gid="<str>"):# Process each chunk (e.g., write to file)
+    file.write(chunk)
+```
+
+> **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "attachments",
+    "action": "download",
+    "params": {
+        "attachment_gid": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `attachment_gid` | `string` | Yes | Globally unique identifier for the attachment |
+| `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
+
+
+### Workspace Tags
+
+#### Workspace Tags List
+
+Returns all tags in a workspace
+
+**Python SDK**
+
+```python
+await asana.workspace_tags.list(
+    workspace_gid="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "workspace_tags",
+    "action": "list",
+    "params": {
+        "workspace_gid": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `workspace_gid` | `string` | Yes | Workspace GID to list tags from |
+| `limit` | `integer` | No | Number of items to return per page |
+| `offset` | `string` | No | Pagination offset token |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `gid` | `string` |  |
+| `resource_type` | `string` |  |
+| `name` | `string` |  |
+
+
+**Meta**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page` | `object \| null` |  |
+
+</details>
+
+### Tags
+
+#### Tags Get
+
+Get a single tag by its ID
+
+**Python SDK**
+
+```python
+await asana.tags.get(
+    tag_gid="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "get",
+    "params": {
+        "tag_gid": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `tag_gid` | `string` | Yes | Tag GID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `gid` | `string` |  |
+| `resource_type` | `string` |  |
+| `name` | `string` |  |
+| `color` | `string` |  |
+| `created_at` | `string` |  |
+| `followers` | `array` |  |
+| `notes` | `string` |  |
+| `permalink_url` | `string` |  |
+| `workspace` | `object` |  |
+
+
+</details>
+
+### Project Sections
+
+#### Project Sections List
+
+Returns all sections in a project
+
+**Python SDK**
+
+```python
+await asana.project_sections.list(
+    project_gid="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "project_sections",
+    "action": "list",
+    "params": {
+        "project_gid": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `project_gid` | `string` | Yes | Project GID to list sections from |
+| `limit` | `integer` | No | Number of items to return per page |
+| `offset` | `string` | No | Pagination offset token |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `gid` | `string` |  |
+| `resource_type` | `string` |  |
+| `name` | `string` |  |
+
+
+**Meta**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page` | `object \| null` |  |
+
+</details>
+
+### Sections
+
+#### Sections Get
+
+Get a single section by its ID
+
+**Python SDK**
+
+```python
+await asana.sections.get(
+    section_gid="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "sections",
+    "action": "get",
+    "params": {
+        "section_gid": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `section_gid` | `string` | Yes | Section GID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `gid` | `string` |  |
+| `resource_type` | `string` |  |
+| `name` | `string` |  |
+| `created_at` | `string` |  |
+| `project` | `object` |  |
+
+
+</details>
+
+### Task Subtasks
+
+#### Task Subtasks List
+
+Returns all subtasks of a task
+
+**Python SDK**
+
+```python
+await asana.task_subtasks.list(
+    task_gid="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "task_subtasks",
+    "action": "list",
+    "params": {
+        "task_gid": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `task_gid` | `string` | Yes | Task GID to list subtasks from |
+| `limit` | `integer` | No | Number of items to return per page |
+| `offset` | `string` | No | Pagination offset token |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `gid` | `string` |  |
+| `resource_type` | `string` |  |
+| `name` | `string` |  |
+| `resource_subtype` | `string` |  |
+| `created_by` | `object` |  |
+
+
+**Meta**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page` | `object \| null` |  |
+
+</details>
+
+### Task Dependencies
+
+#### Task Dependencies List
+
+Returns all tasks that this task depends on
+
+**Python SDK**
+
+```python
+await asana.task_dependencies.list(
+    task_gid="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "task_dependencies",
+    "action": "list",
+    "params": {
+        "task_gid": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `task_gid` | `string` | Yes | Task GID to list dependencies from |
+| `limit` | `integer` | No | Number of items to return per page |
+| `offset` | `string` | No | Pagination offset token |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `gid` | `string` |  |
+| `resource_type` | `string` |  |
+| `name` | `string` |  |
+| `resource_subtype` | `string` |  |
+| `created_by` | `object` |  |
+
+
+**Meta**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page` | `object \| null` |  |
+
+</details>
+
+### Task Dependents
+
+#### Task Dependents List
+
+Returns all tasks that depend on this task
+
+**Python SDK**
+
+```python
+await asana.task_dependents.list(
+    task_gid="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "task_dependents",
+    "action": "list",
+    "params": {
+        "task_gid": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `task_gid` | `string` | Yes | Task GID to list dependents from |
+| `limit` | `integer` | No | Number of items to return per page |
+| `offset` | `string` | No | Pagination offset token |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `gid` | `string` |  |
+| `resource_type` | `string` |  |
+| `name` | `string` |  |
+| `resource_subtype` | `string` |  |
+| `created_by` | `object` |  |
+
+
+**Meta**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page` | `object \| null` |  |
+
+</details>
+
 
 
 ## Authentication
 
-The Asana connector supports the following authentication methods:
+The Asana connector supports the following authentication methods.
 
 
-### Asana OAuth 2.0
+### OAuth 2
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | OAuth access token for API requests |
+| `access_token` | `str` | No | OAuth access token for API requests |
 | `refresh_token` | `str` | Yes | OAuth refresh token for automatic token renewal |
 | `client_id` | `str` | Yes | Connected App Consumer Key |
 | `client_secret` | `str` | Yes | Connected App Consumer Secret |
@@ -1100,7 +1679,7 @@ The Asana connector supports the following authentication methods:
 
 ```python
 AsanaConnector(
-  auth_config=AsanaAuthConfig(
+  auth_config=AsanaOauth2AuthConfig(
     access_token="<OAuth access token for API requests>",
     refresh_token="<OAuth refresh token for automatic token renewal>",
     client_id="<Connected App Consumer Key>",
@@ -1112,16 +1691,52 @@ AsanaConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "d0243522-dccf-4978-8ba0-37ed47a0bdbf",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
     "access_token": "<OAuth access token for API requests>",
     "refresh_token": "<OAuth refresh token for automatic token renewal>",
     "client_id": "<Connected App Consumer Key>",
     "client_secret": "<Connected App Consumer Secret>"
+  },
+  "name": "My Asana Connector"
+}'
+```
+
+
+### Personal Access Token
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `token` | `str` | Yes | Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps |
+
+#### Example
+
+**Python SDK**
+
+```python
+AsanaConnector(
+  auth_config=AsanaPersonalAccessTokenAuthConfig(
+    token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+  )
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
+  "auth_config": {
+    "token": "<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
   },
   "name": "My Asana Connector"
 }'

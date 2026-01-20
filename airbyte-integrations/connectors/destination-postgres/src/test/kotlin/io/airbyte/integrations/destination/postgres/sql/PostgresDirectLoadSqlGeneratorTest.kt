@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.sql
@@ -1146,7 +1146,9 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
-    fun testMatchSchemasModifyColumnsWithCascade() {
+    fun testMatchSchemasModifyColumnsWithCascadeDoesNotApplyCascade() {
+        // CASCADE should NOT be applied to ALTER COLUMN TYPE statements,
+        // it only applies to DROP operations (DROP TABLE, DROP INDEX, DROP COLUMN)
         val cascadeConfig =
             mockk<PostgresConfiguration> {
                 every { legacyRawTablesOnly } returns false
@@ -1176,8 +1178,14 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
         assert(sql.contains("BEGIN TRANSACTION;"))
         assert(sql.contains("COMMIT;"))
+        // CASCADE should NOT be on ALTER COLUMN TYPE
         assert(
             sql.contains(
+                "ALTER COLUMN \"modified_col\" TYPE jsonb USING to_jsonb(\"modified_col\");"
+            )
+        )
+        assert(
+            !sql.contains(
                 "ALTER COLUMN \"modified_col\" TYPE jsonb USING to_jsonb(\"modified_col\") CASCADE"
             )
         )

@@ -1,6 +1,10 @@
-# Linear
+# Linear full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Linear agent connector.
+
+## Supported entities and actions
+
+The Linear connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -17,13 +21,13 @@ Returns a paginated list of issues via GraphQL with pagination support
 **Python SDK**
 
 ```python
-linear.issues.list()
+await linear.issues.list()
 ```
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -33,7 +37,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -60,7 +64,7 @@ Get a single issue by ID via GraphQL
 **Python SDK**
 
 ```python
-linear.issues.get(
+await linear.issues.get(
     id="<str>"
 )
 ```
@@ -68,7 +72,7 @@ linear.issues.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -81,7 +85,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -109,13 +113,13 @@ Returns a paginated list of projects via GraphQL with pagination support
 **Python SDK**
 
 ```python
-linear.projects.list()
+await linear.projects.list()
 ```
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -125,7 +129,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -152,7 +156,7 @@ Get a single project by ID via GraphQL
 **Python SDK**
 
 ```python
-linear.projects.get(
+await linear.projects.get(
     id="<str>"
 )
 ```
@@ -160,7 +164,7 @@ linear.projects.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -173,7 +177,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -201,13 +205,13 @@ Returns a list of teams via GraphQL with pagination support
 **Python SDK**
 
 ```python
-linear.teams.list()
+await linear.teams.list()
 ```
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -217,7 +221,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -244,7 +248,7 @@ Get a single team by ID via GraphQL
 **Python SDK**
 
 ```python
-linear.teams.get(
+await linear.teams.get(
     id="<str>"
 )
 ```
@@ -252,7 +256,7 @@ linear.teams.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -265,7 +269,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -288,14 +292,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ## Authentication
 
-The Linear connector supports the following authentication methods:
+The Linear connector supports the following authentication methods.
 
 
-### Authentication
+### Linear API Key Authentication
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | API authentication key |
+| `api_key` | `str` | Yes | Your Linear API key from Settings > API > Personal API keys |
 
 #### Example
 
@@ -304,7 +308,7 @@ The Linear connector supports the following authentication methods:
 ```python
 LinearConnector(
   auth_config=LinearAuthConfig(
-    api_key="<API authentication key>"
+    api_key="<Your Linear API key from Settings > API > Personal API keys>"
   )
 )
 ```
@@ -312,13 +316,14 @@ LinearConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "1c5d8316-ed42-4473-8fbc-2626f03f070c",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
-    "api_key": "<API authentication key>"
+    "api_key": "<Your Linear API key from Settings > API > Personal API keys>"
   },
   "name": "My Linear Connector"
 }'

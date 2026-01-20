@@ -23,7 +23,7 @@
     },
     {
       "source": "/platform/using-airbyte/pyairbyte/getting-started",
-      "destination": "/developers/using-pyairbyte",
+      "destination": "/developers/pyairbyte",
       "statusCode": 301
     },
     {
@@ -267,8 +267,13 @@
       "statusCode": 301
     },
     {
+      "source": "/developers/using-pyairbyte",
+      "destination": "/developers/pyairbyte",
+      "statusCode": 301
+    },
+    {
       "source": "/pyairbyte",
-      "destination": "/developers/using-pyairbyte",
+      "destination": "/developers/pyairbyte",
       "statusCode": 301
     },
     {
