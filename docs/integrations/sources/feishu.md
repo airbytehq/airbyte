@@ -29,6 +29,6 @@ Extracts data from Feishu/Lark Bitable (Base). Supports authentication via App I
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-01-09 | | Initial release by [@WYW-min](https://github.com/WYW-min) via Connector Builder |
+| 0.0.1 | 2026-01-20 | | Initial release by [@WYW-min](https://github.com/WYW-min) via Connector Builder |
 
 </details>
