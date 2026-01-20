@@ -2348,33 +2348,32 @@ spec:
               description: The name of the object associating.
               type: string
               enum:
-#                - appointments - crm.objects.meetings.read scope is needed
+                - appointments # crm.objects.appointments.read scope is needed
                 - calls
-#                - carts - crm.objects.carts.read
+                - carts # crm.objects.carts.read
                 - communications
                 - companies
                 - contacts
-#                - courses - crm.objects.courses.read
+                - courses # crm.objects.courses.read
                 - deals
                 - discounts
                 - emails
                 - feedback_submissions
                 - fees
                 - goals
-#                - invoices - crm.objects.invoices.read
+                - invoices # crm.objects.invoices.read
                 - leads
                 - line_items
-#                - listings - crm.objects.listings.read
-#                - marketing_events - marketing-events-read
+                - listings # crm.objects.listings.read
                 - meetings
                 - notes
-#                - orders - crm.objects.orders.read
-#                - payments - crm.objects.payments.read
+                - orders # crm.objects.orders.read
+                - payments # crm.objects.commercepayments.read
                 - postal_mail
-#                - projects - projects-read
-                - quotes
-#                - services - crm.objects.services.read
-#                - subscriptions - crm.objects.subscriptions.read
+                - projects # crm.objects.projects.read
+#                - quotes
+                - services # crm.objects.services.read
+                - subscriptions # crm.objects.subscriptions.read
                 - tasks
                 - taxes
                 - tickets
@@ -2400,7 +2399,6 @@ spec:
                 - leads
                 - line_items
                 - listings
-                - marketing_events
                 - meetings
                 - notes
                 - orders
