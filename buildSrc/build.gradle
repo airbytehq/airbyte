@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
     // Note this dependency version needs to line up with the generateJsonSchema2Pojo plugin used in the project.
-    implementation 'org.yaml:snakeyaml:1.33'
+    implementation 'org.yaml:snakeyaml:2.5'
 }
 
 tasks.withType(Jar).configureEach {
