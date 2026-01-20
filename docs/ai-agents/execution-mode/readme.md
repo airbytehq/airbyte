@@ -129,7 +129,7 @@ Once you create your connector, you can use the connector in hosted mode.
 Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the connector ID:
 
 ```python
-from airbyte_ai_github import GithubConnector
+from airbyte_agent_github import GithubConnector
 
 connector = GithubConnector(
     connector_id="<your_connector_id>",
