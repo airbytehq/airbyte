@@ -9,10 +9,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.schema.model.ColumnSchema
-import io.airbyte.cdk.load.schema.model.StreamTableSchema
-import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.mockk.Runs
@@ -34,18 +30,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
 internal class S3DataLakeTableCleanerTest {
-    private val emptyTableSchema =
-        StreamTableSchema(
-            columnSchema =
-                ColumnSchema(
-                    inputSchema = mapOf(),
-                    inputToFinalColumnNames = mapOf(),
-                    finalSchema = mapOf(),
-                ),
-            importType = Append,
-            tableNames = TableNames(finalTableName = TableName("namespace", "test")),
-        )
-
     private fun mockStream(
         importType: ImportType = Append,
         generationId: Long = 1,
@@ -60,7 +44,6 @@ internal class S3DataLakeTableCleanerTest {
             minimumGenerationId = minimumGenerationId,
             syncId = 1,
             namespaceMapper = NamespaceMapper(),
-            tableSchema = emptyTableSchema,
         )
 
     @Test
