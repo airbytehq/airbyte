@@ -50,7 +50,7 @@ Before using hosted execution mode, ensure you have:
 5. An installed agent connector package. For example:
 
    ```bash
-   uv pip install airbyte-ai-github
+   uv pip install airbyte-agent-github
    ```
 
    See [Connectors](../connectors) for a full list of connectors.
