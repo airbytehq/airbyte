@@ -5,7 +5,7 @@ This directory contains the manifest-only connector for [`source-factorial`](htt
 Visit `https://apidoc.factorialhr.com/reference` for API documentation
 
 ## Authentication setup
-`Factorial` uses API token authentication, Visit `https://app.factorialhr.com/settings/api-keys` for getting your api token. Refer `https://apidoc.factorialhr.com/docs/api-keys`.
+`Factorial` uses API token authentication. Visit `https://app.factorialhr.com/settings/api-keys` to get your API token. Refer to `https://apidoc.factorialhr.com/docs/api-keys`.
 
 ## Configuration
 
@@ -13,7 +13,7 @@ Visit `https://apidoc.factorialhr.com/reference` for API documentation
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
 | `start_date` | `string` | Start date.  |  |
-| `limit` | `string` | Limit. Max records per page limit | 50 |
+| `limit` | `string` | Maximum number of records per page | 50 |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
