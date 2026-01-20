@@ -128,9 +128,6 @@ spec:
         airbyte_secret: true
       lark_host:
         type: string
-        description: >-
-          API Base URL. Use https://open.feishu.cn for China or
-          https://open.larksuite.com for global.
         order: 3
         title: Lark Host
         description: >-
