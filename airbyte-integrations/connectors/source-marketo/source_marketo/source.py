@@ -354,7 +354,7 @@ class MarketoExportStatus(MarketoStream):
 
 class Leads(MarketoExportBase):
     """
-    Return list of all leeds.
+    Return list of all leads.
     API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
     """
 
@@ -362,30 +362,91 @@ class Leads(MarketoExportBase):
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config, self.name)
+        self._schema_cache: Optional[Mapping[str, Any]] = None
+        self._field_metadata_cache: Optional[List[Mapping[str, Any]]] = None
 
-    @property
-    def stream_fields(self):
-        standard_properties = set(self.get_json_schema()["properties"])
+    def _get_field_metadata(self) -> List[Mapping[str, Any]]:
+        """
+        Fetch field metadata from the Marketo describe endpoint.
+        Returns a list of field descriptors with dataType information.
+        """
+        if self._field_metadata_cache is not None:
+            return self._field_metadata_cache
+
         resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self._session.auth.get_auth_header())
-
-        available_fields = set()
         result = resp.json().get("result", [])
+
+        self._field_metadata_cache = []
         for describe_record in result:
             rest = describe_record.get("rest")
             if rest and "name" in rest:
-                available_fields.add(rest["name"])
-            else:
-                continue  # skipping soap only fields
+                self._field_metadata_cache.append({
+                    "name": rest["name"],
+                    "dataType": describe_record.get("dataType", "string"),
+                })
 
-        if not available_fields:
+        if not self._field_metadata_cache:
             self.logger.warning("No valid fields found in leads/describe response")
 
-        return list(standard_properties & available_fields)
+        return self._field_metadata_cache
+
+    @property
+    def stream_fields(self):
+        """
+        Returns the list of fields to request from the API.
+        Uses the dynamic schema properties to ensure consistency.
+        """
+        return list(self.get_json_schema()["properties"].keys())
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        # TODO: make schema truly dynamic like in stream Activities
-        #  now blocked by https://github.com/airbytehq/airbyte/issues/30530 due to potentially > 500 fields in schema (can cause OOM)
-        return super().get_json_schema()
+        """
+        Build schema dynamically from the Marketo describe endpoint.
+        This ensures field types match what the API actually returns,
+        preventing type conversion errors during sync.
+        """
+        if self._schema_cache is not None:
+            return self._schema_cache
+
+        field_metadata = self._get_field_metadata()
+
+        properties = {}
+        for field in field_metadata:
+            field_name = field["name"]
+            data_type = field["dataType"]
+
+            # Map Marketo data types to JSON schema types
+            # Based on Marketo Field Types documentation:
+            # https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/lead-database/field-types
+            if data_type == "date":
+                field_schema = {"type": "string", "format": "date"}
+            elif data_type == "datetime":
+                field_schema = {"type": "string", "format": "date-time"}
+            elif data_type in ["integer", "percent", "score"]:
+                field_schema = {"type": "integer"}
+            elif data_type in ["float", "currency"]:
+                field_schema = {"type": "number"}
+            elif data_type == "boolean":
+                field_schema = {"type": "boolean"}
+            elif data_type in STRING_TYPES:
+                field_schema = {"type": "string"}
+            elif data_type in ["array"]:
+                field_schema = {"type": "array", "items": {"type": ["integer", "number", "string", "null"]}}
+            else:
+                # Default to string for unknown types to prevent type conversion errors
+                field_schema = {"type": "string"}
+
+            # Make all fields nullable
+            field_schema["type"] = [field_schema["type"], "null"]
+            properties[field_name] = field_schema
+
+        self._schema_cache = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": properties,
+        }
+
+        return self._schema_cache
 
 
 class Activities(MarketoExportBase):

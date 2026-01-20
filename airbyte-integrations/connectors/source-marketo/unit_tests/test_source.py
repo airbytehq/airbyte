@@ -374,18 +374,13 @@ def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, cap
         ],
     }
 
-    # Patch the schema to include all possible fields
-    class DummyLeads(Leads):
-        def get_json_schema(self):
-            return {"properties": {"email": {}, "phone": {}, "LegacyField": {}}}
-
     requests_mock.get(
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
         json=describe_json,
     )
 
     caplog.set_level("WARNING")
-    leads_stream = DummyLeads(config)
+    leads_stream = Leads(config)
     fields = leads_stream.stream_fields
 
     # Only fields with a 'rest' key should be included
@@ -393,7 +388,9 @@ def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, cap
     # No warning should be logged since valid fields exist
     assert "No valid fields found in leads/describe response" not in caplog.text
 
-    # Now test with no valid rest fields
+
+def test_leads_stream_fields_warns_on_no_rest_fields(config, requests_mock, caplog):
+    # Test with no valid rest fields
     describe_json_no_rest = {
         "requestId": "def456",
         "success": True,
@@ -403,8 +400,67 @@ def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, cap
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
         json=describe_json_no_rest,
     )
-    leads_stream = DummyLeads(config)
+
+    caplog.set_level("WARNING")
+    leads_stream = Leads(config)
     fields = leads_stream.stream_fields
 
     assert fields == []
     assert "No valid fields found in leads/describe response" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "describe_response, expected_schema",
+    (
+        (
+            # Test with various data types
+            {
+                "requestId": "abc123",
+                "success": True,
+                "result": [
+                    {"id": 1, "displayName": "Email", "dataType": "email", "rest": {"name": "email", "readOnly": False}},
+                    {"id": 2, "displayName": "Annual Revenue", "dataType": "currency", "rest": {"name": "annualRevenue", "readOnly": False}},
+                    {"id": 3, "displayName": "Number of Employees", "dataType": "integer", "rest": {"name": "numberOfEmployees", "readOnly": False}},
+                    {"id": 4, "displayName": "Is Customer", "dataType": "boolean", "rest": {"name": "isCustomer", "readOnly": False}},
+                    {"id": 5, "displayName": "Created At", "dataType": "datetime", "rest": {"name": "createdAt", "readOnly": False}},
+                    {"id": 6, "displayName": "Birth Date", "dataType": "date", "rest": {"name": "birthDate", "readOnly": False}},
+                    {"id": 7, "displayName": "Score", "dataType": "score", "rest": {"name": "leadScore", "readOnly": False}},
+                    {"id": 8, "displayName": "Urgency", "dataType": "float", "rest": {"name": "urgency", "readOnly": False}},
+                    {"id": 9, "displayName": "Tags", "dataType": "array", "rest": {"name": "tags", "readOnly": False}},
+                    {"id": 10, "displayName": "Custom Field", "dataType": "unknown_type", "rest": {"name": "customField", "readOnly": False}},
+                ],
+            },
+            {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": ["null", "object"],
+                "additionalProperties": True,
+                "properties": {
+                    "email": {"type": ["string", "null"]},
+                    "annualRevenue": {"type": ["number", "null"]},
+                    "numberOfEmployees": {"type": ["integer", "null"]},
+                    "isCustomer": {"type": ["boolean", "null"]},
+                    "createdAt": {"type": ["string", "null"], "format": "date-time"},
+                    "birthDate": {"type": ["string", "null"], "format": "date"},
+                    "leadScore": {"type": ["integer", "null"]},
+                    "urgency": {"type": ["number", "null"]},
+                    "tags": {"type": ["array", "null"], "items": {"type": ["integer", "number", "string", "null"]}},
+                    "customField": {"type": ["string", "null"]},  # Unknown types default to string
+                },
+            },
+        ),
+    ),
+)
+def test_leads_dynamic_schema(config, requests_mock, describe_response, expected_schema):
+    """
+    Test that the Leads stream builds a dynamic schema from the describe endpoint.
+    This ensures field types match what the API actually returns, preventing type conversion errors.
+    """
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        json=describe_response,
+    )
+
+    leads_stream = Leads(config)
+    schema = leads_stream.get_json_schema()
+
+    assert schema == expected_schema
