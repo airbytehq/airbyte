@@ -59,7 +59,7 @@ streams:
             - tenant_access_token
           request_authentication:
             type: Bearer
-          expiration_duration: ""
+          expiration_duration: "7200"
         request_parameters:
           page_size: "{{ config['page_size'] }}"
       record_selector:
