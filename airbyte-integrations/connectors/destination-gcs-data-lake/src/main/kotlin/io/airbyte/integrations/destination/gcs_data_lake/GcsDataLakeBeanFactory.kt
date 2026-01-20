@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.config.DataFlowSocketConfig
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -20,6 +22,8 @@ class GcsDataLakeBeanFactory {
 
     @Singleton
     fun aggregatePublishingConfig(): AggregatePublishingConfig {
+        log.info { "NOOP code change for CI to pick up" }
+
         // NOT speed mode
         return AggregatePublishingConfig(
             maxRecordsPerAgg = 10_000_000_000L,
@@ -28,6 +32,11 @@ class GcsDataLakeBeanFactory {
             maxBufferedAggregates = 5,
         )
     }
+
+    // TODO: There's a bug preventing the DefaultTempTableNameGenerator Singleton in the CDK
+    // from being loaded. So this is necessary for now.
+    @Singleton
+    fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
 
     /**
      * Socket configuration for GCS Data Lake destination.

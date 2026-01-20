@@ -206,7 +206,7 @@ class RegressionTestFixtures(
                     )
                 )
         CharacterizationTest.doAssert(
-            "$goldenFileBasePath/schema-regression/column_names/$filename.txt",
+            "$goldenFileBasePath/schema-regression/column_names/$filename.json",
             actualSchema,
         )
     }

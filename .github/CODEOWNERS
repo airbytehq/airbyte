@@ -40,13 +40,11 @@
 /airbyte-integrations/connectors/source-*/**/*.gradle @airbytehq/dbsources
 /airbyte-integrations/connectors/source-*/**/*.gradle.kts @airbytehq/dbsources
 /airbyte-integrations/connectors/source-*/**/gradle.properties @airbytehq/dbsources
-/airbyte-integrations/connectors-performance/source-harness/ @airbytehq/dbsources
 /airbyte-integrations/connectors/destination-*/**/*.java @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-*/**/*.kt @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-*/**/*.gradle @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-*/**/*.gradle.kts @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-*/**/gradle.properties @airbytehq/move-destinations
-/airbyte-integrations/connectors-performance/destination-harness/ @airbytehq/dbsources
 
 # Java-based certified or incubating source connectors
 /airbyte-integrations/connectors/source-mongodb-v2/ @airbytehq/dbsources

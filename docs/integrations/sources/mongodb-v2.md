@@ -185,6 +185,10 @@ When Schema is not enforced there is not way to deselect fields as all fields ar
 
 To see connector limitations, or troubleshoot your MongoDB connector, see more [in our MongoDB troubleshooting guide](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting).
 
+### MongoDB CDC Limitations
+
+MongoDB has a 16MB maximum document size limit for BSON documents. During CDC syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. For details on resolving this error, see the [MongoDB CDC Limitations](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-cdc-limitations) section in the troubleshooting guide.
+
 ## Configuration Parameters
 
 | Parameter Name                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                |
