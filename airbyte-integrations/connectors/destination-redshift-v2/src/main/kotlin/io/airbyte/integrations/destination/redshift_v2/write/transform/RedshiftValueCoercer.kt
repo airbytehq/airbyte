@@ -7,8 +7,12 @@ package io.airbyte.integrations.destination.redshift_v2.write.transform
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import jakarta.inject.Singleton
 import java.math.BigDecimal
@@ -41,7 +45,18 @@ internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
 @Singleton
 class RedshiftValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        // No transformation needed for Redshift
+        // TODO replace nulls with sentinel value
+        value.abValue =
+            if (
+                value.type.isArray ||
+                    value.type.isObject ||
+                    value.type is UnionType ||
+                    value.type is UnknownType
+            ) {
+                StringValue(value.abValue.serializeToString())
+            } else {
+                value.abValue
+            }
         return value
     }
 

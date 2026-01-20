@@ -4,20 +4,26 @@
 
 package io.airbyte.integrations.destination.redshift_v2.component
 
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.redshift_v2.client.RedshiftAirbyteClient
+import io.airbyte.integrations.destination.redshift_v2.dataflow.RedshiftStagingAggregate
+import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.time.Clock
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
+import software.amazon.awssdk.services.s3.S3AsyncClient
 
 private val log = KotlinLogging.logger {}
 
@@ -26,6 +32,9 @@ private val log = KotlinLogging.logger {}
 class RedshiftTestTableOperationsClient(
     private val client: RedshiftAirbyteClient,
     private val dataSource: DataSource,
+    private val s3Client: S3AsyncClient,
+    private val config: RedshiftV2Configuration,
+    private val clock: Clock,
 ) : TestTableOperationsClient {
 
     override suspend fun ping() {
@@ -46,7 +55,27 @@ class RedshiftTestTableOperationsClient(
         // Get the actual table columns so we only insert columns that exist
         val tableColumns = getTableColumns(table)
 
-        val aggregate: Aggregate = TODO()
+        // TODO: we should just pass a proper column schema
+        // Since we don't pass in a proper column schema, we have to recreate one here
+        // Fetch the columns and filter out the meta columns so we're just looking at user columns
+        val columnTypes =
+            client.discoverSchema(table).columns.filterNot { Meta.COLUMN_NAMES.contains(it.key) }
+        val columnSchema =
+            io.airbyte.cdk.load.schema.model.ColumnSchema(
+                inputToFinalColumnNames = columnTypes.keys.associateWith { it },
+                finalSchema = columnTypes.mapValues { (_, _) -> ColumnType("", true) },
+                inputSchema = emptyMap() // not needed
+            )
+
+        val aggregate: Aggregate =
+            RedshiftStagingAggregate(
+                table,
+                dataSource,
+                s3Client,
+                config.s3Config,
+                clock,
+                columnSchema,
+            )
         records.forEach { record ->
             // Filter record to only include columns that exist in the table
             val filteredRecord =

@@ -9,20 +9,17 @@ import de.siegmar.fastcsv.writer.LineDelimiter
 import de.siegmar.fastcsv.writer.QuoteStrategies
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.data.csv.toCsvValue
-import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
-import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
 import io.airbyte.integrations.destination.redshift_v2.spec.S3StagingConfiguration
-import io.airbyte.integrations.destination.redshift_v2.sql.RedshiftDataType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.time.Clock
@@ -54,16 +51,9 @@ class RedshiftStagingAggregate(
     private val s3Client: S3AsyncClient,
     private val s3Config: S3StagingConfiguration,
     private val clock: Clock,
-    private val tableSchema: StreamTableSchema,
+    columnSchema: ColumnSchema,
 ) : Aggregate {
-    // Columns that are SUPER type need JSON serialization for all values (including primitives)
-    private val superColumns: Set<String> by lazy {
-        tableSchema.columnSchema.finalSchema
-            .filter { it.value.type == RedshiftDataType.SUPER.typeName }
-            .keys
-    }
-    private val columns: List<String> =
-        metaColumns + tableSchema.columnSchema.finalSchema.keys.toList()
+    private val columns: List<String> = metaColumns + columnSchema.finalSchema.keys.toList()
     private val s3ObjectKey = generateS3Key()
 
     private lateinit var responseFuture: CompletableFuture<PutObjectResponse>
@@ -89,15 +79,7 @@ class RedshiftStagingAggregate(
                     )
         }
         val formattedRecord =
-            columns.map { columnName ->
-                // TODO handle nulls correctly
-                val value = record.fields[columnName]
-                if (columnName in superColumns && value != null) {
-                    value.toJson().serializeToString()
-                } else {
-                    value.toCsvValue().toString()
-                }
-            }
+            columns.map { columnName -> record.fields[columnName].toCsvValue().toString() }
         csvPrinter.writeRecord(formattedRecord)
     }
 
@@ -184,7 +166,7 @@ class RedshiftAggregateFactory(
             s3Client,
             config.s3Config,
             clock,
-            stream.tableSchema,
+            stream.tableSchema.columnSchema,
         )
     }
 }
