@@ -36,11 +36,6 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - name: SECRET_DESTINATION_REDSHIFT_V2_CONFIG
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION_REDSHIFT_V2_CONFIG_STAGING
           fileName: config_staging.json
           secretStore:

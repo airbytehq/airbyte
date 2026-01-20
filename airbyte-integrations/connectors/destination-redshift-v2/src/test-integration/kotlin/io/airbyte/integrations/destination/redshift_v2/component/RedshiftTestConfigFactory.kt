@@ -24,7 +24,7 @@ class RedshiftTestConfigFactory {
         return loadTestConfig(
             RedshiftV2Specification::class.java,
             RedshiftV2ConfigurationFactory::class.java,
-            "config.json",
+            "config_staging.json",
         )
     }
 

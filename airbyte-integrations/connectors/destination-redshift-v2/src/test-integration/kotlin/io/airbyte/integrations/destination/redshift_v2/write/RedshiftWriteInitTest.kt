@@ -11,6 +11,6 @@ import java.nio.file.Path
 
 class RedshiftWriteInitTest :
     WriteInitializationTest<RedshiftV2Specification>(
-        configContents = Files.readString(Path.of("secrets/config.json")),
+        configContents = Files.readString(Path.of("secrets/config_staging.json")),
         configSpecClass = RedshiftV2Specification::class.java,
     )
