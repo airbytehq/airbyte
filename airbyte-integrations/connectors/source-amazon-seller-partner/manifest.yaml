@@ -2765,6 +2765,52 @@ definitions:
         schema:
           $ref: "#/schemas/get_sales_and_traffic_report"
 
+    get_sales_and_traffic_report_by_date:
+      type: DeclarativeStream
+      name: GET_SALES_AND_TRAFFIC_REPORT_BY_DATE
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: queryEndDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_SALES_AND_TRAFFIC_REPORT
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["salesAndTrafficByDate"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["queryEndDate"]
+              value: "{{ stream_slice.cursor_slice.end_time }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_sales_and_traffic_report_by_date"
+
     get_vendor_sales_report:
       type: DeclarativeStream
       name: GET_VENDOR_SALES_REPORT
@@ -3128,6 +3174,7 @@ streams:
   - $ref: "#/definitions/streams/get_brand_analytics_alternate_purchase_report"
   - $ref: "#/definitions/streams/get_brand_analytics_item_comparison_report"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report"
+  - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_date"
   - $ref: "#/definitions/streams/get_vendor_sales_report"
   - $ref: "#/definitions/streams/get_vendor_inventory_report"
 
@@ -8612,6 +8659,252 @@ schemas:
             - 'null'
             - number
           unitSessionPercentageB2B:
+            type:
+            - 'null'
+            - number
+  get_sales_and_traffic_report_by_date:
+    title: Seller Sales and Traffic Business Report - By Date
+    description: Seller retail analytics reports - Sales and Traffic Business Report aggregated by date
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      queryEndDate:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      date:
+        type:
+        - 'null'
+        - string
+        format: date
+      salesByDate:
+        type: object
+        properties:
+          orderedProductSales:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          orderedProductSalesB2B:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          unitsOrdered:
+            type:
+            - 'null'
+            - number
+          unitsOrderedB2B:
+            type:
+            - 'null'
+            - number
+          totalOrderItems:
+            type:
+            - 'null'
+            - number
+          totalOrderItemsB2B:
+            type:
+            - 'null'
+            - number
+          averageSalesPerOrderItem:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          averageSalesPerOrderItemB2B:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          averageUnitsPerOrderItem:
+            type:
+            - 'null'
+            - number
+          averageUnitsPerOrderItemB2B:
+            type:
+            - 'null'
+            - number
+          averageSellingPrice:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          averageSellingPriceB2B:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          unitsRefunded:
+            type:
+            - 'null'
+            - number
+          refundRate:
+            type:
+            - 'null'
+            - number
+          claimsGranted:
+            type:
+            - 'null'
+            - number
+          claimsAmount:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          shippedProductSales:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          unitsShipped:
+            type:
+            - 'null'
+            - number
+          ordersShipped:
+            type:
+            - 'null'
+            - number
+      trafficByDate:
+        type: object
+        properties:
+          browserPageViews:
+            type:
+            - 'null'
+            - number
+          browserPageViewsB2B:
+            type:
+            - 'null'
+            - number
+          mobileAppPageViews:
+            type:
+            - 'null'
+            - number
+          mobileAppPageViewsB2B:
+            type:
+            - 'null'
+            - number
+          pageViews:
+            type:
+            - 'null'
+            - number
+          pageViewsB2B:
+            type:
+            - 'null'
+            - number
+          browserSessions:
+            type:
+            - 'null'
+            - number
+          browserSessionsB2B:
+            type:
+            - 'null'
+            - number
+          mobileAppSessions:
+            type:
+            - 'null'
+            - number
+          mobileAppSessionsB2B:
+            type:
+            - 'null'
+            - number
+          sessions:
+            type:
+            - 'null'
+            - number
+          sessionsB2B:
+            type:
+            - 'null'
+            - number
+          buyBoxPercentage:
+            type:
+            - 'null'
+            - number
+          buyBoxPercentageB2B:
+            type:
+            - 'null'
+            - number
+          orderItemSessionPercentage:
+            type:
+            - 'null'
+            - number
+          orderItemSessionPercentageB2B:
+            type:
+            - 'null'
+            - number
+          unitSessionPercentage:
+            type:
+            - 'null'
+            - number
+          unitSessionPercentageB2B:
+            type:
+            - 'null'
+            - number
+          averageOfferCount:
+            type:
+            - 'null'
+            - number
+          averageParentItems:
+            type:
+            - 'null'
+            - number
+          feedbackReceived:
+            type:
+            - 'null'
+            - number
+          negativeFeedbackReceived:
+            type:
+            - 'null'
+            - number
+          receivedNegativeFeedbackRate:
             type:
             - 'null'
             - number
