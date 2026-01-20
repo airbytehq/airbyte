@@ -2,6 +2,7 @@
 
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -15,7 +16,11 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
-os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+# Disable request caching to avoid SQLite concurrency issues with concurrent streams
+# SQLite doesn't handle concurrent writes from multiple threads (used by concurrent streams
+# like post_comments, article_comments, etc.), causing segmentation faults
+# Setting to empty string disables the file-based cache
+os.environ["REQUEST_CACHE_PATH"] = ""
 
 
 def _get_manifest_path() -> Path:

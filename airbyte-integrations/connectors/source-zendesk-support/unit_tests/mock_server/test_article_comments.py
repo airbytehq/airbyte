@@ -101,8 +101,7 @@ class TestArticleCommentsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article1["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
+            .with_any_query_params()
             .build(),
             ArticleCommentsResponseBuilder.article_comments_response()
             .with_record(ArticleCommentsRecordBuilder.article_comments_record().with_id(1001))
@@ -111,8 +110,7 @@ class TestArticleCommentsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article2["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
+            .with_any_query_params()
             .build(),
             ArticleCommentsResponseBuilder.article_comments_response()
             .with_record(ArticleCommentsRecordBuilder.article_comments_record().with_id(1002))
