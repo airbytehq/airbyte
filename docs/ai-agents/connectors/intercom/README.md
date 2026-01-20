@@ -75,6 +75,6 @@ For the service's official API docs, see the [Intercom API reference](https://de
 
 ## Version information
 
-- **Package version:** 0.1.13
+- **Package version:** 0.1.20
 - **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 20b3afd9215174bb084af41e3174b78f114d86b5
+- **Generated with Connector SDK commit SHA:** c46670b9e4ca5238c0372e143b44088a0d1a68ee

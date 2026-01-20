@@ -34,6 +34,7 @@ Visit `https://docs.mux.com/api-reference` for API documentation
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.48 | 2026-01-20 | [71957](https://github.com/airbytehq/airbyte/pull/71957) | Update dependencies |
 | 0.0.47 | 2026-01-14 | [71628](https://github.com/airbytehq/airbyte/pull/71628) | Update dependencies |
 | 0.0.46 | 2025-12-18 | [70563](https://github.com/airbytehq/airbyte/pull/70563) | Update dependencies |
 | 0.0.45 | 2025-11-25 | [69886](https://github.com/airbytehq/airbyte/pull/69886) | Update dependencies |
