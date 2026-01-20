@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b4375641-e270-41d3-9c20-4f9cecad87a8
-  dockerImageTag: 1.1.36
+  dockerImageTag: 1.1.37
   dockerRepository: airbyte/source-appfollow
   githubIssueLabel: source-appfollow
   icon: appfollow.svg
@@ -48,7 +48,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.3@sha256:826a053bc43678a94e307e32882ae776ecb847cf7b75031fe10dcdc664995dfb
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
   externalDocumentationUrls:
     - title: API documentation
       url: https://appfollow.docs.apiary.io/
