@@ -14,7 +14,7 @@ Extracts data from Feishu/Lark Bitable (Base). Supports authentication via App I
 | `table_id` | `string` | Table Id.  |  |
 | `app_token` | `string` | App Token.  |  |
 | `lark_host` | `string` | Lark Host.  | https://open.feishu.cn |
-| `page_size` | `number` | Page Size.  | 500 |
+| `page_size` | `number` | Page Size.  | 100 |
 | `app_secret` | `string` | App Secret.  |  |
 
 ## Streams
