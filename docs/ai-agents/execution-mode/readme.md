@@ -43,12 +43,14 @@ Before using hosted execution mode, ensure you have:
    - Client ID
    - Client Secret
 
-3. The third-party API credentials you want to use (for example, a Gong access key and access key secret)
+3. The third-party API credentials you want to use (for example, a GitHub personal access token)
 
-4. An installed agent connector package. For example:
+4. Python 3.11 or later
+
+5. An installed agent connector package. For example:
 
    ```bash
-   uv pip install airbyte-agent-gong
+   uv pip install airbyte-agent-github
    ```
 
    See [Connectors](../connectors) for a full list of connectors.
@@ -124,19 +126,19 @@ Once you create your connector, you can use the connector in hosted mode.
 <Tabs>
 <TabItem value="python" label="Python" default>
 
-Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the external user ID (workspace name):
+Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the connector ID:
 
 ```python
-from airbyte_ai_gong import GongConnector
+from airbyte_agent_github import GithubConnector
 
-connector = GongConnector(
-    external_user_id="<your_workspace_name>",
+connector = GithubConnector(
+    connector_id="<your_connector_id>",
     airbyte_client_id="<your_client_id>",
     airbyte_client_secret="<your_client_secret>",
 )
 
 # Execute connector operations
-...
+issues = await connector.issues.list(owner="airbytehq", repo="airbyte")
 ```
 
 Once initialized, the connector works the same way as in local mode. The SDK handles the token exchange (application token → scoped token) automatically, so you don't need to manage tokens manually.
@@ -153,7 +155,7 @@ You can execute connector operations directly via the REST API.
 First, retrieve your connector ID using your external user ID and connector definition ID:
 
 ```bash title="Request"
-curl --location 'https://api.airbyte.ai/api/v1/connectors/connectors_for_user?external_user_id=<your_workspace_name>&definition_id=32382e40-3b49-4b99-9c5c-4076501914e7' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/connectors_for_user?external_user_id=<your_workspace_name>&definition_id=ef69ef6e-aa7f-4af1-a01d-ef775033524e' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>'
 ```
 
@@ -164,7 +166,7 @@ The response contains your connector ID:
   "connectors": [
     {
       "id": "<connector_id>",
-      "name": "gong-connector"
+      "name": "github-connector"
     }
   ]
 }
@@ -177,9 +179,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
   --data '{
-    "entity": "users",
+    "entity": "issues",
     "action": "list",
-    "params": {}
+    "params": {
+      "owner": "airbytehq",
+      "repo": "airbyte"
+    }
   }'
 ```
 
@@ -195,10 +200,13 @@ The response contains the operation result:
 {
   "result": [
     {
-      "id": "user-123",
-      "first_name": "John",
-      "last_name": "Doe",
-      "email_address": "john.doe@example.com"
+      "id": 12345,
+      "number": 100,
+      "title": "Example issue title",
+      "state": "open",
+      "user": {
+        "login": "octocat"
+      }
     }
   ],
   "connector_metadata": {
