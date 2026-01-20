@@ -35,7 +35,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
     def _base_custom_roles_request(self, authenticator):
-        return ZendeskSupportRequestBuilder.custom_roles_endpoint(authenticator).with_per_page(100)
+        return ZendeskSupportRequestBuilder.custom_roles_endpoint(authenticator)
 
     @HttpMocker()
     def test_given_one_page_when_read_custom_roles_then_return_records_and_emit_state(self, http_mocker):
@@ -66,10 +66,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
 
         # Build the next page request using the request builder
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator)
-            .with_per_page(100)
-            .with_query_param("page", "2")
-            .build()
+            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator).with_query_param("page", "2").build()
         )
 
         # Create records for page 1
