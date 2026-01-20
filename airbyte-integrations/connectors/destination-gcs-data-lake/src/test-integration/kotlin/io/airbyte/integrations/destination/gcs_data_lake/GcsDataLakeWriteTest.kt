@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs_data_lake
@@ -14,9 +14,14 @@ import io.airbyte.cdk.load.data.icerberg.parquet.IcebergConfigUpdater
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergDataDumper
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergExpectedRecordMapper
 import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.*
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.BigLakeTableIdGenerator
+import io.airbyte.integrations.destination.gcs_data_lake.schema.GcsDataLakeTableSchemaMapper
+import io.airbyte.integrations.destination.gcs_data_lake.spec.BigLakeCatalogConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeSpecification
 import java.nio.file.Files
 import kotlin.test.assertContains
@@ -38,7 +43,29 @@ class BigLakeWriteTest :
             BigLakeDataDumper(
                 delegateDataDumper =
                     IcebergDataDumper(
-                        tableIdGenerator = BigLakeTableIdGenerator("test_database"),
+                        tableIdGenerator =
+                            BigLakeTableIdGenerator(
+                                GcsDataLakeTableSchemaMapper(
+                                    // STUB: the only thing we actually use is `namespace`
+                                    GcsDataLakeConfiguration(
+                                        gcsBucketName = "",
+                                        serviceAccountJson = "",
+                                        gcpProjectId = null,
+                                        gcpLocation = "",
+                                        gcsEndpoint = null,
+                                        namespace = "test_database",
+                                        gcsCatalogConfiguration =
+                                            GcsCatalogConfiguration(
+                                                warehouseLocation = "",
+                                                mainBranchName = "",
+                                                catalogConfiguration =
+                                                    BigLakeCatalogConfiguration("", "")
+                                            ),
+                                        numProcessRecordsWorkers = 1
+                                    ),
+                                    tempTableNameGenerator = DefaultTempTableNameGenerator(),
+                                )
+                            ),
                         getCatalog = { spec ->
                             GcsDataLakeTestUtil.getCatalog(GcsDataLakeTestUtil.getConfig(spec))
                         }

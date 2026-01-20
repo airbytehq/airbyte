@@ -19,7 +19,7 @@ from .config import ConfigBuilder
 from .utils import get_log_messages_by_log_level, read_stream
 
 
-REPORTING_PERIOD = 90
+REPORTING_PERIOD = 60
 _NOW = datetime.now(timezone.utc)
 _A_START_DATE = _NOW - timedelta(days=REPORTING_PERIOD)
 

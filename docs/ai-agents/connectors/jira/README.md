@@ -50,7 +50,7 @@ connector = JiraConnector(
     password="..."
   )
 )
-result = await connector.issues.search()
+result = await connector.issues.api_search()
 ```
 
 
@@ -60,10 +60,10 @@ This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [Search](./REFERENCE.md#issues-search), [Get](./REFERENCE.md#issues-get) |
-| Projects | [Search](./REFERENCE.md#projects-search), [Get](./REFERENCE.md#projects-get) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Search](./REFERENCE.md#users-search) |
-| Issue Fields | [List](./REFERENCE.md#issue-fields-list), [Search](./REFERENCE.md#issue-fields-search) |
+| Issues | [Api_search](./REFERENCE.md#issues-api_search), [Get](./REFERENCE.md#issues-get) |
+| Projects | [Api_search](./REFERENCE.md#projects-api_search), [Get](./REFERENCE.md#projects-get) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Api_search](./REFERENCE.md#users-api_search) |
+| Issue Fields | [List](./REFERENCE.md#issue-fields-list), [Api_search](./REFERENCE.md#issue-fields-api_search) |
 | Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Get](./REFERENCE.md#issue-comments-get) |
 | Issue Worklogs | [List](./REFERENCE.md#issue-worklogs-list), [Get](./REFERENCE.md#issue-worklogs-get) |
 
@@ -74,6 +74,6 @@ For the service's official API docs, see the [Jira API reference](https://develo
 
 ## Version information
 
-- **Package version:** 0.1.23
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** e519b73d1e90df7073e48d3ed7e11a9fb1af3953
+- **Package version:** 0.1.41
+- **Connector version:** 1.0.5
+- **Generated with Connector SDK commit SHA:** c46670b9e4ca5238c0372e143b44088a0d1a68ee

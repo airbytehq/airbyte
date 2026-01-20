@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost",
+      "url": "https://api.airbyte.ai",
       "description": "Airbyte Sonar API"
     }
   ],
@@ -20,17 +20,38 @@
       "post": {
         "tags": ["Applications"],
         "summary": "Generate Application Token",
-        "description": "Generate an application access token using client credentials. This endpoint is intentionally unauthenticated - authentication is performed via client_id and client_secret in the request body.",
+        "description": "Generate an application access token using client credentials. This endpoint is intentionally unauthenticated - authentication is performed via client_id and client_secret in the request body. Returns a self-signed JWT token that can be used for all API calls.",
         "operationId": "create_account_applications_token",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/TokenRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -883,6 +904,95 @@
         }
       }
     },
+    "/api/v1/agents/chat/templates/sources": {
+      "post": {
+        "tags": ["Agents - Source Template Creator"],
+        "summary": "Post source template creator chat message",
+        "description": "Post a new message to a source template creation chat thread",
+        "operationId": "create_agents_chat_templates_sources",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatPostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageEvent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/agents/discovery/{source_definition_id}": {
       "post": {
         "tags": ["Agents - Discovery"],
@@ -1007,6 +1117,109 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DiscoveryAgentCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connectors/connectors_for_user": {
+      "get": {
+        "summary": "Get Connectors For User",
+        "description": "List connectors (sources) for a user by external_user_id.\n\nThis endpoint:\n1. Finds the workspace by external_user_id and organization_id\n2. Lists all connectors (sources) for that workspace\n3. Optionally filters by definition_id (source_definition_id)\n\nArgs:\n    external_user_id: External user identifier (maps to workspace name)\n    user_info: Authenticated user information from token\n    workspace_repository: Workspace repository\n    partial_user_config_repository: Source repository\n    definition_id: Optional connector definition ID to filter by\n\nReturns:\n    ConnectorsForUserResponse with list of connectors\n\nRaises:\n    HTTPException: 404 if user not found",
+        "operationId": "get_connectors_connectors_for_user",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "external_user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "External User Id"
+            }
+          },
+          {
+            "name": "definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Definition Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorsForUserResponse"
                 }
               }
             }
@@ -1249,6 +1462,103 @@
               "type": "string",
               "format": "uuid",
               "title": "Instance Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectorExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorExecuteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connectors/sources/{source_id}/execute": {
+      "post": {
+        "summary": "Execute Via Source",
+        "description": "Execute a connector operation using an Airbyte Platform source ID.\n\nThis endpoint provides an alternative execution path that uses Platform's\nexisting source configurations instead of Sonar-managed connector instances.\n\nArgs:\n    source_id: Airbyte Platform source ID (UUID)\n    request: Operation details (entity, action, params)\n    airbyte_client: Injected Airbyte API client\n    config_secret_processor: Injected secret processor\n\nReturns:\n    - For download actions: StreamingResponse with file data\n    - For other actions: ConnectorExecuteResponse with operation results",
+        "operationId": "create_connectors_sources_source_id_execute",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
             }
           },
           {
@@ -8937,6 +9247,107 @@
         }
       }
     },
+    "/api/v1/internal/account/organizations/{organization_id}/stripe-portal": {
+      "post": {
+        "tags": ["Organizations"],
+        "summary": "Get Stripe Portal Link",
+        "description": "Get a link to the Stripe customer portal using the configured Stripe API keys.\n\nThis endpoint uses the environment's STRIPE_API_KEY instead of Airbyte Cloud's,\nallowing different Stripe configurations per environment (test keys for dev/staging,\nproduction keys for prod).\n\nSupports three flows:\n- portal: General billing portal access (manage subscriptions, view invoices)\n- payment_method: Update payment method specifically\n- setup: Initial Stripe checkout to collect payment method",
+        "operationId": "create_internal_account_organizations_organization_id_stripe_portal",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to get Stripe portal link for.",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to get Stripe portal link for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPortalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerPortalResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/internal/account/organizations/{organization_id}/subscription": {
       "get": {
         "tags": ["Organizations"],
@@ -9514,6 +9925,171 @@
         }
       }
     },
+    "/api/v1/internal/admin/templates/sync": {
+      "post": {
+        "tags": ["Admin - Templates"],
+        "summary": "Sync Global Source Templates",
+        "description": "Manually trigger synchronization of global source templates.\n\nThis creates/updates global templates for all connectors in the direct\nconnector registry. Mode is determined by Airbyte registry presence:\n- MULTI: Connector exists in both registries (direct + replication)\n- DIRECT: Connector only in direct registry (direct queries only)\n\nRequires instance admin authentication.",
+        "operationId": "create_internal_admin_templates_sync",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncGlobalTemplatesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/auth/exchange": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Exchange Token",
+        "description": "Exchange a Keycloak/Airbyte bearer token for a fast token (self-signed JWT). This endpoint validates the provided bearer token, extracts organization info, and returns a self-signed JWT that can be used for all subsequent API calls.",
+        "operationId": "create_internal_auth_exchange",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenExchangeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/internal/health/check": {
       "get": {
         "tags": ["Health"],
@@ -9812,6 +10388,190 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ListJobsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/jobs/demo": {
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Create Demo Job",
+        "description": "Create and run a demo job that looks up a source definition id by name.\n\nThe job is triggered via Porter's job service.",
+        "operationId": "create_internal_jobs_demo",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Name"
+            }
+          },
+          {
+            "name": "num_failures",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Num Failures"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoJobCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/notifications/sync/success": {
+      "post": {
+        "tags": ["Internal Notifications"],
+        "summary": "Sync Success Notification",
+        "description": "Handle sync success notification from Airbyte.\n\nThis endpoint is called by Airbyte when a sync job completes successfully.\nIt verifies the encrypted workspace token, then delegates to the cache\nbuilder to validate ownership and create views.",
+        "operationId": "create_internal_notifications_sync_success",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Encrypted workspace token for verification",
+              "title": "Token"
+            },
+            "description": "Encrypted workspace token for verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncSuccessNotification"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Internal Notifications Sync Success"
                 }
               }
             }
@@ -10275,6 +11035,163 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WorkspaceSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organizations/{organization_id}/event-history": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "List Event History",
+        "description": "List event history for an organization.\n\nReturns a paginated list of events including connector executions and search cache hits.",
+        "operationId": "list_organizations_organization_id_event_history",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "description": "Maximum number of events to return",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of events to return"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cursor token to be used to fetch the next page of event history records",
+              "title": "Cursor"
+            },
+            "description": "Cursor token to be used to fetch the next page of event history records"
+          },
+          {
+            "name": "external_user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "External User ID to filter the event history on",
+              "title": "External User Id"
+            },
+            "description": "External User ID to filter the event history on"
+          },
+          {
+            "name": "connector_definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Connector Definition ID to filter the event history on",
+              "title": "Connector Definition Id"
+            },
+            "description": "Connector Definition ID to filter the event history on"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventHistoryListResponse"
                 }
               }
             }
@@ -12370,7 +13287,7 @@
                   "$ref": "#/components/schemas/FuzzyCondition"
                 },
                 {
-                  "$ref": "#/components/schemas/SemanticCondition"
+                  "$ref": "#/components/schemas/KeywordCondition"
                 },
                 {
                   "$ref": "#/components/schemas/NotCondition"
@@ -12432,7 +13349,7 @@
                   "$ref": "#/components/schemas/FuzzyCondition"
                 },
                 {
-                  "$ref": "#/components/schemas/SemanticCondition"
+                  "$ref": "#/components/schemas/KeywordCondition"
                 },
                 {
                   "$ref": "#/components/schemas/NotCondition"
@@ -13364,13 +14281,20 @@
             "title": "Action"
           },
           "params": {
-            "additionalProperties": true,
-            "type": "object",
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Params"
           }
         },
         "type": "object",
-        "required": ["entity", "action", "params"],
+        "required": ["entity", "action"],
         "title": "ConnectorExecuteRequest",
         "description": "Request body for connector execution."
       },
@@ -13399,6 +14323,35 @@
         ],
         "title": "ConnectorExecuteResponse",
         "description": "Standardized response envelope for connector execution."
+      },
+      "ConnectorForUserResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Definition Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": ["id", "definition_id", "name"],
+        "title": "ConnectorForUserResponse",
+        "description": "Response model for a single connector (source) in user lookup."
       },
       "ConnectorInstanceCreateRequest": {
         "properties": {
@@ -13538,6 +14491,21 @@
         "type": "object",
         "required": ["connectionSpecification"],
         "title": "ConnectorSpecification"
+      },
+      "ConnectorsForUserResponse": {
+        "properties": {
+          "connectors": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectorForUserResponse"
+            },
+            "type": "array",
+            "title": "Connectors"
+          }
+        },
+        "type": "object",
+        "required": ["connectors"],
+        "title": "ConnectorsForUserResponse",
+        "description": "Response model for listing connectors for a user."
       },
       "ContainsCondition": {
         "properties": {
@@ -13991,6 +14959,18 @@
         "title": "DeferredToolResult",
         "description": "Result from a deferred tool execution provided by the UI."
       },
+      "DemoJobCreateResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Job Id"
+          }
+        },
+        "type": "object",
+        "required": ["job_id"],
+        "title": "DemoJobCreateResponse"
+      },
       "DestinationDefinitionListItem": {
         "properties": {
           "id": {
@@ -14217,6 +15197,10 @@
             },
             "type": "array",
             "title": "Tags"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/SourceConfigTemplateMode",
+            "default": "REPLICATION"
           },
           "created_at": {
             "anyOf": [
@@ -14456,6 +15440,111 @@
         "required": ["eq"],
         "title": "EqCondition",
         "description": "Equal to: field equals value."
+      },
+      "EventHistoryItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Unique identifier for the event"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "When the event occurred"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type",
+            "description": "Type of event (direct, search)"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id",
+            "description": "Organization ID which manages the workspace that the event is associated with"
+          },
+          "external_user_id": {
+            "type": "string",
+            "title": "External User Id",
+            "description": "External User ID that the event was executed on behalf of"
+          },
+          "connector_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Definition Id",
+            "description": "Connector definition ID representing the connector"
+          },
+          "entity": {
+            "type": "string",
+            "title": "Entity",
+            "description": "Entity name"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Action executed"
+          },
+          "route": {
+            "type": "string",
+            "title": "Route",
+            "description": "Path that the request was made to"
+          },
+          "http_method": {
+            "type": "string",
+            "title": "Http Method",
+            "description": "The HTTP method used during the request"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether the event was successful"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "timestamp",
+          "event_type",
+          "organization_id",
+          "external_user_id",
+          "connector_definition_id",
+          "entity",
+          "action",
+          "route",
+          "http_method",
+          "success"
+        ],
+        "title": "EventHistoryItem"
+      },
+      "EventHistoryListResponse": {
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next",
+            "description": "Next page url, empty if no more pages"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EventHistoryItem"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "List of event history items"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "EventHistoryListResponse"
       },
       "ExecutionMetadata": {
         "properties": {
@@ -14927,13 +16016,13 @@
             },
             "type": "object",
             "title": "Fuzzy",
-            "description": "Fuzzy match: {field_name: pattern}"
+            "description": "Ordered word match (case-insensitive, punctuation ignored): {field_name: pattern}"
           }
         },
         "type": "object",
         "required": ["fuzzy"],
         "title": "FuzzyCondition",
-        "description": "Fuzzy text match."
+        "description": "Ordered word text match."
       },
       "GetDriveItem": {
         "properties": {
@@ -15261,6 +16350,22 @@
         "required": ["message", "traceback"],
         "title": "JobErrorException"
       },
+      "KeywordCondition": {
+        "properties": {
+          "keyword": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Keyword",
+            "description": "Keyword match (case-insensitive, punctuation ignored): {field_name: pattern}"
+          }
+        },
+        "type": "object",
+        "required": ["keyword"],
+        "title": "KeywordCondition",
+        "description": "Keyword text match (any word present)."
+      },
       "LikeCondition": {
         "properties": {
           "like": {
@@ -15387,7 +16492,7 @@
                 "$ref": "#/components/schemas/FuzzyCondition"
               },
               {
-                "$ref": "#/components/schemas/SemanticCondition"
+                "$ref": "#/components/schemas/KeywordCondition"
               },
               {
                 "$ref": "#/components/schemas/NotCondition"
@@ -15532,7 +16637,7 @@
                   "$ref": "#/components/schemas/FuzzyCondition"
                 },
                 {
-                  "$ref": "#/components/schemas/SemanticCondition"
+                  "$ref": "#/components/schemas/KeywordCondition"
                 },
                 {
                   "$ref": "#/components/schemas/NotCondition"
@@ -15688,6 +16793,18 @@
                 "type": "null"
               }
             ]
+          },
+          "trialEndsAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trialendsat"
           }
         },
         "type": "object",
@@ -16356,7 +17473,7 @@
                 "$ref": "#/components/schemas/FuzzyCondition"
               },
               {
-                "$ref": "#/components/schemas/SemanticCondition"
+                "$ref": "#/components/schemas/KeywordCondition"
               },
               {
                 "$ref": "#/components/schemas/NotCondition"
@@ -16911,10 +18028,6 @@
             "title": "Hits",
             "default": []
           },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
           "next_cursor": {
             "anyOf": [
               {
@@ -16939,7 +18052,6 @@
           }
         },
         "type": "object",
-        "required": ["total"],
         "title": "SearchResponse",
         "description": "Response schema for search endpoint."
       },
@@ -16954,22 +18066,6 @@
         ],
         "title": "SecretMigrationStatus",
         "description": "Status of secret storage migration during organization enrollment.\n\n- NOT_STARTED: Migration has not been initiated (should not appear in practice)\n- IN_PROGRESS: Migration is currently running\n- COMPLETED: Secrets successfully migrated from default to organization-specific storage\n- FAILED: Migration encountered an error (enrollment continues, status tracked for monitoring)\n- NOT_APPLICABLE: No migration needed (CUSTOMER_OWNED storage, or no default secrets to migrate)"
-      },
-      "SemanticCondition": {
-        "properties": {
-          "semantic": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Semantic",
-            "description": "Semantic search: {field_name: pattern}"
-          }
-        },
-        "type": "object",
-        "required": ["semantic"],
-        "title": "SemanticCondition",
-        "description": "AI-powered natural language search."
       },
       "SonarCatalogInput": {
         "properties": {
@@ -17209,10 +18305,43 @@
             "description": "The id of the source template to create the source from."
           },
           "source_config": {
-            "additionalProperties": true,
-            "type": "object",
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Source Config",
-            "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec."
+            "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec. At least one of source_config or auth_config must be provided."
+          },
+          "auth_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auth Config",
+            "description": "Authentication configuration for the source. Required for DIRECT mode sources. At least one of source_config or auth_config must be provided."
+          },
+          "user_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Config",
+            "description": "User-provided configuration for the source. Required for DIRECT mode sources (can be empty dict)."
           },
           "selected_connection_template_tags": {
             "items": {
@@ -17229,7 +18358,7 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_template_id", "source_config"],
+        "required": ["workspace_id", "source_template_id"],
         "title": "SourceCheckConfigRequest"
       },
       "SourceCheckConfigResponse": {
@@ -17321,6 +18450,11 @@
         "type": "object",
         "title": "SourceCheckConfigUpdateRequest"
       },
+      "SourceConfigTemplateMode": {
+        "type": "string",
+        "enum": ["DIRECT", "REPLICATION", "MULTI"],
+        "title": "SourceConfigTemplateMode"
+      },
       "SourceCreateRequest": {
         "properties": {
           "name": {
@@ -17348,10 +18482,43 @@
             "description": "The id of the source template to create the source from."
           },
           "source_config": {
-            "additionalProperties": true,
-            "type": "object",
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Source Config",
-            "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec."
+            "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec. At least one of source_config or auth_config must be provided."
+          },
+          "auth_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auth Config",
+            "description": "Authentication configuration for the source. Required for DIRECT mode sources. At least one of source_config or auth_config must be provided."
+          },
+          "user_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Config",
+            "description": "User-provided configuration for the source. Required for DIRECT mode sources (can be empty dict)."
           },
           "selected_connection_template_tags": {
             "items": {
@@ -17368,7 +18535,7 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_template_id", "source_config"],
+        "required": ["workspace_id", "source_template_id"],
         "title": "SourceCreateRequest"
       },
       "SourceCreateResponse": {
@@ -17975,6 +19142,17 @@
               }
             ],
             "description": "\nCustomizations for the source template. If stream_whitelist is provided, only the specified streams will be synced.\nIf stream_customizations are provided, and stream fields specified will override the default settings for only that\nfield. Where any streams fields are not specified, the default settings will be used.\n"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceConfigTemplateMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Mode for the source template. Defaults to REPLICATION if not provided."
           }
         },
         "type": "object",
@@ -18033,6 +19211,10 @@
             },
             "type": "array",
             "title": "Tags"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/SourceConfigTemplateMode",
+            "default": "REPLICATION"
           },
           "created_at": {
             "anyOf": [
@@ -18303,6 +19485,10 @@
             "type": "array",
             "title": "Tags"
           },
+          "mode": {
+            "$ref": "#/components/schemas/SourceConfigTemplateMode",
+            "default": "REPLICATION"
+          },
           "created_at": {
             "anyOf": [
               {
@@ -18360,6 +19546,23 @@
             ],
             "title": "Icon"
           },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "actor_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Actor Definition Id"
+          },
           "tags": {
             "items": {
               "type": "string"
@@ -18393,6 +19596,10 @@
               }
             ]
           },
+          "mode": {
+            "$ref": "#/components/schemas/SourceConfigTemplateMode",
+            "default": "REPLICATION"
+          },
           "created_at": {
             "anyOf": [
               {
@@ -18419,7 +19626,7 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "icon"],
+        "required": ["id", "name", "icon", "actor_definition_id"],
         "title": "SourceTemplateListItem"
       },
       "SourceTemplateListResponse": {
@@ -18561,6 +19768,10 @@
             },
             "type": "array",
             "title": "Tags"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/SourceConfigTemplateMode",
+            "default": "REPLICATION"
           },
           "created_at": {
             "anyOf": [
@@ -18708,6 +19919,10 @@
             },
             "type": "array",
             "title": "Tags"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/SourceConfigTemplateMode",
+            "default": "REPLICATION"
           },
           "created_at": {
             "anyOf": [
@@ -19171,6 +20386,23 @@
             ],
             "title": "Icon"
           },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
+          },
+          "actor_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Actor Definition Id"
+          },
           "tags": {
             "items": {
               "type": "string"
@@ -19204,6 +20436,10 @@
               }
             ]
           },
+          "mode": {
+            "$ref": "#/components/schemas/SourceConfigTemplateMode",
+            "default": "REPLICATION"
+          },
           "created_at": {
             "anyOf": [
               {
@@ -19230,13 +20466,220 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "icon"],
+        "required": ["id", "name", "icon", "actor_definition_id"],
         "title": "SummarizedSourceTemplate"
       },
       "SupportLevel": {
         "type": "string",
         "enum": ["archived", "certified", "community", "none"],
         "title": "SupportLevel"
+      },
+      "SyncGlobalTemplatesResponse": {
+        "properties": {
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "updated": {
+            "type": "integer",
+            "title": "Updated"
+          },
+          "unchanged": {
+            "type": "integer",
+            "title": "Unchanged"
+          },
+          "errors": {
+            "type": "integer",
+            "title": "Errors"
+          },
+          "error_details": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Error Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "created",
+          "updated",
+          "unchanged",
+          "errors",
+          "error_details"
+        ],
+        "title": "SyncGlobalTemplatesResponse",
+        "description": "Response for global template sync operation."
+      },
+      "SyncSuccessConnection": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessConnection"
+      },
+      "SyncSuccessData": {
+        "properties": {
+          "workspace": {
+            "$ref": "#/components/schemas/SyncSuccessWorkspace"
+          },
+          "connection": {
+            "$ref": "#/components/schemas/SyncSuccessConnection"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SyncSuccessSource"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/SyncSuccessDestination"
+          },
+          "jobId": {
+            "type": "integer",
+            "title": "Jobid"
+          },
+          "startedAt": {
+            "type": "string",
+            "title": "Startedat"
+          },
+          "finishedAt": {
+            "type": "string",
+            "title": "Finishedat"
+          },
+          "bytesEmitted": {
+            "type": "integer",
+            "title": "Bytesemitted"
+          },
+          "bytesCommitted": {
+            "type": "integer",
+            "title": "Bytescommitted"
+          },
+          "recordsEmitted": {
+            "type": "integer",
+            "title": "Recordsemitted"
+          },
+          "recordsCommitted": {
+            "type": "integer",
+            "title": "Recordscommitted"
+          },
+          "bytesEmittedFormatted": {
+            "type": "string",
+            "title": "Bytesemittedformatted"
+          },
+          "bytesCommittedFormatted": {
+            "type": "string",
+            "title": "Bytescommittedformatted"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "durationInSeconds": {
+            "type": "integer",
+            "title": "Durationinseconds"
+          },
+          "durationFormatted": {
+            "type": "string",
+            "title": "Durationformatted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace",
+          "connection",
+          "source",
+          "destination",
+          "jobId",
+          "startedAt",
+          "finishedAt",
+          "bytesEmitted",
+          "bytesCommitted",
+          "recordsEmitted",
+          "recordsCommitted",
+          "bytesEmittedFormatted",
+          "bytesCommittedFormatted",
+          "success",
+          "durationInSeconds",
+          "durationFormatted"
+        ],
+        "title": "SyncSuccessData"
+      },
+      "SyncSuccessDestination": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessDestination"
+      },
+      "SyncSuccessNotification": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SyncSuccessData"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "SyncSuccessNotification"
+      },
+      "SyncSuccessSource": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessSource"
+      },
+      "SyncSuccessWorkspace": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessWorkspace"
       },
       "TagSelectionMode": {
         "type": "string",
@@ -19439,6 +20882,35 @@
         "title": "ThinkingEffort",
         "description": "Thinking effort levels for LLM agents."
       },
+      "TokenExchangeResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "organization_id"
+        ],
+        "title": "TokenExchangeResponse"
+      },
       "TokenRequest": {
         "properties": {
           "client_id": {
@@ -19467,6 +20939,18 @@
           "expires_in": {
             "type": "integer",
             "title": "Expires In"
+          },
+          "organization_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Id"
           }
         },
         "type": "object",
@@ -20235,6 +21719,14 @@
     }
   },
   "tags": [
+    {
+      "name": "Auth",
+      "description": "Token exchange endpoints for converting IdP tokens to fast tokens."
+    },
+    {
+      "name": "Organizations",
+      "description": "Retrieve organization event history."
+    },
     {
       "name": "Embedded",
       "description": "All the endpoints necessary to retrieve credentials for your end users."

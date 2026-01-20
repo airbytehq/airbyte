@@ -144,6 +144,8 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.19 | 2026-01-20 | [71999](https://github.com/airbytehq/airbyte/pull/71999) | Update dependencies |
+| 4.6.18 | 2026-01-14 | [71506](https://github.com/airbytehq/airbyte/pull/71506) | Update dependencies |
 | 4.6.17 | 2026-01-08 | [70856](https://github.com/airbytehq/airbyte/pull/70856) | Add configurable option to include base_id in stream names for uniqueness |
 | 4.6.16 | 2026-01-08 | [71229](https://github.com/airbytehq/airbyte/pull/71229) | Promoting release candidate 4.6.16-rc.1 to a main version. |
 | 4.6.16-rc.1 | 2025-12-10 | [69778](https://github.com/airbytehq/airbyte/pull/69778) | Add HTTPAPIBudget and concurrency_level for improved sync performance |
@@ -151,7 +153,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 | 4.6.14 | 2025-11-25 | [69916](https://github.com/airbytehq/airbyte/pull/69916) | Update dependencies |
 | 4.6.13 | 2025-10-29 | [69029](https://github.com/airbytehq/airbyte/pull/69029) | Update dependencies |
 | 4.6.12 | 2025-10-14 | [65633](https://github.com/airbytehq/airbyte/pull/65633) | Update dependencies |
-| 4.6.11 | 2025-09-08 | [65991](https://github.com/airbytehq/airbyte/pull/65991) | Update to CDK v7.0.0 |
+| 4.6.11 | 2025-09-09 | [65991](https://github.com/airbytehq/airbyte/pull/65991) | Update to CDK v7.0.0 |
 | 4.6.10 | 2025-08-23 | [65352](https://github.com/airbytehq/airbyte/pull/65352) | Update dependencies |
 | 4.6.9 | 2025-08-09 | [64651](https://github.com/airbytehq/airbyte/pull/64651) | Update dependencies |
 | 4.6.8 | 2025-08-02 | [64436](https://github.com/airbytehq/airbyte/pull/64436) | Update dependencies |

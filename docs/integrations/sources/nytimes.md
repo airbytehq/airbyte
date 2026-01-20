@@ -45,7 +45,9 @@ The New York Times connector should not run into limitations under normal usage.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.22 | 2025-12-16 | [70566](https://github.com/airbytehq/airbyte/pull/70566) | Update dependencies |
+| 0.2.24 | 2026-01-20 | [71936](https://github.com/airbytehq/airbyte/pull/71936) | Update dependencies |
+| 0.2.23 | 2026-01-14 | [71595](https://github.com/airbytehq/airbyte/pull/71595) | Update dependencies |
+| 0.2.22 | 2025-12-18 | [70566](https://github.com/airbytehq/airbyte/pull/70566) | Update dependencies |
 | 0.2.21 | 2025-11-25 | [69876](https://github.com/airbytehq/airbyte/pull/69876) | Update dependencies |
 | 0.2.20 | 2025-11-18 | [69377](https://github.com/airbytehq/airbyte/pull/69377) | Update dependencies |
 | 0.2.19 | 2025-10-29 | [68746](https://github.com/airbytehq/airbyte/pull/68746) | Update dependencies |
@@ -53,7 +55,7 @@ The New York Times connector should not run into limitations under normal usage.
 | 0.2.17 | 2025-10-14 | [67738](https://github.com/airbytehq/airbyte/pull/67738) | Update dependencies |
 | 0.2.16 | 2025-10-07 | [67417](https://github.com/airbytehq/airbyte/pull/67417) | Update dependencies |
 | 0.2.15 | 2025-09-30 | [66932](https://github.com/airbytehq/airbyte/pull/66932) | Update dependencies |
-| 0.2.14 | 2025-09-23 | [66609](https://github.com/airbytehq/airbyte/pull/66609) | Update dependencies |
+| 0.2.14 | 2025-09-24 | [66609](https://github.com/airbytehq/airbyte/pull/66609) | Update dependencies |
 | 0.2.13 | 2025-09-09 | [65865](https://github.com/airbytehq/airbyte/pull/65865) | Update dependencies |
 | 0.2.12 | 2025-08-23 | [65214](https://github.com/airbytehq/airbyte/pull/65214) | Update dependencies |
 | 0.2.11 | 2025-08-09 | [64733](https://github.com/airbytehq/airbyte/pull/64733) | Update dependencies |
