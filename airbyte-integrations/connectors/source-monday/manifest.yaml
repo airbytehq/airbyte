@@ -512,6 +512,10 @@ schemas:
         type:
           - "null"
           - integer
+      user_id:
+        type:
+          - "null"
+          - string
 
   boards:
     $schema: http://json-schema.org/draft-07/schema#

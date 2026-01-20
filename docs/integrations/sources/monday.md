@@ -77,6 +77,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.19 | 2026-01-19 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add `user_id` field to `activity_logs` stream |
 | 2.4.18 | 2026-01-14 | [71513](https://github.com/airbytehq/airbyte/pull/71513) | Update dependencies |
 | 2.4.17 | 2025-12-18 | [70552](https://github.com/airbytehq/airbyte/pull/70552) | Update dependencies |
 | 2.4.16 | 2025-12-03 | [69718](https://github.com/airbytehq/airbyte/pull/69718) | Add pagination reset handling for Monday CursorExpiredError |
