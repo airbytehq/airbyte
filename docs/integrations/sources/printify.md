@@ -25,6 +25,7 @@ API Reference: https://developers.printify.com/#catalog
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2026-01-20 | [72055](https://github.com/airbytehq/airbyte/pull/72055) | Update dependencies |
 | 0.0.27 | 2026-01-14 | [71478](https://github.com/airbytehq/airbyte/pull/71478) | Update dependencies |
 | 0.0.26 | 2025-12-18 | [70591](https://github.com/airbytehq/airbyte/pull/70591) | Update dependencies |
 | 0.0.25 | 2025-11-25 | [70026](https://github.com/airbytehq/airbyte/pull/70026) | Update dependencies |
