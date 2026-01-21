@@ -40,12 +40,7 @@ data:
     breakingChanges:
       2.0.0:
         upgradeDeadline: "2025-09-30"
-        message: >-
-          This version adds OAuth2.0 with refresh token support and reorders the
-          authentication methods. The new OAuth2.0 option (with refresh token) is now
-          the default, followed by API Token, then OAuth2.0 (Legacy). Existing OAuth
-          connections will continue to work but are now labeled as "OAuth2.0 (Legacy)".
-          Zendesk is deprecating non-expiring OAuth access tokens by September 30, 2025.
+        message: "This version adds OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens."
       1.0.0:
         upgradeDeadline: "2024-05-31"
         message: >-
