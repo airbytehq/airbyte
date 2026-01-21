@@ -264,7 +264,7 @@ class QaChecks(SimpleDockerStep):
             secret_env_variables={"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
             if context.docker_hub_username and context.docker_hub_password
             else None,
-            command=["connectors-qa", "run", f"--name={technical_name}"],
+            command=["airbyte-ops", "local", "connector", "qa", f"--name={technical_name}"],
         )
 
     async def init_container(self) -> dagger.Container:
