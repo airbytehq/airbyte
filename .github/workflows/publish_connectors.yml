@@ -115,7 +115,8 @@ jobs:
         id: get-app-token
         with:
           owner: "airbytehq"
-          repositories: "airbyte"
+          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
+          repositories: ${{ github.event.repository.name }}
           app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
 
@@ -280,7 +281,8 @@ jobs:
         id: get-app-token
         with:
           owner: "airbytehq"
-          repositories: "airbyte"
+          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
+          repositories: ${{ github.event.repository.name }}
           app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
 
@@ -387,7 +389,8 @@ jobs:
         id: get-app-token
         with:
           owner: "airbytehq"
-          repositories: "airbyte"
+          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
+          repositories: ${{ github.event.repository.name }}
           app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
 
