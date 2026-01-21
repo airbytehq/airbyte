@@ -60,12 +60,6 @@ data class DestinationStream(
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
-    // whether the stream corresponds to a series of files and their metadata
-    val isFileBased: Boolean = false,
-    // whether we will move the file (in addition to the metadata)
-    val includeFiles: Boolean = false,
-    val destinationObjectName: String? = null,
-    val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper,
     val tableSchema: StreamTableSchema,
 ) {
@@ -136,14 +130,10 @@ data class DestinationStream(
                     .withNamespace(unmappedNamespace)
                     .withName(unmappedName)
                     .withJsonSchema(AirbyteTypeToJsonSchema().convert(schema))
-                    .withIsFileBased(isFileBased)
             )
             .withGenerationId(generationId)
             .withMinimumGenerationId(minimumGenerationId)
             .withSyncId(syncId)
-            .withIncludeFiles(includeFiles)
-            .withDestinationObjectName(destinationObjectName)
-            .withPrimaryKey(matchingKey?.map { listOf(it) }.orEmpty())
             .apply {
                 when (importType) {
                     is Append -> {

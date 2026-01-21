@@ -25,9 +25,6 @@ data class DestinationRecordRaw(
     val checkpointId: CheckpointId? = null,
     val airbyteRawId: UUID,
 ) {
-    // Currently file transfer is only supported for non-socket implementations
-    val fileReference: FileReference? = rawData.fileReference
-
     val schema = stream.schema
 
     val schemaFields: SequencedMap<String, FieldType> =
@@ -41,18 +38,6 @@ data class DestinationRecordRaw(
      * optimization.
      */
     fun asJsonRecord(): JsonNode = rawData.asJsonRecord(stream.airbyteValueProxyFieldAccessors)
-
-    fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
-        return DestinationRecordAirbyteValue(
-            stream = stream,
-            data =
-                if (rawData is DestinationRecordProtobufSource) {
-                    throw RuntimeException("DestinationRecordProtobufSource not supported")
-                } else asJsonRecord().toAirbyteValue(),
-            emittedAtMs = rawData.emittedAtMs,
-            meta = rawData.sourceMeta,
-        )
-    }
 
     /**
      * Convert this record to an EnrichedRecord. Crucially, after this conversion, all entries in
@@ -114,9 +99,5 @@ data class DestinationRecordRaw(
             extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
             airbyteRawId = airbyteRawId,
         )
-    }
-
-    fun asDestinationRecordAirbyteProxy() {
-        TODO("Implement optimized interface here.")
     }
 }

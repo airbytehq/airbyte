@@ -91,7 +91,6 @@ class AirbyteValueProxyTest {
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            includeFiles = false,
             schema = ALL_TYPES_SCHEMA,
             namespaceMapper = NamespaceMapper(),
             tableSchema =
