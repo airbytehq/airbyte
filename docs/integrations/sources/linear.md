@@ -36,6 +36,7 @@ An Airbyte connector for Linear.app.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.29 | 2026-01-21 | [72240](https://github.com/airbytehq/airbyte/pull/72240) | fix(linear): icon |
 | 0.0.28 | 2025-12-16 | [70775](https://github.com/airbytehq/airbyte/pull/70775) | Update dependencies |
 | 0.0.27 | 2025-11-25 | [70007](https://github.com/airbytehq/airbyte/pull/70007) | Update dependencies |
 | 0.0.26 | 2025-11-18 | [69442](https://github.com/airbytehq/airbyte/pull/69442) | Update dependencies |
