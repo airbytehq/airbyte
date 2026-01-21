@@ -1018,16 +1018,17 @@ class CollectionProduct(ShopifyBulkQuery):
         record_components = record.get("record_components", {})
         products = record_components.get("Product", [])
 
-        # Get collection info
-        collection_id = self.tools.resolve_str_id(record.get("id"))
-        collection_admin_graphql_api_id = record.get("id")
+        # Get collection info - id is already resolved to int, admin_graphql_api_id has the string version
+        collection_id = record.get("id")
+        collection_admin_graphql_api_id = record.get("admin_graphql_api_id")
         collection_handle = record.get("handle")
         collection_updated_at = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
 
         if products:
             for product in products:
-                product_id = self.tools.resolve_str_id(product.get("id"))
-                product_admin_graphql_api_id = product.get("id")
+                # Product id is already resolved to int, admin_graphql_api_id has the string version
+                product_id = product.get("id")
+                product_admin_graphql_api_id = product.get("admin_graphql_api_id")
 
                 yield {
                     "collection_id": collection_id,
