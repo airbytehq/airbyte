@@ -252,13 +252,12 @@ class QaChecks(SimpleDockerStep):
                 MountPath(migration_guide_file_path, optional=True),
                 MountPath(icon_path, optional=True),
             ],
-            internal_tools=[
-                MountPath(INTERNAL_TOOL_PATHS.CONNECTORS_QA.value),
-            ],
             secret_env_variables={"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
             if context.docker_hub_username and context.docker_hub_password
             else None,
-            command=["connectors-qa", "run", f"--name={technical_name}"],
+            # Install airbyte-internal-ops from PyPI and run QA checks
+            # The connectors_qa module has been migrated to the airbyte-ops-mcp repo
+            command=["sh", "-c", f"pip install airbyte-internal-ops && airbyte-ops local connector qa --name={technical_name}"],
         )
 
 
