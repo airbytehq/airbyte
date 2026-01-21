@@ -1,4 +1,4 @@
-name: Auto-Draft PRs
+name: Enforce Draft PR Status
 
 # This workflow automatically converts new PRs to draft status.
 # Rationale: Making a PR "ready for review" should be a conscious decision.
