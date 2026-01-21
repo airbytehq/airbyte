@@ -224,7 +224,8 @@ internal class PostgresAirbyteClientTest {
 
     @Test
     fun testCopyTable() {
-        val columnNameMapping = ColumnNameMapping(mapOf("col1" to "targetCol1", "col2" to "targetCol2"))
+        val columnNameMapping =
+            ColumnNameMapping(mapOf("col1" to "targetCol1", "col2" to "targetCol2"))
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val targetTableName = TableName(namespace = "namespace", name = "target")
         val statement =
@@ -239,9 +240,8 @@ internal class PostgresAirbyteClientTest {
                 every { createStatement() } returns statement
             }
         every { dataSource.connection } returns mockConnection
-        every {
-            sqlGenerator.copyTable(any(), sourceTableName, targetTableName)
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.copyTable(any(), sourceTableName, targetTableName) } returns
+            MOCK_SQL_QUERY
 
         runBlocking {
             client.copyTable(
@@ -280,9 +280,8 @@ internal class PostgresAirbyteClientTest {
             }
 
         every { dataSource.connection } returns mockConnection
-        every {
-            sqlGenerator.upsertTable(stream, sourceTableName, targetTableName)
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.upsertTable(stream, sourceTableName, targetTableName) } returns
+            MOCK_SQL_QUERY
 
         runBlocking {
             client.upsertTable(
@@ -593,8 +592,7 @@ internal class PostgresAirbyteClientTest {
         every { stream.tableSchema } returns streamTableSchema
 
         // no index changes
-        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns
-            emptyList()
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns emptyList()
         every { sqlGenerator.getCursorColumnName(stream) } returns null
 
         runBlocking {
@@ -669,8 +667,7 @@ internal class PostgresAirbyteClientTest {
             mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         every { stream.tableSchema } returns streamTableSchema
 
-        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns
-            emptyList()
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns emptyList()
         every { sqlGenerator.getCursorColumnName(stream) } returns null
 
         runBlocking {
@@ -745,8 +742,7 @@ internal class PostgresAirbyteClientTest {
         every { stream.tableSchema } returns streamTableSchema
 
         // primary key has changed
-        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns
-            listOf("new_pk")
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns listOf("new_pk")
         every { sqlGenerator.getCursorColumnName(stream) } returns null
 
         runBlocking {
@@ -820,8 +816,7 @@ internal class PostgresAirbyteClientTest {
             mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         every { stream.tableSchema } returns streamTableSchema
 
-        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns
-            emptyList()
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns emptyList()
         // cursor has changed
         every { sqlGenerator.getCursorColumnName(stream) } returns "new_cursor"
 
@@ -899,8 +894,7 @@ internal class PostgresAirbyteClientTest {
             mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         every { stream.tableSchema } returns streamTableSchema
 
-        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns
-            listOf("new_pk")
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns listOf("new_pk")
         every { sqlGenerator.getCursorColumnName(stream) } returns "new_cursor"
 
         runBlocking {

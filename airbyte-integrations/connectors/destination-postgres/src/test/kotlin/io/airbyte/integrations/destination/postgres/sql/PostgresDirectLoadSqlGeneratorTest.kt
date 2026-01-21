@@ -269,11 +269,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
 
         val (createTableSql, createIndexesSql) =
-            rawModeSqlGenerator.createTable(
-                stream = stream,
-                tableName = tableName,
-                replace = true
-            )
+            rawModeSqlGenerator.createTable(stream = stream, tableName = tableName, replace = true)
 
         // In raw mode, table should only have default columns (no user columns like id, name,
         // updatedAt)

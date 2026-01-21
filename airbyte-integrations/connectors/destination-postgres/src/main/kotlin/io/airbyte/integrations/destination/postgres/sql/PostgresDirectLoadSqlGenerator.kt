@@ -89,9 +89,9 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     /**
-     * Returns the user columns and their types for a stream from the pre-computed table schema.
-     * In raw table mode, this returns just {_airbyte_data -> JSONB} from the final schema
-     * (as set by PostgresTableSchemaMapper.toFinalSchema).
+     * Returns the user columns and their types for a stream from the pre-computed table schema. In
+     * raw table mode, this returns just {_airbyte_data -> JSONB} from the final schema (as set by
+     * PostgresTableSchemaMapper.toFinalSchema).
      */
     private fun getUserColumns(stream: DestinationStream): Map<String, ColumnType> {
         return stream.tableSchema.columnSchema.finalSchema
@@ -108,10 +108,7 @@ class PostgresDirectLoadSqlGenerator(
      * In legacyRawTablesOnly mode, primary key and cursor indexes are skipped because user-defined
      * columns don't exist at the table level (they're stored in _airbyte_data JSONB).
      */
-    private fun createIndexes(
-        stream: DestinationStream,
-        tableName: TableName
-    ): String {
+    private fun createIndexes(stream: DestinationStream, tableName: TableName): String {
         // In raw tables mode, skip primary key and cursor indexes since those columns don't exist
         val primaryKeyIndexStatement =
             if (postgresConfiguration.legacyRawTablesOnly) {
@@ -137,33 +134,25 @@ class PostgresDirectLoadSqlGenerator(
         """
     }
 
-    internal fun getPrimaryKeysColumnNames(
-        stream: DestinationStream
-    ): List<String> {
+    internal fun getPrimaryKeysColumnNames(stream: DestinationStream): List<String> {
         return stream.tableSchema.getPrimaryKey().flatten()
     }
 
-    private fun getPrimaryKeysColumnNamesQuoted(
-        stream: DestinationStream
-    ) = getPrimaryKeysColumnNames(stream).map { quoteIdentifier(it) }
+    private fun getPrimaryKeysColumnNamesQuoted(stream: DestinationStream) =
+        getPrimaryKeysColumnNames(stream).map { quoteIdentifier(it) }
 
-    private fun getPrimaryKeysColumnNamesQuoted(
-        importType: Dedupe
-    ) = importType.primaryKey.flatten().map { quoteIdentifier(it) }
+    private fun getPrimaryKeysColumnNamesQuoted(importType: Dedupe) =
+        importType.primaryKey.flatten().map { quoteIdentifier(it) }
 
-    internal fun getCursorColumnName(
-        stream: DestinationStream
-    ): String? {
+    internal fun getCursorColumnName(stream: DestinationStream): String? {
         return stream.tableSchema.getCursor().firstOrNull()
     }
 
-    private fun getCursorColumnNameQuoted(
-        stream: DestinationStream
-    ) = getCursorColumnName(stream)?.let { quoteIdentifier(it) }
+    private fun getCursorColumnNameQuoted(stream: DestinationStream) =
+        getCursorColumnName(stream)?.let { quoteIdentifier(it) }
 
-    private fun getCursorColumnNameQuoted(
-        cursor: List<String>
-    ) = cursor.firstOrNull()?.let { quoteIdentifier(it) }
+    private fun getCursorColumnNameQuoted(cursor: List<String>) =
+        cursor.firstOrNull()?.let { quoteIdentifier(it) }
 
     internal fun recreatePrimaryKeyIndex(
         primaryKeyColumnNames: List<String>,

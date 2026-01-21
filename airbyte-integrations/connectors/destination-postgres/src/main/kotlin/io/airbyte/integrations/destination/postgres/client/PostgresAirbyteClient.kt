@@ -158,9 +158,7 @@ class PostgresAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(
-            sqlGenerator.upsertTable(stream, sourceTableName, targetTableName)
-        )
+        execute(sqlGenerator.upsertTable(stream, sourceTableName, targetTableName))
     }
 
     override suspend fun dropTable(tableName: TableName) {
@@ -197,8 +195,7 @@ class PostgresAirbyteClient(
                 recreatePrimaryKeyIndex =
                     !isRawTablesMode &&
                         shouldRecreatePrimaryKeyIndex(stream, tableName, columnNameMapping),
-                primaryKeyColumnNames =
-                    sqlGenerator.getPrimaryKeysColumnNames(stream),
+                primaryKeyColumnNames = sqlGenerator.getPrimaryKeysColumnNames(stream),
                 recreateCursorIndex =
                     !isRawTablesMode &&
                         shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
@@ -336,8 +333,7 @@ class PostgresAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): Boolean {
-        val streamCursor =
-            sqlGenerator.getCursorColumnName(stream) ?: return false
+        val streamCursor = sqlGenerator.getCursorColumnName(stream) ?: return false
 
         val existingCursorIndexColumn = getCursorIndexColumn(tableName)
 
