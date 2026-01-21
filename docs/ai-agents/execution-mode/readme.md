@@ -76,7 +76,7 @@ Save the returned token for the next step.
 
 ### Step 2: Get a scoped token
 
-Create a scoped token for your workspace.
+Create a scoped token for your workspace. Your scoped token functions as a user ID, and you need it later when you initiate connector operations.
 
 ```bash title="Request"
 curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
@@ -99,7 +99,7 @@ Once you have a scoped token, create a connector with your API credentials. Airb
 
   - **source_config**: Connector-specific configurations for direct connectors.
 
-  - **auth_config**: Authentication information for your connector.
+  - **credentials**: Authentication information for your connector.
 
   - **user_config**: Connector-specific configurations for replication connectors.
 
@@ -113,25 +113,14 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/sources" \
       "source_template_id": "<source_template_id>",
       "workspace_id": "<workspace_id>",
       "name": "...",
-      "auth_config": {
-        "token": "<GitHub personal access token (fine-grained or classic)>"
-      },
+      "source_config": {"repositories": "airbytehq/airbyte"},
+      "credentials": {"token": "<GitHub personal access token (fine-grained or classic)>"}
     }'
 ```
 
 ## Run operations in hosted mode
 
 Once you create your connector, you can use the connector in hosted mode.
-
-First, retrieve your connector ID.
-
-1. Log into [app.airbyte.ai](https://app.airbyte.ai).
-
-2. Click **Connectors**.
-
-3. Find your connector in the list of connectors. Under the connector name, click the copy button next to the connector ID.
-
-4. Use the connector ID to execute operations.
 
 <Tabs>
 <TabItem value="python" label="Python" default>
@@ -142,39 +131,39 @@ Instead of providing API credentials directly, provide your Airbyte Cloud creden
 from airbyte_agent_github import GithubConnector
 
 connector = GithubConnector(
-    connector_id="<your_connector_id>",
+    external_user_id="<your_scoped_token>",
     airbyte_client_id="<your_client_id>",
     airbyte_client_secret="<your_client_secret>",
 )
 
 # Execute connector operations
-issues = await connector.issues.list(owner="airbytehq", repo="airbyte")
+# ...
 ```
 
-Once initialized, the connector works the same way as in local mode. The SDK handles the token exchange (application token → scoped token) automatically, so you don't need to manage tokens manually.
+Once initialized, the connector works the same way as in local mode. The SDK handles the token exchange automatically. You don't need to manage tokens manually.
 
 </TabItem>
 <TabItem value="api" label="API">
 
 You can execute connector operations directly via the REST API.
 
-    ```bash
-    curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-      --header 'Content-Type: application/json' \
-      --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
-      --data '{
-        "entity": "issues",
-        "action": "list",
-        "params": {
-          "owner": "airbytehq",
-          "repo": "airbyte"
-        }
-      }'
-    ```
+```bash title="Request"
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <SCOPED_TOKEN>' \
+  --data '{
+    "entity": "issues",
+    "action": "list",
+    "params": {
+      "owner": "airbytehq",
+      "repo": "airbyte"
+    }
+  }'
+```
 
 The response contains the operation result:
 
-```json
+```json title="Response"
 {
   "result": [
     {
@@ -213,4 +202,4 @@ The response contains the operation result:
 
 - Application tokens expire after ~15 minutes.
 - The Python SDK handles token refresh automatically during normal operation. The API doesn't and you must request new tokens manually.
-- If you see persistent authentication errors, verify your client credentials are still valid.
+- If you see persistent authentication errors, verify your client ID and client secret are still valid.
