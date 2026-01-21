@@ -218,49 +218,6 @@ class VersionIncrementCheck(VersionCheck):
         return self.success_result
 
 
-class QaChecks(SimpleDockerStep):
-    """A step to run QA checks for a connectors.
-    More details in https://github.com/airbytehq/airbyte-ops-mcp
-    """
-
-    def __init__(self, context: ConnectorContext) -> None:
-        code_directory = context.connector.code_directory
-        documentation_file_path = context.connector.documentation_file_path
-        migration_guide_file_path = context.connector.migration_guide_file_path
-        icon_path = context.connector.icon_path
-        technical_name = context.connector.technical_name
-
-        # When the connector is strict-encrypt, we should run QA checks on the main one as it's the one whose artifacts gets released
-        if context.connector.technical_name.endswith("-strict-encrypt"):
-            technical_name = technical_name.replace("-strict-encrypt", "")
-            code_directory = Path(str(code_directory).replace("-strict-encrypt", ""))
-            if documentation_file_path:
-                documentation_file_path = Path(str(documentation_file_path).replace("-strict-encrypt", ""))
-            if migration_guide_file_path:
-                migration_guide_file_path = Path(str(migration_guide_file_path).replace("-strict-encrypt", ""))
-            if icon_path:
-                icon_path = Path(str(icon_path).replace("-strict-encrypt", ""))
-
-        super().__init__(
-            title=f"Run QA checks for {technical_name}",
-            context=context,
-            paths_to_mount=[
-                MountPath(code_directory),
-                # These paths are optional
-                # But their absence might make the QA check fail
-                MountPath(documentation_file_path, optional=True),
-                MountPath(migration_guide_file_path, optional=True),
-                MountPath(icon_path, optional=True),
-            ],
-            secret_env_variables={"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
-            if context.docker_hub_username and context.docker_hub_password
-            else None,
-            # Install airbyte-internal-ops from PyPI and run QA checks
-            # The connectors_qa module has been migrated to the airbyte-ops-mcp repo
-            command=["sh", "-c", f"pip install airbyte-internal-ops && airbyte-ops local connector qa --name={technical_name}"],
-        )
-
-
 class AcceptanceTests(Step):
     """A step to run acceptance tests for a connector if it has an acceptance test config file."""
 

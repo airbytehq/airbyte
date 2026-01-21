@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-# Test PR to verify CI passes after connectors_qa deletion
 
 from pathlib import Path
 
