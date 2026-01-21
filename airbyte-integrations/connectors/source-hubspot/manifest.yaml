@@ -2371,7 +2371,7 @@ spec:
                 - payments # crm.objects.commercepayments.read
                 - postal_mail
                 - projects # crm.objects.projects.read
-#                - quotes
+                - quotes # crm.objects.quotes.read
                 - services # crm.objects.services.read
                 - subscriptions # crm.objects.subscriptions.read
                 - tasks
