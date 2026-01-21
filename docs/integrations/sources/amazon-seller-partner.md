@@ -9,6 +9,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 ## Prerequisites
 
 - Amazon Seller Partner account
+- For Brand Analytics streams (Market Basket Analysis, Search Terms, Repeat Purchase, Alternate Purchase, Item Comparison reports): Registration in [Amazon Brand Registry](https://brandservices.amazon.com/) and the Brand Analytics role in your SP-API application
 
 <!-- env:cloud -->
 
@@ -159,6 +160,11 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+<!-- env:oss -->
+- [Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
+- [Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
+- [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
+<!-- /env:oss -->
 
 <HideInUI>
 
@@ -258,7 +264,7 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0 | 2026-01-21 | [71055](https://github.com/airbytehq/airbyte/pull/71055) | Re-add brand analytics reports to Cloud: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT, GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT, GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT, GET_SALES_AND_TRAFFIC_REPORT, GET_VENDOR_SALES_REPORT, GET_VENDOR_INVENTORY_REPORT |
+| 5.2.0 | 2026-01-21 | [71055](https://github.com/airbytehq/airbyte/pull/71055) | Re-add 8 brand analytics and vendor analytics streams to Cloud. Fix token expiration handling for long-running syncs. |
 | 5.1.2 | 2026-01-20 | [71037](https://github.com/airbytehq/airbyte/pull/71037) | Fix GB marketplace_id config transformation |
 | 5.1.1 | 2026-01-20 | [71991](https://github.com/airbytehq/airbyte/pull/71991) | Update dependencies |
 | 5.1.0 | 2026-01-15 | [71327](https://github.com/airbytehq/airbyte/pull/71327) | Add rate limiting and hourly granularity options for ListFinancialEvents and ListFinancialEventGroups streams |
