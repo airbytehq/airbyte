@@ -103,7 +103,7 @@ Once you have a scoped token, create a connector with your API credentials. Airb
 
   - **user_config**: Connector-specific configurations for replication connectors.
 
-For GitHub, you only need an authentication configuration. See the examples in the [authentication docs](/ai-agents/connectors/github/REFERENCE#authentication). This is what the request looks like when you're using a personal access token.
+For GitHub, you only need an authentication configuration. See the examples in the [authentication docs](/ai-agents/connectors/github/REFERENCE). This is what the request looks like when you're using a personal access token.
 
 ```bash title="Request"
 curl -X POST "https://api.airbyte.ai/api/v1/integrations/sources" \
@@ -125,7 +125,7 @@ Once you create your connector, you can use the connector in hosted mode.
 
 First, retrieve your connector ID.
 
-1. Log into [app.airbyte.ai](app.airbyte.ai).
+1. Log into [app.airbyte.ai](https://app.airbyte.ai).
 
 2. Click **Connectors**.
 
