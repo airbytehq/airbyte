@@ -7,6 +7,15 @@ on:
   schedule:
     - cron: "0 12 * * *"
   workflow_call:
+    inputs:
+      upgradeCdkGradleParams:
+        type: string
+        description: |
+          Additional parameters to pass into the `./gradlew upgradeCdk` call.
+          For example, `-x :airbyte-integrations:connectors:destination-hubspot:upgradeCdk` would allow you
+          to exclude destination-hubspot from being tested.
+        required: false
+        default: ""
 
 jobs:
   generate-matrix:
@@ -36,6 +45,8 @@ jobs:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
       DD_TAGS: "connector.name:${{ matrix.connector }}"
+      # Exclude data activation destinations by default
+      UPGRADE_CDK_GRADLE_PARAMS: ${{ inputs.upgradeCdkGradleParams || '-x :airbyte-integrations:connectors:destination-hubspot:upgradeCdk :airbyte-integrations:connectors:destination-customer-io:upgradeCdk' }}
 
     strategy:
       matrix:
@@ -89,7 +100,7 @@ jobs:
 
       - name: Run CDK upgrade # Run tests against local CDK version
         if: matrix.connector
-        run: ./gradlew upgradeCdk --cdkVersion=local
+        run: ./gradlew upgradeCdk --cdkVersion=local $UPGRADE_CDK_GRADLE_PARAMS
 
       - name: Run Unit Tests
         id: run-unit-tests
