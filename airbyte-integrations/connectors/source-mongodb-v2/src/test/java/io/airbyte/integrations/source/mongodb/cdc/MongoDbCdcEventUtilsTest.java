@@ -22,10 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
 import java.nio.charset.Charset;
-import java.util.Base64;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import org.bson.BsonBinary;
 import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
@@ -105,6 +102,15 @@ class MongoDbCdcEventUtilsTest {
     assertNull(dataWithoutId.get(DOCUMENT_OBJECT_ID_FIELD));
   }
 
+  // Helper method to create a simple schema map (for tests that don't need type checking)
+  private Map<String, JsonNode> toSchemaMap(Set<String> fieldNames) {
+    final Map<String, JsonNode> schemaMap = new HashMap<>();
+    for (String fieldName : fieldNames) {
+      schemaMap.put(fieldName, Jsons.jsonNode(Collections.emptyMap()));
+    }
+    return schemaMap;
+  }
+
   @Test
   void testTransformDataTypes() {
     final BsonTimestamp bsonTimestamp = new BsonTimestamp(394, 1926745562);
@@ -132,7 +138,7 @@ class MongoDbCdcEventUtilsTest {
         .append("field18", new BsonBinary(legacyUuid, UuidRepresentation.JAVA_LEGACY));
 
     final String documentAsJson = document.toJson();
-    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet());
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, toSchemaMap(document.keySet()));
 
     assertNotNull(transformed);
     assertNotEquals(documentAsJson, Jsons.serialize(transformed));
@@ -185,7 +191,7 @@ class MongoDbCdcEventUtilsTest {
         .append("field16", new Document("key", "value"));
 
     final String documentAsJson = document.toJson();
-    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, Set.of("field1", "field2", "field3"));
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, toSchemaMap(Set.of("field1", "field2", "field3")));
 
     assertNotNull(transformed);
     assertNotEquals(documentAsJson, Jsons.serialize(transformed));
@@ -252,6 +258,55 @@ class MongoDbCdcEventUtilsTest {
     assertTrue(abDataNode.has("field15"));
     assertEquals(JsonNodeType.NULL, abDataNode.get("field15").getNodeType());
     assertTrue(abDataNode.has("field16"));
+  }
+
+  /*
+   * The following tests the dynamic array wrapping functionality. If discovery identifies a field as
+   * an array, the schema expects an array. Since MongoDB is dynamic, users can store int, object, or
+   * string values in that field. To prevent destinations from nulling out these values due to type
+   * mismatch, we wrap them in arrays.
+   */
+  @Test
+  void testTransformDataTypesWrapsObjectInArrayWhenSchemaExpectsArray() {
+    // Document has single object in "reviews", but schema expects array of objects
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("reviews", new Document("rating", "A").append("score", 10));
+
+    final String documentAsJson = document.toJson();
+
+    // Schema says "reviews" should be an array
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "reviews", Jsons.jsonNode(Map.of("type", "array")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("reviews").isArray());
+    assertEquals(1, transformed.get("reviews").size());
+    assertEquals("A", transformed.get("reviews").get(0).get("rating").asText());
+    assertEquals(10, transformed.get("reviews").get(0).get("score").asInt());
+  }
+
+  @Test
+  void testTransformDataTypesWrapsIntInArrayWhenSchemaExpectsArray() {
+    // Document has an int in "scores", but schema expects array
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("scores", new BsonInt32(50));
+
+    final String documentAsJson = document.toJson();
+
+    // Schema says "scores" should be an array
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "scores", Jsons.jsonNode(Map.of("type", "array")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("scores").isArray());
+    assertEquals(1, transformed.get("scores").size());
+    assertEquals(50, transformed.get("scores").get(0).asInt());
   }
 
 }
