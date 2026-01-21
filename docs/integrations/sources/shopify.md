@@ -141,6 +141,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2024-04/resources/transactions)
 - [Blogs](https://shopify.dev/api/admin-rest/2024-04/resources/blog)
 - [Collects](https://shopify.dev/api/admin-rest/2024-04/resources/collect#top)
+- [Collection Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection#field-Collection.fields.products) - All products associated with each collection, including smart collection matches
 - [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Collection)
 - [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/deliveryProfiles)
 - [Custom Collections](https://shopify.dev/api/admin-rest/2024-04/resources/customcollection#top)

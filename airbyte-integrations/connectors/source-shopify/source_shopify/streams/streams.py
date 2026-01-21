@@ -10,6 +10,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
+    CollectionProduct,
     CustomerAddresses,
     CustomerJourney,
     DeliveryProfile,
@@ -321,6 +322,20 @@ class Collections(IncrementalShopifyGraphQlBulkStream):
 
 class MetafieldCollections(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldCollection = MetafieldCollection
+
+
+class CollectionProducts(IncrementalShopifyGraphQlBulkStream):
+    """
+    Stream that returns all products associated with each collection, including both
+    custom collections and smart collections. Unlike the Collects stream which only
+    returns manually associated products, this stream returns all products that belong
+    to a collection (including those matched by smart collection rules).
+
+    https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection#field-Collection.fields.products
+    """
+
+    bulk_query: CollectionProduct = CollectionProduct
+    cursor_field = "collection_updated_at"
 
 
 class BalanceTransactions(IncrementalShopifyStream):
