@@ -18,7 +18,9 @@
   "paths": {
     "/api/v1/account/applications/token": {
       "post": {
-        "tags": ["Applications"],
+        "tags": [
+          "Applications"
+        ],
         "summary": "Generate Application Token",
         "description": "Generate an application access token using client credentials. This endpoint is intentionally unauthenticated - authentication is performed via client_id and client_secret in the request body. Returns a self-signed JWT token that can be used for all API calls.",
         "operationId": "create_account_applications_token",
@@ -109,7 +111,9 @@
     },
     "/api/v1/agents/chat/history/{thread_id}": {
       "get": {
-        "tags": ["Agents - Chat History"],
+        "tags": [
+          "Agents - Chat History"
+        ],
         "summary": "Chat history by thread ID",
         "description": "Get the full chat history for an existing thread",
         "operationId": "get_agents_chat_history_thread_id",
@@ -197,7 +201,9 @@
     },
     "/api/v1/agents/chat/schema/definitions/sources/{source_definition_id}": {
       "post": {
-        "tags": ["Agents - Schema Definitions"],
+        "tags": [
+          "Agents - Schema Definitions"
+        ],
         "summary": "Create Definition Chat",
         "operationId": "create_agents_chat_schema_definitions_sources_source_definition_id",
         "security": [
@@ -329,7 +335,9 @@
     },
     "/api/v1/agents/chat/schema/definitions/sources/{source_definition_id}/qa-report": {
       "get": {
-        "tags": ["Agents - Schema Definitions"],
+        "tags": [
+          "Agents - Schema Definitions"
+        ],
         "summary": "Get Catalog Qa Report",
         "operationId": "get_agents_chat_schema_definitions_sources_source_definition_id_qa_report",
         "security": [
@@ -417,7 +425,9 @@
     },
     "/api/v1/agents/chat/schema/definitions/sources/{source_definition_id}/qa-report/run": {
       "post": {
-        "tags": ["Agents - Schema Definitions"],
+        "tags": [
+          "Agents - Schema Definitions"
+        ],
         "summary": "Run Catalog Qa Fixes",
         "operationId": "create_agents_chat_schema_definitions_sources_source_definition_id_qa_report_run",
         "security": [
@@ -515,7 +525,9 @@
     },
     "/api/v1/agents/chat/schema/definitions/sources/{source_definition_id}/state": {
       "get": {
-        "tags": ["Agents - Schema Definitions"],
+        "tags": [
+          "Agents - Schema Definitions"
+        ],
         "summary": "Get Schema Chat State",
         "operationId": "get_agents_chat_schema_definitions_sources_source_definition_id_state",
         "security": [
@@ -603,7 +615,9 @@
     },
     "/api/v1/agents/chat/schema/templates/sources/{source_template_id}": {
       "post": {
-        "tags": ["Agents - Source Template Catalog Chat"],
+        "tags": [
+          "Agents - Source Template Catalog Chat"
+        ],
         "summary": "Create Definition Chat",
         "operationId": "create_agents_chat_schema_templates_sources_source_template_id",
         "security": [
@@ -699,7 +713,9 @@
     },
     "/api/v1/agents/chat/schema/templates/sources/{source_template_id}/state": {
       "get": {
-        "tags": ["Agents - Source Template Catalog Chat"],
+        "tags": [
+          "Agents - Source Template Catalog Chat"
+        ],
         "summary": "Get Schema Chat State",
         "operationId": "get_agents_chat_schema_templates_sources_source_template_id_state",
         "security": [
@@ -809,25 +825,6 @@
             "description": "The source ID to search within"
           },
           {
-            "name": "connector_instance_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Optional connector instance ID for direct API queries",
-              "title": "Connector Instance Id"
-            },
-            "description": "Optional connector instance ID for direct API queries"
-          },
-          {
             "name": "x-organization-id",
             "in": "header",
             "required": false,
@@ -906,7 +903,9 @@
     },
     "/api/v1/agents/chat/templates/sources": {
       "post": {
-        "tags": ["Agents - Source Template Creator"],
+        "tags": [
+          "Agents - Source Template Creator"
+        ],
         "summary": "Post source template creator chat message",
         "description": "Post a new message to a source template creation chat thread",
         "operationId": "create_agents_chat_templates_sources",
@@ -995,7 +994,9 @@
     },
     "/api/v1/agents/discovery/{source_definition_id}": {
       "post": {
-        "tags": ["Agents - Discovery"],
+        "tags": [
+          "Agents - Discovery"
+        ],
         "summary": "Create Discovery Agent",
         "description": "Trigger discovery job for a specific source definition.\n\nThis endpoint will:\n1. Verify a source template with \"discovery-agent\" tag exists for this source definition\n2. Check if the catalog is blessed (and force flag is not set)\n3. Schedule a new discovery job\n\nThis enables re-running discovery for sources that need catalog updates.\n\nArgs:\n    source_definition_id: The source definition ID to run discovery for\n    force: If true, allows discovery even on blessed catalogs\n\nReturns:\n    DiscoveryAgentCreateResponse with a single job created\n\nRaises:\n    HTTPException 404: Source template not found or not tagged with \"discovery-agent\"\n    HTTPException 403: Catalog is blessed and force is not true",
         "operationId": "create_agents_discovery_source_definition_id",
@@ -1541,10 +1542,98 @@
         }
       }
     },
+    "/api/v1/connectors/sources/{source_id}/entities": {
+      "get": {
+        "summary": "Get Source Entities",
+        "description": "Get entity metadata for a source's cache configuration.\n\nReturns the schema from x-airbyte-cache without implementation details\n(x-airbyte-name fields are excluded).\n\nArgs:\n    source_id: The UUID of the source\n\nReturns:\n    EntitiesResponse containing entity metadata\n\nRaises:\n    HTTPException: 404 if source not found, 409 if cache search not supported",
+        "operationId": "get_connectors_sources_source_id_entities",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntitiesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/connectors/sources/{source_id}/execute": {
       "post": {
         "summary": "Execute Via Source",
-        "description": "Execute a connector operation using an Airbyte Platform source ID.\n\nThis endpoint provides an alternative execution path that uses Platform's\nexisting source configurations instead of Sonar-managed connector instances.\n\nArgs:\n    source_id: Airbyte Platform source ID (UUID)\n    request: Operation details (entity, action, params)\n    airbyte_client: Injected Airbyte API client\n    config_secret_processor: Injected secret processor\n\nReturns:\n    - For download actions: StreamingResponse with file data\n    - For other actions: ConnectorExecuteResponse with operation results",
+        "description": "Execute a connector operation using an Airbyte Platform source ID.\n\nThis endpoint provides an alternative execution path that uses Platform's\nexisting source configurations instead of Sonar-managed connector instances.\n\nActions:\n    - SEARCH: Uses the cache via SearchClient. Requires query field, entity is stream name.\n    - Other actions (list, get, create, download, api_search): Execute via connector SDK.\n\nArgs:\n    source_id: Airbyte Platform source ID (UUID)\n    request: Operation details (entity, action, params/query)\n    controller: Injected SourceExecuteController\n\nReturns:\n    ConnectorExecuteResponse for all actions (wraps search results for SEARCH action)",
         "operationId": "create_connectors_sources_source_id_execute",
         "security": [
           {
@@ -1638,9 +1727,99 @@
         }
       }
     },
+    "/api/v1/connectors/{connector_definition_id}/oauth-configuration-spec": {
+      "get": {
+        "summary": "Get Oauth Configuration Spec",
+        "description": "Get the OAuth configuration specification for a connector.\n\nReturns the JSON schema for the connector's OAuth configuration,\nwhich is a merge of:\n- complete_oauth_server_output_specification (server-side OAuth outputs like client_id, client_secret)\n- complete_oauth_output_specification (client-side OAuth outputs like refresh_token)\n\nArgs:\n    connector_definition_id: UUID of the connector definition\n\nReturns:\n    OAuthConfigurationSpecResponse with the OAuth config schema\n\nRaises:\n    HTTPException: 404 if connector not found, 400 if connector doesn't support OAuth",
+        "operationId": "get_connectors_connector_definition_id_oauth_configuration_spec",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connector_definition_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Connector Definition Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthConfigurationSpecResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/embedded/organizations/current-scoped": {
       "get": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Get Scoped Token Info",
         "description": "Get the organization and workspace id for a scoped token.",
         "operationId": "deprecated_get_embedded_organizations_current_scoped",
@@ -1720,7 +1899,9 @@
     },
     "/api/v1/embedded/scoped-token": {
       "post": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Create Scoped Token",
         "description": "**Requires an Access Token as the bearer token.**\n\nGenerate a new scoped token.\n\nYou can safely share it with your end users and it will allow them to manage their configured sources.",
         "operationId": "create_embedded_scoped_token",
@@ -1809,7 +1990,9 @@
     },
     "/api/v1/embedded/scoped-token-info": {
       "get": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Get Scoped Token Info",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nReturn metadata about a scoped token (workspace, organization...).",
         "operationId": "deprecated_get_embedded_scoped_token_info",
@@ -1889,7 +2072,9 @@
     },
     "/api/v1/embedded/scoped-token/info": {
       "get": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Get Scoped Token Info",
         "description": "Get the organization and workspace id for a scoped token.",
         "operationId": "get_embedded_scoped_token_info",
@@ -1968,7 +2153,9 @@
     },
     "/api/v1/embedded/source-templates": {
       "post": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "List Source Templates",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nList all the available sources that the end users can connect to.",
         "operationId": "deprecated_list_embedded_source_templates",
@@ -2072,7 +2259,9 @@
         }
       },
       "get": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "List Source Templates",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nList all the available sources that the end users can connect to.",
         "operationId": "list_embedded_source_templates",
@@ -2177,7 +2366,9 @@
     },
     "/api/v1/embedded/source-templates/{id}": {
       "get": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Get Source Template",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nRetrieves all the details to display to the end users to configure their source.",
         "operationId": "get_embedded_source_templates_id",
@@ -2266,7 +2457,9 @@
     },
     "/api/v1/embedded/sources": {
       "post": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Create Source",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nCreates a new source with the provided end user credentials and configurations.\nConfig should be validated before this endpoint is called.",
         "operationId": "create_embedded_sources",
@@ -2353,7 +2546,9 @@
         }
       },
       "get": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "List Sources",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nList all the sources the end user configured.",
         "operationId": "list_embedded_sources",
@@ -2444,7 +2639,9 @@
     },
     "/api/v1/embedded/sources/check": {
       "post": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Run Check Config Source",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nTriggers a check for the setup of a new source with the provided end user credentials and configurations.",
         "operationId": "create_embedded_sources_check",
@@ -2533,7 +2730,9 @@
     },
     "/api/v1/embedded/sources/check/{id}/status": {
       "get": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Status Check Config Source",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nReview the status of a check.",
         "operationId": "get_embedded_sources_check_id_status",
@@ -2622,7 +2821,9 @@
     },
     "/api/v1/embedded/sources/{id}": {
       "get": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Get Source",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nGet the details for the source the end user configured.",
         "operationId": "get_embedded_sources_id",
@@ -2709,7 +2910,9 @@
         }
       },
       "put": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Update Source",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nUpdate an existing source with the provided end user credentials and configurations.\nConfig should be validated before this endpoint is called.",
         "operationId": "update_embedded_sources_id",
@@ -2806,7 +3009,9 @@
         }
       },
       "delete": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Delete Source",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nDelete an existing end user source.",
         "operationId": "delete_embedded_sources_id",
@@ -2895,7 +3100,9 @@
     },
     "/api/v1/embedded/sources/{id}/check": {
       "post": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Run Check Config Source Update",
         "description": "**Requires a Scoped Token as the bearer token.**\n\nTriggers a check for updating an existing source with the provided end user credentials and configurations.",
         "operationId": "create_embedded_sources_id_check",
@@ -2994,7 +3201,9 @@
     },
     "/api/v1/embedded/widget-token": {
       "post": {
-        "tags": ["Embedded"],
+        "tags": [
+          "Embedded"
+        ],
         "summary": "Create Widget Token",
         "description": "**Requires an Access Token as the bearer token.**\n\nGenerate a new widget token.\n\nYou can safely pass it to your front-end application to instantiate a widget instance.",
         "operationId": "create_embedded_widget_token",
@@ -3083,7 +3292,9 @@
     },
     "/api/v1/integrations/definitions/destinations": {
       "get": {
-        "tags": ["Destinations Definitions"],
+        "tags": [
+          "Destinations Definitions"
+        ],
         "summary": "List Destination Definitions",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a destination connector specification.",
         "operationId": "list_integrations_definitions_destinations",
@@ -3178,7 +3389,9 @@
     },
     "/api/v1/integrations/definitions/destinations/{id}": {
       "get": {
-        "tags": ["Destinations Definitions"],
+        "tags": [
+          "Destinations Definitions"
+        ],
         "summary": "Get Destination Definition",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a destination connector specification.",
         "operationId": "get_integrations_definitions_destinations_id",
@@ -3267,7 +3480,9 @@
     },
     "/api/v1/integrations/definitions/sources": {
       "get": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Source Definitions Get",
         "description": "**Requires an Access Token as the bearer token.**\n\nList source connector specifications.",
         "operationId": "list_integrations_definitions_sources",
@@ -3364,7 +3579,9 @@
     },
     "/api/v1/integrations/definitions/sources/{id}": {
       "get": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Source Definition Get",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a source connector specification.",
         "operationId": "get_integrations_definitions_sources_id",
@@ -3453,7 +3670,9 @@
     },
     "/api/v1/integrations/definitions/sources/{source_definition_id}/catalog": {
       "post": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Source Definition Catalog Create",
         "description": "**Requires an Instance Admin Token as the bearer token.**\n\nCreate a catalog for a source connector specification.",
         "operationId": "create_integrations_definitions_sources_source_definition_id_catalog",
@@ -3550,7 +3769,9 @@
         }
       },
       "delete": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Delete Source Definition Catalog",
         "description": "**Requires an Instance Admin Token as the bearer token.**\n\nDelete a catalog for a source connector specification.",
         "operationId": "delete_integrations_definitions_sources_source_definition_id_catalog",
@@ -3637,7 +3858,9 @@
         }
       },
       "get": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Get Source Definition Catalog",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a source connector specification catalog.",
         "operationId": "get_integrations_definitions_sources_source_definition_id_catalog",
@@ -3736,7 +3959,9 @@
         }
       },
       "patch": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Patch Source Definition Catalog",
         "description": "Patch the source definition's catalog. This allows updating global configurations such as selected streams.",
         "operationId": "update_integrations_definitions_sources_source_definition_id_catalog",
@@ -3835,7 +4060,9 @@
     },
     "/api/v1/integrations/definitions/sources/{source_definition_id}/catalog/query": {
       "post": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Query Source Definition Catalog",
         "description": "Query the source definition's catalog using a JMESPath expression.",
         "operationId": "create_integrations_definitions_sources_source_definition_id_catalog_query",
@@ -3934,7 +4161,9 @@
     },
     "/api/v1/integrations/definitions/sources/{source_definition_id}/streams": {
       "post": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Create Source Definition Catalog Stream",
         "description": "Add a new stream to the source definition's catalog.",
         "operationId": "create_integrations_definitions_sources_source_definition_id_streams",
@@ -4033,7 +4262,9 @@
     },
     "/api/v1/integrations/definitions/sources/{source_definition_id}/streams/{stream_name}": {
       "patch": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Patch Source Definition Catalog Stream",
         "description": "Patch a specific stream in the source definition's catalog. This allows updating stream configurations such as sync modes and cursor fields.",
         "operationId": "update_integrations_definitions_sources_source_definition_id_streams_stream_name",
@@ -4139,7 +4370,9 @@
         }
       },
       "delete": {
-        "tags": ["Sources Definitions"],
+        "tags": [
+          "Sources Definitions"
+        ],
         "summary": "Delete Source Definition Catalog Stream",
         "description": "**Requires an Instance Admin Token as the bearer token.**\n\nDelete a catalog for a source connector specification.",
         "operationId": "delete_integrations_definitions_sources_source_definition_id_streams_stream_name",
@@ -4237,7 +4470,9 @@
     },
     "/api/v1/integrations/destinations": {
       "get": {
-        "tags": ["Destinations"],
+        "tags": [
+          "Destinations"
+        ],
         "summary": "List Destinations",
         "description": "**Requires an Access Token as the bearer token.**\n\nList destinations.",
         "operationId": "list_integrations_destinations",
@@ -4351,7 +4586,9 @@
     },
     "/api/v1/integrations/destinations/{id}": {
       "get": {
-        "tags": ["Destinations"],
+        "tags": [
+          "Destinations"
+        ],
         "summary": "Get Destination",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a destination.",
         "operationId": "get_integrations_destinations_id",
@@ -4440,7 +4677,9 @@
     },
     "/api/v1/integrations/sources": {
       "post": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Create Source",
         "description": "**Requires an Access Token as the bearer token.**\n\nCreate an end user's configured source, config should be validated before.",
         "operationId": "create_integrations_sources",
@@ -4527,7 +4766,9 @@
         }
       },
       "get": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "List Sources",
         "description": "**Requires an Access Token as the bearer token.**\n\nList end user's configured sources.",
         "operationId": "list_integrations_sources",
@@ -4618,7 +4859,9 @@
     },
     "/api/v1/integrations/sources/check": {
       "post": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Run Check Config Source",
         "description": "**Requires an Access Token as the bearer token.**\n\nCreate a source configuration check.",
         "operationId": "create_integrations_sources_check",
@@ -4707,7 +4950,9 @@
     },
     "/api/v1/integrations/sources/check/{id}/status": {
       "get": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Status Check Config Source",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a source configuration check status.",
         "operationId": "get_integrations_sources_check_id_status",
@@ -4796,7 +5041,9 @@
     },
     "/api/v1/integrations/sources/{id}": {
       "get": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Get Source",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet an end user's configured source.",
         "operationId": "get_integrations_sources_id",
@@ -4883,7 +5130,9 @@
         }
       },
       "put": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Update Source",
         "description": "**Requires an Access Token as the bearer token.**\n\nUpdate an end user's configured source, config should be validated before.",
         "operationId": "update_integrations_sources_id",
@@ -4980,7 +5229,9 @@
         }
       },
       "delete": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Delete Source",
         "description": "**Requires an Access Token as the bearer token.**\n\nDelete an end user's configured source.",
         "operationId": "delete_integrations_sources_id",
@@ -5069,7 +5320,9 @@
     },
     "/api/v1/integrations/sources/{id}/check": {
       "post": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Run Check Config Source Update",
         "description": "Check source configuration before updating an existing source.",
         "operationId": "create_integrations_sources_id_check",
@@ -5168,7 +5421,9 @@
     },
     "/api/v1/integrations/sources/{id}/meta/streams": {
       "get": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Get Source Streams Metadata",
         "description": "Get metadata about available streams for a source",
         "operationId": "get_integrations_sources_id_meta_streams",
@@ -5267,7 +5522,9 @@
     },
     "/api/v1/integrations/sources/{id}/meta/streams/{stream_name}": {
       "get": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Get Source Stream Fields",
         "description": "Get field metadata for a specific stream",
         "operationId": "get_integrations_sources_id_meta_streams_stream_name",
@@ -5375,7 +5632,9 @@
     },
     "/api/v1/integrations/sources/{id}/search/{stream_name}": {
       "post": {
-        "tags": ["Sources"],
+        "tags": [
+          "Sources"
+        ],
         "summary": "Search",
         "description": "Search source data using condition syntax",
         "operationId": "create_integrations_sources_id_search_stream_name",
@@ -5483,7 +5742,9 @@
     },
     "/api/v1/integrations/templates/connections": {
       "get": {
-        "tags": ["Template Connections"],
+        "tags": [
+          "Template Connections"
+        ],
         "summary": "List Connection Templates",
         "description": "**Requires an Access Token as the bearer token.**\n\nList connection templates.",
         "operationId": "list_integrations_templates_connections",
@@ -5586,7 +5847,9 @@
         }
       },
       "post": {
-        "tags": ["Template Connections"],
+        "tags": [
+          "Template Connections"
+        ],
         "summary": "Create Connection Template",
         "description": "**Requires an Access Token as the bearer token.**\n\nCreate a connection template.",
         "operationId": "create_integrations_templates_connections",
@@ -5698,7 +5961,9 @@
     },
     "/api/v1/integrations/templates/connections/cron/describe": {
       "post": {
-        "tags": ["Template Connections"],
+        "tags": [
+          "Template Connections"
+        ],
         "summary": "Describe Cron Expression",
         "description": "**Requires an Access Token as the bearer token.**\n\nValidate and describe a Quartz cron expression. Returns a human-readable description of when the schedule will run.",
         "operationId": "create_integrations_templates_connections_cron_describe",
@@ -5787,7 +6052,9 @@
     },
     "/api/v1/integrations/templates/connections/{id}": {
       "get": {
-        "tags": ["Template Connections"],
+        "tags": [
+          "Template Connections"
+        ],
         "summary": "Get Connection Template",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a connection template.",
         "operationId": "get_integrations_templates_connections_id",
@@ -5889,7 +6156,9 @@
         }
       },
       "delete": {
-        "tags": ["Template Connections"],
+        "tags": [
+          "Template Connections"
+        ],
         "summary": "Delete Connection Template",
         "description": "**Requires an Access Token as the bearer token.**\n\nDelete a connection template.",
         "operationId": "delete_integrations_templates_connections_id",
@@ -5976,7 +6245,9 @@
         }
       },
       "patch": {
-        "tags": ["Template Connections"],
+        "tags": [
+          "Template Connections"
+        ],
         "summary": "Patch Connection Template",
         "description": "**Requires an Access Token as the bearer token.**\n\nUpdate a connection template.",
         "operationId": "update_integrations_templates_connections_id",
@@ -6090,7 +6361,9 @@
     },
     "/api/v1/integrations/templates/connections/{id}/tags": {
       "post": {
-        "tags": ["Template Connections"],
+        "tags": [
+          "Template Connections"
+        ],
         "summary": "Tag Connection Template",
         "description": "**Requires an Access Token as the bearer token.**\n\nTag a connection template.",
         "operationId": "create_integrations_templates_connections_id_tags",
@@ -6204,7 +6477,9 @@
     },
     "/api/v1/integrations/templates/connections/{id}/tags/{tag_name}": {
       "delete": {
-        "tags": ["Template Connections"],
+        "tags": [
+          "Template Connections"
+        ],
         "summary": "Untag Connection Template",
         "description": "Remove a tag from a connection template",
         "operationId": "delete_integrations_templates_connections_id_tags_tag_name",
@@ -6302,7 +6577,9 @@
     },
     "/api/v1/integrations/templates/sources": {
       "post": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Create Source Template",
         "description": "**Requires an Access Token as the bearer token.**\n\nCreate a source_template.\n\nEnd users can complete this template to create a source connector.",
         "operationId": "create_integrations_templates_sources",
@@ -6397,7 +6674,9 @@
         }
       },
       "get": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "List Source Templates",
         "description": "**Requires an Access Token as the bearer token.**\n\nList source templates.",
         "operationId": "list_integrations_templates_sources",
@@ -6502,7 +6781,9 @@
     },
     "/api/v1/integrations/templates/sources/global": {
       "get": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "List Global Source Templates",
         "description": "**Requires an Access Token as the bearer token.**\n\nList global a source template.\n\nGlobal templates are visible to all organizations and are maintained by Airbyte. You can clone them to create a local template.",
         "operationId": "list_integrations_templates_sources_global",
@@ -6581,7 +6862,9 @@
     },
     "/api/v1/integrations/templates/sources/{id}": {
       "patch": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Update Source Template",
         "description": "**Requires an Access Token as the bearer token.**\n\nUpdate a source template.",
         "operationId": "update_integrations_templates_sources_id",
@@ -6678,7 +6961,9 @@
         }
       },
       "get": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Get Source Template",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a source template.",
         "operationId": "get_integrations_templates_sources_id",
@@ -6765,7 +7050,9 @@
         }
       },
       "delete": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Delete Source Templates",
         "description": "**Requires an Access Token as the bearer token.**\n\nDelete a source template.",
         "operationId": "delete_integrations_templates_sources_id",
@@ -6854,7 +7141,9 @@
     },
     "/api/v1/integrations/templates/sources/{id}/tags": {
       "post": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Tag Source Template",
         "description": "**Requires an Access Token as the bearer token.**\n\nTag a source template.",
         "operationId": "create_integrations_templates_sources_id_tags",
@@ -6953,7 +7242,9 @@
     },
     "/api/v1/integrations/templates/sources/{id}/tags/{tag_name}": {
       "delete": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Untag Source Template",
         "description": "Remove a tag from a source template",
         "operationId": "delete_integrations_templates_sources_id_tags_tag_name",
@@ -7051,7 +7342,9 @@
     },
     "/api/v1/integrations/templates/sources/{source_template_id}/catalog": {
       "post": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Create Source Template Catalog",
         "description": "Create/update a catalog for a source template.",
         "operationId": "create_integrations_templates_sources_source_template_id_catalog",
@@ -7148,7 +7441,9 @@
         }
       },
       "delete": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Delete Source Template Catalog",
         "description": "Delete a source template's catalog.",
         "operationId": "delete_integrations_templates_sources_source_template_id_catalog",
@@ -7235,7 +7530,9 @@
         }
       },
       "get": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Get Source Template Catalog",
         "description": "Get a source template's catalog.",
         "operationId": "get_integrations_templates_sources_source_template_id_catalog",
@@ -7334,7 +7631,9 @@
         }
       },
       "patch": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Patch Source Template Catalog",
         "description": "Patch the source template's catalog. This allows updating configurations such as selected streams.",
         "operationId": "update_integrations_templates_sources_source_template_id_catalog",
@@ -7433,7 +7732,9 @@
     },
     "/api/v1/integrations/templates/sources/{source_template_id}/catalog/query": {
       "post": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Query Source Template Catalog",
         "description": "Query the source template's catalog using a JMESPath expression.",
         "operationId": "create_integrations_templates_sources_source_template_id_catalog_query",
@@ -7532,7 +7833,9 @@
     },
     "/api/v1/integrations/templates/sources/{source_template_id}/streams": {
       "post": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Create Source Template Catalog Stream",
         "description": "Add a new stream to the source template's catalog.",
         "operationId": "create_integrations_templates_sources_source_template_id_streams",
@@ -7631,7 +7934,9 @@
     },
     "/api/v1/integrations/templates/sources/{source_template_id}/streams/{stream_name}": {
       "patch": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Patch Source Template Catalog Stream",
         "description": "Patch a specific stream in the source template's catalog. This allows updating stream configurations.",
         "operationId": "update_integrations_templates_sources_source_template_id_streams_stream_name",
@@ -7737,7 +8042,9 @@
         }
       },
       "delete": {
-        "tags": ["Template Sources"],
+        "tags": [
+          "Template Sources"
+        ],
         "summary": "Delete Source Template Catalog Stream",
         "description": "Delete a specific stream from the source template's catalog.",
         "operationId": "delete_integrations_templates_sources_source_template_id_streams_stream_name",
@@ -7835,7 +8142,9 @@
     },
     "/api/v1/integrations/templates/tags": {
       "post": {
-        "tags": ["Template Tags"],
+        "tags": [
+          "Template Tags"
+        ],
         "summary": "Create Template Tag",
         "description": "**Requires an Access Token as the bearer token.**\n\nCreate a tag.",
         "operationId": "create_integrations_templates_tags",
@@ -7922,7 +8231,9 @@
         }
       },
       "get": {
-        "tags": ["Template Tags"],
+        "tags": [
+          "Template Tags"
+        ],
         "summary": "List Template Tags",
         "description": "**Requires an Access Token as the bearer token.**\n\nList tags.",
         "operationId": "list_integrations_templates_tags",
@@ -8001,7 +8312,9 @@
     },
     "/api/v1/integrations/templates/tags/{name}": {
       "put": {
-        "tags": ["Template Tags"],
+        "tags": [
+          "Template Tags"
+        ],
         "summary": "Update Template Tag",
         "description": "**Requires an Access Token as the bearer token.**\n\nUpdate a tag.",
         "operationId": "update_integrations_templates_tags_name",
@@ -8097,7 +8410,9 @@
         }
       },
       "delete": {
-        "tags": ["Template Tags"],
+        "tags": [
+          "Template Tags"
+        ],
         "summary": "Delete Template Tag",
         "description": "**Requires an Access Token as the bearer token.**\n\nDelete a tag.",
         "operationId": "delete_integrations_templates_tags_name",
@@ -8185,7 +8500,9 @@
     },
     "/api/v1/internal/account/applications": {
       "post": {
-        "tags": ["Applications"],
+        "tags": [
+          "Applications"
+        ],
         "summary": "Get Or Create Application",
         "operationId": "create_internal_account_applications",
         "security": [
@@ -8263,7 +8580,9 @@
     },
     "/api/v1/internal/account/enroll": {
       "post": {
-        "tags": ["Account"],
+        "tags": [
+          "Account"
+        ],
         "summary": "Enroll",
         "description": "Enroll an organization in PAYG billing and provisioning.\nSets up Orb billing, Stigg subscription, and payment status synchronously.\nReturns immediately with success or failure.\n\nThis endpoint is idempotent - if enrollment is already completed, returns existing subscription data\nwithout attempting to re-provision services.",
         "operationId": "create_internal_account_enroll",
@@ -8342,7 +8661,9 @@
     },
     "/api/v1/internal/account/enrollment-status": {
       "get": {
-        "tags": ["Account"],
+        "tags": [
+          "Account"
+        ],
         "summary": "Get Enrollment Status",
         "description": "Check user's enrollment status.\n\nDetermines:\n1. Whether user is new (has email in token) or existing (no email)\n2. Whether organization has completed enrollment\n3. Organization details if enrolled\n\nReturns:\n    EnrollmentStatusResponse with user and enrollment details",
         "operationId": "get_internal_account_enrollment_status",
@@ -8421,7 +8742,9 @@
     },
     "/api/v1/internal/account/organizations": {
       "get": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "List Organizations",
         "operationId": "list_internal_account_organizations",
         "security": [
@@ -8499,7 +8822,9 @@
     },
     "/api/v1/internal/account/organizations/{id}/onboarding-progress": {
       "post": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "Update Organization Onboarding Progress",
         "description": "Update the onboarding progress for an organization.",
         "operationId": "create_internal_account_organizations_id_onboarding_progress",
@@ -8598,7 +8923,9 @@
     },
     "/api/v1/internal/account/organizations/{organization_id}": {
       "get": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "Get Organization",
         "operationId": "get_internal_account_organizations_organization_id",
         "security": [
@@ -8688,7 +9015,9 @@
     },
     "/api/v1/internal/account/organizations/{organization_id}/billing-state": {
       "patch": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "Update Organization Billing State",
         "description": "Manually update organization billing state and sync to Airbyte.\n\nThis is an internal admin-only endpoint for testing and emergency use.\nIt updates the billing state in Sonar and automatically syncs to Airbyte\nto ensure workspaces/connections are enabled or disabled appropriately.\n\nBilling State Mapping (Sonar → Airbyte):\n    - TRIAL → MANUAL (syncs enabled)\n    - ENABLED → MANUAL (syncs enabled)\n    - GRACE_PERIOD → MANUAL (syncs enabled, Sonar tracks grace period internally)\n    - DISABLED → LOCKED (syncs disabled - Airbyte API doesn't allow DISABLED status)\n    - LOCKED → LOCKED (syncs disabled, requires payment)\n\nThe mapping ensures that:\n    - Paying customers (TRIAL/ENABLED/GRACE_PERIOD) have unrestricted access (MANUAL)\n    - Sonar tracks grace period end dates internally without Airbyte involvement\n    - Customers who cancel (DISABLED) are locked in Airbyte (LOCKED status)\n    - Customers with payment issues (LOCKED) have syncs blocked until payment\n\nNote: Airbyte's DISABLED status is reserved for internal billing automation only.\nWhen Sonar sets DISABLED, we use LOCKED which has the same effect (disables connections).\n\nGrace Period Handling:\n    - If grace_period_ends_at is not provided when transitioning to GRACE_PERIOD,\n      it will be auto-calculated as +1 day from now (matching webhook behavior)\n    - grace_period_ends_at is stored in Sonar DB but NOT sent to Airbyte\n\nArgs:\n    organization_id: The organization to update\n    request: The billing state to set and optional grace period end time\n\nReturns:\n    Updated billing state information\n\nRaises:\n    HTTPException 404: Organization not found\n    HTTPException 500: Failed to sync to Airbyte (will trigger retry)",
         "operationId": "update_internal_account_organizations_organization_id_billing_state",
@@ -8789,7 +9118,9 @@
     },
     "/api/v1/internal/account/organizations/{organization_id}/customer-portal": {
       "post": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "Get Customer Portal Link",
         "description": "Get a link to the customer portal for an organization.\n\nThe customer portal allows users to manage their billing information,\nview invoices, and update payment methods.",
         "operationId": "create_internal_account_organizations_organization_id_customer_portal",
@@ -8890,7 +9221,9 @@
     },
     "/api/v1/internal/account/organizations/{organization_id}/info": {
       "get": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "Get Organization Info",
         "operationId": "get_internal_account_organizations_organization_id_info",
         "security": [
@@ -8980,7 +9313,9 @@
     },
     "/api/v1/internal/account/organizations/{organization_id}/invoices": {
       "get": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "List Invoices",
         "operationId": "get_internal_account_organizations_organization_id_invoices",
         "security": [
@@ -9070,7 +9405,9 @@
     },
     "/api/v1/internal/account/organizations/{organization_id}/payment-information": {
       "get": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "Get Payment Information",
         "operationId": "get_internal_account_organizations_organization_id_payment_information",
         "security": [
@@ -9160,7 +9497,9 @@
     },
     "/api/v1/internal/account/organizations/{organization_id}/signup": {
       "post": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "Organization Signup",
         "description": "Sign up an organization with synchronous provisioning.\nSets up Orb billing, Stigg subscription, and payment status in a single request.\nReturns immediately with subscription details.",
         "operationId": "create_internal_account_organizations_organization_id_signup",
@@ -9249,7 +9588,9 @@
     },
     "/api/v1/internal/account/organizations/{organization_id}/stripe-portal": {
       "post": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "Get Stripe Portal Link",
         "description": "Get a link to the Stripe customer portal using the configured Stripe API keys.\n\nThis endpoint uses the environment's STRIPE_API_KEY instead of Airbyte Cloud's,\nallowing different Stripe configurations per environment (test keys for dev/staging,\nproduction keys for prod).\n\nSupports three flows:\n- portal: General billing portal access (manage subscriptions, view invoices)\n- payment_method: Update payment method specifically\n- setup: Initial Stripe checkout to collect payment method",
         "operationId": "create_internal_account_organizations_organization_id_stripe_portal",
@@ -9350,7 +9691,9 @@
     },
     "/api/v1/internal/account/organizations/{organization_id}/subscription": {
       "get": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "Get Organization Subscription",
         "operationId": "get_internal_account_organizations_organization_id_subscription",
         "security": [
@@ -9438,9 +9781,102 @@
         }
       }
     },
+    "/api/v1/internal/admin/oauth_credentials": {
+      "post": {
+        "tags": [
+          "Admin - OAuth Credentials"
+        ],
+        "summary": "Create Global Oauth Credentials",
+        "description": "Create global OAuth credentials (admin only).\n\nThis endpoint:\n1. Validates that no global credential already exists for this connector (POST-only)\n2. Validates the configuration against the connector's OAuth spec\n3. Stores secrets and replaces them with secret coordinates\n4. Saves the record to Sonar's database (no Coral proxy for global credentials)\n\nNote: No Coral proxy call is made for global credentials.",
+        "operationId": "create_internal_admin_oauth_credentials",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCredentialsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthCredentialsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/internal/admin/rate_limits": {
       "post": {
-        "tags": ["Admin - Rate Limits"],
+        "tags": [
+          "Admin - Rate Limits"
+        ],
         "summary": "Create Rate Limit",
         "description": "Create a new rate limit configuration.\n\nCan create:\n- Org-specific limits: Provide only organization_id (user_id=NULL)\n- User-specific limits: Provide only user_id (org_id=NULL)\n- Global limits: Provide neither (all NULL)\n- Tagged limits: Provide category_tag for endpoint-specific limits",
         "operationId": "create_internal_admin_rate_limits",
@@ -9527,7 +9963,9 @@
         }
       },
       "get": {
-        "tags": ["Admin - Rate Limits"],
+        "tags": [
+          "Admin - Rate Limits"
+        ],
         "summary": "List Rate Limits",
         "description": "List all rate limit configurations for an organization or user, optionally filtered by tag.",
         "operationId": "list_internal_admin_rate_limits",
@@ -9655,7 +10093,9 @@
     },
     "/api/v1/internal/admin/rate_limits/{config_id}": {
       "get": {
-        "tags": ["Admin - Rate Limits"],
+        "tags": [
+          "Admin - Rate Limits"
+        ],
         "summary": "Get Rate Limit",
         "description": "Get a specific rate limit configuration.",
         "operationId": "get_internal_admin_rate_limits_config_id",
@@ -9744,7 +10184,9 @@
         }
       },
       "put": {
-        "tags": ["Admin - Rate Limits"],
+        "tags": [
+          "Admin - Rate Limits"
+        ],
         "summary": "Update Rate Limit",
         "description": "Update an existing rate limit configuration.",
         "operationId": "update_internal_admin_rate_limits_config_id",
@@ -9843,7 +10285,9 @@
         }
       },
       "delete": {
-        "tags": ["Admin - Rate Limits"],
+        "tags": [
+          "Admin - Rate Limits"
+        ],
         "summary": "Delete Rate Limit",
         "description": "Delete a rate limit configuration.",
         "operationId": "delete_internal_admin_rate_limits_config_id",
@@ -9927,7 +10371,9 @@
     },
     "/api/v1/internal/admin/templates/sync": {
       "post": {
-        "tags": ["Admin - Templates"],
+        "tags": [
+          "Admin - Templates"
+        ],
         "summary": "Sync Global Source Templates",
         "description": "Manually trigger synchronization of global source templates.\n\nThis creates/updates global templates for all connectors in the direct\nconnector registry. Mode is determined by Airbyte registry presence:\n- MULTI: Connector exists in both registries (direct + replication)\n- DIRECT: Connector only in direct registry (direct queries only)\n\nRequires instance admin authentication.",
         "operationId": "create_internal_admin_templates_sync",
@@ -10006,7 +10452,9 @@
     },
     "/api/v1/internal/auth/exchange": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Exchange Token",
         "description": "Exchange a Keycloak/Airbyte bearer token for a fast token (self-signed JWT). This endpoint validates the provided bearer token, extracts organization info, and returns a self-signed JWT that can be used for all subsequent API calls.",
         "operationId": "create_internal_auth_exchange",
@@ -10092,7 +10540,9 @@
     },
     "/api/v1/internal/health/check": {
       "get": {
-        "tags": ["Health"],
+        "tags": [
+          "Health"
+        ],
         "summary": "Health Check",
         "operationId": "get_internal_health_check",
         "responses": {
@@ -10151,7 +10601,9 @@
     },
     "/api/v1/internal/integrations/definitions/destinations/wrapped": {
       "get": {
-        "tags": ["Internal Destinations Definitions"],
+        "tags": [
+          "Internal Destinations Definitions"
+        ],
         "summary": "List Wrapped Destination Definitions",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a destination connector specification.",
         "operationId": "list_internal_integrations_definitions_destinations_wrapped",
@@ -10246,7 +10698,9 @@
     },
     "/api/v1/internal/integrations/definitions/destinations/wrapped/{id}": {
       "get": {
-        "tags": ["Internal Destinations Definitions"],
+        "tags": [
+          "Internal Destinations Definitions"
+        ],
         "summary": "Get Wrapped Destination Definition",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a destination connector specification.",
         "operationId": "get_internal_integrations_definitions_destinations_wrapped_id",
@@ -10335,7 +10789,9 @@
     },
     "/api/v1/internal/jobs": {
       "get": {
-        "tags": ["Jobs"],
+        "tags": [
+          "Jobs"
+        ],
         "summary": "List Jobs",
         "description": "List all jobs from all job tables in a unified format.\n\nThis endpoint aggregates jobs from:\n- AsyncJob (modern job system)\n- CreateConnectionJob (legacy)\n- PatchDestinationAndConnectionsJob (legacy)\n- PatchPartialUserConfigJob (legacy)\n\nLegacy jobs are transformed to match the AsyncJob format:\n- job_type: The class name of the legacy job\n- input: JSON blob containing data set when the job was created\n- output: JSON blob containing data set during/after job execution",
         "operationId": "list_internal_jobs",
@@ -10437,7 +10893,9 @@
     },
     "/api/v1/internal/jobs/demo": {
       "post": {
-        "tags": ["Jobs"],
+        "tags": [
+          "Jobs"
+        ],
         "summary": "Create Demo Job",
         "description": "Create and run a demo job that looks up a source definition id by name.\n\nThe job is triggered via Porter's job service.",
         "operationId": "create_internal_jobs_demo",
@@ -10536,9 +10994,11 @@
     },
     "/api/v1/internal/notifications/sync/success": {
       "post": {
-        "tags": ["Internal Notifications"],
+        "tags": [
+          "Internal Notifications"
+        ],
         "summary": "Sync Success Notification",
-        "description": "Handle sync success notification from Airbyte.\n\nThis endpoint is called by Airbyte when a sync job completes successfully.\nIt verifies the encrypted workspace token, then delegates to the cache\nbuilder to validate ownership and create views.",
+        "description": "Handle sync success notification from Airbyte.\n\nThis endpoint is called by Airbyte when a sync job completes successfully.\nIt verifies the encrypted workspace token, then delegates to the cache\nbuilder to validate ownership and create tables.",
         "operationId": "create_internal_notifications_sync_success",
         "parameters": [
           {
@@ -10621,7 +11081,9 @@
     },
     "/api/v1/internal/oauth/sources/complete": {
       "post": {
-        "tags": ["OAuth - Sources"],
+        "tags": [
+          "OAuth - Sources"
+        ],
         "summary": "Complete Oauth",
         "operationId": "create_internal_oauth_sources_complete",
         "security": [
@@ -10709,7 +11171,9 @@
     },
     "/api/v1/internal/oauth/sources/get_embedded_consent_url": {
       "post": {
-        "tags": ["OAuth - Sources"],
+        "tags": [
+          "OAuth - Sources"
+        ],
         "summary": "Get Embedded Consent Url",
         "operationId": "create_internal_oauth_sources_get_embedded_consent_url",
         "security": [
@@ -10797,7 +11261,9 @@
     },
     "/api/v1/internal/oauth/sources/revoke": {
       "post": {
-        "tags": ["OAuth - Sources"],
+        "tags": [
+          "OAuth - Sources"
+        ],
         "summary": "Revoke Source Oauth",
         "operationId": "create_internal_oauth_sources_revoke",
         "security": [
@@ -10885,9 +11351,11 @@
     },
     "/api/v1/internal/webhooks/orb": {
       "post": {
-        "tags": ["webhooks"],
+        "tags": [
+          "webhooks"
+        ],
         "summary": "Receive Orb Webhook",
-        "description": "Receive and process Orb billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to OrbWebhookFunctions controller.\n\nReturns:\n    OrbWebhookResponse with processing status",
+        "description": "Receive and process Orb billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to OrbWebhookController.\n\nReturns:\n    OrbWebhookResponse with processing status",
         "operationId": "create_internal_webhooks_orb",
         "responses": {
           "200": {
@@ -10945,9 +11413,11 @@
     },
     "/api/v1/internal/webhooks/stripe": {
       "post": {
-        "tags": ["webhooks"],
+        "tags": [
+          "webhooks"
+        ],
         "summary": "Receive Stripe Webhook",
-        "description": "Receive and process Stripe billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to StripeWebhookFunctions controller.\n\nReturns:\n    StripeWebhookResponse with processing status",
+        "description": "Receive and process Stripe billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to StripeWebhookController.\n\nReturns:\n    StripeWebhookResponse with processing status",
         "operationId": "create_internal_webhooks_stripe",
         "responses": {
           "200": {
@@ -11005,7 +11475,9 @@
     },
     "/api/v1/internal/workspaces/sync": {
       "post": {
-        "tags": ["Internal Workspaces"],
+        "tags": [
+          "Internal Workspaces"
+        ],
         "summary": "Sync Workspaces",
         "description": "Sync workspaces from remote to local database.\n\nFetches all workspaces for the authenticated organization and creates\nany missing workspaces in the local database.\n\nReturns statistics about the sync operation including the total number of workspaces\nfound and the number created locally.",
         "operationId": "create_internal_workspaces_sync",
@@ -11082,9 +11554,102 @@
         }
       }
     },
+    "/api/v1/oauth/credentials": {
+      "put": {
+        "tags": [
+          "OAuth Credentials"
+        ],
+        "summary": "Upsert Organization Oauth Credentials",
+        "description": "Create or update OAuth credentials for the user's organization.\n\nThis endpoint:\n1. Extracts organization_id from the user's token\n2. Validates the configuration against the connector's OAuth spec\n3. Stores secrets and replaces them with secret coordinates\n4. Proxies the credentials to Coral's organization OAuth endpoint\n5. Saves the record to Sonar's database",
+        "operationId": "update_oauth_credentials",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCredentialsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthCredentialsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/organizations/{organization_id}/event-history": {
       "get": {
-        "tags": ["Organizations"],
+        "tags": [
+          "Organizations"
+        ],
         "summary": "List Event History",
         "description": "List event history for an organization.\n\nReturns a paginated list of events including connector executions and search cache hits.",
         "operationId": "list_organizations_organization_id_event_history",
@@ -11241,7 +11806,9 @@
     },
     "/api/v1/sonar/apis": {
       "get": {
-        "tags": ["Sonar - APIs"],
+        "tags": [
+          "Sonar - APIs"
+        ],
         "summary": "List Sources",
         "description": "**Requires an Access Token as the bearer token.**\n\nDeprecated. Use `/api/v1/integrations/sources` instead.",
         "operationId": "deprecated_get_sonar_apis",
@@ -11357,7 +11924,9 @@
     },
     "/api/v1/sonar/apis/{source_id}/request": {
       "post": {
-        "tags": ["Sonar - APIs"],
+        "tags": [
+          "Sonar - APIs"
+        ],
         "summary": "Request",
         "description": "**Requires an Access Token as the bearer token.**\n\nMake a request to an API using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
         "operationId": "create_sonar_apis_source_id_request",
@@ -11458,7 +12027,9 @@
     },
     "/api/v1/sonar/files/sources": {
       "get": {
-        "tags": ["Sonar - Files"],
+        "tags": [
+          "Sonar - Files"
+        ],
         "summary": "List Sources",
         "description": "**Requires an Access Token as the bearer token.**\n\nDeprecated. Use `/api/v1/integrations/sources` instead.",
         "operationId": "get_sonar_files_sources",
@@ -11549,7 +12120,9 @@
     },
     "/api/v1/sonar/files/{source_id}/drives": {
       "get": {
-        "tags": ["Sonar - Files"],
+        "tags": [
+          "Sonar - Files"
+        ],
         "summary": "List Drives",
         "description": "**Requires an Access Token as the bearer token.**\n\nRetrieve the list of drives available using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
         "operationId": "get_sonar_files_source_id_drives",
@@ -11640,7 +12213,9 @@
     },
     "/api/v1/sonar/files/{source_id}/drives/{drive_id}/get/{path}": {
       "get": {
-        "tags": ["Sonar - Files"],
+        "tags": [
+          "Sonar - Files"
+        ],
         "summary": "Drive Stream File",
         "description": "**Requires an Access Token as the bearer token.**\n\nRetrieve the file content at the specified path in a drive using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
         "operationId": "get_sonar_files_source_id_drives_drive_id_get_path_path",
@@ -11751,7 +12326,9 @@
     },
     "/api/v1/sonar/files/{source_id}/drives/{drive_id}/list/{path}": {
       "get": {
-        "tags": ["Sonar - Files"],
+        "tags": [
+          "Sonar - Files"
+        ],
         "summary": "List Drive Files With Prefix",
         "description": "**Requires an Access Token as the bearer token.**\n\nList Drive files at the specified path in a File Management System (like Sharepoint underneath drives) using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
         "operationId": "list_sonar_files_source_id_drives_drive_id_list_path_path",
@@ -11887,7 +12464,9 @@
     },
     "/api/v1/sonar/files/{source_id}/get/{path}": {
       "get": {
-        "tags": ["Sonar - Files"],
+        "tags": [
+          "Sonar - Files"
+        ],
         "summary": "Stream File",
         "description": "**Requires an Access Token as the bearer token.**\n\nRetrieve the file content at the specified path using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
         "operationId": "get_sonar_files_source_id_get_path_path",
@@ -11987,7 +12566,9 @@
     },
     "/api/v1/sonar/files/{source_id}/list/{path}": {
       "get": {
-        "tags": ["Sonar - Files"],
+        "tags": [
+          "Sonar - Files"
+        ],
         "summary": "List Files With Prefix",
         "description": "**Requires an Access Token as the bearer token.**\n\nList files at the specified path in a File Management System (Google Drive, S3...) using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
         "operationId": "list_sonar_files_source_id_list_path_path",
@@ -12112,7 +12693,9 @@
     },
     "/api/v1/tools/destinations": {
       "post": {
-        "tags": ["Tool Wrappers - Destinations"],
+        "tags": [
+          "Tool Wrappers - Destinations"
+        ],
         "summary": "Tools Create Destination",
         "operationId": "create_tools_destinations",
         "security": [
@@ -12200,7 +12783,9 @@
     },
     "/api/v1/tools/destinations/{id}": {
       "patch": {
-        "tags": ["Tool Wrappers - Destinations"],
+        "tags": [
+          "Tool Wrappers - Destinations"
+        ],
         "summary": "Tools Update Destination",
         "operationId": "update_tools_destinations_id",
         "security": [
@@ -12298,7 +12883,9 @@
     },
     "/api/v1/tools/sources": {
       "post": {
-        "tags": ["Tool Wrappers - Sources"],
+        "tags": [
+          "Tool Wrappers - Sources"
+        ],
         "summary": "Tools Create Source",
         "operationId": "create_tools_sources",
         "security": [
@@ -12386,7 +12973,9 @@
     },
     "/api/v1/tools/sources/{id}": {
       "patch": {
-        "tags": ["Tool Wrappers - Sources"],
+        "tags": [
+          "Tool Wrappers - Sources"
+        ],
         "summary": "Tools Update Source",
         "operationId": "update_tools_sources_id",
         "security": [
@@ -12484,7 +13073,9 @@
     },
     "/api/v1/workspaces": {
       "get": {
-        "tags": ["Workspaces"],
+        "tags": [
+          "Workspaces"
+        ],
         "summary": "List Workspaces",
         "description": "List workspaces for the authenticated organization with cursor-based pagination.\n\n- **name_contains**: Optional filter by workspace name (case-insensitive partial match)\n- **status**: Optional filter by workspace status (active or inactive). If not specified, returns all workspaces.\n- **limit**: Maximum number of workspaces to return (default: 20, max: 100)\n- **cursor**: Pagination cursor from previous response's `next` URL\n- **next**: URL for next page (null if no more results)",
         "operationId": "list_workspaces",
@@ -12631,7 +13222,9 @@
     },
     "/api/v1/workspaces/stats": {
       "get": {
-        "tags": ["Workspaces"],
+        "tags": [
+          "Workspaces"
+        ],
         "summary": "Get Workspace Stats",
         "description": "Get workspace statistics for the authenticated organization.\n\nReturns the count of active and inactive workspaces.",
         "operationId": "get_workspaces_stats",
@@ -12710,7 +13303,9 @@
     },
     "/api/v1/workspaces/{workspace_id}": {
       "get": {
-        "tags": ["Workspaces"],
+        "tags": [
+          "Workspaces"
+        ],
         "summary": "Get Workspace",
         "description": "Get a single workspace by ID.",
         "operationId": "get_workspaces_workspace_id",
@@ -12797,7 +13392,9 @@
         }
       },
       "put": {
-        "tags": ["Workspaces"],
+        "tags": [
+          "Workspaces"
+        ],
         "summary": "Update Workspace",
         "description": "Update a workspace's name and/or status.\n- Set `name` to update the workspace name\n- Set `status` to 'active' or 'inactive' to change the workspace status\n- When setting status to 'inactive', all active connections in the workspace will be automatically disabled",
         "operationId": "update_workspaces_workspace_id",
@@ -12894,7 +13491,9 @@
         }
       },
       "delete": {
-        "tags": ["Workspaces"],
+        "tags": [
+          "Workspaces"
+        ],
         "summary": "Delete Workspace",
         "description": "Delete a workspace in both Coral and Sonar (soft delete in Sonar).\nThis will delete the workspace from Coral and mark it as deleted in Sonar.",
         "operationId": "delete_workspaces_workspace_id",
@@ -13092,7 +13691,10 @@
           }
         },
         "type": "object",
-        "required": ["auth_flow_type", "oauth_config_specification"],
+        "required": [
+          "auth_flow_type",
+          "oauth_config_specification"
+        ],
         "title": "AdvancedAuth"
       },
       "AgentModel": {
@@ -13135,12 +13737,9 @@
           "get_selected_streams",
           "set_selected_streams",
           "select_streams",
-          "search",
+          "execute",
           "list_streams",
           "get_stream_schema",
-          "list_connector_instances",
-          "get_connector_capabilities",
-          "connector_query",
           "convert_dates_to_nanos",
           "convert_nanos_to_dates"
         ],
@@ -13224,7 +13823,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "organization_id", "destination_name"],
+        "required": [
+          "id",
+          "organization_id",
+          "destination_name"
+        ],
         "title": "AirbyteHostedConnectionTemplate",
         "description": "Connection template where destination configuration is managed by Airbyte."
       },
@@ -13250,7 +13853,9 @@
           }
         },
         "type": "object",
-        "required": ["data_hosting_type"],
+        "required": [
+          "data_hosting_type"
+        ],
         "title": "AirbyteHostedConnectionTemplateCreateRequest",
         "description": "Create request for Airbyte-hosted connection templates where destination configuration is auto-populated."
       },
@@ -13312,7 +13917,9 @@
           }
         },
         "type": "object",
-        "required": ["and"],
+        "required": [
+          "and"
+        ],
         "title": "AndCondition",
         "description": "True if all nested conditions are true."
       },
@@ -13374,7 +13981,9 @@
           }
         },
         "type": "object",
-        "required": ["any"],
+        "required": [
+          "any"
+        ],
         "title": "AnyCondition",
         "description": "Match if ANY element in array field matches the nested condition.\n\nExample: {\"any\": {\"addresses\": {\"eq\": {\"state\": \"CA\"}}}}\nReturns documents where any address has state = \"CA\""
       },
@@ -13460,7 +14069,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "workspace_id", "source_type"],
+        "required": [
+          "id",
+          "workspace_id",
+          "source_type"
+        ],
         "title": "ApisAvailableSource"
       },
       "ApisAvailableSourcesResponse": {
@@ -13486,7 +14099,9 @@
           }
         },
         "type": "object",
-        "required": ["sources"],
+        "required": [
+          "sources"
+        ],
         "title": "ApisAvailableSourcesResponse"
       },
       "Application": {
@@ -13514,7 +14129,13 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "client_id", "client_secret", "created_at"],
+        "required": [
+          "id",
+          "name",
+          "client_id",
+          "client_secret",
+          "created_at"
+        ],
         "title": "Application"
       },
       "AuthenticationProxyRequest": {
@@ -13546,7 +14167,10 @@
           }
         },
         "type": "object",
-        "required": ["url", "method"],
+        "required": [
+          "url",
+          "method"
+        ],
         "title": "AuthenticationProxyRequest"
       },
       "AuthenticationProxyResponse": {
@@ -13568,12 +14192,21 @@
           }
         },
         "type": "object",
-        "required": ["response_status_code", "response_body"],
+        "required": [
+          "response_status_code",
+          "response_body"
+        ],
         "title": "AuthenticationProxyResponse"
       },
       "BillingStateEnum": {
         "type": "string",
-        "enum": ["TRIAL", "ENABLED", "GRACE_PERIOD", "DISABLED", "LOCKED"],
+        "enum": [
+          "TRIAL",
+          "ENABLED",
+          "GRACE_PERIOD",
+          "DISABLED",
+          "LOCKED"
+        ],
         "title": "BillingStateEnum"
       },
       "BillingStateUpdateRequest": {
@@ -13595,7 +14228,9 @@
           }
         },
         "type": "object",
-        "required": ["billing_state"],
+        "required": [
+          "billing_state"
+        ],
         "title": "BillingStateUpdateRequest",
         "description": "Request to manually update organization billing state."
       },
@@ -13696,7 +14331,10 @@
           }
         },
         "type": "object",
-        "required": ["source_definition_id", "approved_issue_count"],
+        "required": [
+          "source_definition_id",
+          "approved_issue_count"
+        ],
         "title": "CatalogQaRunApprovedResponse"
       },
       "CategoriesIssueContext": {
@@ -13777,7 +14415,10 @@
           }
         },
         "type": "object",
-        "required": ["thread_id", "messages"],
+        "required": [
+          "thread_id",
+          "messages"
+        ],
         "title": "ChatHistoryResponse"
       },
       "ChatMessageEvent": {
@@ -13816,7 +14457,10 @@
           }
         },
         "type": "object",
-        "required": ["event", "data"],
+        "required": [
+          "event",
+          "data"
+        ],
         "title": "ChatMessageEvent",
         "description": "Format of chat message events sent to the browser."
       },
@@ -13864,7 +14508,13 @@
       },
       "CheckStatus": {
         "type": "string",
-        "enum": ["pending", "running", "cancelled", "failed", "succeeded"],
+        "enum": [
+          "pending",
+          "running",
+          "cancelled",
+          "failed",
+          "succeeded"
+        ],
         "title": "CheckStatus"
       },
       "CompleteSourceOauthRequest": {
@@ -13956,7 +14606,10 @@
           }
         },
         "type": "object",
-        "required": ["request_succeeded", "auth_payload"],
+        "required": [
+          "request_succeeded",
+          "auth_payload"
+        ],
         "title": "CompleteSourceOauthResponse"
       },
       "ConnectionSpecification": {
@@ -14012,7 +14665,9 @@
           }
         },
         "type": "object",
-        "required": ["type"],
+        "required": [
+          "type"
+        ],
         "title": "ConnectionSpecification"
       },
       "ConnectionTemplateDeleteResponse": {
@@ -14029,7 +14684,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
+        "required": [
+          "id",
+          "deleted_at"
+        ],
         "title": "ConnectionTemplateDeleteResponse"
       },
       "ConnectionTemplateListResponse": {
@@ -14050,7 +14708,9 @@
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "ConnectionTemplateListResponse"
       },
       "ConnectionTemplatePatchRequest": {
@@ -14122,7 +14782,9 @@
           }
         },
         "type": "object",
-        "required": ["tag"],
+        "required": [
+          "tag"
+        ],
         "title": "ConnectionTemplateTagRequest"
       },
       "ConnectionTemplateUntagResponse": {
@@ -14134,7 +14796,9 @@
           }
         },
         "type": "object",
-        "required": ["deleted_at"],
+        "required": [
+          "deleted_at"
+        ],
         "title": "ConnectionTemplateUntagResponse"
       },
       "ConnectorDefinition": {
@@ -14202,7 +14866,10 @@
           }
         },
         "type": "object",
-        "required": ["name", "spec"],
+        "required": [
+          "name",
+          "spec"
+        ],
         "title": "ConnectorDefinition"
       },
       "ConnectorDefinitionSummarized": {
@@ -14267,7 +14934,9 @@
           }
         },
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "title": "ConnectorDefinitionSummarized"
       },
       "ConnectorExecuteRequest": {
@@ -14281,22 +14950,18 @@
             "title": "Action"
           },
           "params": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "additionalProperties": true,
+            "type": "object",
             "title": "Params"
           }
         },
         "type": "object",
-        "required": ["entity", "action"],
+        "required": [
+          "entity",
+          "action"
+        ],
         "title": "ConnectorExecuteRequest",
-        "description": "Request body for connector execution."
+        "description": "Request body for connector execution.\n\nAll actions use the same unified format:\n    - entity: resource type or stream name\n    - action: operation type (list, get, create, download, search, api_search)\n    - params: operation-specific parameters\n\nFor SEARCH action, params should contain:\n    - query: Query object with filter/sort conditions\n    - limit: maximum number of results (default 10)\n    - cursor: pagination cursor for next page\n    - fields: list of field paths to include in results"
       },
       "ConnectorExecuteResponse": {
         "properties": {
@@ -14349,7 +15014,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "definition_id", "name"],
+        "required": [
+          "id",
+          "definition_id",
+          "name"
+        ],
         "title": "ConnectorForUserResponse",
         "description": "Response model for a single connector (source) in user lookup."
       },
@@ -14389,7 +15058,10 @@
           }
         },
         "type": "object",
-        "required": ["connector_definition_id", "auth_config"],
+        "required": [
+          "connector_definition_id",
+          "auth_config"
+        ],
         "title": "ConnectorInstanceCreateRequest",
         "description": "Request model for creating connector instance."
       },
@@ -14402,7 +15074,9 @@
           }
         },
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "title": "ConnectorInstanceCreateResponse",
         "description": "Response model for creating connector instance."
       },
@@ -14443,7 +15117,12 @@
           }
         },
         "type": "object",
-        "required": ["id", "definition_id", "name", "user_config"],
+        "required": [
+          "id",
+          "definition_id",
+          "name",
+          "user_config"
+        ],
         "title": "ConnectorInstanceResponse",
         "description": "Response model for connector instance retrieval."
       },
@@ -14489,8 +15168,18 @@
           }
         },
         "type": "object",
-        "required": ["connectionSpecification"],
+        "required": [
+          "connectionSpecification"
+        ],
         "title": "ConnectorSpecification"
+      },
+      "ConnectorType": {
+        "type": "string",
+        "enum": [
+          "source",
+          "destination"
+        ],
+        "title": "ConnectorType"
       },
       "ConnectorsForUserResponse": {
         "properties": {
@@ -14503,7 +15192,9 @@
           }
         },
         "type": "object",
-        "required": ["connectors"],
+        "required": [
+          "connectors"
+        ],
         "title": "ConnectorsForUserResponse",
         "description": "Response model for listing connectors for a user."
       },
@@ -14517,7 +15208,9 @@
           }
         },
         "type": "object",
-        "required": ["contains"],
+        "required": [
+          "contains"
+        ],
         "title": "ContainsCondition",
         "description": "Check if value exists in array field.\n\nExample: {\"contains\": {\"tags\": \"premium\"}}\nReturns documents where \"premium\" is in the tags array"
       },
@@ -14818,7 +15511,9 @@
           }
         },
         "type": "object",
-        "required": ["cron_expression"],
+        "required": [
+          "cron_expression"
+        ],
         "title": "CronExpressionDescribeRequest"
       },
       "CronExpressionDescribeResponse": {
@@ -14835,7 +15530,10 @@
           }
         },
         "type": "object",
-        "required": ["description", "is_valid"],
+        "required": [
+          "description",
+          "is_valid"
+        ],
         "title": "CronExpressionDescribeResponse"
       },
       "CustomerPortalRequest": {
@@ -14850,13 +15548,19 @@
           },
           "flow": {
             "type": "string",
-            "enum": ["payment_method", "portal", "setup"],
+            "enum": [
+              "payment_method",
+              "portal",
+              "setup"
+            ],
             "title": "Flow",
             "default": "portal"
           }
         },
         "type": "object",
-        "required": ["return_url"],
+        "required": [
+          "return_url"
+        ],
         "title": "CustomerPortalRequest",
         "description": "Request schema for customer portal link generation."
       },
@@ -14869,13 +15573,19 @@
           }
         },
         "type": "object",
-        "required": ["url"],
+        "required": [
+          "url"
+        ],
         "title": "CustomerPortalResponse",
         "description": "Response schema for customer portal link."
       },
       "DataCategoriesAction": {
         "type": "string",
-        "enum": ["skip", "new_categories_only", "recreate_all_categories"],
+        "enum": [
+          "skip",
+          "new_categories_only",
+          "recreate_all_categories"
+        ],
         "title": "DataCategoriesAction"
       },
       "DataCategory": {
@@ -14934,7 +15644,11 @@
           }
         },
         "type": "object",
-        "required": ["tool_call_id", "tool_name", "args"],
+        "required": [
+          "tool_call_id",
+          "tool_name",
+          "args"
+        ],
         "title": "DeferredToolRequestEvent",
         "description": "Format of deferred tool request events sent to the browser."
       },
@@ -14955,7 +15669,11 @@
           }
         },
         "type": "object",
-        "required": ["tool_call_id", "tool_name", "result"],
+        "required": [
+          "tool_call_id",
+          "tool_name",
+          "result"
+        ],
         "title": "DeferredToolResult",
         "description": "Result from a deferred tool execution provided by the UI."
       },
@@ -14968,7 +15686,9 @@
           }
         },
         "type": "object",
-        "required": ["job_id"],
+        "required": [
+          "job_id"
+        ],
         "title": "DemoJobCreateResponse"
       },
       "DestinationDefinitionListItem": {
@@ -14988,7 +15708,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "icon"],
+        "required": [
+          "id",
+          "name",
+          "icon"
+        ],
         "title": "DestinationDefinitionListItem"
       },
       "DestinationDefinitionResponse": {
@@ -15003,7 +15727,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "definition"],
+        "required": [
+          "id",
+          "definition"
+        ],
         "title": "DestinationDefinitionResponse"
       },
       "DestinationDefinitionsListResponse": {
@@ -15017,7 +15744,9 @@
           }
         },
         "type": "object",
-        "required": ["destinations"],
+        "required": [
+          "destinations"
+        ],
         "title": "DestinationDefinitionsListResponse"
       },
       "DestinationDefinitionsWrappedListResponse": {
@@ -15031,7 +15760,9 @@
           }
         },
         "type": "object",
-        "required": ["definitions"],
+        "required": [
+          "definitions"
+        ],
         "title": "DestinationDefinitionsWrappedListResponse",
         "description": "Full definitions list response (includes full specs)."
       },
@@ -15130,7 +15861,9 @@
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "DestinationListResponse"
       },
       "DestinationSyncMode": {
@@ -15248,7 +15981,9 @@
           }
         },
         "type": "object",
-        "required": ["jobs_created"],
+        "required": [
+          "jobs_created"
+        ],
         "title": "DiscoveryAgentCreateResponse"
       },
       "DiscoveryAgentJobCreated": {
@@ -15265,7 +16000,10 @@
           }
         },
         "type": "object",
-        "required": ["job_id", "source_definition_id"],
+        "required": [
+          "job_id",
+          "source_definition_id"
+        ],
         "title": "DiscoveryAgentJobCreated"
       },
       "EncryptionMapper": {
@@ -15280,7 +16018,10 @@
           }
         },
         "type": "object",
-        "required": ["type", "mapper_configuration"],
+        "required": [
+          "type",
+          "mapper_configuration"
+        ],
         "title": "EncryptionMapper",
         "description": "Encryption mapper - encrypts sensitive fields with RSA.\n\nEncrypts specified fields using RSA public key encryption. The encrypted\nvalues replace the original field values in the output stream.\n\nNote: Only RSA encryption is supported. AES is not available due to\nsecrets hydration issues in the Airbyte platform."
       },
@@ -15334,14 +16075,20 @@
           },
           "output_encoding": {
             "type": "string",
-            "enum": ["base64", "hex"],
+            "enum": [
+              "base64",
+              "hex"
+            ],
             "title": "Output Encoding",
             "description": "Encoding for ciphertext bytes",
             "default": "base64"
           }
         },
         "type": "object",
-        "required": ["target_field", "public_key"],
+        "required": [
+          "target_field",
+          "public_key"
+        ],
         "title": "EncryptionMapperConfig",
         "description": "Configuration for encryption mapper - uses snake_case.\n\nEncrypts a specified field using RSA (OAEP-SHA256). The encrypted value\nreplaces the original field value or is emitted with the configured suffix.\n\nNOTE: Symmetric AES is NOT supported in this API.\n\nWhy we don't support AES:\n- Secrets hydration for AES mappers is not currently supported in the platform\n- AES requires symmetric key management which doesn't align well with\n  Sonar's secrets management architecture\n- RSA with public keys is more appropriate for this use case as it\n  allows encryption without exposing private keys in the configuration\n\nIf you need AES encryption, this must be resolved at the platform level\nwith proper secrets storage and hydration support before we can add it here."
       },
@@ -15423,9 +16170,85 @@
           }
         },
         "type": "object",
-        "required": ["is_new_user", "is_enrolled"],
+        "required": [
+          "is_new_user",
+          "is_enrolled"
+        ],
         "title": "EnrollmentStatusResponse",
         "description": "Response schema for enrollment status endpoint.\n\nUsed to determine if a user is new vs existing, and whether\ntheir organization is enrolled in Sonar."
+      },
+      "EntitiesResponse": {
+        "properties": {
+          "entities": {
+            "items": {
+              "$ref": "#/components/schemas/EntityMetadata"
+            },
+            "type": "array",
+            "title": "Entities"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entities"
+        ],
+        "title": "EntitiesResponse",
+        "description": "Response containing all entity metadata."
+      },
+      "EntityFieldMetadata": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Type"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "description"
+        ],
+        "title": "EntityFieldMetadata",
+        "description": "Metadata for a single entity field (x-airbyte-name excluded)."
+      },
+      "EntityMetadata": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/EntityFieldMetadata"
+            },
+            "type": "array",
+            "title": "Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entity",
+          "fields"
+        ],
+        "title": "EntityMetadata",
+        "description": "Metadata for a single entity (x-airbyte-name excluded)."
       },
       "EqCondition": {
         "properties": {
@@ -15437,7 +16260,9 @@
           }
         },
         "type": "object",
-        "required": ["eq"],
+        "required": [
+          "eq"
+        ],
         "title": "EqCondition",
         "description": "Equal to: field equals value."
       },
@@ -15543,7 +16368,9 @@
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "EventHistoryListResponse"
       },
       "ExecutionMetadata": {
@@ -15558,7 +16385,10 @@
           }
         },
         "type": "object",
-        "required": ["connector_instance_id", "execution_time_ms"],
+        "required": [
+          "connector_instance_id",
+          "execution_time_ms"
+        ],
         "title": "ExecutionMetadata",
         "description": "Metadata about the execution."
       },
@@ -15673,7 +16503,9 @@
           }
         },
         "type": "object",
-        "required": ["timestamp"],
+        "required": [
+          "timestamp"
+        ],
         "title": "FailureReason",
         "description": "Structured failure information from Coral API.\nContains details about why a check or operation failed."
       },
@@ -15703,7 +16535,10 @@
           }
         },
         "type": "object",
-        "required": ["type", "mapper_configuration"],
+        "required": [
+          "type",
+          "mapper_configuration"
+        ],
         "title": "FieldFilteringMapper",
         "description": "Field filtering mapper - removes a specific field from each record.\n\nFilters out a single specified field from the data stream. The targeted\nfield is removed from all records in the output stream.\n\nNote: This currently supports removing a single field (denylist approach).\nTo support allowlist filtering (keeping only specified fields), the config\nwould need to be extended with an allowed_fields list instead of target_field."
       },
@@ -15717,7 +16552,9 @@
           }
         },
         "type": "object",
-        "required": ["target_field"],
+        "required": [
+          "target_field"
+        ],
         "title": "FieldFilteringMapperConfig",
         "description": "Configuration for field filtering mapper - uses snake_case.\n\nFilters out a specific field from the data stream."
       },
@@ -15733,7 +16570,10 @@
           }
         },
         "type": "object",
-        "required": ["type", "mapper_configuration"],
+        "required": [
+          "type",
+          "mapper_configuration"
+        ],
         "title": "FieldRenamingMapper",
         "description": "Field renaming mapper - renames a single field per configuration.\n\nRenames one field in the data stream (original_field_name → new_field_name).\nUseful for standardizing field names across different data sources."
       },
@@ -15753,7 +16593,10 @@
           }
         },
         "type": "object",
-        "required": ["original_field_name", "new_field_name"],
+        "required": [
+          "original_field_name",
+          "new_field_name"
+        ],
         "title": "FieldRenamingMapperConfig",
         "description": "Configuration for field renaming mapper - uses snake_case.\n\nRenames a single field in the data stream."
       },
@@ -15769,12 +16612,18 @@
           }
         },
         "type": "object",
-        "required": ["field_name", "tag"],
+        "required": [
+          "field_name",
+          "tag"
+        ],
         "title": "FieldTag"
       },
       "FileEntity": {
         "type": "string",
-        "enum": ["file", "folder"],
+        "enum": [
+          "file",
+          "folder"
+        ],
         "title": "FileEntity"
       },
       "FilesAvailableSource": {
@@ -15795,7 +16644,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "workspace_id", "source_type"],
+        "required": [
+          "id",
+          "workspace_id",
+          "source_type"
+        ],
         "title": "FilesAvailableSource"
       },
       "FilesAvailableSourcesResponse": {
@@ -15809,7 +16662,9 @@
           }
         },
         "type": "object",
-        "required": ["sources"],
+        "required": [
+          "sources"
+        ],
         "title": "FilesAvailableSourcesResponse"
       },
       "FilesSourceListItem": {
@@ -15882,7 +16737,9 @@
           }
         },
         "type": "object",
-        "required": ["items"],
+        "required": [
+          "items"
+        ],
         "title": "FilesSourcesListResponse"
       },
       "ForeignKey": {
@@ -16020,7 +16877,9 @@
           }
         },
         "type": "object",
-        "required": ["fuzzy"],
+        "required": [
+          "fuzzy"
+        ],
         "title": "FuzzyCondition",
         "description": "Ordered word text match."
       },
@@ -16040,7 +16899,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "url"],
+        "required": [
+          "id",
+          "name",
+          "url"
+        ],
         "title": "GetDriveItem"
       },
       "GetDrivesResponse": {
@@ -16054,7 +16917,9 @@
           }
         },
         "type": "object",
-        "required": ["drives"],
+        "required": [
+          "drives"
+        ],
         "title": "GetDrivesResponse"
       },
       "GetEmbeddedSourceConsentUrlRequest": {
@@ -16093,7 +16958,11 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_definition_id", "redirect_url"],
+        "required": [
+          "workspace_id",
+          "source_definition_id",
+          "redirect_url"
+        ],
         "title": "GetEmbeddedSourceConsentUrlRequest"
       },
       "GetEmbeddedSourceConsentUrlResponse": {
@@ -16104,7 +16973,9 @@
           }
         },
         "type": "object",
-        "required": ["consent_url"],
+        "required": [
+          "consent_url"
+        ],
         "title": "GetEmbeddedSourceConsentUrlResponse"
       },
       "GtCondition": {
@@ -16117,7 +16988,9 @@
           }
         },
         "type": "object",
-        "required": ["gt"],
+        "required": [
+          "gt"
+        ],
         "title": "GtCondition",
         "description": "Greater than: field > value."
       },
@@ -16131,7 +17004,9 @@
           }
         },
         "type": "object",
-        "required": ["gte"],
+        "required": [
+          "gte"
+        ],
         "title": "GteCondition",
         "description": "Greater than or equal: field >= value (equivalent to not lt)."
       },
@@ -16147,7 +17022,10 @@
           }
         },
         "type": "object",
-        "required": ["type", "mapper_configuration"],
+        "required": [
+          "type",
+          "mapper_configuration"
+        ],
         "title": "HashingMapper",
         "description": "Hashing mapper - converts field values to cryptographic hashes.\n\nApplies a hash function (SHA256, SHA512, or MD5) to transform field values.\nCan either replace the original field or create a new field with a suffix."
       },
@@ -16161,7 +17039,11 @@
           },
           "method": {
             "type": "string",
-            "enum": ["SHA256", "SHA512", "MD5"],
+            "enum": [
+              "SHA256",
+              "SHA512",
+              "MD5"
+            ],
             "title": "Method",
             "description": "Hashing algorithm to use"
           },
@@ -16179,7 +17061,10 @@
           }
         },
         "type": "object",
-        "required": ["target_field", "method"],
+        "required": [
+          "target_field",
+          "method"
+        ],
         "title": "HashingMapperConfig",
         "description": "Configuration for hashing mapper - uses snake_case.\n\nTransforms a field value by applying a cryptographic hash function.\nThe original field is replaced with the hashed value, or a new field\ncan be created with a suffix."
       },
@@ -16194,12 +17079,20 @@
           }
         },
         "type": "object",
-        "required": ["success", "queue_information"],
+        "required": [
+          "success",
+          "queue_information"
+        ],
         "title": "HealthCheckGetResponse"
       },
       "HttpMethod": {
         "type": "string",
-        "enum": ["GET", "POST", "PUT", "DELETE"],
+        "enum": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ],
         "title": "HttpMethod"
       },
       "InCondition": {
@@ -16215,7 +17108,9 @@
           }
         },
         "type": "object",
-        "required": ["in"],
+        "required": [
+          "in"
+        ],
         "title": "InCondition",
         "description": "In list: true if field value is in list (equivalent to or [eq, eq...])."
       },
@@ -16239,7 +17134,13 @@
           },
           "status": {
             "type": "string",
-            "enum": ["draft", "open", "paid", "uncollectible", "void"],
+            "enum": [
+              "draft",
+              "open",
+              "paid",
+              "uncollectible",
+              "void"
+            ],
             "title": "Status"
           },
           "pdfUrl": {
@@ -16289,7 +17190,10 @@
           }
         },
         "type": "object",
-        "required": ["invoices", "hasMore"],
+        "required": [
+          "invoices",
+          "hasMore"
+        ],
         "title": "InvoicesResponse"
       },
       "JobErrorData": {
@@ -16310,7 +17214,11 @@
           },
           "error_type": {
             "type": "string",
-            "enum": ["transient", "system", "config"],
+            "enum": [
+              "transient",
+              "system",
+              "config"
+            ],
             "title": "Error Type"
           },
           "user_message": {
@@ -16347,7 +17255,10 @@
           }
         },
         "type": "object",
-        "required": ["message", "traceback"],
+        "required": [
+          "message",
+          "traceback"
+        ],
         "title": "JobErrorException"
       },
       "KeywordCondition": {
@@ -16362,7 +17273,9 @@
           }
         },
         "type": "object",
-        "required": ["keyword"],
+        "required": [
+          "keyword"
+        ],
         "title": "KeywordCondition",
         "description": "Keyword text match (any word present)."
       },
@@ -16378,7 +17291,9 @@
           }
         },
         "type": "object",
-        "required": ["like"],
+        "required": [
+          "like"
+        ],
         "title": "LikeCondition",
         "description": "Partial string match (supports % wildcards)."
       },
@@ -16397,7 +17312,10 @@
           }
         },
         "type": "object",
-        "required": ["jobs", "total"],
+        "required": [
+          "jobs",
+          "total"
+        ],
         "title": "ListJobsResponse",
         "description": "Response for listing all jobs."
       },
@@ -16411,7 +17329,9 @@
           }
         },
         "type": "object",
-        "required": ["lt"],
+        "required": [
+          "lt"
+        ],
         "title": "LtCondition",
         "description": "Less than: field < value."
       },
@@ -16425,7 +17345,9 @@
           }
         },
         "type": "object",
-        "required": ["lte"],
+        "required": [
+          "lte"
+        ],
         "title": "LteCondition",
         "description": "Less than or equal: field <= value (equivalent to not gt)."
       },
@@ -16437,7 +17359,9 @@
           }
         },
         "type": "object",
-        "required": ["content"],
+        "required": [
+          "content"
+        ],
         "title": "MessageContent",
         "description": "Content of a chat message."
       },
@@ -16451,13 +17375,20 @@
           }
         },
         "type": "object",
-        "required": ["neq"],
+        "required": [
+          "neq"
+        ],
         "title": "NeqCondition",
         "description": "Not equal to: field does not equal value (equivalent to not eq)."
       },
       "NonBreakingChangesPreference": {
         "type": "string",
-        "enum": ["ignore", "disable", "propagate_columns", "propagate_fully"],
+        "enum": [
+          "ignore",
+          "disable",
+          "propagate_columns",
+          "propagate_fully"
+        ],
         "title": "NonBreakingChangesPreference"
       },
       "NotCondition": {
@@ -16515,7 +17446,9 @@
           }
         },
         "type": "object",
-        "required": ["not"],
+        "required": [
+          "not"
+        ],
         "title": "NotCondition",
         "description": "Negates the nested condition."
       },
@@ -16567,6 +17500,107 @@
         "type": "object",
         "title": "OAuthConfigSpecification"
       },
+      "OAuthConfigurationSpecResponse": {
+        "properties": {
+          "connector_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Definition Id"
+          },
+          "connector_type": {
+            "$ref": "#/components/schemas/ConnectorType"
+          },
+          "oauth_config_schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Oauth Config Schema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "connector_definition_id",
+          "connector_type",
+          "oauth_config_schema"
+        ],
+        "title": "OAuthConfigurationSpecResponse",
+        "description": "Response body for OAuth configuration specification.\n\nContains the JSON schema for the connector's OAuth configuration\nbased on the complete_oauth_server_output_specification and\ncomplete_oauth_output_specification from the connector's spec."
+      },
+      "OAuthCredentialsRequest": {
+        "properties": {
+          "connector_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Definition Id"
+          },
+          "configuration": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Configuration"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "connector_definition_id",
+          "configuration"
+        ],
+        "title": "OAuthCredentialsRequest",
+        "description": "Request body for creating/updating OAuth credentials.\n\nNote: connector_type is NOT in the request - it's resolved on the backend\nby looking up the connector definition. This prevents mismatches.\n\nFor operator endpoint: scope_type and scope_id are determined from the token.\nFor admin endpoint: scope_type is always 'global' and scope_id is NULL."
+      },
+      "OAuthCredentialsResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "scope_type": {
+            "$ref": "#/components/schemas/ScopeType"
+          },
+          "scope_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope Id"
+          },
+          "connector_type": {
+            "$ref": "#/components/schemas/ConnectorType"
+          },
+          "connector_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Definition Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "scope_type",
+          "scope_id",
+          "connector_type",
+          "connector_definition_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "OAuthCredentialsResponse",
+        "description": "Response body for OAuth credentials.\n\nNote: configuration is NOT returned for security reasons."
+      },
       "OnboardingProgressUpdateRequest": {
         "properties": {
           "onboarding_status": {
@@ -16574,7 +17608,9 @@
           }
         },
         "type": "object",
-        "required": ["onboarding_status"],
+        "required": [
+          "onboarding_status"
+        ],
         "title": "OnboardingProgressUpdateRequest"
       },
       "OnboardingProgressUpdateResponse": {
@@ -16589,7 +17625,10 @@
           }
         },
         "type": "object",
-        "required": ["organization_id", "onboarding_progress"],
+        "required": [
+          "organization_id",
+          "onboarding_progress"
+        ],
         "title": "OnboardingProgressUpdateResponse"
       },
       "OnboardingStatusEnum": {
@@ -16662,7 +17701,9 @@
           }
         },
         "type": "object",
-        "required": ["or"],
+        "required": [
+          "or"
+        ],
         "title": "OrCondition",
         "description": "True if any nested conditions are true."
       },
@@ -16692,7 +17733,10 @@
           }
         },
         "type": "object",
-        "required": ["status", "message"],
+        "required": [
+          "status",
+          "message"
+        ],
         "title": "OrbWebhookResponse",
         "description": "Response schema for webhook endpoint."
       },
@@ -16753,7 +17797,11 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": ["pre_subscription", "subscribed", "unsubscribed"]
+                "enum": [
+                  "pre_subscription",
+                  "subscribed",
+                  "unsubscribed"
+                ]
               },
               {
                 "type": "null"
@@ -16765,7 +17813,10 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": ["free", "internal"]
+                "enum": [
+                  "free",
+                  "internal"
+                ]
               },
               {
                 "type": "null"
@@ -16808,7 +17859,9 @@
           }
         },
         "type": "object",
-        "required": ["paymentStatus"],
+        "required": [
+          "paymentStatus"
+        ],
         "title": "OrganizationBillingInfo"
       },
       "OrganizationDetailResponse": {
@@ -16835,7 +17888,10 @@
           }
         },
         "type": "object",
-        "required": ["organizationId", "organizationName"],
+        "required": [
+          "organizationId",
+          "organizationName"
+        ],
         "title": "OrganizationDetailResponse"
       },
       "OrganizationInfoResponse": {
@@ -16865,7 +17921,11 @@
           }
         },
         "type": "object",
-        "required": ["organizationId", "organizationName", "sso"],
+        "required": [
+          "organizationId",
+          "organizationName",
+          "sso"
+        ],
         "title": "OrganizationInfoResponse"
       },
       "OrganizationSignupResponse": {
@@ -17098,7 +18158,11 @@
           }
         },
         "type": "object",
-        "required": ["name", "selfServeSubscription", "balanceHidden"],
+        "required": [
+          "name",
+          "selfServeSubscription",
+          "balanceHidden"
+        ],
         "title": "OrganizationSubscriptionResponse"
       },
       "OrganizationSubscriptionUpcomingInvoice": {
@@ -17118,7 +18182,11 @@
           }
         },
         "type": "object",
-        "required": ["currency", "amount", "dueDate"],
+        "required": [
+          "currency",
+          "amount",
+          "dueDate"
+        ],
         "title": "OrganizationSubscriptionUpcomingInvoice"
       },
       "OrganizationsListResponse": {
@@ -17132,7 +18200,9 @@
           }
         },
         "type": "object",
-        "required": ["organizations"],
+        "required": [
+          "organizations"
+        ],
         "title": "OrganizationsListResponse"
       },
       "PatchOp": {
@@ -17156,7 +18226,10 @@
           }
         },
         "type": "object",
-        "required": ["op", "path"],
+        "required": [
+          "op",
+          "path"
+        ],
         "title": "PatchOp"
       },
       "PaymentInformationCustomer": {
@@ -17274,14 +18347,20 @@
           }
         },
         "type": "object",
-        "required": ["type"],
+        "required": [
+          "type"
+        ],
         "title": "PaymentMethod"
       },
       "QaIssue": {
         "properties": {
           "severity": {
             "type": "string",
-            "enum": ["low", "medium", "high"],
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
             "title": "Severity"
           },
           "summary": {
@@ -17331,7 +18410,12 @@
           }
         },
         "type": "object",
-        "required": ["severity", "summary", "description", "issue_type"],
+        "required": [
+          "severity",
+          "summary",
+          "description",
+          "issue_type"
+        ],
         "title": "QaIssue"
       },
       "QaIssueCatalogContext-Input": {
@@ -17400,7 +18484,9 @@
           }
         },
         "type": "object",
-        "required": ["issue"],
+        "required": [
+          "issue"
+        ],
         "title": "QaIssueWithContext"
       },
       "QaIssueWithContext-Output": {
@@ -17420,7 +18506,9 @@
           }
         },
         "type": "object",
-        "required": ["issue"],
+        "required": [
+          "issue"
+        ],
         "title": "QaIssueWithContext"
       },
       "QaOutput": {
@@ -17438,7 +18526,9 @@
           }
         },
         "type": "object",
-        "required": ["summary"],
+        "required": [
+          "summary"
+        ],
         "title": "QaOutput"
       },
       "Query": {
@@ -17503,7 +18593,10 @@
                 "items": {
                   "additionalProperties": {
                     "type": "string",
-                    "enum": ["asc", "desc"]
+                    "enum": [
+                      "asc",
+                      "desc"
+                    ]
                   },
                   "type": "object"
                 },
@@ -17537,7 +18630,11 @@
           }
         },
         "type": "object",
-        "required": ["total", "scheduled_count", "pending_count"],
+        "required": [
+          "total",
+          "scheduled_count",
+          "pending_count"
+        ],
         "title": "QueueInformation"
       },
       "RateLimitConfigCreate": {
@@ -17588,7 +18685,10 @@
           }
         },
         "type": "object",
-        "required": ["limit_count", "limit_period"],
+        "required": [
+          "limit_count",
+          "limit_period"
+        ],
         "title": "RateLimitConfigCreate"
       },
       "RateLimitConfigListResponse": {
@@ -17602,7 +18702,9 @@
           }
         },
         "type": "object",
-        "required": ["rate_limits"],
+        "required": [
+          "rate_limits"
+        ],
         "title": "RateLimitConfigListResponse"
       },
       "RateLimitConfigResponse": {
@@ -17720,7 +18822,12 @@
       },
       "RateLimitPeriod": {
         "type": "string",
-        "enum": ["second", "minute", "hour", "day"],
+        "enum": [
+          "second",
+          "minute",
+          "hour",
+          "day"
+        ],
         "title": "RateLimitPeriod"
       },
       "RevokeSourceOauthRequest": {
@@ -17742,7 +18849,11 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_definition_id", "source_id"],
+        "required": [
+          "workspace_id",
+          "source_definition_id",
+          "source_id"
+        ],
         "title": "RevokeSourceOauthRequest"
       },
       "RevokeSourceOauthResponse": {
@@ -17772,7 +18883,11 @@
           }
         },
         "type": "object",
-        "required": ["type", "field_name", "comparison_value"],
+        "required": [
+          "type",
+          "field_name",
+          "comparison_value"
+        ],
         "title": "RowFilterCondition",
         "description": "Condition for row filtering - uses snake_case."
       },
@@ -17788,7 +18903,10 @@
           }
         },
         "type": "object",
-        "required": ["type", "mapper_configuration"],
+        "required": [
+          "type",
+          "mapper_configuration"
+        ],
         "title": "RowFilteringMapper",
         "description": "Row filtering mapper - filters rows based on field equality.\n\nOnly keeps rows where a specific field equals a given value. Rows that\ndon't match the condition are excluded from the output."
       },
@@ -17804,7 +18922,10 @@
           }
         },
         "type": "object",
-        "required": ["type", "mapper_configuration"],
+        "required": [
+          "type",
+          "mapper_configuration"
+        ],
         "title": "RowFilteringMapper",
         "description": "Row filtering mapper - filters rows based on field equality.\n\nOnly keeps rows where a specific field equals a given value. Rows that\ndon't match the condition are excluded from the output."
       },
@@ -17816,7 +18937,9 @@
           }
         },
         "type": "object",
-        "required": ["conditions"],
+        "required": [
+          "conditions"
+        ],
         "title": "RowFilteringMapperConfig",
         "description": "Configuration for row filtering mapper - uses snake_case.\n\nFilters rows based on a condition. Only rows where the specified field\nequals the provided value are kept."
       },
@@ -17876,8 +18999,19 @@
           }
         },
         "type": "object",
-        "required": ["source_definition_id", "source_definition_name"],
+        "required": [
+          "source_definition_id",
+          "source_definition_name"
+        ],
         "title": "SchemaChatAgentState"
+      },
+      "ScopeType": {
+        "type": "string",
+        "enum": [
+          "global",
+          "organization"
+        ],
+        "title": "ScopeType"
       },
       "ScopedTokenCreateRequest": {
         "properties": {
@@ -17905,7 +19039,9 @@
           }
         },
         "type": "object",
-        "required": ["workspace_name"],
+        "required": [
+          "workspace_name"
+        ],
         "title": "ScopedTokenCreateRequest"
       },
       "ScopedTokenCreateResponse": {
@@ -17916,7 +19052,9 @@
           }
         },
         "type": "object",
-        "required": ["token"],
+        "required": [
+          "token"
+        ],
         "title": "ScopedTokenCreateResponse"
       },
       "ScopedTokenInfoGetResponse": {
@@ -17933,7 +19071,10 @@
           }
         },
         "type": "object",
-        "required": ["organization_id", "workspace_id"],
+        "required": [
+          "organization_id",
+          "workspace_id"
+        ],
         "title": "ScopedTokenInfoGetResponse"
       },
       "SearchHit": {
@@ -17967,7 +19108,9 @@
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "SearchHit",
         "description": "A single search result."
       },
@@ -18014,7 +19157,9 @@
           }
         },
         "type": "object",
-        "required": ["query"],
+        "required": [
+          "query"
+        ],
         "title": "SearchRequest",
         "description": "Request schema for search endpoint."
       },
@@ -18127,7 +19272,12 @@
       },
       "SonarCatalogSchemaType": {
         "type": "string",
-        "enum": ["structured", "unstructured", "dynamic", "customizable"],
+        "enum": [
+          "structured",
+          "unstructured",
+          "dynamic",
+          "customizable"
+        ],
         "title": "SonarCatalogSchemaType"
       },
       "SonarStream": {
@@ -18317,7 +19467,7 @@
             "title": "Source Config",
             "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec. At least one of source_config or auth_config must be provided."
           },
-          "auth_config": {
+          "credentials": {
             "anyOf": [
               {
                 "additionalProperties": true,
@@ -18327,10 +19477,10 @@
                 "type": "null"
               }
             ],
-            "title": "Auth Config",
+            "title": "Credentials",
             "description": "Authentication configuration for the source. Required for DIRECT mode sources. At least one of source_config or auth_config must be provided."
           },
-          "user_config": {
+          "environment": {
             "anyOf": [
               {
                 "additionalProperties": true,
@@ -18340,7 +19490,7 @@
                 "type": "null"
               }
             ],
-            "title": "User Config",
+            "title": "Environment",
             "description": "User-provided configuration for the source. Required for DIRECT mode sources (can be empty dict)."
           },
           "selected_connection_template_tags": {
@@ -18358,7 +19508,10 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_template_id"],
+        "required": [
+          "workspace_id",
+          "source_template_id"
+        ],
         "title": "SourceCheckConfigRequest"
       },
       "SourceCheckConfigResponse": {
@@ -18370,7 +19523,9 @@
           }
         },
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "title": "SourceCheckConfigResponse"
       },
       "SourceCheckConfigStatusResponse": {
@@ -18418,7 +19573,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "status"],
+        "required": [
+          "id",
+          "status"
+        ],
         "title": "SourceCheckConfigStatusResponse"
       },
       "SourceCheckConfigUpdateRequest": {
@@ -18452,7 +19610,11 @@
       },
       "SourceConfigTemplateMode": {
         "type": "string",
-        "enum": ["DIRECT", "REPLICATION", "MULTI"],
+        "enum": [
+          "DIRECT",
+          "REPLICATION",
+          "MULTI"
+        ],
         "title": "SourceConfigTemplateMode"
       },
       "SourceCreateRequest": {
@@ -18494,7 +19656,7 @@
             "title": "Source Config",
             "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec. At least one of source_config or auth_config must be provided."
           },
-          "auth_config": {
+          "credentials": {
             "anyOf": [
               {
                 "additionalProperties": true,
@@ -18504,10 +19666,10 @@
                 "type": "null"
               }
             ],
-            "title": "Auth Config",
+            "title": "Credentials",
             "description": "Authentication configuration for the source. Required for DIRECT mode sources. At least one of source_config or auth_config must be provided."
           },
-          "user_config": {
+          "environment": {
             "anyOf": [
               {
                 "additionalProperties": true,
@@ -18517,7 +19679,7 @@
                 "type": "null"
               }
             ],
-            "title": "User Config",
+            "title": "Environment",
             "description": "User-provided configuration for the source. Required for DIRECT mode sources (can be empty dict)."
           },
           "selected_connection_template_tags": {
@@ -18535,7 +19697,10 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_template_id"],
+        "required": [
+          "workspace_id",
+          "source_template_id"
+        ],
         "title": "SourceCreateRequest"
       },
       "SourceCreateResponse": {
@@ -18583,7 +19748,12 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "source_template", "source_config"],
+        "required": [
+          "id",
+          "name",
+          "source_template",
+          "source_config"
+        ],
         "title": "SourceCreateResponse"
       },
       "SourceDefinitionCatalogCreateRequest": {
@@ -18603,7 +19773,9 @@
           }
         },
         "type": "object",
-        "required": ["catalog_type"],
+        "required": [
+          "catalog_type"
+        ],
         "title": "SourceDefinitionCatalogCreateRequest"
       },
       "SourceDefinitionCatalogCreateResponse": {
@@ -18615,7 +19787,9 @@
           }
         },
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "title": "SourceDefinitionCatalogCreateResponse"
       },
       "SourceDefinitionCatalogDeleteResponse": {
@@ -18632,7 +19806,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
+        "required": [
+          "id",
+          "deleted_at"
+        ],
         "title": "SourceDefinitionCatalogDeleteResponse"
       },
       "SourceDefinitionCatalogGetResponse": {
@@ -18678,7 +19855,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "source_definition_id"],
+        "required": [
+          "id",
+          "name",
+          "source_definition_id"
+        ],
         "title": "SourceDefinitionCatalogGetResponse"
       },
       "SourceDefinitionCatalogPatchRequest": {
@@ -18721,7 +19902,9 @@
           }
         },
         "type": "object",
-        "required": ["catalog"],
+        "required": [
+          "catalog"
+        ],
         "title": "SourceDefinitionCatalogPatchResponse"
       },
       "SourceDefinitionCatalogQueryRequest": {
@@ -18733,7 +19916,9 @@
           }
         },
         "type": "object",
-        "required": ["query"],
+        "required": [
+          "query"
+        ],
         "title": "SourceDefinitionCatalogQueryRequest"
       },
       "SourceDefinitionCatalogQueryResponse": {
@@ -18744,7 +19929,9 @@
           }
         },
         "type": "object",
-        "required": ["result"],
+        "required": [
+          "result"
+        ],
         "title": "SourceDefinitionCatalogQueryResponse"
       },
       "SourceDefinitionListResponse": {
@@ -18758,7 +19945,9 @@
           }
         },
         "type": "object",
-        "required": ["definitions"],
+        "required": [
+          "definitions"
+        ],
         "title": "SourceDefinitionListResponse"
       },
       "SourceDefinitionResponse": {
@@ -18773,7 +19962,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "definition"],
+        "required": [
+          "id",
+          "definition"
+        ],
         "title": "SourceDefinitionResponse"
       },
       "SourceDefinitionStreamCreateRequest": {
@@ -18784,7 +19976,9 @@
           }
         },
         "type": "object",
-        "required": ["stream"],
+        "required": [
+          "stream"
+        ],
         "title": "SourceDefinitionStreamCreateRequest"
       },
       "SourceDefinitionStreamCreateResponse": {
@@ -18794,7 +19988,9 @@
           }
         },
         "type": "object",
-        "required": ["stream"],
+        "required": [
+          "stream"
+        ],
         "title": "SourceDefinitionStreamCreateResponse"
       },
       "SourceDefinitionStreamDeleteResponse": {
@@ -18810,7 +20006,10 @@
           }
         },
         "type": "object",
-        "required": ["stream_name", "deleted_at"],
+        "required": [
+          "stream_name",
+          "deleted_at"
+        ],
         "title": "SourceDefinitionStreamDeleteResponse"
       },
       "SourceDefinitionStreamPatchRequest": {
@@ -18825,7 +20024,9 @@
           }
         },
         "type": "object",
-        "required": ["patch_ops"],
+        "required": [
+          "patch_ops"
+        ],
         "title": "SourceDefinitionStreamPatchRequest"
       },
       "SourceDefinitionStreamPatchResponse": {
@@ -18835,7 +20036,9 @@
           }
         },
         "type": "object",
-        "required": ["stream"],
+        "required": [
+          "stream"
+        ],
         "title": "SourceDefinitionStreamPatchResponse"
       },
       "SourceDeleteResponse": {
@@ -18852,7 +20055,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
+        "required": [
+          "id",
+          "deleted_at"
+        ],
         "title": "SourceDeleteResponse"
       },
       "SourceGetResponse": {
@@ -18900,7 +20106,12 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "source_template", "source_config"],
+        "required": [
+          "id",
+          "name",
+          "source_template",
+          "source_config"
+        ],
         "title": "SourceGetResponse"
       },
       "SourceListItem": {
@@ -18943,7 +20154,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "summarized_source_template"],
+        "required": [
+          "id",
+          "name",
+          "summarized_source_template"
+        ],
         "title": "SourceListItem"
       },
       "SourceListResponse": {
@@ -18957,7 +20172,9 @@
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "SourceListResponse"
       },
       "SourceTemplateCatalogCreateRequest": {
@@ -18974,7 +20191,9 @@
           }
         },
         "type": "object",
-        "required": ["sonar_catalog"],
+        "required": [
+          "sonar_catalog"
+        ],
         "title": "SourceTemplateCatalogCreateRequest"
       },
       "SourceTemplateCatalogCreateResponse": {
@@ -18986,7 +20205,9 @@
           }
         },
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "title": "SourceTemplateCatalogCreateResponse"
       },
       "SourceTemplateCatalogDeleteResponse": {
@@ -19003,7 +20224,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
+        "required": [
+          "id",
+          "deleted_at"
+        ],
         "title": "SourceTemplateCatalogDeleteResponse"
       },
       "SourceTemplateCatalogGetResponse": {
@@ -19030,7 +20254,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "source_template_id"],
+        "required": [
+          "id",
+          "source_template_id"
+        ],
         "title": "SourceTemplateCatalogGetResponse"
       },
       "SourceTemplateCatalogPatchRequest": {
@@ -19045,7 +20272,9 @@
           }
         },
         "type": "object",
-        "required": ["patch_ops"],
+        "required": [
+          "patch_ops"
+        ],
         "title": "SourceTemplateCatalogPatchRequest"
       },
       "SourceTemplateCatalogPatchResponse": {
@@ -19055,7 +20284,9 @@
           }
         },
         "type": "object",
-        "required": ["catalog"],
+        "required": [
+          "catalog"
+        ],
         "title": "SourceTemplateCatalogPatchResponse"
       },
       "SourceTemplateCatalogQueryRequest": {
@@ -19067,7 +20298,9 @@
           }
         },
         "type": "object",
-        "required": ["query"],
+        "required": [
+          "query"
+        ],
         "title": "SourceTemplateCatalogQueryRequest"
       },
       "SourceTemplateCatalogQueryResponse": {
@@ -19078,7 +20311,9 @@
           }
         },
         "type": "object",
-        "required": ["result"],
+        "required": [
+          "result"
+        ],
         "title": "SourceTemplateCatalogQueryResponse"
       },
       "SourceTemplateCloneRequest": {
@@ -19103,7 +20338,9 @@
           }
         },
         "type": "object",
-        "required": ["original_source_template_id"],
+        "required": [
+          "original_source_template_id"
+        ],
         "title": "SourceTemplateCloneRequest",
         "description": "Request to clone an existing source template"
       },
@@ -19156,7 +20393,10 @@
           }
         },
         "type": "object",
-        "required": ["actor_definition_id", "partial_default_config"],
+        "required": [
+          "actor_definition_id",
+          "partial_default_config"
+        ],
         "title": "SourceTemplateCreateRequest"
       },
       "SourceTemplateCreateResponse": {
@@ -19429,7 +20669,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
+        "required": [
+          "id",
+          "deleted_at"
+        ],
         "title": "SourceTemplateDeleteResponse"
       },
       "SourceTemplateGetResponse": {
@@ -19626,7 +20869,12 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "icon", "actor_definition_id"],
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "actor_definition_id"
+        ],
         "title": "SourceTemplateListItem"
       },
       "SourceTemplateListResponse": {
@@ -19640,7 +20888,9 @@
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "SourceTemplateListResponse"
       },
       "SourceTemplateStreamCreateRequest": {
@@ -19651,7 +20901,9 @@
           }
         },
         "type": "object",
-        "required": ["stream"],
+        "required": [
+          "stream"
+        ],
         "title": "SourceTemplateStreamCreateRequest"
       },
       "SourceTemplateStreamCreateResponse": {
@@ -19661,7 +20913,9 @@
           }
         },
         "type": "object",
-        "required": ["stream"],
+        "required": [
+          "stream"
+        ],
         "title": "SourceTemplateStreamCreateResponse"
       },
       "SourceTemplateStreamDeleteResponse": {
@@ -19677,7 +20931,10 @@
           }
         },
         "type": "object",
-        "required": ["stream_name", "deleted_at"],
+        "required": [
+          "stream_name",
+          "deleted_at"
+        ],
         "title": "SourceTemplateStreamDeleteResponse"
       },
       "SourceTemplateStreamPatchRequest": {
@@ -19692,7 +20949,9 @@
           }
         },
         "type": "object",
-        "required": ["patch_ops"],
+        "required": [
+          "patch_ops"
+        ],
         "title": "SourceTemplateStreamPatchRequest"
       },
       "SourceTemplateStreamPatchResponse": {
@@ -19702,7 +20961,9 @@
           }
         },
         "type": "object",
-        "required": ["stream"],
+        "required": [
+          "stream"
+        ],
         "title": "SourceTemplateStreamPatchResponse"
       },
       "SourceTemplateTagRequest": {
@@ -19713,7 +20974,9 @@
           }
         },
         "type": "object",
-        "required": ["tag"],
+        "required": [
+          "tag"
+        ],
         "title": "SourceTemplateTagRequest"
       },
       "SourceTemplateTagResponse": {
@@ -19817,7 +21080,9 @@
           }
         },
         "type": "object",
-        "required": ["deleted_at"],
+        "required": [
+          "deleted_at"
+        ],
         "title": "SourceTemplateUntagResponse"
       },
       "SourceTemplateUpdateRequest": {
@@ -19864,7 +21129,9 @@
           }
         },
         "type": "object",
-        "required": ["partial_default_config"],
+        "required": [
+          "partial_default_config"
+        ],
         "title": "SourceTemplateUpdateRequest"
       },
       "SourceTemplateUpdateResponse": {
@@ -20033,7 +21300,12 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "source_template", "source_config"],
+        "required": [
+          "id",
+          "name",
+          "source_template",
+          "source_config"
+        ],
         "title": "SourceUpdateResponse"
       },
       "StreamCustomization": {
@@ -20116,12 +21388,18 @@
           }
         },
         "type": "object",
-        "required": ["stream"],
+        "required": [
+          "stream"
+        ],
         "title": "StreamDescriptionIssueContext"
       },
       "StreamDescriptionsAction": {
         "type": "string",
-        "enum": ["skip", "new_descriptions_only", "recreate_all_descriptions"],
+        "enum": [
+          "skip",
+          "new_descriptions_only",
+          "recreate_all_descriptions"
+        ],
         "title": "StreamDescriptionsAction"
       },
       "StreamDescriptor": {
@@ -20143,7 +21421,9 @@
           }
         },
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "title": "StreamDescriptor",
         "description": "Stream descriptor for failure context."
       },
@@ -20198,7 +21478,9 @@
           }
         },
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "title": "StreamField",
         "description": "A field within a stream schema."
       },
@@ -20253,7 +21535,10 @@
           }
         },
         "type": "object",
-        "required": ["stream", "field"],
+        "required": [
+          "stream",
+          "field"
+        ],
         "title": "StreamFieldDescriptionIssueContext"
       },
       "StreamFieldsResponse": {
@@ -20285,7 +21570,9 @@
           }
         },
         "type": "object",
-        "required": ["stream_name"],
+        "required": [
+          "stream_name"
+        ],
         "title": "StreamFieldsResponse",
         "description": "Response for the stream fields endpoint."
       },
@@ -20310,13 +21597,19 @@
           }
         },
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "title": "StreamMetadata",
         "description": "Metadata for a single stream."
       },
       "StreamSelectionMode": {
         "type": "string",
-        "enum": ["all", "suggested", "whitelist"],
+        "enum": [
+          "all",
+          "suggested",
+          "whitelist"
+        ],
         "title": "StreamSelectionMode"
       },
       "StreamsMetadataResponse": {
@@ -20360,7 +21653,10 @@
           }
         },
         "type": "object",
-        "required": ["status", "message"],
+        "required": [
+          "status",
+          "message"
+        ],
         "title": "StripeWebhookResponse",
         "description": "Response schema for webhook endpoint."
       },
@@ -20466,12 +21762,22 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "icon", "actor_definition_id"],
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "actor_definition_id"
+        ],
         "title": "SummarizedSourceTemplate"
       },
       "SupportLevel": {
         "type": "string",
-        "enum": ["archived", "certified", "community", "none"],
+        "enum": [
+          "archived",
+          "certified",
+          "community",
+          "none"
+        ],
         "title": "SupportLevel"
       },
       "SyncGlobalTemplatesResponse": {
@@ -20527,7 +21833,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "url"],
+        "required": [
+          "id",
+          "name",
+          "url"
+        ],
         "title": "SyncSuccessConnection"
       },
       "SyncSuccessData": {
@@ -20630,7 +21940,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "url"],
+        "required": [
+          "id",
+          "name",
+          "url"
+        ],
         "title": "SyncSuccessDestination"
       },
       "SyncSuccessNotification": {
@@ -20640,7 +21954,9 @@
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "SyncSuccessNotification"
       },
       "SyncSuccessSource": {
@@ -20659,7 +21975,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "url"],
+        "required": [
+          "id",
+          "name",
+          "url"
+        ],
         "title": "SyncSuccessSource"
       },
       "SyncSuccessWorkspace": {
@@ -20678,12 +21998,19 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "url"],
+        "required": [
+          "id",
+          "name",
+          "url"
+        ],
         "title": "SyncSuccessWorkspace"
       },
       "TagSelectionMode": {
         "type": "string",
-        "enum": ["all", "any"],
+        "enum": [
+          "all",
+          "any"
+        ],
         "title": "TagSelectionMode"
       },
       "TemplateTagCreateRequest": {
@@ -20695,7 +22022,9 @@
           }
         },
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "title": "TemplateTagCreateRequest"
       },
       "TemplateTagCreateResponse": {
@@ -20740,7 +22069,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "organization_id"],
+        "required": [
+          "id",
+          "name",
+          "organization_id"
+        ],
         "title": "TemplateTagCreateResponse"
       },
       "TemplateTagDeleteResponse": {
@@ -20757,7 +22090,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
+        "required": [
+          "id",
+          "deleted_at"
+        ],
         "title": "TemplateTagDeleteResponse"
       },
       "TemplateTagListItem": {
@@ -20802,7 +22138,11 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "organization_id"],
+        "required": [
+          "id",
+          "name",
+          "organization_id"
+        ],
         "title": "TemplateTagListItem"
       },
       "TemplateTagListResponse": {
@@ -20816,7 +22156,9 @@
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "TemplateTagListResponse"
       },
       "TemplateTagUpdateRequest": {
@@ -20828,7 +22170,9 @@
           }
         },
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "title": "TemplateTagUpdateRequest"
       },
       "TemplateTagUpdateResponse": {
@@ -20873,12 +22217,21 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "organization_id"],
+        "required": [
+          "id",
+          "name",
+          "organization_id"
+        ],
         "title": "TemplateTagUpdateResponse"
       },
       "ThinkingEffort": {
         "type": "string",
-        "enum": ["none", "low", "medium", "high"],
+        "enum": [
+          "none",
+          "low",
+          "medium",
+          "high"
+        ],
         "title": "ThinkingEffort",
         "description": "Thinking effort levels for LLM agents."
       },
@@ -20923,7 +22276,10 @@
           }
         },
         "type": "object",
-        "required": ["client_id", "client_secret"],
+        "required": [
+          "client_id",
+          "client_secret"
+        ],
         "title": "TokenRequest"
       },
       "TokenResponse": {
@@ -20954,7 +22310,11 @@
           }
         },
         "type": "object",
-        "required": ["access_token", "token_type", "expires_in"],
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in"
+        ],
         "title": "TokenResponse"
       },
       "ToolCallEvent": {
@@ -20979,7 +22339,10 @@
           }
         },
         "type": "object",
-        "required": ["tool_name", "args"],
+        "required": [
+          "tool_name",
+          "args"
+        ],
         "title": "ToolCallEvent",
         "description": "Format of tool call events sent to the browser."
       },
@@ -20993,7 +22356,10 @@
           }
         },
         "type": "object",
-        "required": ["tool_name", "response"],
+        "required": [
+          "tool_name",
+          "response"
+        ],
         "title": "ToolResponseEvent",
         "description": "Format of tool response events sent to the browser."
       },
@@ -21427,7 +22793,10 @@
           }
         },
         "type": "object",
-        "required": ["workspace_name", "allowed_origin"],
+        "required": [
+          "workspace_name",
+          "allowed_origin"
+        ],
         "title": "WidgetTokenCreateRequest"
       },
       "WidgetTokenCreateResponse": {
@@ -21438,7 +22807,9 @@
           }
         },
         "type": "object",
-        "required": ["token"],
+        "required": [
+          "token"
+        ],
         "title": "WidgetTokenCreateResponse"
       },
       "WorkspaceDeleteResponse": {
@@ -21457,7 +22828,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
+        "required": [
+          "id",
+          "deleted_at"
+        ],
         "title": "WorkspaceDeleteResponse"
       },
       "WorkspaceGetResponse": {
@@ -21578,7 +22952,9 @@
           }
         },
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "title": "WorkspaceListResponse"
       },
       "WorkspaceStatsResponse": {
@@ -21600,12 +22976,19 @@
           }
         },
         "type": "object",
-        "required": ["active_count", "inactive_count", "total_count"],
+        "required": [
+          "active_count",
+          "inactive_count",
+          "total_count"
+        ],
         "title": "WorkspaceStatsResponse"
       },
       "WorkspaceStatus": {
         "type": "string",
-        "enum": ["active", "inactive"],
+        "enum": [
+          "active",
+          "inactive"
+        ],
         "title": "WorkspaceStatus"
       },
       "WorkspaceSyncResponse": {
@@ -21631,7 +23014,11 @@
           }
         },
         "type": "object",
-        "required": ["total_count", "created_count", "created_workspace_ids"],
+        "required": [
+          "total_count",
+          "created_count",
+          "created_workspace_ids"
+        ],
         "title": "WorkspaceSyncResponse"
       },
       "WorkspaceUpdateRequest": {
@@ -21778,6 +23165,10 @@
     {
       "name": "Sonar - Files",
       "description": "Operator endpoints to access end user's file sources (GDrive, Sharepoint, S3...) without requiring credentials"
+    },
+    {
+      "name": "OAuth Credentials",
+      "description": "Operator endpoints to manage OAuth credentials for connectors at organization scope."
     }
   ]
 }
