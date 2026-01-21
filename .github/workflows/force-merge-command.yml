@@ -1,0 +1,170 @@
+name: Force Merge PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number to force merge."
+        type: number
+        required: true
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+
+      # These must be declared, but they are unused and ignored.
+      # TODO: Infer 'repo' and 'gitref' from PR number on other workflows, so we can remove these.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Ref (Ignored)"
+        required: false
+
+run-name: "Force Merge PR #${{ github.event.inputs.pr }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
+  # Cancel any previous runs on the same branch if they are still in progress
+  cancel-in-progress: true
+
+jobs:
+  force-merge:
+    name: "Force Merge PR"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Get job variables
+        id: job-vars
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        shell: bash
+        run: |
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+          echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
+          echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
+          echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
+          echo "pr_url=$(echo "$PR_JSON" | jq -r .html_url)" >> $GITHUB_OUTPUT
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Append comment with job run link
+        id: first-comment-action
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          issue-number: ${{ github.event.inputs.pr }}
+          body: |
+
+            > Force-merge job started... [Check job output.][1]
+
+            [1]: ${{ steps.job-vars.outputs.run-url }}
+
+      - name: Check PR approval status
+        id: check-approval
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        shell: bash
+        run: |
+          # Get PR reviews
+          REVIEWS=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }}/reviews)
+
+          # Check if there's at least one approved review
+          # We need to check the latest review from each reviewer, as reviews can be dismissed or changed
+          APPROVED=$(echo "$REVIEWS" | jq -r '
+            group_by(.user.login) |
+            map(sort_by(.submitted_at) | last) |
+            map(select(.state == "APPROVED")) |
+            length
+          ')
+
+          if [ "$APPROVED" -gt 0 ]; then
+            echo "approved=true" >> $GITHUB_OUTPUT
+            echo "PR has $APPROVED approval(s)"
+          else
+            echo "approved=false" >> $GITHUB_OUTPUT
+            echo "PR does not have any approvals"
+          fi
+
+      - name: Reject - PR not approved
+        if: steps.check-approval.outputs.approved != 'true'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: "-1"
+          body: |
+            > **Force merge rejected:** This PR has not been approved yet.
+            >
+            > A PR must have at least one approval before it can be force-merged.
+            >
+            > Please request approval from a human reviewer
+            > or use `/ai-review` to request an AI-powered approval.
+
+      - name: Fail if not approved
+        if: steps.check-approval.outputs.approved != 'true'
+        run: |
+          echo "::error::PR is not approved. Force merge requires at least one approval."
+          exit 1
+
+      - name: Force merge PR
+        id: merge
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        shell: bash
+        run: |
+          # Merge the PR using squash merge
+          gh pr merge ${{ github.event.inputs.pr }} \
+            --repo ${{ github.repository }} \
+            --squash \
+            --admin
+
+          echo "merged=true" >> $GITHUB_OUTPUT
+
+      - name: Post success comment
+        if: steps.merge.outputs.merged == 'true'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: hooray
+          body: |
+            > **Force merge successful!** This PR has been merged.
+
+      - name: Post to Slack
+        if: steps.merge.outputs.merged == 'true'
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C04928XA0LB # The `#dev-ci` channel
+            text: "PR force-merged: ${{ steps.job-vars.outputs.pr_title }}"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "*PR Force-Merged*\n<${{ steps.job-vars.outputs.pr_url }}|${{ steps.job-vars.outputs.pr_title }}>"
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: "Initiated by: ${{ github.actor }} | <https://github.com/${{ github.repository }}/pull/${{ github.event.inputs.pr }}|View PR>"
+
+      - name: Append failure comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: failure() && steps.check-approval.outputs.approved == 'true'
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > **Force merge failed.** Please check the [job output](${{ steps.job-vars.outputs.run-url }}) for details.

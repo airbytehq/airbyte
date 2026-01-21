@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs_data_lake
@@ -77,7 +77,8 @@ class GcsPolarisWriteTest :
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = emptyTableSchema
             )
         val firstStream =
             makeStream(

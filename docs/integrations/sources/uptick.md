@@ -2,15 +2,25 @@
 
 Extract data from Uptick, a field service management platform designed for the fire protection industry.
 
+## Prerequisites
+
+To use the Uptick connector, you need:
+
+- An Uptick account with API access enabled
+- OAuth credentials (Client ID and Client Secret) generated from your Uptick instance
+- Your Uptick instance URL (for example, `https://yourcompany.onuptick.com`)
+
+To generate OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance and select **Create Application**. For more information, see the [Uptick API documentation](https://support.uptickhq.com/en/collections/9129536-uptick-api).
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `base_url` | `string` | Base URL eg https://demo-fire.onuptick.com (no trailing slash) |  |
-| `client_id` | `string` | API Client ID |  |
-| `client_secret` | `string` | API Client Secret  |  |
-| `username` | `string` | API Account Email |  |
-| `password` | `string` | API Account Password |  |
+| `base_url` | `string` | Your Uptick instance URL, for example `https://yourcompany.onuptick.com`. Do not include a trailing slash. |  |
+| `client_id` | `string` | OAuth Client ID generated from Control Panel > Uptick API. |  |
+| `client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. |  |
+| `username` | `string` | Email address for an Uptick user account with API access. |  |
+| `password` | `string` | Password for the Uptick user account. |  |
 
 ## Streams
 
@@ -40,6 +50,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 - `billingcontracts` - Recurring billing contracts for ongoing services
 - `billingcontractlineitems` - Line items within billing contracts
 - `costcentres` - Cost center assignments for financial tracking
+- `task_profitability` - Profitability metrics and financial performance data for tasks
 
 ### Purchasing and supply chain
 
@@ -134,9 +145,10 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.4.1 | 2025-12-16 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
-| 0.4.0 | 2025-11-23 | [68194](https://github.com/airbytehq/airbyte/pull/68194) | Remove expensive
-calculation fields from tasksessions, add more streams, including task profitability |
+| 0.4.3 | 2026-01-20 | [72056](https://github.com/airbytehq/airbyte/pull/72056) | Update dependencies |
+| 0.4.2 | 2026-01-14 | [71437](https://github.com/airbytehq/airbyte/pull/71437) | Update dependencies |
+| 0.4.1 | 2025-12-18 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
+| 0.4.0 | 2025-12-10 | [68194](https://github.com/airbytehq/airbyte/pull/68194) | Remove expensive calculation fields from tasksessions, add more streams, including task profitability |
 | 0.3.9 | 2025-11-25 | [70176](https://github.com/airbytehq/airbyte/pull/70176) | Update dependencies |
 | 0.3.8 | 2025-11-18 | [69684](https://github.com/airbytehq/airbyte/pull/69684) | Update dependencies |
 | 0.3.7 | 2025-10-29 | [68880](https://github.com/airbytehq/airbyte/pull/68880) | Update dependencies |
@@ -146,16 +158,16 @@ calculation fields from tasksessions, add more streams, including task profitabi
 | 0.3.3 | 2025-10-07 | [67515](https://github.com/airbytehq/airbyte/pull/67515) | Update dependencies |
 | 0.3.2 | 2025-10-03 | [67020](https://github.com/airbytehq/airbyte/pull/67020) | Remove start_date, include more task fields |
 | 0.3.1 | 2025-09-30 | [66839](https://github.com/airbytehq/airbyte/pull/66839) | Update dependencies |
-| 0.3.0 | 2025-09-17 | [66410](https://github.com/airbytehq/airbyte/pull/66410) | Add more streams |
-| 0.2.4 | 2025-09-23 | [66598](https://github.com/airbytehq/airbyte/pull/66598) | Update dependencies |
+| 0.3.0 | 2025-09-25 | [66410](https://github.com/airbytehq/airbyte/pull/66410) | Add more streams |
+| 0.2.4 | 2025-09-24 | [66598](https://github.com/airbytehq/airbyte/pull/66598) | Update dependencies |
 | 0.2.3 | 2025-09-09 | [65733](https://github.com/airbytehq/airbyte/pull/65733) | Update dependencies |
-| 0.2.2 | 2025-08-26 | [65534](https://github.com/airbytehq/airbyte/pull/65534) | Add extra_fields to property stream |
+| 0.2.2 | 2025-09-07 | [65534](https://github.com/airbytehq/airbyte/pull/65534) | Add extra_fields to property stream |
 | 0.2.1 | 2025-08-24 | [65445](https://github.com/airbytehq/airbyte/pull/65445) | Update dependencies |
 | 0.2.0 | 2025-08-22 | | Update task profitability stream to use start_date parameter |
-| 0.0.11 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/65061) | Add users and task profitability streams |
-| 0.0.10 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
-| 0.0.9 | 2025-08-13 | [64170](https://github.com/airbytehq/airbyte/pull/64170) | adds cursor pagination, incremental sync and rate limiting |
-| 0.0.8 | 2025-08-09 | [64845](https://github.com/airbytehq/airbyte/pull/64845) | Update dependencies |
+| 0.0.11 | 2025-08-21 | [65061](https://github.com/airbytehq/airbyte/pull/65061) | Add users and task profitability streams |
+| 0.0.10 | 2025-08-15 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.0.9 | 2025-08-14 | [64170](https://github.com/airbytehq/airbyte/pull/64170) | adds cursor pagination, incremental sync and rate limiting |
+| 0.0.8 | 2025-08-10 | [64845](https://github.com/airbytehq/airbyte/pull/64845) | Update dependencies |
 | 0.0.7 | 2025-08-02 | [64403](https://github.com/airbytehq/airbyte/pull/64403) | Update dependencies |
 | 0.0.6 | 2025-07-26 | [64055](https://github.com/airbytehq/airbyte/pull/64055) | Update dependencies |
 | 0.0.5 | 2025-07-20 | [63685](https://github.com/airbytehq/airbyte/pull/63685) | Update dependencies |

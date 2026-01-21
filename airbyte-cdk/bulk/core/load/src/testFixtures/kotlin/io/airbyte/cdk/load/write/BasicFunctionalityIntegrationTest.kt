@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.write
@@ -361,7 +361,6 @@ abstract class BasicFunctionalityIntegrationTest(
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
     ) {
-
     // Update config with any replacements.  This may be necessary when using testcontainers.
     val updatedConfig = configUpdater.update(configContents)
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
@@ -5237,6 +5236,20 @@ abstract class BasicFunctionalityIntegrationTest(
                 nullable = true,
             )
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
+
+        // This will get blown away in the tests as the DestinationStream's we are mocking just get
+        // converted to the protocol which has no concept of destination schemas
+        val emptyTableSchema: StreamTableSchema =
+            StreamTableSchema(
+                columnSchema =
+                    ColumnSchema(
+                        inputSchema = mapOf(),
+                        inputToFinalColumnNames = mapOf(),
+                        finalSchema = mapOf(),
+                    ),
+                importType = Append,
+                tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+            )
     }
 
     fun checkpointKeyForMedium(index: Int = 1, partitionId: String = "1"): CheckpointKey? {
@@ -5272,27 +5285,15 @@ abstract class BasicFunctionalityIntegrationTest(
             expectedAdditionalStats
         } else null
 
-    protected fun namespaceMapperForMedium(): NamespaceMapper {
-        return when (dataChannelMedium) {
-            DataChannelMedium.STDIO ->
-                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
-            // TODO: Return something more dynamic? Based on the test?
-            DataChannelMedium.SOCKET ->
-                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
-        }
-    }
+    fun namespaceMapperForMedium(): NamespaceMapper = dataChannelMedium.namespaceMapper()
+}
 
-    // This will get blown away in the tests as the DestinationStream's we are mocking just get
-    // converted to the protocol which has no concept of destination schemas
-    protected val emptyTableSchema: StreamTableSchema =
-        StreamTableSchema(
-            columnSchema =
-                ColumnSchema(
-                    inputSchema = mapOf(),
-                    inputToFinalColumnNames = mapOf(),
-                    finalSchema = mapOf(),
-                ),
-            importType = Append,
-            tableNames = TableNames(finalTableName = TableName("namespace", "test")),
-        )
+fun DataChannelMedium.namespaceMapper(): NamespaceMapper {
+    return when (this) {
+        DataChannelMedium.STDIO ->
+            NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
+        // TODO: Return something more dynamic? Based on the test?
+        DataChannelMedium.SOCKET ->
+            NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
+    }
 }

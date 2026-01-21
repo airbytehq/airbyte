@@ -77,7 +77,9 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| 2.1.38 | 2025-12-16 | [70765](https://github.com/airbytehq/airbyte/pull/70765) | Update dependencies |
+| 2.1.40 | 2026-01-20 | [72020](https://github.com/airbytehq/airbyte/pull/72020) | Update dependencies |
+| 2.1.39 | 2026-01-14 | [71547](https://github.com/airbytehq/airbyte/pull/71547) | Update dependencies |
+| 2.1.38 | 2025-12-18 | [70765](https://github.com/airbytehq/airbyte/pull/70765) | Update dependencies |
 | 2.1.37 | 2025-11-25 | [70109](https://github.com/airbytehq/airbyte/pull/70109) | Update dependencies |
 | 2.1.36 | 2025-11-18 | [69556](https://github.com/airbytehq/airbyte/pull/69556) | Update dependencies |
 | 2.1.35 | 2025-10-29 | [69057](https://github.com/airbytehq/airbyte/pull/69057) | Update dependencies |
@@ -85,7 +87,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 | 2.1.33 | 2025-10-14 | [67829](https://github.com/airbytehq/airbyte/pull/67829) | Update dependencies |
 | 2.1.32 | 2025-10-07 | [67388](https://github.com/airbytehq/airbyte/pull/67388) | Update dependencies |
 | 2.1.31 | 2025-09-30 | [66335](https://github.com/airbytehq/airbyte/pull/66335) | Update dependencies |
-| 2.1.30 | 2025-09-09 | [65815](https://github.com/airbytehq/airbyte/pull/65815) | Update dependencies |
+| 2.1.30 | 2025-09-10 | [65815](https://github.com/airbytehq/airbyte/pull/65815) | Update dependencies |
 | 2.1.29 | 2025-08-23 | [65218](https://github.com/airbytehq/airbyte/pull/65218) | Update dependencies |
 | 2.1.28 | 2025-08-09 | [64780](https://github.com/airbytehq/airbyte/pull/64780) | Update dependencies |
 | 2.1.27 | 2025-08-02 | [64288](https://github.com/airbytehq/airbyte/pull/64288) | Update dependencies |
@@ -131,11 +133,11 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 | 2.0.1 | 2024-06-06 | [39205](https://github.com/airbytehq/airbyte/pull/39205) | [autopull] Upgrade base image to v1.2.2 |
 | 2.0.0 | 2024-03-01 | [35680](https://github.com/airbytehq/airbyte/pull/35680) | Updates `dashboards` stream, Base image migration: remove Dockerfile and use the python-connector-base image, migrated to poetry |
 | 1.1.0 | 2023-10-31 | [31909](https://github.com/airbytehq/airbyte/pull/31909) | Add `databases` and `native_query_snippets` streams |
-| 1.0.1   | 2023-07-20 | [28470](https://github.com/airbytehq/airbyte/pull/27777) | Update CDK to 0.47.0                                                                                                             |
-| 1.0.0   | 2023-06-27 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | Remove Activity Stream                                                                                                           |
-| 0.3.1   | 2022-12-15 | [20535](https://github.com/airbytehq/airbyte/pull/20535) | Run on CDK 0.15.0                                                                                                                |
-| 0.3.0   | 2022-12-13 | [19236](https://github.com/airbytehq/airbyte/pull/19236) | Migrate to YAML.                                                                                                                 |
-| 0.2.0   | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs                                                                                                       |
-| 0.1.0   | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752)  | Initial (alpha) release                                                                                                          |
+| 1.0.1 | 2023-07-20 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | Update CDK to 0.47.0 |
+| 1.0.0 | 2023-06-27 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | Remove Activity Stream |
+| 0.3.1 | 2022-12-15 | [20535](https://github.com/airbytehq/airbyte/pull/20535) | Run on CDK 0.15.0 |
+| 0.3.0 | 2022-12-13 | [19236](https://github.com/airbytehq/airbyte/pull/19236) | Migrate to YAML. |
+| 0.2.0 | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs |
+| 0.1.0 | 2022-06-15 | [13752](https://github.com/airbytehq/airbyte/pull/13752) | Initial (alpha) release |
 
 </details>
