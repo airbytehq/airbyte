@@ -214,6 +214,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.6 | 2026-01-21 | [71049](https://github.com/airbytehq/airbyte/pull/71049) | Use debezium's own token validation logic to ensure that the saved resume token is present on the server (h/t @ed-kyu) |
 | 2.0.5 | 2026-01-14 | [71255](https://github.com/airbytehq/airbyte/pull/71255) | fix(source-mongodb-v2): Add helpful error message for BSONObjectTooLarge errors during CDC syncs |
 | 2.0.4 | 2025-09-10 | [65579](https://github.com/airbytehq/airbyte/pull/65579) | Add validation to ensure state format consistency. |
 | 2.0.3 | 2025-08-12 | [64900](https://github.com/airbytehq/airbyte/pull/64900) | Fix hardcoded read preferences to allow specification in connection string. |
