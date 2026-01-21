@@ -572,48 +572,13 @@ spec:
       credentials:
         type: object
         description: >-
-          Zendesk allows three authentication methods. We recommend using `OAuth2.0 with Refresh Token`
-          for Airbyte Cloud users (recommended), `OAuth2.0 (Legacy)` for existing OAuth connections,
-          and `API token` for Airbyte Open Source users.
+          Zendesk allows three authentication methods. We recommend using `OAuth2.0`
+          for Airbyte Cloud users and `API token` for Airbyte Open Source users.
         title: Authentication
         order: 1
         oneOf:
           - type: object
-            title: OAuth2.0 (Legacy)
-            required:
-              - access_token
-            additionalProperties: true
-            properties:
-              auth_type:
-                type: string
-                const: oauth2.0
-                order: 0
-              access_token:
-                type: string
-                description: >-
-                  The OAuth access token. See the <a
-                  href="https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/">Zendesk
-                  docs</a> for more information on generating this token.
-                title: Access Token
-                airbyte_secret: true
-              client_id:
-                type: string
-                description: >-
-                  The OAuth client's ID. See <a
-                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
-                  guide</a> for more information.
-                title: Client ID
-                airbyte_secret: true
-              client_secret:
-                type: string
-                description: >-
-                  The OAuth client secret. See <a
-                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
-                  guide</a> for more information.
-                title: Client Secret
-                airbyte_secret: true
-          - type: object
-            title: OAuth2.0 with Refresh Token
+            title: OAuth2.0
             required:
               - client_id
               - client_secret
@@ -679,6 +644,40 @@ spec:
                   href="https://docs.airbyte.com/integrations/sources/zendesk-talk">docs</a>
                   for more information.
                 title: API Token
+                airbyte_secret: true
+          - type: object
+            title: OAuth2.0 (Legacy)
+            required:
+              - access_token
+            additionalProperties: true
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              access_token:
+                type: string
+                description: >-
+                  The OAuth access token. See the <a
+                  href="https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/">Zendesk
+                  docs</a> for more information on generating this token.
+                title: Access Token
+                airbyte_secret: true
+              client_id:
+                type: string
+                description: >-
+                  The OAuth client's ID. See <a
+                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
+                  guide</a> for more information.
+                title: Client ID
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: >-
+                  The OAuth client secret. See <a
+                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
+                  guide</a> for more information.
+                title: Client Secret
                 airbyte_secret: true
       start_date:
         type: string
