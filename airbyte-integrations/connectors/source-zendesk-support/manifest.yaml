@@ -1312,40 +1312,6 @@ spec:
           and `API token` for Airbyte Open Source users.
         order: 1
         oneOf:
-          - title: OAuth2.0 (Legacy)
-            type: object
-            required:
-              - access_token
-            additionalProperties: true
-            properties:
-              credentials:
-                type: string
-                const: oauth2.0
-                order: 0
-              access_token:
-                type: string
-                title: Access Token
-                description: >-
-                  The OAuth access token. See the <a
-                  href="https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/">Zendesk
-                  docs</a> for more information on generating this token.
-                airbyte_secret: true
-              client_id:
-                type: string
-                title: Client ID
-                description: >-
-                  The OAuth client's ID. See <a
-                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
-                  guide</a> for more information.
-                airbyte_secret: true
-              client_secret:
-                type: string
-                title: Client Secret
-                description: >-
-                  The OAuth client secret. See <a
-                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
-                  guide</a> for more information.
-                airbyte_secret: true
           - title: OAuth2.0 with Refresh Token
             type: object
             required:
@@ -1414,6 +1380,40 @@ spec:
                   The value of the API token generated. See our <a
                   href="https://docs.airbyte.com/integrations/sources/zendesk-support#setup-guide">full
                   documentation</a> for more information on generating this token.
+                airbyte_secret: true
+          - title: OAuth2.0 (Legacy)
+            type: object
+            required:
+              - access_token
+            additionalProperties: true
+            properties:
+              credentials:
+                type: string
+                const: oauth2.0
+                order: 0
+              access_token:
+                type: string
+                title: Access Token
+                description: >-
+                  The OAuth access token. See the <a
+                  href="https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/">Zendesk
+                  docs</a> for more information on generating this token.
+                airbyte_secret: true
+              client_id:
+                type: string
+                title: Client ID
+                description: >-
+                  The OAuth client's ID. See <a
+                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
+                  guide</a> for more information.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: >-
+                  The OAuth client secret. See <a
+                  href="https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.">this
+                  guide</a> for more information.
                 airbyte_secret: true
       ignore_pagination:
         type: boolean
