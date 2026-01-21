@@ -8,6 +8,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
@@ -15,40 +16,25 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
-import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
 class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
-    @Value("\${airbyte.destination.core.file-transfer.enabled}")
-    private val fileTransferEnabled: Boolean,
-    @Named("requireCheckpointIdOnRecordAndKeyOnState")
-    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
+    @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     private val namespaceMapper: NamespaceMapper,
     private val uuidGenerator: UUIDGenerator,
 ) {
+    // In socket mode, multiple sockets can run in parallel, which means that we
+    // depend on upstream to associate each record with the appropriate state message.
+    private val requireCheckpointIdOnRecordAndKeyOnState =
+        dataChannelMedium == DataChannelMedium.SOCKET
 
     fun fromAirbyteProtocolMessage(
         message: AirbyteMessage,
         serializedSizeBytes: Long
     ): DestinationMessage {
-        fun toLong(value: Any?, name: String): Long? {
-            return value?.let {
-                when (it) {
-                    // you can't cast java.lang.Integer -> java.lang.Long
-                    // so instead we have to do this manual pattern match
-                    is Int -> it.toLong()
-                    is Long -> it
-                    else ->
-                        throw IllegalArgumentException(
-                            "Unexpected value for $name: $it (${it::class.qualifiedName})",
-                        )
-                }
-            }
-        }
-
         return when (message.type) {
             AirbyteMessage.Type.RECORD -> {
                 val descriptor =
@@ -57,53 +43,25 @@ class DestinationMessageFactory(
                         name = message.record.stream
                     )
                 val stream = catalog.getStream(descriptor)
-                if (fileTransferEnabled) {
-                    try {
-                        @Suppress("UNCHECKED_CAST")
-                        val fileMessage =
-                            message.record.additionalProperties["file"] as Map<String, Any>
-
-                        DestinationFile(
-                            stream = stream,
-                            emittedAtMs = message.record.emittedAt,
-                            fileMessage =
-                                DestinationFile.AirbyteRecordMessageFile(
-                                    fileUrl = fileMessage["file_url"] as String?,
-                                    bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
-                                    fileRelativePath = fileMessage["file_relative_path"] as String?,
-                                    modified =
-                                        toLong(fileMessage["modified"], "message.record.modified"),
-                                    sourceFileUrl = fileMessage["source_file_url"] as String?,
-                                ),
-                        )
-                    } catch (e: Exception) {
-                        throw IllegalArgumentException(
-                            "Failed to construct file message: ${e.message}",
-                        )
+                // In socket mode, multiple sockets can run in parallel, which means that we
+                // depend on upstream to associate each record with the appropriate state
+                // message for us.
+                val checkpointId =
+                    if (requireCheckpointIdOnRecordAndKeyOnState) {
+                        val idSource =
+                            (message.record.additionalProperties[Meta.CHECKPOINT_ID_NAME]
+                                ?: throw IllegalStateException("Expected `partition_id` on record"))
+                        CheckpointId(idSource as String)
+                    } else {
+                        null
                     }
-                } else {
-                    // In socket mode, multiple sockets can run in parallel, which means that we
-                    // depend on upstream to associate each record with the appropriate state
-                    // message for us.
-                    val checkpointId =
-                        if (requireCheckpointIdOnRecordAndKeyOnState) {
-                            val idSource =
-                                (message.record.additionalProperties[Meta.CHECKPOINT_ID_NAME]
-                                    ?: throw IllegalStateException(
-                                        "Expected `partition_id` on record"
-                                    ))
-                            CheckpointId(idSource as String)
-                        } else {
-                            null
-                        }
-                    DestinationRecord(
-                        stream = stream,
-                        message = DestinationRecordJsonSource(message),
-                        serializedSizeBytes = serializedSizeBytes,
-                        checkpointId = checkpointId,
-                        airbyteRawId = uuidGenerator.v7(),
-                    )
-                }
+                DestinationRecord(
+                    stream = stream,
+                    message = DestinationRecordJsonSource(message),
+                    serializedSizeBytes = serializedSizeBytes,
+                    checkpointId = checkpointId,
+                    airbyteRawId = uuidGenerator.v7(),
+                )
             }
             AirbyteMessage.Type.TRACE -> {
                 val status = message.trace.streamStatus
@@ -119,17 +77,10 @@ class DestinationMessageFactory(
                     val stream = catalog.getStream(descriptor)
                     when (status.status) {
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE ->
-                            if (fileTransferEnabled) {
-                                DestinationFileStreamComplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            } else {
-                                DestinationRecordStreamComplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            }
+                            DestinationRecordStreamComplete(
+                                stream,
+                                message.trace.emittedAt?.toLong() ?: 0L,
+                            )
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
                             throw ConfigErrorException(
                                 "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message: $message"
@@ -312,14 +263,5 @@ class DestinationMessageFactory(
         } else {
             throw IllegalArgumentException("AirbyteMessage must contain a payload.")
         }
-    }
-}
-
-data object ProbeMessage : DestinationMessage {
-    override fun asProtocolMessage(): AirbyteMessage {
-        throw UnsupportedOperationException(
-            "ProbeMessage cannot be converted to AirbyteMessage. " +
-                "It is only used by the source to verify that the data channel is open."
-        )
     }
 }
