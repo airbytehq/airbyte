@@ -11,19 +11,18 @@ import com.mongodb.MongoChangeStreamException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
 import io.debezium.connector.mongodb.MongoDbConnectorConfig;
 import io.debezium.connector.mongodb.MongoDbOffsetContext;
 import io.debezium.connector.mongodb.MongoDbPartition;
+import io.debezium.connector.mongodb.MongoDbTaskContext;
+import io.debezium.connector.mongodb.MongoUtils;
 import io.debezium.connector.mongodb.ResumeTokens;
 import io.debezium.pipeline.spi.Partition;
 import java.util.*;
@@ -32,7 +31,6 @@ import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.BsonTimestamp;
-import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,96 +79,35 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
 
   /**
    * Tests whether the provided saved offset resume token is valid for resuming a MongoDB change event
-   * stream.
+   * stream. Uses the same pipeline as Debezium to ensure consistency between validation and actual
+   * CDC resumption.
    *
    * @param savedOffset The resume token from the saved offset.
    * @param mongoClient The MongoClient used to validate the saved offset.
-   * @param databaseNames The list of database names to check.
-   * @param streamsByDatabase The list of lists of ConfiguredAirbyteStream objects, grouped by
-   *        database.
+   * @param debeziumProperties The Debezium properties used to configure the change stream pipeline.
    * @return {@code true} if the saved offset value is valid; otherwise, {@code false} to indicate
    *         that an initial snapshot should be performed.
    */
   public boolean isValidResumeToken(final BsonDocument savedOffset,
                                     final MongoClient mongoClient,
-                                    final List<String> databaseNames,
-                                    final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
+                                    final Properties debeziumProperties) {
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return true;
     }
 
-    // First, try cluster-level validation without filter.
-    // The resume token may point to an event from any collection (including unsynced collections),
-    // so we validate against the entire cluster's change stream for accuracy.
-    try {
-      final ChangeStreamIterable<BsonDocument> clusterStream = mongoClient.watch(BsonDocument.class);
-      clusterStream.resumeAfter(savedOffset);
-      try (final var ignored = clusterStream.cursor()) {
-        LOGGER.info("Valid resume token '{}' present (cluster-level validation), corresponding to timestamp (seconds after epoch) : {}. "
-            + "Incremental sync will be performed for up-to-date streams.",
-            ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
-        return true;
-      }
-    } catch (final MongoCommandException e) {
-      // If unauthorized (error code 13), fall back to filtered validation for restricted permissions
-      if (e.getErrorCode() == 13) {
-        LOGGER.info("Cluster-level watch unauthorized (error code 13), falling back to filtered validation. Error: {}", e.getMessage());
-        return validateWithFilter(savedOffset, mongoClient, databaseNames, streamsByDatabase);
-      }
-      // Other command errors indicate invalid token
-      LOGGER.info("Invalid resume token '{}' (MongoCommandException), corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
-          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
-      return false;
-    } catch (final MongoChangeStreamException e) {
-      // Change stream exception indicates invalid token (e.g., token not found in oplog)
-      LOGGER.info("Invalid resume token '{}' (MongoChangeStreamException), corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
-          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
-      return false;
-    }
-  }
+    // Use Debezium's MongoDbTaskContext to create the same pipeline used for actual CDC resumption.
+    // This ensures validation uses identical pipeline configuration as the streaming phase,
+    // preventing false negatives caused by pipeline mismatch.
+    final Configuration config = Configuration.from(debeziumProperties);
+    final MongoDbTaskContext taskContext = new MongoDbTaskContext(config);
 
-  /**
-   * Validates resume token using filtered change stream (fallback for restricted permissions). Note:
-   * This method may incorrectly report valid tokens as invalid if the token points to an event from
-   * an unsynced collection. Use cluster-level validation when possible.
-   */
-  private boolean validateWithFilter(final BsonDocument savedOffset,
-                                     final MongoClient mongoClient,
-                                     final List<String> databaseNames,
-                                     final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
-    // Build filter for configured databases and collections
-    List<Bson> orFilters = new ArrayList<>();
-    LOGGER.info("The length of the database names is {}", databaseNames.size());
-    for (int i = 0; i < databaseNames.size(); i++) {
-      String dbName = databaseNames.get(i);
-      List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
-      List<String> collectionNames = streams.stream()
-          .map(s -> s.getStream().getName())
-          .toList();
-      // Match documents where ns.db == dbName and ns.coll in collectionNames
-      orFilters.add(Filters.and(
-          Filters.eq("ns.db", dbName),
-          Filters.in("ns.coll", collectionNames)));
-    }
+    // Open change stream with Debezium's pipeline (same as used in MongoDbStreamingChangeEventSource)
+    final ChangeStreamIterable<BsonDocument> stream = MongoUtils.openChangeStream(mongoClient, taskContext);
+    stream.resumeAfter(savedOffset);
 
-    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
-    final ChangeStreamIterable<BsonDocument> eventStream;
-
-    // Use database-level watch when only one database is configured to minimize required permissions.
-    // Empty database validation is handled upstream in MongoDbSource.check()
-    if (databaseNames.size() == 1) {
-      LOGGER.info("Watching for CDC events for a single database stream {}.", databaseNames.getFirst());
-      eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
-    } else {
-      LOGGER.info("Watching for CDC events for multiple databases.");
-      eventStream = mongoClient.watch(pipeline, BsonDocument.class);
-    }
-
-    // Attempt to start the stream after the saved offset.
-    eventStream.resumeAfter(savedOffset);
-    try (final var ignored = eventStream.cursor()) {
-      LOGGER.info("Valid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Incremental sync will be performed for "
-          + "up-to-date streams.",
+    try (final var ignored = stream.cursor()) {
+      LOGGER.info("Valid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}. "
+          + "Incremental sync will be performed for up-to-date streams.",
           ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
       return true;
     } catch (final MongoCommandException | MongoChangeStreamException e) {
