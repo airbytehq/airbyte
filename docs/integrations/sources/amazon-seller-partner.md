@@ -34,6 +34,12 @@ This page contains the setup guide and reference information for the [Amazon Sel
 
 <!-- /env:oss -->
 
+## Supported regions
+
+The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
+
+Both GB and UK refer to the United Kingdom marketplace and can be used interchangeably. For the complete list of Amazon marketplace IDs, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids).
+
 ## Setup guide
 
 ## Step 1: Set up Amazon Seller Partner
@@ -252,7 +258,9 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0 | 2026-01-20 | [71055](https://github.com/airbytehq/airbyte/pull/71055) | Re-add brand analytics reports to Cloud: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT, GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT, GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT, GET_SALES_AND_TRAFFIC_REPORT, GET_VENDOR_SALES_REPORT, GET_VENDOR_INVENTORY_REPORT |
+| 5.2.0 | 2026-01-21 | [71055](https://github.com/airbytehq/airbyte/pull/71055) | Re-add brand analytics reports to Cloud: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT, GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT, GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT, GET_SALES_AND_TRAFFIC_REPORT, GET_VENDOR_SALES_REPORT, GET_VENDOR_INVENTORY_REPORT |
+| 5.1.2 | 2026-01-20 | [71037](https://github.com/airbytehq/airbyte/pull/71037) | Fix GB marketplace_id config transformation |
+| 5.1.1 | 2026-01-20 | [71991](https://github.com/airbytehq/airbyte/pull/71991) | Update dependencies |
 | 5.1.0 | 2026-01-15 | [71327](https://github.com/airbytehq/airbyte/pull/71327) | Add rate limiting and hourly granularity options for ListFinancialEvents and ListFinancialEventGroups streams |
 | 5.0.2 | 2026-01-14 | [71526](https://github.com/airbytehq/airbyte/pull/71526) | Update dependencies |
 | 5.0.1 | 2025-12-11 | [70200](https://github.com/airbytehq/airbyte/pull/70200) | Fix financial events pagination causing 400 InvalidInput errors under rate limiting when syncing `ListFinancialEvents`, and align `ListFinancialEventGroups` pagination behavior |
