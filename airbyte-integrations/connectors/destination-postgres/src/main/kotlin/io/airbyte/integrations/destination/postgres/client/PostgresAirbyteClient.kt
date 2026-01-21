@@ -111,7 +111,7 @@ class PostgresAirbyteClient(
         replace: Boolean
     ) {
         val (createTableSql, createIndexesSql) =
-            sqlGenerator.createTable(stream, tableName, columnNameMapping, replace)
+            sqlGenerator.createTable(stream, tableName, replace)
         execute(createTableSql)
         try {
             execute(createIndexesSql)
@@ -140,7 +140,16 @@ class PostgresAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(sqlGenerator.copyTable(columnNameMapping, sourceTableName, targetTableName))
+        val metaColumnNames = columnManager.getMetaColumnNames()
+        val targetColumnNames =
+            if (postgresConfiguration.legacyRawTablesOnly == true) {
+                metaColumnNames
+            } else {
+                metaColumnNames + columnNameMapping.values
+            }
+        execute(
+            sqlGenerator.copyTable(targetColumnNames.toList(), sourceTableName, targetTableName)
+        )
     }
 
     override suspend fun upsertTable(
@@ -150,7 +159,7 @@ class PostgresAirbyteClient(
         targetTableName: TableName
     ) {
         execute(
-            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
+            sqlGenerator.upsertTable(stream, sourceTableName, targetTableName)
         )
     }
 
@@ -194,11 +203,11 @@ class PostgresAirbyteClient(
                     !isRawTablesMode &&
                         shouldRecreatePrimaryKeyIndex(stream, tableName, columnNameMapping),
                 primaryKeyColumnNames =
-                    sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping),
+                    sqlGenerator.getPrimaryKeysColumnNames(stream),
                 recreateCursorIndex =
                     !isRawTablesMode &&
                         shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
-                cursorColumnName = sqlGenerator.getCursorColumnName(stream, columnNameMapping),
+                cursorColumnName = sqlGenerator.getCursorColumnName(stream),
             )
         )
     }
@@ -289,7 +298,7 @@ class PostgresAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): Boolean {
-        val streamPrimaryKeys = sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping)
+        val streamPrimaryKeys = sqlGenerator.getPrimaryKeysColumnNames(stream)
         if (streamPrimaryKeys.isEmpty()) return false
 
         val existingPrimaryKeyIndexColumns = getPrimaryKeyIndexColumns(tableName)
@@ -333,7 +342,7 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ): Boolean {
         val streamCursor =
-            sqlGenerator.getCursorColumnName(stream, columnNameMapping) ?: return false
+            sqlGenerator.getCursorColumnName(stream) ?: return false
 
         val existingCursorIndexColumn = getCursorIndexColumn(tableName)
 

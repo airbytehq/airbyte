@@ -18,7 +18,6 @@ import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
@@ -58,7 +57,11 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             )
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
         val streamTableSchema =
-            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { getPrimaryKey() } returns emptyList()
+                every { getCursor() } returns emptyList()
+            }
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -73,14 +76,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { importType } returns Append
                 every { tableSchema } returns streamTableSchema
             }
-        val columnNameMapping = ColumnNameMapping(mapOf("sourceId" to "targetId"))
         val tableName = TableName(namespace = "namespace", name = "name")
 
         val (createTableSql, createIndexesSql) =
             postgresDirectLoadSqlGenerator.createTable(
                 stream = stream,
                 tableName = tableName,
-                columnNameMapping = columnNameMapping,
                 replace = true
             )
 
@@ -120,7 +121,11 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val finalSchema = mapOf("targetId" to ColumnType("varchar", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
         val streamTableSchema =
-            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { getPrimaryKey() } returns emptyList()
+                every { getCursor() } returns emptyList()
+            }
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -134,19 +139,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { importType } returns Append
                 every { tableSchema } returns streamTableSchema
             }
-        val columnNameMapping =
-            ColumnNameMapping(
-                mapOf(
-                    "sourceId" to "targetId",
-                )
-            )
         val tableName = TableName(namespace = "namespace", name = "name")
 
         val (createTableSql, createIndexesSql) =
             postgresDirectLoadSqlGenerator.createTable(
                 stream = stream,
                 tableName = tableName,
-                columnNameMapping = columnNameMapping,
                 replace = false
             )
 
@@ -182,7 +180,11 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             )
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
         val streamTableSchema =
-            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { getPrimaryKey() } returns listOf(listOf("id"))
+                every { getCursor() } returns listOf("updatedAt")
+            }
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -198,14 +200,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
                 every { tableSchema } returns streamTableSchema
             }
-        val columnNameMapping = ColumnNameMapping(emptyMap())
         val tableName = TableName(namespace = "test_schema", name = "test_table")
 
         val (createTableSql, createIndexesSql) =
             postgresDirectLoadSqlGenerator.createTable(
                 stream = stream,
                 tableName = tableName,
-                columnNameMapping = columnNameMapping,
                 replace = true
             )
 
@@ -263,15 +263,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     )
                 every { importType } returns
                     Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
+                // In raw mode, tableSchema accesses might be skipped in getUserColumns
+                // but createIndexes checks config first.
             }
-        val columnNameMapping = ColumnNameMapping(emptyMap())
         val tableName = TableName(namespace = "test_schema", name = "test_table")
 
         val (createTableSql, createIndexesSql) =
             rawModeSqlGenerator.createTable(
                 stream = stream,
                 tableName = tableName,
-                columnNameMapping = columnNameMapping,
                 replace = true
             )
 
@@ -325,13 +325,20 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @Test
     fun testGenerateCopyTable() {
-        val columnNameMapping = ColumnNameMapping(mapOf("sourceId" to "targetId"))
+        val columnNames =
+            listOf(
+                "_airbyte_raw_id",
+                "_airbyte_extracted_at",
+                "_airbyte_meta",
+                "_airbyte_generation_id",
+                "targetId"
+            )
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "target")
 
         val sql =
             postgresDirectLoadSqlGenerator.copyTable(
-                columnNameMapping = columnNameMapping,
+                columnNames = columnNames,
                 sourceTableName = sourceTableName,
                 targetTableName = destinationTableName
             )
@@ -387,7 +394,11 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             )
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
         val streamTableSchema =
-            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { getPrimaryKey() } returns listOf(listOf("id"))
+                every { getCursor() } returns listOf("updatedAt")
+            }
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -407,14 +418,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { tableSchema } returns streamTableSchema
             }
 
-        val columnNameMapping = ColumnNameMapping(emptyMap())
         val sourceTableName = TableName(namespace = "test_schema", name = "staging_table")
         val targetTableName = TableName(namespace = "test_schema", name = "final_table")
 
         val sql =
             postgresDirectLoadSqlGenerator.upsertTable(
                 stream = stream,
-                columnNameMapping = columnNameMapping,
                 sourceTableName = sourceTableName,
                 targetTableName = targetTableName
             )
@@ -509,7 +518,6 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { importType } returns Dedupe(primaryKey = emptyList(), cursor = emptyList())
             }
 
-        val columnNameMapping = ColumnNameMapping(emptyMap())
         val sourceTableName = TableName(namespace = "test_schema", name = "source_table")
         val targetTableName = TableName(namespace = "test_schema", name = "target_table")
 
@@ -517,7 +525,6 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             assertThrows<IllegalArgumentException> {
                 postgresDirectLoadSqlGenerator.upsertTable(
                     stream = stream,
-                    columnNameMapping = columnNameMapping,
                     sourceTableName = sourceTableName,
                     targetTableName = targetTableName
                 )

@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
@@ -51,7 +50,6 @@ class PostgresDirectLoadSqlGenerator(
     fun createTable(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): Pair<String, String> {
         val metaColumns = columnManager.getMetaColumns()
@@ -88,7 +86,7 @@ class PostgresDirectLoadSqlGenerator(
             );
             COMMIT;
             """
-        val createIndexesSql = createIndexes(stream, tableName, columnNameMapping)
+        val createIndexesSql = createIndexes(stream, tableName)
         return Pair(createTableSql, createIndexesSql)
     }
 
@@ -103,11 +101,6 @@ class PostgresDirectLoadSqlGenerator(
         return stream.tableSchema.columnSchema.finalSchema
     }
 
-    internal fun getTargetColumnName(
-        streamColumnName: String,
-        columnNameMapping: ColumnNameMapping
-    ): String = columnNameMapping[streamColumnName] ?: streamColumnName
-
     /**
      * Generates index creation statements for a table based on the stream's configuration.
      *
@@ -121,23 +114,21 @@ class PostgresDirectLoadSqlGenerator(
      */
     private fun createIndexes(
         stream: DestinationStream,
-        tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        tableName: TableName
     ): String {
         // In raw tables mode, skip primary key and cursor indexes since those columns don't exist
         val primaryKeyIndexStatement =
             if (postgresConfiguration.legacyRawTablesOnly) {
                 ""
             } else {
-                val primaryKeyColumnNames =
-                    getPrimaryKeysColumnNamesQuoted(stream, columnNameMapping)
+                val primaryKeyColumnNames = getPrimaryKeysColumnNamesQuoted(stream)
                 createPrimaryKeyIndexStatement(primaryKeyColumnNames, tableName)
             }
         val cursorIndexStatement =
             if (postgresConfiguration.legacyRawTablesOnly) {
                 ""
             } else {
-                val cursorColumnName = getCursorColumnNameQuoted(stream, columnNameMapping)
+                val cursorColumnName = getCursorColumnNameQuoted(stream)
                 createCursorIndexStatement(cursorColumnName, tableName)
             }
         val extractedAtIndexStatement =
@@ -151,66 +142,32 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     internal fun getPrimaryKeysColumnNames(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
+        stream: DestinationStream
     ): List<String> {
-        return when (stream.importType) {
-            is Dedupe -> getPrimaryKeysColumnNames(stream.importType as Dedupe, columnNameMapping)
-            else -> listOf()
-        }
-    }
-
-    internal fun getPrimaryKeysColumnNames(
-        importType: Dedupe,
-        columnNameMapping: ColumnNameMapping
-    ): List<String> {
-        return importType.primaryKey
-            .map { fieldPath ->
-                val primaryKeyColumnName = fieldPath.first() // only at the root level for Postgres
-                getTargetColumnName(primaryKeyColumnName, columnNameMapping)
-            }
-            .toList()
+        return stream.tableSchema.getPrimaryKey().flatten()
     }
 
     private fun getPrimaryKeysColumnNamesQuoted(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ) = getPrimaryKeysColumnNames(stream, columnNameMapping).map { quoteIdentifier(it) }
+        stream: DestinationStream
+    ) = getPrimaryKeysColumnNames(stream).map { quoteIdentifier(it) }
 
     private fun getPrimaryKeysColumnNamesQuoted(
-        importType: Dedupe,
-        columnNameMapping: ColumnNameMapping
-    ) = getPrimaryKeysColumnNames(importType, columnNameMapping).map { quoteIdentifier(it) }
+        importType: Dedupe
+    ) = importType.primaryKey.flatten().map { quoteIdentifier(it) }
 
     internal fun getCursorColumnName(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
+        stream: DestinationStream
     ): String? {
-        return when (stream.importType) {
-            is Dedupe ->
-                getCursorColumnName((stream.importType as Dedupe).cursor, columnNameMapping)
-            else -> null
-        }
-    }
-
-    internal fun getCursorColumnName(
-        cursor: List<String>,
-        columnNameMapping: ColumnNameMapping
-    ): String? {
-        return cursor.firstOrNull()?.let { columnName ->
-            getTargetColumnName(columnName, columnNameMapping)
-        }
+        return stream.tableSchema.getCursor().firstOrNull()
     }
 
     private fun getCursorColumnNameQuoted(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ) = getCursorColumnName(stream, columnNameMapping)?.let { quoteIdentifier(it) }
+        stream: DestinationStream
+    ) = getCursorColumnName(stream)?.let { quoteIdentifier(it) }
 
     private fun getCursorColumnNameQuoted(
-        cursor: List<String>,
-        columnNameMapping: ColumnNameMapping
-    ) = getCursorColumnName(cursor, columnNameMapping)?.let { quoteIdentifier(it) }
+        cursor: List<String>
+    ) = cursor.firstOrNull()?.let { quoteIdentifier(it) }
 
     internal fun recreatePrimaryKeyIndex(
         primaryKeyColumnNames: List<String>,
@@ -290,36 +247,16 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     fun copyTable(
-        columnNameMapping: ColumnNameMapping,
+        columnNames: List<String>,
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
-        val columnNames = getTargetColumnNamesForCopy(columnNameMapping).joinToString(",")
+        val quotedColumnNames = columnNames.joinToString(",") { quoteIdentifier(it) }
         return """
-            INSERT INTO ${getFullyQualifiedName(targetTableName)} ($columnNames)
-            SELECT $columnNames
+            INSERT INTO ${getFullyQualifiedName(targetTableName)} ($quotedColumnNames)
+            SELECT $quotedColumnNames
             FROM ${getFullyQualifiedName(sourceTableName)};
             """
-    }
-
-    private fun getTargetColumnNamesForStream(
-        stream: DestinationStream,
-    ): List<String> {
-        val metaColumnNames = columnManager.getMetaColumnNames().map { quoteIdentifier(it) }
-        if (postgresConfiguration.legacyRawTablesOnly) {
-            return metaColumnNames
-        }
-        val userColumnNames = getUserColumns(stream).keys.map { quoteIdentifier(it) }
-        return metaColumnNames + userColumnNames
-    }
-
-    private fun getTargetColumnNamesForCopy(columnNameMapping: ColumnNameMapping): List<String> {
-        val metaColumnNames = columnManager.getMetaColumnNames().map { quoteIdentifier(it) }
-        if (postgresConfiguration.legacyRawTablesOnly == true) {
-            return metaColumnNames
-        }
-        return metaColumnNames +
-            columnNameMapping.map { (_, targetName) -> quoteIdentifier(targetName) }
     }
 
     /**
@@ -341,7 +278,6 @@ class PostgresDirectLoadSqlGenerator(
      */
     fun upsertTable(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
@@ -351,8 +287,8 @@ class PostgresDirectLoadSqlGenerator(
             throw IllegalArgumentException("Cannot perform upsert without primary key")
         }
 
-        val primaryKeyTargetColumns = getPrimaryKeysColumnNamesQuoted(importType, columnNameMapping)
-        val cursorTargetColumn = getCursorColumnNameQuoted(importType.cursor, columnNameMapping)
+        val primaryKeyTargetColumns = getPrimaryKeysColumnNamesQuoted(stream)
+        val cursorTargetColumn = getCursorColumnNameQuoted(stream)
         val allTargetColumns = getTargetColumnNamesForStream(stream)
 
         val selectDedupedQuery =
@@ -737,4 +673,15 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     private fun getName(tableName: TableName): String = quoteIdentifier(tableName.name)
+
+    private fun getTargetColumnNamesForStream(
+        stream: DestinationStream,
+    ): List<String> {
+        val metaColumnNames = columnManager.getMetaColumnNames().map { quoteIdentifier(it) }
+        if (postgresConfiguration.legacyRawTablesOnly) {
+            return metaColumnNames
+        }
+        val userColumnNames = getUserColumns(stream).keys.map { quoteIdentifier(it) }
+        return metaColumnNames + userColumnNames
+    }
 }
