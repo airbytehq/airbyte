@@ -1,3 +1,11 @@
+## Version 0.1.108
+
+load cdk: DataCoercionSuite tests null character in strings
+
+## Version 0.1.107
+
+base cdk: add utility to start ssh tunnel + return endpoint
+
 ## Version 0.1.106
 
 **Load CDK**
