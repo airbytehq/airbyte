@@ -287,4 +287,5 @@ jobs:
           labels: |
             area/documentation
             auto-generated
+            auto-merge
           delete-branch: true
