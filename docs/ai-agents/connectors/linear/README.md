@@ -18,17 +18,21 @@ The Linear connector is optimized to handle prompts like these.
 - Compare the issue complexity across different teams
 - Which projects have the most unresolved issues?
 - Give me an overview of my team's current project backlog
+- Create a new issue titled 'Fix login bug' for the Engineering team
+- Update issue ABC-123 to set priority to urgent
+- Change the title of issue XYZ-456 to 'Updated feature request'
+- Add a comment to issue DEF-789 saying 'This is ready for review'
+- Update my comment on issue to say 'Revised feedback after testing'
+- Create a high priority issue for the backend team about the API performance
 
 ## Unsupported questions
 
 The Linear connector isn't currently able to handle prompts like these.
 
-- Create a new issue for the backend team
-- Update the priority of this specific issue
-- Assign a team member to this project
 - Delete an outdated project from our workspace
 - Schedule a sprint planning meeting
-- Move an issue to a different project
+- Delete this issue
+- Remove a comment from an issue
 
 ## Installation
 
@@ -56,9 +60,10 @@ This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update) |
 | Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
+| Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Create](./REFERENCE.md#comments-create), [Update](./REFERENCE.md#comments-update) |
 
 
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
@@ -67,6 +72,6 @@ For the service's official API docs, see the [Linear API reference](https://line
 
 ## Version information
 
-- **Package version:** 0.19.49
+- **Package version:** 0.19.50
 - **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** c46670b9e4ca5238c0372e143b44088a0d1a68ee
+- **Generated with Connector SDK commit SHA:** c7dab97573a377c99c730f5f0f2c02733d2b3161
