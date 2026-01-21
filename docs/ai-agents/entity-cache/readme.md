@@ -16,7 +16,7 @@ Even though they're short, they're complex enough to require your agent to do si
 
 - Unbounded growth of the context window
 - Long-running queries
-- Pagination
+- Needing to iteratively collect paginated lists of records
 - API rate limiting
 
 The result is a query that takes substantial time and resources to process, a degraded experience, and inflated costs. Enabling the entity cache gives you a way to search your datasets using data that's available to Airbyte through object storage.
