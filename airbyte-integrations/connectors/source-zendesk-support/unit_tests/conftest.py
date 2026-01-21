@@ -1,11 +1,27 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+# Monkey-patch the CDK's HttpClient to disable caching for tests
+# This prevents SQLite concurrency issues with concurrent streams
 import os
+os.environ["REQUEST_CACHE_PATH"] = ""  # Disable file-based cache
+
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
+
+# Patch HttpClient to never use caching
+from unittest.mock import patch
+from airbyte_cdk.sources.streams.http.http_client import HttpClient, LimiterSession
+
+_original_request_session = HttpClient._request_session
+
+def _patched_request_session(self):
+    """Always return a non-cached session to avoid SQLite concurrency issues in tests."""
+    return LimiterSession(api_budget=self._api_budget)
+
+HttpClient._request_session = _patched_request_session
+
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -15,12 +31,6 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
-
-# Disable request caching to avoid SQLite concurrency issues with concurrent streams
-# SQLite doesn't handle concurrent writes from multiple threads (used by concurrent streams
-# like post_comments, article_comments, etc.), causing segmentation faults
-# Setting to empty string disables the file-based cache
-os.environ["REQUEST_CACHE_PATH"] = ""
 
 
 def _get_manifest_path() -> Path:

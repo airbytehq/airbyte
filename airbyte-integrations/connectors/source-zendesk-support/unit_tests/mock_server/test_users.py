@@ -73,7 +73,7 @@ class TestUserIdentitiesStream(TestCase):
             .build(),
         )
         http_mocker.get(
-            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").with_cursor(_A_CURSOR).build(),
+            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").with_cursor(_A_CURSOR).with_per_page(100).build(),
             UsersResponseBuilder.identities_response().with_record(UsersRecordBuilder.record()).build(),
         )
 
