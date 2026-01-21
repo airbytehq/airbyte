@@ -1,6 +1,6 @@
 # Entity cache for search
 
-The Entity Cache stores your connected source data in Airbyte-managed storage. Enabling this allows natural language to power AI agents making object-based queries on your data. When enabled, Airbyte stores data from your agent connectors makes it available for agentic search queries.
+The Entity Cache stores your connected source data in Airbyte-managed storage. Enabling the entity cache allows AI agents to make object-based queries on your data, based on your natural language prompts. When enabled, Airbyte stores data from your agent connectors and makes it available for agentic search queries.
 
 ## Why and when to use the entity cache
 
@@ -8,7 +8,6 @@ You should use the entity cache if you _don't_ configure your own object storage
 
 Some APIs have search endpoints, but many don't. This makes search operations resource-intensive. Imagine prompts like these:
 
-- `Tell me more about this dataset.`
 - `List all customers closing this month with deal sizes greater than $5000.`
 - `Search all dresses and find the ones with a color option of red.`
 
@@ -58,7 +57,3 @@ To turn off the entity cache, follow these steps.
 2. Disable **Cache connected source data for agentic search**.
 
 When you turn off the cache, Airbyte removes the cached data from Airbyte storage. AI agents will no longer be able to run search actions on the cache until you re-enable the cache and data syncs again.
-
-## Data retention
-
-<!-- Unknown at the moment, find out from the team -->
