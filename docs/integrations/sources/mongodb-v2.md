@@ -191,6 +191,7 @@ Most destinations can safely cast between primitive types (i.e. integer to strin
 // Document 2 - Single object (auto-wrapped)
 { "reviews": {"rating": "A"} }  →  { "reviews": [{"rating": "A"}] }
 ```
+
 :::info Important
 This normalization is intended for few type inconsistencies. If your collection has fields that frequently change types, consider using schemaless mode instead.
 :::
