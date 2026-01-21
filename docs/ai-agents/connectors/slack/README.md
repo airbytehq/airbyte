@@ -1,8 +1,10 @@
 # Slack agent connector
 
 Slack is a business communication platform that offers messaging, file sharing, and integrations
-with other tools. This connector provides access to users, channels, channel members, channel
-messages, and threads for workspace analytics and communication insights.
+with other tools. This connector provides read access to users, channels, channel members, channel
+messages, and threads for workspace analytics. It also supports write operations including sending
+and updating messages, creating and renaming channels, setting channel topics and purposes, and
+adding reactions to messages.
 
 
 ## Example questions
@@ -19,17 +21,30 @@ The Slack connector is optimized to handle prompts like these.
 - What messages were posted in channel \{channel_id\} last week?
 - Show me the conversation history for channel \{channel_id\}
 - List channel members for the general channel
+- Send a message to channel \{channel_id\} saying 'Hello team!'
+- Post a message in the general channel
+- Update the message with timestamp \{ts\} in channel \{channel_id\}
+- Create a new public channel called 'project-updates'
+- Create a private channel named 'team-internal'
+- Rename channel \{channel_id\} to 'new-channel-name'
+- Set the topic for channel \{channel_id\} to 'Daily standup notes'
+- Update the purpose of channel \{channel_id\}
+- Add a thumbsup reaction to message \{ts\} in channel \{channel_id\}
+- React with :rocket: to the latest message in channel \{channel_id\}
+- Reply to thread \{ts\} in channel \{channel_id\} with 'Thanks for the update!'
 
 ## Unsupported questions
 
 The Slack connector isn't currently able to handle prompts like these.
 
-- Create a new channel
-- Delete a message
-- Send a message to a channel
-- Update a channel topic
-- Invite a user to a channel
-- Archive a channel
+- Delete a message from channel \{channel_id\}
+- Remove a reaction from a message
+- Archive channel \{channel_id\}
+- Invite user \{user_id\} to channel \{channel_id\}
+- Remove user \{user_id\} from channel \{channel_id\}
+- Delete channel \{channel_id\}
+- Create a new user in the workspace
+- Update user profile information
 
 ## Installation
 
@@ -79,9 +94,13 @@ This connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
-| Channels | [List](./REFERENCE.md#channels-list), [Get](./REFERENCE.md#channels-get) |
+| Channels | [List](./REFERENCE.md#channels-list), [Get](./REFERENCE.md#channels-get), [Create](./REFERENCE.md#channels-create), [Update](./REFERENCE.md#channels-update) |
 | Channel Messages | [List](./REFERENCE.md#channel-messages-list) |
 | Threads | [List](./REFERENCE.md#threads-list) |
+| Messages | [Create](./REFERENCE.md#messages-create), [Update](./REFERENCE.md#messages-update) |
+| Channel Topics | [Create](./REFERENCE.md#channel-topics-create) |
+| Channel Purposes | [Create](./REFERENCE.md#channel-purposes-create) |
+| Reactions | [Create](./REFERENCE.md#reactions-create) |
 
 
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
@@ -90,6 +109,6 @@ For the service's official API docs, see the [Slack API reference](https://api.s
 
 ## Version information
 
-- **Package version:** 0.1.6
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** a50c8f71ed01cb9fd029c6c72d7523dbe2d5cec7
+- **Package version:** 0.1.8
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 3d42e4e800c13be04bdad03db5c50318a12a9769
