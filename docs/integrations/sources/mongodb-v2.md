@@ -184,6 +184,7 @@ When Schema is not enforced there is not way to deselect fields as all fields ar
 ## Array Type Normalization
 
 Most destinations can safely cast between primitive types (i.e. integer to string), but they cannot reconcile composite/compound types like an object versus an array. Without normalization, records with these structural mismatches would be written as `NULL` in the destination. To ensure data consistency, in schema-enforced mode our implementation automatically converts any non-array field to an array when the schema expects an array.
+
 ```javascript
 // Document 1 - Array (matches schema)
 { "reviews": [{"rating": "A"}, {"rating": "B"}] }
