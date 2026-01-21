@@ -181,6 +181,20 @@ Unlike in Schema enforced mode, the same field can vary in type between document
 As a result no field will be omitted and no document will be rejected.
 When Schema is not enforced there is not way to deselect fields as all fields are read for every document.
 
+## Array Type Normalization
+
+Most destinations can safely cast between primitive types (i.e. integer to string), but they cannot reconcile composite/compound types like an object versus an array. Without normalization, records with these structural mismatches would be written as `NULL` in the destination. To ensure data consistency, in schema-enforced mode our implementation automatically converts any non-array field to an array when the schema expects an array.
+```javascript
+// Document 1 - Array (matches schema)
+{ "reviews": [{"rating": "A"}, {"rating": "B"}] }
+
+// Document 2 - Single object (auto-wrapped)
+{ "reviews": {"rating": "A"} }  →  { "reviews": [{"rating": "A"}] }
+```
+:::info Important
+This normalization is intended for few type inconsistencies. If your collection has fields that frequently change types, consider using schemaless mode instead.
+:::
+
 ## Limitations & Troubleshooting
 
 To see connector limitations, or troubleshoot your MongoDB connector, see more [in our MongoDB troubleshooting guide](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting).
