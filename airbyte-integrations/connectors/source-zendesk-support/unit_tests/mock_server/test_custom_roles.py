@@ -15,10 +15,8 @@ from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import CustomRolesRecordBuilder, CustomRolesResponseBuilder, ErrorResponseBuilder
 from .utils import get_log_messages_by_log_level, read_stream
 
-_NOW = ab_datetime_now()
 
-
-@freezegun.freeze_time(_NOW.isoformat())
+@freezegun.freeze_time("2025-11-01")
 class TestCustomRolesStreamFullRefresh(TestCase):
     """
     Tests for custom_roles stream.
