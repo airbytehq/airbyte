@@ -22,7 +22,8 @@ An Airbyte connector for Oveit enables seamless data synchronization by extracti
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.41 | 2025-12-16 | [70490](https://github.com/airbytehq/airbyte/pull/70490) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [71648](https://github.com/airbytehq/airbyte/pull/71648) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70490](https://github.com/airbytehq/airbyte/pull/70490) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [70088](https://github.com/airbytehq/airbyte/pull/70088) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69664](https://github.com/airbytehq/airbyte/pull/69664) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [69022](https://github.com/airbytehq/airbyte/pull/69022) | Update dependencies |
@@ -30,7 +31,7 @@ An Airbyte connector for Oveit enables seamless data synchronization by extracti
 | 0.0.36 | 2025-10-14 | [67778](https://github.com/airbytehq/airbyte/pull/67778) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67353](https://github.com/airbytehq/airbyte/pull/67353) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66384](https://github.com/airbytehq/airbyte/pull/66384) | Update dependencies |
-| 0.0.33 | 2025-09-09 | [65890](https://github.com/airbytehq/airbyte/pull/65890) | Update dependencies |
+| 0.0.33 | 2025-09-10 | [65890](https://github.com/airbytehq/airbyte/pull/65890) | Update dependencies |
 | 0.0.32 | 2025-08-23 | [65177](https://github.com/airbytehq/airbyte/pull/65177) | Update dependencies |
 | 0.0.31 | 2025-08-16 | [64722](https://github.com/airbytehq/airbyte/pull/64722) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64241](https://github.com/airbytehq/airbyte/pull/64241) | Update dependencies |

@@ -14,11 +14,12 @@ set -euo pipefail
 # default values are specific to how the move team manages issues
 # Getting these ids is not straightforward:
 # - project number: from the project URL `https://github.com/orgs/airbytehq/projects/98`
-# - status field id and oncall option id: using `gh project field-list 98 --owner airbytehq --format json` to explore the project fields and options
+# - status field id and column option id: using `gh project field-list 98 --owner airbytehq --format json` to explore the project fields and options.
+#   Currently we're using the `Bulk CDK Destination Compatibility` column.
 ISSUES_REPOSITORY="${ISSUES_REPOSITORY:-airbytehq/airbyte-internal-issues}"
 PROJECT_NUMBER="${PROJECT_NUMBER:-98}"
 STATUS_FIELD_ID="${STATUS_FIELD_ID:-PVTSSF_lADOA4_XW84Am4WkzgetXZM}"
-ONCALL_OPTION_ID="${ONCALL_OPTION_ID:-3ecf8bb4}"
+PROJECT_COLUMN_OPTION_ID="${PROJECT_COLUMN_OPTION_ID:-6d096d2c}"
 
 connector_name=$1
 job_url=$2
@@ -49,6 +50,6 @@ else
     --id $item_id \
     --project-id $project_id \
     --field-id $STATUS_FIELD_ID \
-    --single-select-option-id "$ONCALL_OPTION_ID"
+    --single-select-option-id "$PROJECT_COLUMN_OPTION_ID"
   echo "Created new issue for $connector_name."
 fi

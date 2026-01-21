@@ -8,15 +8,15 @@ The Salesforce connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](#accounts-list), [Get](#accounts-get), [Search](#accounts-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
-| Leads | [List](#leads-list), [Get](#leads-get), [Search](#leads-search) |
-| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [Search](#opportunities-search) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [Search](#tasks-search) |
-| Events | [List](#events-list), [Get](#events-get), [Search](#events-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Cases | [List](#cases-list), [Get](#cases-get), [Search](#cases-search) |
-| Notes | [List](#notes-list), [Get](#notes-get), [Search](#notes-search) |
+| Accounts | [List](#accounts-list), [Get](#accounts-get), [API Search](#accounts-api-search), [Search](#accounts-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Search](#contacts-search) |
+| Leads | [List](#leads-list), [Get](#leads-get), [API Search](#leads-api-search), [Search](#leads-search) |
+| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [API Search](#opportunities-api-search), [Search](#opportunities-search) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [API Search](#tasks-api-search), [Search](#tasks-search) |
+| Events | [List](#events-list), [Get](#events-get), [API Search](#events-api-search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [API Search](#campaigns-api-search) |
+| Cases | [List](#cases-list), [Get](#cases-get), [API Search](#cases-api-search) |
+| Notes | [List](#notes-list), [Get](#notes-get), [API Search](#notes-api-search) |
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Query | [List](#query-list) |
@@ -40,7 +40,7 @@ await salesforce.accounts.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -98,7 +98,7 @@ await salesforce.accounts.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -135,7 +135,7 @@ Example: "Id,Name,Industry,AnnualRevenue,Website"
 
 </details>
 
-#### Accounts Search
+#### Accounts API Search
 
 Search for accounts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields and objects.
@@ -145,7 +145,7 @@ Use SOQL (list action) for structured queries with specific field conditions.
 **Python SDK**
 
 ```python
-await salesforce.accounts.search(
+await salesforce.accounts.api_search(
     q="<str>"
 )
 ```
@@ -153,12 +153,12 @@ await salesforce.accounts.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -190,6 +190,123 @@ Examples:
 
 </details>
 
+#### Accounts Search
+
+Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await salesforce.accounts.search(
+    query={"filter": {"eq": {"Id": "<str>"}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "accounts",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"Id": "<str>"}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` | Unique identifier for the account record |
+| `Name` | `string` | Name of the account or company |
+| `AccountSource` | `string` | Source of the account record (e.g., Web, Referral) |
+| `BillingAddress` | `object` | Complete billing address as a compound field |
+| `BillingCity` | `string` | City portion of the billing address |
+| `BillingCountry` | `string` | Country portion of the billing address |
+| `BillingPostalCode` | `string` | Postal code portion of the billing address |
+| `BillingState` | `string` | State or province portion of the billing address |
+| `BillingStreet` | `string` | Street address portion of the billing address |
+| `CreatedById` | `string` | ID of the user who created this account |
+| `CreatedDate` | `string` | Date and time when the account was created |
+| `Description` | `string` | Text description of the account |
+| `Industry` | `string` | Primary business industry of the account |
+| `IsDeleted` | `boolean` | Whether the account has been moved to the Recycle Bin |
+| `LastActivityDate` | `string` | Date of the last activity associated with this account |
+| `LastModifiedById` | `string` | ID of the user who last modified this account |
+| `LastModifiedDate` | `string` | Date and time when the account was last modified |
+| `NumberOfEmployees` | `integer` | Number of employees at the account |
+| `OwnerId` | `string` | ID of the user who owns this account |
+| `ParentId` | `string` | ID of the parent account, if this is a subsidiary |
+| `Phone` | `string` | Primary phone number for the account |
+| `ShippingAddress` | `object` | Complete shipping address as a compound field |
+| `ShippingCity` | `string` | City portion of the shipping address |
+| `ShippingCountry` | `string` | Country portion of the shipping address |
+| `ShippingPostalCode` | `string` | Postal code portion of the shipping address |
+| `ShippingState` | `string` | State or province portion of the shipping address |
+| `ShippingStreet` | `string` | Street address portion of the shipping address |
+| `Type` | `string` | Type of account (e.g., Customer, Partner, Competitor) |
+| `Website` | `string` | Website URL for the account |
+| `SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.Id` | `string` | Unique identifier for the account record |
+| `hits[].data.Name` | `string` | Name of the account or company |
+| `hits[].data.AccountSource` | `string` | Source of the account record (e.g., Web, Referral) |
+| `hits[].data.BillingAddress` | `object` | Complete billing address as a compound field |
+| `hits[].data.BillingCity` | `string` | City portion of the billing address |
+| `hits[].data.BillingCountry` | `string` | Country portion of the billing address |
+| `hits[].data.BillingPostalCode` | `string` | Postal code portion of the billing address |
+| `hits[].data.BillingState` | `string` | State or province portion of the billing address |
+| `hits[].data.BillingStreet` | `string` | Street address portion of the billing address |
+| `hits[].data.CreatedById` | `string` | ID of the user who created this account |
+| `hits[].data.CreatedDate` | `string` | Date and time when the account was created |
+| `hits[].data.Description` | `string` | Text description of the account |
+| `hits[].data.Industry` | `string` | Primary business industry of the account |
+| `hits[].data.IsDeleted` | `boolean` | Whether the account has been moved to the Recycle Bin |
+| `hits[].data.LastActivityDate` | `string` | Date of the last activity associated with this account |
+| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this account |
+| `hits[].data.LastModifiedDate` | `string` | Date and time when the account was last modified |
+| `hits[].data.NumberOfEmployees` | `integer` | Number of employees at the account |
+| `hits[].data.OwnerId` | `string` | ID of the user who owns this account |
+| `hits[].data.ParentId` | `string` | ID of the parent account, if this is a subsidiary |
+| `hits[].data.Phone` | `string` | Primary phone number for the account |
+| `hits[].data.ShippingAddress` | `object` | Complete shipping address as a compound field |
+| `hits[].data.ShippingCity` | `string` | City portion of the shipping address |
+| `hits[].data.ShippingCountry` | `string` | Country portion of the shipping address |
+| `hits[].data.ShippingPostalCode` | `string` | Postal code portion of the shipping address |
+| `hits[].data.ShippingState` | `string` | State or province portion of the shipping address |
+| `hits[].data.ShippingStreet` | `string` | Street address portion of the shipping address |
+| `hits[].data.Type` | `string` | Type of account (e.g., Customer, Partner, Competitor) |
+| `hits[].data.Website` | `string` | Website URL for the account |
+| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Contacts
 
 #### Contacts List
@@ -209,7 +326,7 @@ await salesforce.contacts.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -267,7 +384,7 @@ await salesforce.contacts.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -304,7 +421,7 @@ Example: "Id,FirstName,LastName,Email,Phone,AccountId"
 
 </details>
 
-#### Contacts Search
+#### Contacts API Search
 
 Search for contacts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -313,7 +430,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.contacts.search(
+await salesforce.contacts.api_search(
     q="<str>"
 )
 ```
@@ -321,12 +438,12 @@ await salesforce.contacts.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -357,6 +474,115 @@ Examples:
 
 </details>
 
+#### Contacts Search
+
+Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await salesforce.contacts.search(
+    query={"filter": {"eq": {"Id": "<str>"}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"Id": "<str>"}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` | Unique identifier for the contact record |
+| `AccountId` | `string` | ID of the account this contact is associated with |
+| `CreatedById` | `string` | ID of the user who created this contact |
+| `CreatedDate` | `string` | Date and time when the contact was created |
+| `Department` | `string` | Department within the account where the contact works |
+| `Email` | `string` | Email address of the contact |
+| `FirstName` | `string` | First name of the contact |
+| `IsDeleted` | `boolean` | Whether the contact has been moved to the Recycle Bin |
+| `LastActivityDate` | `string` | Date of the last activity associated with this contact |
+| `LastModifiedById` | `string` | ID of the user who last modified this contact |
+| `LastModifiedDate` | `string` | Date and time when the contact was last modified |
+| `LastName` | `string` | Last name of the contact |
+| `LeadSource` | `string` | Source from which this contact originated |
+| `MailingAddress` | `object` | Complete mailing address as a compound field |
+| `MailingCity` | `string` | City portion of the mailing address |
+| `MailingCountry` | `string` | Country portion of the mailing address |
+| `MailingPostalCode` | `string` | Postal code portion of the mailing address |
+| `MailingState` | `string` | State or province portion of the mailing address |
+| `MailingStreet` | `string` | Street address portion of the mailing address |
+| `MobilePhone` | `string` | Mobile phone number of the contact |
+| `Name` | `string` | Full name of the contact (read-only, concatenation of first and last name) |
+| `OwnerId` | `string` | ID of the user who owns this contact |
+| `Phone` | `string` | Business phone number of the contact |
+| `ReportsToId` | `string` | ID of the contact this contact reports to |
+| `Title` | `string` | Job title of the contact |
+| `SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.Id` | `string` | Unique identifier for the contact record |
+| `hits[].data.AccountId` | `string` | ID of the account this contact is associated with |
+| `hits[].data.CreatedById` | `string` | ID of the user who created this contact |
+| `hits[].data.CreatedDate` | `string` | Date and time when the contact was created |
+| `hits[].data.Department` | `string` | Department within the account where the contact works |
+| `hits[].data.Email` | `string` | Email address of the contact |
+| `hits[].data.FirstName` | `string` | First name of the contact |
+| `hits[].data.IsDeleted` | `boolean` | Whether the contact has been moved to the Recycle Bin |
+| `hits[].data.LastActivityDate` | `string` | Date of the last activity associated with this contact |
+| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this contact |
+| `hits[].data.LastModifiedDate` | `string` | Date and time when the contact was last modified |
+| `hits[].data.LastName` | `string` | Last name of the contact |
+| `hits[].data.LeadSource` | `string` | Source from which this contact originated |
+| `hits[].data.MailingAddress` | `object` | Complete mailing address as a compound field |
+| `hits[].data.MailingCity` | `string` | City portion of the mailing address |
+| `hits[].data.MailingCountry` | `string` | Country portion of the mailing address |
+| `hits[].data.MailingPostalCode` | `string` | Postal code portion of the mailing address |
+| `hits[].data.MailingState` | `string` | State or province portion of the mailing address |
+| `hits[].data.MailingStreet` | `string` | Street address portion of the mailing address |
+| `hits[].data.MobilePhone` | `string` | Mobile phone number of the contact |
+| `hits[].data.Name` | `string` | Full name of the contact (read-only, concatenation of first and last name) |
+| `hits[].data.OwnerId` | `string` | ID of the user who owns this contact |
+| `hits[].data.Phone` | `string` | Business phone number of the contact |
+| `hits[].data.ReportsToId` | `string` | ID of the contact this contact reports to |
+| `hits[].data.Title` | `string` | Job title of the contact |
+| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Leads
 
 #### Leads List
@@ -376,7 +602,7 @@ await salesforce.leads.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -434,7 +660,7 @@ await salesforce.leads.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -471,7 +697,7 @@ Example: "Id,FirstName,LastName,Email,Company,Status,LeadSource"
 
 </details>
 
-#### Leads Search
+#### Leads API Search
 
 Search for leads using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -480,7 +706,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.leads.search(
+await salesforce.leads.api_search(
     q="<str>"
 )
 ```
@@ -488,12 +714,12 @@ await salesforce.leads.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "leads",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -524,6 +750,131 @@ Examples:
 
 </details>
 
+#### Leads Search
+
+Search and filter leads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await salesforce.leads.search(
+    query={"filter": {"eq": {"Id": "<str>"}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "leads",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"Id": "<str>"}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` | Unique identifier for the lead record |
+| `Address` | `object` | Complete address as a compound field |
+| `City` | `string` | City portion of the address |
+| `Company` | `string` | Company or organization the lead works for |
+| `ConvertedAccountId` | `string` | ID of the account created when lead was converted |
+| `ConvertedContactId` | `string` | ID of the contact created when lead was converted |
+| `ConvertedDate` | `string` | Date when the lead was converted |
+| `ConvertedOpportunityId` | `string` | ID of the opportunity created when lead was converted |
+| `Country` | `string` | Country portion of the address |
+| `CreatedById` | `string` | ID of the user who created this lead |
+| `CreatedDate` | `string` | Date and time when the lead was created |
+| `Email` | `string` | Email address of the lead |
+| `FirstName` | `string` | First name of the lead |
+| `Industry` | `string` | Industry the lead's company operates in |
+| `IsConverted` | `boolean` | Whether the lead has been converted to an account, contact, and opportunity |
+| `IsDeleted` | `boolean` | Whether the lead has been moved to the Recycle Bin |
+| `LastActivityDate` | `string` | Date of the last activity associated with this lead |
+| `LastModifiedById` | `string` | ID of the user who last modified this lead |
+| `LastModifiedDate` | `string` | Date and time when the lead was last modified |
+| `LastName` | `string` | Last name of the lead |
+| `LeadSource` | `string` | Source from which this lead originated |
+| `MobilePhone` | `string` | Mobile phone number of the lead |
+| `Name` | `string` | Full name of the lead (read-only, concatenation of first and last name) |
+| `NumberOfEmployees` | `integer` | Number of employees at the lead's company |
+| `OwnerId` | `string` | ID of the user who owns this lead |
+| `Phone` | `string` | Phone number of the lead |
+| `PostalCode` | `string` | Postal code portion of the address |
+| `Rating` | `string` | Rating of the lead (e.g., Hot, Warm, Cold) |
+| `State` | `string` | State or province portion of the address |
+| `Status` | `string` | Current status of the lead in the sales process |
+| `Street` | `string` | Street address portion of the address |
+| `Title` | `string` | Job title of the lead |
+| `Website` | `string` | Website URL for the lead's company |
+| `SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.Id` | `string` | Unique identifier for the lead record |
+| `hits[].data.Address` | `object` | Complete address as a compound field |
+| `hits[].data.City` | `string` | City portion of the address |
+| `hits[].data.Company` | `string` | Company or organization the lead works for |
+| `hits[].data.ConvertedAccountId` | `string` | ID of the account created when lead was converted |
+| `hits[].data.ConvertedContactId` | `string` | ID of the contact created when lead was converted |
+| `hits[].data.ConvertedDate` | `string` | Date when the lead was converted |
+| `hits[].data.ConvertedOpportunityId` | `string` | ID of the opportunity created when lead was converted |
+| `hits[].data.Country` | `string` | Country portion of the address |
+| `hits[].data.CreatedById` | `string` | ID of the user who created this lead |
+| `hits[].data.CreatedDate` | `string` | Date and time when the lead was created |
+| `hits[].data.Email` | `string` | Email address of the lead |
+| `hits[].data.FirstName` | `string` | First name of the lead |
+| `hits[].data.Industry` | `string` | Industry the lead's company operates in |
+| `hits[].data.IsConverted` | `boolean` | Whether the lead has been converted to an account, contact, and opportunity |
+| `hits[].data.IsDeleted` | `boolean` | Whether the lead has been moved to the Recycle Bin |
+| `hits[].data.LastActivityDate` | `string` | Date of the last activity associated with this lead |
+| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this lead |
+| `hits[].data.LastModifiedDate` | `string` | Date and time when the lead was last modified |
+| `hits[].data.LastName` | `string` | Last name of the lead |
+| `hits[].data.LeadSource` | `string` | Source from which this lead originated |
+| `hits[].data.MobilePhone` | `string` | Mobile phone number of the lead |
+| `hits[].data.Name` | `string` | Full name of the lead (read-only, concatenation of first and last name) |
+| `hits[].data.NumberOfEmployees` | `integer` | Number of employees at the lead's company |
+| `hits[].data.OwnerId` | `string` | ID of the user who owns this lead |
+| `hits[].data.Phone` | `string` | Phone number of the lead |
+| `hits[].data.PostalCode` | `string` | Postal code portion of the address |
+| `hits[].data.Rating` | `string` | Rating of the lead (e.g., Hot, Warm, Cold) |
+| `hits[].data.State` | `string` | State or province portion of the address |
+| `hits[].data.Status` | `string` | Current status of the lead in the sales process |
+| `hits[].data.Street` | `string` | Street address portion of the address |
+| `hits[].data.Title` | `string` | Job title of the lead |
+| `hits[].data.Website` | `string` | Website URL for the lead's company |
+| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Opportunities
 
 #### Opportunities List
@@ -543,7 +894,7 @@ await salesforce.opportunities.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -601,7 +952,7 @@ await salesforce.opportunities.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -638,7 +989,7 @@ Example: "Id,Name,Amount,StageName,CloseDate,AccountId"
 
 </details>
 
-#### Opportunities Search
+#### Opportunities API Search
 
 Search for opportunities using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -647,7 +998,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.opportunities.search(
+await salesforce.opportunities.api_search(
     q="<str>"
 )
 ```
@@ -655,12 +1006,12 @@ await salesforce.opportunities.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "opportunities",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -691,6 +1042,115 @@ Examples:
 
 </details>
 
+#### Opportunities Search
+
+Search and filter opportunities records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await salesforce.opportunities.search(
+    query={"filter": {"eq": {"Id": "<str>"}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunities",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"Id": "<str>"}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` | Unique identifier for the opportunity record |
+| `AccountId` | `string` | ID of the account associated with this opportunity |
+| `Amount` | `number` | Estimated total sale amount |
+| `CampaignId` | `string` | ID of the campaign that generated this opportunity |
+| `CloseDate` | `string` | Expected close date for the opportunity |
+| `ContactId` | `string` | ID of the primary contact for this opportunity |
+| `CreatedById` | `string` | ID of the user who created this opportunity |
+| `CreatedDate` | `string` | Date and time when the opportunity was created |
+| `Description` | `string` | Text description of the opportunity |
+| `ExpectedRevenue` | `number` | Expected revenue based on amount and probability |
+| `ForecastCategory` | `string` | Forecast category for this opportunity |
+| `ForecastCategoryName` | `string` | Name of the forecast category |
+| `IsClosed` | `boolean` | Whether the opportunity is closed |
+| `IsDeleted` | `boolean` | Whether the opportunity has been moved to the Recycle Bin |
+| `IsWon` | `boolean` | Whether the opportunity was won |
+| `LastActivityDate` | `string` | Date of the last activity associated with this opportunity |
+| `LastModifiedById` | `string` | ID of the user who last modified this opportunity |
+| `LastModifiedDate` | `string` | Date and time when the opportunity was last modified |
+| `LeadSource` | `string` | Source from which this opportunity originated |
+| `Name` | `string` | Name of the opportunity |
+| `NextStep` | `string` | Description of the next step in closing the opportunity |
+| `OwnerId` | `string` | ID of the user who owns this opportunity |
+| `Probability` | `number` | Likelihood of closing the opportunity (percentage) |
+| `StageName` | `string` | Current stage of the opportunity in the sales process |
+| `Type` | `string` | Type of opportunity (e.g., New Business, Existing Business) |
+| `SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.Id` | `string` | Unique identifier for the opportunity record |
+| `hits[].data.AccountId` | `string` | ID of the account associated with this opportunity |
+| `hits[].data.Amount` | `number` | Estimated total sale amount |
+| `hits[].data.CampaignId` | `string` | ID of the campaign that generated this opportunity |
+| `hits[].data.CloseDate` | `string` | Expected close date for the opportunity |
+| `hits[].data.ContactId` | `string` | ID of the primary contact for this opportunity |
+| `hits[].data.CreatedById` | `string` | ID of the user who created this opportunity |
+| `hits[].data.CreatedDate` | `string` | Date and time when the opportunity was created |
+| `hits[].data.Description` | `string` | Text description of the opportunity |
+| `hits[].data.ExpectedRevenue` | `number` | Expected revenue based on amount and probability |
+| `hits[].data.ForecastCategory` | `string` | Forecast category for this opportunity |
+| `hits[].data.ForecastCategoryName` | `string` | Name of the forecast category |
+| `hits[].data.IsClosed` | `boolean` | Whether the opportunity is closed |
+| `hits[].data.IsDeleted` | `boolean` | Whether the opportunity has been moved to the Recycle Bin |
+| `hits[].data.IsWon` | `boolean` | Whether the opportunity was won |
+| `hits[].data.LastActivityDate` | `string` | Date of the last activity associated with this opportunity |
+| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this opportunity |
+| `hits[].data.LastModifiedDate` | `string` | Date and time when the opportunity was last modified |
+| `hits[].data.LeadSource` | `string` | Source from which this opportunity originated |
+| `hits[].data.Name` | `string` | Name of the opportunity |
+| `hits[].data.NextStep` | `string` | Description of the next step in closing the opportunity |
+| `hits[].data.OwnerId` | `string` | ID of the user who owns this opportunity |
+| `hits[].data.Probability` | `number` | Likelihood of closing the opportunity (percentage) |
+| `hits[].data.StageName` | `string` | Current stage of the opportunity in the sales process |
+| `hits[].data.Type` | `string` | Type of opportunity (e.g., New Business, Existing Business) |
+| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Tasks
 
 #### Tasks List
@@ -710,7 +1170,7 @@ await salesforce.tasks.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -768,7 +1228,7 @@ await salesforce.tasks.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -805,7 +1265,7 @@ Example: "Id,Subject,Status,Priority,ActivityDate,WhoId,WhatId"
 
 </details>
 
-#### Tasks Search
+#### Tasks API Search
 
 Search for tasks using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -814,7 +1274,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.tasks.search(
+await salesforce.tasks.api_search(
     q="<str>"
 )
 ```
@@ -822,12 +1282,12 @@ await salesforce.tasks.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -858,6 +1318,111 @@ Examples:
 
 </details>
 
+#### Tasks Search
+
+Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+**Python SDK**
+
+```python
+await salesforce.tasks.search(
+    query={"filter": {"eq": {"Id": "<str>"}}}
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"Id": "<str>"}}}
+    }
+}'
+```
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+**Searchable Fields**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` | Unique identifier for the task record |
+| `AccountId` | `string` | ID of the account associated with this task |
+| `ActivityDate` | `string` | Due date for the task |
+| `CallDisposition` | `string` | Result of the call, if this task represents a call |
+| `CallDurationInSeconds` | `integer` | Duration of the call in seconds |
+| `CallType` | `string` | Type of call (Inbound, Outbound, Internal) |
+| `CompletedDateTime` | `string` | Date and time when the task was completed |
+| `CreatedById` | `string` | ID of the user who created this task |
+| `CreatedDate` | `string` | Date and time when the task was created |
+| `Description` | `string` | Text description or notes about the task |
+| `IsClosed` | `boolean` | Whether the task has been completed |
+| `IsDeleted` | `boolean` | Whether the task has been moved to the Recycle Bin |
+| `IsHighPriority` | `boolean` | Whether the task is marked as high priority |
+| `LastModifiedById` | `string` | ID of the user who last modified this task |
+| `LastModifiedDate` | `string` | Date and time when the task was last modified |
+| `OwnerId` | `string` | ID of the user who owns this task |
+| `Priority` | `string` | Priority level of the task (High, Normal, Low) |
+| `Status` | `string` | Current status of the task |
+| `Subject` | `string` | Subject or title of the task |
+| `TaskSubtype` | `string` | Subtype of the task (e.g., Call, Email, Task) |
+| `Type` | `string` | Type of task |
+| `WhatId` | `string` | ID of the related object (Account, Opportunity, etc.) |
+| `WhoId` | `string` | ID of the related person (Contact or Lead) |
+| `SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.Id` | `string` | Unique identifier for the task record |
+| `hits[].data.AccountId` | `string` | ID of the account associated with this task |
+| `hits[].data.ActivityDate` | `string` | Due date for the task |
+| `hits[].data.CallDisposition` | `string` | Result of the call, if this task represents a call |
+| `hits[].data.CallDurationInSeconds` | `integer` | Duration of the call in seconds |
+| `hits[].data.CallType` | `string` | Type of call (Inbound, Outbound, Internal) |
+| `hits[].data.CompletedDateTime` | `string` | Date and time when the task was completed |
+| `hits[].data.CreatedById` | `string` | ID of the user who created this task |
+| `hits[].data.CreatedDate` | `string` | Date and time when the task was created |
+| `hits[].data.Description` | `string` | Text description or notes about the task |
+| `hits[].data.IsClosed` | `boolean` | Whether the task has been completed |
+| `hits[].data.IsDeleted` | `boolean` | Whether the task has been moved to the Recycle Bin |
+| `hits[].data.IsHighPriority` | `boolean` | Whether the task is marked as high priority |
+| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this task |
+| `hits[].data.LastModifiedDate` | `string` | Date and time when the task was last modified |
+| `hits[].data.OwnerId` | `string` | ID of the user who owns this task |
+| `hits[].data.Priority` | `string` | Priority level of the task (High, Normal, Low) |
+| `hits[].data.Status` | `string` | Current status of the task |
+| `hits[].data.Subject` | `string` | Subject or title of the task |
+| `hits[].data.TaskSubtype` | `string` | Subtype of the task (e.g., Call, Email, Task) |
+| `hits[].data.Type` | `string` | Type of task |
+| `hits[].data.WhatId` | `string` | ID of the related object (Account, Opportunity, etc.) |
+| `hits[].data.WhoId` | `string` | ID of the related person (Contact or Lead) |
+| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ### Events
 
 #### Events List
@@ -877,7 +1442,7 @@ await salesforce.events.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -935,7 +1500,7 @@ await salesforce.events.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -972,7 +1537,7 @@ Example: "Id,Subject,StartDateTime,EndDateTime,Location,WhoId,WhatId"
 
 </details>
 
-#### Events Search
+#### Events API Search
 
 Search for events using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -981,7 +1546,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.events.search(
+await salesforce.events.api_search(
     q="<str>"
 )
 ```
@@ -989,12 +1554,12 @@ await salesforce.events.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1044,7 +1609,7 @@ await salesforce.campaigns.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1102,7 +1667,7 @@ await salesforce.campaigns.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1139,7 +1704,7 @@ Example: "Id,Name,Type,Status,StartDate,EndDate,IsActive"
 
 </details>
 
-#### Campaigns Search
+#### Campaigns API Search
 
 Search for campaigns using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1148,7 +1713,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.campaigns.search(
+await salesforce.campaigns.api_search(
     q="<str>"
 )
 ```
@@ -1156,12 +1721,12 @@ await salesforce.campaigns.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1211,7 +1776,7 @@ await salesforce.cases.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1270,7 +1835,7 @@ await salesforce.cases.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1308,7 +1873,7 @@ Example: "Id,CaseNumber,Subject,Status,Priority,ContactId,AccountId"
 
 </details>
 
-#### Cases Search
+#### Cases API Search
 
 Search for cases using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1317,7 +1882,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.cases.search(
+await salesforce.cases.api_search(
     q="<str>"
 )
 ```
@@ -1325,12 +1890,12 @@ await salesforce.cases.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "cases",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1380,7 +1945,7 @@ await salesforce.notes.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1438,7 +2003,7 @@ await salesforce.notes.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1475,7 +2040,7 @@ Example: "Id,Title,Body,ParentId,OwnerId"
 
 </details>
 
-#### Notes Search
+#### Notes API Search
 
 Search for notes using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1484,7 +2049,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-await salesforce.notes.search(
+await salesforce.notes.api_search(
     q="<str>"
 )
 ```
@@ -1492,12 +2057,12 @@ await salesforce.notes.search(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "notes",
-    "action": "search",
+    "action": "api_search",
     "params": {
         "q": "<str>"
     }
@@ -1548,7 +2113,7 @@ await salesforce.content_versions.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1611,7 +2176,7 @@ await salesforce.content_versions.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1673,7 +2238,7 @@ async for chunk in salesforce.content_versions.download(    id="<str>"):# Proces
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1716,7 +2281,7 @@ await salesforce.attachments.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1778,7 +2343,7 @@ await salesforce.attachments.get(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1838,7 +2403,7 @@ async for chunk in salesforce.attachments.download(    id="<str>"):# Process eac
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1880,7 +2445,7 @@ await salesforce.query.list(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1961,11 +2526,12 @@ SalesforceConnector(
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "b117307c-14b6-41aa-9422-947e34922962",
+  "workspace_id": "{your_workspace_id}",
+  "source_template_id": "{source_template_id}",
   "auth_config": {
     "refresh_token": "<OAuth refresh token for automatic token renewal>",
     "client_id": "<Connected App Consumer Key>",
