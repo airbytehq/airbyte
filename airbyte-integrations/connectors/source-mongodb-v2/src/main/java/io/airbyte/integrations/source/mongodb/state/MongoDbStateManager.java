@@ -254,7 +254,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
    */
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final Document document) {
-    final Map<String, JsonNode> fields = getStreamFields(stream);
+    final Map<String, JsonNode> fields = MongoDbCdcEventUtils.extractFieldSchemas(stream);
 
     final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
 
@@ -269,19 +269,6 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
             .withNamespace(stream.getStream().getNamespace())
             .withEmittedAt(emittedAt.toEpochMilli())
             .withData((stream.getSyncMode() == INCREMENTAL) ? injectMetadata(jsonNode) : jsonNode));
-  }
-
-  /**
-   * Extracts field schemas from the stream's properties into a map (Map<String, JsonNode>). Used for
-   * type checking during data transformation (e.g., determining if a field expects an array).
-   */
-  private Map<String, JsonNode> getStreamFields(final ConfiguredAirbyteStream stream) {
-    final Map<String, JsonNode> fieldSchemas = new HashMap<>();
-    final JsonNode properties = stream.getStream().getJsonSchema().get("properties");
-    if (properties != null && properties.isObject()) {
-      properties.fields().forEachRemaining(entry -> fieldSchemas.put(entry.getKey(), entry.getValue()));
-    }
-    return fieldSchemas;
   }
 
   private JsonNode injectMetadata(final JsonNode jsonNode) {

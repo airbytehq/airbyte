@@ -117,15 +117,14 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
   }
 
   /**
-   * Returns a map of all field names mapped to their type using the jsonSchema metadata from the
-   * configuredAirbyteCatalog.
+   * Finds the stream and maps it to its field types.
    *
-   * @param source JsonNode with the source metadata (version, name, ts_ms, snapshot status, etc).
-   * @param configuredAirbyteCatalog AirbyteCatalog object that includes jsonSchema with the
-   *        "properties" field containing all columns and their corresponding types
+   * @param source the source metadata (JsonNode)
+   * @param configuredAirbyteCatalog AirbyteCatalog containing stream configurations and JSON schemas
    * @param cdcMetadataInjector Helper to extract stream namespace and name from the source
-   * @return Map of field names (String) to schema definition type (JsonNode) e.g.: { "filedName1":
-   *         {"type": "string"}, "fieldName2": {"type": "array"}, }
+   * @return Map of field names to schema definitions using
+   *         MongoDbCdcEventUtils.extractFieldSchemas(). Returns an empty map if the stream is not
+   *         found.
    */
   private static Map<String, JsonNode> getConfiguredMongoDbCollectionFields(final JsonNode source,
                                                                             final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
@@ -134,15 +133,7 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     final String streamName = cdcMetadataInjector.name(source);
     return configuredAirbyteCatalog.getStreams().stream()
         .filter(s -> streamName.equals(s.getStream().getName()) && streamNamespace.equals(s.getStream().getNamespace()))
-        .findFirst()
-        .map(stream -> {
-          final Map<String, JsonNode> fieldSchemas = new HashMap<>();
-          final JsonNode properties = stream.getStream().getJsonSchema().get("properties");
-          if (properties != null && properties.isObject()) {
-            properties.fields().forEachRemaining(entry -> fieldSchemas.put(entry.getKey(), entry.getValue()));
-          }
-          return fieldSchemas;
-        })
+        .findFirst().map(MongoDbCdcEventUtils::extractFieldSchemas)
         .orElse(new HashMap<>());
   }
 

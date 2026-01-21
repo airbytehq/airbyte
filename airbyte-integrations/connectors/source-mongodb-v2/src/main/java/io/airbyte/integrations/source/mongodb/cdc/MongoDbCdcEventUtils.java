@@ -19,7 +19,9 @@ import com.mongodb.DBRefCodecProvider;
 import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -175,6 +177,22 @@ public class MongoDbCdcEventUtils {
       LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Extracts field names and their JSON schema definitions from the properties.
+   *
+   * @param stream The configured stream containing the JSON schema
+   * @return Map of field names to their schema definitions, e.g.: { "_id": {"type": "string"},
+   *         "reviews": {"type": "array"} }
+   */
+  public static Map<String, JsonNode> extractFieldSchemas(final ConfiguredAirbyteStream stream) {
+    final Map<String, JsonNode> fieldSchemas = new HashMap<>();
+    final JsonNode properties = stream.getStream().getJsonSchema().get("properties");
+    if (properties != null && properties.isObject()) {
+      properties.fields().forEachRemaining(entry -> fieldSchemas.put(entry.getKey(), entry.getValue()));
+    }
+    return fieldSchemas;
   }
 
   /**
