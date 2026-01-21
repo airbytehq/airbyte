@@ -3,6 +3,8 @@
 from datetime import timedelta
 from unittest import TestCase
 
+import freezegun
+
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -13,7 +15,10 @@ from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import CustomRolesRecordBuilder, CustomRolesResponseBuilder, ErrorResponseBuilder
 from .utils import get_log_messages_by_log_level, read_stream
 
+_NOW = ab_datetime_now()
 
+
+@freezegun.freeze_time(_NOW.isoformat())
 class TestCustomRolesStreamFullRefresh(TestCase):
     """
     Tests for custom_roles stream.
