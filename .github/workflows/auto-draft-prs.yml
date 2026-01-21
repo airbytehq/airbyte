@@ -8,6 +8,7 @@ name: Auto-Draft PRs
 #   - "skip-draft-status"
 #   - "auto-merge"
 #   - "auto-merge/bypass-ci-checks"
+#   - "dependencies" (Dependabot PRs)
 
 on:
   pull_request_target:
@@ -20,22 +21,32 @@ jobs:
     # Skip if:
     # - PR is already a draft
     # - PR title contains "[ready]" (opt-out)
-    # - PR has opt-out label (skip-draft-status, auto-merge, auto-merge/bypass-ci-checks)
-    # - PR is from a bot (Dependabot, etc.)
+    # - PR has opt-out label (skip-draft-status, auto-merge, auto-merge/bypass-ci-checks, dependencies)
+    # - PR is from Dependabot
     if: |
       github.event.pull_request.draft == false &&
       !contains(github.event.pull_request.title, '[ready]') &&
       !contains(toJson(github.event.pull_request.labels.*.name), 'skip-draft-status') &&
       !contains(toJson(github.event.pull_request.labels.*.name), 'auto-merge') &&
-      github.event.pull_request.user.type != 'Bot'
+      !contains(toJson(github.event.pull_request.labels.*.name), 'dependencies') &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
     permissions:
       contents: read
       pull-requests: write
     runs-on: ubuntu-24.04
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
       - name: Convert PR to draft
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           gh pr ready --undo "$PR_NUMBER" --repo "${{ github.repository }}"
@@ -43,10 +54,19 @@ jobs:
       - name: Add comment explaining draft status
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
+          token: ${{ steps.get-app-token.outputs.token }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Thank you for creating this PR. As a policy to protect our engineers' time, we require all PRs to be created first in draft status. Your PR has been converted to draft status in respect for this policy.
-
-            Once the PR has been tested and is ready for review, you can proceed to convert the PR to "ready for review" status by clicking the "Ready for review" button at the bottom of the PR page.
-
-            To skip this auto-draft behavior, include `[ready]` in your PR title or add the `skip-draft-status` label when creating the PR.
+            > [!NOTE]
+            > 📝 **PR Converted to Draft**
+            >
+            > <details>
+            > <summary>More info...</summary>
+            >
+            > Thank you for creating this PR. As a policy to protect our engineers' time, Airbyte requires all PRs to be created first in draft status. Your PR has been automatically converted to draft status in respect for this policy.
+            >
+            > As soon as your PR is ready for formal review, you can proceed to convert the PR to "ready for review" status by clicking the "Ready for review" button at the bottom of the PR page.
+            >
+            > To skip draft status in future PRs, please include `[ready]` in your PR title or add the `skip-draft-status` label when creating your PR.
+            >
+            > </details>
