@@ -441,7 +441,7 @@ jobs:
         if: matrix.connector
         run: |
           # Install airbyte-internal-ops from PyPI (replaces local connectors_qa)
-          uv tool install 'airbyte-internal-ops[qa]'
+          uv tool install airbyte-internal-ops
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
