@@ -64,12 +64,10 @@ class PostgresDirectLoadSqlGenerator(
                         add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
                     }
 
-                    // Add user columns from the mapped schema (only in typed mode)
-                    if (!postgresConfiguration.legacyRawTablesOnly) {
-                        userColumns.forEach { (columnName, columnType) ->
-                            val nullability = if (columnType.nullable) "" else " NOT NULL"
-                            add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
-                        }
+                    // Add user columns from the mapped schema
+                    userColumns.forEach { (columnName, columnType) ->
+                        val nullability = if (columnType.nullable) "" else " NOT NULL"
+                        add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
                     }
                 }
                 .joinToString(",\n")
@@ -91,13 +89,11 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     /**
-     * Returns the user columns and their types for a stream from the pre-computed table schema. In
-     * raw table mode, returns empty map since user columns are stored in _airbyte_data.
+     * Returns the user columns and their types for a stream from the pre-computed table schema.
+     * In raw table mode, this returns just {_airbyte_data -> JSONB} from the final schema
+     * (as set by PostgresTableSchemaMapper.toFinalSchema).
      */
     private fun getUserColumns(stream: DestinationStream): Map<String, ColumnType> {
-        if (postgresConfiguration.legacyRawTablesOnly) {
-            return emptyMap()
-        }
         return stream.tableSchema.columnSchema.finalSchema
     }
 
@@ -547,7 +543,8 @@ class PostgresDirectLoadSqlGenerator(
         SELECT column_name, data_type, is_nullable
         FROM information_schema.columns
         WHERE table_schema = '${tableName.namespace.replace("'", "''")}'
-        AND table_name = '${tableName.name.replace("'", "''")}';
+        AND table_name = '${tableName.name.replace("'", "''")}'
+        ORDER BY ordinal_position;
         """
 
     /**
