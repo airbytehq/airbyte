@@ -64,10 +64,12 @@ class PostgresDirectLoadSqlGenerator(
                         add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
                     }
 
-                    // Add user columns from the mapped schema
-                    userColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+                    // Add user columns from the mapped schema (only in typed mode)
+                    if (!postgresConfiguration.legacyRawTablesOnly) {
+                        userColumns.forEach { (columnName, columnType) ->
+                            val nullability = if (columnType.nullable) "" else " NOT NULL"
+                            add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+                        }
                     }
                 }
                 .joinToString(",\n")
@@ -90,9 +92,12 @@ class PostgresDirectLoadSqlGenerator(
 
     /**
      * Returns the user columns and their types for a stream from the pre-computed table schema. In
-     * raw table mode, returns the _airbyte_data column.
+     * raw table mode, returns empty map since user columns are stored in _airbyte_data.
      */
     private fun getUserColumns(stream: DestinationStream): Map<String, ColumnType> {
+        if (postgresConfiguration.legacyRawTablesOnly) {
+            return emptyMap()
+        }
         return stream.tableSchema.columnSchema.finalSchema
     }
 
@@ -673,6 +678,9 @@ class PostgresDirectLoadSqlGenerator(
         stream: DestinationStream,
     ): List<String> {
         val metaColumnNames = columnManager.getMetaColumnNames().map { quoteIdentifier(it) }
+        if (postgresConfiguration.legacyRawTablesOnly) {
+            return metaColumnNames
+        }
         val userColumnNames = getUserColumns(stream).keys.map { quoteIdentifier(it) }
         return metaColumnNames + userColumnNames
     }
