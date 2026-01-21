@@ -32,29 +32,23 @@ Before you begin this tutorial, ensure you have the following.
 
 In this tutorial you initialize a basic Python project to work in. However, if you have an existing project you want to work with, feel free to use that instead.
 
-1. Create a new project using uv:
+Create a new project using uv:
 
-   ```bash
-   uv init my-ai-agent --app
-   cd my-ai-agent
-   ```
+```bash
+uv init my-ai-agent --app
+cd my-ai-agent
+```
 
-   This creates a project with the following structure:
+This creates a project with the following structure:
 
-   ```text
-   my-ai-agent/
-   ├── .gitignore
-   ├── .python-version
-   ├── README.md
-   ├── main.py
-   └── pyproject.toml
-   ```
-
-2. Create an `agent.py` file for your agent definition:
-
-   ```bash
-   touch agent.py
-   ```
+```text
+my-ai-agent/
+├── .gitignore
+├── .python-version
+├── main.py
+├── pyproject.toml
+└── README.md
+```
 
 You create `.env` and `uv.lock` files in later steps, so don't worry about them yet.
 
@@ -79,24 +73,30 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
 
 ## Part 3: Import Pydantic AI and the GitHub agent connector
 
-Add the following imports to `agent.py`:
+1. Create an `agent.py` file for your agent definition:
 
-```python title="agent.py"
-import os
+   ```bash
+   touch agent.py
+   ```
 
-from dotenv import load_dotenv
-from pydantic_ai import Agent
-from airbyte_agent_github import GithubConnector
-from airbyte_agent_github.models import GithubPersonalAccessTokenAuthConfig
-```
+2. Add the following imports to `agent.py`:
 
-These imports provide:
+    ```python title="agent.py"
+    import os
 
-- `os`: Access environment variables for your GitHub token and LLM API key.
-- `load_dotenv`: Load environment variables from your `.env` file.
-- `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
-- `GithubConnector`: The Airbyte agent connector that provides type-safe access to GitHub's API.
-- `GithubPersonalAccessTokenAuthConfig`: The authentication configuration for the GitHub connector using a personal access token.
+    from dotenv import load_dotenv
+    from pydantic_ai import Agent
+    from airbyte_agent_github import GithubConnector
+    from airbyte_agent_github.models import GithubPersonalAccessTokenAuthConfig
+    ```
+
+    These imports provide:
+
+    - `os`: Access environment variables for your GitHub token and LLM API key.
+    - `load_dotenv`: Load environment variables from your `.env` file.
+    - `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
+    - `GithubConnector`: The Airbyte agent connector that provides type-safe access to GitHub's API.
+    - `GithubPersonalAccessTokenAuthConfig`: The authentication configuration for the GitHub connector using a personal access token.
 
 ## Part 4: Add a .env file with your secrets
 
@@ -160,25 +160,15 @@ Tools let your agent fetch real data from GitHub using Airbyte's agent connector
 Add the following code to `agent.py`.
 
 ```python title="agent.py"
-# Tool to list issues in a repository
 @agent.tool_plain
-async def list_issues(owner: str, repo: str, limit: int = 10) -> str:
-    """List open issues in a GitHub repository."""
-    result = await connector.issues.list(owner=owner, repo=repo, states=["OPEN"], per_page=limit)
-    return str(result.data)
-
-
-# Tool to list pull requests in a repository
-@agent.tool_plain
-async def list_pull_requests(owner: str, repo: str, limit: int = 10) -> str:
-    """List open pull requests in a GitHub repository."""
-    result = await connector.pull_requests.list(owner=owner, repo=repo, states=["OPEN"], per_page=limit)
-    return str(result.data)
+@GithubConnector.describe
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
-The `@agent.tool_plain` decorator registers each function as a tool the agent can call. The docstring becomes the tool's description, which helps the LLM understand when to use it. The function parameters become the tool's input schema, so the LLM knows what arguments to provide.
+The `@GithubConnector.describe` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
 
-With these two tools, your agent can answer questions about issues, pull requests, or both. For example, it can compare open issues against pending PRs to identify which issues might be resolved soon.
+With this single tool, your agent can access all of the connector's capabilities. The agent decides which entity and action to use based on your natural language questions.
 
 ## Part 7: Run your project
 
@@ -244,5 +234,8 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- Add more tools and agent connectors to your project. For GitHub, you can wrap additional operations (like search, comments, or commits) as tools. Explore other agent connectors in the [Airbyte agent connectors catalog](https://github.com/airbytehq/airbyte-agent-connectors) to give your agent access to more services.
+- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](https://github.com/airbytehq/airbyte-agent-connectors) to give your agent access to more services like Stripe, HubSpot, and Salesforce.
+
+- Learn about [introspection and fine-grained tool control](../tools/) to customize how your agent interacts with connectors.
+
 - Consider how you might like to expand your agent's capabilities. For example, you might want to trigger effects like sending a Slack message or an email based on the agent's findings. You aren't limited to the capabilities of Airbyte's agent connectors. You can use other libraries and integrations to build an increasingly robust agent ecosystem.
