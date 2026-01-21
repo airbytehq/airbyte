@@ -100,5 +100,5 @@ data:
       type: api_release_history
     - title: MongoDB authentication
       url: https://www.mongodb.com/docs/manual/core/authentication/
-      type: authentication_guide
+      type: other
 metadataSpecVersion: "1.0"
