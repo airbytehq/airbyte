@@ -1,4 +1,4 @@
-name: Publish Stale Metadata Report
+name: Resolve Stale Metadata
 
 on:
   workflow_dispatch:
@@ -8,14 +8,20 @@ on:
         required: false
         type: string
   schedule:
-    - cron: "0 * * * *" # Run every hour
+    - cron: "0 */2 * * *" # Run every 2 hours
 
 permissions:
   contents: read
 
 jobs:
-  publish-stale-metadata-report:
-    name: Publish Stale Metadata Report
+  generate-connector-registries:
+    name: Generate Connector Registries
+    uses: ./.github/workflows/generate-connector-registries.yml
+    secrets: inherit
+
+  check-stale-metadata:
+    name: Check for Stale Metadata
+    needs: [generate-connector-registries]
     runs-on: ubuntu-24.04
 
     steps:
