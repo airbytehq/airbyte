@@ -81,6 +81,6 @@ For the service's official API docs, see the [Mailchimp API reference](https://m
 
 ## Version information
 
-- **Package version:** 0.1.4
+- **Package version:** 0.1.7
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** ca5acdda8030d8292c059c82f498a95b2227c106
+- **Generated with Connector SDK commit SHA:** c46670b9e4ca5238c0372e143b44088a0d1a68ee
