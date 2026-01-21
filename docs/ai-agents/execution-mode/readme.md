@@ -89,60 +89,56 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
 
 ## Create a connector
 
-Once you have a scoped token, create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud. You need the following values.
+Once you have a scoped token, create a connector instance with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud. You need the following values.
 
-- **source_template_id**: The ID of the source template for the connector type. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token.
+- **connector_definition_id**: The ID of the connector definition for the connector type. For GitHub, this is `ef69ef6e-aa7f-4af1-a01d-ef775033524e`.
 
-- **workspace_id**: Your workspace ID. Retrieve it by calling `GET /api/v1/embedded/scoped-token/info` with your scoped token.
+- **auth_config**: Authentication information for your connector. The field names vary by connector. For GitHub with a personal access token, use `{"token": "<your_pat>"}`.
 
-- Additional configuration fields that may or may not be mandatory, depending on the source. If applicable, these fields are explained in the reference docs for your connector.
+- **user_config** (optional): Connector-specific configurations. For GitHub, you can specify `{"repositories": "owner/repo"}` to limit which repositories the connector can access.
 
-  - **source_config**: Connector-specific configurations for direct connectors.
+- **name** (optional): A friendly name for your connector instance.
 
-  - **auth_config**: Authentication information for your connector.
-
-  - **user_config**: Connector-specific configurations for replication connectors.
-
-For GitHub, you only need an authentication configuration. See the examples in the [authentication docs](/ai-agents/connectors/github/REFERENCE#authentication). This is what the request looks like when you're using a personal access token.
+For GitHub, you need an authentication configuration with your personal access token. See the examples in the [authentication docs](/ai-agents/connectors/github/REFERENCE#authentication). This is what the request looks like when you're using a personal access token.
 
 ```bash title="Request"
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/sources" \
+curl -X POST "https://api.airbyte.ai/api/v1/connectors/instances" \
     -H "Authorization: Bearer <scoped_token>" \
     -H "Content-Type: application/json" \
     -d '{
-      "source_template_id": "<source_template_id>",
-      "workspace_id": "<workspace_id>",
-      "name": "...",
+      "connector_definition_id": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
       "auth_config": {
         "token": "<GitHub personal access token (fine-grained or classic)>"
       },
+      "user_config": {
+        "repositories": "airbytehq/airbyte"
+      },
+      "name": "my-github-connector"
     }'
+```
+
+The response contains the connector instance ID:
+
+```json
+{
+  "id": "44e19479-9238-4440-b7f3-a1840b4fd48c"
+}
 ```
 
 ## Run operations in hosted mode
 
-Once you create your connector, you can use the connector in hosted mode.
-
-First, retrieve your connector ID.
-
-1. Log into [app.airbyte.ai](app.airbyte.ai).
-
-2. Click **Connectors**.
-
-3. Find your connector in the list of connectors. Under the connector name, click the copy button next to the connector ID.
-
-4. Use the connector ID to execute operations.
+Once you create your connector instance, you can use it to execute operations in hosted mode. Use the instance ID returned from the create connector request.
 
 <Tabs>
 <TabItem value="python" label="Python" default>
 
-Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the connector ID:
+Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the external user ID (the workspace name you used when creating the scoped token):
 
 ```python
 from airbyte_agent_github import GithubConnector
 
 connector = GithubConnector(
-    connector_id="<your_connector_id>",
+    external_user_id="<your_workspace_name>",
     airbyte_client_id="<your_client_id>",
     airbyte_client_secret="<your_client_secret>",
 )
@@ -156,21 +152,21 @@ Once initialized, the connector works the same way as in local mode. The SDK han
 </TabItem>
 <TabItem value="api" label="API">
 
-You can execute connector operations directly via the REST API.
+You can execute connector operations directly via the REST API using the instance ID from the create connector response.
 
-    ```bash
-    curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-      --header 'Content-Type: application/json' \
-      --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
-      --data '{
-        "entity": "issues",
-        "action": "list",
-        "params": {
-          "owner": "airbytehq",
-          "repo": "airbyte"
-        }
-      }'
-    ```
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/<instance_id>/execute' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <SCOPED_TOKEN>' \
+  --data '{
+    "entity": "issues",
+    "action": "list",
+    "params": {
+      "owner": "airbytehq",
+      "repo": "airbyte"
+    }
+  }'
+```
 
 The response contains the operation result:
 
