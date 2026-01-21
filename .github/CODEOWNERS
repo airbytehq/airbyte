@@ -10,18 +10,9 @@
 * @airbytehq/airbyte-core
 
 # -----------------------------------------------------------------------------
-# CI/CD & Developer Tooling
-# -----------------------------------------------------------------------------
-/.github/ @airbytehq/dev-extensibility
-/airbyte-ci/ @airbytehq/dev-extensibility
-/airbyte-integrations/connector-templates/ @airbytehq/dev-extensibility
-/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/dev-extensibility
-/airbyte-integrations/connectors/**/build_customization.py @airbytehq/dev-extensibility
-
-# -----------------------------------------------------------------------------
 # Protocol
 # -----------------------------------------------------------------------------
-/docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
+/docs/understanding-airbyte/airbyte-protocol.md @airbytehq/move-destinations
 
 # -----------------------------------------------------------------------------
 # BULK CDK (Kotlin-based modern CDK)
@@ -31,6 +22,7 @@
 /airbyte-cdk/bulk/core/load/ @airbytehq/move-destinations
 /airbyte-cdk/bulk/toolkits/extract-*/ @airbytehq/dbsources
 /airbyte-cdk/bulk/toolkits/load-*/ @airbytehq/move-destinations
+/airbyte-cdk/bulk/toolkits/legacy-task-*/ @airbytehq/move-destinations
 
 # -----------------------------------------------------------------------------
 # JAVA CDK
@@ -49,13 +41,6 @@
 # SOURCE CONNECTORS
 # -----------------------------------------------------------------------------
 /airbyte-integrations/connectors/source-*/ @airbytehq/dbsources
-
-# Python critical source connectors (dev-extensibility)
-/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/dev-extensibility
-/airbyte-integrations/connectors/source-hubspot/ @airbytehq/dev-extensibility
-/airbyte-integrations/connectors/source-salesforce/ @airbytehq/dev-extensibility
-/airbyte-integrations/connectors/source-shopify/ @airbytehq/dev-extensibility
-/airbyte-integrations/connectors/source-stripe/ @airbytehq/dev-extensibility
 
 # -----------------------------------------------------------------------------
 # DESTINATION CONNECTORS
