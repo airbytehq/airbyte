@@ -446,8 +446,37 @@ class PostgresAirbyteClient(
 
     private fun execute(query: String) {
         log.info { query.trimIndent() }
-        dataSource.connection.use { connection ->
-            connection.createStatement().use { it.execute(query) }
+        try {
+            dataSource.connection.use { connection ->
+                connection.createStatement().use { it.execute(query) }
+            }
+        } catch (e: org.postgresql.util.PSQLException) {
+            // Handle dependent objects error (e.g., views depending on tables/columns)
+            // PostgreSQL error code 2BP01 = DEPENDENT_OBJECTS_STILL_EXIST
+            if (e.sqlState == "2BP01" || e.message?.contains("depends on") == true) {
+                val cascadeOptionMessage =
+                    if (postgresConfiguration.dropCascade == true) {
+                        "The 'Drop tables with CASCADE' option is already enabled, but the operation still failed. " +
+                            "This can happen when views have complex dependencies that CASCADE cannot automatically resolve."
+                    } else {
+                        "You can enable the 'Drop tables with CASCADE' option in the destination configuration to automatically drop dependent objects. " +
+                            "WARNING: This will delete all data in dependent objects (views, etc.)."
+                    }
+                val message =
+                    "Failed to modify table because other database objects (such as views or rules) depend on it. " +
+                        "Original error: ${e.message}\n\n" +
+                        "$cascadeOptionMessage\n\n" +
+                        "If the CASCADE option doesn't work or you want more control, you can manually drop the dependent views before running the sync, " +
+                        "then recreate them afterward. To find dependent views, you can run: " +
+                        "SELECT dependent_ns.nspname, dependent_view.relname FROM pg_depend " +
+                        "JOIN pg_rewrite ON pg_depend.objid = pg_rewrite.oid " +
+                        "JOIN pg_class as dependent_view ON pg_rewrite.ev_class = dependent_view.oid " +
+                        "JOIN pg_namespace dependent_ns ON dependent_view.relnamespace = dependent_ns.oid " +
+                        "WHERE pg_depend.refobjid = 'your_schema.your_table'::regclass;"
+                log.error { message }
+                throw ConfigErrorException(message, e)
+            }
+            throw e
         }
     }
 

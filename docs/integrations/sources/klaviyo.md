@@ -28,7 +28,8 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
 6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
-7. Click **Set up source**.
+7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
+8. Click **Set up source**.
 
 ### For Airbyte Open Source:
 
@@ -48,17 +49,17 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Campaigns](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
-- [Campaigns Detailed](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
-- [Email Templates](https://developers.klaviyo.com/en/reference/get_templates)
-- [Events](https://developers.klaviyo.com/en/reference/get_events)
-- [Events Detailed](https://developers.klaviyo.com/en/reference/get_event)
-- [Flows](https://developers.klaviyo.com/en/reference/get_flows)
-- [GlobalExclusions](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
-- [Lists](https://developers.klaviyo.com/en/reference/get_lists)
-- [Lists Detailed](https://developers.klaviyo.com/en/reference/get_lists)
-- [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
-- [Profiles](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
+- [Campaigns](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
+- [Campaigns Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
+- [Email Templates](https://developers.klaviyo.com/en/v2024-10-15/reference/get_templates)
+- [Events](https://developers.klaviyo.com/en/v2024-10-15/reference/get_events)
+- [Events Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_event)
+- [Flows](https://developers.klaviyo.com/en/v2024-10-15/reference/get_flows)
+- [GlobalExclusions](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
+- [Lists](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
+- [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
+- [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
+- [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
 
 ## Performance considerations
 
@@ -95,6 +96,9 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.16.12 | 2026-01-20 | [72040](https://github.com/airbytehq/airbyte/pull/72040) | Update dependencies |
+| 2.16.11 | 2026-01-19 | [70208](https://github.com/airbytehq/airbyte/pull/70208) | Add chunking to events_detailed stream to fix full refresh stalling and incremental mode returning zero rows |
+| 2.16.10 | 2026-01-14 | [71461](https://github.com/airbytehq/airbyte/pull/71461) | Update dependencies |
 | 2.16.9 | 2025-12-18 | [70783](https://github.com/airbytehq/airbyte/pull/70783) | Update dependencies |
 | 2.16.8 | 2025-11-25 | [70028](https://github.com/airbytehq/airbyte/pull/70028) | Update dependencies |
 | 2.16.7 | 2025-11-18 | [69457](https://github.com/airbytehq/airbyte/pull/69457) | Update dependencies |

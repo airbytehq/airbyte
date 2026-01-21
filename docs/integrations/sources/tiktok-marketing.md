@@ -144,10 +144,12 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 <details>
   <summary>Expand to review</summary>
 
-
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.11-rc.1      | 2025-10-06 | [65623](https://github.com/airbytehq/airbyte/pull/65623) | Fix missing deleted data on some streams |=======>>>>>>> master
+| 4.8.13 | 2026-01-20 | [64958](https://github.com/airbytehq/airbyte/pull/64958) | Update dependencies |
+| 4.8.12 | 2026-01-15 | [70241](https://github.com/airbytehq/airbyte/pull/70241) | Fix `pixel_events_statistics` stream: `pixel_ids` format, `date_range` calculation, and add error handler to skip advertisers without pixel permissions |
+| 4.8.11 | 2026-01-15 | [71773](https://github.com/airbytehq/airbyte/pull/71773) | Finalize progressive rollout for version 4.8.11 |
+| 4.8.11-rc.1| 2025-11-14 | [65623](https://github.com/airbytehq/airbyte/pull/65623) | Fix missing deleted data on some streams                                                                                                                               |
 | 4.8.10     | 2025-11-04 | [69170](https://github.com/airbytehq/airbyte/pull/69170) | Revert api budget and concurrency back to a safe number                                                                                                                |
 | 4.8.9      | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting                                                                                                                                        |
 | 4.8.8      | 2025-10-29 | [69082](https://github.com/airbytehq/airbyte/pull/69082) | Aggressively fail on rate limiting issues                                                                                                                              |
@@ -157,7 +159,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 | 4.8.4      | 2025-10-08 | [67432](https://github.com/airbytehq/airbyte/pull/67432) | Promoting release candidate 4.8.4 to a main version.                                                                                                                   |
 | 4.8.4-rc.1 | 2025-09-30 | [66823](https://github.com/airbytehq/airbyte/pull/66823) | Up CDK version to 7.                                                                                                                                                   |
 | 4.8.3      | 2025-09-23 | [66584](https://github.com/airbytehq/airbyte/pull/66584) | Promoting release candidate 4.8.3-rc.1 to a main version.                                                                                                              |
-| 4.8.3-rc.1 | 2025-09-16 | [62058] | Add new video metrics in `ads_reports` streams                                                                                                                         |
+| 4.8.3-rc.1 | 2025-09-16 | [62058](https://github.com/airbytehq/airbyte/pull/62058) | Add new video metrics in `ads_reports` streams                                                                                                                         |
 | 4.8.2      | 2025-09-16 | [66233](https://github.com/airbytehq/airbyte/pull/66233) | Promoting release candidate 4.8.2-rc.1 to a main version.                                                                                                              |
 | 4.8.2-rc.1 | 2025-09-11 | [65527](https://github.com/airbytehq/airbyte/pull/65527) | Fix missing records for hourly streams: remove record filter                                                                                                           |
 | 4.8.1      | 2025-09-11 | [66161](https://github.com/airbytehq/airbyte/pull/66161) | Promoting release candidate 4.8.1-rc.1 to a main version.                                                                                                              |

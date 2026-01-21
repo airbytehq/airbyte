@@ -2,15 +2,25 @@
 
 Extract data from Uptick, a field service management platform designed for the fire protection industry.
 
+## Prerequisites
+
+To use the Uptick connector, you need:
+
+- An Uptick account with API access enabled
+- OAuth credentials (Client ID and Client Secret) generated from your Uptick instance
+- Your Uptick instance URL (for example, `https://yourcompany.onuptick.com`)
+
+To generate OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance and select **Create Application**. For more information, see the [Uptick API documentation](https://support.uptickhq.com/en/collections/9129536-uptick-api).
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `base_url` | `string` | Base URL eg https://demo-fire.onuptick.com (no trailing slash) |  |
-| `client_id` | `string` | API Client ID |  |
-| `client_secret` | `string` | API Client Secret  |  |
-| `username` | `string` | API Account Email |  |
-| `password` | `string` | API Account Password |  |
+| `base_url` | `string` | Your Uptick instance URL, for example `https://yourcompany.onuptick.com`. Do not include a trailing slash. |  |
+| `client_id` | `string` | OAuth Client ID generated from Control Panel > Uptick API. |  |
+| `client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. |  |
+| `username` | `string` | Email address for an Uptick user account with API access. |  |
+| `password` | `string` | Password for the Uptick user account. |  |
 
 ## Streams
 
@@ -40,6 +50,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 - `billingcontracts` - Recurring billing contracts for ongoing services
 - `billingcontractlineitems` - Line items within billing contracts
 - `costcentres` - Cost center assignments for financial tracking
+- `task_profitability` - Profitability metrics and financial performance data for tasks
 
 ### Purchasing and supply chain
 
@@ -134,9 +145,10 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.4.3 | 2026-01-20 | [72056](https://github.com/airbytehq/airbyte/pull/72056) | Update dependencies |
+| 0.4.2 | 2026-01-14 | [71437](https://github.com/airbytehq/airbyte/pull/71437) | Update dependencies |
 | 0.4.1 | 2025-12-18 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
-| 0.4.0 | 2025-12-10 | [68194](https://github.com/airbytehq/airbyte/pull/68194) | Remove expensive
-calculation fields from tasksessions, add more streams, including task profitability |
+| 0.4.0 | 2025-12-10 | [68194](https://github.com/airbytehq/airbyte/pull/68194) | Remove expensive calculation fields from tasksessions, add more streams, including task profitability |
 | 0.3.9 | 2025-11-25 | [70176](https://github.com/airbytehq/airbyte/pull/70176) | Update dependencies |
 | 0.3.8 | 2025-11-18 | [69684](https://github.com/airbytehq/airbyte/pull/69684) | Update dependencies |
 | 0.3.7 | 2025-10-29 | [68880](https://github.com/airbytehq/airbyte/pull/68880) | Update dependencies |

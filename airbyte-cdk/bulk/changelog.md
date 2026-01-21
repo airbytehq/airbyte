@@ -1,3 +1,35 @@
+## Version 0.1.108
+
+load cdk: DataCoercionSuite tests null character in strings
+
+## Version 0.1.107
+
+base cdk: add utility to start ssh tunnel + return endpoint
+
+## Version 0.1.106
+
+**Load CDK**
+
+* Add `DEFAULT_AIRBYTE_INTERNAL_NAMESPACE` constant to `core-load` table package
+* Add README documentation to `legacy-task-loader` and `legacy-task-load-db` toolkits
+
+## Version 0.1.105
+
+load cdk: schema regression tests use .json extension
+
+## Version 0.1.104
+
+**Load CDK**
+
+* Add `legacy-task-loader` toolkit containing CDK 0.1.74 code for connectors not yet migrated to the modern tableSchema API
+* Add `useLegacyTaskLoader` option to `airbyteBulkConnector` plugin to automatically include the toolkit and exclude core-load
+* Rename `load-db` toolkit to `legacy-task-load-db`
+* Revert `load-db` to pre components era (cdk 0.1.52)
+
+## Version 0.1.103
+
+load cdk: add table identifier regression test
+
 ## Version 0.1.102
 
 load cdk: add schema regression test
