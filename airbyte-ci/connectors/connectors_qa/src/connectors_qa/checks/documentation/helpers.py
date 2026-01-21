@@ -150,3 +150,42 @@ def generate_description(template_file: str, kwargs: dict[str, Any]) -> str:
     template = environment.get_template(template_file)
     template_content = template.render(**kwargs)
     return template_content
+
+
+def get_first_heading(content: str) -> str:
+    """
+    Extract the first markdown heading from content, skipping frontmatter, MDX imports, and empty lines.
+
+    Args:
+        content: The markdown file content
+
+    Returns:
+        The first line starting with '#', or empty string if none found
+    """
+    lines = content.splitlines()
+    in_frontmatter = False
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+
+        if stripped == "---":
+            if i == 0:
+                in_frontmatter = True
+                continue
+            elif in_frontmatter:
+                in_frontmatter = False
+                continue
+
+        if in_frontmatter:
+            continue
+
+        if stripped.startswith("import "):
+            continue
+
+        if not stripped:
+            continue
+
+        if stripped.startswith("#"):
+            return stripped
+
+    return ""
