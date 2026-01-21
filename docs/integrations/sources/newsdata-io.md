@@ -31,7 +31,8 @@ Historical News is only available for premium users of NewsData service.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.43 | 2025-12-16 | [70562](https://github.com/airbytehq/airbyte/pull/70562) | Update dependencies |
+| 0.0.44 | 2026-01-20 | [71655](https://github.com/airbytehq/airbyte/pull/71655) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70562](https://github.com/airbytehq/airbyte/pull/70562) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [69902](https://github.com/airbytehq/airbyte/pull/69902) | Update dependencies |
 | 0.0.41 | 2025-11-18 | [69364](https://github.com/airbytehq/airbyte/pull/69364) | Update dependencies |
 | 0.0.40 | 2025-10-29 | [68730](https://github.com/airbytehq/airbyte/pull/68730) | Update dependencies |
@@ -39,7 +40,7 @@ Historical News is only available for premium users of NewsData service.
 | 0.0.38 | 2025-10-14 | [67761](https://github.com/airbytehq/airbyte/pull/67761) | Update dependencies |
 | 0.0.37 | 2025-10-07 | [67419](https://github.com/airbytehq/airbyte/pull/67419) | Update dependencies |
 | 0.0.36 | 2025-09-30 | [66924](https://github.com/airbytehq/airbyte/pull/66924) | Update dependencies |
-| 0.0.35 | 2025-09-23 | [66620](https://github.com/airbytehq/airbyte/pull/66620) | Update dependencies |
+| 0.0.35 | 2025-09-24 | [66620](https://github.com/airbytehq/airbyte/pull/66620) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65869](https://github.com/airbytehq/airbyte/pull/65869) | Update dependencies |
 | 0.0.33 | 2025-08-23 | [65200](https://github.com/airbytehq/airbyte/pull/65200) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64680](https://github.com/airbytehq/airbyte/pull/64680) | Update dependencies |

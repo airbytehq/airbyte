@@ -127,7 +127,9 @@ More information about Strava rate limits and adjustments to those limits can be
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.38 | 2025-12-16 | [70608](https://github.com/airbytehq/airbyte/pull/70608) | Update dependencies |
+| 0.3.40 | 2026-01-20 | [72132](https://github.com/airbytehq/airbyte/pull/72132) | Update dependencies |
+| 0.3.39 | 2026-01-14 | [71619](https://github.com/airbytehq/airbyte/pull/71619) | Update dependencies |
+| 0.3.38 | 2025-12-18 | [70608](https://github.com/airbytehq/airbyte/pull/70608) | Update dependencies |
 | 0.3.37 | 2025-11-25 | [70057](https://github.com/airbytehq/airbyte/pull/70057) | Update dependencies |
 | 0.3.36 | 2025-11-18 | [69586](https://github.com/airbytehq/airbyte/pull/69586) | Update dependencies |
 | 0.3.35 | 2025-10-29 | [68991](https://github.com/airbytehq/airbyte/pull/68991) | Update dependencies |
@@ -137,7 +139,7 @@ More information about Strava rate limits and adjustments to those limits can be
 | 0.3.31 | 2025-09-30 | [66893](https://github.com/airbytehq/airbyte/pull/66893) | Update dependencies |
 | 0.3.30 | 2025-09-23 | [66371](https://github.com/airbytehq/airbyte/pull/66371) | Update dependencies |
 | 0.3.29 | 2025-09-09 | [65664](https://github.com/airbytehq/airbyte/pull/65664) | Update dependencies |
-| 0.3.28 | 2025-08-23 | [65412](https://github.com/airbytehq/airbyte/pull/65412) | Update dependencies |
+| 0.3.28 | 2025-08-24 | [65412](https://github.com/airbytehq/airbyte/pull/65412) | Update dependencies |
 | 0.3.27 | 2025-08-16 | [65038](https://github.com/airbytehq/airbyte/pull/65038) | Update dependencies |
 | 0.3.26 | 2025-08-02 | [64020](https://github.com/airbytehq/airbyte/pull/64020) | Update dependencies |
 | 0.3.25 | 2025-07-12 | [63084](https://github.com/airbytehq/airbyte/pull/63084) | Update dependencies |

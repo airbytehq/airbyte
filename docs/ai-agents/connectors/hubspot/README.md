@@ -7,10 +7,12 @@ tickets, and custom objects for customer relationship management and sales analy
 
 ## Example questions
 
-- Show me all deals from [Company] this quarter
+The Hubspot connector is optimized to handle prompts like these.
+
+- Show me all deals from \{company\} this quarter
 - What are the top 5 most valuable deals in my pipeline right now?
-- List recent tickets from [customerX] and analyze their support trends
-- Search for contacts in the marketing department at [Company]
+- List recent tickets from \{customer\} and analyze their support trends
+- Search for contacts in the marketing department at \{company\}
 - Give me an overview of my sales team's deals in the last 30 days
 - Identify the most active companies in our CRM this month
 - Compare the number of deals closed by different sales representatives
@@ -18,8 +20,10 @@ tickets, and custom objects for customer relationship management and sales analy
 
 ## Unsupported questions
 
-- Create a new contact record for [personX]
-- Update the contact information for [customerY]
+The Hubspot connector isn't currently able to handle prompts like these.
+
+- Create a new contact record for \{person\}
+- Update the contact information for \{customer\}
 - Delete the ticket from last week's support case
 - Schedule a follow-up task for this deal
 - Send an email to all contacts in the sales pipeline
@@ -53,10 +57,10 @@ This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Search](./REFERENCE.md#contacts-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [Search](./REFERENCE.md#companies-search) |
-| Deals | [List](./REFERENCE.md#deals-list), [Get](./REFERENCE.md#deals-get), [Search](./REFERENCE.md#deals-search) |
-| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Search](./REFERENCE.md#tickets-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Api_search](./REFERENCE.md#contacts-api_search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [Api_search](./REFERENCE.md#companies-api_search) |
+| Deals | [List](./REFERENCE.md#deals-list), [Get](./REFERENCE.md#deals-get), [Api_search](./REFERENCE.md#deals-api_search) |
+| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Api_search](./REFERENCE.md#tickets-api_search) |
 | Schemas | [List](./REFERENCE.md#schemas-list), [Get](./REFERENCE.md#schemas-get) |
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
 
@@ -67,6 +71,6 @@ For the service's official API docs, see the [Hubspot API reference](https://dev
 
 ## Version information
 
-- **Package version:** 0.15.24
-- **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.15.53
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** c7dab97573a377c99c730f5f0f2c02733d2b3161

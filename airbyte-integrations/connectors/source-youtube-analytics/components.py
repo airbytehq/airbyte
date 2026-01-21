@@ -8,7 +8,7 @@ from typing import Any, Callable, Generator, Mapping, MutableMapping, Optional, 
 
 import requests
 
-from airbyte_cdk import Decoder
+from airbyte_cdk import AirbyteTracedException, Decoder, FailureType
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.types import StreamSlice, StreamState
@@ -27,9 +27,35 @@ class CustomDecoder(Decoder):
 
 
 @dataclass
-class JobRequester(HttpRequester):
+class ContentOwnerRequester(HttpRequester):
+    """
+    Custom requester that conditionally adds the onBehalfOfContentOwner parameter
+    only when content_owner_id is provided in the config.
+    """
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().get_request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
+        content_owner_id = self.config.get("content_owner_id")
+        if content_owner_id:
+            params["onBehalfOfContentOwner"] = content_owner_id
+        return params
+
+
+@dataclass
+class JobRequester(ContentOwnerRequester):
     """
     Sends request to create a report job if it doesn't exist yet.
+    Extends ContentOwnerRequester to conditionally add onBehalfOfContentOwner parameter.
     """
 
     JOB_NAME = "Airbyte reporting job"
@@ -58,7 +84,20 @@ class JobRequester(HttpRequester):
             log_formatter,
         )
 
-        stream_job = [r for r in response.json()["jobs"] if r["reportTypeId"] == self._parameters["report_type_id"]]
+        response_json = response.json()
+
+        # Handle error responses from the API
+        if "error" in response_json:
+            error_details = response_json["error"]
+            error_code = error_details.get("code", "unknown")
+            api_message = error_details.get("message", str(error_details))
+            error_message = f"YouTube Reporting API Error (code {error_code}): " f"{api_message}. "
+            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
+
+        # Handle the case where API returns {} instead of {"jobs": []}
+        # This can happen when no jobs exist yet - treat as empty list
+        jobs_list = response_json.get("jobs", [])
+        stream_job = [r for r in jobs_list if r["reportTypeId"] == self._parameters["report_type_id"]]
 
         if not stream_job:
             self._http_client.send_request(
@@ -71,7 +110,7 @@ class JobRequester(HttpRequester):
                 ),
                 request_kwargs={"stream": self.stream_response},
                 headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
-                json={"name": self.JOB_NAME, "reportTypeId": self._parameters["report_id"]},
+                json={"name": self.JOB_NAME, "reportTypeId": self._parameters["report_type_id"]},
                 dedupe_query_params=True,
                 log_formatter=log_formatter,
                 exit_on_rate_limit=self._exit_on_rate_limit,

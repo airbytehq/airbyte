@@ -1,0 +1,290 @@
+# This workflow generates PyAirbyte API documentation using pdoc3
+# and commits the generated markdown files to the docs/developers/pyairbyte/reference directory.
+#
+# The workflow can be triggered:
+# - Manually via workflow_dispatch
+# - On a schedule (weekly on Sundays)
+# - When PyAirbyte releases a new version (via repository_dispatch)
+#
+# pdoc3 generates markdown output when --output-dir is specified without --html or --pdf flags.
+# See: https://github.com/pdoc3/pdoc/issues/257
+
+name: Generate PyAirbyte API Docs
+
+on:
+  workflow_dispatch:
+    inputs:
+      pyairbyte_version:
+        description: "PyAirbyte version to generate docs for (leave empty for latest)"
+        required: false
+        default: ""
+  schedule:
+    # Run weekly on Sundays at 00:00 UTC
+    - cron: "0 0 * * 0"
+  repository_dispatch:
+    types: [pyairbyte-release]
+
+jobs:
+  generate-docs:
+    name: Generate PyAirbyte API Documentation
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Airbyte Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Determine PyAirbyte Version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.pyairbyte_version }}" ]; then
+            echo "version=${{ github.event.inputs.pyairbyte_version }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ github.event.client_payload.version }}" ]; then
+            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+          else
+            # Get latest version from PyPI
+            LATEST_VERSION=$(pip index versions airbyte 2>/dev/null | grep -oP 'airbyte \(\K[^)]+' | head -1)
+            echo "version=${LATEST_VERSION}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Clone PyAirbyte Repository
+        run: |
+          # Clone PyAirbyte at the specific version tag
+          git clone --depth 1 --branch "v${{ steps.version.outputs.version }}" \
+            https://github.com/airbytehq/PyAirbyte.git pyairbyte-source
+          echo "Cloned PyAirbyte v${{ steps.version.outputs.version }}"
+          ls -la pyairbyte-source/
+
+      - name: Install PyAirbyte and pdoc3
+        run: |
+          # Install PyAirbyte from the cloned source to get all dependencies
+          cd pyairbyte-source
+          pip install -e .
+          cd ..
+          # Install pdoc3 for documentation generation
+          pip install pdoc3
+
+      - name: Generate API Documentation
+        run: |
+          # Create the reference directory if it doesn't exist
+          mkdir -p docs/developers/pyairbyte/reference
+
+          # Generate markdown documentation using pdoc3
+          # Without --html or --pdf flags, pdoc3 outputs Markdown-Extra format
+          # See: https://github.com/pdoc3/pdoc/issues/257
+          pdoc3 --output-dir docs/developers/pyairbyte/reference \
+            --config show_source_code=False \
+            --config sort_identifiers=True \
+            --config show_type_annotations=True \
+            airbyte
+
+          echo "Generated documentation files:"
+          find docs/developers/pyairbyte/reference -name "*.md" | head -20
+
+      - name: Add Docusaurus Frontmatter
+        run: |
+          # Add Docusaurus-compatible frontmatter to generated markdown files
+          # Use unique id and title based on file path to avoid translation key conflicts
+          # See: https://github.com/facebook/docusaurus/discussions/11458
+          base_dir="docs/developers/pyairbyte/reference"
+          for file in $(find "$base_dir" -name "*.md"); do
+            # Generate unique id from relative path (e.g., airbyte/mcp/cloud_ops)
+            rel_path="${file#$base_dir/}"
+            module_path="${rel_path%.md}"
+            # Replace slashes with dots for the title (Python module notation)
+            module_title=$(echo "$module_path" | tr '/' '.')
+            # Replace slashes with dashes for the id (URL-safe)
+            unique_id=$(echo "$module_path" | tr '/' '-')
+            # Create a temp file with frontmatter and original content
+            {
+              echo "---"
+              echo "id: ${unique_id}"
+              echo "title: ${module_title}"
+              echo "---"
+              echo ""
+              cat "$file"
+            } > "${file}.tmp"
+            mv "${file}.tmp" "$file"
+          done
+          echo "Added Docusaurus frontmatter to all generated files"
+
+      - name: Sanitize for MDX Compatibility
+        run: |
+          # Docusaurus uses MDX which interprets { and } as JSX expressions,
+          # and <...> patterns as JSX tags. We need to escape these in the
+          # generated markdown files to prevent MDX compilation errors.
+          # Use a Python script for more reliable escaping that handles all edge cases.
+          python3 << 'EOF'
+          import os
+          import re
+
+          # HTML tags that should NOT be escaped (legitimate HTML in Markdown)
+          ALLOWED_HTML_TAGS = {
+              'a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo',
+              'blockquote', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col',
+              'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog',
+              'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure',
+              'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr',
+              'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li',
+              'main', 'map', 'mark', 'menu', 'meter', 'nav', 'noscript', 'object',
+              'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress',
+              'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'small',
+              'source', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody',
+              'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr',
+              'track', 'u', 'ul', 'var', 'video', 'wbr',
+          }
+
+          def is_allowed_html_tag(match_text):
+              """Check if a <...> pattern is a legitimate HTML tag."""
+              # Extract the tag name from patterns like <tag>, </tag>, <tag attr="val">
+              tag_match = re.match(r'</?([a-zA-Z][a-zA-Z0-9]*)', match_text)
+              if tag_match:
+                  tag_name = tag_match.group(1).lower()
+                  return tag_name in ALLOWED_HTML_TAGS
+              return False
+
+          def escape_angle_brackets(text):
+              """Escape angle brackets that look like JSX but aren't valid HTML tags."""
+              # Pattern to match <...> sequences that aren't in code
+              # We'll process these and escape non-HTML-tag patterns
+              def replace_angles(match):
+                  content = match.group(0)
+                  if is_allowed_html_tag(content):
+                      return content  # Keep legitimate HTML tags
+                  # Escape the angle brackets for non-HTML patterns
+                  return content.replace('<', '&lt;').replace('>', '&gt;')
+              
+              # Match angle-bracketed content that's not a simple HTML tag
+              # This catches type annotations like <str>, <int | None>, <CDCDeletionMode.HARD_DELETE: 'value'>
+              pattern = r'<[^>]+>'
+              return re.sub(pattern, replace_angles, text)
+
+          def sanitize_for_mdx(content):
+              """Sanitize content for MDX compatibility, preserving code blocks and frontmatter."""
+              lines = content.split('\n')
+              result = []
+              in_code_block = False
+              in_frontmatter = False
+              frontmatter_count = 0
+              
+              for line in lines:
+                  # Track frontmatter (starts and ends with ---)
+                  if line.strip() == '---':
+                      frontmatter_count += 1
+                      if frontmatter_count == 1:
+                          in_frontmatter = True
+                      elif frontmatter_count == 2:
+                          in_frontmatter = False
+                      result.append(line)
+                      continue
+                  
+                  # Skip frontmatter content
+                  if in_frontmatter:
+                      result.append(line)
+                      continue
+                  
+                  # Track code blocks (``` or ~~~)
+                  if line.strip().startswith('```') or line.strip().startswith('~~~'):
+                      in_code_block = not in_code_block
+                      result.append(line)
+                      continue
+                  
+                  # Skip code blocks
+                  if in_code_block:
+                      result.append(line)
+                      continue
+                  
+                  # Process line outside of code blocks
+                  # Split by inline code (backticks) and only escape non-code parts
+                  parts = re.split(r'(`[^`]+`)', line)
+                  escaped_parts = []
+                  for part in parts:
+                      if part.startswith('`') and part.endswith('`'):
+                          # This is inline code, don't escape
+                          escaped_parts.append(part)
+                      else:
+                          # Escape curly braces that aren't already escaped
+                          part = re.sub(r'(?<!\\)\{', r'\\{', part)
+                          part = re.sub(r'(?<!\\)\}', r'\\}', part)
+                          # Escape angle brackets that look like JSX (but not valid HTML)
+                          part = escape_angle_brackets(part)
+                          escaped_parts.append(part)
+                  result.append(''.join(escaped_parts))
+              
+              return '\n'.join(result)
+
+          # Process all markdown files
+          base_dir = 'docs/developers/pyairbyte/reference'
+          for root, dirs, files in os.walk(base_dir):
+              for filename in files:
+                  if filename.endswith('.md'):
+                      filepath = os.path.join(root, filename)
+                      with open(filepath, 'r', encoding='utf-8') as f:
+                          content = f.read()
+                      sanitized_content = sanitize_for_mdx(content)
+                      with open(filepath, 'w', encoding='utf-8') as f:
+                          f.write(sanitized_content)
+                      print(f"Processed: {filepath}")
+
+          print("Sanitized all generated markdown files for MDX compatibility")
+          EOF
+
+      - name: Cleanup PyAirbyte Source
+        run: |
+          # Remove the cloned PyAirbyte source directory to prevent it from being
+          # committed as a submodule (it contains a .git directory)
+          rm -rf pyairbyte-source
+          echo "Cleaned up temporary files"
+
+      - name: Check for Changes
+        id: changes
+        run: |
+          git add docs/developers/pyairbyte/reference/
+          if git diff --cached --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate as GitHub App
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          commit-message: "docs: Update PyAirbyte API reference documentation for v${{ steps.version.outputs.version }}"
+          title: "docs: Update PyAirbyte API reference documentation for v${{ steps.version.outputs.version }}"
+          body: |
+            This PR updates the PyAirbyte API reference documentation.
+
+            **PyAirbyte Version:** ${{ steps.version.outputs.version }}
+
+            The documentation was auto-generated using [pdoc3](https://github.com/pdoc3/pdoc).
+
+            ---
+            *This PR was automatically generated by the [Generate PyAirbyte API Docs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) workflow.*
+          branch: docs/pyairbyte-api-reference-${{ steps.version.outputs.version }}
+          base: master
+          labels: |
+            area/documentation
+            auto-generated
+          delete-branch: true

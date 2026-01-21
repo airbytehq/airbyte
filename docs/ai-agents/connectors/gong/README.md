@@ -8,6 +8,8 @@ coaching metrics, and library content for sales performance analysis and revenue
 
 ## Example questions
 
+The Gong connector is optimized to handle prompts like these.
+
 - List all users in my Gong account
 - Show me calls from last week
 - Get the transcript for call abc123
@@ -18,6 +20,8 @@ coaching metrics, and library content for sales performance analysis and revenue
 - Get coaching metrics for manager user123
 
 ## Unsupported questions
+
+The Gong connector isn't currently able to handle prompts like these.
 
 - Create a new user in Gong
 - Delete a call recording
@@ -44,7 +48,10 @@ from airbyte_agent_gong.models import GongOauth20AuthenticationAuthConfig
 
 connector = GongConnector(
   auth_config=GongOauth20AuthenticationAuthConfig(
-    access_token="..."
+    access_token="...",
+    refresh_token="...",
+    client_id="...",
+    client_secret="..."
   )
 )
 result = await connector.users.list()
@@ -96,6 +103,6 @@ For the service's official API docs, see the [Gong API reference](https://gong.a
 
 ## Version information
 
-- **Package version:** 0.19.26
-- **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.19.56
+- **Connector version:** 0.1.10
+- **Generated with Connector SDK commit SHA:** c7dab97573a377c99c730f5f0f2c02733d2b3161
