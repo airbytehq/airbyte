@@ -36,28 +36,28 @@ With hosted execution, sensitive API credentials never leave Airbyte Cloud, mult
 
 Before using hosted execution mode, ensure you have:
 
-1. Airbyte Cloud account
+1. An Airbyte Cloud account and credentials:
 
 2. Airbyte credentials
 
    - Client ID
    - Client Secret
 
-3. The third-party API credentials you want to use (for example, a GitHub personal access token)
+3. The third-party API credentials you want to use. For example, a GitHub personal access token.
 
-4. Python 3.11 or later
+If you're using the Python SDK, you also need:
 
-5. An installed agent connector package. For example:
+1. Python 3.11 or later
+
+2. An installed agent connector package. For example:
 
    ```bash
    uv pip install airbyte-agent-github
    ```
 
-   See [Connectors](../connectors) for a full list of connectors.
-
 ## Authentication
 
-Before running operations in hosted mode, you must create a connector in Airbyte Cloud. This stores your API credentials securely and associates them with a workspace.
+Before you can run connectors in hosted mode, you need a scoped token for authentication. This stores your API credentials securely and associates them with a workspace.
 
 ### Step 1: Get an application token
 
@@ -87,19 +87,26 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
   }'
 ```
 
-<!-- In E2E testing, Devin expressed a great deal of confusion about what this was. I am also confused. I think this creates a new workspace, because it returns a random workspace ID. But I can't find the workspace in the org. I don't know why we're doing this. Presumably this allows customer to run connector operations in their own specific workspace? -->
-
 ## Create a connector
 
-Create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud.
-
-You'll need:
+Once you have a scoped token, create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud. You need the following values.
 
 - **source_template_id**: The ID of the source template for the connector type. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token.
+
 - **workspace_id**: Your workspace ID. Retrieve it by calling `GET /api/v1/embedded/scoped-token/info` with your scoped token.
 
-```bash
-curl -X POST "https://api.airbyte.ai/api/v1/embedded/sources" \
+- Additional configuration fields that may or may not be mandatory, depending on the source. If applicable, these fields are explained in the reference docs for your connector.
+
+  - **source_config**: Connector-specific configurations for direct connectors.
+
+  - **auth_config**: Authentication information for your connector.
+
+  - **user_config**: Connector-specific configurations for replication connectors.
+
+For GitHub, you only need an authentication configuration. See the examples in the [authentication docs](/ai-agents/connectors/github/REFERENCE#authentication). This is what the request looks like when you're using a personal access token.
+
+```bash title="Request"
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/sources" \
     -H "Authorization: Bearer <scoped_token>" \
     -H "Content-Type: application/json" \
     -d '{
@@ -107,21 +114,24 @@ curl -X POST "https://api.airbyte.ai/api/v1/embedded/sources" \
       "workspace_id": "<workspace_id>",
       "name": "...",
       "auth_config": {
-         ...
+        "token": "<GitHub personal access token (fine-grained or classic)>"
       },
-      "source_config": {
-         ...
-      }
     }'
 ```
-
-Note the returned connector ID for reference.
-
-<!-- Devin and I both experienced failure at this step. The operation of the auth_config and source_config fields is completely ambiguous. There is no way to know what fields are required, what the schema is, or how to discover it (as far as I can tell). -->
 
 ## Run operations in hosted mode
 
 Once you create your connector, you can use the connector in hosted mode.
+
+First, retrieve your connector ID.
+
+1. Log into [app.airbyte.ai](app.airbyte.ai).
+
+2. Click **Connectors**.
+
+3. Find your connector in the list of connectors. Under the connector name, click the copy button next to the connector ID.
+
+4. Use the connector ID to execute operations.
 
 <Tabs>
 <TabItem value="python" label="Python" default>
@@ -143,56 +153,24 @@ issues = await connector.issues.list(owner="airbytehq", repo="airbyte")
 
 Once initialized, the connector works the same way as in local mode. The SDK handles the token exchange (application token → scoped token) automatically, so you don't need to manage tokens manually.
 
-<!-- Devin struggled with this. It was not successful with external_user_id. I think the workspace name you chose earlier for the scoped token is the external_user_id, at least that's the intent, but that doesn't seem to be the actual field the connector uses  -->
-
-<!-- Devin was never actually able to run this. It seems this still doesn't work. The HostedExecutor is configured to use `http://localhost:8001` instead of the Airbyte Cloud API. This means Python hosted mode DOES NOT WORK out of the box. The SDK needs to be configured with the correct API URL. The SDK is using wrong URL path: `/connectors/{id}/execute`. The correct path (per API docs) should be: `/api/v1/connectors/sources/{id}/execute`. Python SDK hosted mode is broken, but Devin believes the documentation shows the correct API paths. -->
-
 </TabItem>
 <TabItem value="api" label="API">
 
 You can execute connector operations directly via the REST API.
 
-First, retrieve your connector ID using your external user ID and connector definition ID:
-
-```bash title="Request"
-curl --location 'https://api.airbyte.ai/api/v1/connectors/connectors_for_user?external_user_id=<your_workspace_name>&definition_id=ef69ef6e-aa7f-4af1-a01d-ef775033524e' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>'
-```
-
-The response contains your connector ID:
-
-```json title="Response"
-{
-  "connectors": [
-    {
-      "id": "<connector_id>",
-      "name": "github-connector"
-    }
-  ]
-}
-```
-
-Use the connector ID to execute operations:
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-  --header 'Content-Type: application/json' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
-  --data '{
-    "entity": "issues",
-    "action": "list",
-    "params": {
-      "owner": "airbytehq",
-      "repo": "airbyte"
-    }
-  }'
-```
-
-<!-- - The execute endpoint returns: "Unable to map source configuration to any supported auth scheme"
-- This suggests the credentials weren't stored correctly when creating the connector
-- The connector was created successfully (ID: 017a8b18-c1ad-4128-9a09-8944c1597267)
-- But the execute endpoint can't find the auth credentials
-- **POSSIBLE ISSUE**: The `source_config` structure I used may not have stored credentials correctly -->
+    ```bash
+    curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
+      --header 'Content-Type: application/json' \
+      --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
+      --data '{
+        "entity": "issues",
+        "action": "list",
+        "params": {
+          "owner": "airbytehq",
+          "repo": "airbyte"
+        }
+      }'
+    ```
 
 The response contains the operation result:
 
@@ -225,16 +203,14 @@ The response contains the operation result:
 ### No connector found for user
 
 - Ensure you've created a connector for the workspace.
-- Verify the `external_user_id` matches the `workspace_name` used during setup.
 
 ### Authentication errors (401/403)
 
 - Check that your Airbyte client ID and secret are correct.
 - Verify your application token hasn't expired.
-- Ensure the connector was created with valid API credentials.
 
 ### Token expiration
 
 - Application tokens expire after ~15 minutes.
-- The SDK handles token refresh automatically during normal operation.
-- If you see persistent auth errors, verify your client credentials are still valid.
+- The Python SDK handles token refresh automatically during normal operation. The API doesn't and you must request new tokens manually.
+- If you see persistent authentication errors, verify your client credentials are still valid.
