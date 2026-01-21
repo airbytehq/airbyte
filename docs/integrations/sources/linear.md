@@ -36,6 +36,7 @@ An Airbyte connector for Linear.app.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.31 | 2026-01-21 | [72241](https://github.com/airbytehq/airbyte/pull/72241) | Add xmlns attribute to icon SVG for proper rendering |
 | 0.0.30 | 2026-01-20 | [72027](https://github.com/airbytehq/airbyte/pull/72027) | Update dependencies |
 | 0.0.29 | 2026-01-14 | [71489](https://github.com/airbytehq/airbyte/pull/71489) | Update dependencies |
 | 0.0.28 | 2025-12-18 | [70775](https://github.com/airbytehq/airbyte/pull/70775) | Update dependencies |
