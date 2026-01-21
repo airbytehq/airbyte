@@ -9,9 +9,13 @@ The Slack connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Users | [List](#users-list), [Get](#users-get) |
-| Channels | [List](#channels-list), [Get](#channels-get) |
+| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update) |
 | Channel Messages | [List](#channel-messages-list) |
 | Threads | [List](#threads-list) |
+| Messages | [Create](#messages-create), [Update](#messages-update) |
+| Channel Topics | [Create](#channel-topics-create) |
+| Channel Purposes | [Create](#channel-purposes-create) |
+| Reactions | [Create](#reactions-create) |
 
 ### Users
 
@@ -309,6 +313,164 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+#### Channels Create
+
+Creates a new public or private channel
+
+**Python SDK**
+
+```python
+await slack.channels.create(
+    name="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channels",
+    "action": "create",
+    "params": {
+        "name": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | Yes | Channel name (lowercase, no spaces, max 80 chars) |
+| `is_private` | `boolean` | No | Create a private channel instead of public |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `is_channel` | `boolean \| null` |  |
+| `is_group` | `boolean \| null` |  |
+| `is_im` | `boolean \| null` |  |
+| `is_mpim` | `boolean \| null` |  |
+| `is_private` | `boolean \| null` |  |
+| `created` | `integer \| null` |  |
+| `is_archived` | `boolean \| null` |  |
+| `is_general` | `boolean \| null` |  |
+| `unlinked` | `integer \| null` |  |
+| `name_normalized` | `string \| null` |  |
+| `is_shared` | `boolean \| null` |  |
+| `is_org_shared` | `boolean \| null` |  |
+| `is_pending_ext_shared` | `boolean \| null` |  |
+| `pending_shared` | `array \| null` |  |
+| `context_team_id` | `string \| null` |  |
+| `updated` | `integer \| null` |  |
+| `creator` | `string \| null` |  |
+| `is_ext_shared` | `boolean \| null` |  |
+| `shared_team_ids` | `array \| null` |  |
+| `pending_connected_team_ids` | `array \| null` |  |
+| `is_member` | `boolean \| null` |  |
+| `topic` | `object \| any` |  |
+| `purpose` | `object \| any` |  |
+| `previous_names` | `array \| null` |  |
+| `num_members` | `integer \| null` |  |
+| `parent_conversation` | `string \| null` |  |
+| `properties` | `object \| null` |  |
+| `is_thread_only` | `boolean \| null` |  |
+| `is_read_only` | `boolean \| null` |  |
+
+
+</details>
+
+#### Channels Update
+
+Renames an existing channel
+
+**Python SDK**
+
+```python
+await slack.channels.update(
+    channel="<str>",
+    name="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channels",
+    "action": "update",
+    "params": {
+        "channel": "<str>",
+        "name": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID to rename |
+| `name` | `string` | Yes | New channel name (lowercase, no spaces, max 80 chars) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `is_channel` | `boolean \| null` |  |
+| `is_group` | `boolean \| null` |  |
+| `is_im` | `boolean \| null` |  |
+| `is_mpim` | `boolean \| null` |  |
+| `is_private` | `boolean \| null` |  |
+| `created` | `integer \| null` |  |
+| `is_archived` | `boolean \| null` |  |
+| `is_general` | `boolean \| null` |  |
+| `unlinked` | `integer \| null` |  |
+| `name_normalized` | `string \| null` |  |
+| `is_shared` | `boolean \| null` |  |
+| `is_org_shared` | `boolean \| null` |  |
+| `is_pending_ext_shared` | `boolean \| null` |  |
+| `pending_shared` | `array \| null` |  |
+| `context_team_id` | `string \| null` |  |
+| `updated` | `integer \| null` |  |
+| `creator` | `string \| null` |  |
+| `is_ext_shared` | `boolean \| null` |  |
+| `shared_team_ids` | `array \| null` |  |
+| `pending_connected_team_ids` | `array \| null` |  |
+| `is_member` | `boolean \| null` |  |
+| `topic` | `object \| any` |  |
+| `purpose` | `object \| any` |  |
+| `previous_names` | `array \| null` |  |
+| `num_members` | `integer \| null` |  |
+| `parent_conversation` | `string \| null` |  |
+| `properties` | `object \| null` |  |
+| `is_thread_only` | `boolean \| null` |  |
+| `is_read_only` | `boolean \| null` |  |
+
+
+</details>
+
 ### Channel Messages
 
 #### Channel Messages List
@@ -546,6 +708,350 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |------------|------|-------------|
 | `next_cursor` | `string \| null` |  |
 | `has_more` | `boolean \| null` |  |
+
+</details>
+
+### Messages
+
+#### Messages Create
+
+Posts a message to a public channel, private channel, or direct message conversation
+
+**Python SDK**
+
+```python
+await slack.messages.create(
+    channel="<str>",
+    text="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "text": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID, private group ID, or user ID to send message to |
+| `text` | `string` | Yes | Message text content (supports mrkdwn formatting) |
+| `thread_ts` | `string` | No | Thread timestamp to reply to (for threaded messages) |
+| `reply_broadcast` | `boolean` | No | Also post reply to channel when replying to a thread |
+| `unfurl_links` | `boolean` | No | Enable unfurling of primarily text-based content |
+| `unfurl_media` | `boolean` | No | Enable unfurling of media content |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `subtype` | `string \| null` |  |
+| `text` | `string \| null` |  |
+| `ts` | `string` |  |
+| `user` | `string \| null` |  |
+| `bot_id` | `string \| null` |  |
+| `app_id` | `string \| null` |  |
+| `team` | `string \| null` |  |
+| `bot_profile` | `object \| any` |  |
+
+
+</details>
+
+#### Messages Update
+
+Updates an existing message in a channel
+
+**Python SDK**
+
+```python
+await slack.messages.update(
+    channel="<str>",
+    ts="<str>",
+    text="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "update",
+    "params": {
+        "channel": "<str>",
+        "ts": "<str>",
+        "text": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID containing the message |
+| `ts` | `string` | Yes | Timestamp of the message to update |
+| `text` | `string` | Yes | New message text content |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `subtype` | `string \| null` |  |
+| `text` | `string \| null` |  |
+| `ts` | `string` |  |
+| `user` | `string \| null` |  |
+| `bot_id` | `string \| null` |  |
+| `app_id` | `string \| null` |  |
+| `team` | `string \| null` |  |
+| `bot_profile` | `object \| any` |  |
+
+
+</details>
+
+### Channel Topics
+
+#### Channel Topics Create
+
+Sets the topic for a channel
+
+**Python SDK**
+
+```python
+await slack.channel_topics.create(
+    channel="<str>",
+    topic="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_topics",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "topic": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID to set topic for |
+| `topic` | `string` | Yes | New topic text (max 250 characters) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `is_channel` | `boolean \| null` |  |
+| `is_group` | `boolean \| null` |  |
+| `is_im` | `boolean \| null` |  |
+| `is_mpim` | `boolean \| null` |  |
+| `is_private` | `boolean \| null` |  |
+| `created` | `integer \| null` |  |
+| `is_archived` | `boolean \| null` |  |
+| `is_general` | `boolean \| null` |  |
+| `unlinked` | `integer \| null` |  |
+| `name_normalized` | `string \| null` |  |
+| `is_shared` | `boolean \| null` |  |
+| `is_org_shared` | `boolean \| null` |  |
+| `is_pending_ext_shared` | `boolean \| null` |  |
+| `pending_shared` | `array \| null` |  |
+| `context_team_id` | `string \| null` |  |
+| `updated` | `integer \| null` |  |
+| `creator` | `string \| null` |  |
+| `is_ext_shared` | `boolean \| null` |  |
+| `shared_team_ids` | `array \| null` |  |
+| `pending_connected_team_ids` | `array \| null` |  |
+| `is_member` | `boolean \| null` |  |
+| `topic` | `object \| any` |  |
+| `purpose` | `object \| any` |  |
+| `previous_names` | `array \| null` |  |
+| `num_members` | `integer \| null` |  |
+| `parent_conversation` | `string \| null` |  |
+| `properties` | `object \| null` |  |
+| `is_thread_only` | `boolean \| null` |  |
+| `is_read_only` | `boolean \| null` |  |
+
+
+</details>
+
+### Channel Purposes
+
+#### Channel Purposes Create
+
+Sets the purpose for a channel
+
+**Python SDK**
+
+```python
+await slack.channel_purposes.create(
+    channel="<str>",
+    purpose="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_purposes",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "purpose": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID to set purpose for |
+| `purpose` | `string` | Yes | New purpose text (max 250 characters) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `is_channel` | `boolean \| null` |  |
+| `is_group` | `boolean \| null` |  |
+| `is_im` | `boolean \| null` |  |
+| `is_mpim` | `boolean \| null` |  |
+| `is_private` | `boolean \| null` |  |
+| `created` | `integer \| null` |  |
+| `is_archived` | `boolean \| null` |  |
+| `is_general` | `boolean \| null` |  |
+| `unlinked` | `integer \| null` |  |
+| `name_normalized` | `string \| null` |  |
+| `is_shared` | `boolean \| null` |  |
+| `is_org_shared` | `boolean \| null` |  |
+| `is_pending_ext_shared` | `boolean \| null` |  |
+| `pending_shared` | `array \| null` |  |
+| `context_team_id` | `string \| null` |  |
+| `updated` | `integer \| null` |  |
+| `creator` | `string \| null` |  |
+| `is_ext_shared` | `boolean \| null` |  |
+| `shared_team_ids` | `array \| null` |  |
+| `pending_connected_team_ids` | `array \| null` |  |
+| `is_member` | `boolean \| null` |  |
+| `topic` | `object \| any` |  |
+| `purpose` | `object \| any` |  |
+| `previous_names` | `array \| null` |  |
+| `num_members` | `integer \| null` |  |
+| `parent_conversation` | `string \| null` |  |
+| `properties` | `object \| null` |  |
+| `is_thread_only` | `boolean \| null` |  |
+| `is_read_only` | `boolean \| null` |  |
+
+
+</details>
+
+### Reactions
+
+#### Reactions Create
+
+Adds a reaction (emoji) to a message
+
+**Python SDK**
+
+```python
+await slack.reactions.create(
+    channel="<str>",
+    timestamp="<str>",
+    name="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "reactions",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "timestamp": "<str>",
+        "name": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID containing the message |
+| `timestamp` | `string` | Yes | Timestamp of the message to react to |
+| `name` | `string` | Yes | Reaction emoji name (without colons, e.g., "thumbsup") |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+**Records**
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+
 
 </details>
 
