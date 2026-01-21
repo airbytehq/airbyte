@@ -177,9 +177,9 @@ When schema is not enforced, each document will generate a record that only cont
 ```
 
 The contents of `data` will vary according to the contents of each document read from MongoDB.
-Unlike in Schema enforced mode, the same field can vary in type between document. For example field `"xyz"` may be a String on one document and a Date on another.
+Unlike in Schema enforced mode, the same field can vary in type between documents. For example, field `"xyz"` may be a String on one document and a Date on another.
 As a result no field will be omitted and no document will be rejected.
-When Schema is not enforced there is not way to deselect fields as all fields are read for every document.
+When Schema is not enforced there is no way to deselect fields as all fields are read for every document.
 
 ## Array Type Normalization
 
@@ -194,7 +194,7 @@ Most destinations can safely cast between primitive types (i.e. integer to strin
 ```
 
 :::info Important
-This normalization is intended for few type inconsistencies. If your collection has fields that frequently change types, consider using schemaless mode instead.
+This normalization is intended for occasional type inconsistencies. If your collection has fields that frequently change types, consider using schemaless mode instead.
 :::
 
 ## Limitations & Troubleshooting
@@ -230,7 +230,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
-| 2.0.6   | 2026-01-19 | [70980](https://github.com/airbytehq/airbyte/pull/70980) | Convert non-array MongoDB values into arrays when the schema expects an array to prevent nulls.        |
+| 2.0.6   | 2026-01-21 | [70980](https://github.com/airbytehq/airbyte/pull/70980) | Convert non-array MongoDB values into arrays when the schema expects an array to prevent nulls.        |
 | 2.0.5   | 2026-01-14 | [71255](https://github.com/airbytehq/airbyte/pull/71255) | fix(source-mongodb-v2): Add helpful error message for BSONObjectTooLarge errors during CDC syncs |
 | 2.0.4   | 2025-09-10 | [65579](https://github.com/airbytehq/airbyte/pull/65579) | Add validation to ensure state format consistency. |
 | 2.0.3   | 2025-08-12 | [64900](https://github.com/airbytehq/airbyte/pull/64900) | Fix hardcoded read preferences to allow specification in connection string. |
