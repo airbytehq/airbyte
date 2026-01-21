@@ -84,7 +84,6 @@ class PostgresColumnManager(
                         PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName,
                         true,
                     ),
-                Meta.COLUMN_NAME_DATA to ColumnType(PostgresDataType.JSONB.typeName, false),
             )
 
         val schemaModeMetaColumns =

@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
@@ -250,6 +251,18 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val rawModeSqlGenerator =
             PostgresDirectLoadSqlGenerator(rawModeColumnManager, rawModeConfig)
 
+        val finalSchema =
+            mapOf(
+                Meta.COLUMN_NAME_DATA to ColumnType(PostgresDataType.JSONB.typeName, false)
+            )
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema =
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { getPrimaryKey() } returns listOf(listOf("id"))
+                every { getCursor() } returns listOf("updatedAt")
+            }
+
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -263,8 +276,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     )
                 every { importType } returns
                     Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
-                // In raw mode, tableSchema accesses might be skipped in getUserColumns
-                // but createIndexes checks config first.
+                every { tableSchema } returns streamTableSchema
             }
         val tableName = TableName(namespace = "test_schema", name = "test_table")
 
@@ -277,6 +289,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
         // In raw mode, table should only have default columns (no user columns like id, name,
         // updatedAt)
+        // _airbyte_data is now considered a user column
         val expectedTableSql =
             """
             BEGIN TRANSACTION;
