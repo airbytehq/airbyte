@@ -56,9 +56,7 @@ access to the database.
 Starting in version `v2.0.0`, change data capture now supports monitoring the entire cluster, not just a single database.
 This allows you to sync multiple collections across different databases using a single source.
 
-The `readAnyDatabase` privilege is recommended for optimal CDC resume token validation. The connector first attempts cluster-level validation, which provides the most accurate results. If `readAnyDatabase` is not granted (authorization error code 13), the connector automatically falls back to filtered validation using only the configured databases and collections.
-
-**Note:** Filtered validation may occasionally report valid resume tokens as invalid if the token points to an event from an unsynced collection. For best results, grant `readAnyDatabase` privilege when possible.
+The `readAnyDatabase` privilege is required for this expanded access. Without it, the connection will fail with an authorization error.
 :::
 
 ![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)

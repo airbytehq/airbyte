@@ -23,8 +23,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.mongodb.MongoCommandException;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -427,7 +425,7 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetInvalidDefaultBehaviorSingleDB() {
     setupSingleDatabase();
-    // Mock isValidResumeToken to return false (invalid token) since the method now uses Debezium internals
+    // Mock invalid resume token (Debezium internals don't work with mocks)
     doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateSingleDB(InitialSnapshotStatus.COMPLETE), SINGLE_DB_CONFIG);
@@ -439,7 +437,7 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetInvalidDefaultBehaviorMultipleDB() {
     setupMultipleDatabases();
-    // Mock isValidResumeToken to return false (invalid token) since the method now uses Debezium internals
+    // Mock invalid resume token (Debezium internals don't work with mocks)
     doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateMultipleDB(InitialSnapshotStatus.COMPLETE), MULTIPLE_DB_CONFIG);
@@ -451,7 +449,7 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetFailOptionSingleDb() {
     setupSingleDatabase();
-    // Mock isValidResumeToken to return false (invalid token) since the method now uses Debezium internals
+    // Mock invalid resume token (Debezium internals don't work with mocks)
     doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateSingleDB(InitialSnapshotStatus.COMPLETE), SINGLE_DB_CONFIG);
@@ -463,7 +461,7 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetFailOptionMultipleDb() {
     setupMultipleDatabases();
-    // Mock isValidResumeToken to return false (invalid token) since the method now uses Debezium internals
+    // Mock invalid resume token (Debezium internals don't work with mocks)
     doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateMultipleDB(InitialSnapshotStatus.COMPLETE), MULTIPLE_DB_CONFIG);
