@@ -220,7 +220,7 @@ class VersionIncrementCheck(VersionCheck):
 
 class QaChecks(SimpleDockerStep):
     """A step to run QA checks for a connectors.
-    More details in https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/connectors_qa/README.md
+    More details in https://github.com/airbytehq/airbyte-ops-mcp
     """
 
     def __init__(self, context: ConnectorContext) -> None:
