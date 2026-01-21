@@ -173,14 +173,9 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val columnsInDb = getColumnsFromDb(tableName)
-        // In raw tables mode, schema is stored in _airbyte_data so user columns are empty from DB
-        // perspective
-        val columnsInStream =
-            if (postgresConfiguration.legacyRawTablesOnly) {
-                emptyMap()
-            } else {
-                stream.tableSchema.columnSchema.finalSchema
-            }
+        // In raw tables mode, finalSchema contains just {_airbyte_data -> JSONB}
+        // In typed mode, finalSchema contains the mapped user columns
+        val columnsInStream = stream.tableSchema.columnSchema.finalSchema
 
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)

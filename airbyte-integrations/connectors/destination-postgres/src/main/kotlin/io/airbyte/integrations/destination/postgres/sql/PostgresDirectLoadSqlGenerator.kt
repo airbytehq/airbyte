@@ -675,9 +675,6 @@ class PostgresDirectLoadSqlGenerator(
         stream: DestinationStream,
     ): List<String> {
         val metaColumnNames = columnManager.getMetaColumnNames().map { quoteIdentifier(it) }
-        if (postgresConfiguration.legacyRawTablesOnly) {
-            return metaColumnNames
-        }
         val userColumnNames = getUserColumns(stream).keys.map { quoteIdentifier(it) }
         return metaColumnNames + userColumnNames
     }
