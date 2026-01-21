@@ -25,7 +25,7 @@ The result is a query that takes substantial time and resources to process, a de
 
 When you enable the Entity Cache:
 
-- **Storage begins automatically**. Airbyte copies data from your agent connectors to Airbyte-managed storage. Not all data goes into the entity cache. Airbyte manages a subset of your data that it considers relevant to search actions.
+- **Storage begins automatically**. Airbyte copies a subset of data from your agent connectors to Airbyte-managed storage. Not all data goes into the entity cache. Airbyte selects a subset of your data that it considers relevant to search actions.
 
 - **Search becomes available**. Data from the cache is available via the search action in direct connectors.
 
