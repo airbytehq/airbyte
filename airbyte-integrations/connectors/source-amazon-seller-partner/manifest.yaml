@@ -282,6 +282,18 @@ spec:
         default: 2
         minimum: 1
         order: 15
+      financial_events_max_results_per_page:
+        title: Financial Events Max Results Per Page
+        description: >-
+          The maximum number of results to return per page for the ListFinancialEvents
+          stream. If the response exceeds the maximum number of transactions or 10 MB,
+          the API returns an InvalidInput error. Lower this value if you encounter
+          InvalidInput errors during sync. Valid range is 1-100.
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 100
+        order: 16
 
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -999,6 +1011,18 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 400
+                    predicate: "{{ 'InvalidInput' in response.get('errors', [{}])[0].get('code', '') }}"
+                    error_message: >-
+                      The API returned an InvalidInput error. This typically occurs when the response
+                      exceeds the maximum number of transactions or 10 MB per page. To resolve this,
+                      lower the 'Financial Events Max Results Per Page' setting in your connector
+                      configuration. Current value: {{ config.get('financial_events_max_results_per_page', 100) }}.
+                      Try reducing it to a smaller value (e.g., 50, 25, 10, or even 1 for very high-volume accounts).
                 backoff_strategies:
                   - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
@@ -1021,7 +1045,7 @@ definitions:
             field_name: MaxResultsPerPage
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: "{{ config.get('financial_events_max_results_per_page', 100) }}"
             cursor_value: "{{ response.payload.NextToken }}"
       schema_loader:
         type: InlineSchemaLoader

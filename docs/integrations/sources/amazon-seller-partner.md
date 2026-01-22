@@ -74,9 +74,10 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 9. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
-10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-12. Click `Set up source`.
+10. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
+11. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+12. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
+13. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -93,9 +94,10 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 7. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
-8. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-9. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-10. Click `Set up source`.
+8. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
+9. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+10. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
+11. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -256,6 +258,25 @@ We recommend next steps to overcome the rate limits issue:
 3. Set syncs to run every 24 hours.
 
 This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
+
+### InvalidInput error for ListFinancialEvents stream
+
+```
+The API returned an InvalidInput error. This typically occurs when the response exceeds the maximum number of transactions or 10 MB per page.
+```
+
+This error occurs when the ListFinancialEvents stream returns more data than the API can handle in a single page response. According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference), if the response exceeds the maximum number of transactions or 10 MB, the API returns an `InvalidInput` error.
+
+**Solution:**
+
+Lower the **Financial Events Max Results Per Page** setting in your connector configuration:
+
+1. Go to the connector settings page.
+2. Find the **Financial Events Max Results Per Page** option.
+3. Reduce the value from the default of 100 to a smaller number (e.g., 50, 25, 10, or even 1 for very high-volume accounts).
+4. Save and retry the sync.
+
+You may also combine this with a smaller **Financial Events Step Size** (e.g., 1H or 6H) to further reduce the amount of data fetched per request.
 
 ## Changelog
 
