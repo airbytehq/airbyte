@@ -254,7 +254,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
    */
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final Document document) {
-    final var fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
+    final Map<String, JsonNode> fields = MongoDbCdcEventUtils.extractFieldSchemas(stream);
 
     final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
 
