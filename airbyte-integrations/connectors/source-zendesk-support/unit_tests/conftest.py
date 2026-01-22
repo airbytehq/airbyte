@@ -3,22 +3,28 @@
 # Monkey-patch the CDK's HttpClient to disable caching for tests
 # This prevents SQLite concurrency issues with concurrent streams
 import os
+
+
 os.environ["REQUEST_CACHE_PATH"] = ""  # Disable file-based cache
 
 import sys
 from pathlib import Path
 
-import pytest
-
 # Patch HttpClient to never use caching
 from unittest.mock import patch
+
+import pytest
+
 from airbyte_cdk.sources.streams.http.http_client import HttpClient, LimiterSession
 
+
 _original_request_session = HttpClient._request_session
+
 
 def _patched_request_session(self):
     """Always return a non-cached session to avoid SQLite concurrency issues in tests."""
     return LimiterSession(api_budget=self._api_budget)
+
 
 HttpClient._request_session = _patched_request_session
 

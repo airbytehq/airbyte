@@ -77,9 +77,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         # The paginator uses RequestPath, so the next_page URL replaces the entire path
         next_page_url = f"https://d3v-airbyte.zendesk.com/api/v2/custom_roles?page=2"
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator)
-            .with_custom_url(next_page_url)
-            .build()
+            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator).with_custom_url(next_page_url).build()
         )
 
         # Create records with updated_at timestamps after start_date so they pass the date filter

@@ -60,7 +60,7 @@ class TestSchedulesStreamFullRefresh(TestCase):
         Per playbook: validate a resulting state message is emitted for incremental streams.
         """
         api_token_authenticator = self.get_authenticator(self._config)
-        
+
         # Semi-incremental streams filter by updated_at, so we need a recent timestamp
         recent_timestamp = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -96,7 +96,7 @@ class TestSchedulesStreamFullRefresh(TestCase):
 
         # Semi-incremental streams filter by updated_at, so we need recent timestamps
         recent_timestamp = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        
+
         # Create records for page 1
         record1 = SchedulesRecordBuilder.schedules_record().with_id(1001).with_field(FieldPath("updated_at"), recent_timestamp)
         record2 = SchedulesRecordBuilder.schedules_record().with_id(1002).with_field(FieldPath("updated_at"), recent_timestamp)
