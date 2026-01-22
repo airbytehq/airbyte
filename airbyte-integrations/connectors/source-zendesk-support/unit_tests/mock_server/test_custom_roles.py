@@ -38,6 +38,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
     def _base_custom_roles_request(self, authenticator):
+        # custom_roles stream uses a paginator without page_size_option, so no page_size param
         return ZendeskSupportRequestBuilder.custom_roles_endpoint(authenticator)
 
     @HttpMocker()
@@ -47,9 +48,13 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
+        # Use a recent updated_at to pass the semi_incremental_stream record filter
+        recent_updated_at = "2025-01-01T00:00:00Z"
         http_mocker.get(
             self._base_custom_roles_request(api_token_authenticator).build(),
-            CustomRolesResponseBuilder.custom_roles_response().with_record(CustomRolesRecordBuilder.custom_roles_record()).build(),
+            CustomRolesResponseBuilder.custom_roles_response()
+            .with_record(CustomRolesRecordBuilder.custom_roles_record().with_updated_at(recent_updated_at))
+            .build(),
         )
 
         output = read_stream("custom_roles", SyncMode.incremental, self._config)
@@ -67,17 +72,18 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        # Build the next page request using the request builder
-        next_page_http_request = (
-            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator).with_query_param("page", "2").build()
-        )
+        # Build the next page request using the request builder with after_cursor like other tests
+        next_page_http_request = self._base_custom_roles_request(api_token_authenticator).with_after_cursor("after-cursor").build()
 
-        # Create records for page 1
-        record1 = CustomRolesRecordBuilder.custom_roles_record().with_id(1001)
-        record2 = CustomRolesRecordBuilder.custom_roles_record().with_id(1002)
+        # Use a recent updated_at to pass the semi_incremental_stream record filter
+        recent_updated_at = "2025-01-01T00:00:00Z"
 
-        # Create record for page 2
-        record3 = CustomRolesRecordBuilder.custom_roles_record().with_id(1003)
+        # Create records for page 1 with recent updated_at
+        record1 = CustomRolesRecordBuilder.custom_roles_record().with_id(1001).with_updated_at(recent_updated_at)
+        record2 = CustomRolesRecordBuilder.custom_roles_record().with_id(1002).with_updated_at(recent_updated_at)
+
+        # Create record for page 2 with recent updated_at
+        record3 = CustomRolesRecordBuilder.custom_roles_record().with_id(1003).with_updated_at(recent_updated_at)
 
         # Page 1: has records and provides next_page URL
         http_mocker.get(
