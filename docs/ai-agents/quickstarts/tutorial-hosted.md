@@ -90,7 +90,7 @@ Once you have a scoped token, create a connector with your API credentials. Airb
 
   - `credentials`: Authentication information for your connector.
 
-  - `user_config`: Connector-specific configurations for replication connectors.
+  - `environment`: Connector-specific configurations for replication connectors.
 
 For GitHub, you only need an authentication configuration. See the examples in the [authentication docs](/ai-agents/connectors/github/REFERENCE). This is what the request looks like when you're using a personal access token.
 
