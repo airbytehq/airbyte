@@ -40,14 +40,18 @@ class PostgresWriter(
 
     override suspend fun setup() {
         catalog.streams
-            .flatMap { stream ->
-                val finalTableName = stream.tableSchema.tableNames.finalTableName!!
-                val tempTableName = stream.tableSchema.tableNames.tempTableName!!// tempTableNameGenerator.generate(finalTableName)
-                listOf(finalTableName.namespace, tempTableName.namespace)
-            }
-            .distinct()
-            .filter { it.isNotBlank() }
+            .map { it.tableSchema.tableNames.finalTableName!!.namespace }
+            .toSet()
             .forEach { postgresClient.createNamespace(it) }
+
+        catalog.streams
+            .map { it.tableSchema.tableNames.tempTableName!!.namespace }
+            .toSet()
+            .forEach { postgresClient.createNamespace(it) }
+
+        postgresClient.createNamespace(
+            postgresConfiguration.internalTableSchema!!
+        )
 
         initialStatuses = stateGatherer.gatherInitialStatus()
     }
