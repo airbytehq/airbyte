@@ -99,7 +99,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     -H "Authorization: Bearer <scoped_token>" \
     -H "Content-Type: application/json" \
     -d '{
-      "source_template_id": "<source_template_id>",
+      "connector_type": "github",
       "workspace_id": "<workspace_id>",
       "name": "...",
       "source_config": {"repositories": "airbytehq/airbyte"},
