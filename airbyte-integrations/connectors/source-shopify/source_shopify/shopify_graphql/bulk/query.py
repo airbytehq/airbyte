@@ -1011,6 +1011,23 @@ class CollectionProduct(ShopifyBulkQuery):
         "record_components": ["Product"],
     }
 
+    def _process_product_components(self, products: List[dict]) -> List[dict]:
+        """
+        Process product components to resolve IDs from string to int and preserve the original ID.
+
+        Args:
+            products: List of product dictionaries with string IDs
+
+        Returns:
+            List of processed product dictionaries with both id (int) and admin_graphql_api_id (str)
+        """
+        for product in products:
+            # Save the original string ID before resolving
+            product["admin_graphql_api_id"] = product.get("id")
+            # Resolve the ID from string to int
+            product["id"] = self.tools.resolve_str_id(product.get("id"))
+        return products
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Process collection records and yield one record per collection-product association.
@@ -1025,8 +1042,10 @@ class CollectionProduct(ShopifyBulkQuery):
         collection_updated_at = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
 
         if products:
+            # Process products to resolve their IDs
+            products = self._process_product_components(products)
+
             for product in products:
-                # Product id is already resolved to int, admin_graphql_api_id has the string version
                 product_id = product.get("id")
                 product_admin_graphql_api_id = product.get("admin_graphql_api_id")
 
