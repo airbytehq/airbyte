@@ -64,7 +64,7 @@ set -eu # Ensure we return non-zero exit code upon failure
 
 connector_name=$(basename "$PWD")
 echo "Running: ./gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
-${POE_ROOT}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}
+${POE_ROOT}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args} --configure-on-demand
 '''
 args = [
   { name = "task_and_args", positional = true, multiple = true, help = "Gradle task name and its arguments" }
