@@ -23,7 +23,7 @@ jobs:
     # - PR title contains "[ready]" (opt-out)
     # - PR has opt-out label (skip-draft-status, auto-merge, auto-merge/bypass-ci-checks, dependencies)
     # - PR is from Dependabot
-    # - PR is from a whitelisted user (tryangul)
+    # - PR is from a whitelisted user
     if: |
       github.event.pull_request.draft == false &&
       !contains(github.event.pull_request.title, '[ready]') &&
