@@ -39,6 +39,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
     def _base_custom_roles_request(self, authenticator):
+        # custom_roles stream uses a paginator without page_size_option, so no page_size param
         return ZendeskSupportRequestBuilder.custom_roles_endpoint(authenticator)
 
     @HttpMocker()
