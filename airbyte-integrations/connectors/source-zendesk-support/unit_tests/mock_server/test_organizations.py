@@ -75,7 +75,7 @@ class TestOrganizationsStreamFullRefresh(TestCase):
             .build(),
         )
         http_mocker.get(
-            ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).with_per_page(100).build(),
+            ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).build(),
             OrganizationsResponseBuilder.organizations_response()
             .with_record(OrganizationsRecordBuilder.organizations_record().with_id(2))
             .build(),

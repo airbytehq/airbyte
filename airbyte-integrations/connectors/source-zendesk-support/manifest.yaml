@@ -914,7 +914,18 @@ definitions:
           class_name: source_declarative_manifest.components.ZendeskSupportExtractorEvents
           field_path: ["ticket_events", "*", "child_events", "*"]
       paginator:
-        $ref: "#/definitions/end_of_stream_paginator"
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ response.get("end_of_stream") }}'
+          page_size: "{{ config.get('page_size', 100) }}"
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: "per_page"
+          inject_into: request_parameter
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1441,7 +1452,7 @@ spec:
         order: 3
       page_size:
         type: integer
-        title: Page Size
+        title: Page Size (ticket_comments)
         minimum: 1
         maximum: 1000
         default: 100
@@ -1450,8 +1461,8 @@ spec:
           - 250
           - 500
         description: >-
-          The number of records per page for API requests. Lower values may help
-          prevent timeouts on large datasets. The maximum value is 1000.
+          The number of records per page for the ticket_comments stream API requests.
+          Lower values may help prevent timeouts on large datasets. The maximum value is 1000.
         order: 4
   advanced_auth:
     auth_flow_type: oauth2.0

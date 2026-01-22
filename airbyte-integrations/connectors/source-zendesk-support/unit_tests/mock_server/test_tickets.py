@@ -74,8 +74,10 @@ class TestTicketsStreamFullRefresh(TestCase):
             .with_pagination()
             .build(),
         )
+        # The connector uses RequestPath pagination, meaning it uses the full URL from after_url
+        # The after_url only includes the cursor, not per_page
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).with_per_page(100).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).build(),
             TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_id(2)).build(),
         )
 
