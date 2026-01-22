@@ -44,8 +44,8 @@ class PostgresDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
-        val tempTableNameGenerator = DefaultTempTableNameGenerator(config.internalTableSchema)
-        val tableSchemaMapper = PostgresTableSchemaMapper(config, tempTableNameGenerator)
+        val finalTableNameGenerator = DefaultTempTableNameGenerator()
+        val tableSchemaMapper = PostgresTableSchemaMapper(config, finalTableNameGenerator)
         val dataSource =
             PostgresBeanFactory()
                 .postgresDataSource(
