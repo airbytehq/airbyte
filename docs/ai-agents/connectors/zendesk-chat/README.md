@@ -54,17 +54,48 @@ uv pip install airbyte-agent-zendesk-chat
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_zendesk_chat import ZendeskChatConnector, ZendeskChatAuthConfig
+from airbyte_agent_zendesk-chat import ZendeskChatConnector
+from airbyte_agent_zendesk_chat.models import ZendeskChatAuthConfig
 
 connector = ZendeskChatConnector(
-  auth_config=ZendeskChatAuthConfig(
-    access_token="..."
-  )
+    auth_config=ZendeskChatAuthConfig(
+        access_token="<Your Zendesk Chat OAuth 2.0 access token>"
+    )
 )
-result = await connector.accounts.get()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@ZendeskChatConnector.describe
+async def zendesk-chat_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_zendesk-chat import ZendeskChatConnector
+
+connector = ZendeskChatConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@ZendeskChatConnector.describe
+async def zendesk-chat_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
@@ -86,12 +117,14 @@ This connector supports the following entities and actions.
 | Triggers | [List](./REFERENCE.md#triggers-list) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Zendesk-Chat API reference](https://developer.zendesk.com/api-reference/live-chat/chat-api/introduction/).
 
 ## Version information
 
-- **Package version:** 0.1.4
+- **Package version:** 0.1.7
 - **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** c713ec4833c2b52dc89926ec68caa343423884cd
+- **Generated with Connector SDK commit SHA:** 49e6dfe93fc406c8d2ed525372608fa2766ebece
