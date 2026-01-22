@@ -73,10 +73,6 @@ class PostgresTableSchemaMapper(
         }
     }
 
-    fun toColumnNameForLookup(name: String): String {
-        return name.lowercase(Locale.getDefault()).toPostgresCompatibleName()
-    }
-
     override fun toColumnType(fieldType: FieldType): ColumnType {
         val postgresType =
             when (fieldType.type) {
