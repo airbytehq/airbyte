@@ -32,6 +32,7 @@ import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactor
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NOT_FOUND
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NO_CHANGE
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.NO_FILENODE
+import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.config.UserDefinedCursorIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
@@ -101,7 +102,7 @@ open class PostgresSourceJdbcPartitionFactory(
                     )
                 }
                     ?: error(
-                        "Unexpected incremetal sync for a table ${stream.id} with no filenode."
+                        "Unexpected incremental sync for a table ${stream.id} with no filenode."
                     )
             }
             is UserDefinedCursorIncrementalConfiguration -> {
@@ -125,7 +126,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         cursorChosenFromCatalog,
                     )
             }
-            else -> TODO("CDC Incremental is not supported yet")
+            else -> throw RuntimeException("Encountered unrecognized configuration")
         }
     }
 
@@ -304,13 +305,33 @@ open class PostgresSourceJdbcPartitionFactory(
                                 )
                             }
                                 ?: error(
-                                    "Unexpected incremetal sync for a table ${stream.id} with no filenode."
+                                    "Unexpected incremental sync for a table ${stream.id} with no filenode."
                                 )
                         }
                     }
                 }
             }
-            else -> TODO("Not implemented yet")
+            is CdcIncrementalConfiguration -> {
+                // TODO: Same as Xmin full refresh. Refactor to DRY.
+                return if (fileNodeChange in listOf(FILENODE_CHANGED, FILENODE_NOT_FOUND)) {
+                    handler.accept(ResetStream(stream.id))
+                    streamState.reset()
+                    coldStart(streamState, filenode)
+                } else if (streamState.maybeCtid == null) {
+                    // snapshot done
+                    null
+                } else {
+                    // snapshot ongoing
+                    PostgresSourceJdbcSplittableSnapshotPartition(
+                        selectQueryGenerator,
+                        streamState,
+                        lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
+                        upperBound = null,
+                        filenode,
+                        true
+                    )
+                }
+            }
         }
     }
 
