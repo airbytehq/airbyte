@@ -148,6 +148,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 | routineserviceleveltypes | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
 | servicetasks | id | DefaultPaginator | ✅ | ✅ |
 | subtasks | id | DefaultPaginator | ✅ | ✅ |
+| task_profitability | task_id | DefaultPaginator | ✅ | ✅ |
 
 ## Changelog
 
@@ -156,7 +157,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.5.0 | 2026-01-13 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems, and add 6 new streams: servicetasks, routineservices, routineservicelevels, routineservicetypes, routineserviceleveltypes, subtasks |
+| 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems, and add 6 new streams: servicetasks, routineservices, routineservicelevels, routineservicetypes, routineserviceleveltypes, subtasks |
 | 0.4.3 | 2026-01-20 | [72056](https://github.com/airbytehq/airbyte/pull/72056) | Update dependencies |
 | 0.4.2 | 2026-01-14 | [71437](https://github.com/airbytehq/airbyte/pull/71437) | Update dependencies |
 | 0.4.1 | 2025-12-18 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
