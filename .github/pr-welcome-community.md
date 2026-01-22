@@ -40,6 +40,6 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - If you enable [BYO Connector Credentials](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets) within your fork, you can view your test results [here](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml):
   [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/{{ .repo_name }}/run-connector-tests-command.yml?style=for-the-badge&label=Fork%20CI%20Status)](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml)
 
-</details>
-
 [📝 _Edit this welcome message._](https://github.com/airbytehq/airbyte/blob/master/.github/pr-welcome-community.md)
+
+</details>

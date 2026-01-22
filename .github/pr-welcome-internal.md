@@ -53,6 +53,6 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - [`#connector-publish-updates`](https://airbytehq-team.slack.com/archives/C056HGD1QSW)
 - [`#connector-build-statuses`](https://airbytehq-team.slack.com/archives/C02TYE9QL9M)
 
-</details>
-
 [📝 _Edit this welcome message._](https://github.com/airbytehq/airbyte/blob/master/.github/pr-welcome-internal.md)
+
+</details>
