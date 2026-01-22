@@ -321,7 +321,8 @@ Creates a new public or private channel
 
 ```python
 await slack.channels.create(
-    name="<str>"
+    name="<str>",
+    is_private=True
 )
 ```
 
@@ -335,7 +336,8 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
     "entity": "channels",
     "action": "create",
     "params": {
-        "name": "<str>"
+        "name": "<str>",
+        "is_private": True
     }
 }'
 ```
@@ -722,7 +724,11 @@ Posts a message to a public channel, private channel, or direct message conversa
 ```python
 await slack.messages.create(
     channel="<str>",
-    text="<str>"
+    text="<str>",
+    thread_ts="<str>",
+    reply_broadcast=True,
+    unfurl_links=True,
+    unfurl_media=True
 )
 ```
 
@@ -737,7 +743,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
     "action": "create",
     "params": {
         "channel": "<str>",
-        "text": "<str>"
+        "text": "<str>",
+        "thread_ts": "<str>",
+        "reply_broadcast": True,
+        "unfurl_links": True,
+        "unfurl_media": True
     }
 }'
 ```
