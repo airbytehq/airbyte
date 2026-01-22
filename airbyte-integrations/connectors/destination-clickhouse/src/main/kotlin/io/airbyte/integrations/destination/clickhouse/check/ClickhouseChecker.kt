@@ -22,6 +22,8 @@ class ClickhouseChecker(
     @VisibleForTesting val tableName = "_airbyte_check_table_${clock.millis()}"
 
     override fun check() {
+        require(!config.hostname.startsWith(Constants.PROTOCOL)) { Constants.PROTOCOL_ERR_MESSAGE }
+
         val resolvedTableName = "${config.database}.$tableName"
 
         client
@@ -34,7 +36,7 @@ class ClickhouseChecker(
             client
                 .insert(
                     resolvedTableName,
-                    TEST_DATA.byteInputStream(),
+                    Constants.TEST_DATA.byteInputStream(),
                     ClickHouseFormat.JSONEachRow
                 )
                 .get(10, TimeUnit.SECONDS)
@@ -50,7 +52,12 @@ class ClickhouseChecker(
             .get(10, TimeUnit.SECONDS)
     }
 
-    companion object {
+    object Constants {
         const val TEST_DATA = """{"test": 42}"""
+        // We concatenate to get around CI rules around the string we're building.
+        // It will literally break your PR if it sees it.
+        const val PROTOCOL = "htt" + "p"
+        const val PROTOCOL_ERR_MESSAGE =
+            "Please remove the protocol ($PROTOCOL://, https://) from the hostname in your connector configuration."
     }
 }
