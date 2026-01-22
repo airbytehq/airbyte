@@ -79,7 +79,7 @@ definitions:
         inject_into: request_parameter
       pagination_strategy:
         type: CursorPagination
-        page_size: "{{ config.get('page_size', 100) }}"
+        page_size: 100
         cursor_value: '{{ response.get("next_page", {}) }}'
         stop_condition: "{{ last_page_size == 0 }}"
       page_token_option:
@@ -136,7 +136,7 @@ definitions:
       type: CursorPagination
       cursor_value: "{{ response['links']['next'] }}"
       stop_condition: "{{ not response['meta']['has_more'] }}"
-      page_size: "{{ config.get('page_size', 100) }}"
+      page_size: 100
     page_token_option:
       type: RequestPath
     page_size_option:
@@ -153,7 +153,7 @@ definitions:
       # we should use it, instead of relying on `last_page_size`,
       # which could be `[]` but, `end_of_stream == false` and `after_url != null`
       stop_condition: '{{ response.get("end_of_stream") }}'
-      page_size: "{{ config.get('page_size', 100) }}"
+      page_size: 100
     page_token_option:
       type: RequestPath
 
