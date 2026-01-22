@@ -2741,9 +2741,9 @@ class ProductVariant(ShopifyBulkQuery):
         Enriches the variant's options with id and position from the product's options.
         Matches options by name and adds the corresponding ProductOption id and position.
         """
-        options = record.get("options", [])
-        product = record.get("product", {})
-        product_options = product.get("product_options", []) if product else []
+        options = record.get("options") or []
+        product = record.get("product") or {}
+        product_options = product.get("product_options") or []
 
         # Create a lookup map from option name to ProductOption data
         option_lookup = {}
