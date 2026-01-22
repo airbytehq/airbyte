@@ -408,7 +408,7 @@ spec:
               - refresh_token
             additionalProperties: true
             properties:
-              auth_type:
+              auth_method:
                 type: string
                 const: oauth2_refresh
                 order: 0
@@ -453,7 +453,7 @@ spec:
               - api_token
             additionalProperties: true
             properties:
-              auth_type:
+              auth_method:
                 type: string
                 const: api_token
               email:
@@ -474,7 +474,7 @@ spec:
               - access_token
             additionalProperties: true
             properties:
-              auth_type:
+              auth_method:
                 type: string
                 const: oauth2.0
                 order: 0
@@ -507,7 +507,7 @@ spec:
     auth_flow_type: oauth2.0
     predicate_key:
       - credentials
-      - auth_type
+      - auth_method
     predicate_value: oauth2_refresh
     oauth_config_specification:
       complete_oauth_output_specification:

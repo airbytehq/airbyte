@@ -19,11 +19,10 @@ class AuthenticatorZendeskSunshine(DeclarativeAuthenticator):
 
     def __new__(cls, basic_auth, oauth2, oauth2_refresh, config, *args, **kwargs):
         credentials = config.get("credentials", {})
-        # Support both auth_type (new) and auth_method (legacy) for backward compatibility
-        auth_type = credentials.get("auth_type") or credentials.get("auth_method", "")
-        if auth_type == "api_token":
+        auth_method = credentials.get("auth_method", "")
+        if auth_method == "api_token":
             return basic_auth
-        elif auth_type == "oauth2_refresh":
+        elif auth_method == "oauth2_refresh":
             return oauth2_refresh
         else:
             return oauth2
