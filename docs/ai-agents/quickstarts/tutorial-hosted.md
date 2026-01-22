@@ -95,7 +95,7 @@ Once you have a scoped token, create a connector with your API credentials. Airb
 For GitHub, you only need an authentication configuration. See the examples in the [authentication docs](/ai-agents/connectors/github/REFERENCE). This is what the request looks like when you're using a personal access token.
 
 ```bash title="Request"
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/sources" \
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     -H "Authorization: Bearer <scoped_token>" \
     -H "Content-Type: application/json" \
     -d '{
