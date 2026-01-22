@@ -90,7 +90,7 @@ sealed interface DebeziumWarmStartState
 
 data class ValidDebeziumWarmStartState(
     val offset: DebeziumOffset,
-    val schemaHistory: DebeziumSchemaHistory
+    val schemaHistory: DebeziumSchemaHistory?
 ) : DebeziumWarmStartState
 
 sealed interface InvalidDebeziumWarmStartState : DebeziumWarmStartState
