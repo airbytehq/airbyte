@@ -17,7 +17,8 @@ dependencies {
     implementation 'com.azure:azure-identity:1.17.0'
     // version specified by the debezium bom dependency in the cdc toolkit
     implementation 'io.debezium:debezium-connector-postgres'
-    implementation 'org.postgresql:postgresql:42.7.7'
+    // Use Postgres JDBC driver version specified by Debezium
+    implementation 'org.postgresql:postgresql'
 
     testImplementation 'org.testcontainers:postgresql:1.21.3'
     testImplementation("io.mockk:mockk:1.14.7")
