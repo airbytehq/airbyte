@@ -49,9 +49,7 @@ class PostgresWriter(
             .toSet()
             .forEach { postgresClient.createNamespace(it) }
 
-        postgresClient.createNamespace(
-            postgresConfiguration.internalTableSchema!!
-        )
+        postgresClient.createNamespace(postgresConfiguration.internalTableSchema!!)
 
         initialStatuses = stateGatherer.gatherInitialStatus()
     }
