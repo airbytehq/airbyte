@@ -547,18 +547,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/triggers"
-  bearer_authenticator:
-    type: BearerAuthenticator
-    api_token: "{{ config['credentials']['access_token'] }}"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/chat/
     authenticator:
-      type: SelectiveAuthenticator
-      authenticator_selection_path: ["credentials", "credentials"]
-      authenticators:
-        oauth2.0: "#/definitions/bearer_authenticator"
-        access_token: "#/definitions/bearer_authenticator"
+      type: BearerAuthenticator
+      api_token: "{{ config['credentials']['access_token'] }}"
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -608,9 +602,6 @@ spec:
       credentials:
         type: object
         title: Authorization Method
-        description: >-
-          Zendesk Chat allows two authentication methods. We recommend using `OAuth2.0`
-          for Airbyte Cloud users and `Access Token` for Airbyte Open Source users.
         oneOf:
           - type: object
             title: OAuth2.0
@@ -635,6 +626,11 @@ spec:
                 type: string
                 description: Access Token for making authenticated requests.
                 title: Access Token
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                description: Refresh Token to obtain new Access Token, when it's expired.
+                title: Refresh Token
                 airbyte_secret: true
           - type: object
             title: Access Token
