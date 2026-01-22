@@ -57,9 +57,13 @@ class TestSchedulesStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
+        # Use a recent updated_at to pass the semi_incremental_stream record filter
+        recent_updated_at = "2025-01-01T00:00:00Z"
         http_mocker.get(
             self._base_schedules_request(api_token_authenticator).build(),
-            SchedulesResponseBuilder.schedules_response().with_record(SchedulesRecordBuilder.schedules_record()).build(),
+            SchedulesResponseBuilder.schedules_response()
+            .with_record(SchedulesRecordBuilder.schedules_record().with_updated_at(recent_updated_at))
+            .build(),
         )
 
         output = read_stream("schedules", SyncMode.incremental, self._config)
@@ -77,20 +81,20 @@ class TestSchedulesStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        # Build the next page request using the request builder
+        # Build the next page request using the request builder with after_cursor like other tests
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.schedules_endpoint(api_token_authenticator)
-            .with_page_size(100)
-            .with_query_param("page", "2")
-            .build()
+            self._base_schedules_request(api_token_authenticator).with_after_cursor("after-cursor").build()
         )
 
-        # Create records for page 1
-        record1 = SchedulesRecordBuilder.schedules_record().with_id(1001)
-        record2 = SchedulesRecordBuilder.schedules_record().with_id(1002)
+        # Use a recent updated_at to pass the semi_incremental_stream record filter
+        recent_updated_at = "2025-01-01T00:00:00Z"
 
-        # Create record for page 2
-        record3 = SchedulesRecordBuilder.schedules_record().with_id(1003)
+        # Create records for page 1 with recent updated_at
+        record1 = SchedulesRecordBuilder.schedules_record().with_id(1001).with_updated_at(recent_updated_at)
+        record2 = SchedulesRecordBuilder.schedules_record().with_id(1002).with_updated_at(recent_updated_at)
+
+        # Create record for page 2 with recent updated_at
+        record3 = SchedulesRecordBuilder.schedules_record().with_id(1003).with_updated_at(recent_updated_at)
 
         # Page 1: has records and provides next_page URL
         http_mocker.get(
