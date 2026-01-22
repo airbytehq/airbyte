@@ -9,9 +9,6 @@ If you have any questions, feel free to ask in the PR comments or join our [Slac
 
 ### PR Slash Commands
 
-<details>
-<summary>Show details</summary>
-
 As needed or by request, Airbyte Maintainers can execute the following slash commands on your PR:
 
 - `/format-fix` - Fixes most formatting issues.
@@ -23,12 +20,7 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}`) for all modified connectors in the PR.
 - `/ai-review` - AI-powered PR review for connector safety and quality gates.
 
-</details>
-
 ### Tips for Working with CI
-
-<details>
-<summary>Show details</summary>
 
 1. **Pre-Release Checks.** Please pay attention to these, as they contain standard checks on the metadata.yaml file, docs requirements, etc. If you need help resolving a pre-release check, please ask a maintainer.
    - Note: If you are creating a new connector, please be sure to replace the default `logo.svg` file with a suitable icon.
@@ -37,23 +29,16 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 
 </details>
 
-</details>
-
 <details>
 <summary><b>📚 Show Repo Guidance</b></summary>
 
 ### Helpful Resources
-
-<details>
-<summary>Show details</summary>
 
 - [PR Guidelines](https://docs.airbyte.com/contributing-to-airbyte): Check our guidelines for contributions.
 - [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes): Guide to breaking changes, migration guides, and upgrade deadlines.
 - [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development): Learn how to set up your environment and develop connectors locally.
 - If you enable [BYO Connector Credentials](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets) within your fork, you can view your test results [here](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml):
   [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/{{ .repo_name }}/run-connector-tests-command.yml?style=for-the-badge&label=Fork%20CI%20Status)](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml)
-
-</details>
 
 </details>
 

@@ -7,9 +7,6 @@ Here are some helpful tips and reminders for your convenience.
 
 ### PR Slash Commands
 
-<details>
-<summary>Show details</summary>
-
 Airbyte Maintainers (that's you!) can execute the following slash commands on your PR:
 
 - `/format-fix` - Fixes most formatting issues.
@@ -43,15 +40,10 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 
 </details>
 
-</details>
-
 <details>
 <summary><b>📚 Show Repo Guidance</b></summary>
 
 ### Helpful Resources
-
-<details>
-<summary>Show details</summary>
 
 - [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes) - Breaking changes, migration guides, and upgrade deadlines
 - [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development)
@@ -60,8 +52,6 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - [`#connector-ci-issues`](https://airbytehq-team.slack.com/archives/C05KSGM8MNC)
 - [`#connector-publish-updates`](https://airbytehq-team.slack.com/archives/C056HGD1QSW)
 - [`#connector-build-statuses`](https://airbytehq-team.slack.com/archives/C02TYE9QL9M)
-
-</details>
 
 </details>
 
