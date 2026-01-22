@@ -72,6 +72,7 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.2.8 | 2026-01-20 | [71949](https://github.com/airbytehq/airbyte/pull/71949) | Update dependencies |
 | 3.2.7 | 2026-01-14 | [71629](https://github.com/airbytehq/airbyte/pull/71629) | Update dependencies |
 | 3.2.6 | 2025-12-18 | [70595](https://github.com/airbytehq/airbyte/pull/70595) | Update dependencies |
 | 3.2.5 | 2025-11-25 | [70016](https://github.com/airbytehq/airbyte/pull/70016) | Update dependencies |
