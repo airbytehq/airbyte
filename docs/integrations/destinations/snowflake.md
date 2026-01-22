@@ -260,6 +260,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                 | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.35 | 2026-01-20 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Upgrade CDK to 0.2.0                                                                                                                                                                   |
 | 4.0.34 | 2026-01-09 | [71273](https://github.com/airbytehq/airbyte/pull/71273) | Fix check operation in raw tables only mode.                                                                                                                                           |
 | 4.0.33 | 2026-01-09 | [71248](https://github.com/airbytehq/airbyte/pull/71248) | Upgrade to CDK 0.1.99 — limit final aggregate parallelism.                                                                                                                             |
 | 4.0.32 | 2026-01-08 | [71233](https://github.com/airbytehq/airbyte/pull/71233) | Promoting release candidate 4.0.32-rc.2 to a main version. |
