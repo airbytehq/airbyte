@@ -141,18 +141,12 @@ class PostgresDirectLoadSqlGenerator(
     private fun getPrimaryKeysColumnNamesQuoted(stream: DestinationStream) =
         getPrimaryKeysColumnNames(stream).map { quoteIdentifier(it) }
 
-    private fun getPrimaryKeysColumnNamesQuoted(importType: Dedupe) =
-        importType.primaryKey.flatten().map { quoteIdentifier(it) }
-
     internal fun getCursorColumnName(stream: DestinationStream): String? {
         return stream.tableSchema.getCursor().firstOrNull()
     }
 
     private fun getCursorColumnNameQuoted(stream: DestinationStream) =
         getCursorColumnName(stream)?.let { quoteIdentifier(it) }
-
-    private fun getCursorColumnNameQuoted(cursor: List<String>) =
-        cursor.firstOrNull()?.let { quoteIdentifier(it) }
 
     internal fun recreatePrimaryKeyIndex(
         primaryKeyColumnNames: List<String>,
