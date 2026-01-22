@@ -341,6 +341,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.1 | 2026-01-22 | [72263](https://github.com/airbytehq/airbyte/pull/72263) | Update CDK version from 7.6.0 to 7.6.5 |
 | 6.1.0-rc.1  | 2025-11-24 | [69782](https://github.com/airbytehq/airbyte/pull/69782)     | Allow for user defined cursor field key in the configured catalog for incremental streams                                                                                                                                    |
 | 6.0.15 | 2025-11-25 | [70053](https://github.com/airbytehq/airbyte/pull/70053) | Update dependencies |
 | 6.0.14 | 2025-11-24 | [69803](https://github.com/airbytehq/airbyte/pull/69803) | Add missing fields in Marketing Emails stream for Avro/Parquet conversions |
