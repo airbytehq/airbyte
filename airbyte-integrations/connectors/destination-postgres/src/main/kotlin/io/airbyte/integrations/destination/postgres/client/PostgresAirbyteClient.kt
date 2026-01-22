@@ -193,12 +193,10 @@ class PostgresAirbyteClient(
                 columnsToRemove = deletedColumns,
                 columnsToModify = modifiedColumns,
                 recreatePrimaryKeyIndex =
-                    !isRawTablesMode &&
-                        shouldRecreatePrimaryKeyIndex(stream, tableName),
+                    !isRawTablesMode && shouldRecreatePrimaryKeyIndex(stream, tableName),
                 primaryKeyColumnNames = sqlGenerator.getPrimaryKeysColumnNames(stream),
                 recreateCursorIndex =
-                    !isRawTablesMode &&
-                        shouldRecreateCursorIndex(stream, tableName),
+                    !isRawTablesMode && shouldRecreateCursorIndex(stream, tableName),
                 cursorColumnName = sqlGenerator.getCursorColumnName(stream),
             )
         )
