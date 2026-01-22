@@ -46,20 +46,51 @@ uv pip install airbyte-agent-google-drive
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_google_drive import GoogleDriveConnector, GoogleDriveAuthConfig
+from airbyte_agent_google-drive import GoogleDriveConnector
+from airbyte_agent_google_drive.models import GoogleDriveAuthConfig
 
 connector = GoogleDriveConnector(
-  auth_config=GoogleDriveAuthConfig(
-    access_token="...",
-    refresh_token="...",
-    client_id="...",
-    client_secret="..."
-  )
+    auth_config=GoogleDriveAuthConfig(
+        access_token="<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
+        refresh_token="<Your Google OAuth2 Refresh Token>",
+        client_id="<Your Google OAuth2 Client ID>",
+        client_secret="<Your Google OAuth2 Client Secret>"
+    )
 )
-result = await connector.files.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GoogleDriveConnector.describe
+async def google-drive_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_google-drive import GoogleDriveConnector
+
+connector = GoogleDriveConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GoogleDriveConnector.describe
+async def google-drive_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
@@ -79,12 +110,14 @@ This connector supports the following entities and actions.
 | About | [Get](./REFERENCE.md#about-get) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Google-Drive API reference](https://developers.google.com/workspace/drive/api/reference/rest/v3).
 
 ## Version information
 
-- **Package version:** 0.1.22
+- **Package version:** 0.1.25
 - **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** c713ec4833c2b52dc89926ec68caa343423884cd
+- **Generated with Connector SDK commit SHA:** 49e6dfe93fc406c8d2ed525372608fa2766ebece
