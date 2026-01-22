@@ -101,6 +101,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.5 | 2026-01-22 | [72261](https://github.com/airbytehq/airbyte/pull/72261) | Update CDK version from 7.0.1 to 7.6.5 |
 | 1.4.4 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
 | 1.4.3 | 2025-09-15 | [66140](https://github.com/airbytehq/airbyte/pull/66140) | Update to CDK v7 |
 | 1.4.2 | 2025-05-31 | [53033](https://github.com/airbytehq/airbyte/pull/53033) | Update dependencies |
