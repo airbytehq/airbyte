@@ -250,6 +250,16 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val rawModeSqlGenerator =
             PostgresDirectLoadSqlGenerator(rawModeColumnManager, rawModeConfig)
 
+        // In raw mode, finalSchema contains only _airbyte_data column
+        val rawModeFinalSchema = mapOf("_airbyte_data" to ColumnType("jsonb", false))
+        val rawModeColumnSchema = ColumnSchema(emptyMap(), emptyMap(), rawModeFinalSchema)
+        val rawModeStreamTableSchema =
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns rawModeColumnSchema
+                every { getPrimaryKey() } returns listOf(listOf("id"))
+                every { getCursor() } returns listOf("updatedAt")
+            }
+
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -263,8 +273,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     )
                 every { importType } returns
                     Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
-                // In raw mode, tableSchema accesses might be skipped in getUserColumns
-                // but createIndexes checks config first.
+                every { tableSchema } returns rawModeStreamTableSchema
             }
         val tableName = TableName(namespace = "test_schema", name = "test_table")
 
