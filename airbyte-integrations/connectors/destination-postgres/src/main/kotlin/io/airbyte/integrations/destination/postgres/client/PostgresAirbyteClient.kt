@@ -288,7 +288,6 @@ class PostgresAirbyteClient(
     private fun shouldRecreatePrimaryKeyIndex(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
     ): Boolean {
         val streamPrimaryKeys = sqlGenerator.getPrimaryKeysColumnNames(stream)
         if (streamPrimaryKeys.isEmpty()) return false
@@ -331,7 +330,6 @@ class PostgresAirbyteClient(
     private fun shouldRecreateCursorIndex(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
     ): Boolean {
         val streamCursor = sqlGenerator.getCursorColumnName(stream) ?: return false
 
