@@ -34,19 +34,50 @@ uv pip install airbyte-agent-amazon-ads
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_amazon_ads import AmazonAdsConnector, AmazonAdsAuthConfig
+from airbyte_agent_amazon-ads import AmazonAdsConnector
+from airbyte_agent_amazon_ads.models import AmazonAdsAuthConfig
 
 connector = AmazonAdsConnector(
-  auth_config=AmazonAdsAuthConfig(
-    client_id="...",
-    client_secret="...",
-    refresh_token="..."
-  )
+    auth_config=AmazonAdsAuthConfig(
+        client_id="<The client ID of your Amazon Ads API application>",
+        client_secret="<The client secret of your Amazon Ads API application>",
+        refresh_token="<The refresh token obtained from the OAuth authorization flow>"
+    )
 )
-result = await connector.profiles.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@AmazonAdsConnector.describe
+async def amazon-ads_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_amazon-ads import AmazonAdsConnector
+
+connector = AmazonAdsConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@AmazonAdsConnector.describe
+async def amazon-ads_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
@@ -59,12 +90,14 @@ This connector supports the following entities and actions.
 | Sponsored Product Campaigns | [List](./REFERENCE.md#sponsored-product-campaigns-list), [Get](./REFERENCE.md#sponsored-product-campaigns-get) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Amazon-Ads API reference](https://advertising.amazon.com/API/docs/en-us).
 
 ## Version information
 
-- **Package version:** 0.1.1
+- **Package version:** 0.1.4
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** c713ec4833c2b52dc89926ec68caa343423884cd
+- **Generated with Connector SDK commit SHA:** 49e6dfe93fc406c8d2ed525372608fa2766ebece
