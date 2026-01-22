@@ -100,7 +100,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     -H "Content-Type: application/json" \
     -d '{
       "connector_type": "github",
-      "workspace_id": "<workspace_id>",
+      "external_user_id": "<external_user_id>",
       "name": "...",
       "source_config": {"repositories": "airbytehq/airbyte"},
       "credentials": {"token": "<GitHub personal access token (fine-grained or classic)>"}
