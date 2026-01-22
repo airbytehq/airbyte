@@ -550,29 +550,6 @@ definitions:
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
-  oauth_refresh_authenticator:
-    type: OAuthAuthenticator
-    client_id: "{{ config['credentials']['client_id'] }}"
-    client_secret: "{{ config['credentials']['client_secret'] }}"
-    refresh_token: "{{ config['credentials']['refresh_token'] }}"
-    grant_type: refresh_token
-    token_refresh_endpoint: "https://{{ config['subdomain'] }}.zendesk.com/oauth/tokens"
-    refresh_request_body:
-      grant_type: "refresh_token"
-      refresh_token: "{{ config['credentials']['refresh_token'] }}"
-      client_id: "{{ config['credentials']['client_id'] }}"
-      client_secret: "{{ config['credentials']['client_secret'] }}"
-    refresh_token_updater:
-      refresh_token_name: refresh_token
-      access_token_config_path:
-        - credentials
-        - access_token
-      token_expiry_date_config_path:
-        - credentials
-        - token_expiry_date
-      refresh_token_config_path:
-        - credentials
-        - refresh_token
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/chat/
@@ -581,7 +558,6 @@ definitions:
       authenticator_selection_path: ["credentials", "credentials"]
       authenticators:
         oauth2.0: "#/definitions/bearer_authenticator"
-        oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
         access_token: "#/definitions/bearer_authenticator"
 
 streams:
@@ -633,12 +609,11 @@ spec:
         type: object
         title: Authorization Method
         description: >-
-          Zendesk Chat allows three authentication methods. We recommend using `OAuth2.0 with Refresh Token`
-          for Airbyte Cloud users (recommended), `OAuth2.0 (Legacy)` for existing OAuth connections,
-          and `Access Token` for Airbyte Open Source users.
+          Zendesk Chat allows two authentication methods. We recommend using `OAuth2.0`
+          for Airbyte Cloud users and `Access Token` for Airbyte Open Source users.
         oneOf:
           - type: object
-            title: OAuth2.0 (Legacy)
+            title: OAuth2.0
             required:
               - credentials
             properties:
@@ -661,58 +636,6 @@ spec:
                 description: Access Token for making authenticated requests.
                 title: Access Token
                 airbyte_secret: true
-              refresh_token:
-                type: string
-                description: Refresh Token to obtain new Access Token, when it's expired.
-                title: Refresh Token
-                airbyte_secret: true
-          - type: object
-            title: OAuth2.0 with Refresh Token
-            required:
-              - credentials
-              - client_id
-              - client_secret
-              - refresh_token
-            additionalProperties: true
-            properties:
-              credentials:
-                type: string
-                const: oauth2_refresh
-                order: 0
-              client_id:
-                type: string
-                title: Client ID
-                description: >-
-                  The OAuth client's ID. See <a
-                  href="https://developer.zendesk.com/api-reference/live-chat/chat-api/oauth_tokens/">Zendesk
-                  Chat OAuth documentation</a> for more information.
-                airbyte_secret: true
-              client_secret:
-                type: string
-                title: Client Secret
-                description: >-
-                  The OAuth client secret. See <a
-                  href="https://developer.zendesk.com/api-reference/live-chat/chat-api/oauth_tokens/">Zendesk
-                  Chat OAuth documentation</a> for more information.
-                airbyte_secret: true
-              access_token:
-                type: string
-                title: Access Token
-                description: Access Token for making authenticated requests.
-                airbyte_secret: true
-              token_expiry_date:
-                type: string
-                title: Token Expiry Date
-                description: The date-time when the access token should be refreshed.
-                format: date-time
-              refresh_token:
-                type: string
-                title: Refresh Token
-                description: >-
-                  The refresh token used to obtain new access tokens. Note that Zendesk uses
-                  rotating refresh tokens - each refresh will return a new refresh token and
-                  invalidate the previous one.
-                airbyte_secret: true
           - type: object
             title: Access Token
             required:
@@ -733,7 +656,7 @@ spec:
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key: ["credentials", "credentials"]
-    predicate_value: oauth2_refresh
+    predicate_value: oauth2.0
     oauth_config_specification:
       complete_oauth_output_specification:
         type: object
@@ -742,12 +665,6 @@ spec:
           access_token:
             type: string
             path_in_connector_config: ["credentials", "access_token"]
-          refresh_token:
-            type: string
-            path_in_connector_config: ["credentials", "refresh_token"]
-          token_expiry_date:
-            type: string
-            path_in_connector_config: ["credentials", "token_expiry_date"]
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: true
@@ -770,7 +687,7 @@ spec:
         scope: read chat
         consent_url: https://{{subdomain}}.zendesk.com/oauth2/chat/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}
         access_token_url: https://{{subdomain}}.zendesk.com/oauth2/chat/token?grant_type=authorization_code&{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&{{scope_param}}
-        extract_output: ["access_token", "refresh_token"]
+        extract_output: ["access_token"]
       oauth_user_input_from_connector_config_specification:
         type: object
         additionalProperties: false
