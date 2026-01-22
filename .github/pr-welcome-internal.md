@@ -3,28 +3,12 @@
 Here are some helpful tips and reminders for your convenience.
 
 <details>
-<summary><b>📚 Show Repo Guidance</b></summary>
-
-<details>
-<summary>Helpful Resources</summary>
-
-- [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes) - Breaking changes, migration guides, and upgrade deadlines
-- [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development)
-- [Managing Connector Secrets](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets)
-- [On-Demand Regression Tests](https://github.com/airbytehq/airbyte/actions/workflows/regression_tests.yml)
-- [`#connector-ci-issues`](https://airbytehq-team.slack.com/archives/C05KSGM8MNC)
-- [`#connector-publish-updates`](https://airbytehq-team.slack.com/archives/C056HGD1QSW)
-- [`#connector-build-statuses`](https://airbytehq-team.slack.com/archives/C02TYE9QL9M)
-
-</details>
-
-</details>
-
-<details>
 <summary><b>💡 Show Tips and Tricks</b></summary>
 
+### PR Slash Commands
+
 <details>
-<summary>PR Slash Commands</summary>
+<summary>Show details</summary>
 
 Airbyte Maintainers (that's you!) can execute the following slash commands on your PR:
 
@@ -56,6 +40,26 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
   - `/poe source example lock` - Alias for `/poe connector source-example lock`.
   - `/poe source example use-cdk-branch my/branch` - Pin the `source-example` CDK reference to the branch name specified.
   - `/poe source example use-cdk-latest` - Update the `source-example` CDK dependency to the latest available version.
+
+</details>
+
+</details>
+
+<details>
+<summary><b>📚 Show Repo Guidance</b></summary>
+
+### Helpful Resources
+
+<details>
+<summary>Show details</summary>
+
+- [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes) - Breaking changes, migration guides, and upgrade deadlines
+- [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development)
+- [Managing Connector Secrets](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets)
+- [On-Demand Regression Tests](https://github.com/airbytehq/airbyte/actions/workflows/regression_tests.yml)
+- [`#connector-ci-issues`](https://airbytehq-team.slack.com/archives/C05KSGM8MNC)
+- [`#connector-publish-updates`](https://airbytehq-team.slack.com/archives/C056HGD1QSW)
+- [`#connector-build-statuses`](https://airbytehq-team.slack.com/archives/C02TYE9QL9M)
 
 </details>
 
