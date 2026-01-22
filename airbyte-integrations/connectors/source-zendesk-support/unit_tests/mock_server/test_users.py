@@ -75,10 +75,7 @@ class TestUserIdentitiesStream(TestCase):
         # The connector uses RequestPath pagination, meaning it uses the full URL from after_url
         # The after_url only includes the cursor, not per_page
         http_mocker.get(
-            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator)
-            .with_include("identities")
-            .with_cursor(_A_CURSOR)
-            .build(),
+            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").with_cursor(_A_CURSOR).build(),
             UsersResponseBuilder.identities_response().with_record(UsersRecordBuilder.record()).build(),
         )
 
