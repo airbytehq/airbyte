@@ -39,39 +39,48 @@ uv pip install airbyte-agent-asana
 
 ## Usage
 
-This connector supports multiple authentication methods:
+Connectors can run in open source or hosted mode.
 
-### OAuth 2
+### Open source
 
-```python
-from airbyte_agent_asana import AsanaConnector
-from airbyte_agent_asana.models import AsanaOauth2AuthConfig
-
-connector = AsanaConnector(
-  auth_config=AsanaOauth2AuthConfig(
-    access_token="...",
-    refresh_token="...",
-    client_id="...",
-    client_secret="..."
-  )
-)
-result = await connector.tasks.list()
-```
-
-### Personal Access Token
+In open source mode, you provide API credentials directly to the connector.
 
 ```python
 from airbyte_agent_asana import AsanaConnector
 from airbyte_agent_asana.models import AsanaPersonalAccessTokenAuthConfig
 
 connector = AsanaConnector(
-  auth_config=AsanaPersonalAccessTokenAuthConfig(
-    token="..."
-  )
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
 )
-result = await connector.tasks.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@AsanaConnector.describe
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_asana import AsanaConnector
+
+connector = AsanaConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@AsanaConnector.describe
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
@@ -103,12 +112,14 @@ This connector supports the following entities and actions.
 | Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Asana API reference](https://developers.asana.com/reference/rest-api-reference).
 
 ## Version information
 
-- **Package version:** 0.19.54
+- **Package version:** 0.19.57
 - **Connector version:** 0.1.7
-- **Generated with Connector SDK commit SHA:** c713ec4833c2b52dc89926ec68caa343423884cd
+- **Generated with Connector SDK commit SHA:** 49e6dfe93fc406c8d2ed525372608fa2766ebece
