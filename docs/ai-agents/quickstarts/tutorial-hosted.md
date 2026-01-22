@@ -1,36 +1,25 @@
+---
+sidebar_label: "Hosted connectors"
+sidebar_position: 3
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Using agent connectors in hosted execution mode
+# Hosted agent connectors in the Agent Engine
 
-Hosted execution mode allows you to run agent connector operations through Airbyte. In this mode, you still execute connectors and tool calls from your agent, but API credentials are stored securely in Airbyte Cloud, and the connector proxies all requests through Airbyte's infrastructure.
+When you run connector operations with the [Python SDK](tutorial-python), you store API credentials locally and provide them directly to the API through agent connectors. This approach, while viable at first, reaches limits quickly. You may find yourself dealing with large numbers of customers who have their own environments and credentials. You may not want to manage these credentials and or store them at all.
 
-## Local mode vs hosted mode
+With hosted execution, sensitive API credentials never leave Airbyte Cloud, multiple end-users can have separate credentials managed centrally, and Airbyte handles credential lifecycle (refresh, rotation) automatically.
 
-When you run connector operations locally, you store API credentials locally and provide them directly to the API, running those connector operations in your local environment. This approach, while viable at first, reaches limits quickly when you're dealing with large numbers of customers who have their own environments and credentials. You may not want to manage these credentials and may not want to store them at all.
+Generally, local mode is most appropriate for development, testing, single-user scenarios, and cases where you need local control over credentials. Hosted mode is most appropriate for production B2B applications, multi-tenant scenarios, when security is a priority, and when you want centralized credential management.
 
-With hosted execution, sensitive API credentials never leave Airbyte Cloud, multiple end-users can have separate credentials managed centrally, and credential lifecycle (refresh, rotation) is handled automatically.
-
-| Aspect                   | Local Mode                            | Hosted Mode                             |
-| ------------------------ | ------------------------------------- | --------------------------------------- |
-| **Credentials provided** | Actual API keys/tokens                | Airbyte Cloud client credentials        |
-| **Credential storage**   | Managed by you locally                | Stored securely in Airbyte Cloud        |
-| **API calls**            | Direct HTTP calls to external APIs    | Proxied through Airbyte Cloud           |
-| **Entity cache**         | Not available                         | Available                               |
-
-### When to use local mode
-
-- Development and testing
-- Single-user scenarios
-- You need full, local control over credentials
-- Quick prototyping
-
-### When to use hosted mode
-
-- Production B2B applications
-- Multi-tenant scenarios where different customers have different credentials
-- Credential security is a priority
-- You want centralized credential management
+| Aspect                   | Local Mode                         | Hosted Mode                           |
+| ------------------------ | ---------------------------------- | ------------------------------------- |
+| **Credentials provided** | Actual API keys/tokens             | Airbyte Cloud client credentials      |
+| **Credential storage**   | Managed by you locally             | Stored securely in Airbyte Cloud      |
+| **API calls**            | Direct HTTP calls to external APIs | API calls proxy through Airbyte Cloud |
+| **Entity cache**         | Not available                      | Available                             |
 
 ## Prerequisites
 
@@ -91,17 +80,17 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
 
 Once you have a scoped token, create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud. You need the following values.
 
-- **source_template_id**: The ID of the source template for the connector type. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token.
+- `source_template_id`: The ID of the source template for the connector type. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token. Or, find this in the Airbyte AI user interface. Click **Connectors**, then click the copy button on the type of connector you're using.
 
-- **workspace_id**: Your workspace ID. Retrieve it by calling `GET /api/v1/embedded/scoped-token/info` with your scoped token.
+- `workspace_id`: Your workspace ID. Retrieve it by calling `GET /api/v1/embedded/scoped-token/info` with your scoped token.
 
 - Additional configuration fields that may or may not be mandatory, depending on the source. If applicable, these fields are explained in the reference docs for your connector.
 
-  - **source_config**: Connector-specific configurations for direct connectors.
+  - `source_config`: Connector-specific configurations for direct connectors.
 
-  - **credentials**: Authentication information for your connector.
+  - `credentials`: Authentication information for your connector.
 
-  - **user_config**: Connector-specific configurations for replication connectors.
+  - `user_config`: Connector-specific configurations for replication connectors.
 
 For GitHub, you only need an authentication configuration. See the examples in the [authentication docs](/ai-agents/connectors/github/REFERENCE). This is what the request looks like when you're using a personal access token.
 
@@ -137,7 +126,10 @@ connector = GithubConnector(
 )
 
 # Execute connector operations
-# ...
+@agent.tool_plain # assumes you're using Pydantic AI
+@GithubConnector.describe
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
 Once initialized, the connector works the same way as in local mode. The SDK handles the token exchange automatically. You don't need to manage tokens manually.
