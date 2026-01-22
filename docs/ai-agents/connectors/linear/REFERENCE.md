@@ -114,7 +114,10 @@ Create a new issue via GraphQL mutation
 ```python
 await linear.issues.create(
     team_id="<str>",
-    title="<str>"
+    title="<str>",
+    description="<str>",
+    state_id="<str>",
+    priority=0
 )
 ```
 
@@ -129,7 +132,10 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
     "action": "create",
     "params": {
         "teamId": "<str>",
-        "title": "<str>"
+        "title": "<str>",
+        "description": "<str>",
+        "stateId": "<str>",
+        "priority": 0
     }
 }'
 ```
@@ -166,7 +172,11 @@ Update an existing issue via GraphQL mutation. All fields except id are optional
 
 ```python
 await linear.issues.update(
-    id="<str>"
+    id="<str>",
+    title="<str>",
+    description="<str>",
+    state_id="<str>",
+    priority=0
 )
 ```
 
@@ -180,7 +190,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
     "entity": "issues",
     "action": "update",
     "params": {
-        "id": "<str>"
+        "id": "<str>",
+        "title": "<str>",
+        "description": "<str>",
+        "stateId": "<str>",
+        "priority": 0
     }
 }'
 ```
