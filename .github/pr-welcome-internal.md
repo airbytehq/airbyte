@@ -2,7 +2,8 @@
 
 Here are some helpful tips and reminders for your convenience.
 
-### Helpful Resources
+<details>
+<summary>Helpful Resources</summary>
 
 - [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes) - Breaking changes, migration guides, and upgrade deadlines
 - [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development)
@@ -12,7 +13,10 @@ Here are some helpful tips and reminders for your convenience.
 - [`#connector-publish-updates`](https://airbytehq-team.slack.com/archives/C056HGD1QSW)
 - [`#connector-build-statuses`](https://airbytehq-team.slack.com/archives/C02TYE9QL9M)
 
-### PR Slash Commands
+</details>
+
+<details>
+<summary>PR Slash Commands</summary>
 
 Airbyte Maintainers (that's you!) can execute the following slash commands on your PR:
 
@@ -44,5 +48,7 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
   - `/poe source example lock` - Alias for `/poe connector source-example lock`.
   - `/poe source example use-cdk-branch my/branch` - Pin the `source-example` CDK reference to the branch name specified.
   - `/poe source example use-cdk-latest` - Update the `source-example` CDK dependency to the latest available version.
+
+</details>
 
 [📝 _Edit this welcome message._](https://github.com/airbytehq/airbyte/blob/master/.github/pr-welcome-internal.md)
