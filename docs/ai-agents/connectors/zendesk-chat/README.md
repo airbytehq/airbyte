@@ -92,6 +92,6 @@ For the service's official API docs, see the [Zendesk-Chat API reference](https:
 
 ## Version information
 
-- **Package version:** 0.1.3
+- **Package version:** 0.1.4
 - **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** 6fbe49cd29847836209576c7ba21d94aacc1d834
+- **Generated with Connector SDK commit SHA:** c713ec4833c2b52dc89926ec68caa343423884cd

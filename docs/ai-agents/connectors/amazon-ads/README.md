@@ -65,6 +65,6 @@ For the service's official API docs, see the [Amazon-Ads API reference](https://
 
 ## Version information
 
-- **Package version:** 0.1.0
+- **Package version:** 0.1.1
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 5fbc94c3c665f3c1f39576555fc0e9537bc3f2fa
+- **Generated with Connector SDK commit SHA:** c713ec4833c2b52dc89926ec68caa343423884cd
