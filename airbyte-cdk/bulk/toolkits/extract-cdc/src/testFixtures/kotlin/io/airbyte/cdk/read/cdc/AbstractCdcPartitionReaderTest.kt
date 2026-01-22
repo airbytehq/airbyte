@@ -314,12 +314,6 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 } else {
                     null
                 }
-            if (schemaHistory == null || schemaHistory.wrapped.isEmpty()) {
-                return AbortDebeziumWarmStartState(
-                    "Schema history missing with existing offset. " +
-                        "Previous snapshot was incomplete, please refresh the connection."
-                )
-            }
             return ValidDebeziumWarmStartState(offset, schemaHistory)
         }
     }
