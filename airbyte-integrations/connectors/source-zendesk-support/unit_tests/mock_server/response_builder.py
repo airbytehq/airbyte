@@ -154,6 +154,10 @@ class CustomRolesRecordBuilder(ZendeskSupportRecordBuilder):
         self._record["id"] = id
         return self
 
+    def with_cursor(self, cursor: str) -> "CustomRolesRecordBuilder":
+        self._record["updated_at"] = cursor
+        return self
+
 
 class SchedulesRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
@@ -163,6 +167,10 @@ class SchedulesRecordBuilder(ZendeskSupportRecordBuilder):
 
     def with_id(self, id: int) -> "SchedulesRecordBuilder":
         self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor: str) -> "SchedulesRecordBuilder":
+        self._record["updated_at"] = cursor
         return self
 
 
@@ -612,6 +620,10 @@ class UserFieldsRecordBuilder(ZendeskSupportRecordBuilder):
         self._record["id"] = id
         return self
 
+    def with_cursor(self, cursor: str) -> "UserFieldsRecordBuilder":
+        self._record["updated_at"] = cursor
+        return self
+
 
 class CategoriesRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
@@ -643,6 +655,10 @@ class TopicsRecordBuilder(ZendeskSupportRecordBuilder):
 
     def with_id(self, id: int) -> "TopicsRecordBuilder":
         self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor: str) -> "TopicsRecordBuilder":
+        self._record["updated_at"] = cursor
         return self
 
 

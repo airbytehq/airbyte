@@ -14,6 +14,9 @@ from .response_builder import ErrorResponseBuilder, TopicsRecordBuilder, TopicsR
 from .utils import get_log_messages_by_log_level, read_stream
 
 
+RECENT_CURSOR = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 class TestTopicsStreamFullRefresh(TestCase):
     """Test topics stream which uses links_next_paginator (cursor-based pagination)."""
 
@@ -43,7 +46,7 @@ class TestTopicsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_topics_request(api_token_authenticator).build(),
-            TopicsResponseBuilder.topics_response().with_record(TopicsRecordBuilder.topics_record()).build(),
+            TopicsResponseBuilder.topics_response().with_record(TopicsRecordBuilder.topics_record().with_cursor(RECENT_CURSOR)).build(),
         )
 
         output = read_stream("topics", SyncMode.incremental, self._config)
@@ -64,14 +67,16 @@ class TestTopicsStreamFullRefresh(TestCase):
         http_mocker.get(
             self._base_topics_request(api_token_authenticator).build(),
             TopicsResponseBuilder.topics_response(next_page_http_request)
-            .with_record(TopicsRecordBuilder.topics_record())
+            .with_record(TopicsRecordBuilder.topics_record().with_cursor(RECENT_CURSOR))
             .with_pagination()
             .build(),
         )
 
         http_mocker.get(
             next_page_http_request,
-            TopicsResponseBuilder.topics_response().with_record(TopicsRecordBuilder.topics_record().with_id(67890)).build(),
+            TopicsResponseBuilder.topics_response()
+            .with_record(TopicsRecordBuilder.topics_record().with_id(67890).with_cursor(RECENT_CURSOR))
+            .build(),
         )
 
         output = read_stream("topics", SyncMode.full_refresh, self._config)

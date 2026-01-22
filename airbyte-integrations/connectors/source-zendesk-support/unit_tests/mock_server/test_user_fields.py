@@ -14,6 +14,9 @@ from .response_builder import ErrorResponseBuilder, UserFieldsRecordBuilder, Use
 from .utils import get_log_messages_by_log_level, read_stream
 
 
+RECENT_CURSOR = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 class TestUserFieldsStreamFullRefresh(TestCase):
     @property
     def _config(self):
@@ -38,7 +41,9 @@ class TestUserFieldsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_user_fields_request(api_token_authenticator).build(),
-            UserFieldsResponseBuilder.user_fields_response().with_record(UserFieldsRecordBuilder.user_fields_record()).build(),
+            UserFieldsResponseBuilder.user_fields_response()
+            .with_record(UserFieldsRecordBuilder.user_fields_record().with_cursor(RECENT_CURSOR))
+            .build(),
         )
 
         output = read_stream("user_fields", SyncMode.full_refresh, self._config)
@@ -54,7 +59,7 @@ class TestUserFieldsStreamFullRefresh(TestCase):
         http_mocker.get(
             self._base_user_fields_request(api_token_authenticator).build(),
             UserFieldsResponseBuilder.user_fields_response(next_page_http_request)
-            .with_record(UserFieldsRecordBuilder.user_fields_record())
+            .with_record(UserFieldsRecordBuilder.user_fields_record().with_cursor(RECENT_CURSOR))
             .with_pagination()
             .build(),
         )
@@ -62,7 +67,7 @@ class TestUserFieldsStreamFullRefresh(TestCase):
         http_mocker.get(
             next_page_http_request,
             UserFieldsResponseBuilder.user_fields_response()
-            .with_record(UserFieldsRecordBuilder.user_fields_record().with_id(67890))
+            .with_record(UserFieldsRecordBuilder.user_fields_record().with_id(67890).with_cursor(RECENT_CURSOR))
             .build(),
         )
 
