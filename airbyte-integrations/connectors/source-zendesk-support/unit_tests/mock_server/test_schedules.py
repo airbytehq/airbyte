@@ -85,9 +85,7 @@ class TestSchedulesStreamFullRefresh(TestCase):
         api_token_authenticator = self.get_authenticator(self._config)
 
         # Build the next page request using the request builder with after_cursor like other tests
-        next_page_http_request = (
-            self._base_schedules_request(api_token_authenticator).with_after_cursor("after-cursor").build()
-        )
+        next_page_http_request = self._base_schedules_request(api_token_authenticator).with_after_cursor("after-cursor").build()
 
         # Use a recent updated_at to pass the semi_incremental_stream record filter
         recent_updated_at = "2025-01-01T00:00:00Z"
