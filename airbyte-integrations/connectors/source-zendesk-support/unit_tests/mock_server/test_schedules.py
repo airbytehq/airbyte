@@ -11,6 +11,8 @@ Pagination is handled via the next_page field in the response, not links.next.
 from datetime import timedelta
 from unittest import TestCase
 
+import freezegun
+
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -23,6 +25,7 @@ from .response_builder import ErrorResponseBuilder, SchedulesRecordBuilder, Sche
 from .utils import get_log_messages_by_log_level, read_stream
 
 
+@freezegun.freeze_time("2025-11-01")
 class TestSchedulesStreamFullRefresh(TestCase):
     """
     Tests for the schedules stream full refresh sync.

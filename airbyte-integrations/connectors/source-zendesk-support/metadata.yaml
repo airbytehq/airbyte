@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 4.10.18
+  dockerImageTag: 5.1.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -53,6 +53,9 @@ data:
           - scopeType: stream
             impactedScopes:
               - "tags"
+      5.0.0:
+        message: "This version adds OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens."
+        upgradeDeadline: "2026-01-31"
   suggestedStreams:
     streams:
       - brands

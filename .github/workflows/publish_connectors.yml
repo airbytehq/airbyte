@@ -110,6 +110,16 @@ jobs:
       # Allow all jobs to run, even if one fails
       fail-fast: false
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
+          repositories: ${{ github.event.repository.name }}
+          app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
+
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
@@ -153,6 +163,9 @@ jobs:
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          # We pass a token with dedicated GH rate limit
+          github-token: ${{ steps.get-app-token.outputs.token }}
 
       - name: Install Poe
         run: |
@@ -263,6 +276,16 @@ jobs:
     outputs:
       docker-image-tag: ${{ steps.connector-metadata.outputs.docker-image-tag }}
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
+          repositories: ${{ github.event.repository.name }}
+          app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
+
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
@@ -290,6 +313,9 @@ jobs:
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          # We pass a token with dedicated GH rate limit
+          github-token: ${{ steps.get-app-token.outputs.token }}
 
       - name: Install Poe
         run: |
@@ -358,6 +384,16 @@ jobs:
       - publish_connector_registry_entries
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
+          repositories: ${{ github.event.repository.name }}
+          app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
+
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
@@ -369,7 +405,7 @@ jobs:
         uses: ./.github/actions/match-github-to-slack-user
         env:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
-          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_API_TOKEN: ${{ steps.get-app-token.outputs.token }}
       - name: Send publish failures to connector-publish-failures channel
         id: slack
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
