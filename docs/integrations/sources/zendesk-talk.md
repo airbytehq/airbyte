@@ -2,19 +2,30 @@
 
 ## Prerequisites
 
-- Zendesk API Token or Zendesk OAuth Client
-- Zendesk Email (For API Token authentication)
-- Zendesk Subdomain
+- Zendesk subdomain (found in your account URL, for example `MY_SUBDOMAIN` in `https://MY_SUBDOMAIN.zendesk.com/`)
+- One of the following authentication methods:
+  - **OAuth2.0** (recommended for Airbyte Cloud): Requires completing the OAuth flow in Airbyte
+  - **API Token**: Requires a Zendesk API token and the email address associated with your Zendesk account
+
+:::info
+If you previously configured this connector using OAuth2.0 before version 2.0.0, you must re-authenticate to use the new OAuth flow with rotating refresh tokens. See the [migration guide](./zendesk-talk-migrations.md) for details.
+:::
 
 ## Setup guide
 
 ### Step 1: Set up Zendesk
 
-Generate an API access token as described in [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-)
+The connector supports two authentication methods.
 
-We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte is able to access.
+**Option A: OAuth2.0 (recommended for Airbyte Cloud)**
 
-Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) for details.
+OAuth2.0 is the recommended authentication method for Airbyte Cloud users. When you configure the connector, you will be redirected to Zendesk to authorize access. The connector automatically handles token refresh using Zendesk's rotating refresh token flow.
+
+**Option B: API Token**
+
+Generate an API access token as described in [Zendesk's documentation](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-). We recommend creating a restricted, read-only key specifically for Airbyte access. This allows you to control which resources Airbyte can access.
+
+For more information about OAuth authentication with Zendesk, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application).
 
 <!-- env:cloud -->
 
@@ -25,11 +36,12 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Zendesk Talk connector and select **Zendesk Talk** from the Source type dropdown.
-4. Fill in the rest of the fields:
-   - _Subdomain_
-   - _Authentication (API Token / OAuth2.0)_
-   - _Start Date_
-5. Click **Set up source**
+4. Enter your Zendesk **Subdomain**.
+5. Select your **Authentication** method:
+   - **OAuth2.0**: Click **Authenticate your Zendesk Talk account** and complete the authorization flow.
+   - **API Token**: Enter your Zendesk **Email** and **API Token**.
+6. Enter the **Start Date** from which you want to sync data.
+7. Click **Set up source**.
 <!-- /env:cloud -->
 
 ## Supported sync modes
@@ -79,7 +91,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
-| 2.0.0 | 2026-01-21 | [71857](https://github.com/airbytehq/airbyte/pull/71857) | Add OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate. |
+| 2.0.0 | 2026-01-22 | [71857](https://github.com/airbytehq/airbyte/pull/71857) | Add OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate. |
 | 1.2.29 | 2026-01-14 | [71686](https://github.com/airbytehq/airbyte/pull/71686) | Update dependencies |
 | 1.2.28 | 2025-12-18 | [70683](https://github.com/airbytehq/airbyte/pull/70683) | Update dependencies |
 | 1.2.27 | 2025-11-25 | [70102](https://github.com/airbytehq/airbyte/pull/70102) | Update dependencies |
