@@ -3,6 +3,8 @@
 from datetime import timedelta
 from unittest import TestCase
 
+import freezegun
+
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -14,6 +16,7 @@ from .response_builder import ErrorResponseBuilder, TopicsRecordBuilder, TopicsR
 from .utils import get_log_messages_by_log_level, read_stream
 
 
+@freezegun.freeze_time("2025-11-01")
 class TestTopicsStreamFullRefresh(TestCase):
     """Test topics stream which uses links_next_paginator (cursor-based pagination)."""
 

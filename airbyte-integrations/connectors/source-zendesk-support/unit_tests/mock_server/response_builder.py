@@ -362,6 +362,61 @@ class ErrorResponseBuilder:
         return HttpResponse(body, self._status_code)
 
 
+class OAuthTokenRefreshResponseBuilder:
+    """Builder for OAuth token refresh responses from /oauth/tokens endpoint.
+
+    This builder creates mock responses for the Zendesk OAuth token refresh endpoint.
+    The response includes access_token, refresh_token (for rotating tokens), token_type,
+    and expires_in fields.
+    """
+
+    def __init__(self) -> None:
+        self._access_token: str = "new_access_token"
+        self._refresh_token: str = "new_refresh_token"
+        self._token_type: str = "Bearer"
+        self._expires_in: int = 7200
+        self._scope: str = "read write"
+        self._status_code: int = 200
+
+    @classmethod
+    def oauth_token_response(cls) -> "OAuthTokenRefreshResponseBuilder":
+        """Create a new OAuth token refresh response builder."""
+        return cls()
+
+    def with_access_token(self, access_token: str) -> "OAuthTokenRefreshResponseBuilder":
+        """Set the access_token in the response."""
+        self._access_token = access_token
+        return self
+
+    def with_refresh_token(self, refresh_token: str) -> "OAuthTokenRefreshResponseBuilder":
+        """Set the refresh_token in the response (for rotating refresh tokens)."""
+        self._refresh_token = refresh_token
+        return self
+
+    def with_expires_in(self, expires_in: int) -> "OAuthTokenRefreshResponseBuilder":
+        """Set the expires_in value in seconds."""
+        self._expires_in = expires_in
+        return self
+
+    def with_status_code(self, status_code: int) -> "OAuthTokenRefreshResponseBuilder":
+        """Set the HTTP status code for the response."""
+        self._status_code = status_code
+        return self
+
+    def build(self) -> HttpResponse:
+        """Build and return the HttpResponse object."""
+        body = json.dumps(
+            {
+                "access_token": self._access_token,
+                "refresh_token": self._refresh_token,
+                "token_type": self._token_type,
+                "expires_in": self._expires_in,
+                "scope": self._scope,
+            }
+        )
+        return HttpResponse(body, self._status_code)
+
+
 # Response Builders for each stream
 
 
