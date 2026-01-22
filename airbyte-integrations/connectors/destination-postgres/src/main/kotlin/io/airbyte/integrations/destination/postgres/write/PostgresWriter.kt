@@ -42,7 +42,7 @@ class PostgresWriter(
         catalog.streams
             .flatMap { stream ->
                 val finalTableName = stream.tableSchema.tableNames.finalTableName!!
-                val tempTableName = tempTableNameGenerator.generate(finalTableName)
+                val tempTableName = stream.tableSchema.tableNames.tempTableName!!// tempTableNameGenerator.generate(finalTableName)
                 listOf(finalTableName.namespace, tempTableName.namespace)
             }
             .distinct()
