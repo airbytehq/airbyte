@@ -15,10 +15,15 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 ## Set up Zendesk Support
 
-The Zendesk Support source connector supports two authentication methods:
+The Zendesk Support source connector supports three authentication methods:
 
-- OAuth 2.0
-- API token
+- OAuth 2.0 with Refresh Token (recommended for Airbyte Cloud)
+- OAuth 2.0 (Legacy)
+- API Token
+
+:::note
+Zendesk is transitioning to OAuth with refresh tokens as the standard authentication method. The new OAuth 2.0 with Refresh Token option supports automatic token refresh with rotating refresh tokens, as described in [Zendesk's OAuth grant-type tokens documentation](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/). Zendesk requires all customers to adopt this flow by April 30, 2026.
+:::
 
 <!-- env:cloud -->
 
@@ -76,7 +81,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
 <!-- env:cloud -->
 
-- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
+- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0 with Refresh Token** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account. This is the recommended authentication method as it supports automatic token refresh.
   <!-- /env:cloud -->
   <!-- env:oss -->
 - **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
@@ -189,7 +194,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.0 | 2026-01-21 | [70990](https://github.com/airbytehq/airbyte/pull/70990) | Add OAuth2.0 with refresh token support. Users using OAuth must re-authenticate to use the new flow with rotating refresh tokens. |
+| 5.0.0 | 2026-01-22 | [70990](https://github.com/airbytehq/airbyte/pull/70990) | Add OAuth2.0 with refresh token support. Users using OAuth must re-authenticate to use the new flow with rotating refresh tokens. |
 | 4.10.18 | 2025-12-18 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
 | 4.10.17 | 2025-12-02 | [70066](https://github.com/airbytehq/airbyte/pull/70066) | Update dependencies |
 | 4.10.16 | 2025-11-18 | [69538](https://github.com/airbytehq/airbyte/pull/69538) | Update dependencies |
