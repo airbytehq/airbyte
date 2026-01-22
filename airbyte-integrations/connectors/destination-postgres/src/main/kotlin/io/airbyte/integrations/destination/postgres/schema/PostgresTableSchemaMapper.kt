@@ -32,7 +32,6 @@ import io.airbyte.cdk.load.table.TypingDedupingUtil
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.PostgresDataType
 import jakarta.inject.Singleton
-import java.util.Locale
 
 @Singleton
 class PostgresTableSchemaMapper(
