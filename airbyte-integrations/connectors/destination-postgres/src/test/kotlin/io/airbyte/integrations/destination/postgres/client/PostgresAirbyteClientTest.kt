@@ -588,7 +588,11 @@ internal class PostgresAirbyteClientTest {
             mapOf("col1" to ColumnType("text", true), "col2" to ColumnType("integer", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
         val streamTableSchema =
-            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { this@mockk.getPrimaryKey() } returns emptyList()
+                every { this@mockk.getCursor() } returns emptyList()
+            }
         every { stream.tableSchema } returns streamTableSchema
 
         // no index changes
@@ -664,7 +668,11 @@ internal class PostgresAirbyteClientTest {
             mapOf("col1" to ColumnType("text", true), "col2" to ColumnType("integer", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
         val streamTableSchema =
-            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { this@mockk.getPrimaryKey() } returns emptyList()
+                every { this@mockk.getCursor() } returns emptyList()
+            }
         every { stream.tableSchema } returns streamTableSchema
 
         every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns emptyList()
@@ -738,7 +746,11 @@ internal class PostgresAirbyteClientTest {
         val finalSchema = mapOf("col1" to ColumnType("text", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
         val streamTableSchema =
-            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { this@mockk.getPrimaryKey() } returns listOf(listOf("new_pk"))
+                every { this@mockk.getCursor() } returns emptyList()
+            }
         every { stream.tableSchema } returns streamTableSchema
 
         // primary key has changed
@@ -813,7 +825,11 @@ internal class PostgresAirbyteClientTest {
         val finalSchema = mapOf("col1" to ColumnType("text", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
         val streamTableSchema =
-            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { this@mockk.getPrimaryKey() } returns emptyList()
+                every { this@mockk.getCursor() } returns listOf("new_cursor")
+            }
         every { stream.tableSchema } returns streamTableSchema
 
         every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns emptyList()
@@ -891,7 +907,11 @@ internal class PostgresAirbyteClientTest {
             mapOf("col1" to ColumnType("text", true), "new_col" to ColumnType("integer", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
         val streamTableSchema =
-            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { this@mockk.getPrimaryKey() } returns listOf(listOf("new_pk"))
+                every { this@mockk.getCursor() } returns listOf("new_cursor")
+            }
         every { stream.tableSchema } returns streamTableSchema
 
         every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns listOf("new_pk")
