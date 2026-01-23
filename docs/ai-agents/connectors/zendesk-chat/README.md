@@ -97,6 +97,10 @@ async def zendesk-chat_execute(entity: str, action: str, params: dict | None = N
     return await connector.execute(entity, action, params or {})
 ```
 
+## Replication Configuration
+
+This connector supports replication configuration for MULTI mode sources. See the [full reference documentation](./REFERENCE.md#replication-configuration) for details on available options like `start_date`.
+
 ## Full documentation
 
 This connector supports the following entities and actions.
@@ -125,6 +129,6 @@ For the service's official API docs, see the [Zendesk-Chat API reference](https:
 
 ## Version information
 
-- **Package version:** 0.1.7
-- **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** 49e6dfe93fc406c8d2ed525372608fa2766ebece
+- **Package version:** 0.1.10
+- **Connector version:** 0.1.4
+- **Generated with Connector SDK commit SHA:** 049f6ad546186bde8303b77e0e1001a831a58654
