@@ -55,7 +55,9 @@ Supported Data Streams:
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.13 | 2025-12-16 | [70748](https://github.com/airbytehq/airbyte/pull/70748) | Update dependencies |
+| 0.0.15 | 2026-01-20 | [72034](https://github.com/airbytehq/airbyte/pull/72034) | Update dependencies |
+| 0.0.14 | 2026-01-14 | [71527](https://github.com/airbytehq/airbyte/pull/71527) | Update dependencies |
+| 0.0.13 | 2025-12-18 | [70748](https://github.com/airbytehq/airbyte/pull/70748) | Update dependencies |
 | 0.0.12 | 2025-11-25 | [70118](https://github.com/airbytehq/airbyte/pull/70118) | Update dependencies |
 | 0.0.11 | 2025-11-18 | [69550](https://github.com/airbytehq/airbyte/pull/69550) | Update dependencies |
 | 0.0.10 | 2025-10-29 | [69063](https://github.com/airbytehq/airbyte/pull/69063) | Update dependencies |
@@ -66,7 +68,7 @@ Supported Data Streams:
 | 0.0.5 | 2025-09-09 | [65802](https://github.com/airbytehq/airbyte/pull/65802) | Update dependencies |
 | 0.0.4 | 2025-08-23 | [65179](https://github.com/airbytehq/airbyte/pull/65179) | Update dependencies |
 | 0.0.3 | 2025-08-16 | [64965](https://github.com/airbytehq/airbyte/pull/64965) | Update dependencies |
-| 0.0.2 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.0.2 | 2025-08-15 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.1 | 2025-08-06 | | Initial release by [@santigiova](https://github.com/santigiova) via Connector Builder |
 
 </details>

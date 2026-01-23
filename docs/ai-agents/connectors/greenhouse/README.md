@@ -8,11 +8,13 @@ for recruiting analytics and talent acquisition insights.
 
 ## Example questions
 
-- Show me candidates from [Company] who applied last month
+The Greenhouse connector is optimized to handle prompts like these.
+
+- Show me candidates from \{company\} who applied last month
 - What are the top 5 sources for our job applications this quarter?
 - List all open jobs in the Sales department
 - Analyze the interview schedules for our engineering candidates this week
-- Get details of recent job offers for [teamMember]
+- Get details of recent job offers for \{team_member\}
 - Compare the number of applications across different offices
 - Identify candidates who have multiple applications in our system
 - Show me upcoming scheduled interviews for our marketing positions
@@ -21,11 +23,13 @@ for recruiting analytics and talent acquisition insights.
 
 ## Unsupported questions
 
+The Greenhouse connector isn't currently able to handle prompts like these.
+
 - Create a new job posting for the marketing team
-- Schedule an interview for [candidate]
-- Update the status of [candidate]'s application
+- Schedule an interview for \{candidate\}
+- Update the status of \{candidate\}'s application
 - Delete a candidate profile
-- Send an offer letter to [candidate]
+- Send an offer letter to \{candidate\}
 - Edit the details of a job description
 
 ## Installation
@@ -36,17 +40,48 @@ uv pip install airbyte-agent-greenhouse
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_greenhouse import GreenhouseConnector, GreenhouseAuthConfig
+from airbyte_agent_greenhouse import GreenhouseConnector
+from airbyte_agent_greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
-  auth_config=GreenhouseAuthConfig(
-    api_key="..."
-  )
+    auth_config=GreenhouseAuthConfig(
+        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+    )
 )
-result = await connector.candidates.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GreenhouseConnector.describe
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_greenhouse import GreenhouseConnector
+
+connector = GreenhouseConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GreenhouseConnector.describe
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
@@ -68,12 +103,14 @@ This connector supports the following entities and actions.
 | Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Greenhouse API reference](https://developers.greenhouse.io/harvest.html).
 
 ## Version information
 
-- **Package version:** 0.17.23
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.17.55
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9

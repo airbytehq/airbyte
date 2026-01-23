@@ -1,0 +1,150 @@
+name: AI Create Docs PR Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number (if triggered from a PR)"
+        type: number
+        required: false
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      repo:
+        description: "Repo (passed by slash command dispatcher)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref (passed by slash command dispatcher)"
+        required: false
+
+run-name: "AI Create Docs PR${{ github.event.inputs.pr != '' && format(' for PR #{0}', github.event.inputs.pr) || '' }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  ai-create-docs-pr:
+    name: AI Create Docs PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get job variables
+        id: job-vars
+        run: |
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte,oncall"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Determine context and build messages
+        id: context
+        run: |
+          PR_NUMBER="${{ inputs.pr }}"
+          GITREF="${{ inputs.gitref }}"
+          REPO="${{ inputs.repo }}"
+
+          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
+            echo "context=pr" >> $GITHUB_OUTPUT
+            echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
+            echo "Triggered from PR #$PR_NUMBER - will stack docs PR on top of this PR"
+            
+            # Build start message for PR context
+            {
+              echo "start-message<<EOF"
+              cat <<STARTMSG
+          **AI Documentation PR session starting...**
+
+          This will create a documentation PR stacked on top of PR #${PR_NUMBER}.
+
+          [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/connectordocs.md)
+          STARTMSG
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+            
+            # Build extra context for PR context
+            {
+              echo "extra-context<<EOF"
+              cat <<EXTRACTX
+          ## Slash Command Context
+
+          This command was triggered from PR #${PR_NUMBER} in the ${REPO:-airbytehq/airbyte} repository.
+
+          You should create a documentation PR that stacks on top of this PR. Use the PR head branch (\`${GITREF}\`) as your base branch, and include a reference to the parent PR in your new PR description using this format at the top:
+
+          \`\`\`
+          This PR targets the following PR:
+          - #${PR_NUMBER}
+
+          ---
+          \`\`\`
+          EXTRACTX
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+            
+          else
+            echo "context=standalone" >> $GITHUB_OUTPUT
+            echo "pr-number=" >> $GITHUB_OUTPUT
+            echo "Triggered standalone - will target master branch"
+            
+            # Build start message for standalone context
+            {
+              echo "start-message<<EOF"
+              cat <<STARTMSG
+          **AI Documentation PR session starting...**
+
+          This will create a documentation PR targeting the master branch.
+
+          [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/connectordocs.md)
+          STARTMSG
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+            
+            # Build extra context for standalone context
+            {
+              echo "extra-context<<EOF"
+              cat <<EXTRACTX
+          ## Slash Command Context
+
+          This command was triggered standalone. Create a documentation PR targeting the master branch.
+          EXTRACTX
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post start comment
+        if: inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **AI Create Docs PR Started**
+            >
+            > ${{ steps.context.outputs.context == 'pr' && format('Creating documentation PR stacked on top of PR #{0}.', steps.context.outputs.pr-number) || 'Creating documentation PR targeting master branch.' }}
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Run AI Create Docs PR
+        uses: aaronsteers/devin-action@main
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          playbook-macro: "!connectordocs"
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          start-message: ${{ steps.context.outputs.start-message }}
+          extra-context: ${{ steps.context.outputs.extra-context }}
+          tags: |
+            ai-oncall
+            documentation

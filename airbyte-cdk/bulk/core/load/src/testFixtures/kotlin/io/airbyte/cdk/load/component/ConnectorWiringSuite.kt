@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.component
@@ -167,8 +167,8 @@ interface ConnectorWiringSuite {
             val count = client.countTable(tableName)
             assertEquals(1L, count, "Should have exactly 1 record after write. Got $count records.")
 
-            // 6. Close loader
-            loader.close(hadNonzeroRecords = true, streamFailure = null)
+            // 6. Teardown loader
+            loader.teardown(completedSuccessfully = true)
         } finally {
             // Cleanup
             client.dropTable(tableName)

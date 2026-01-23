@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.component.config
@@ -7,11 +7,14 @@ package io.airbyte.integrations.destination.snowflake.component.config
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsFixtures
 import io.airbyte.cdk.load.component.TableSchema
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
 
 object SnowflakeComponentTestFixtures {
     private fun ColumnNameMapping.transformColumns() =
         ColumnNameMapping(mapValues { (_, v) -> v.uppercase() })
+
+    val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
 
     val testMapping = TableOperationsFixtures.TEST_MAPPING.transformColumns()
     val idAndTestMapping = TableOperationsFixtures.ID_AND_TEST_MAPPING.transformColumns()

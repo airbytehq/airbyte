@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse.component
@@ -24,24 +24,7 @@ class ClickhouseTableSchemaEvolutionTest(
     override val testClient: TestTableOperationsClient,
     override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
-    private val allTypesTableSchema =
-        TableSchema(
-            mapOf(
-                "string" to ColumnType(ClickhouseSqlTypes.STRING, true),
-                "boolean" to ColumnType(ClickhouseSqlTypes.BOOL, true),
-                "integer" to ColumnType(ClickhouseSqlTypes.INT64, true),
-                "number" to ColumnType(ClickhouseSqlTypes.DECIMAL_WITH_PRECISION_AND_SCALE, true),
-                "date" to ColumnType(ClickhouseSqlTypes.DATE32, true),
-                "timestamp_tz" to ColumnType(ClickhouseSqlTypes.DATETIME_WITH_PRECISION, true),
-                "timestamp_ntz" to ColumnType(ClickhouseSqlTypes.DATETIME_WITH_PRECISION, true),
-                "time_tz" to ColumnType(ClickhouseSqlTypes.STRING, true),
-                "time_ntz" to ColumnType(ClickhouseSqlTypes.STRING, true),
-                // yes, these three are different
-                "array" to ColumnType(ClickhouseSqlTypes.STRING, true),
-                "object" to ColumnType(ClickhouseSqlTypes.JSON, true),
-                "unknown" to ColumnType(ClickhouseSqlTypes.STRING, true),
-            )
-        )
+    private val allTypesTableSchema = allTypesSchema
 
     @Test
     fun `discover recognizes all data types`() {
@@ -114,5 +97,29 @@ class ClickhouseTableSchemaEvolutionTest(
     @Test
     override fun `change from unknown type to string type`() {
         super.`change from unknown type to string type`()
+    }
+
+    companion object {
+        val allTypesSchema =
+            TableSchema(
+                mapOf(
+                    "string" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                    "boolean" to ColumnType(ClickhouseSqlTypes.BOOL, true),
+                    "integer" to ColumnType(ClickhouseSqlTypes.INT64, true),
+                    "number" to
+                        ColumnType(ClickhouseSqlTypes.DECIMAL_WITH_PRECISION_AND_SCALE, true),
+                    "date" to ColumnType(ClickhouseSqlTypes.DATE32, true),
+                    "timestamp_tz" to ColumnType(ClickhouseSqlTypes.DATETIME_WITH_PRECISION, true),
+                    "timestamp_ntz" to ColumnType(ClickhouseSqlTypes.DATETIME_WITH_PRECISION, true),
+                    "time_tz" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                    "time_ntz" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                    // yes, these three are different
+                    "array" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                    "object" to ColumnType(ClickhouseSqlTypes.JSON, true),
+                    "union" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                    "legacy_union" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                    "unknown" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                )
+            )
     }
 }
