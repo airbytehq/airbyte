@@ -80,9 +80,9 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
 
 Once you have a scoped token, create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud. You need the following values.
 
-- `source_template_id`: The ID of the source template for the connector type. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token. Or, find this in the Airbyte AI user interface. Click **Connectors**, then click the copy button on the type of connector you're using.
+- `connector_type`: The case-insensitive name or ID of the source template for the connector type. For example, `GitHub` or `github`. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token.
 
-- `workspace_id`: Your workspace ID. Retrieve it by calling `GET /api/v1/embedded/scoped-token/info` with your scoped token.
+- `external_user_id`: Retrieve this by calling `GET /api/v1/embedded/scoped-token/info` with your scoped token.
 
 - Additional configuration fields that may or may not be mandatory, depending on the source. If applicable, these fields are explained in the reference docs for your connector.
 
@@ -92,7 +92,7 @@ Once you have a scoped token, create a connector with your API credentials. Airb
 
   - `environment`: Connector-specific configurations for replication connectors.
 
-For GitHub, you only need an authentication configuration. See the examples in the [authentication docs](/ai-agents/connectors/github/REFERENCE). This is what the request looks like when you're using a personal access token.
+This is what the request looks like when you're using a personal access token. See more examples in the [authentication docs](/ai-agents/connectors/github/AUTH).
 
 ```bash title="Request"
 curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
@@ -101,7 +101,6 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     -d '{
       "connector_type": "github",
       "external_user_id": "<external_user_id>",
-      "name": "...",
       "source_config": {"repositories": "airbytehq/airbyte"},
       "credentials": {"token": "<GitHub personal access token (fine-grained or classic)>"}
     }'
@@ -181,9 +180,9 @@ The response contains the operation result:
 
 ## Troubleshooting
 
-### No connector found for user
+### No connector found for this user
 
-- Ensure you've created a connector for the workspace.
+- Ensure you've created a connector for the right external user ID.
 
 ### Authentication errors (401/403)
 

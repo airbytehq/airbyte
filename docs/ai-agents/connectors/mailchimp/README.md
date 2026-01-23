@@ -42,18 +42,49 @@ uv pip install airbyte-agent-mailchimp
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_mailchimp import MailchimpConnector, MailchimpAuthConfig
+from airbyte_agent_mailchimp import MailchimpConnector
+from airbyte_agent_mailchimp.models import MailchimpAuthConfig
 
 connector = MailchimpConnector(
-  auth_config=MailchimpAuthConfig(
-    api_key="...",
-    data_center="..."
-  )
+    auth_config=MailchimpAuthConfig(
+        api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>",
+        data_center="<The data center for your Mailchimp account. This is the suffix of your API key (e.g., 'us6' if your API key ends with '-us6').>"
+    )
 )
-result = await connector.campaigns.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@MailchimpConnector.describe
+async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_mailchimp import MailchimpConnector
+
+connector = MailchimpConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@MailchimpConnector.describe
+async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
@@ -75,12 +106,14 @@ This connector supports the following entities and actions.
 | Unsubscribes | [List](./REFERENCE.md#unsubscribes-list) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Mailchimp API reference](https://mailchimp.com/developer/marketing/api/).
 
 ## Version information
 
-- **Package version:** 0.1.9
+- **Package version:** 0.1.14
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** c713ec4833c2b52dc89926ec68caa343423884cd
+- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9
