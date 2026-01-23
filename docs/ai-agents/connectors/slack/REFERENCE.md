@@ -17,19 +17,19 @@ The Slack connector supports the following entities and actions.
 | Channel Purposes | [Create](#channel-purposes-create) |
 | Reactions | [Create](#reactions-create) |
 
-### Users
+## Users
 
-#### Users List
+### Users List
 
 Returns a list of all users in the Slack workspace
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.users.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -42,7 +42,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -53,7 +53,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -79,7 +79,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `who_can_share_contact_card` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -87,11 +87,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Users Get
+### Users Get
 
 Get information about a single user by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.users.get(
@@ -99,7 +99,7 @@ await slack.users.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -115,7 +115,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -125,7 +125,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -153,19 +153,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Channels
+## Channels
 
-#### Channels List
+### Channels List
 
 Returns a list of all channels in the Slack workspace
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.channels.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -178,7 +178,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -191,7 +191,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -228,7 +228,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `is_read_only` | `boolean \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -236,11 +236,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Channels Get
+### Channels Get
 
 Get information about a single channel by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.channels.get(
@@ -248,7 +248,7 @@ await slack.channels.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -264,7 +264,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -274,7 +274,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -313,11 +313,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Channels Create
+### Channels Create
 
 Creates a new public or private channel
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.channels.create(
@@ -326,7 +326,7 @@ await slack.channels.create(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -343,7 +343,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -354,7 +354,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -393,11 +393,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Channels Update
+### Channels Update
 
 Renames an existing channel
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.channels.update(
@@ -406,7 +406,7 @@ await slack.channels.update(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -423,7 +423,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -434,7 +434,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -473,13 +473,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Channel Messages
+## Channel Messages
 
-#### Channel Messages List
+### Channel Messages List
 
 Returns messages from a channel
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.channel_messages.list(
@@ -487,7 +487,7 @@ await slack.channel_messages.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -503,7 +503,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -518,7 +518,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -583,7 +583,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `team` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -592,13 +592,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Threads
+## Threads
 
-#### Threads List
+### Threads List
 
 Returns messages in a thread (thread replies from conversations.replies endpoint)
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.threads.list(
@@ -606,7 +606,7 @@ await slack.threads.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -622,7 +622,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -638,7 +638,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -704,7 +704,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `team` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -713,13 +713,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Messages
+## Messages
 
-#### Messages Create
+### Messages Create
 
 Posts a message to a public channel, private channel, or direct message conversation
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.messages.create(
@@ -732,7 +732,7 @@ await slack.messages.create(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -753,7 +753,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -768,7 +768,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -785,11 +785,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Messages Update
+### Messages Update
 
 Updates an existing message in a channel
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.messages.update(
@@ -799,7 +799,7 @@ await slack.messages.update(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -817,7 +817,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -829,7 +829,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -846,13 +846,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Channel Topics
+## Channel Topics
 
-#### Channel Topics Create
+### Channel Topics Create
 
 Sets the topic for a channel
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.channel_topics.create(
@@ -861,7 +861,7 @@ await slack.channel_topics.create(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -878,7 +878,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -889,7 +889,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -928,13 +928,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Channel Purposes
+## Channel Purposes
 
-#### Channel Purposes Create
+### Channel Purposes Create
 
 Sets the purpose for a channel
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.channel_purposes.create(
@@ -943,7 +943,7 @@ await slack.channel_purposes.create(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -960,7 +960,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -971,7 +971,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1010,13 +1010,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Reactions
+## Reactions
 
-#### Reactions Create
+### Reactions Create
 
 Adds a reaction (emoji) to a message
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await slack.reactions.create(
@@ -1026,7 +1026,7 @@ await slack.reactions.create(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1044,7 +1044,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1056,7 +1056,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1067,83 +1067,37 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 
 
-## Authentication
+## Replication Configuration
 
-The Slack connector supports the following authentication methods.
+Settings for data replication from Slack
 
-
-### Token Authentication
+These settings control how data is replicated from the source. Pass them via the `replication_config` parameter when creating a source.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Your Slack Bot Token (xoxb-) or User Token (xoxp-) |
+| `start_date` | `str (date-time)` | Yes | UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. |
+| `lookback_window` | `int` | Yes | Number of days to look back when syncing data (0-365). |
+| `join_channels` | `bool` | Yes | Whether to automatically join public channels to sync messages. |
 
-#### Example
-
-**Python SDK**
-
-```python
-SlackConnector(
-  auth_config=SlackTokenAuthenticationAuthConfig(
-    access_token="<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
-  )
-)
-```
+### Example
 
 **API**
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
+curl --location 'https://api.airbyte.ai/integrations/connectors' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "workspace_id": "{your_workspace_id}",
-  "source_template_id": "{source_template_id}",
-  "auth_config": {
-    "access_token": "<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
+  "external_user_id": "{your_external_user_id}",
+  "connector_type": "slack",
+  "credentials": {
+    ...
+  },
+  "replication_config": {
+    "start_date": "<UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.>",
+    "lookback_window": "<Number of days to look back when syncing data (0-365).>",
+    "join_channels": "<Whether to automatically join public channels to sync messages.>"
   },
   "name": "My Slack Connector"
 }'
 ```
-
-
-### OAuth 2.0 Authentication
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `client_id` | `str` | Yes | Your Slack App's Client ID |
-| `client_secret` | `str` | Yes | Your Slack App's Client Secret |
-| `access_token` | `str` | Yes | OAuth access token (bot token from oauth.v2.access response) |
-
-#### Example
-
-**Python SDK**
-
-```python
-SlackConnector(
-  auth_config=SlackOauth20AuthenticationAuthConfig(
-    client_id="<Your Slack App's Client ID>",
-    client_secret="<Your Slack App's Client Secret>",
-    access_token="<OAuth access token (bot token from oauth.v2.access response)>"
-  )
-)
-```
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "workspace_id": "{your_workspace_id}",
-  "source_template_id": "{source_template_id}",
-  "auth_config": {
-    "client_id": "<Your Slack App's Client ID>",
-    "client_secret": "<Your Slack App's Client Secret>",
-    "access_token": "<OAuth access token (bot token from oauth.v2.access response)>"
-  },
-  "name": "My Slack Connector"
-}'
-```
-

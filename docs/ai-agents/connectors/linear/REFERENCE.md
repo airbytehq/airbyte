@@ -13,19 +13,19 @@ The Linear connector supports the following entities and actions.
 | Teams | [List](#teams-list), [Get](#teams-get) |
 | Comments | [List](#comments-list), [Get](#comments-get), [Create](#comments-create), [Update](#comments-update) |
 
-### Issues
+## Issues
 
-#### Issues List
+### Issues List
 
 Returns a paginated list of issues via GraphQL with pagination support
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.issues.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -38,7 +38,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -49,7 +49,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -58,11 +58,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Issues Get
+### Issues Get
 
 Get a single issue by ID via GraphQL
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.issues.get(
@@ -70,7 +70,7 @@ await linear.issues.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -86,7 +86,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -96,7 +96,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -105,11 +105,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Issues Create
+### Issues Create
 
 Create a new issue via GraphQL mutation
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.issues.create(
@@ -121,7 +121,7 @@ await linear.issues.create(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -141,7 +141,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -155,7 +155,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -164,11 +164,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Issues Update
+### Issues Update
 
 Update an existing issue via GraphQL mutation. All fields except id are optional for partial updates.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.issues.update(
@@ -180,7 +180,7 @@ await linear.issues.update(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -200,7 +200,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -214,7 +214,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -223,19 +223,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Projects
+## Projects
 
-#### Projects List
+### Projects List
 
 Returns a paginated list of projects via GraphQL with pagination support
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.projects.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -248,7 +248,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -259,7 +259,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -268,11 +268,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Projects Get
+### Projects Get
 
 Get a single project by ID via GraphQL
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.projects.get(
@@ -280,7 +280,7 @@ await linear.projects.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -296,7 +296,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -306,7 +306,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -315,19 +315,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Teams
+## Teams
 
-#### Teams List
+### Teams List
 
 Returns a list of teams via GraphQL with pagination support
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.teams.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -340,7 +340,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -351,7 +351,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -360,11 +360,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Teams Get
+### Teams Get
 
 Get a single team by ID via GraphQL
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.teams.get(
@@ -372,7 +372,7 @@ await linear.teams.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -388,7 +388,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -398,7 +398,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -407,13 +407,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Comments
+## Comments
 
-#### Comments List
+### Comments List
 
 Returns a paginated list of comments for an issue via GraphQL
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.comments.list(
@@ -421,7 +421,7 @@ await linear.comments.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -437,7 +437,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -449,7 +449,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -458,11 +458,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Comments Get
+### Comments Get
 
 Get a single comment by ID via GraphQL
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.comments.get(
@@ -470,7 +470,7 @@ await linear.comments.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -486,7 +486,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -496,7 +496,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -505,11 +505,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Comments Create
+### Comments Create
 
 Create a new comment on an issue via GraphQL mutation
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.comments.create(
@@ -518,7 +518,7 @@ await linear.comments.create(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -535,7 +535,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -546,7 +546,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -555,11 +555,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Comments Update
+### Comments Update
 
 Update an existing comment via GraphQL mutation
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await linear.comments.update(
@@ -568,7 +568,7 @@ await linear.comments.update(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -585,7 +585,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -596,7 +596,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -604,45 +604,4 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 
 </details>
-
-
-
-## Authentication
-
-The Linear connector supports the following authentication methods.
-
-
-### Linear API Key Authentication
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Linear API key from Settings > API > Personal API keys |
-
-#### Example
-
-**Python SDK**
-
-```python
-LinearConnector(
-  auth_config=LinearAuthConfig(
-    api_key="<Your Linear API key from Settings > API > Personal API keys>"
-  )
-)
-```
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "workspace_id": "{your_workspace_id}",
-  "source_template_id": "{source_template_id}",
-  "auth_config": {
-    "api_key": "<Your Linear API key from Settings > API > Personal API keys>"
-  },
-  "name": "My Linear Connector"
-}'
-```
 

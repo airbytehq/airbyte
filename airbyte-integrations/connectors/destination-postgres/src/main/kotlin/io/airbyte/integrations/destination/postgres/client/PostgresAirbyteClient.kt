@@ -9,6 +9,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
@@ -17,10 +18,9 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.postgres.sql.Column
-import io.airbyte.integrations.destination.postgres.sql.PostgresColumnUtils
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -38,7 +38,7 @@ private val log = KotlinLogging.logger {}
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
-    private val postgresColumnUtils: PostgresColumnUtils,
+    private val columnManager: PostgresColumnManager,
     private val postgresConfiguration: PostgresConfiguration
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
@@ -111,7 +111,7 @@ class PostgresAirbyteClient(
         replace: Boolean
     ) {
         val (createTableSql, createIndexesSql) =
-            sqlGenerator.createTable(stream, tableName, columnNameMapping, replace)
+            sqlGenerator.createTable(stream, tableName, replace)
         execute(createTableSql)
         try {
             execute(createIndexesSql)
@@ -140,7 +140,16 @@ class PostgresAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(sqlGenerator.copyTable(columnNameMapping, sourceTableName, targetTableName))
+        val metaColumnNames = columnManager.getMetaColumnNames()
+        val targetColumnNames =
+            if (postgresConfiguration.legacyRawTablesOnly == true) {
+                metaColumnNames
+            } else {
+                metaColumnNames + columnNameMapping.values
+            }
+        execute(
+            sqlGenerator.copyTable(targetColumnNames.toList(), sourceTableName, targetTableName)
+        )
     }
 
     override suspend fun upsertTable(
@@ -149,9 +158,7 @@ class PostgresAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(
-            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
-        )
+        execute(sqlGenerator.upsertTable(stream, sourceTableName, targetTableName))
     }
 
     override suspend fun dropTable(tableName: TableName) {
@@ -164,12 +171,10 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val columnsInDb = getColumnsFromDb(tableName)
-        val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
-        val columnsInStream =
-            postgresColumnUtils
-                .getTargetColumns(stream, columnNameMapping)
-                .filter { it.columnName !in defaultColumnNames }
-                .toSet()
+        // In raw tables mode, finalSchema contains just {_airbyte_data -> JSONB}
+        // In typed mode, finalSchema contains the mapped user columns
+        val columnsInStream = stream.tableSchema.columnSchema.finalSchema
+
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)
 
@@ -187,17 +192,12 @@ class PostgresAirbyteClient(
                 columnsToAdd = addedColumns,
                 columnsToRemove = deletedColumns,
                 columnsToModify = modifiedColumns,
-                columnsInDb = columnsInDb,
                 recreatePrimaryKeyIndex =
-                    !isRawTablesMode &&
-                        shouldRecreatePrimaryKeyIndex(stream, tableName, columnNameMapping),
-                primaryKeyColumnNames =
-                    postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping),
+                    !isRawTablesMode && shouldRecreatePrimaryKeyIndex(stream, tableName),
+                primaryKeyColumnNames = stream.tableSchema.getPrimaryKey().flatten(),
                 recreateCursorIndex =
-                    !isRawTablesMode &&
-                        shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
-                cursorColumnName =
-                    postgresColumnUtils.getCursorColumnName(stream, columnNameMapping),
+                    !isRawTablesMode && shouldRecreateCursorIndex(stream, tableName),
+                cursorColumnName = stream.tableSchema.getCursor().firstOrNull(),
             )
         )
     }
@@ -242,35 +242,12 @@ class PostgresAirbyteClient(
             log.info { "Deleted columns: ${columnChangeset.columnsToDrop}" }
             log.info { "Modified columns: ${columnChangeset.columnsToChange}" }
 
-            // Convert from TableColumns format to Column format
-            val columnsToAdd =
-                columnChangeset.columnsToAdd
-                    .map { (name, type) -> Column(name, type.type, type.nullable) }
-                    .toSet()
-            val columnsToRemove =
-                columnChangeset.columnsToDrop
-                    .map { (name, type) -> Column(name, type.type, type.nullable) }
-                    .toSet()
-            val columnsToModify =
-                columnChangeset.columnsToChange
-                    .map { (name, change) ->
-                        Column(name, change.newType.type, change.newType.nullable)
-                    }
-                    .toSet()
-            val columnsInDb =
-                (columnChangeset.columnsToRetain +
-                        columnChangeset.columnsToDrop +
-                        columnChangeset.columnsToChange.mapValues { it.value.originalType })
-                    .map { (name, type) -> Column(name, type.type, type.nullable) }
-                    .toSet()
-
             execute(
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
-                    columnsToAdd = columnsToAdd,
-                    columnsToRemove = columnsToRemove,
-                    columnsToModify = columnsToModify,
-                    columnsInDb = columnsInDb,
+                    columnsToAdd = columnChangeset.columnsToAdd,
+                    columnsToRemove = columnChangeset.columnsToDrop,
+                    columnsToModify = columnChangeset.columnsToChange,
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
                     recreateCursorIndex = false,
@@ -309,10 +286,8 @@ class PostgresAirbyteClient(
     private fun shouldRecreatePrimaryKeyIndex(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
     ): Boolean {
-        val streamPrimaryKeys =
-            postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
+        val streamPrimaryKeys = sqlGenerator.getPrimaryKeysColumnNames(stream)
         if (streamPrimaryKeys.isEmpty()) return false
 
         val existingPrimaryKeyIndexColumns = getPrimaryKeyIndexColumns(tableName)
@@ -353,10 +328,8 @@ class PostgresAirbyteClient(
     private fun shouldRecreateCursorIndex(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
     ): Boolean {
-        val streamCursor =
-            postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) ?: return false
+        val streamCursor = sqlGenerator.getCursorColumnName(stream) ?: return false
 
         val existingCursorIndexColumn = getCursorIndexColumn(tableName)
 
@@ -371,11 +344,10 @@ class PostgresAirbyteClient(
         }
     }
 
-    internal fun getColumnsFromDb(tableName: TableName): Set<Column> =
+    internal fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> =
         executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
-            val columnsInDb: MutableSet<Column> = mutableSetOf()
-            val defaultColumnNames =
-                postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
+            val columnsInDb = mutableMapOf<String, ColumnType>()
+            val defaultColumnNames = columnManager.getMetaColumnNames()
             while (rs.next()) {
                 val columnName = rs.getString(COLUMN_NAME_COLUMN)
 
@@ -384,8 +356,9 @@ class PostgresAirbyteClient(
                     continue
                 }
                 val dataType = rs.getString("data_type")
+                val isNullable = rs.getString("is_nullable") == "YES"
 
-                columnsInDb.add(Column(columnName, normalizePostgresType(dataType)))
+                columnsInDb[columnName] = ColumnType(normalizePostgresType(dataType), isNullable)
             }
 
             columnsInDb
@@ -413,31 +386,21 @@ class PostgresAirbyteClient(
         }
 
     internal fun generateSchemaChanges(
-        columnsInDb: Set<Column>,
-        columnsInStream: Set<Column>
-    ): Triple<Set<Column>, Set<Column>, Set<Column>> {
-        val addedColumns =
-            columnsInStream
-                .filter { it.columnName !in columnsInDb.map { col -> col.columnName } }
-                .toSet()
-        val deletedColumns =
-            columnsInDb
-                .filter { it.columnName !in columnsInStream.map { col -> col.columnName } }
-                .toSet()
-        val commonColumns =
-            columnsInStream
-                .filter { it.columnName in columnsInDb.map { col -> col.columnName } }
-                .toSet()
-        val modifiedColumns =
-            commonColumns
-                .filter {
-                    val dbType =
-                        columnsInDb
-                            .find { column -> it.columnName == column.columnName }
-                            ?.columnTypeName
-                    it.columnTypeName != dbType
-                }
-                .toSet()
+        columnsInDb: Map<String, ColumnType>,
+        columnsInStream: Map<String, ColumnType>
+    ): Triple<Map<String, ColumnType>, Map<String, ColumnType>, Map<String, ColumnTypeChange>> {
+        val addedColumns = columnsInStream.filterKeys { it !in columnsInDb.keys }
+        val deletedColumns = columnsInDb.filterKeys { it !in columnsInStream.keys }
+
+        val modifiedColumns = mutableMapOf<String, ColumnTypeChange>()
+        columnsInStream.forEach { (name, streamType) ->
+            val dbType = columnsInDb[name]
+            if (dbType != null && dbType.type != streamType.type) {
+                modifiedColumns[name] =
+                    ColumnTypeChange(originalType = dbType, newType = streamType)
+            }
+        }
+
         return Triple(addedColumns, deletedColumns, modifiedColumns)
     }
 
