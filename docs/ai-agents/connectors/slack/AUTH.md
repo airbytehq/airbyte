@@ -33,7 +33,7 @@ connector = SlackConnector(
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Your Slack Bot Token (xoxb-) or User Token (xoxp-) |
+| `api_token` | `str` | Yes | Your Slack Bot Token (xoxb-) or User Token (xoxp-) |
 
 ```python
 from airbyte_agent_slack import SlackConnector
@@ -41,7 +41,7 @@ from airbyte_agent_slack.models import SlackTokenAuthenticationAuthConfig
 
 connector = SlackConnector(
     auth_config=SlackTokenAuthenticationAuthConfig(
-        access_token="<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
+        api_token="<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
     )
 )
 ```
@@ -55,12 +55,12 @@ In hosted mode, you first create a connector via the Airbyte API (providing your
 Create a connector with OAuth credentials:
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/sources' \
+curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
   -H 'Authorization: Bearer <SCOPED_TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_id": "<WORKSPACE_ID>",
-    "source_template_id": "<SOURCE_TEMPLATE_ID>",
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Slack",
     "name": "My Slack Connector",
     "credentials": {
       "client_id": "<Your Slack App's Client ID>",
@@ -75,15 +75,14 @@ curl -X POST 'https://api.airbyte.ai/v1/integrations/sources' \
 Create a connector with Token credentials:
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/sources' \
+curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
   -H 'Authorization: Bearer <SCOPED_TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_id": "<WORKSPACE_ID>",
-    "source_template_id": "<SOURCE_TEMPLATE_ID>",
-    "name": "My Slack Connector",
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Slack",
     "credentials": {
-      "access_token": "<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
+      "api_token": "<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
     }
   }'
 ```

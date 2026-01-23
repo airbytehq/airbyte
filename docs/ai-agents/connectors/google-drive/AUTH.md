@@ -32,7 +32,7 @@ connector = GoogleDriveConnector(
 ```
 
 #### Token
-This authentication method is not available for this connector.
+This authentication method isn't available for this connector.
 
 ### Hosted execution
 
@@ -43,12 +43,12 @@ In hosted mode, you first create a connector via the Airbyte API (providing your
 Create a connector with OAuth credentials:
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/sources' \
+curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
   -H 'Authorization: Bearer <SCOPED_TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_id": "<WORKSPACE_ID>",
-    "source_template_id": "<SOURCE_TEMPLATE_ID>",
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Google-Drive",
     "name": "My Google-Drive Connector",
     "credentials": {
       "access_token": "<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
@@ -60,7 +60,7 @@ curl -X POST 'https://api.airbyte.ai/v1/integrations/sources' \
 ```
 
 #### Token
-This authentication method is not available for this connector.
+This authentication method isn't available for this connector.
 
 #### Execution
 

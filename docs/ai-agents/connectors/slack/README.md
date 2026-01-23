@@ -66,7 +66,7 @@ from airbyte_agent_slack.models import SlackTokenAuthenticationAuthConfig
 
 connector = SlackConnector(
     auth_config=SlackTokenAuthenticationAuthConfig(
-        access_token="<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
+        api_token="<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
     )
 )
 
@@ -97,6 +97,10 @@ async def slack_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
+## Replication Configuration
+
+This connector supports replication configuration for MULTI mode sources. See the [full reference documentation](./REFERENCE.md#replication-configuration) for details on available options like `start_date`.
+
 ## Full documentation
 
 This connector supports the following entities and actions.
@@ -121,6 +125,6 @@ For the service's official API docs, see the [Slack API reference](https://api.s
 
 ## Version information
 
-- **Package version:** 0.1.16
-- **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 49e6dfe93fc406c8d2ed525372608fa2766ebece
+- **Package version:** 0.1.20
+- **Connector version:** 0.1.7
+- **Generated with Connector SDK commit SHA:** 049f6ad546186bde8303b77e0e1001a831a58654

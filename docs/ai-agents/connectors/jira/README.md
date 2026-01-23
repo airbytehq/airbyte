@@ -21,16 +21,21 @@ The Jira connector is optimized to handle prompts like these.
 - Show me all comments on issue \{issue_key\}
 - How much time has been logged on issue \{issue_key\}?
 - List all worklogs for \{issue_key\} this month
+- Create a new task in the \{project_key\} project called '\{issue_title\}'
+- Create a bug in \{project_key\} with high priority
+- Update the summary of \{issue_key\} to '\{new_summary\}'
+- Change the priority of \{issue_key\} to high
+- Add a comment to \{issue_key\} saying '\{comment_text\}'
+- Update my comment on \{issue_key\}
+- Delete the test issue \{issue_key\}
+- Remove my comment from \{issue_key\}
 
 ## Unsupported questions
 
 The Jira connector isn't currently able to handle prompts like these.
 
-- Create a new issue in \{project_key\}
-- Update the status of \{issue_key\}
-- Add a comment to \{issue_key\}
 - Log time on \{issue_key\}
-- Delete issue \{issue_key\}
+- Transition \{issue_key\} to Done
 - Assign \{issue_key\} to \{team_member\}
 
 ## Installation
@@ -91,11 +96,11 @@ This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [Api_search](./REFERENCE.md#issues-api_search), [Get](./REFERENCE.md#issues-get) |
+| Issues | [Api_search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete) |
 | Projects | [Api_search](./REFERENCE.md#projects-api_search), [Get](./REFERENCE.md#projects-get) |
 | Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Api_search](./REFERENCE.md#users-api_search) |
 | Issue Fields | [List](./REFERENCE.md#issue-fields-list), [Api_search](./REFERENCE.md#issue-fields-api_search) |
-| Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Get](./REFERENCE.md#issue-comments-get) |
+| Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Create](./REFERENCE.md#issue-comments-create), [Get](./REFERENCE.md#issue-comments-get), [Update](./REFERENCE.md#issue-comments-update), [Delete](./REFERENCE.md#issue-comments-delete) |
 | Issue Worklogs | [List](./REFERENCE.md#issue-worklogs-list), [Get](./REFERENCE.md#issue-worklogs-get) |
 
 
@@ -107,6 +112,6 @@ For the service's official API docs, see the [Jira API reference](https://develo
 
 ## Version information
 
-- **Package version:** 0.1.47
-- **Connector version:** 1.0.6
-- **Generated with Connector SDK commit SHA:** 49e6dfe93fc406c8d2ed525372608fa2766ebece
+- **Package version:** 0.1.50
+- **Connector version:** 1.1.1
+- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9

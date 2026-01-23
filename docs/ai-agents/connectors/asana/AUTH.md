@@ -57,12 +57,12 @@ In hosted mode, you first create a connector via the Airbyte API (providing your
 Create a connector with OAuth credentials:
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/sources' \
+curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
   -H 'Authorization: Bearer <SCOPED_TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_id": "<WORKSPACE_ID>",
-    "source_template_id": "<SOURCE_TEMPLATE_ID>",
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Asana",
     "name": "My Asana Connector",
     "credentials": {
       "access_token": "<OAuth access token for API requests>",
@@ -78,13 +78,12 @@ curl -X POST 'https://api.airbyte.ai/v1/integrations/sources' \
 Create a connector with Token credentials:
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/sources' \
+curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
   -H 'Authorization: Bearer <SCOPED_TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_id": "<WORKSPACE_ID>",
-    "source_template_id": "<SOURCE_TEMPLATE_ID>",
-    "name": "My Asana Connector",
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Asana",
     "credentials": {
       "token": "<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
     }

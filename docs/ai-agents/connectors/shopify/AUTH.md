@@ -9,7 +9,7 @@ This page documents the authentication and configuration options for the Shopify
 In open source mode, you provide API credentials directly to the connector.
 
 #### OAuth
-This authentication method is not available for this connector.
+This authentication method isn't available for this connector.
 
 #### Token
 
@@ -35,20 +35,19 @@ connector = ShopifyConnector(
 In hosted mode, you first create a connector via the Airbyte API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 #### OAuth
-This authentication method is not available for this connector.
+This authentication method isn't available for this connector.
 
 #### Token
 
 Create a connector with Token credentials:
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/sources' \
+curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
   -H 'Authorization: Bearer <SCOPED_TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_id": "<WORKSPACE_ID>",
-    "source_template_id": "<SOURCE_TEMPLATE_ID>",
-    "name": "My Shopify Connector",
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Shopify",
     "credentials": {
       "api_key": "<Your Shopify Admin API access token>",
       "shop": "<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
