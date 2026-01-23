@@ -110,11 +110,15 @@ class MongoDbMetadataQuerier(
                     .append("nameOnly", true)
             ).append("filter", "{ 'type': 'collection' }")
 
-            return document.toBsonDocument()
-                .get("cursor").asDocument()
-                .getArray("firstBatch")
+            val bsonDocument = document.toBsonDocument()
+            val cursor = bsonDocument.get("cursor")?.asDocument()
+                ?: return emptySet()
+            val firstBatch = cursor.getArray("firstBatch")
+                ?: return emptySet()
+
+            return firstBatch
                 .asSequence()
-                .map { it.asDocument().getString("name").value }
+                .mapNotNull { it?.asDocument()?.getString("name")?.value }
                 .filter { isSupportedCollection(it) }
                 .toSet()
         } catch (e: MongoCommandException) {
