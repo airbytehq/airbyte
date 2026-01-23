@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 3.0.17
+  dockerImageTag: 3.0.17-rc.1
   dockerRepository: airbyte/destination-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   githubIssueLabel: destination-bigquery
@@ -39,7 +39,7 @@ data:
         message: "If you never interact with the raw tables, you can upgrade without taking any action. Otherwise, make sure to read the migration guide for more details."
         upgradeDeadline: "2026-07-31"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
   resourceRequirements:
     jobSpecific:
       - jobType: sync
