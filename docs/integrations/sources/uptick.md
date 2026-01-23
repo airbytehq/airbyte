@@ -156,6 +156,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.5.1 | 2026-01-23 | [72302](https://github.com/airbytehq/airbyte/pull/72302) | Add branch, client, property, author, and salesperson fields to defectquotes |
 | 0.5.0 | 2026-01-13 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems, and add 6 new streams: servicetasks, routineservices, routineservicelevels, routineservicetypes, routineserviceleveltypes, subtasks |
 | 0.4.3 | 2026-01-20 | [72056](https://github.com/airbytehq/airbyte/pull/72056) | Update dependencies |
 | 0.4.2 | 2026-01-14 | [71437](https://github.com/airbytehq/airbyte/pull/71437) | Update dependencies |
