@@ -336,6 +336,7 @@ class CollectionProducts(IncrementalShopifyGraphQlBulkStream):
 
     bulk_query: CollectionProduct = CollectionProduct
     cursor_field = "collection_updated_at"
+    primary_key = ["collection_id", "product_id"]
 
 
 class BalanceTransactions(IncrementalShopifyStream):
