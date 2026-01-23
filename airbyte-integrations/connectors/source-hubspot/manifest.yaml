@@ -268,7 +268,8 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: HttpRequester
+                  type: CustomRequester
+                  class_name: source_declarative_manifest.components.HubspotHttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -358,7 +359,8 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: HttpRequester
+                  type: CustomRequester
+                  class_name: source_declarative_manifest.components.HubspotHttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -480,7 +482,8 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: HttpRequester
+                  type: CustomRequester
+                  class_name: source_declarative_manifest.components.HubspotHttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
