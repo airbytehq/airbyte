@@ -88,6 +88,55 @@ definitions:
         error_message: >-
           Bad request (400). Please verify your credentials and try again.
 
+  error_handler_ignore_403:
+    # Same as the base error handler, but ignores 403 errors
+    # to avoid failing the sync when fetching dynamic streams.
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      # HubSpot API does not always return Retry-After value for 429 HTTP error
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        error_message: >-
+          Bad request (400). Please verify your credentials and try again.
+
   offset_paginator:
     type: DefaultPaginator
     page_token_option:
@@ -1845,6 +1894,54 @@ definitions:
           $ref: "#/schemas/tickets"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  properties_stream:
+    type: DeclarativeStream
+    name: properties
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/properties/{{ stream_partition['objectType'] }}
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/error_handler_ignore_403"
+      record_selector:
+        $ref: "#/definitions/base_selector"
+      partition_router:
+        type: ListPartitionRouter
+        values:
+          - company
+          - contact
+          - deal
+          - ticket
+          - call
+          - communication
+          - email
+          - lead
+          - meeting
+          - note
+          - order
+          - product
+          - quote
+          - service
+          - subscription
+          - task
+          - user
+        cursor_field: objectType
+      decoder:
+        type: JsonDecoder
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - objectType
+            value: "{{ stream_partition['objectType'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/properties"
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_stream"
@@ -1878,6 +1975,7 @@ streams:
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
+  - "#/definitions/properties_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -1998,53 +2096,7 @@ dynamic_streams:
           path: /crm/v3/schemas
           http_method: GET
           error_handler:
-            # Same as the base error handler, but ignores 403 errors
-            # to avoid failing the sync when fetching dynamic streams.
-            type: DefaultErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-              # HubSpot API does not always return Retry-After value for 429 HTTP error
-              - type: ExponentialBackoffStrategy
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 429
-                error_message: >-
-                  HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 502
-                  - 503
-                error_message: >-
-                  HubSpot server error (5xx). Retrying with exponential backoff...
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 401
-                error_message: >-
-                  Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
-              # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 530
-                error_message: >-
-                  The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 403
-                error_message: >-
-                  Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 400
-                error_message: >-
-                  Bad request (400). Please verify your credentials and try again.
+            $ref: "#/definitions/error_handler_ignore_403"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7462,3 +7514,155 @@ schemas:
         type:
           - "null"
           - boolean
+
+  properties:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      calculated:
+        type:
+          - boolean
+          - "null"
+      calculationFormula:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdUserId:
+        type:
+          - string
+          - "null"
+      dataSensitivity:
+        type:
+          - string
+          - "null"
+      dateDisplayHint:
+        type:
+          - string
+          - "null"
+      displayOrder:
+        type:
+          - number
+          - "null"
+      externalOptions:
+        type:
+          - boolean
+          - "null"
+      fieldType:
+        type:
+          - string
+          - "null"
+      formField:
+        type:
+          - boolean
+          - "null"
+      groupName:
+        type:
+          - string
+          - "null"
+      hasUniqueValue:
+        type:
+          - boolean
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      hubspotDefined:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      modificationMetadata:
+        type:
+          - object
+          - "null"
+        properties:
+          archivable:
+            type:
+              - boolean
+              - "null"
+          readOnlyDefinition:
+            type:
+              - boolean
+              - "null"
+          readOnlyOptions:
+            type:
+              - boolean
+              - "null"
+          readOnlyValue:
+            type:
+              - boolean
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      objectType:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            displayOrder:
+              type:
+                - number
+                - "null"
+            hidden:
+              type:
+                - boolean
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      referencedObjectType:
+        type:
+          - string
+          - "null"
+      showCurrencySymbol:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedUserId:
+        type:
+          - string
+          - "null"
