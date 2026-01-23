@@ -333,6 +333,7 @@ class HubspotHttpClient(HttpClient):
         super()._handle_error_resolution(response, exc, request, error_resolution, exit_on_rate_limit)
 
 
+@dataclass
 class HubspotHttpRequester(HttpRequester):
     """
     Custom HttpRequester that uses HubspotHttpClient for OAuth token refresh on 401.
@@ -341,7 +342,27 @@ class HubspotHttpRequester(HttpRequester):
     automatically refreshes OAuth tokens when a 401 response is received during retries.
     """
 
+    # Request options attributes - these are passed by the declarative framework
+    # and need to be explicitly declared so they can be used to create the
+    # InterpolatedRequestOptionsProvider before calling super().__post_init__()
+    request_body_json: Optional[Mapping[str, Any]] = None
+    request_headers: Optional[Mapping[str, str]] = None
+    request_parameters: Optional[Mapping[str, str]] = None
+    request_body_data: Optional[Union[Mapping[str, str], str]] = None
+    query_properties_key: Optional[str] = None
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # Create the request options provider with the request options attributes
+        # BEFORE calling super().__post_init__() so they are properly initialized
+        self.request_options_provider = InterpolatedRequestOptionsProvider(
+            request_body_data=self.request_body_data,
+            request_body_json=self.request_body_json,
+            request_headers=self.request_headers,
+            request_parameters=self.request_parameters,
+            query_properties_key=self.query_properties_key,
+            config=self.config,
+            parameters=parameters or {},
+        )
         super().__post_init__(parameters)
 
         # Get backoff strategies from error handler if available
