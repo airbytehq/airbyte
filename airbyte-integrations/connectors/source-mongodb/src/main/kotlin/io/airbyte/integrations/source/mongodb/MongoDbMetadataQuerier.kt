@@ -56,7 +56,15 @@ class MongoDbMetadataQuerier(
     }
 
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
-        // Return collections in the configured database
+        // Only return collections when namespace matches the configured database
+        // or when namespace is null (initial discovery call)
+        if (streamNamespace != null && streamNamespace != config.database) {
+            return emptyList()
+        }
+        // When namespace is null, return empty - we only want streams from explicit namespaces
+        if (streamNamespace == null) {
+            return emptyList()
+        }
         return memoizedCollectionNames.map { collectionName ->
             StreamIdentifier.from(
                 StreamDescriptor()
@@ -192,13 +200,13 @@ class MongoDbMetadataQuerier(
             log.warn { "Error discovering fields for collection $collectionName: ${e.message}" }
             // If discovery fails, at least return the _id field
             if (discoveredFields.isEmpty()) {
-                discoveredFields[ID_FIELD] = MongoDbFieldType.OBJECT_ID
+                discoveredFields[ID_FIELD] = MongoDbFieldType.STRING
             }
         }
 
         // Ensure _id is always included
         if (ID_FIELD !in discoveredFields) {
-            discoveredFields[ID_FIELD] = MongoDbFieldType.OBJECT_ID
+            discoveredFields[ID_FIELD] = MongoDbFieldType.STRING
         }
 
         return discoveredFields.map { (name, type) -> Field(name, type) }
