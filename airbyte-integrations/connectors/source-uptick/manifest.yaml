@@ -1857,7 +1857,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[DefectQuote]: id,description,ref,created,updated,status,date,due_date,expiry_date,last_actioned,email_template,reminder_email_template,scope_of_works
+          fields[DefectQuote]: id,description,ref,created,updated,status,date,due_date,expiry_date,last_actioned,email_template,reminder_email_template,scope_of_works,branch,client,property,author,salesperson
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1917,6 +1917,26 @@ streams:
           scope_of_works:
             type:
               - string
+          branch_id:
+            type:
+              - integer
+              - "null"
+          client_id:
+            type:
+              - integer
+              - "null"
+          property_id:
+            type:
+              - integer
+              - "null"
+          author_id:
+            type:
+              - integer
+              - "null"
+          salesperson_id:
+            type:
+              - integer
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -1972,6 +1992,26 @@ streams:
             path:
               - scope_of_works
             value: '{{ record["attributes"]["scope_of_works"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - branch_id
+            value: '{{ record["relationships"]["branch"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - client_id
+            value: '{{ record["relationships"]["client"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - property_id
+            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - author_id
+            value: '{{ record["relationships"]["author"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - salesperson_id
+            value: '{{ record["relationships"]["salesperson"]["data"]["id"] or "None"}}'
   - type: DeclarativeStream
     name: suppliers
     primary_key:
