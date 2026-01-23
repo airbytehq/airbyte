@@ -1799,7 +1799,7 @@
       "get": {
         "tags": ["Embedded"],
         "summary": "Get Scoped Token Info",
-        "description": "Get the organization and workspace id for a scoped token.",
+        "description": "Get the organization, workspace id, and external user id for a scoped token.",
         "operationId": "deprecated_get_embedded_organizations_current_scoped",
         "deprecated": true,
         "security": [
@@ -2048,7 +2048,7 @@
       "get": {
         "tags": ["Embedded"],
         "summary": "Get Scoped Token Info",
-        "description": "Get the organization and workspace id for a scoped token.",
+        "description": "Get the organization, workspace id, and external user id for a scoped token.",
         "operationId": "get_embedded_scoped_token_info",
         "security": [
           {
@@ -2136,6 +2136,18 @@
           }
         ],
         "parameters": [
+          {
+            "name": "use_global",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows.",
+              "default": false,
+              "title": "Use Global"
+            },
+            "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows."
+          },
           {
             "name": "tags",
             "in": "query",
@@ -2239,6 +2251,18 @@
           }
         ],
         "parameters": [
+          {
+            "name": "use_global",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows.",
+              "default": false,
+              "title": "Use Global"
+            },
+            "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows."
+          },
           {
             "name": "tags",
             "in": "query",
@@ -6565,6 +6589,18 @@
         ],
         "parameters": [
           {
+            "name": "use_global",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows.",
+              "default": false,
+              "title": "Use Global"
+            },
+            "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows."
+          },
+          {
             "name": "tags",
             "in": "query",
             "required": false,
@@ -8796,6 +8832,105 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{organization_id}/agentic-onboarding-status": {
+      "patch": {
+        "tags": ["Organizations"],
+        "summary": "Update Agentic Onboarding Status",
+        "description": "Update the agentic onboarding status for an organization.\nUsed by the new agentic onboarding flow to track progress.",
+        "operationId": "update_internal_account_organizations_organization_id_agentic_onboarding_status",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgenticOnboardingStatusUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgenticOnboardingStatusUpdateResponse"
                 }
               }
             }
@@ -13479,6 +13614,46 @@
         "title": "AgentToolName",
         "description": "Enum of tool names available to agents.\nThis enum is automatically synced to the frontend via OpenAPI generation,\nensuring type safety when handling tool calls and responses.\nWhen adding a new tool to an agent (e.g., in app/agents/chat_agent.py),\nadd the corresponding tool name here to expose it to the frontend."
       },
+      "AgenticOnboardingStatusEnum": {
+        "type": "string",
+        "enum": [
+          "NOT_STARTED",
+          "SOURCE_CONNECTED",
+          "CONTINUE_TO_CONTEXT",
+          "CONTEXT_COMPLETE",
+          "REPLICATION_CONFIGURED",
+          "COMPLETED"
+        ],
+        "title": "AgenticOnboardingStatusEnum",
+        "description": "Status tracking for the new agentic onboarding flow."
+      },
+      "AgenticOnboardingStatusUpdateRequest": {
+        "properties": {
+          "agentic_onboarding_status": {
+            "$ref": "#/components/schemas/AgenticOnboardingStatusEnum"
+          }
+        },
+        "type": "object",
+        "required": ["agentic_onboarding_status"],
+        "title": "AgenticOnboardingStatusUpdateRequest",
+        "description": "Request to update agentic onboarding status."
+      },
+      "AgenticOnboardingStatusUpdateResponse": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "agentic_onboarding_status": {
+            "$ref": "#/components/schemas/AgenticOnboardingStatusEnum"
+          }
+        },
+        "type": "object",
+        "required": ["organization_id", "agentic_onboarding_status"],
+        "title": "AgenticOnboardingStatusUpdateResponse",
+        "description": "Response after updating agentic onboarding status."
+      },
       "AirbyteHostedConnectionTemplate": {
         "properties": {
           "id": {
@@ -13634,6 +13809,9 @@
                   "$ref": "#/components/schemas/AnyCondition"
                 },
                 {
+                  "$ref": "#/components/schemas/HasCondition"
+                },
+                {
                   "$ref": "#/components/schemas/ContainsCondition"
                 }
               ]
@@ -13694,6 +13872,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/HasCondition"
                 },
                 {
                   "$ref": "#/components/schemas/ContainsCondition"
@@ -15750,6 +15931,16 @@
                 "type": "null"
               }
             ]
+          },
+          "agentic_onboarding_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgenticOnboardingStatusEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -16529,6 +16720,71 @@
         "title": "GteCondition",
         "description": "Greater than or equal: field >= value (equivalent to not lt)."
       },
+      "HasCondition": {
+        "properties": {
+          "has": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NeqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/InCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LikeCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/FuzzyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/KeywordCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NotCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AndCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/OrCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/HasCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/ContainsCondition"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Has",
+            "description": "Object field condition: {json_column_name: <condition on nested fields>}"
+          }
+        },
+        "type": "object",
+        "required": ["has"],
+        "title": "HasCondition",
+        "description": "Access nested field within a JSON object column.\n\nExample: {\"has\": {\"metadata\": {\"eq\": {\"version\": \"2.0\"}}}}\nAccesses metadata->>'$.version' for comparison.\n\nCan be nested with 'any' for complex queries:\n{\"any\": {\"transitions\": {\"has\": {\"fields\": {\"eq\": {\"timespent\": 3600}}}}}}"
+      },
       "HashingMapper": {
         "properties": {
           "type": {
@@ -16901,6 +17157,9 @@
                 "$ref": "#/components/schemas/AnyCondition"
               },
               {
+                "$ref": "#/components/schemas/HasCondition"
+              },
+              {
                 "$ref": "#/components/schemas/ContainsCondition"
               }
             ],
@@ -17142,6 +17401,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/HasCondition"
                 },
                 {
                   "$ref": "#/components/schemas/ContainsCondition"
@@ -17980,6 +18242,9 @@
                 "$ref": "#/components/schemas/AnyCondition"
               },
               {
+                "$ref": "#/components/schemas/HasCondition"
+              },
+              {
                 "$ref": "#/components/schemas/ContainsCondition"
               },
               {
@@ -17987,7 +18252,7 @@
               }
             ],
             "title": "Filter",
-            "description": "Optional filter condition. If omitted, returns all documents."
+            "description": "Optional filter condition. If omitted, returns all documents. Supports dot notation for nested fields: {'eq': {'user.name': 'Alice'}} expands to {'has': {'user': {'eq': {'name': 'Alice'}}}}."
           },
           "sort": {
             "anyOf": [
@@ -18427,10 +18692,15 @@
             "type": "string",
             "format": "uuid",
             "title": "Workspace Id"
+          },
+          "external_user_id": {
+            "type": "string",
+            "title": "External User Id",
+            "description": "The external user identifier (workspace name)."
           }
         },
         "type": "object",
-        "required": ["organization_id", "workspace_id"],
+        "required": ["organization_id", "workspace_id", "external_user_id"],
         "title": "ScopedTokenInfoGetResponse"
       },
       "SearchHit": {
@@ -18507,7 +18777,7 @@
               }
             ],
             "title": "Fields",
-            "description": "Field paths to include in results. Each path is a list of keys for nested access. Example: [['id'], ['user', 'name'], ['metadata', 'tags']] returns id, user.name, and metadata.tags."
+            "description": "Field paths to include in results. Use dot notation for nested fields. Example: ['id', 'user.name', 'metadata.tags'] returns id, user.name, and metadata.tags."
           }
         },
         "type": "object",
@@ -18789,17 +19059,35 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "workspace_id": {
+          "external_user_id": {
             "type": "string",
-            "format": "uuid",
-            "title": "Workspace Id",
-            "description": "The workspace in which to create the source."
+            "title": "External User Id",
+            "description": "External user identifier (maps to workspace name)."
           },
-          "source_template_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Source Template Id",
-            "description": "The id of the source template to create the source from."
+          "connector_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Type",
+            "description": "Connector name (case-insensitive exact match, e.g., 'Hubspot', 'hubspot', 'HUBSPOT')."
+          },
+          "definition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Definition Id",
+            "description": "Actor definition ID for the connector."
           },
           "source_config": {
             "anyOf": [
@@ -18855,7 +19143,7 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_template_id"],
+        "required": ["external_user_id"],
         "title": "SourceCheckConfigRequest"
       },
       "SourceCheckConfigResponse": {
@@ -18966,17 +19254,35 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "workspace_id": {
+          "external_user_id": {
             "type": "string",
-            "format": "uuid",
-            "title": "Workspace Id",
-            "description": "The workspace in which to create the source."
+            "title": "External User Id",
+            "description": "External user identifier (maps to workspace name)."
           },
-          "source_template_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Source Template Id",
-            "description": "The id of the source template to create the source from."
+          "connector_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Type",
+            "description": "Connector name (case-insensitive exact match, e.g., 'Hubspot', 'hubspot', 'HUBSPOT')."
+          },
+          "definition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Definition Id",
+            "description": "Actor definition ID for the connector."
           },
           "source_config": {
             "anyOf": [
@@ -19032,7 +19338,7 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_template_id"],
+        "required": ["external_user_id"],
         "title": "SourceCreateRequest"
       },
       "SourceCreateResponse": {
@@ -19267,6 +19573,14 @@
           },
           "definition": {
             "$ref": "#/components/schemas/ConnectorDefinition"
+          },
+          "example_questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Example Questions",
+            "description": "Example questions that can be asked about data from this connector (max 3)"
           }
         },
         "type": "object",
