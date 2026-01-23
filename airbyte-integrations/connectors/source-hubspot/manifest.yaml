@@ -28,7 +28,8 @@ definitions:
       Private App Credentials: "#/definitions/api_token_auth"
 
   base_requester:
-    type: HttpRequester
+    type: CustomRequester
+    class_name: source_declarative_manifest.components.HubspotHttpRequester
     url_base: "https://api.hubapi.com"
     authenticator:
       $ref: "#/definitions/authenticator"
