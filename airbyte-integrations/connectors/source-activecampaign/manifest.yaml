@@ -213,6 +213,40 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/forms"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['account_username'] }}.api-us1.com/api/3
@@ -231,6 +265,7 @@ streams:
   - $ref: "#/definitions/streams/deals"
   - $ref: "#/definitions/streams/segments"
   - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/accounts"
 
 spec:
   type: Spec
@@ -261,6 +296,7 @@ metadata:
     deals: false
     segments: false
     forms: false
+    accounts: false
 
 schemas:
   campaigns:
@@ -1516,6 +1552,56 @@ schemas:
           - "null"
         examples:
           - "1"
+    required:
+      - id
+    additionalProperties: true
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      accountUrl:
+        type:
+          - string
+          - "null"
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+      contactCount:
+        type:
+          - string
+          - "null"
+      dealCount:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          notes:
+            type:
+              - string
+              - "null"
+          accountCustomFieldData:
+            type:
+              - string
+              - "null"
+          accountContacts:
+            type:
+              - string
+              - "null"
     required:
       - id
     additionalProperties: true

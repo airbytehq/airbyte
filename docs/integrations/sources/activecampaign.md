@@ -12,6 +12,7 @@ This source can sync data from the [ActiveCampaign API](https://developers.activ
 - deals
 - segments
 - forms
+- accounts
 
 ### Features
 
