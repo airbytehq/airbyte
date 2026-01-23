@@ -12,9 +12,9 @@ The Amazon-Ads connector supports the following entities and actions.
 | Portfolios | [List](#portfolios-list), [Get](#portfolios-get) |
 | Sponsored Product Campaigns | [List](#sponsored-product-campaigns-list), [Get](#sponsored-product-campaigns-get) |
 
-### Profiles
+## Profiles
 
-#### Profiles List
+### Profiles List
 
 Returns a list of advertising profiles associated with the authenticated user.
 Profiles represent an advertiser's account in a specific marketplace. Advertisers
@@ -22,13 +22,13 @@ may have a single profile if they advertise in only one marketplace, or a separa
 profile for each marketplace if they advertise regionally or globally.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await amazon_ads.profiles.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -41,7 +41,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -53,7 +53,7 @@ Valid values: seller, vendor, agency
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -67,13 +67,13 @@ Valid values: seller, vendor, agency
 
 </details>
 
-#### Profiles Get
+### Profiles Get
 
 Retrieves a single advertising profile by its ID. The profile contains
 information about the advertiser's account in a specific marketplace.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await amazon_ads.profiles.get(
@@ -81,7 +81,7 @@ await amazon_ads.profiles.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -97,7 +97,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -107,7 +107,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -121,21 +121,21 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Portfolios
+## Portfolios
 
-#### Portfolios List
+### Portfolios List
 
 Returns a list of portfolios for the specified profile. Portfolios are used to
 group campaigns together for organizational and budget management purposes.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await amazon_ads.portfolios.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -148,19 +148,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `includeExtendedDataFields` | `string` | No | Whether to include extended data fields in the response |
 
 
-#### Portfolios Get
+### Portfolios Get
 
 Retrieves a single portfolio by its ID using the v2 API.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await amazon_ads.portfolios.get(
@@ -168,7 +168,7 @@ await amazon_ads.portfolios.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -184,7 +184,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -194,7 +194,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -210,21 +210,21 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Sponsored Product Campaigns
+## Sponsored Product Campaigns
 
-#### Sponsored Product Campaigns List
+### Sponsored Product Campaigns List
 
 Returns a list of sponsored product campaigns for the specified profile.
 Sponsored Products campaigns promote individual product listings on Amazon.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await amazon_ads.sponsored_product_campaigns.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -237,7 +237,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -247,12 +247,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `nextToken` | `string` | No | Token for pagination |
 
 
-#### Sponsored Product Campaigns Get
+### Sponsored Product Campaigns Get
 
 Retrieves a single sponsored product campaign by its ID using the v2 API.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await amazon_ads.sponsored_product_campaigns.get(
@@ -260,7 +260,7 @@ await amazon_ads.sponsored_product_campaigns.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -276,7 +276,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -286,7 +286,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
