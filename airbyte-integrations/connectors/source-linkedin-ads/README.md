@@ -29,7 +29,7 @@ An image will be available on your host with the tag `airbyte/source-linkedin-ad
 ### Creating credentials
 
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/linkedin-ads)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` object in the connector's `manifest.yaml` file.
+to generate the necessary credentials. Then create a file `secrets/config_oauth.json` conforming to the `spec` object in the connector's `manifest.yaml` file. Note: The acceptance tests also use `secrets/config_multiple_account_ids.json` for testing multiple account IDs configuration.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 
 ### Running as a docker container
