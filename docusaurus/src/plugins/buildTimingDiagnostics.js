@@ -5,7 +5,8 @@
  * This helps identify where time is spent during the Docusaurus build:
  * - loadContent: Plugins load their content (docs, blog posts, etc.)
  * - contentLoaded: Content is processed and routes are created
- * - configureWebpack: Webpack configuration is set up
+ * - configureWebpack/Rspack: Bundler configuration is set up
+ * - Rspack compilation hooks: Track bundling progress
  * - postBuild: After static site generation completes (before llms.txt runs)
  */
 
@@ -16,6 +17,87 @@ const logWithTimestamp = (phase, message) => {
 
 // Track global build start time
 let globalBuildStart = null;
+
+// Create a Rspack/Webpack plugin class for timing hooks
+class BundlerTimingPlugin {
+  constructor(recordPhase, isServer) {
+    this.recordPhase = recordPhase;
+    this.isServer = isServer;
+    this.bundleType = isServer ? 'server' : 'client';
+  }
+
+  apply(compiler) {
+    const bundleType = this.bundleType;
+    const recordPhase = this.recordPhase;
+
+    // Log when compilation starts
+    compiler.hooks.beforeCompile.tap('BundlerTimingPlugin', () => {
+      recordPhase(`rspack-beforeCompile-${bundleType}`);
+      logWithTimestamp(`rspack-${bundleType}`, 'Rspack compilation starting...');
+    });
+
+    // Log when compilation object is created
+    compiler.hooks.compilation.tap('BundlerTimingPlugin', (compilation) => {
+      recordPhase(`rspack-compilation-${bundleType}`);
+      logWithTimestamp(`rspack-${bundleType}`, 'Rspack compilation object created');
+      
+      // Track when modules are being built
+      let moduleCount = 0;
+      let lastLogTime = Date.now();
+      
+      compilation.hooks.buildModule.tap('BundlerTimingPlugin', (module) => {
+        moduleCount++;
+        // Log progress every 500 modules or every 10 seconds
+        const now = Date.now();
+        if (moduleCount % 500 === 0 || (now - lastLogTime > 10000)) {
+          logWithTimestamp(`rspack-${bundleType}`, `Building modules... (${moduleCount} modules processed)`);
+          lastLogTime = now;
+        }
+      });
+
+      // Log when all modules are built
+      compilation.hooks.finishModules.tap('BundlerTimingPlugin', () => {
+        recordPhase(`rspack-finishModules-${bundleType}`);
+        logWithTimestamp(`rspack-${bundleType}`, `All modules built (${moduleCount} total)`);
+      });
+
+      // Log when optimization starts
+      compilation.hooks.optimize.tap('BundlerTimingPlugin', () => {
+        recordPhase(`rspack-optimize-${bundleType}`);
+        logWithTimestamp(`rspack-${bundleType}`, 'Optimization phase starting...');
+      });
+
+      // Log when chunks are optimized
+      compilation.hooks.afterOptimizeChunks.tap('BundlerTimingPlugin', (chunks) => {
+        const chunkCount = Array.isArray(chunks) ? chunks.length : (chunks?.size || 0);
+        recordPhase(`rspack-afterOptimizeChunks-${bundleType}`);
+        logWithTimestamp(`rspack-${bundleType}`, `Chunks optimized (${chunkCount} chunks)`);
+      });
+    });
+
+    // Log when assets are about to be emitted
+    compiler.hooks.emit.tap('BundlerTimingPlugin', (compilation) => {
+      const assetCount = Object.keys(compilation.assets || {}).length;
+      recordPhase(`rspack-emit-${bundleType}`);
+      logWithTimestamp(`rspack-${bundleType}`, `Emitting ${assetCount} assets...`);
+    });
+
+    // Log when compilation is done
+    compiler.hooks.done.tap('BundlerTimingPlugin', (stats) => {
+      recordPhase(`rspack-done-${bundleType}`);
+      const time = stats.endTime - stats.startTime;
+      logWithTimestamp(`rspack-${bundleType}`, `Rspack ${bundleType} bundle complete! (${time}ms, ${(time/1000/60).toFixed(2)} min)`);
+      
+      // Log any warnings or errors
+      if (stats.hasWarnings()) {
+        logWithTimestamp(`rspack-${bundleType}`, `Warnings: ${stats.compilation.warnings.length}`);
+      }
+      if (stats.hasErrors()) {
+        logWithTimestamp(`rspack-${bundleType}`, `Errors: ${stats.compilation.errors.length}`);
+      }
+    });
+  }
+}
 
 module.exports = function buildTimingDiagnosticsPlugin(context, options) {
   if (!globalBuildStart) {
@@ -29,7 +111,7 @@ module.exports = function buildTimingDiagnosticsPlugin(context, options) {
     const sincePluginInit = now - pluginStartTime;
     const sinceBuildStart = now - globalBuildStart;
     phaseTimings[phase] = { timestamp: now, sincePluginInit, sinceBuildStart };
-    logWithTimestamp(phase, `Started (${sincePluginInit}ms since plugin init, ${sinceBuildStart}ms since build start)`);
+    logWithTimestamp(phase, `(${sincePluginInit}ms since plugin init, ${sinceBuildStart}ms since build start)`);
   };
 
   logWithTimestamp('init', `Plugin initialized (build started ${Date.now() - globalBuildStart}ms ago)`);
@@ -52,9 +134,12 @@ module.exports = function buildTimingDiagnosticsPlugin(context, options) {
     configureWebpack(config, isServer, utils) {
       const phase = `configureWebpack-${isServer ? 'server' : 'client'}`;
       recordPhase(phase);
-      logWithTimestamp(phase, `Webpack ${isServer ? 'server' : 'client'} bundle configuration starting...`);
-      // Don't modify webpack config, just log
-      return {};
+      logWithTimestamp(phase, `Rspack ${isServer ? 'server' : 'client'} bundle configuration starting...`);
+      
+      // Add our timing plugin to track Rspack compilation phases
+      return {
+        plugins: [new BundlerTimingPlugin(recordPhase, isServer)],
+      };
     },
 
     // This runs BEFORE static site generation
