@@ -103,7 +103,7 @@ connector = SlackConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@SlackConnector.describe
+@SlackConnector.tool_utils
 async def slack_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```

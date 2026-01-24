@@ -57,7 +57,7 @@ connector = SalesforceConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@SalesforceConnector.describe
+@SalesforceConnector.tool_utils
 async def salesforce_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -78,10 +78,11 @@ connector = SalesforceConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@SalesforceConnector.describe
+@SalesforceConnector.tool_utils
 async def salesforce_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
+
 
 ## Full documentation
 
@@ -111,6 +112,6 @@ For the service's official API docs, see the [Salesforce API reference](https://
 
 ## Version information
 
-- **Package version:** 0.1.50
+- **Package version:** 0.1.51
 - **Connector version:** 1.0.5
-- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
