@@ -83,4 +83,11 @@ class PolarisCatalogSpec(
         json = """{"examples": ["secretkey123"], "airbyte_secret": true, "order":4}"""
     )
     val clientSecret: String,
+    @get:JsonSchemaTitle("Polaris Realm")
+    @get:JsonPropertyDescription(
+        "The Polaris realm name for multi-realm deployments. If not provided, defaults to the server's default realm."
+    )
+    @get:JsonProperty("realm")
+    @get:JsonSchemaInject(json = """{"examples": ["POLARIS", "my-realm"], "order":5}""")
+    val realm: String? = null,
 ) : GcsCatalogType(catalogType)

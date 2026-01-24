@@ -132,6 +132,7 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
                         catalogName = spec.catalogName,
                         clientId = spec.clientId,
                         clientSecret = spec.clientSecret,
+                        realm = spec.realm,
                     )
                 }
             }

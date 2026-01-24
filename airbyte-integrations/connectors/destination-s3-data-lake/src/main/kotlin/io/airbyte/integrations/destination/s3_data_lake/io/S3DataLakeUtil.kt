@@ -166,6 +166,7 @@ class S3DataLakeUtil(
                 CatalogProperties.WAREHOUSE_LOCATION to catalogConfig.catalogName,
                 S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
                 S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+                "header.Polaris-Realm" to catalogConfig.realm,
             )
 
         return restProperties +
