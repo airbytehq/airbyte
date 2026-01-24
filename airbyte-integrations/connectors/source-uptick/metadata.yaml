@@ -33,13 +33,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 54c75c42-df4a-4f3e-a5f3-d50cf80f1649
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.5.1
   dockerRepository: airbyte/source-uptick
   githubIssueLabel: source-uptick
   icon: icon.svg
   license: ELv2
   name: Uptick
-  releaseDate: 2026-01-13
+  releaseDate: 2026-01-23
   releaseStage: generally_available
   releases:
     breakingChanges:
