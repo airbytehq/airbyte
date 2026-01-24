@@ -1,11 +1,20 @@
 import { API_SIDEBAR_PATH, SPEC_CACHE_PATH } from "./constants";
 import * as fs from "fs";
 
+// Build timing utility for diagnosing slow builds
+const logWithTimestamp = (message: string) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] [sidebar-generator] ${message}`);
+};
+
 const loadAllowedTags = (): string[] => {
+  logWithTimestamp("Loading allowed tags from OpenAPI spec...");
   if (fs.existsSync(SPEC_CACHE_PATH)) {
     try {
       const spec = JSON.parse(fs.readFileSync(SPEC_CACHE_PATH, "utf8"));
-      return spec.tags?.map((tag: any) => tag.name) || [];
+      const tags = spec.tags?.map((tag: any) => tag.name) || [];
+      logWithTimestamp(`Loaded ${tags.length} allowed tags from spec`);
+      return tags;
     } catch (e) {
       console.warn("Could not load OpenAPI spec for tag filtering:", e);
     }
@@ -14,15 +23,19 @@ const loadAllowedTags = (): string[] => {
 };
 
 export const loadSonarApiSidebar = (): any[] => {
+  logWithTimestamp("Starting loadSonarApiSidebar...");
   const allowedTags = loadAllowedTags();
 
   if (fs.existsSync(API_SIDEBAR_PATH)) {
     try {
+      logWithTimestamp("Loading sidebar module...");
       const sidebarModule = require(API_SIDEBAR_PATH);
       // The sidebar.ts exports the array directly via: export default sidebar.apisidebar;
       let apiSidebarItems = sidebarModule.default || sidebarModule || [];
+      logWithTimestamp(`Loaded ${apiSidebarItems.length} sidebar items`);
 
       // Filter to only show tags that are defined in the spec
+      logWithTimestamp("Filtering sidebar items...");
       apiSidebarItems = apiSidebarItems.filter((item: any) => {
         if (item.type !== "category") {
           return true;
@@ -31,13 +44,15 @@ export const loadSonarApiSidebar = (): any[] => {
         return allowedTags.includes(item.label);
       });
 
-      console.log(`Filtered API sidebar to ${apiSidebarItems.length} items`);
+      logWithTimestamp(`Filtered API sidebar to ${apiSidebarItems.length} items`);
+      logWithTimestamp("loadSonarApiSidebar complete");
       return apiSidebarItems;
     } catch (e) {
       console.warn("Could not load pre-generated API sidebar:", e);
       return [];
     }
   }
+  logWithTimestamp("API sidebar path not found, returning empty array");
   return [];
 };
 

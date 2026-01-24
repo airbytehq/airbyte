@@ -171,13 +171,23 @@ const config: Config = {
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
         async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
+          const startTime = Date.now();
+          console.log(`[${new Date().toISOString()}] [ai-agents] sidebarItemsGenerator starting...`);
+          
+          console.log(`[${new Date().toISOString()}] [ai-agents] Calling defaultSidebarItemsGenerator...`);
           const sidebarItems = await defaultSidebarItemsGenerator(args);
+          console.log(`[${new Date().toISOString()}] [ai-agents] defaultSidebarItemsGenerator complete (${Date.now() - startTime}ms)`);
 
           // Load and filter the Sonar API sidebar based on allowed tags
+          console.log(`[${new Date().toISOString()}] [ai-agents] Loading Sonar API sidebar...`);
           const sonarApiItems = loadSonarApiSidebar();
+          console.log(`[${new Date().toISOString()}] [ai-agents] Sonar API sidebar loaded (${Date.now() - startTime}ms)`);
 
           // Replace the "api-reference" category with the filtered API items
-          return replaceApiReferenceCategory(sidebarItems, sonarApiItems);
+          console.log(`[${new Date().toISOString()}] [ai-agents] Replacing api-reference category...`);
+          const result = replaceApiReferenceCategory(sidebarItems, sonarApiItems);
+          console.log(`[${new Date().toISOString()}] [ai-agents] sidebarItemsGenerator complete (${Date.now() - startTime}ms total)`);
+          return result;
         },
         remarkPlugins: [
           plugins.docsHeaderDecoration,
