@@ -120,12 +120,12 @@ When using the legacy "Raw tables only" mode, raw tables and schemas are created
    Postgres database.
 6. List the **Default Schemas**.
 
-:::note
+   :::note
 
-The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
-used at one time. No schemas set explicitly - will sync all of existing.
+   The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
+   used at one time. No schemas set explicitly - will sync all of existing.
 
-:::
+   :::
 
 7. For **User** and **Password**, enter the username and password you created in
    [Step 1](#step-1-set-up-postgres).
