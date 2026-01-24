@@ -8,14 +8,28 @@ This version adds OAuth2.0 with refresh token support. Users who authenticate vi
 
 ### What changed
 
-The OAuth authentication flow has been updated to support Zendesk's new grant-type tokens with rotating refresh tokens. The legacy OAuth2.0 option has been renamed to "OAuth2.0 (Legacy)" and a new "OAuth2.0" option with refresh token support has been added.
+Zendesk introduced the OAuth refresh token grant type as part of their transition to expiring access tokens. The previous OAuth implementation used non-expiring access tokens, which Zendesk is deprecating. The new OAuth2.0 flow uses rotating refresh tokens, where each token refresh returns a new refresh token and invalidates the previous one.
+
+The connector now offers three authentication options:
+
+- **OAuth2.0**: The new recommended method with refresh token support. This option automatically refreshes access tokens using Zendesk's rotating refresh token flow.
+- **API Token**: Uses a Zendesk API token with email authentication. This method is unaffected by this change.
+- **OAuth2.0 (Legacy)**: The previous OAuth implementation using non-expiring access tokens. This option remains available for backward compatibility but will eventually be deprecated by Zendesk.
+
+For more information about Zendesk's OAuth changes, see [Zendesk's OAuth grant-type tokens documentation](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/).
+
+### Who is affected
+
+This change affects users who authenticate using OAuth2.0. Users who authenticate using API tokens are not affected.
 
 ### Migration steps
 
-1. Go to your Zendesk Talk connection settings in Airbyte
-2. If you are using OAuth authentication, you will need to re-authenticate
-3. Select "OAuth2.0" as the authentication method
-4. Complete the OAuth flow to authorize the connector
+1. Go to your Zendesk Talk connection settings in Airbyte.
+2. If you are using OAuth authentication, you will need to re-authenticate.
+3. Select **OAuth2.0** as the authentication method.
+4. Complete the OAuth flow to authorize the connector.
+
+After re-authenticating, the connector will automatically handle token refresh using the new rotating refresh token flow.
 
 ### Connector upgrade guide
 
