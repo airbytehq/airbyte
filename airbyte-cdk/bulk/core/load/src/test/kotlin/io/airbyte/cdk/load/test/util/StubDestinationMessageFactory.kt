@@ -7,8 +7,6 @@ package io.airbyte.cdk.load.test.util
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationFileStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
@@ -38,20 +36,8 @@ object StubDestinationMessageFactory {
         )
     }
 
-    fun makeFile(stream: DestinationStream): DestinationFile {
-        return DestinationFile(
-            stream = stream,
-            emittedAtMs = 0,
-            fileMessage = nullFileMessage,
-        )
-    }
-
     fun makeStreamComplete(stream: DestinationStream): DestinationRecordStreamComplete {
         return DestinationRecordStreamComplete(stream = stream, emittedAtMs = 0)
-    }
-
-    fun makeFileStreamComplete(stream: DestinationStream): DestinationFileStreamComplete {
-        return DestinationFileStreamComplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {
@@ -77,6 +63,4 @@ object StubDestinationMessageFactory {
             serializedSizeBytes = 0L
         )
     }
-
-    private val nullFileMessage = DestinationFile.AirbyteRecordMessageFile()
 }

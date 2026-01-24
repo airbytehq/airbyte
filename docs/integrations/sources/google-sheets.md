@@ -309,6 +309,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.18 | 2026-01-20 | [71904](https://github.com/airbytehq/airbyte/pull/71904) | Update dependencies |
 | 0.12.17 | 2026-01-14 | [71703](https://github.com/airbytehq/airbyte/pull/71703) | Update dependencies |
 | 0.12.16 | 2025-12-18 | [70510](https://github.com/airbytehq/airbyte/pull/70510) | Update dependencies |
 | 0.12.15 | 2025-12-03 | [69848](https://github.com/airbytehq/airbyte/pull/69848) | Add optional flag to read columns with empty headers |

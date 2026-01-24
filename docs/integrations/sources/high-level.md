@@ -33,6 +33,7 @@ Proxy connector for [Go High Level](https://gohighlevel.com) (Lead Connector). R
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.43 | 2026-01-20 | [71907](https://github.com/airbytehq/airbyte/pull/71907) | Update dependencies |
 | 0.0.42 | 2026-01-14 | [71706](https://github.com/airbytehq/airbyte/pull/71706) | Update dependencies |
 | 0.0.41 | 2025-12-18 | [70521](https://github.com/airbytehq/airbyte/pull/70521) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [70036](https://github.com/airbytehq/airbyte/pull/70036) | Update dependencies |

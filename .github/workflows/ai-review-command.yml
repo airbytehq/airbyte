@@ -74,12 +74,13 @@ jobs:
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
+          playbook-macro: "!pr_ai_review"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
           start-message: |
-            **AI PR Review (Phase C)** starting...
+            **AI PR Review (Phase D)** starting...
 
-            Reviewing PR for connector safety and quality.
+            Reviewing PR for connector safety and quality. Phase D adds MCP-based validation verification.
             [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/pr_ai_review.md)
           tags: |
             ai-oncall
