@@ -2,6 +2,8 @@
 products: all
 ---
 
+{/* Test Vercel build cache configuration - this comment can be removed */}
+
 # Platform
 
 import Tabs from "@theme/Tabs";
