@@ -21,6 +21,8 @@ The Jira connector is optimized to handle prompts like these.
 - Show me all comments on issue \{issue_key\}
 - How much time has been logged on issue \{issue_key\}?
 - List all worklogs for \{issue_key\} this month
+- Assign \{issue_key\} to \{team_member\}
+- Unassign \{issue_key\}
 - Create a new task in the \{project_key\} project called '\{issue_title\}'
 - Create a bug in \{project_key\} with high priority
 - Update the summary of \{issue_key\} to '\{new_summary\}'
@@ -36,7 +38,6 @@ The Jira connector isn't currently able to handle prompts like these.
 
 - Log time on \{issue_key\}
 - Transition \{issue_key\} to Done
-- Assign \{issue_key\} to \{team_member\}
 
 ## Installation
 
@@ -64,7 +65,7 @@ connector = JiraConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@JiraConnector.describe
+@JiraConnector.tool_utils
 async def jira_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -85,10 +86,11 @@ connector = JiraConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@JiraConnector.describe
+@JiraConnector.tool_utils
 async def jira_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
+
 
 ## Full documentation
 
@@ -102,6 +104,7 @@ This connector supports the following entities and actions.
 | Issue Fields | [List](./REFERENCE.md#issue-fields-list), [Api_search](./REFERENCE.md#issue-fields-api_search) |
 | Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Create](./REFERENCE.md#issue-comments-create), [Get](./REFERENCE.md#issue-comments-get), [Update](./REFERENCE.md#issue-comments-update), [Delete](./REFERENCE.md#issue-comments-delete) |
 | Issue Worklogs | [List](./REFERENCE.md#issue-worklogs-list), [Get](./REFERENCE.md#issue-worklogs-get) |
+| Issues Assignee | [Update](./REFERENCE.md#issues-assignee-update) |
 
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
@@ -112,6 +115,6 @@ For the service's official API docs, see the [Jira API reference](https://develo
 
 ## Version information
 
-- **Package version:** 0.1.50
-- **Connector version:** 1.1.1
-- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9
+- **Package version:** 0.1.52
+- **Connector version:** 1.1.2
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

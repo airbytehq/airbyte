@@ -14,6 +14,7 @@ The Jira connector supports the following entities and actions.
 | Issue Fields | [List](#issue-fields-list), [API Search](#issue-fields-api-search), [Search](#issue-fields-search) |
 | Issue Comments | [List](#issue-comments-list), [Create](#issue-comments-create), [Get](#issue-comments-get), [Update](#issue-comments-update), [Delete](#issue-comments-delete), [Search](#issue-comments-search) |
 | Issue Worklogs | [List](#issue-worklogs-list), [Get](#issue-worklogs-get), [Search](#issue-worklogs-search) |
+| Issues Assignee | [Update](#issues-assignee-update) |
 
 ## Issues
 
@@ -1824,4 +1825,45 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `took_ms` | `number` | Query execution time in milliseconds |
 
 </details>
+
+## Issues Assignee
+
+### Issues Assignee Update
+
+Assigns an issue to a user. Use accountId to specify the assignee. Use null to unassign the issue. Use "-1" to set to automatic (project default).
+
+#### Python SDK
+
+```python
+await jira.issues_assignee.update(
+    account_id="<str>",
+    issue_id_or_key="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issues_assignee",
+    "action": "update",
+    "params": {
+        "accountId": "<str>",
+        "issueIdOrKey": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `accountId` | `string` | No | The account ID of the user to assign the issue to. Use null to unassign the issue. Use "-1" to set to automatic (project default assignee). |
+| `issueIdOrKey` | `string` | Yes | The issue ID or key (e.g., "PROJ-123" or "10000") |
+
+
 

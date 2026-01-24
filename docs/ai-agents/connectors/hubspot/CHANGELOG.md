@@ -1,5 +1,10 @@
 # Hubspot changelog
 
+## [0.15.61] - 2026-01-24
+- Updated connector definition (YAML version 0.1.7)
+- Source commit: 609c1d86
+- SDK version: 0.1.0
+
 ## [0.15.60] - 2026-01-23
 - Updated connector definition (YAML version 0.1.7)
 - Source commit: 416466da

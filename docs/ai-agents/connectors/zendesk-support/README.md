@@ -56,7 +56,7 @@ connector = ZendeskSupportConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@ZendeskSupportConnector.describe
+@ZendeskSupportConnector.tool_utils
 async def zendesk-support_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -77,10 +77,11 @@ connector = ZendeskSupportConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@ZendeskSupportConnector.describe
+@ZendeskSupportConnector.tool_utils
 async def zendesk-support_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
+
 
 ## Full documentation
 
@@ -120,6 +121,6 @@ For the service's official API docs, see the [Zendesk-Support API reference](htt
 
 ## Version information
 
-- **Package version:** 0.18.59
-- **Connector version:** 0.1.7
-- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9
+- **Package version:** 0.18.61
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

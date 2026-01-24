@@ -78,7 +78,7 @@ connector = GoogleDriveConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@GoogleDriveConnector.describe
+@GoogleDriveConnector.tool_utils
 async def google-drive_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```

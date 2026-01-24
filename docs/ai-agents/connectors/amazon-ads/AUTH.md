@@ -75,7 +75,7 @@ connector = AmazonAdsConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@AmazonAdsConnector.describe
+@AmazonAdsConnector.tool_utils
 async def amazon-ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -96,7 +96,7 @@ The Amazon-Ads connector requires the following configuration variables. These v
 
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
-| `region_url` | `string` | Yes | https://advertising-api.amazon.com | The Amazon Ads API endpoint URL based on region:
+| `region` | `string` | Yes | https://advertising-api.amazon.com | The Amazon Ads API endpoint URL based on region:
 - NA (North America): https://advertising-api.amazon.com
 - EU (Europe): https://advertising-api-eu.amazon.com
 - FE (Far East): https://advertising-api-fe.amazon.com

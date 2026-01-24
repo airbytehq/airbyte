@@ -75,7 +75,7 @@ connector = SalesforceConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@SalesforceConnector.describe
+@SalesforceConnector.tool_utils
 async def salesforce_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```

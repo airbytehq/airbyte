@@ -56,7 +56,7 @@ connector = GongConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@GongConnector.describe
+@GongConnector.tool_utils
 async def gong_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -77,10 +77,11 @@ connector = GongConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@GongConnector.describe
+@GongConnector.tool_utils
 async def gong_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
+
 
 ## Full documentation
 
@@ -114,6 +115,6 @@ For the service's official API docs, see the [Gong API reference](https://gong.a
 
 ## Version information
 
-- **Package version:** 0.19.63
-- **Connector version:** 0.1.11
-- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9
+- **Package version:** 0.19.65
+- **Connector version:** 0.1.12
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

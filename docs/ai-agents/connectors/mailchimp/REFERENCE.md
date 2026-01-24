@@ -8,11 +8,11 @@ The Mailchimp connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get) |
-| Lists | [List](#lists-list), [Get](#lists-get) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
+| Lists | [List](#lists-list), [Get](#lists-get), [Search](#lists-search) |
 | List Members | [List](#list-members-list), [Get](#list-members-get) |
-| Reports | [List](#reports-list), [Get](#reports-get) |
-| Email Activity | [List](#email-activity-list) |
+| Reports | [List](#reports-list), [Get](#reports-get), [Search](#reports-search) |
+| Email Activity | [List](#email-activity-list), [Search](#email-activity-search) |
 | Automations | [List](#automations-list) |
 | Tags | [List](#tags-list) |
 | Interest Categories | [List](#interest-categories-list), [Get](#interest-categories-get) |
@@ -163,6 +163,107 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Campaigns Search
+
+Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await mailchimp.campaigns.search(
+    query={"filter": {"eq": {"ab_split_opts": {}}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"ab_split_opts": {}}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ab_split_opts` | `object` | [A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/) options for a campaign. |
+| `archive_url` | `string` | The link to the campaign's archive version in ISO 8601 format. |
+| `content_type` | `string` | How the campaign's content is put together. |
+| `create_time` | `string` | The date and time the campaign was created in ISO 8601 format. |
+| `delivery_status` | `object` | Updates on campaigns in the process of sending. |
+| `emails_sent` | `integer` | The total number of emails sent for this campaign. |
+| `id` | `string` | A string that uniquely identifies this campaign. |
+| `long_archive_url` | `string` | The original link to the campaign's archive version. |
+| `needs_block_refresh` | `boolean` | Determines if the campaign needs its blocks refreshed by opening the web-based campaign editor. D... |
+| `parent_campaign_id` | `string` | If this campaign is the child of another campaign, this identifies the parent campaign. For Examp... |
+| `recipients` | `object` | List settings for the campaign. |
+| `report_summary` | `object` | For sent campaigns, a summary of opens, clicks, and e-commerce data. |
+| `resendable` | `boolean` | Determines if the campaign qualifies to be resent to non-openers. |
+| `rss_opts` | `object` | [RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/) options for a campaign. |
+| `send_time` | `string` | The date and time a campaign was sent. |
+| `settings` | `object` | The settings for your campaign, including subject, from name, reply-to address, and more. |
+| `social_card` | `object` | The preview for the campaign, rendered by social networks like Facebook and Twitter. [Learn more]... |
+| `status` | `string` | The current status of the campaign. |
+| `tracking` | `object` | The tracking options for a campaign. |
+| `type` | `string` | There are four types of [campaigns](https://mailchimp.com/help/getting-started-with-campaigns/) y... |
+| `variate_settings` | `object` | The settings specific to A/B test campaigns. |
+| `web_id` | `integer` | The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht... |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.ab_split_opts` | `object` | [A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/) options for a campaign. |
+| `hits[].data.archive_url` | `string` | The link to the campaign's archive version in ISO 8601 format. |
+| `hits[].data.content_type` | `string` | How the campaign's content is put together. |
+| `hits[].data.create_time` | `string` | The date and time the campaign was created in ISO 8601 format. |
+| `hits[].data.delivery_status` | `object` | Updates on campaigns in the process of sending. |
+| `hits[].data.emails_sent` | `integer` | The total number of emails sent for this campaign. |
+| `hits[].data.id` | `string` | A string that uniquely identifies this campaign. |
+| `hits[].data.long_archive_url` | `string` | The original link to the campaign's archive version. |
+| `hits[].data.needs_block_refresh` | `boolean` | Determines if the campaign needs its blocks refreshed by opening the web-based campaign editor. D... |
+| `hits[].data.parent_campaign_id` | `string` | If this campaign is the child of another campaign, this identifies the parent campaign. For Examp... |
+| `hits[].data.recipients` | `object` | List settings for the campaign. |
+| `hits[].data.report_summary` | `object` | For sent campaigns, a summary of opens, clicks, and e-commerce data. |
+| `hits[].data.resendable` | `boolean` | Determines if the campaign qualifies to be resent to non-openers. |
+| `hits[].data.rss_opts` | `object` | [RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/) options for a campaign. |
+| `hits[].data.send_time` | `string` | The date and time a campaign was sent. |
+| `hits[].data.settings` | `object` | The settings for your campaign, including subject, from name, reply-to address, and more. |
+| `hits[].data.social_card` | `object` | The preview for the campaign, rendered by social networks like Facebook and Twitter. [Learn more]... |
+| `hits[].data.status` | `string` | The current status of the campaign. |
+| `hits[].data.tracking` | `object` | The tracking options for a campaign. |
+| `hits[].data.type` | `string` | There are four types of [campaigns](https://mailchimp.com/help/getting-started-with-campaigns/) y... |
+| `hits[].data.variate_settings` | `object` | The settings specific to A/B test campaigns. |
+| `hits[].data.web_id` | `integer` | The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht... |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ## Lists
 
 ### Lists List
@@ -303,6 +404,105 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `marketing_permissions` | `boolean \| null` |  |
 | `stats` | `object \| null` |  |
 
+
+</details>
+
+### Lists Search
+
+Search and filter lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await mailchimp.lists.search(
+    query={"filter": {"eq": {"beamer_address": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "lists",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"beamer_address": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `beamer_address` | `string` | The list's Email Beamer address. |
+| `campaign_defaults` | `object` | Default values for campaigns created for this list. |
+| `contact` | `object` | Contact information displayed in campaign footers to comply with international spam laws. |
+| `date_created` | `string` | The date and time that this list was created in ISO 8601 format. |
+| `double_optin` | `boolean` | Whether or not to require the subscriber to confirm subscription via email. |
+| `email_type_option` | `boolean` | Whether the list supports multiple formats for emails. When set to `true`, subscribers can choose... |
+| `has_welcome` | `boolean` | Whether or not this list has a welcome automation connected. |
+| `id` | `string` | A string that uniquely identifies this list. |
+| `list_rating` | `integer` | An auto-generated activity score for the list (0-5). |
+| `marketing_permissions` | `boolean` | Whether or not the list has marketing permissions (eg. GDPR) enabled. |
+| `modules` | `array` | Any list-specific modules installed for this list. |
+| `name` | `string` | The name of the list. |
+| `notify_on_subscribe` | `string` | The email address to send subscribe notifications to. |
+| `notify_on_unsubscribe` | `string` | The email address to send unsubscribe notifications to. |
+| `permission_reminder` | `string` | The permission reminder for the list. |
+| `stats` | `object` | Stats for the list. Many of these are cached for at least five minutes. |
+| `subscribe_url_long` | `string` | The full version of this list's subscribe form (host will vary). |
+| `subscribe_url_short` | `string` | Our EepURL shortened version of this list's subscribe form. |
+| `use_archive_bar` | `boolean` | Whether campaigns for this list use the Archive Bar in archives by default. |
+| `visibility` | `string` | Whether this list is public or private. |
+| `web_id` | `integer` | The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:... |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.beamer_address` | `string` | The list's Email Beamer address. |
+| `hits[].data.campaign_defaults` | `object` | Default values for campaigns created for this list. |
+| `hits[].data.contact` | `object` | Contact information displayed in campaign footers to comply with international spam laws. |
+| `hits[].data.date_created` | `string` | The date and time that this list was created in ISO 8601 format. |
+| `hits[].data.double_optin` | `boolean` | Whether or not to require the subscriber to confirm subscription via email. |
+| `hits[].data.email_type_option` | `boolean` | Whether the list supports multiple formats for emails. When set to `true`, subscribers can choose... |
+| `hits[].data.has_welcome` | `boolean` | Whether or not this list has a welcome automation connected. |
+| `hits[].data.id` | `string` | A string that uniquely identifies this list. |
+| `hits[].data.list_rating` | `integer` | An auto-generated activity score for the list (0-5). |
+| `hits[].data.marketing_permissions` | `boolean` | Whether or not the list has marketing permissions (eg. GDPR) enabled. |
+| `hits[].data.modules` | `array` | Any list-specific modules installed for this list. |
+| `hits[].data.name` | `string` | The name of the list. |
+| `hits[].data.notify_on_subscribe` | `string` | The email address to send subscribe notifications to. |
+| `hits[].data.notify_on_unsubscribe` | `string` | The email address to send unsubscribe notifications to. |
+| `hits[].data.permission_reminder` | `string` | The permission reminder for the list. |
+| `hits[].data.stats` | `object` | Stats for the list. Many of these are cached for at least five minutes. |
+| `hits[].data.subscribe_url_long` | `string` | The full version of this list's subscribe form (host will vary). |
+| `hits[].data.subscribe_url_short` | `string` | Our EepURL shortened version of this list's subscribe form. |
+| `hits[].data.use_archive_bar` | `boolean` | Whether campaigns for this list use the Archive Bar in archives by default. |
+| `hits[].data.visibility` | `string` | Whether this list is public or private. |
+| `hits[].data.web_id` | `integer` | The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:... |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
 
 </details>
 
@@ -621,6 +821,115 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Reports Search
+
+Search and filter reports records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await mailchimp.reports.search(
+    query={"filter": {"eq": {"ab_split": {}}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "reports",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"ab_split": {}}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ab_split` | `object` | General stats about different groups of an A/B Split campaign. Does not return information about ... |
+| `abuse_reports` | `integer` | The number of abuse reports generated for this campaign. |
+| `bounces` | `object` | An object describing the bounce summary for the campaign. |
+| `campaign_title` | `string` | The title of the campaign. |
+| `clicks` | `object` | An object describing the click activity for the campaign. |
+| `delivery_status` | `object` | Updates on campaigns in the process of sending. |
+| `ecommerce` | `object` | E-Commerce stats for a campaign. |
+| `emails_sent` | `integer` | The total number of emails sent for this campaign. |
+| `facebook_likes` | `object` | An object describing campaign engagement on Facebook. |
+| `forwards` | `object` | An object describing the forwards and forward activity for the campaign. |
+| `id` | `string` | A string that uniquely identifies this campaign. |
+| `industry_stats` | `object` | The average campaign statistics for your industry. |
+| `list_id` | `string` | The unique list id. |
+| `list_is_active` | `boolean` | The status of the list used, namely if it's deleted or disabled. |
+| `list_name` | `string` | The name of the list. |
+| `list_stats` | `object` | The average campaign statistics for your list. This won't be present if we haven't calculated i... |
+| `opens` | `object` | An object describing the open activity for the campaign. |
+| `preview_text` | `string` | The preview text for the campaign. |
+| `rss_last_send` | `string` | For RSS campaigns, the date and time of the last send in ISO 8601 format. |
+| `send_time` | `string` | The date and time a campaign was sent in ISO 8601 format. |
+| `share_report` | `object` | The url and password for the VIP report. |
+| `subject_line` | `string` | The subject line for the campaign. |
+| `timeseries` | `array` | An hourly breakdown of the performance of the campaign over the first 24 hours. |
+| `timewarp` | `array` | An hourly breakdown of sends, opens, and clicks if a campaign is sent using timewarp. |
+| `type` | `string` | The type of campaign (regular, plain-text, ab_split, rss, automation, variate, or auto). |
+| `unsubscribed` | `integer` | The total number of unsubscribed members for this campaign. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.ab_split` | `object` | General stats about different groups of an A/B Split campaign. Does not return information about ... |
+| `hits[].data.abuse_reports` | `integer` | The number of abuse reports generated for this campaign. |
+| `hits[].data.bounces` | `object` | An object describing the bounce summary for the campaign. |
+| `hits[].data.campaign_title` | `string` | The title of the campaign. |
+| `hits[].data.clicks` | `object` | An object describing the click activity for the campaign. |
+| `hits[].data.delivery_status` | `object` | Updates on campaigns in the process of sending. |
+| `hits[].data.ecommerce` | `object` | E-Commerce stats for a campaign. |
+| `hits[].data.emails_sent` | `integer` | The total number of emails sent for this campaign. |
+| `hits[].data.facebook_likes` | `object` | An object describing campaign engagement on Facebook. |
+| `hits[].data.forwards` | `object` | An object describing the forwards and forward activity for the campaign. |
+| `hits[].data.id` | `string` | A string that uniquely identifies this campaign. |
+| `hits[].data.industry_stats` | `object` | The average campaign statistics for your industry. |
+| `hits[].data.list_id` | `string` | The unique list id. |
+| `hits[].data.list_is_active` | `boolean` | The status of the list used, namely if it's deleted or disabled. |
+| `hits[].data.list_name` | `string` | The name of the list. |
+| `hits[].data.list_stats` | `object` | The average campaign statistics for your list. This won't be present if we haven't calculated i... |
+| `hits[].data.opens` | `object` | An object describing the open activity for the campaign. |
+| `hits[].data.preview_text` | `string` | The preview text for the campaign. |
+| `hits[].data.rss_last_send` | `string` | For RSS campaigns, the date and time of the last send in ISO 8601 format. |
+| `hits[].data.send_time` | `string` | The date and time a campaign was sent in ISO 8601 format. |
+| `hits[].data.share_report` | `object` | The url and password for the VIP report. |
+| `hits[].data.subject_line` | `string` | The subject line for the campaign. |
+| `hits[].data.timeseries` | `array` | An hourly breakdown of the performance of the campaign over the first 24 hours. |
+| `hits[].data.timewarp` | `array` | An hourly breakdown of sends, opens, and clicks if a campaign is sent using timewarp. |
+| `hits[].data.type` | `string` | The type of campaign (regular, plain-text, ab_split, rss, automation, variate, or auto). |
+| `hits[].data.unsubscribed` | `integer` | The total number of unsubscribed members for this campaign. |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 ## Email Activity
 
 ### Email Activity List
@@ -681,6 +990,83 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `total_items` | `integer` |  |
+
+</details>
+
+### Email Activity Search
+
+Search and filter email activity records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await mailchimp.email_activity.search(
+    query={"filter": {"eq": {"action": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "email_activity",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"action": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `action` | `string` | One of the following actions: 'open', 'click', or 'bounce' |
+| `campaign_id` | `string` | The unique id for the campaign. |
+| `email_address` | `string` | Email address for a subscriber. |
+| `email_id` | `string` | The MD5 hash of the lowercase version of the list member's email address. |
+| `ip` | `string` | The IP address recorded for the action. |
+| `list_id` | `string` | The unique id for the list. |
+| `list_is_active` | `boolean` | The status of the list used, namely if it's deleted or disabled. |
+| `timestamp` | `string` | The date and time recorded for the action in ISO 8601 format. |
+| `type` | `string` | If the action is a 'bounce', the type of bounce received: 'hard', 'soft'. |
+| `url` | `string` | If the action is a 'click', the URL on which the member clicked. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.action` | `string` | One of the following actions: 'open', 'click', or 'bounce' |
+| `hits[].data.campaign_id` | `string` | The unique id for the campaign. |
+| `hits[].data.email_address` | `string` | Email address for a subscriber. |
+| `hits[].data.email_id` | `string` | The MD5 hash of the lowercase version of the list member's email address. |
+| `hits[].data.ip` | `string` | The IP address recorded for the action. |
+| `hits[].data.list_id` | `string` | The unique id for the list. |
+| `hits[].data.list_is_active` | `boolean` | The status of the list used, namely if it's deleted or disabled. |
+| `hits[].data.timestamp` | `string` | The date and time recorded for the action in ISO 8601 format. |
+| `hits[].data.type` | `string` | If the action is a 'bounce', the type of bounce received: 'hard', 'soft'. |
+| `hits[].data.url` | `string` | If the action is a 'click', the URL on which the member clicked. |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
 
 </details>
 
@@ -1311,4 +1697,5 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `total_items` | `integer` |  |
 
 </details>
+
 
