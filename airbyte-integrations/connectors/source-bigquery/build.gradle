@@ -23,7 +23,8 @@ java {
 
 application {
     mainClass = 'io.airbyte.integrations.source.bigquery.BigQuerySource'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+                                 '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005']
 }
 
 dependencies {
