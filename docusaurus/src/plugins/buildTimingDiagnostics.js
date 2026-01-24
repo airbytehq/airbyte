@@ -6,7 +6,7 @@
  * - loadContent: Plugins load their content (docs, blog posts, etc.)
  * - contentLoaded: Content is processed and routes are created
  * - configureWebpack/Rspack: Bundler configuration is set up
- * - Rspack compilation hooks: Track bundling progress
+ * - Rspack compiler hooks: Track bundling progress (using only Rspack-compatible hooks)
  * - postBuild: After static site generation completes (before llms.txt runs)
  */
 
@@ -19,6 +19,8 @@ const logWithTimestamp = (phase, message) => {
 let globalBuildStart = null;
 
 // Create a Rspack/Webpack plugin class for timing hooks
+// NOTE: Only using compiler-level hooks that are compatible with Rspack
+// Rspack's compilation object has different hooks than webpack
 class BundlerTimingPlugin {
   constructor(recordPhase, isServer) {
     this.recordPhase = recordPhase;
@@ -30,70 +32,47 @@ class BundlerTimingPlugin {
     const bundleType = this.bundleType;
     const recordPhase = this.recordPhase;
 
-    // Log when compilation starts
+    // Log when compilation starts (compiler-level hook, works with Rspack)
     compiler.hooks.beforeCompile.tap('BundlerTimingPlugin', () => {
       recordPhase(`rspack-beforeCompile-${bundleType}`);
       logWithTimestamp(`rspack-${bundleType}`, 'Rspack compilation starting...');
     });
 
-    // Log when compilation object is created
+    // Log when compilation object is created (compiler-level hook, works with Rspack)
     compiler.hooks.compilation.tap('BundlerTimingPlugin', (compilation) => {
       recordPhase(`rspack-compilation-${bundleType}`);
       logWithTimestamp(`rspack-${bundleType}`, 'Rspack compilation object created');
-      
-      // Track when modules are being built
-      let moduleCount = 0;
-      let lastLogTime = Date.now();
-      
-      compilation.hooks.buildModule.tap('BundlerTimingPlugin', (module) => {
-        moduleCount++;
-        // Log progress every 500 modules or every 10 seconds
-        const now = Date.now();
-        if (moduleCount % 500 === 0 || (now - lastLogTime > 10000)) {
-          logWithTimestamp(`rspack-${bundleType}`, `Building modules... (${moduleCount} modules processed)`);
-          lastLogTime = now;
-        }
-      });
-
-      // Log when all modules are built
-      compilation.hooks.finishModules.tap('BundlerTimingPlugin', () => {
-        recordPhase(`rspack-finishModules-${bundleType}`);
-        logWithTimestamp(`rspack-${bundleType}`, `All modules built (${moduleCount} total)`);
-      });
-
-      // Log when optimization starts
-      compilation.hooks.optimize.tap('BundlerTimingPlugin', () => {
-        recordPhase(`rspack-optimize-${bundleType}`);
-        logWithTimestamp(`rspack-${bundleType}`, 'Optimization phase starting...');
-      });
-
-      // Log when chunks are optimized
-      compilation.hooks.afterOptimizeChunks.tap('BundlerTimingPlugin', (chunks) => {
-        const chunkCount = Array.isArray(chunks) ? chunks.length : (chunks?.size || 0);
-        recordPhase(`rspack-afterOptimizeChunks-${bundleType}`);
-        logWithTimestamp(`rspack-${bundleType}`, `Chunks optimized (${chunkCount} chunks)`);
-      });
     });
 
-    // Log when assets are about to be emitted
-    compiler.hooks.emit.tap('BundlerTimingPlugin', (compilation) => {
+    // Log when assets are about to be emitted (compiler-level hook, works with Rspack)
+    compiler.hooks.emit.tapAsync('BundlerTimingPlugin', (compilation, callback) => {
       const assetCount = Object.keys(compilation.assets || {}).length;
       recordPhase(`rspack-emit-${bundleType}`);
       logWithTimestamp(`rspack-${bundleType}`, `Emitting ${assetCount} assets...`);
+      callback();
     });
 
-    // Log when compilation is done
+    // Log after assets are emitted (compiler-level hook, works with Rspack)
+    compiler.hooks.afterEmit.tapAsync('BundlerTimingPlugin', (compilation, callback) => {
+      recordPhase(`rspack-afterEmit-${bundleType}`);
+      logWithTimestamp(`rspack-${bundleType}`, 'Assets emitted');
+      callback();
+    });
+
+    // Log when compilation is done (compiler-level hook, works with Rspack)
     compiler.hooks.done.tap('BundlerTimingPlugin', (stats) => {
       recordPhase(`rspack-done-${bundleType}`);
       const time = stats.endTime - stats.startTime;
       logWithTimestamp(`rspack-${bundleType}`, `Rspack ${bundleType} bundle complete! (${time}ms, ${(time/1000/60).toFixed(2)} min)`);
       
       // Log any warnings or errors
-      if (stats.hasWarnings()) {
-        logWithTimestamp(`rspack-${bundleType}`, `Warnings: ${stats.compilation.warnings.length}`);
+      if (stats.hasWarnings && stats.hasWarnings()) {
+        const warningCount = stats.compilation?.warnings?.length || 'unknown';
+        logWithTimestamp(`rspack-${bundleType}`, `Warnings: ${warningCount}`);
       }
-      if (stats.hasErrors()) {
-        logWithTimestamp(`rspack-${bundleType}`, `Errors: ${stats.compilation.errors.length}`);
+      if (stats.hasErrors && stats.hasErrors()) {
+        const errorCount = stats.compilation?.errors?.length || 'unknown';
+        logWithTimestamp(`rspack-${bundleType}`, `Errors: ${errorCount}`);
       }
     });
   }
