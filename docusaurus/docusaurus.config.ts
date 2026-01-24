@@ -128,6 +128,9 @@ const config: Config = {
     ],
   ],
   plugins: [
+    // Build timing diagnostics plugin - logs timestamps at each build phase
+    // to help identify bottlenecks in the build process
+    require.resolve("./src/plugins/buildTimingDiagnostics"),
     // This plugin controls "platform" docs, which are versioned
     [
       "@docusaurus/plugin-content-docs",
