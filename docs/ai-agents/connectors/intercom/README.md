@@ -59,7 +59,7 @@ connector = IntercomConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@IntercomConnector.describe
+@IntercomConnector.tool_utils
 async def intercom_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -80,7 +80,7 @@ connector = IntercomConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@IntercomConnector.describe
+@IntercomConnector.tool_utils
 async def intercom_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -112,6 +112,6 @@ For the service's official API docs, see the [Intercom API reference](https://de
 
 ## Version information
 
-- **Package version:** 0.1.28
-- **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** 049f6ad546186bde8303b77e0e1001a831a58654
+- **Package version:** 0.1.30
+- **Connector version:** 0.1.3
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

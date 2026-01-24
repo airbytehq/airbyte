@@ -60,7 +60,7 @@ connector = ShopifyConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@ShopifyConnector.describe
+@ShopifyConnector.tool_utils
 async def shopify_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -81,10 +81,11 @@ connector = ShopifyConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@ShopifyConnector.describe
+@ShopifyConnector.tool_utils
 async def shopify_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
+
 
 ## Full documentation
 
@@ -134,6 +135,6 @@ For the service's official API docs, see the [Shopify API reference](https://sho
 
 ## Version information
 
-- **Package version:** 0.1.8
+- **Package version:** 0.1.9
 - **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

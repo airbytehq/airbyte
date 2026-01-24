@@ -71,7 +71,7 @@ connector = ShopifyConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@ShopifyConnector.describe
+@ShopifyConnector.tool_utils
 async def shopify_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```

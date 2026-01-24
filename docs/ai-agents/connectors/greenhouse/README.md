@@ -57,7 +57,7 @@ connector = GreenhouseConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@GreenhouseConnector.describe
+@GreenhouseConnector.tool_utils
 async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -78,10 +78,11 @@ connector = GreenhouseConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@GreenhouseConnector.describe
+@GreenhouseConnector.tool_utils
 async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
+
 
 ## Full documentation
 
@@ -111,6 +112,6 @@ For the service's official API docs, see the [Greenhouse API reference](https://
 
 ## Version information
 
-- **Package version:** 0.17.55
-- **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9
+- **Package version:** 0.17.57
+- **Connector version:** 0.1.3
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

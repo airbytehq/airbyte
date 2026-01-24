@@ -8,8 +8,8 @@ The Slack connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get) |
-| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update) |
+| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
+| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Search](#channels-search) |
 | Channel Messages | [List](#channel-messages-list) |
 | Threads | [List](#threads-list) |
 | Messages | [Create](#messages-create), [Update](#messages-update) |
@@ -150,6 +150,109 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `is_email_confirmed` | `boolean \| null` |  |
 | `who_can_share_contact_card` | `string \| null` |  |
 
+
+</details>
+
+### Users Search
+
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await slack.users.search(
+    query={"filter": {"eq": {"color": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"color": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `color` | `string` | The color assigned to the user for visual purposes. |
+| `deleted` | `boolean` | Indicates if the user is deleted or not. |
+| `has_2fa` | `boolean` | Flag indicating if the user has two-factor authentication enabled. |
+| `id` | `string` | Unique identifier for the user. |
+| `is_admin` | `boolean` | Flag specifying if the user is an admin or not. |
+| `is_app_user` | `boolean` | Specifies if the user is an app user. |
+| `is_bot` | `boolean` | Indicates if the user is a bot account. |
+| `is_email_confirmed` | `boolean` | Flag indicating if the user's email is confirmed. |
+| `is_forgotten` | `boolean` | Specifies if the user is marked as forgotten. |
+| `is_invited_user` | `boolean` | Indicates if the user is invited or not. |
+| `is_owner` | `boolean` | Flag indicating if the user is an owner. |
+| `is_primary_owner` | `boolean` | Specifies if the user is the primary owner. |
+| `is_restricted` | `boolean` | Flag specifying if the user is restricted. |
+| `is_ultra_restricted` | `boolean` | Indicates if the user has ultra-restricted access. |
+| `name` | `string` | The username of the user. |
+| `profile` | `object` | User's profile information containing detailed details. |
+| `real_name` | `string` | The real name of the user. |
+| `team_id` | `string` | Unique identifier for the team the user belongs to. |
+| `tz` | `string` | Timezone of the user. |
+| `tz_label` | `string` | Label representing the timezone of the user. |
+| `tz_offset` | `integer` | Offset of the user's timezone. |
+| `updated` | `integer` | Timestamp of when the user's information was last updated. |
+| `who_can_share_contact_card` | `string` | Specifies who can share the user's contact card. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.color` | `string` | The color assigned to the user for visual purposes. |
+| `hits[].data.deleted` | `boolean` | Indicates if the user is deleted or not. |
+| `hits[].data.has_2fa` | `boolean` | Flag indicating if the user has two-factor authentication enabled. |
+| `hits[].data.id` | `string` | Unique identifier for the user. |
+| `hits[].data.is_admin` | `boolean` | Flag specifying if the user is an admin or not. |
+| `hits[].data.is_app_user` | `boolean` | Specifies if the user is an app user. |
+| `hits[].data.is_bot` | `boolean` | Indicates if the user is a bot account. |
+| `hits[].data.is_email_confirmed` | `boolean` | Flag indicating if the user's email is confirmed. |
+| `hits[].data.is_forgotten` | `boolean` | Specifies if the user is marked as forgotten. |
+| `hits[].data.is_invited_user` | `boolean` | Indicates if the user is invited or not. |
+| `hits[].data.is_owner` | `boolean` | Flag indicating if the user is an owner. |
+| `hits[].data.is_primary_owner` | `boolean` | Specifies if the user is the primary owner. |
+| `hits[].data.is_restricted` | `boolean` | Flag specifying if the user is restricted. |
+| `hits[].data.is_ultra_restricted` | `boolean` | Indicates if the user has ultra-restricted access. |
+| `hits[].data.name` | `string` | The username of the user. |
+| `hits[].data.profile` | `object` | User's profile information containing detailed details. |
+| `hits[].data.real_name` | `string` | The real name of the user. |
+| `hits[].data.team_id` | `string` | Unique identifier for the team the user belongs to. |
+| `hits[].data.tz` | `string` | Timezone of the user. |
+| `hits[].data.tz_label` | `string` | Label representing the timezone of the user. |
+| `hits[].data.tz_offset` | `integer` | Offset of the user's timezone. |
+| `hits[].data.updated` | `integer` | Timestamp of when the user's information was last updated. |
+| `hits[].data.who_can_share_contact_card` | `string` | Specifies who can share the user's contact card. |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
 
 </details>
 
@@ -470,6 +573,125 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `is_thread_only` | `boolean \| null` |  |
 | `is_read_only` | `boolean \| null` |  |
 
+
+</details>
+
+### Channels Search
+
+Search and filter channels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await slack.channels.search(
+    query={"filter": {"eq": {"context_team_id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channels",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"context_team_id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `context_team_id` | `string` | The unique identifier of the team context in which the channel exists. |
+| `created` | `integer` | The timestamp when the channel was created. |
+| `creator` | `string` | The ID of the user who created the channel. |
+| `id` | `string` | The unique identifier of the channel. |
+| `is_archived` | `boolean` | Indicates if the channel is archived. |
+| `is_channel` | `boolean` | Indicates if the entity is a channel. |
+| `is_ext_shared` | `boolean` | Indicates if the channel is externally shared. |
+| `is_general` | `boolean` | Indicates if the channel is a general channel in the workspace. |
+| `is_group` | `boolean` | Indicates if the channel is a group (private channel) rather than a regular channel. |
+| `is_im` | `boolean` | Indicates if the entity is a direct message (IM) channel. |
+| `is_member` | `boolean` | Indicates if the calling user is a member of the channel. |
+| `is_mpim` | `boolean` | Indicates if the entity is a multiple person direct message (MPIM) channel. |
+| `is_org_shared` | `boolean` | Indicates if the channel is organization-wide shared. |
+| `is_pending_ext_shared` | `boolean` | Indicates if the channel is pending external shared. |
+| `is_private` | `boolean` | Indicates if the channel is a private channel. |
+| `is_read_only` | `boolean` | Indicates if the channel is read-only. |
+| `is_shared` | `boolean` | Indicates if the channel is shared. |
+| `last_read` | `string` | The timestamp of the user's last read message in the channel. |
+| `locale` | `string` | The locale of the channel. |
+| `name` | `string` | The name of the channel. |
+| `name_normalized` | `string` | The normalized name of the channel. |
+| `num_members` | `integer` | The number of members in the channel. |
+| `parent_conversation` | `string` | The parent conversation of the channel. |
+| `pending_connected_team_ids` | `array` | The IDs of teams that are pending to be connected to the channel. |
+| `pending_shared` | `array` | The list of pending shared items of the channel. |
+| `previous_names` | `array` | The previous names of the channel. |
+| `purpose` | `object` | The purpose of the channel. |
+| `shared_team_ids` | `array` | The IDs of teams with which the channel is shared. |
+| `topic` | `object` | The topic of the channel. |
+| `unlinked` | `integer` | Indicates if the channel is unlinked. |
+| `updated` | `integer` | The timestamp when the channel was last updated. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.context_team_id` | `string` | The unique identifier of the team context in which the channel exists. |
+| `hits[].data.created` | `integer` | The timestamp when the channel was created. |
+| `hits[].data.creator` | `string` | The ID of the user who created the channel. |
+| `hits[].data.id` | `string` | The unique identifier of the channel. |
+| `hits[].data.is_archived` | `boolean` | Indicates if the channel is archived. |
+| `hits[].data.is_channel` | `boolean` | Indicates if the entity is a channel. |
+| `hits[].data.is_ext_shared` | `boolean` | Indicates if the channel is externally shared. |
+| `hits[].data.is_general` | `boolean` | Indicates if the channel is a general channel in the workspace. |
+| `hits[].data.is_group` | `boolean` | Indicates if the channel is a group (private channel) rather than a regular channel. |
+| `hits[].data.is_im` | `boolean` | Indicates if the entity is a direct message (IM) channel. |
+| `hits[].data.is_member` | `boolean` | Indicates if the calling user is a member of the channel. |
+| `hits[].data.is_mpim` | `boolean` | Indicates if the entity is a multiple person direct message (MPIM) channel. |
+| `hits[].data.is_org_shared` | `boolean` | Indicates if the channel is organization-wide shared. |
+| `hits[].data.is_pending_ext_shared` | `boolean` | Indicates if the channel is pending external shared. |
+| `hits[].data.is_private` | `boolean` | Indicates if the channel is a private channel. |
+| `hits[].data.is_read_only` | `boolean` | Indicates if the channel is read-only. |
+| `hits[].data.is_shared` | `boolean` | Indicates if the channel is shared. |
+| `hits[].data.last_read` | `string` | The timestamp of the user's last read message in the channel. |
+| `hits[].data.locale` | `string` | The locale of the channel. |
+| `hits[].data.name` | `string` | The name of the channel. |
+| `hits[].data.name_normalized` | `string` | The normalized name of the channel. |
+| `hits[].data.num_members` | `integer` | The number of members in the channel. |
+| `hits[].data.parent_conversation` | `string` | The parent conversation of the channel. |
+| `hits[].data.pending_connected_team_ids` | `array` | The IDs of teams that are pending to be connected to the channel. |
+| `hits[].data.pending_shared` | `array` | The list of pending shared items of the channel. |
+| `hits[].data.previous_names` | `array` | The previous names of the channel. |
+| `hits[].data.purpose` | `object` | The purpose of the channel. |
+| `hits[].data.shared_team_ids` | `array` | The IDs of teams with which the channel is shared. |
+| `hits[].data.topic` | `object` | The topic of the channel. |
+| `hits[].data.unlinked` | `integer` | Indicates if the channel is unlinked. |
+| `hits[].data.updated` | `integer` | The timestamp when the channel was last updated. |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
 
 </details>
 
