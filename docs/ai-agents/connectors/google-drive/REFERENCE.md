@@ -19,19 +19,19 @@ The Google-Drive connector supports the following entities and actions.
 | Changes Start Page Token | [Get](#changes-start-page-token-get) |
 | About | [Get](#about-get) |
 
-### Files
+## Files
 
-#### Files List
+### Files List
 
 Lists the user's files. Returns a paginated list of files.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.files.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -44,7 +44,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -63,7 +63,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -133,7 +133,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `videoMediaMetadata` | `object \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -142,11 +142,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Files Get
+### Files Get
 
 Gets a file's metadata by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.files.get(
@@ -154,7 +154,7 @@ await google_drive.files.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -170,7 +170,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -182,7 +182,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -254,14 +254,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Files Download
+### Files Download
 
 Downloads the binary content of a file. This works for non-Google Workspace files
 (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
 use the export action instead.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in google_drive.files.download(    file_id="<str>",    alt="<str>"):# Process each chunk (e.g., write to file)
@@ -270,7 +270,7 @@ async for chunk in google_drive.files.download(    file_id="<str>",    alt="<str
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -287,7 +287,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -298,9 +298,9 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Files Export
+## Files Export
 
-#### Files Export Download
+### Files Export Download
 
 Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
 Common export formats:
@@ -313,7 +313,7 @@ Common export formats:
 Note: Export has a 10MB limit. For larger files, use the Drive UI.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in google_drive.files_export.download(    file_id="<str>",    mime_type="<str>"):# Process each chunk (e.g., write to file)
@@ -322,7 +322,7 @@ async for chunk in google_drive.files_export.download(    file_id="<str>",    mi
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -339,7 +339,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -355,19 +355,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Drives
+## Drives
 
-#### Drives List
+### Drives List
 
 Lists the user's shared drives
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.drives.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -380,7 +380,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -393,7 +393,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -411,7 +411,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `orgUnitId` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -419,11 +419,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Drives Get
+### Drives Get
 
 Gets a shared drive's metadata by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.drives.get(
@@ -431,7 +431,7 @@ await google_drive.drives.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -447,7 +447,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -458,7 +458,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -478,13 +478,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Permissions
+## Permissions
 
-#### Permissions List
+### Permissions List
 
 Lists a file's or shared drive's permissions
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.permissions.list(
@@ -492,7 +492,7 @@ await google_drive.permissions.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -508,7 +508,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -522,7 +522,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -543,7 +543,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `pendingOwner` | `boolean \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -551,11 +551,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Permissions Get
+### Permissions Get
 
 Gets a permission by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.permissions.get(
@@ -564,7 +564,7 @@ await google_drive.permissions.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -581,7 +581,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -594,7 +594,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -617,13 +617,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Comments
+## Comments
 
-#### Comments List
+### Comments List
 
 Lists a file's comments
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.comments.list(
@@ -631,7 +631,7 @@ await google_drive.comments.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -647,7 +647,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -662,7 +662,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -691,7 +691,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `assigneeEmailAddress` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -699,11 +699,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Comments Get
+### Comments Get
 
 Gets a comment by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.comments.get(
@@ -712,7 +712,7 @@ await google_drive.comments.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -729,7 +729,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -742,7 +742,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -773,13 +773,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Replies
+## Replies
 
-#### Replies List
+### Replies List
 
 Lists a comment's replies
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.replies.list(
@@ -788,7 +788,7 @@ await google_drive.replies.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -805,7 +805,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -820,7 +820,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -835,7 +835,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `action` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -843,11 +843,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Replies Get
+### Replies Get
 
 Gets a reply by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.replies.get(
@@ -857,7 +857,7 @@ await google_drive.replies.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -875,7 +875,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -889,7 +889,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -906,13 +906,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Revisions
+## Revisions
 
-#### Revisions List
+### Revisions List
 
 Lists a file's revisions
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.revisions.list(
@@ -920,7 +920,7 @@ await google_drive.revisions.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -936,7 +936,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -948,7 +948,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -968,7 +968,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `exportLinks` | `object \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -976,11 +976,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Revisions Get
+### Revisions Get
 
 Gets a revision's metadata by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.revisions.get(
@@ -989,7 +989,7 @@ await google_drive.revisions.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1006,7 +1006,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1017,7 +1017,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1039,13 +1039,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Changes
+## Changes
 
-#### Changes List
+### Changes List
 
 Lists the changes for a user or shared drive
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.changes.list(
@@ -1053,7 +1053,7 @@ await google_drive.changes.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1069,7 +1069,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1086,7 +1086,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1101,7 +1101,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `changeType` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1110,19 +1110,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Changes Start Page Token
+## Changes Start Page Token
 
-#### Changes Start Page Token Get
+### Changes Start Page Token Get
 
 Gets the starting pageToken for listing future changes
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.changes_start_page_token.get()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1135,7 +1135,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1146,7 +1146,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1156,19 +1156,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### About
+## About
 
-#### About Get
+### About Get
 
 Gets information about the user, the user's Drive, and system capabilities
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.about.get()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1181,7 +1181,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1191,7 +1191,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1211,54 +1211,4 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 
 </details>
-
-
-
-## Authentication
-
-The Google-Drive connector supports the following authentication methods.
-
-
-### OAuth 2.0 Authentication
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `access_token` | `str` | No | Your Google OAuth2 Access Token (optional, will be obtained via refresh) |
-| `refresh_token` | `str` | Yes | Your Google OAuth2 Refresh Token |
-| `client_id` | `str` | Yes | Your Google OAuth2 Client ID |
-| `client_secret` | `str` | Yes | Your Google OAuth2 Client Secret |
-
-#### Example
-
-**Python SDK**
-
-```python
-GoogleDriveConnector(
-  auth_config=GoogleDriveAuthConfig(
-    access_token="<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
-    refresh_token="<Your Google OAuth2 Refresh Token>",
-    client_id="<Your Google OAuth2 Client ID>",
-    client_secret="<Your Google OAuth2 Client Secret>"
-  )
-)
-```
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "workspace_id": "{your_workspace_id}",
-  "source_template_id": "{source_template_id}",
-  "auth_config": {
-    "access_token": "<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
-    "refresh_token": "<Your Google OAuth2 Refresh Token>",
-    "client_id": "<Your Google OAuth2 Client ID>",
-    "client_secret": "<Your Google OAuth2 Client Secret>"
-  },
-  "name": "My Google-Drive Connector"
-}'
-```
 
