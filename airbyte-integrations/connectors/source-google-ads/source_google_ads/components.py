@@ -302,11 +302,15 @@ class GoogleAdsHttpRequester(HttpRequester):
         schema = self.schema_loader.get_json_schema()[self.name]["properties"]
         manager = stream_slice.extra_fields.get("manager", False)
         resource_name = REPORT_MAPPING.get(self.name, self.name)
+        include_geo_target = self.config.get("include_geo_target", False)
+        geo_target_fields = {"segments.geo_target_city", "segments.geo_target_region"}
         fields = [
             field
             for field in schema.keys()
             # exclude metrics.* if this is a manager account
             if not (manager and field.startswith("metrics."))
+            # exclude geo_target segments from geographic_view unless include_geo_target is enabled
+            and not (resource_name == "geographic_view" and field in geo_target_fields and not include_geo_target)
         ]
 
         if "start_time" in stream_slice and "end_time" in stream_slice:
