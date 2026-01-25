@@ -52,7 +52,15 @@ object ValidatedJsonUtils {
     ): List<T> {
         val jsonList: List<JsonNode> = if (tree.isArray) tree.toList() else listOf(tree)
         val schemaNode: JsonNode = generator.generateJsonSchema(elementClass)
-        val schemaValidator = SchemaValidator(null, schemaNode)
+        
+        // Special handling for ConfiguredAirbyteStream to allow null fields
+        val modifiedSchemaNode = if (elementClass.simpleName == "ConfiguredAirbyteStream") {
+            allowNullFieldsInAirbyteStreamSchema(schemaNode)
+        } else {
+            schemaNode
+        }
+        
+        val schemaValidator = SchemaValidator(null, modifiedSchemaNode)
         for (element in jsonList) {
             val validationData = ValidationData<Void>()
             schemaValidator.validate(element, validationData)
@@ -174,5 +182,46 @@ object ValidatedJsonUtils {
         walk(root)
         // Return the transformed object.
         return root
+    }
+
+    private fun allowNullFieldsInAirbyteStreamSchema(schemaNode: JsonNode): JsonNode {
+        if (schemaNode.isObject) {
+            val objectNode = schemaNode.deepCopy() as ObjectNode
+            val properties = objectNode.get("properties")
+            if (properties != null && properties.isObject) {
+                val propertiesNode = properties as ObjectNode
+                val stream = propertiesNode.get("stream")
+                if (stream != null && stream.isObject) {
+                    val streamNode = stream as ObjectNode
+                    val streamProperties = streamNode.get("properties")
+                    if (streamProperties != null && streamProperties.isObject) {
+                        val streamPropertiesNode = streamProperties as ObjectNode
+                        
+                        // Allow null for namespace field
+                        val namespace = streamPropertiesNode.get("namespace")
+                        if (namespace != null && namespace.isObject) {
+                            val namespaceNode = namespace as ObjectNode
+                            namespaceNode.put("nullable", true)
+                        }
+                        
+                        // Allow null for source_defined_cursor field
+                        val sourceCursor = streamPropertiesNode.get("source_defined_cursor")
+                        if (sourceCursor != null && sourceCursor.isObject) {
+                            val sourceCursorNode = sourceCursor as ObjectNode
+                            sourceCursorNode.put("nullable", true)
+                        }
+                        
+                        // Allow null for is_resumable field
+                        val isResumable = streamPropertiesNode.get("is_resumable")
+                        if (isResumable != null && isResumable.isObject) {
+                            val isResumableNode = isResumable as ObjectNode
+                            isResumableNode.put("nullable", true)
+                        }
+                    }
+                }
+            }
+            return objectNode
+        }
+        return schemaNode
     }
 }
