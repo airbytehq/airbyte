@@ -19,7 +19,7 @@ pluginManagement {
 // as much information as possible.
 plugins {
     id "com.gradle.develocity" version "3.19.2"
-    id 'com.github.burrunan.s3-build-cache' version "1.8.1"
+    id 'com.github.burrunan.s3-build-cache' version "1.9.5"
 }
 
 final boolean isCI = System.getenv().containsKey("CI") || System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
