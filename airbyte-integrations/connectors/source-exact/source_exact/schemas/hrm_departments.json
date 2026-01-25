@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "HRMDepartments",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "Code": {
+      "description": "Department Code",
+      "type": ["null", "string"]
+    },
+    "Costcenter": {
+      "type": ["null", "string"]
+    },
+    "CostcenterDescription": {
+      "description": "Cost center description",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "Description": {
+      "description": "Department description",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "Notes": {
+      "description": "Explanation or extra information can be stored in the notes",
+      "type": ["null", "string"]
+    }
+  }
+}

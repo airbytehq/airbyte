@@ -1,0 +1,11 @@
+{
+  "base_url": "https://start.exactonline.nl",
+  "divisions": ["123"],
+  "credentials": {
+    "client_id": "string",
+    "client_secret": "string",
+    "access_token": "string",
+    "refresh_token": "string",
+    "token_expiry_date": "2025-01-01T08:00:00"
+  }
+}

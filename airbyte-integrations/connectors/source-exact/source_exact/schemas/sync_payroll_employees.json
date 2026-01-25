@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncPayrollEmployees",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "BirthName": {
+      "description": "Birth name",
+      "type": ["null", "string"]
+    },
+    "BirthNamePrefix": {
+      "description": "Birth middle name",
+      "type": ["null", "string"]
+    },
+    "BusinessEmail": {
+      "description": "Email of the employee at the office",
+      "type": ["null", "string"]
+    },
+    "BusinessFax": {
+      "description": "Fax number of the employee at the office",
+      "type": ["null", "string"]
+    },
+    "BusinessMobile": {
+      "description": "Office mobile number of the employee at the office",
+      "type": ["null", "string"]
+    },
+    "BusinessPhone": {
+      "description": "Phone number of the employee at the office",
+      "type": ["null", "string"]
+    },
+    "BusinessPhoneExtension": {
+      "description": "Phone extension of the employee at the office",
+      "type": ["null", "string"]
+    },
+    "City": {
+      "description": "City",
+      "type": ["null", "string"]
+    },
+    "Code": {
+      "description": "Code of the employee",
+      "type": ["null", "string"]
+    },
+    "Country": {
+      "description": "Country code",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Created date.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator.",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "Customer": {
+      "description": "ID of customer",
+      "type": ["null", "string"]
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Email": {
+      "description": "E-mail address of a user. If employee is linked to a user, the user email is stored in this property",
+      "type": ["null", "string"]
+    },
+    "EmployeeHID": {
+      "description": "Employee number",
+      "type": ["null", "integer"]
+    },
+    "EndDate": {
+      "description": "End date of the employee",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "FirstName": {
+      "description": "First name of the employee",
+      "type": ["null", "string"]
+    },
+    "FullName": {
+      "description": "Full name of the employee",
+      "type": ["null", "string"]
+    },
+    "HID": {
+      "description": "Numeric ID of the employee",
+      "type": ["null", "string"]
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "Initials": {
+      "description": "Initials",
+      "type": ["null", "string"]
+    },
+    "IsActive": {
+      "description": "Is Active",
+      "type": ["null", "boolean"]
+    },
+    "IsAnonymised": {
+      "description": "First name of the employee",
+      "type": ["null", "integer"]
+    },
+    "Language": {
+      "description": "Language code",
+      "type": ["null", "string"]
+    },
+    "LastName": {
+      "description": "LastName",
+      "type": ["null", "string"]
+    },
+    "LocationDescription": {
+      "description": "Description of the location of the employee (where am I?)",
+      "type": ["null", "string"]
+    },
+    "Manager": {
+      "description": "Direct manager of the employee",
+      "type": ["null", "string"]
+    },
+    "MiddleName": {
+      "description": "Middle name",
+      "type": ["null", "string"]
+    },
+    "Mobile": {
+      "description": "Mobile phone",
+      "type": ["null", "string"]
+    },
+    "Modified": {
+      "description": "Last modified date.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "NameComposition": {
+      "description": "",
+      "type": ["null", "integer"]
+    },
+    "Nationality": {
+      "description": "Nationality",
+      "type": ["null", "string"]
+    },
+    "NickName": {
+      "description": "Nick name",
+      "type": ["null", "string"]
+    },
+    "Notes": {
+      "description": "Additional notes",
+      "type": ["null", "string"]
+    },
+    "Person": {
+      "description": "Reference to the persions table in which the personal data of the employee is stored",
+      "type": ["null", "string"]
+    },
+    "Phone": {
+      "description": "Phone number",
+      "type": ["null", "string"]
+    },
+    "PhoneExtension": {
+      "description": "Phone number extension",
+      "type": ["null", "string"]
+    },
+    "StartDate": {
+      "description": "Start date of employment",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "State": {
+      "description": "State",
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "description": "Title",
+      "type": ["null", "string"]
+    },
+    "User": {
+      "description": "User ID of employee",
+      "type": ["null", "string"]
+    },
+    "UserFullName": {
+      "description": "Name of user",
+      "type": ["null", "string"]
+    }
+  }
+}
