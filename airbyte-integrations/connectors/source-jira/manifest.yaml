@@ -7349,13 +7349,13 @@ definitions:
         xml:
           name: user
 
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflows-search-get
   workflows_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: workflows
     primary_key: [["entityId"], ["name"]]
     $parameters:
-      path: "workflow/search"
+      path: "workflows/search"
       extract_field: "values"
     transformations:
     - type: AddFields
