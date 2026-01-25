@@ -13,13 +13,15 @@ This page contains the setup guide and reference information for the [SharePoint
 
 The SharePoint Lists source connector allows you to sync data from Microsoft SharePoint Lists to your data warehouse or destination of choice. This connector uses the Microsoft Graph API to extract list data with full support for dynamic schema discovery, incremental syncs, and complex column types.
 
+This connector is built using the Airbyte Low-Code Framework (manifest-only) with custom Python components for complex field transformations.
+
 ## Features
 
 - **Dynamic List Discovery**: Automatically discovers all non-hidden lists in your SharePoint site
 - **Dynamic Column Discovery**: Automatically detects and maps all column types for each list
-- **Incremental Sync Support**: Efficiently syncs only new and modified records
+- **Incremental Sync Support**: Efficiently syncs only new and modified records using client-side filtering
 - **Complex Column Type Support**: Handles Person/Group, Lookup, Managed Metadata, and Hyperlink columns
-- **User Information Table**: Provides a lookup table for Author/Editor resolution
+- **Site Users Table**: Provides a lookup table for Author/Editor resolution
 
 ## Prerequisites
 
@@ -70,10 +72,7 @@ The Site ID is required to identify which SharePoint site to sync from. You can 
 6. Enter your **Client Secret**
 7. Enter your **Tenant ID**
 8. Enter your **Site ID** in the format: `hostname,site-guid,web-guid`
-9. (Optional) Enter a **List Name Filter** regex pattern to filter which lists to sync
-10. (Optional) Configure **Skip Document Libraries** (default: true)
-11. (Optional) Set **Number of Workers** for parallel processing (default: 10, range: 1-20)
-12. Click **Set up source**
+9. Click **Set up source**
 
 ## Configuration
 
@@ -83,9 +82,6 @@ The Site ID is required to identify which SharePoint site to sync from. You can 
 | `client_secret` | Yes | Azure AD Application client secret |
 | `tenant_id` | Yes | Azure AD Tenant ID |
 | `site_id` | Yes | SharePoint Site ID in format: `hostname,site-guid,web-guid` |
-| `list_name_filter` | No | Regular expression pattern to filter which lists to sync (for example, `Perdue.*` to match lists starting with "Perdue") |
-| `skip_document_libraries` | No | Skip document library lists (default: `true`) |
-| `num_workers` | No | Number of concurrent workers for parallel processing (default: `10`, range: 1-20) |
 
 ## Streams
 
@@ -111,22 +107,44 @@ Metadata about all SharePoint lists in the site.
 **Primary Key**: `id`  
 **Cursor Field**: `lastModifiedDateTime`
 
-#### `user_information`
+#### `columns`
+
+Column definitions for all lists in the site.
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `id` | string | Unique column identifier |
+| `name` | string | Internal column name |
+| `displayName` | string | Display name of the column |
+| `description` | string | Column description |
+| `list_id` | string | ID of the parent list |
+| `list_name` | string | Internal name of the parent list |
+| `list_display_name` | string | Display name of the parent list |
+| `column_type` | string | Detected column type (string, number, boolean, lookup, person, hyperlink, term) |
+| `is_lookup_type` | boolean | Whether the column is a lookup-type column |
+| `allows_multiple` | boolean | Whether the column allows multiple values |
+
+**Sync Mode**: Full Refresh only  
+**Primary Key**: `list_id`, `name`
+
+#### `site_users`
 
 Lookup table for SharePoint users (useful for resolving Author/Editor lookup IDs).
 
 | Property | Type | Description |
 | -------- | ---- | ----------- |
-| `user_lookup_id` | string | User lookup ID (matches AuthorLookupId/EditorLookupId) |
-| `user_title` | string | User display name |
-| `user_email` | string | User email address |
-| `user_login_name` | string | User login name |
-| `is_site_admin` | boolean | Whether user is a site admin |
+| `id` | string | User record ID |
+| `user_id` | string | User ID |
+| `user_name` | string | User display name |
+| `email` | string | User email address |
 | `department` | string | User's department |
 | `job_title` | string | User's job title |
+| `user_principal_name` | string | User principal name (UPN) |
+| `sip_address` | string | SIP address for communication |
+| `picture_url` | string | URL to user's profile picture |
 
 **Sync Mode**: Full Refresh only  
-**Primary Key**: `user_lookup_id`
+**Primary Key**: `id`
 
 ### Dynamic streams (list items)
 
@@ -184,7 +202,7 @@ The connector automatically handles the following SharePoint column types:
 
 - Returns the user's display name as a string
 - Multi-select person columns return semicolon-separated display names
-- Use the `user_information` stream to get additional user details via `authorlookupid`/`editorlookupid`
+- Use the `site_users` stream to get additional user details via `authorlookupid`/`editorlookupid`
 
 #### Lookup columns
 
@@ -217,15 +235,15 @@ The connector automatically handles the following SharePoint column types:
 
 ## Rate limiting and performance
 
-- The connector respects Microsoft Graph API rate limits
+- The connector respects Microsoft Graph API rate limits with exponential backoff
+- Implements a rate limit policy of 100 requests per second
 - Default page size is determined by the API (typically 200 items per page)
-- Use `num_workers` to control parallelization (higher values increase throughput but may hit rate limits)
 
 ## Known limitations
 
-1. **12 Lookup Column Limit**: SharePoint limits the number of lookup-type columns (Person, Lookup, Managed Metadata) to 12 when listing multiple items. If a list has more than 12 lookup columns, some may not return values. The connector logs a warning when this is detected.
+1. **12 Lookup Column Limit**: SharePoint limits the number of lookup-type columns (Person, Lookup, Managed Metadata) to 12 when listing multiple items. If a list has more than 12 lookup columns, some may not return values.
 
-2. **Document Libraries**: By default, document libraries are skipped. Set `skip_document_libraries: false` to include them.
+2. **Document Libraries**: Document libraries are automatically excluded from sync (filtered by template type).
 
 3. **Schema Changes**: New columns added to lists aren't automatically detected during syncs. A schema refresh is required to detect new columns or new lists.
 
@@ -251,7 +269,7 @@ The connector automatically handles the following SharePoint column types:
 
 ### Rate limiting
 
-- Reduce `num_workers` if experiencing throttling
+- The connector automatically handles rate limiting with exponential backoff
 - Microsoft Graph API has per-tenant and per-app rate limits
 
 ## Changelog
@@ -261,6 +279,6 @@ The connector automatically handles the following SharePoint column types:
 
 | Version | Date       | Pull Request | Subject                                                                                               |
 | ------- | ---------- | ------------ | ----------------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2025-01-07 | 338          | Initial release with dynamic list/column discovery, incremental sync, and complex column type support |
+| 0.1.0   | 2025-01-15 | 338          | Initial release using Low-Code Framework with dynamic list/column discovery, incremental sync, and complex column type support |
 
 </details>
