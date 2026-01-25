@@ -7,7 +7,7 @@ description: >-
 
 ## Overview
 
-The Airbyte Chargify destination allows you to stream data from any [Airbyte Source](https://airbyte.com/connectors?connector-type=Sources) into [Chargify](http://chargify.com) for [custom analysis](http://chargify.com/business-intelligence) and [multi-attribute, usage-based billing](http://chargify.com/events-based-billing). Chargify is the leading billing and subscription management software built for the evolving needs of fast-growth companies.
+The Airbyte Chargify destination allows you to stream data from any [Airbyte Source](https://airbyte.com/connectors?connector-type=Sources) into [Chargify](https://chargify.com) for [custom analysis](https://chargify.com/business-intelligence) and [multi-attribute, usage-based billing](https://chargify.com/events-based-billing). Chargify is the leading billing and subscription management software built for the evolving needs of fast-growth companies.
 
 ### Sync overview
 
@@ -43,7 +43,7 @@ See the setup guide for more information about how to get started.
 
 #### Chargify
 
-If [Business Intelligence](http://chargify.com/business-intelligence/) and [Events-Based Billing](http://chargify.com/events-based-billing) have not been enabled, please contact [support@chargify.com](mailto:support@chargify.com).
+If [Business Intelligence](https://chargify.com/business-intelligence/) and [Events-Based Billing](https://chargify.com/events-based-billing) have not been enabled, please contact [support@chargify.com](mailto:support@chargify.com).
 
 Login to the Chargify application and identify which sites you want to stream data to for Events-Based Billing and Chargify Business Intelligence.
 
@@ -67,7 +67,7 @@ Now, you should have all the parameters needed to configure Chargify destination
 - **Master API Key**
 - **Infer Timestamp**
 
-Connect your first source and then head to the Chargify application. You can seamlessly run [custom analysis](https://www.chargify.com/business-intelligence/) on your data and build [multi-attribute, usage-based pricing models](http://chargify.com/events-based-billing/).
+Connect your first source and then head to the Chargify application. You can seamlessly run [custom analysis](https://www.chargify.com/business-intelligence/) on your data and build [multi-attribute, usage-based pricing models](https://chargify.com/events-based-billing/).
 
 If you have any questions or want to get started, [please reach out to a billing expert](https://go.chargify.com/contact/).
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This source connector syncs data from the [Weatherstack API](http://api.weatherstack.com/). This API allows to obtain current, historical, location lookup, and weather forecast.
+This source connector syncs data from the [Weatherstack API](https://weatherstack.com/). This API allows to obtain current, historical, location lookup, and weather forecast.
 
 ### Output schema
 
