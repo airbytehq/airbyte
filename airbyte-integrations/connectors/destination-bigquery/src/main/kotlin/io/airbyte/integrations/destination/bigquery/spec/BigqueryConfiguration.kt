@@ -19,12 +19,23 @@ data class BigqueryConfiguration(
     val cdcDeletionMode: CdcDeletionMode,
     val internalTableDataset: String,
     val legacyRawTablesOnly: Boolean,
+    val defaultPartitioningField: String?,
+    val defaultClusteringField: String?,
+    val defaultTableSuffix: String?,
+    val streamConfigMap: Map<String, StreamLevelConfig>,
 ) : DestinationConfiguration() {
     override val numOpenStreamWorkers = 3
     // currently the base cdk declares 0.2 as the default.
     // use 0.4 so that we support 20MiB records.
     override val maxMessageQueueMemoryUsageRatio = 0.4
 }
+
+data class StreamLevelConfig(
+    val partitioningField: String? = null,
+    val clusteringField: String? = null,
+    val tableSuffix: String? = null,
+    val dataset: String? = null,
+)
 
 sealed interface LoadingMethodConfiguration
 
@@ -66,6 +77,17 @@ class BigqueryConfigurationFactory :
                     pojo.internalTableDataset!!
                 },
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
+            defaultPartitioningField = pojo.defaultPartitioningField,
+            defaultClusteringField = pojo.defaultClusteringField,
+            defaultTableSuffix = pojo.defaultTableSuffix,
+            streamConfigMap = pojo.streams?.associate {
+                it.name to StreamLevelConfig(
+                    partitioningField = it.partitioningField,
+                    clusteringField = it.clusteringField,
+                    tableSuffix = it.tableSuffix,
+                    dataset = it.dataset
+                )
+            } ?: emptyMap(),
         )
     }
 }

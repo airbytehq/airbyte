@@ -105,7 +105,59 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonProperty("raw_data_dataset")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableDataset: String? = null
+
+    @get:JsonSchemaTitle("Default Partitioning Field")
+    @get:JsonPropertyDescription("Default field to use for partitioning (e.g. _airbyte_extracted_at)")
+    @get:JsonProperty("default_partitioning_field")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
+    val defaultPartitioningField: String? = null
+
+    @get:JsonSchemaTitle("Default Clustering Field")
+    @get:JsonPropertyDescription("Default field to use for clustering (e.g. _airbyte_extracted_at)")
+    @get:JsonProperty("default_clustering_field")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
+    val defaultClusteringField: String? = null
+
+    @get:JsonSchemaTitle("Default Table Suffix")
+    @get:JsonPropertyDescription("Default suffix to append to table names")
+    @get:JsonProperty("default_table_suffix")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 12}""")
+    val defaultTableSuffix: String? = null
+
+    @get:JsonSchemaTitle("Stream Configuration")
+    @get:JsonPropertyDescription(
+        """Per-stream configuration overrides.""",
+    )
+    @get:JsonProperty("streams")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 13}""")
+    val streams: List<SingleStreamConfiguration>? = null
 }
+
+/**
+ * Per-stream configuration for custom partitioning, clustering, and table naming.
+ */
+data class SingleStreamConfiguration(
+    @get:JsonSchemaTitle("Stream Name")
+    @get:JsonPropertyDescription("Name of the stream (or namespace.stream_name)")
+    @JsonProperty("name")
+    val name: String = "",
+
+    @get:JsonSchemaTitle("Partitioning Field")
+    @JsonProperty("partitioning_field")
+    val partitioningField: String? = null,
+
+    @get:JsonSchemaTitle("Clustering Field")
+    @JsonProperty("clustering_field")
+    val clusteringField: String? = null,
+
+    @get:JsonSchemaTitle("Table Suffix")
+    @JsonProperty("table_suffix")
+    val tableSuffix: String? = null,
+
+    @get:JsonSchemaTitle("Target Dataset")
+    @JsonProperty("dataset")
+    val dataset: String? = null,
+)
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,

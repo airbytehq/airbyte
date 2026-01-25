@@ -37,6 +37,7 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryTableSchemaEvolutionClient
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryRawTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider // ADDED
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -52,6 +53,9 @@ private val logger = KotlinLogging.logger {}
 @Factory
 class BigqueryBeansFactory {
     @Singleton fun getConfig(config: DestinationConfiguration) = config as BigqueryConfiguration
+
+    @Singleton
+    fun getStreamConfigProvider(config: BigqueryConfiguration) = StreamConfigProvider(config)
 
     @Singleton
     @Requires(condition = BigqueryConfiguredForBulkLoad::class)
@@ -101,6 +105,7 @@ class BigqueryBeansFactory {
         // we use a different type depending on whether we're in legacy raw tables vs
         // direct-load tables mode.
         streamStateStore: StreamStateStore<*>,
+        streamConfigProvider: StreamConfigProvider,
     ): DestinationWriter {
         val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
         if (config.legacyRawTablesOnly) {
@@ -125,6 +130,7 @@ class BigqueryBeansFactory {
                     BigqueryDirectLoadSqlGenerator(
                         projectId = config.projectId,
                         cdcDeletionMode = config.cdcDeletionMode,
+                        streamConfigProvider = streamConfigProvider,
                     ),
                     destinationHandler,
                     bigquery,
@@ -151,6 +157,7 @@ class BigqueryBeansFactory {
                         destinationHandler,
                         projectId = config.projectId,
                         tempTableNameGenerator,
+                        streamConfigProvider,
                     ),
                 tableOperationsClient = tableOperations,
                 streamStateStore = streamStateStore,
