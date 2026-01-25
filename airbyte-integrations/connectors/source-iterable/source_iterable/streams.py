@@ -6,7 +6,7 @@ import csv
 import json
 from abc import ABC, abstractmethod
 from io import StringIO
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import requests
@@ -158,6 +158,7 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
         self._start_date = pendulum.parse(start_date)
         self._end_date = end_date and pendulum.parse(end_date)
         self.stream_params = {"dataTypeName": self.data_field}
+        self._state = {}
 
     def path(self, **kwargs) -> str:
         return "export/data.json"
@@ -198,17 +199,53 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
             }
         return {self.cursor_field: str(latest_benchmark)}
 
+    def _extract_date_range(self, stream_slice: Any) -> Tuple[DateTime, DateTime]:
+        """
+        Extract start and end dates from a stream slice.
+
+        Handles both:
+        - Local StreamSlice dataclass from slice_generators.py (has start_date/end_date attributes)
+        - CDK declarative StreamSlice (has cursor_slice with start_time/end_time)
+
+        Returns:
+            Tuple of (start_date, end_date) as DateTime objects
+        """
+        start_dt = None
+        end_dt = None
+
+        # Case 1: Local StreamSlice dataclass from slice_generators.py (has start_date/end_date attributes)
+        if hasattr(stream_slice, "start_date") and hasattr(stream_slice, "end_date"):
+            start_dt = stream_slice.start_date
+            end_dt = stream_slice.end_date
+        else:
+            # Case 2: CDK declarative StreamSlice (has cursor_slice with start_time/end_time)
+            cursor_slice = getattr(stream_slice, "cursor_slice", None)
+            if cursor_slice:
+                start_dt = cursor_slice.get("start_time") or cursor_slice.get("startDateTime")
+                end_dt = cursor_slice.get("end_time") or cursor_slice.get("endDateTime")
+
+        # Fallback to stream's own date range if slice doesn't provide dates
+        if start_dt is None:
+            start_dt = self._start_date
+        if end_dt is None:
+            end_dt = self._end_date or pendulum.now("UTC")
+
+        return start_dt, end_dt
+
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: StreamSlice,
+        stream_slice: Any,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state)
+
+        start_dt, end_dt = self._extract_date_range(stream_slice)
+
         params.update(
             {
-                "startDateTime": stream_slice.start_date.strftime("%Y-%m-%d %H:%M:%S"),
-                "endDateTime": stream_slice.end_date.strftime("%Y-%m-%d %H:%M:%S"),
+                "startDateTime": start_dt.strftime("%Y-%m-%d %H:%M:%S"),
+                "endDateTime": end_dt.strftime("%Y-%m-%d %H:%M:%S"),
             },
             **self.stream_params,
         )
@@ -310,15 +347,14 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
         self,
         sync_mode: SyncMode,
         cursor_field: List[str],
-        stream_slice: StreamSlice,
+        stream_slice: Any,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         start_time = pendulum.now()
+        start_dt, end_dt = self._extract_date_range(stream_slice)
         for _ in range(self.CHUNKED_ENCODING_ERROR_RETRIES):
             try:
-                self.logger.info(
-                    f"Processing slice of {(stream_slice.end_date - stream_slice.start_date).total_days()} days for stream {self.name}"
-                )
+                self.logger.info(f"Processing slice of {(end_dt - start_dt).total_days()} days for stream {self.name}")
                 for record in super().read_records(
                     sync_mode=sync_mode,
                     cursor_field=cursor_field,
@@ -326,13 +362,17 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
                     stream_state=stream_state,
                 ):
                     now = pendulum.now()
-                    self._adjustable_generator.adjust_range(now - start_time)
+                    if self._adjustable_generator is not None:
+                        self._adjustable_generator.adjust_range(now - start_time)
                     yield record
                     start_time = now
                 break
             except ChunkedEncodingError:
+                if self._adjustable_generator is None:
+                    raise
                 self.logger.warn("ChunkedEncodingError occurred, decrease days range and try again")
                 stream_slice = self._adjustable_generator.reduce_range()
+                start_dt, end_dt = self._extract_date_range(stream_slice)
         else:
             raise Exception(f"ChunkedEncodingError: Reached maximum number of retires: {self.CHUNKED_ENCODING_ERROR_RETRIES}")
 
@@ -428,6 +468,19 @@ class CampaignsMetrics(IterableStream):
             result.append(row)
 
         return result
+
+
+class Users(IterableExportStreamAdjustableRange):
+    """
+    Users export stream with adaptive slicing to handle ChunkedEncodingError.
+
+    This stream uses the same adjustable range logic as email streams to automatically
+    reduce the date range and retry when the Iterable API terminates long-running
+    chunked responses.
+    """
+
+    data_field = "user"
+    cursor_field = "profileUpdatedAt"
 
 
 class EmailBounce(IterableExportStreamAdjustableRange):
