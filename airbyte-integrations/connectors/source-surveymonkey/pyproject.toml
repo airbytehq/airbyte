@@ -19,7 +19,7 @@ include = "source_surveymonkey"
 python = "^3.9,<3.12"
 airbyte-cdk = "^2"
 vcrpy = "==4.1.1"
-urllib3 = "==1.26.18"
+urllib3 = "==2.6.0"
 
 [tool.poetry.scripts]
 source-surveymonkey = "source_surveymonkey.run:run"
