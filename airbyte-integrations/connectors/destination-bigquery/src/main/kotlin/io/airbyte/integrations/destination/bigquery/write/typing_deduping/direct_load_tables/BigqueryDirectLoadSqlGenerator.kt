@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils
 class BigqueryDirectLoadSqlGenerator(
     private val projectId: String?,
     private val cdcDeletionMode: CdcDeletionMode,
+    private val streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
 ) : DirectLoadSqlGenerator {
     override fun createTable(
         stream: DestinationStream,
@@ -59,12 +60,17 @@ class BigqueryDirectLoadSqlGenerator(
                 .joinToString(",\n")
 
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
+        
+        // Use custom clustering if provided, else use PK-based clustering
         val clusterConfig =
-            clusteringColumns(stream, columnNameMapping)
+            getClusteringColumns(stream, columnNameMapping)
                 .stream()
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
+
+        val partitioningField = streamConfigProvider.getPartitioningField(stream.unmappedDescriptor)
         val finalTableId = tableName.toPrettyString(QUOTE)
+        
         // bigquery has a CREATE OR REPLACE TABLE statement, but we can't use it
         // because you can't change a partitioning/clustering scheme in-place.
         // Bigquery requires you to drop+recreate the table in this case.
@@ -86,7 +92,7 @@ class BigqueryDirectLoadSqlGenerator(
                   _airbyte_generation_id INTEGER,
                   $columnDeclarations
                 )
-                PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+                PARTITION BY (DATE_TRUNC(`$partitioningField`, DAY))
                 CLUSTER BY $clusterConfig;
                 """.trimIndent()
             )
@@ -347,5 +353,48 @@ class BigqueryDirectLoadSqlGenerator(
             clusterColumns.add("_airbyte_extracted_at")
             return clusterColumns
         }
+    }
+
+    /**
+     * Get clustering columns with stream-level override support.
+     * Priority:
+     * 1. Stream-level clustering field from config
+     * 2. Default clustering field from connector config
+     * 3. PK-based clustering (for dedupe mode)
+     */
+    private fun getClusteringColumns(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): List<String> {
+        val customClusteringField = streamConfigProvider.getClusteringField(stream.unmappedDescriptor)
+
+        if (customClusteringField != null) {
+            // Validate that the clustering field exists and is a valid type
+            val clusterFields = customClusteringField.split(",").map{ it.trim() }.filter { it.isNotEmpty() }
+            val resolvedColumns = mutableListOf<String>()
+
+            for (field in clusterFields) {
+                val actualColumnName = columnNameMapping[field]
+                if (actualColumnName != null) {
+                    val fieldType = stream.schema.asColumns()[field]
+                    if (fieldType != null) {
+                       val bigqueryType = toDialectType(fieldType.type)
+                       if (bigqueryType == StandardSQLTypeName.JSON) {
+                            throw ConfigErrorException(
+                                "Stream ${stream.mappedDescriptor.toPrettyString()}: Clustering field '$field' is JSON type, which cannot be used for clustering"
+                            )
+                       }
+                    }
+                    resolvedColumns.add(actualColumnName)
+                }
+            }
+            if (resolvedColumns.isNotEmpty()) {
+                return resolvedColumns
+            }
+            // If the fields don't exist in the schema, fall through to default behavior
+        }
+
+        // Default behavior: use PK-based clustering
+        return clusteringColumns(stream, columnNameMapping)
     }
 }
