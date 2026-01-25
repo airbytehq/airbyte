@@ -80,6 +80,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `property_history`          | `crm.objects.contacts.read`                                                                                  |
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
+| `users`                     | `crm.objects.users.read`, `settings.users.read`                                                              |
 | `workflows`                 | `automation`                                                                                                 |
 
 </details>
@@ -178,6 +179,7 @@ The HubSpot source connector supports the following streams:
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 - [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
 - [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
+- [Users](https://developers.hubspot.com/docs/api-reference/settings-user-provisioning-v3/users/get-settings-v3-users-) \(Full-Refresh\)
 - [Owners Archived](https://legacydocs.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
 - [Contacts Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Client-Side Incremental\)
@@ -341,6 +343,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.2.0 | 2025-12-15 | [70920](https://github.com/airbytehq/airbyte/pull/70920) | Add new stream Users |
 | 6.1.0-rc.1  | 2025-11-24 | [69782](https://github.com/airbytehq/airbyte/pull/69782)     | Allow for user defined cursor field key in the configured catalog for incremental streams                                                                                                                                    |
 | 6.0.15 | 2025-11-25 | [70053](https://github.com/airbytehq/airbyte/pull/70053) | Update dependencies |
 | 6.0.14 | 2025-11-24 | [69803](https://github.com/airbytehq/airbyte/pull/69803) | Add missing fields in Marketing Emails stream for Avro/Parquet conversions |
