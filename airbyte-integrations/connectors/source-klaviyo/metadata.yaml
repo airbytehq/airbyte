@@ -21,6 +21,7 @@ data:
       packageName: airbyte-source-klaviyo
   registryOverrides:
     cloud:
+      dockerImageTag: 2.15.0
       enabled: true
     oss:
       enabled: true
