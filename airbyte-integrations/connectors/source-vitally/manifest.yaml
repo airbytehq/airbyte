@@ -1,4 +1,4 @@
-version: 6.41.5
+version: 7.4.2
 
 type: DeclarativeSource
 
@@ -10,248 +10,2666 @@ check:
     - accounts
 
 definitions:
-  streams:
-    accounts:
-      type: DeclarativeStream
-      name: accounts
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /accounts
-          http_method: GET
-          request_parameters:
-            status: "{{ config['status'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: from
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.next }}"
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/accounts"
-    admins:
-      type: DeclarativeStream
-      name: admins
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /admins
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: from
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.next }}"
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/admins"
-    conversations:
-      type: DeclarativeStream
-      name: conversations
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /conversations
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: from
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.next }}"
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/conversations"
-    notes:
-      type: DeclarativeStream
-      name: notes
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /notes
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: from
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.next }}"
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/notes"
-    tasks:
-      type: DeclarativeStream
-      name: tasks
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /tasks
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: from
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.next }}"
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/tasks"
-    users:
-      type: DeclarativeStream
-      name: users
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /users
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: from
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.next }}"
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/users"
-  base_requester:
-    type: HttpRequester
-    url_base: >-
-      {{ ('https://' + config['domain'] + '.' if config.domain else '') +
-      'rest.vitally.io/resources' }}
-    authenticator:
-      type: BasicHttpAuthenticator
-      password: "{{ config[\"basic_auth_header\"] }}"
-      username: "{{ config[\"secret_token\"] }}"
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BasicHttpAuthenticator
+        password: "{{ config[\"basic_auth_header\"] }}"
+        username: "{{ config[\"secret_token\"] }}"
+      request_parameters:
+        sortBy: "{{ config['incremental_cursor_field'] }}"
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
 
 streams:
-  - $ref: "#/definitions/streams/accounts"
-  - $ref: "#/definitions/streams/admins"
-  - $ref: "#/definitions/streams/conversations"
-  - $ref: "#/definitions/streams/notes"
-  - $ref: "#/definitions/streams/tasks"
-  - $ref: "#/definitions/streams/users"
+  - type: DeclarativeStream
+    name: accounts
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ ('https:/' + config['domain'] + '.' if config.domain else '') +
+          'rest.vitally.io/resources' }}/accounts
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"basic_auth_header\"] }}"
+          username: "{{ config[\"secret_token\"] }}"
+        request_parameters:
+          sortBy: "{{ config['incremental_cursor_field'] }}"
+          status: "{{ config['status'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          mrr:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          csmId:
+            type:
+              - string
+              - "null"
+          traits:
+            type:
+              - object
+              - "null"
+            properties:
+              firm_id:
+                type:
+                  - number
+                  - "null"
+              hspot.city:
+                type:
+                  - string
+                  - "null"
+              last_nps_1:
+                type:
+                  - number
+                  - "null"
+              last_nps_2:
+                type:
+                  - number
+                  - "null"
+              last_nps_3:
+                type:
+                  - number
+                  - "null"
+              hspot.state:
+                type:
+                  - string
+                  - "null"
+              period_year:
+                type:
+                  - string
+                  - "null"
+              top_staff_1:
+                type:
+                  - string
+                  - "null"
+              top_staff_2:
+                type:
+                  - string
+                  - "null"
+              top_staff_3:
+                type:
+                  - string
+                  - "null"
+              hspot.status:
+                type:
+                  - string
+                  - "null"
+              period_month:
+                type:
+                  - number
+                  - "null"
+              hspot.firm_id:
+                type:
+                  - number
+                  - "null"
+              bottom_staff_1:
+                type:
+                  - string
+                  - "null"
+              bottom_staff_2:
+                type:
+                  - string
+                  - "null"
+              bottom_staff_3:
+                type:
+                  - string
+                  - "null"
+              hspot.of_cases:
+                type:
+                  - number
+                  - "null"
+              nps_change_pct:
+                type:
+                  - number
+                  - "null"
+              top_avg_csat_1:
+                type:
+                  - number
+                  - "null"
+              top_avg_csat_2:
+                type:
+                  - number
+                  - "null"
+              top_avg_csat_3:
+                type:
+                  - number
+                  - "null"
+              csat_change_pct:
+                type:
+                  - number
+                  - "null"
+              hspot.escalation:
+                type:
+                  - string
+                  - "null"
+              unhappy_client_1:
+                type:
+                  - string
+                  - "null"
+              unhappy_client_2:
+                type:
+                  - string
+                  - "null"
+              unhappy_client_3:
+                type:
+                  - string
+                  - "null"
+              bottom_avg_csat_1:
+                type:
+                  - number
+                  - "null"
+              bottom_avg_csat_2:
+                type:
+                  - number
+                  - "null"
+              bottom_avg_csat_3:
+                type:
+                  - number
+                  - "null"
+              current_promoters:
+                type:
+                  - number
+                  - "null"
+              logins_change_pct:
+                type:
+                  - number
+                  - "null"
+              current_csat_score:
+                type:
+                  - number
+                  - "null"
+              current_logins_cnt:
+                type:
+                  - number
+                  - "null"
+              current_period_nps:
+                type:
+                  - number
+                  - "null"
+              hspot.last_payment:
+                type:
+                  - number
+                  - "null"
+              message_change_pct:
+                type:
+                  - number
+                  - "null"
+              previous_promoters:
+                type:
+                  - number
+                  - "null"
+              hspot.practice_area:
+                type:
+                  - string
+                  - "null"
+              hspot.size_category:
+                type:
+                  - string
+                  - "null"
+              passives_change_pct:
+                type:
+                  - number
+                  - "null"
+              previous_csat_score:
+                type:
+                  - number
+                  - "null"
+              previous_logins_cnt:
+                type:
+                  - number
+                  - "null"
+              previous_period_nps:
+                type:
+                  - number
+                  - "null"
+              current_messages_cnt:
+                type:
+                  - number
+                  - "null"
+              hspot.practice_areas:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              new_cases_change_pct:
+                type:
+                  - number
+                  - "null"
+              promoters_change_pct:
+                type:
+                  - number
+                  - "null"
+              current_activated_pct:
+                type:
+                  - number
+                  - "null"
+              current_new_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              hspot.sentiment_notes:
+                type:
+                  - string
+                  - "null"
+              previous_messages_cnt:
+                type:
+                  - number
+                  - "null"
+              hspot.hs_csm_sentiment:
+                type:
+                  - string
+                  - "null"
+              hspot.hubspot_owner_id:
+                type:
+                  - string
+                  - "null"
+              hspot.termination_date:
+                type:
+                  - number
+                  - "null"
+              previous_activated_pct:
+                type:
+                  - number
+                  - "null"
+              previous_new_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              hspot.cancellation_date:
+                type:
+                  - number
+                  - "null"
+              hspot.scorecard__growth:
+                type:
+                  - string
+                  - "null"
+              period_cases_change_pct:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.forecast:
+                type:
+                  - string
+                  - "null"
+              current_period_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.nextSteps:
+                type:
+                  - string
+                  - "null"
+              hspot.contract_start_date:
+                type:
+                  - number
+                  - "null"
+              previous_period_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              hspot.firm_success_manager:
+                type:
+                  - string
+                  - "null"
+              hspot.implementation_stage:
+                type:
+                  - string
+                  - "null"
+              current_passives_detractors:
+                type:
+                  - number
+                  - "null"
+              hspot.annual_contract_value:
+                type:
+                  - number
+                  - "null"
+              hspot.scorecard__activation:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.renewalStage:
+                type:
+                  - string
+                  - "null"
+              hspot.current_google_reviews:
+                type:
+                  - number
+                  - "null"
+              hspot.implementation_manager:
+                type:
+                  - string
+                  - "null"
+              hspot.messages_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.scorecard_last_updated:
+                type:
+                  - number
+                  - "null"
+              previous_passives_detractors:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.forecastNotes:
+                type:
+                  - string
+                  - "null"
+              hspot.documents_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.starting_google_reviews:
+                type:
+                  - number
+                  - "null"
+              hspot.treatments_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.renewalContacts:
+                type:
+                  - number
+                  - "null"
+              hspot.automations_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.contracted_case_threshold:
+                type:
+                  - number
+                  - "null"
+              hspot.appointments_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.notice_of_termination_date:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.adoptionChampions:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.executiveSponsors:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.implementationStage:
+                type:
+                  - string
+                  - "null"
+              hspot.checklist_items_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.scorecard__activation_percentage:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.lastAccountReviewReminder:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.implementationProjectStatus:
+                type:
+                  - string
+                  - "null"
+              hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
+                type:
+                  - number
+                  - "null"
+          keyRoles:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                keyRole:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    label:
+                      type:
+                        - string
+                        - "null"
+                    createdAt:
+                      type:
+                        - string
+                        - "null"
+                createdAt:
+                  type:
+                    - string
+                    - "null"
+                assignedAt:
+                  type:
+                    - string
+                    - "null"
+                vitallyUser:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    licenseStatus:
+                      type:
+                        - string
+                        - "null"
+          segments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          churnedAt:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          externalId:
+            type:
+              - string
+              - "null"
+          usersCount:
+            type:
+              - number
+              - "null"
+          healthScore:
+            type:
+              - number
+              - "null"
+          nextRenewalDate:
+            type:
+              - string
+              - "null"
+          npsPassiveCount:
+            type:
+              - number
+              - "null"
+          npsPromoterCount:
+            type:
+              - number
+              - "null"
+          npsDetractorCount:
+            type:
+              - number
+              - "null"
+          accountExecutiveId:
+            type:
+              - string
+              - "null"
+          lastInboundMessageTimestamp:
+            type:
+              - string
+              - "null"
+          lastOutboundMessageTimestamp:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ config['incremental_cursor_field'] }}"
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "1970-01-01T00:00:00.000Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: PT1H
+      global_substream_cursor: false
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: admins
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ ('https:/' + config['domain'] + '.' if config.domain else '') +
+          'rest.vitally.io/resources' }}/admins
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"basic_auth_header\"] }}"
+          username: "{{ config[\"secret_token\"] }}"
+        request_parameters:
+          sortBy: "{{ config['incremental_cursor_field'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          licenseStatus:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ config['incremental_cursor_field'] }}"
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "1970-01-01T00:00:00.000Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: PT1H
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: conversations
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ ('https:/' + config['domain'] + '.' if config.domain else '') +
+          'rest.vitally.io/resources' }}/conversations
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"basic_auth_header\"] }}"
+          username: "{{ config[\"secret_token\"] }}"
+        request_parameters:
+          sortBy: "{{ config['incremental_cursor_field'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          source:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          traits:
+            type:
+              - object
+              - "null"
+            properties:
+              zendesk.tags:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              zendesk.type:
+                type:
+                  - string
+                  - "null"
+              zendesk.status:
+                type:
+                  - string
+                  - "null"
+          subject:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ config['incremental_cursor_field'] }}"
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "1970-01-01T00:00:00.000Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: PT1H
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: notes
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ ('https:/' + config['domain'] + '.' if config.domain else '') +
+          'rest.vitally.io/resources' }}/notes
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"basic_auth_header\"] }}"
+          username: "{{ config[\"secret_token\"] }}"
+        request_parameters:
+          sortBy: "{{ config['incremental_cursor_field'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          note:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          users:
+            type:
+              - array
+              - "null"
+          author:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              licenseStatus:
+                type:
+                  - string
+                  - "null"
+          traits:
+            type:
+              - object
+              - "null"
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              mrr:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              csmId:
+                type:
+                  - string
+                  - "null"
+              traits:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  firm_id:
+                    type:
+                      - number
+                      - "null"
+                  hspot.city:
+                    type:
+                      - string
+                      - "null"
+                  last_nps_1:
+                    type:
+                      - number
+                      - "null"
+                  last_nps_2:
+                    type:
+                      - number
+                      - "null"
+                  last_nps_3:
+                    type:
+                      - number
+                      - "null"
+                  hspot.state:
+                    type:
+                      - string
+                      - "null"
+                  period_year:
+                    type:
+                      - string
+                      - "null"
+                  top_staff_1:
+                    type:
+                      - string
+                      - "null"
+                  top_staff_2:
+                    type:
+                      - string
+                      - "null"
+                  top_staff_3:
+                    type:
+                      - string
+                      - "null"
+                  hspot.status:
+                    type:
+                      - string
+                      - "null"
+                  period_month:
+                    type:
+                      - number
+                      - "null"
+                  hspot.firm_id:
+                    type:
+                      - number
+                      - "null"
+                  bottom_staff_1:
+                    type:
+                      - string
+                      - "null"
+                  bottom_staff_2:
+                    type:
+                      - string
+                      - "null"
+                  bottom_staff_3:
+                    type:
+                      - string
+                      - "null"
+                  hspot.of_cases:
+                    type:
+                      - number
+                      - "null"
+                  nps_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  top_avg_csat_1:
+                    type:
+                      - number
+                      - "null"
+                  top_avg_csat_2:
+                    type:
+                      - number
+                      - "null"
+                  top_avg_csat_3:
+                    type:
+                      - number
+                      - "null"
+                  csat_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  hspot.escalation:
+                    type:
+                      - string
+                      - "null"
+                  unhappy_client_1:
+                    type:
+                      - string
+                      - "null"
+                  unhappy_client_2:
+                    type:
+                      - string
+                      - "null"
+                  unhappy_client_3:
+                    type:
+                      - string
+                      - "null"
+                  bottom_avg_csat_1:
+                    type:
+                      - number
+                      - "null"
+                  bottom_avg_csat_2:
+                    type:
+                      - number
+                      - "null"
+                  bottom_avg_csat_3:
+                    type:
+                      - number
+                      - "null"
+                  current_promoters:
+                    type:
+                      - number
+                      - "null"
+                  logins_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  current_csat_score:
+                    type:
+                      - number
+                      - "null"
+                  current_logins_cnt:
+                    type:
+                      - number
+                      - "null"
+                  current_period_nps:
+                    type:
+                      - number
+                      - "null"
+                  hspot.last_payment:
+                    type:
+                      - number
+                      - "null"
+                  message_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  previous_promoters:
+                    type:
+                      - number
+                      - "null"
+                  hspot.practice_area:
+                    type:
+                      - string
+                      - "null"
+                  hspot.size_category:
+                    type:
+                      - string
+                      - "null"
+                  passives_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  previous_csat_score:
+                    type:
+                      - number
+                      - "null"
+                  previous_logins_cnt:
+                    type:
+                      - number
+                      - "null"
+                  previous_period_nps:
+                    type:
+                      - number
+                      - "null"
+                  current_messages_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.practice_areas:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  new_cases_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  promoters_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  current_activated_pct:
+                    type:
+                      - number
+                      - "null"
+                  current_new_cases_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.sentiment_notes:
+                    type:
+                      - string
+                      - "null"
+                  previous_messages_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.hs_csm_sentiment:
+                    type:
+                      - string
+                      - "null"
+                  hspot.hubspot_owner_id:
+                    type:
+                      - string
+                      - "null"
+                  hspot.termination_date:
+                    type:
+                      - number
+                      - "null"
+                  previous_activated_pct:
+                    type:
+                      - number
+                      - "null"
+                  previous_new_cases_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.cancellation_date:
+                    type:
+                      - number
+                      - "null"
+                  hspot.scorecard__growth:
+                    type:
+                      - string
+                      - "null"
+                  period_cases_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.forecast:
+                    type:
+                      - string
+                      - "null"
+                  current_period_cases_cnt:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.nextSteps:
+                    type:
+                      - string
+                      - "null"
+                  hspot.contract_start_date:
+                    type:
+                      - number
+                      - "null"
+                  previous_period_cases_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.firm_success_manager:
+                    type:
+                      - string
+                      - "null"
+                  hspot.implementation_stage:
+                    type:
+                      - string
+                      - "null"
+                  current_passives_detractors:
+                    type:
+                      - number
+                      - "null"
+                  hspot.annual_contract_value:
+                    type:
+                      - number
+                      - "null"
+                  hspot.scorecard__activation:
+                    type:
+                      - string
+                      - "null"
+                  vitally.custom.renewalStage:
+                    type:
+                      - string
+                      - "null"
+                  hspot.current_google_reviews:
+                    type:
+                      - number
+                      - "null"
+                  hspot.implementation_manager:
+                    type:
+                      - string
+                      - "null"
+                  hspot.messages_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.scorecard_last_updated:
+                    type:
+                      - number
+                      - "null"
+                  previous_passives_detractors:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.forecastNotes:
+                    type:
+                      - string
+                      - "null"
+                  hspot.documents_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.starting_google_reviews:
+                    type:
+                      - number
+                      - "null"
+                  hspot.treatments_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.renewalContacts:
+                    type:
+                      - number
+                      - "null"
+                  hspot.automations_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.contracted_case_threshold:
+                    type:
+                      - number
+                      - "null"
+                  hspot.appointments_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.notice_of_termination_date:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.adoptionChampions:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.executiveSponsors:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.implementationStage:
+                    type:
+                      - string
+                      - "null"
+                  hspot.checklist_items_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.scorecard__activation_percentage:
+                    type:
+                      - string
+                      - "null"
+                  vitally.custom.lastAccountReviewReminder:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.implementationProjectStatus:
+                    type:
+                      - string
+                      - "null"
+                  hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
+                    type:
+                      - number
+                      - "null"
+              churnedAt:
+                type:
+                  - string
+                  - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              externalId:
+                type:
+                  - string
+                  - "null"
+              usersCount:
+                type:
+                  - number
+                  - "null"
+              healthScore:
+                type:
+                  - number
+                  - "null"
+              nextRenewalDate:
+                type:
+                  - string
+                  - "null"
+              npsPassiveCount:
+                type:
+                  - number
+                  - "null"
+              npsPromoterCount:
+                type:
+                  - number
+                  - "null"
+              npsDetractorCount:
+                type:
+                  - number
+                  - "null"
+              accountExecutiveId:
+                type:
+                  - string
+                  - "null"
+              lastInboundMessageTimestamp:
+                type:
+                  - string
+                  - "null"
+              lastOutboundMessageTimestamp:
+                type:
+                  - string
+                  - "null"
+          subject:
+            type:
+              - string
+              - "null"
+          authorId:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+          noteDate:
+            type:
+              - string
+              - "null"
+          accountId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          categoryId:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ config['incremental_cursor_field'] }}"
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "1970-01-01T00:00:00.000Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: PT1H
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: tasks
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ ('https:/' + config['domain'] + '.' if config.domain else '') +
+          'rest.vitally.io/resources' }}/tasks
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"basic_auth_header\"] }}"
+          username: "{{ config[\"secret_token\"] }}"
+        request_parameters:
+          sortBy: "{{ config['incremental_cursor_field'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+          traits:
+            type:
+              - object
+              - "null"
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              mrr:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              csmId:
+                type:
+                  - string
+                  - "null"
+              traits:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  firm_id:
+                    type:
+                      - number
+                      - "null"
+                  hspot.city:
+                    type:
+                      - string
+                      - "null"
+                  last_nps_1:
+                    type:
+                      - number
+                      - "null"
+                  last_nps_2:
+                    type:
+                      - number
+                      - "null"
+                  last_nps_3:
+                    type:
+                      - number
+                      - "null"
+                  hspot.state:
+                    type:
+                      - string
+                      - "null"
+                  period_year:
+                    type:
+                      - string
+                      - "null"
+                  top_staff_1:
+                    type:
+                      - string
+                      - "null"
+                  top_staff_2:
+                    type:
+                      - string
+                      - "null"
+                  top_staff_3:
+                    type:
+                      - string
+                      - "null"
+                  hspot.status:
+                    type:
+                      - string
+                      - "null"
+                  period_month:
+                    type:
+                      - number
+                      - "null"
+                  hspot.firm_id:
+                    type:
+                      - number
+                      - "null"
+                  bottom_staff_1:
+                    type:
+                      - string
+                      - "null"
+                  bottom_staff_2:
+                    type:
+                      - string
+                      - "null"
+                  bottom_staff_3:
+                    type:
+                      - string
+                      - "null"
+                  hspot.of_cases:
+                    type:
+                      - number
+                      - "null"
+                  nps_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  top_avg_csat_1:
+                    type:
+                      - number
+                      - "null"
+                  top_avg_csat_2:
+                    type:
+                      - number
+                      - "null"
+                  top_avg_csat_3:
+                    type:
+                      - number
+                      - "null"
+                  csat_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  hspot.escalation:
+                    type:
+                      - string
+                      - "null"
+                  unhappy_client_1:
+                    type:
+                      - string
+                      - "null"
+                  unhappy_client_2:
+                    type:
+                      - string
+                      - "null"
+                  unhappy_client_3:
+                    type:
+                      - string
+                      - "null"
+                  bottom_avg_csat_1:
+                    type:
+                      - number
+                      - "null"
+                  bottom_avg_csat_2:
+                    type:
+                      - number
+                      - "null"
+                  bottom_avg_csat_3:
+                    type:
+                      - number
+                      - "null"
+                  current_promoters:
+                    type:
+                      - number
+                      - "null"
+                  logins_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  current_csat_score:
+                    type:
+                      - number
+                      - "null"
+                  current_logins_cnt:
+                    type:
+                      - number
+                      - "null"
+                  current_period_nps:
+                    type:
+                      - number
+                      - "null"
+                  hspot.last_payment:
+                    type:
+                      - number
+                      - "null"
+                  message_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  previous_promoters:
+                    type:
+                      - number
+                      - "null"
+                  hspot.practice_area:
+                    type:
+                      - string
+                      - "null"
+                  hspot.size_category:
+                    type:
+                      - string
+                      - "null"
+                  passives_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  previous_csat_score:
+                    type:
+                      - number
+                      - "null"
+                  previous_logins_cnt:
+                    type:
+                      - number
+                      - "null"
+                  previous_period_nps:
+                    type:
+                      - number
+                      - "null"
+                  current_messages_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.practice_areas:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  new_cases_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  promoters_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  current_activated_pct:
+                    type:
+                      - number
+                      - "null"
+                  current_new_cases_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.sentiment_notes:
+                    type:
+                      - string
+                      - "null"
+                  previous_messages_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.hs_csm_sentiment:
+                    type:
+                      - string
+                      - "null"
+                  hspot.hubspot_owner_id:
+                    type:
+                      - string
+                      - "null"
+                  hspot.termination_date:
+                    type:
+                      - number
+                      - "null"
+                  previous_activated_pct:
+                    type:
+                      - number
+                      - "null"
+                  previous_new_cases_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.cancellation_date:
+                    type:
+                      - number
+                      - "null"
+                  hspot.scorecard__growth:
+                    type:
+                      - string
+                      - "null"
+                  period_cases_change_pct:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.forecast:
+                    type:
+                      - string
+                      - "null"
+                  current_period_cases_cnt:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.nextSteps:
+                    type:
+                      - string
+                      - "null"
+                  hspot.contract_start_date:
+                    type:
+                      - number
+                      - "null"
+                  previous_period_cases_cnt:
+                    type:
+                      - number
+                      - "null"
+                  hspot.firm_success_manager:
+                    type:
+                      - string
+                      - "null"
+                  hspot.implementation_stage:
+                    type:
+                      - string
+                      - "null"
+                  current_passives_detractors:
+                    type:
+                      - number
+                      - "null"
+                  hspot.annual_contract_value:
+                    type:
+                      - number
+                      - "null"
+                  hspot.scorecard__activation:
+                    type:
+                      - string
+                      - "null"
+                  vitally.custom.renewalStage:
+                    type:
+                      - string
+                      - "null"
+                  hspot.current_google_reviews:
+                    type:
+                      - number
+                      - "null"
+                  hspot.implementation_manager:
+                    type:
+                      - string
+                      - "null"
+                  hspot.messages_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.scorecard_last_updated:
+                    type:
+                      - number
+                      - "null"
+                  previous_passives_detractors:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.forecastNotes:
+                    type:
+                      - string
+                      - "null"
+                  hspot.documents_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.starting_google_reviews:
+                    type:
+                      - number
+                      - "null"
+                  hspot.treatments_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.renewalContacts:
+                    type:
+                      - number
+                      - "null"
+                  hspot.automations_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.contracted_case_threshold:
+                    type:
+                      - number
+                      - "null"
+                  hspot.appointments_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.notice_of_termination_date:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.adoptionChampions:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.executiveSponsors:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.implementationStage:
+                    type:
+                      - string
+                      - "null"
+                  hspot.checklist_items_per_100_cases:
+                    type:
+                      - number
+                      - "null"
+                  hspot.scorecard__activation_percentage:
+                    type:
+                      - string
+                      - "null"
+                  vitally.custom.lastAccountReviewReminder:
+                    type:
+                      - number
+                      - "null"
+                  vitally.custom.implementationProjectStatus:
+                    type:
+                      - string
+                      - "null"
+                  hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
+                    type:
+                      - number
+                      - "null"
+              churnedAt:
+                type:
+                  - string
+                  - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              externalId:
+                type:
+                  - string
+                  - "null"
+              usersCount:
+                type:
+                  - number
+                  - "null"
+              healthScore:
+                type:
+                  - number
+                  - "null"
+              nextRenewalDate:
+                type:
+                  - string
+                  - "null"
+              npsPassiveCount:
+                type:
+                  - number
+                  - "null"
+              npsPromoterCount:
+                type:
+                  - number
+                  - "null"
+              npsDetractorCount:
+                type:
+                  - number
+                  - "null"
+              accountExecutiveId:
+                type:
+                  - string
+                  - "null"
+              lastInboundMessageTimestamp:
+                type:
+                  - string
+                  - "null"
+              lastOutboundMessageTimestamp:
+                type:
+                  - string
+                  - "null"
+          dueDate:
+            type:
+              - string
+              - "null"
+          projects:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                traits:
+                  type:
+                    - object
+                    - "null"
+                accountId:
+                  type:
+                    - string
+                    - "null"
+                createdAt:
+                  type:
+                    - string
+                    - "null"
+                updatedAt:
+                  type:
+                    - string
+                    - "null"
+                archivedAt:
+                  type:
+                    - string
+                    - "null"
+                durationInDays:
+                  type:
+                    - number
+                    - "null"
+                actualStartDate:
+                  type:
+                    - string
+                    - "null"
+                projectStatusId:
+                  type:
+                    - string
+                    - "null"
+                projectCategoryId:
+                  type:
+                    - string
+                    - "null"
+                ownedByVitallyUserId:
+                  type:
+                    - string
+                    - "null"
+                targetCompletionDate:
+                  type:
+                    - string
+                    - "null"
+          accountId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          assignedTo:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              licenseStatus:
+                type:
+                  - string
+                  - "null"
+          completedAt:
+            type:
+              - string
+              - "null"
+          completedBy:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              licenseStatus:
+                type:
+                  - string
+                  - "null"
+          assignedToId:
+            type:
+              - string
+              - "null"
+          completedById:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ config['incremental_cursor_field'] }}"
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "1970-01-01T00:00:00.000Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: PT1H
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ ('https:/' + config['domain'] + '.' if config.domain else '') +
+          'rest.vitally.io/resources' }}/users
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"basic_auth_header\"] }}"
+          username: "{{ config[\"secret_token\"] }}"
+        request_parameters:
+          sortBy: "{{ config['incremental_cursor_field'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          traits:
+            type:
+              - object
+              - "null"
+            properties:
+              hspot.email:
+                type:
+                  - string
+                  - "null"
+              hspot.phone:
+                type:
+                  - string
+                  - "null"
+              hspot.jobtitle:
+                type:
+                  - string
+                  - "null"
+              hspot.lastname:
+                type:
+                  - string
+                  - "null"
+              hspot.firstname:
+                type:
+                  - string
+                  - "null"
+              hspot.executive_sponsor_:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.renewalContact:
+                type:
+                  - boolean
+                  - "null"
+              vitally.custom.adoptionChampion:
+                type:
+                  - boolean
+                  - "null"
+              vitally.custom.executiveSponsor:
+                type:
+                  - boolean
+                  - "null"
+          accounts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                mrr:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                csmId:
+                  type:
+                    - string
+                    - "null"
+                traits:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    firm_id:
+                      type:
+                        - number
+                        - "null"
+                    hspot.city:
+                      type:
+                        - string
+                        - "null"
+                    last_nps_1:
+                      type:
+                        - number
+                        - "null"
+                    last_nps_2:
+                      type:
+                        - number
+                        - "null"
+                    last_nps_3:
+                      type:
+                        - number
+                        - "null"
+                    hspot.state:
+                      type:
+                        - string
+                        - "null"
+                    period_year:
+                      type:
+                        - string
+                        - "null"
+                    top_staff_1:
+                      type:
+                        - string
+                        - "null"
+                    top_staff_2:
+                      type:
+                        - string
+                        - "null"
+                    top_staff_3:
+                      type:
+                        - string
+                        - "null"
+                    hspot.status:
+                      type:
+                        - string
+                        - "null"
+                    period_month:
+                      type:
+                        - number
+                        - "null"
+                    hspot.firm_id:
+                      type:
+                        - number
+                        - "null"
+                    bottom_staff_1:
+                      type:
+                        - string
+                        - "null"
+                    bottom_staff_2:
+                      type:
+                        - string
+                        - "null"
+                    bottom_staff_3:
+                      type:
+                        - string
+                        - "null"
+                    hspot.of_cases:
+                      type:
+                        - number
+                        - "null"
+                    nps_change_pct:
+                      type:
+                        - number
+                        - "null"
+                    top_avg_csat_1:
+                      type:
+                        - number
+                        - "null"
+                    top_avg_csat_2:
+                      type:
+                        - number
+                        - "null"
+                    top_avg_csat_3:
+                      type:
+                        - number
+                        - "null"
+                    csat_change_pct:
+                      type:
+                        - number
+                        - "null"
+                    hspot.escalation:
+                      type:
+                        - string
+                        - "null"
+                    unhappy_client_1:
+                      type:
+                        - string
+                        - "null"
+                    unhappy_client_2:
+                      type:
+                        - string
+                        - "null"
+                    unhappy_client_3:
+                      type:
+                        - string
+                        - "null"
+                    bottom_avg_csat_1:
+                      type:
+                        - number
+                        - "null"
+                    bottom_avg_csat_2:
+                      type:
+                        - number
+                        - "null"
+                    bottom_avg_csat_3:
+                      type:
+                        - number
+                        - "null"
+                    current_promoters:
+                      type:
+                        - number
+                        - "null"
+                    logins_change_pct:
+                      type:
+                        - number
+                        - "null"
+                    current_csat_score:
+                      type:
+                        - number
+                        - "null"
+                    current_logins_cnt:
+                      type:
+                        - number
+                        - "null"
+                    current_period_nps:
+                      type:
+                        - number
+                        - "null"
+                    hspot.last_payment:
+                      type:
+                        - number
+                        - "null"
+                    message_change_pct:
+                      type:
+                        - number
+                        - "null"
+                    previous_promoters:
+                      type:
+                        - number
+                        - "null"
+                    hspot.practice_area:
+                      type:
+                        - string
+                        - "null"
+                    hspot.size_category:
+                      type:
+                        - string
+                        - "null"
+                    passives_change_pct:
+                      type:
+                        - number
+                        - "null"
+                    previous_csat_score:
+                      type:
+                        - number
+                        - "null"
+                    previous_logins_cnt:
+                      type:
+                        - number
+                        - "null"
+                    previous_period_nps:
+                      type:
+                        - number
+                        - "null"
+                    current_messages_cnt:
+                      type:
+                        - number
+                        - "null"
+                    hspot.practice_areas:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    new_cases_change_pct:
+                      type:
+                        - number
+                        - "null"
+                    promoters_change_pct:
+                      type:
+                        - number
+                        - "null"
+                    current_activated_pct:
+                      type:
+                        - number
+                        - "null"
+                    current_new_cases_cnt:
+                      type:
+                        - number
+                        - "null"
+                    hspot.sentiment_notes:
+                      type:
+                        - string
+                        - "null"
+                    previous_messages_cnt:
+                      type:
+                        - number
+                        - "null"
+                    hspot.hs_csm_sentiment:
+                      type:
+                        - string
+                        - "null"
+                    hspot.hubspot_owner_id:
+                      type:
+                        - string
+                        - "null"
+                    hspot.termination_date:
+                      type:
+                        - number
+                        - "null"
+                    previous_activated_pct:
+                      type:
+                        - number
+                        - "null"
+                    previous_new_cases_cnt:
+                      type:
+                        - number
+                        - "null"
+                    hspot.cancellation_date:
+                      type:
+                        - number
+                        - "null"
+                    hspot.scorecard__growth:
+                      type:
+                        - string
+                        - "null"
+                    period_cases_change_pct:
+                      type:
+                        - number
+                        - "null"
+                    vitally.custom.forecast:
+                      type:
+                        - string
+                        - "null"
+                    current_period_cases_cnt:
+                      type:
+                        - number
+                        - "null"
+                    vitally.custom.nextSteps:
+                      type:
+                        - string
+                        - "null"
+                    hspot.contract_start_date:
+                      type:
+                        - number
+                        - "null"
+                    previous_period_cases_cnt:
+                      type:
+                        - number
+                        - "null"
+                    hspot.firm_success_manager:
+                      type:
+                        - string
+                        - "null"
+                    hspot.implementation_stage:
+                      type:
+                        - string
+                        - "null"
+                    current_passives_detractors:
+                      type:
+                        - number
+                        - "null"
+                    hspot.annual_contract_value:
+                      type:
+                        - number
+                        - "null"
+                    hspot.scorecard__activation:
+                      type:
+                        - string
+                        - "null"
+                    vitally.custom.renewalStage:
+                      type:
+                        - string
+                        - "null"
+                    hspot.current_google_reviews:
+                      type:
+                        - number
+                        - "null"
+                    hspot.implementation_manager:
+                      type:
+                        - string
+                        - "null"
+                    hspot.messages_per_100_cases:
+                      type:
+                        - number
+                        - "null"
+                    hspot.scorecard_last_updated:
+                      type:
+                        - number
+                        - "null"
+                    previous_passives_detractors:
+                      type:
+                        - number
+                        - "null"
+                    vitally.custom.forecastNotes:
+                      type:
+                        - string
+                        - "null"
+                    hspot.documents_per_100_cases:
+                      type:
+                        - number
+                        - "null"
+                    hspot.starting_google_reviews:
+                      type:
+                        - number
+                        - "null"
+                    hspot.treatments_per_100_cases:
+                      type:
+                        - number
+                        - "null"
+                    vitally.custom.renewalContacts:
+                      type:
+                        - number
+                        - "null"
+                    hspot.automations_per_100_cases:
+                      type:
+                        - number
+                        - "null"
+                    hspot.contracted_case_threshold:
+                      type:
+                        - number
+                        - "null"
+                    hspot.appointments_per_100_cases:
+                      type:
+                        - number
+                        - "null"
+                    hspot.notice_of_termination_date:
+                      type:
+                        - number
+                        - "null"
+                    vitally.custom.adoptionChampions:
+                      type:
+                        - number
+                        - "null"
+                    vitally.custom.executiveSponsors:
+                      type:
+                        - number
+                        - "null"
+                    vitally.custom.implementationStage:
+                      type:
+                        - string
+                        - "null"
+                    hspot.checklist_items_per_100_cases:
+                      type:
+                        - number
+                        - "null"
+                    hspot.scorecard__activation_percentage:
+                      type:
+                        - string
+                        - "null"
+                    vitally.custom.lastAccountReviewReminder:
+                      type:
+                        - number
+                        - "null"
+                    vitally.custom.implementationProjectStatus:
+                      type:
+                        - string
+                        - "null"
+                    hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
+                      type:
+                        - number
+                        - "null"
+                segments:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                churnedAt:
+                  type:
+                    - string
+                    - "null"
+                createdAt:
+                  type:
+                    - string
+                    - "null"
+                updatedAt:
+                  type:
+                    - string
+                    - "null"
+                externalId:
+                  type:
+                    - string
+                    - "null"
+                usersCount:
+                  type:
+                    - number
+                    - "null"
+                healthScore:
+                  type:
+                    - number
+                    - "null"
+                nextRenewalDate:
+                  type:
+                    - string
+                    - "null"
+                npsPassiveCount:
+                  type:
+                    - number
+                    - "null"
+                npsPromoterCount:
+                  type:
+                    - number
+                    - "null"
+                npsDetractorCount:
+                  type:
+                    - number
+                    - "null"
+                accountExecutiveId:
+                  type:
+                    - string
+                    - "null"
+                lastInboundMessageTimestamp:
+                  type:
+                    - string
+                    - "null"
+                lastOutboundMessageTimestamp:
+                  type:
+                    - string
+                    - "null"
+          joinDate:
+            type:
+              - string
+              - "null"
+          segments:
+            type:
+              - array
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          externalId:
+            type:
+              - string
+              - "null"
+          firstKnown:
+            type:
+              - string
+              - "null"
+          lastInboundMessageTimestamp:
+            type:
+              - string
+              - "null"
+          lastOutboundMessageTimestamp:
+            type:
+              - string
+              - "null"
+          unsubscribedFromConversations:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ config['incremental_cursor_field'] }}"
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "1970-01-01T00:00:00.000Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: PT1H
 
 spec:
   type: Spec
@@ -294,38 +2712,23 @@ spec:
         title: Basic Auth Header
         always_show: true
         airbyte_secret: true
+      incremental_cursor_field:
+        type: string
+        description: >-
+          The cursor field used for incremental sync. One of the followings:
+          updatedAt, createdAt.
+        enum:
+          - updatedAt
+          - createdAt
+        order: 4
+        title: Incremental Cursor Field
+        default: updatedAt
     additionalProperties: true
 
 metadata:
-  autoImportSchema:
-    accounts: false
-    admins: false
-    conversations: false
-    notes: false
-    tasks: false
-    users: false
+  assist:
+    docsUrl: https://docs.vitally.io/en/articles/9880649-rest-api-overview
   testedStreams:
-    accounts:
-      streamHash: 30ddca51972202cbbad3ed172261a548849a62e4
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    admins:
-      streamHash: d9efad91bc144a5f484691c9ce4b539e878be340
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    conversations:
-      hasRecords: true
-      streamHash: ea4c7e3fe9b501cd8ae0b63eefcf6cff9421015a
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     notes:
       hasRecords: true
       streamHash: a0dcaf271fca368ff8abc675084b1bda11cbf300
@@ -347,2324 +2750,42 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-  assist:
-    docsUrl: https://docs.vitally.io/en/articles/9880649-rest-api-overview
-
-schemas:
-  accounts:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      accountExecutiveId:
-        type:
-          - string
-          - "null"
-      churnedAt:
-        type:
-          - string
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      csmId:
-        type:
-          - string
-          - "null"
-      externalId:
-        type:
-          - string
-          - "null"
-      healthScore:
-        type:
-          - number
-          - "null"
-      id:
-        type: string
-      keyRoles:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            assignedAt:
-              type:
-                - string
-                - "null"
-            createdAt:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            keyRole:
-              type:
-                - object
-                - "null"
-              properties:
-                createdAt:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - string
-                    - "null"
-                label:
-                  type:
-                    - string
-                    - "null"
-            vitallyUser:
-              type:
-                - object
-                - "null"
-              properties:
-                email:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - string
-                    - "null"
-                licenseStatus:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-      lastInboundMessageTimestamp:
-        type:
-          - string
-          - "null"
-      lastOutboundMessageTimestamp:
-        type:
-          - string
-          - "null"
-      mrr:
-        type:
-          - number
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      nextRenewalDate:
-        type:
-          - string
-          - "null"
-      npsDetractorCount:
-        type:
-          - number
-          - "null"
-      npsPassiveCount:
-        type:
-          - number
-          - "null"
-      npsPromoterCount:
-        type:
-          - number
-          - "null"
-      segments:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-      traits:
-        type:
-          - object
-          - "null"
-        properties:
-          bottom_avg_csat_1:
-            type:
-              - number
-              - "null"
-          bottom_avg_csat_2:
-            type:
-              - number
-              - "null"
-          bottom_avg_csat_3:
-            type:
-              - number
-              - "null"
-          bottom_staff_1:
-            type:
-              - string
-              - "null"
-          bottom_staff_2:
-            type:
-              - string
-              - "null"
-          bottom_staff_3:
-            type:
-              - string
-              - "null"
-          csat_change_pct:
-            type:
-              - number
-              - "null"
-          current_activated_pct:
-            type:
-              - number
-              - "null"
-          current_csat_score:
-            type:
-              - number
-              - "null"
-          current_logins_cnt:
-            type:
-              - number
-              - "null"
-          current_messages_cnt:
-            type:
-              - number
-              - "null"
-          current_new_cases_cnt:
-            type:
-              - number
-              - "null"
-          current_passives_detractors:
-            type:
-              - number
-              - "null"
-          current_period_cases_cnt:
-            type:
-              - number
-              - "null"
-          current_period_nps:
-            type:
-              - number
-              - "null"
-          current_promoters:
-            type:
-              - number
-              - "null"
-          firm_id:
-            type:
-              - number
-              - "null"
-          hspot.annual_contract_value:
-            type:
-              - number
-              - "null"
-          hspot.appointments_per_100_cases:
-            type:
-              - number
-              - "null"
-          hspot.automations_per_100_cases:
-            type:
-              - number
-              - "null"
-          hspot.cancellation_date:
-            type:
-              - number
-              - "null"
-          hspot.checklist_items_per_100_cases:
-            type:
-              - number
-              - "null"
-          hspot.city:
-            type:
-              - string
-              - "null"
-          hspot.contract_start_date:
-            type:
-              - number
-              - "null"
-          hspot.contracted_case_threshold:
-            type:
-              - number
-              - "null"
-          hspot.current_google_reviews:
-            type:
-              - number
-              - "null"
-          hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
-            type:
-              - number
-              - "null"
-          hspot.documents_per_100_cases:
-            type:
-              - number
-              - "null"
-          hspot.escalation:
-            type:
-              - string
-              - "null"
-          hspot.firm_id:
-            type:
-              - number
-              - "null"
-          hspot.firm_success_manager:
-            type:
-              - string
-              - "null"
-          hspot.hs_csm_sentiment:
-            type:
-              - string
-              - "null"
-          hspot.hubspot_owner_id:
-            type:
-              - string
-              - "null"
-          hspot.implementation_manager:
-            type:
-              - string
-              - "null"
-          hspot.implementation_stage:
-            type:
-              - string
-              - "null"
-          hspot.last_payment:
-            type:
-              - number
-              - "null"
-          hspot.messages_per_100_cases:
-            type:
-              - number
-              - "null"
-          hspot.notice_of_termination_date:
-            type:
-              - number
-              - "null"
-          hspot.of_cases:
-            type:
-              - number
-              - "null"
-          hspot.practice_area:
-            type:
-              - string
-              - "null"
-          hspot.practice_areas:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          hspot.scorecard__activation:
-            type:
-              - string
-              - "null"
-          hspot.scorecard__activation_percentage:
-            type:
-              - string
-              - "null"
-          hspot.scorecard__growth:
-            type:
-              - string
-              - "null"
-          hspot.scorecard_last_updated:
-            type:
-              - number
-              - "null"
-          hspot.sentiment_notes:
-            type:
-              - string
-              - "null"
-          hspot.size_category:
-            type:
-              - string
-              - "null"
-          hspot.starting_google_reviews:
-            type:
-              - number
-              - "null"
-          hspot.state:
-            type:
-              - string
-              - "null"
-          hspot.status:
-            type:
-              - string
-              - "null"
-          hspot.termination_date:
-            type:
-              - number
-              - "null"
-          hspot.treatments_per_100_cases:
-            type:
-              - number
-              - "null"
-          last_nps_1:
-            type:
-              - number
-              - "null"
-          last_nps_2:
-            type:
-              - number
-              - "null"
-          last_nps_3:
-            type:
-              - number
-              - "null"
-          logins_change_pct:
-            type:
-              - number
-              - "null"
-          message_change_pct:
-            type:
-              - number
-              - "null"
-          new_cases_change_pct:
-            type:
-              - number
-              - "null"
-          nps_change_pct:
-            type:
-              - number
-              - "null"
-          passives_change_pct:
-            type:
-              - number
-              - "null"
-          period_cases_change_pct:
-            type:
-              - number
-              - "null"
-          period_month:
-            type:
-              - number
-              - "null"
-          period_year:
-            type:
-              - string
-              - "null"
-          previous_activated_pct:
-            type:
-              - number
-              - "null"
-          previous_csat_score:
-            type:
-              - number
-              - "null"
-          previous_logins_cnt:
-            type:
-              - number
-              - "null"
-          previous_messages_cnt:
-            type:
-              - number
-              - "null"
-          previous_new_cases_cnt:
-            type:
-              - number
-              - "null"
-          previous_passives_detractors:
-            type:
-              - number
-              - "null"
-          previous_period_cases_cnt:
-            type:
-              - number
-              - "null"
-          previous_period_nps:
-            type:
-              - number
-              - "null"
-          previous_promoters:
-            type:
-              - number
-              - "null"
-          promoters_change_pct:
-            type:
-              - number
-              - "null"
-          top_avg_csat_1:
-            type:
-              - number
-              - "null"
-          top_avg_csat_2:
-            type:
-              - number
-              - "null"
-          top_avg_csat_3:
-            type:
-              - number
-              - "null"
-          top_staff_1:
-            type:
-              - string
-              - "null"
-          top_staff_2:
-            type:
-              - string
-              - "null"
-          top_staff_3:
-            type:
-              - string
-              - "null"
-          unhappy_client_1:
-            type:
-              - string
-              - "null"
-          unhappy_client_2:
-            type:
-              - string
-              - "null"
-          unhappy_client_3:
-            type:
-              - string
-              - "null"
-          vitally.custom.adoptionChampions:
-            type:
-              - number
-              - "null"
-          vitally.custom.executiveSponsors:
-            type:
-              - number
-              - "null"
-          vitally.custom.forecast:
-            type:
-              - string
-              - "null"
-          vitally.custom.forecastNotes:
-            type:
-              - string
-              - "null"
-          vitally.custom.implementationProjectStatus:
-            type:
-              - string
-              - "null"
-          vitally.custom.implementationStage:
-            type:
-              - string
-              - "null"
-          vitally.custom.lastAccountReviewReminder:
-            type:
-              - number
-              - "null"
-          vitally.custom.nextSteps:
-            type:
-              - string
-              - "null"
-          vitally.custom.renewalContacts:
-            type:
-              - number
-              - "null"
-          vitally.custom.renewalStage:
-            type:
-              - string
-              - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      usersCount:
-        type:
-          - number
-          - "null"
-    required:
-      - id
-  admins:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      email:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      licenseStatus:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  conversations:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      createdAt:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      source:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      subject:
-        type:
-          - string
-          - "null"
-      traits:
-        type:
-          - object
-          - "null"
-        properties:
-          zendesk.status:
-            type:
-              - string
-              - "null"
-          zendesk.tags:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          zendesk.type:
-            type:
-              - string
-              - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  notes:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      account:
-        type:
-          - object
-          - "null"
-        properties:
-          accountExecutiveId:
-            type:
-              - string
-              - "null"
-          churnedAt:
-            type:
-              - string
-              - "null"
-          createdAt:
-            type:
-              - string
-              - "null"
-          csmId:
-            type:
-              - string
-              - "null"
-          externalId:
-            type:
-              - string
-              - "null"
-          healthScore:
-            type:
-              - number
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          lastInboundMessageTimestamp:
-            type:
-              - string
-              - "null"
-          lastOutboundMessageTimestamp:
-            type:
-              - string
-              - "null"
-          mrr:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          nextRenewalDate:
-            type:
-              - string
-              - "null"
-          npsDetractorCount:
-            type:
-              - number
-              - "null"
-          npsPassiveCount:
-            type:
-              - number
-              - "null"
-          npsPromoterCount:
-            type:
-              - number
-              - "null"
-          traits:
-            type:
-              - object
-              - "null"
-            properties:
-              bottom_avg_csat_1:
-                type:
-                  - number
-                  - "null"
-              bottom_avg_csat_2:
-                type:
-                  - number
-                  - "null"
-              bottom_avg_csat_3:
-                type:
-                  - number
-                  - "null"
-              bottom_staff_1:
-                type:
-                  - string
-                  - "null"
-              bottom_staff_2:
-                type:
-                  - string
-                  - "null"
-              bottom_staff_3:
-                type:
-                  - string
-                  - "null"
-              csat_change_pct:
-                type:
-                  - number
-                  - "null"
-              current_activated_pct:
-                type:
-                  - number
-                  - "null"
-              current_csat_score:
-                type:
-                  - number
-                  - "null"
-              current_logins_cnt:
-                type:
-                  - number
-                  - "null"
-              current_messages_cnt:
-                type:
-                  - number
-                  - "null"
-              current_new_cases_cnt:
-                type:
-                  - number
-                  - "null"
-              current_passives_detractors:
-                type:
-                  - number
-                  - "null"
-              current_period_cases_cnt:
-                type:
-                  - number
-                  - "null"
-              current_period_nps:
-                type:
-                  - number
-                  - "null"
-              current_promoters:
-                type:
-                  - number
-                  - "null"
-              firm_id:
-                type:
-                  - number
-                  - "null"
-              hspot.annual_contract_value:
-                type:
-                  - number
-                  - "null"
-              hspot.appointments_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.automations_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.cancellation_date:
-                type:
-                  - number
-                  - "null"
-              hspot.checklist_items_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.city:
-                type:
-                  - string
-                  - "null"
-              hspot.contract_start_date:
-                type:
-                  - number
-                  - "null"
-              hspot.contracted_case_threshold:
-                type:
-                  - number
-                  - "null"
-              hspot.current_google_reviews:
-                type:
-                  - number
-                  - "null"
-              hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
-                type:
-                  - number
-                  - "null"
-              hspot.documents_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.escalation:
-                type:
-                  - string
-                  - "null"
-              hspot.firm_id:
-                type:
-                  - number
-                  - "null"
-              hspot.firm_success_manager:
-                type:
-                  - string
-                  - "null"
-              hspot.hs_csm_sentiment:
-                type:
-                  - string
-                  - "null"
-              hspot.hubspot_owner_id:
-                type:
-                  - string
-                  - "null"
-              hspot.implementation_manager:
-                type:
-                  - string
-                  - "null"
-              hspot.implementation_stage:
-                type:
-                  - string
-                  - "null"
-              hspot.last_payment:
-                type:
-                  - number
-                  - "null"
-              hspot.messages_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.notice_of_termination_date:
-                type:
-                  - number
-                  - "null"
-              hspot.of_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.practice_area:
-                type:
-                  - string
-                  - "null"
-              hspot.practice_areas:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
-              hspot.scorecard__activation:
-                type:
-                  - string
-                  - "null"
-              hspot.scorecard__activation_percentage:
-                type:
-                  - string
-                  - "null"
-              hspot.scorecard__growth:
-                type:
-                  - string
-                  - "null"
-              hspot.scorecard_last_updated:
-                type:
-                  - number
-                  - "null"
-              hspot.sentiment_notes:
-                type:
-                  - string
-                  - "null"
-              hspot.size_category:
-                type:
-                  - string
-                  - "null"
-              hspot.starting_google_reviews:
-                type:
-                  - number
-                  - "null"
-              hspot.state:
-                type:
-                  - string
-                  - "null"
-              hspot.status:
-                type:
-                  - string
-                  - "null"
-              hspot.termination_date:
-                type:
-                  - number
-                  - "null"
-              hspot.treatments_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              last_nps_1:
-                type:
-                  - number
-                  - "null"
-              last_nps_2:
-                type:
-                  - number
-                  - "null"
-              last_nps_3:
-                type:
-                  - number
-                  - "null"
-              logins_change_pct:
-                type:
-                  - number
-                  - "null"
-              message_change_pct:
-                type:
-                  - number
-                  - "null"
-              new_cases_change_pct:
-                type:
-                  - number
-                  - "null"
-              nps_change_pct:
-                type:
-                  - number
-                  - "null"
-              passives_change_pct:
-                type:
-                  - number
-                  - "null"
-              period_cases_change_pct:
-                type:
-                  - number
-                  - "null"
-              period_month:
-                type:
-                  - number
-                  - "null"
-              period_year:
-                type:
-                  - string
-                  - "null"
-              previous_activated_pct:
-                type:
-                  - number
-                  - "null"
-              previous_csat_score:
-                type:
-                  - number
-                  - "null"
-              previous_logins_cnt:
-                type:
-                  - number
-                  - "null"
-              previous_messages_cnt:
-                type:
-                  - number
-                  - "null"
-              previous_new_cases_cnt:
-                type:
-                  - number
-                  - "null"
-              previous_passives_detractors:
-                type:
-                  - number
-                  - "null"
-              previous_period_cases_cnt:
-                type:
-                  - number
-                  - "null"
-              previous_period_nps:
-                type:
-                  - number
-                  - "null"
-              previous_promoters:
-                type:
-                  - number
-                  - "null"
-              promoters_change_pct:
-                type:
-                  - number
-                  - "null"
-              top_avg_csat_1:
-                type:
-                  - number
-                  - "null"
-              top_avg_csat_2:
-                type:
-                  - number
-                  - "null"
-              top_avg_csat_3:
-                type:
-                  - number
-                  - "null"
-              top_staff_1:
-                type:
-                  - string
-                  - "null"
-              top_staff_2:
-                type:
-                  - string
-                  - "null"
-              top_staff_3:
-                type:
-                  - string
-                  - "null"
-              unhappy_client_1:
-                type:
-                  - string
-                  - "null"
-              unhappy_client_2:
-                type:
-                  - string
-                  - "null"
-              unhappy_client_3:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.adoptionChampions:
-                type:
-                  - number
-                  - "null"
-              vitally.custom.executiveSponsors:
-                type:
-                  - number
-                  - "null"
-              vitally.custom.forecast:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.forecastNotes:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.implementationProjectStatus:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.implementationStage:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.lastAccountReviewReminder:
-                type:
-                  - number
-                  - "null"
-              vitally.custom.nextSteps:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.renewalContacts:
-                type:
-                  - number
-                  - "null"
-              vitally.custom.renewalStage:
-                type:
-                  - string
-                  - "null"
-          updatedAt:
-            type:
-              - string
-              - "null"
-          usersCount:
-            type:
-              - number
-              - "null"
-      accountId:
-        type:
-          - string
-          - "null"
-      author:
-        type:
-          - object
-          - "null"
-        properties:
-          email:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          licenseStatus:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-      authorId:
-        type:
-          - string
-          - "null"
-      category:
-        type:
-          - object
-          - "null"
-        properties:
-          createdAt:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          updatedAt:
-            type:
-              - string
-              - "null"
-      categoryId:
-        type:
-          - string
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      note:
-        type:
-          - string
-          - "null"
-      noteDate:
-        type:
-          - string
-          - "null"
-      subject:
-        type:
-          - string
-          - "null"
-      tags:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      traits:
-        type:
-          - object
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      users:
-        type:
-          - array
-          - "null"
-    required:
-      - id
-  tasks:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      description:
-        type:
-          - string
-          - "null"
-      account:
-        type:
-          - object
-          - "null"
-        properties:
-          accountExecutiveId:
-            type:
-              - string
-              - "null"
-          churnedAt:
-            type:
-              - string
-              - "null"
-          createdAt:
-            type:
-              - string
-              - "null"
-          csmId:
-            type:
-              - string
-              - "null"
-          externalId:
-            type:
-              - string
-              - "null"
-          healthScore:
-            type:
-              - number
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          lastInboundMessageTimestamp:
-            type:
-              - string
-              - "null"
-          lastOutboundMessageTimestamp:
-            type:
-              - string
-              - "null"
-          mrr:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          nextRenewalDate:
-            type:
-              - string
-              - "null"
-          npsDetractorCount:
-            type:
-              - number
-              - "null"
-          npsPassiveCount:
-            type:
-              - number
-              - "null"
-          npsPromoterCount:
-            type:
-              - number
-              - "null"
-          traits:
-            type:
-              - object
-              - "null"
-            properties:
-              bottom_avg_csat_1:
-                type:
-                  - number
-                  - "null"
-              bottom_avg_csat_2:
-                type:
-                  - number
-                  - "null"
-              bottom_avg_csat_3:
-                type:
-                  - number
-                  - "null"
-              bottom_staff_1:
-                type:
-                  - string
-                  - "null"
-              bottom_staff_2:
-                type:
-                  - string
-                  - "null"
-              bottom_staff_3:
-                type:
-                  - string
-                  - "null"
-              csat_change_pct:
-                type:
-                  - number
-                  - "null"
-              current_activated_pct:
-                type:
-                  - number
-                  - "null"
-              current_csat_score:
-                type:
-                  - number
-                  - "null"
-              current_logins_cnt:
-                type:
-                  - number
-                  - "null"
-              current_messages_cnt:
-                type:
-                  - number
-                  - "null"
-              current_new_cases_cnt:
-                type:
-                  - number
-                  - "null"
-              current_passives_detractors:
-                type:
-                  - number
-                  - "null"
-              current_period_cases_cnt:
-                type:
-                  - number
-                  - "null"
-              current_period_nps:
-                type:
-                  - number
-                  - "null"
-              current_promoters:
-                type:
-                  - number
-                  - "null"
-              firm_id:
-                type:
-                  - number
-                  - "null"
-              hspot.annual_contract_value:
-                type:
-                  - number
-                  - "null"
-              hspot.appointments_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.automations_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.cancellation_date:
-                type:
-                  - number
-                  - "null"
-              hspot.checklist_items_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.city:
-                type:
-                  - string
-                  - "null"
-              hspot.contract_start_date:
-                type:
-                  - number
-                  - "null"
-              hspot.contracted_case_threshold:
-                type:
-                  - number
-                  - "null"
-              hspot.current_google_reviews:
-                type:
-                  - number
-                  - "null"
-              hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
-                type:
-                  - number
-                  - "null"
-              hspot.documents_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.escalation:
-                type:
-                  - string
-                  - "null"
-              hspot.firm_id:
-                type:
-                  - number
-                  - "null"
-              hspot.firm_success_manager:
-                type:
-                  - string
-                  - "null"
-              hspot.hs_csm_sentiment:
-                type:
-                  - string
-                  - "null"
-              hspot.hubspot_owner_id:
-                type:
-                  - string
-                  - "null"
-              hspot.implementation_manager:
-                type:
-                  - string
-                  - "null"
-              hspot.implementation_stage:
-                type:
-                  - string
-                  - "null"
-              hspot.last_payment:
-                type:
-                  - number
-                  - "null"
-              hspot.messages_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.notice_of_termination_date:
-                type:
-                  - number
-                  - "null"
-              hspot.of_cases:
-                type:
-                  - number
-                  - "null"
-              hspot.practice_area:
-                type:
-                  - string
-                  - "null"
-              hspot.practice_areas:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
-              hspot.scorecard__activation:
-                type:
-                  - string
-                  - "null"
-              hspot.scorecard__activation_percentage:
-                type:
-                  - string
-                  - "null"
-              hspot.scorecard__growth:
-                type:
-                  - string
-                  - "null"
-              hspot.scorecard_last_updated:
-                type:
-                  - number
-                  - "null"
-              hspot.sentiment_notes:
-                type:
-                  - string
-                  - "null"
-              hspot.size_category:
-                type:
-                  - string
-                  - "null"
-              hspot.starting_google_reviews:
-                type:
-                  - number
-                  - "null"
-              hspot.state:
-                type:
-                  - string
-                  - "null"
-              hspot.status:
-                type:
-                  - string
-                  - "null"
-              hspot.termination_date:
-                type:
-                  - number
-                  - "null"
-              hspot.treatments_per_100_cases:
-                type:
-                  - number
-                  - "null"
-              last_nps_1:
-                type:
-                  - number
-                  - "null"
-              last_nps_2:
-                type:
-                  - number
-                  - "null"
-              last_nps_3:
-                type:
-                  - number
-                  - "null"
-              logins_change_pct:
-                type:
-                  - number
-                  - "null"
-              message_change_pct:
-                type:
-                  - number
-                  - "null"
-              new_cases_change_pct:
-                type:
-                  - number
-                  - "null"
-              nps_change_pct:
-                type:
-                  - number
-                  - "null"
-              passives_change_pct:
-                type:
-                  - number
-                  - "null"
-              period_cases_change_pct:
-                type:
-                  - number
-                  - "null"
-              period_month:
-                type:
-                  - number
-                  - "null"
-              period_year:
-                type:
-                  - string
-                  - "null"
-              previous_activated_pct:
-                type:
-                  - number
-                  - "null"
-              previous_csat_score:
-                type:
-                  - number
-                  - "null"
-              previous_logins_cnt:
-                type:
-                  - number
-                  - "null"
-              previous_messages_cnt:
-                type:
-                  - number
-                  - "null"
-              previous_new_cases_cnt:
-                type:
-                  - number
-                  - "null"
-              previous_passives_detractors:
-                type:
-                  - number
-                  - "null"
-              previous_period_cases_cnt:
-                type:
-                  - number
-                  - "null"
-              previous_period_nps:
-                type:
-                  - number
-                  - "null"
-              previous_promoters:
-                type:
-                  - number
-                  - "null"
-              promoters_change_pct:
-                type:
-                  - number
-                  - "null"
-              top_avg_csat_1:
-                type:
-                  - number
-                  - "null"
-              top_avg_csat_2:
-                type:
-                  - number
-                  - "null"
-              top_avg_csat_3:
-                type:
-                  - number
-                  - "null"
-              top_staff_1:
-                type:
-                  - string
-                  - "null"
-              top_staff_2:
-                type:
-                  - string
-                  - "null"
-              top_staff_3:
-                type:
-                  - string
-                  - "null"
-              unhappy_client_1:
-                type:
-                  - string
-                  - "null"
-              unhappy_client_2:
-                type:
-                  - string
-                  - "null"
-              unhappy_client_3:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.adoptionChampions:
-                type:
-                  - number
-                  - "null"
-              vitally.custom.executiveSponsors:
-                type:
-                  - number
-                  - "null"
-              vitally.custom.forecast:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.forecastNotes:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.implementationProjectStatus:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.implementationStage:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.lastAccountReviewReminder:
-                type:
-                  - number
-                  - "null"
-              vitally.custom.nextSteps:
-                type:
-                  - string
-                  - "null"
-              vitally.custom.renewalContacts:
-                type:
-                  - number
-                  - "null"
-              vitally.custom.renewalStage:
-                type:
-                  - string
-                  - "null"
-          updatedAt:
-            type:
-              - string
-              - "null"
-          usersCount:
-            type:
-              - number
-              - "null"
-      accountId:
-        type:
-          - string
-          - "null"
-      assignedTo:
-        type:
-          - object
-          - "null"
-        properties:
-          email:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          licenseStatus:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-      assignedToId:
-        type:
-          - string
-          - "null"
-      completedAt:
-        type:
-          - string
-          - "null"
-      completedBy:
-        type:
-          - object
-          - "null"
-        properties:
-          email:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          licenseStatus:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-      completedById:
-        type:
-          - string
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      dueDate:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      name:
-        type:
-          - string
-          - "null"
-      projects:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            accountId:
-              type:
-                - string
-                - "null"
-            actualStartDate:
-              type:
-                - string
-                - "null"
-            archivedAt:
-              type:
-                - string
-                - "null"
-            createdAt:
-              type:
-                - string
-                - "null"
-            durationInDays:
-              type:
-                - number
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            ownedByVitallyUserId:
-              type:
-                - string
-                - "null"
-            projectCategoryId:
-              type:
-                - string
-                - "null"
-            projectStatusId:
-              type:
-                - string
-                - "null"
-            targetCompletionDate:
-              type:
-                - string
-                - "null"
-            traits:
-              type:
-                - object
-                - "null"
-            updatedAt:
-              type:
-                - string
-                - "null"
-      tags:
-        type:
-          - array
-          - "null"
-      traits:
-        type:
-          - object
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  users:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      accounts:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            accountExecutiveId:
-              type:
-                - string
-                - "null"
-            churnedAt:
-              type:
-                - string
-                - "null"
-            createdAt:
-              type:
-                - string
-                - "null"
-            csmId:
-              type:
-                - string
-                - "null"
-            externalId:
-              type:
-                - string
-                - "null"
-            healthScore:
-              type:
-                - number
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            lastInboundMessageTimestamp:
-              type:
-                - string
-                - "null"
-            lastOutboundMessageTimestamp:
-              type:
-                - string
-                - "null"
-            mrr:
-              type:
-                - number
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            nextRenewalDate:
-              type:
-                - string
-                - "null"
-            npsDetractorCount:
-              type:
-                - number
-                - "null"
-            npsPassiveCount:
-              type:
-                - number
-                - "null"
-            npsPromoterCount:
-              type:
-                - number
-                - "null"
-            segments:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  id:
-                    type:
-                      - string
-                      - "null"
-                  name:
-                    type:
-                      - string
-                      - "null"
-            traits:
-              type:
-                - object
-                - "null"
-              properties:
-                bottom_avg_csat_1:
-                  type:
-                    - number
-                    - "null"
-                bottom_avg_csat_2:
-                  type:
-                    - number
-                    - "null"
-                bottom_avg_csat_3:
-                  type:
-                    - number
-                    - "null"
-                bottom_staff_1:
-                  type:
-                    - string
-                    - "null"
-                bottom_staff_2:
-                  type:
-                    - string
-                    - "null"
-                bottom_staff_3:
-                  type:
-                    - string
-                    - "null"
-                csat_change_pct:
-                  type:
-                    - number
-                    - "null"
-                current_activated_pct:
-                  type:
-                    - number
-                    - "null"
-                current_csat_score:
-                  type:
-                    - number
-                    - "null"
-                current_logins_cnt:
-                  type:
-                    - number
-                    - "null"
-                current_messages_cnt:
-                  type:
-                    - number
-                    - "null"
-                current_new_cases_cnt:
-                  type:
-                    - number
-                    - "null"
-                current_passives_detractors:
-                  type:
-                    - number
-                    - "null"
-                current_period_cases_cnt:
-                  type:
-                    - number
-                    - "null"
-                current_period_nps:
-                  type:
-                    - number
-                    - "null"
-                current_promoters:
-                  type:
-                    - number
-                    - "null"
-                firm_id:
-                  type:
-                    - number
-                    - "null"
-                hspot.annual_contract_value:
-                  type:
-                    - number
-                    - "null"
-                hspot.appointments_per_100_cases:
-                  type:
-                    - number
-                    - "null"
-                hspot.automations_per_100_cases:
-                  type:
-                    - number
-                    - "null"
-                hspot.cancellation_date:
-                  type:
-                    - number
-                    - "null"
-                hspot.checklist_items_per_100_cases:
-                  type:
-                    - number
-                    - "null"
-                hspot.city:
-                  type:
-                    - string
-                    - "null"
-                hspot.contract_start_date:
-                  type:
-                    - number
-                    - "null"
-                hspot.contracted_case_threshold:
-                  type:
-                    - number
-                    - "null"
-                hspot.current_google_reviews:
-                  type:
-                    - number
-                    - "null"
-                hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
-                  type:
-                    - number
-                    - "null"
-                hspot.documents_per_100_cases:
-                  type:
-                    - number
-                    - "null"
-                hspot.escalation:
-                  type:
-                    - string
-                    - "null"
-                hspot.firm_id:
-                  type:
-                    - number
-                    - "null"
-                hspot.firm_success_manager:
-                  type:
-                    - string
-                    - "null"
-                hspot.hs_csm_sentiment:
-                  type:
-                    - string
-                    - "null"
-                hspot.hubspot_owner_id:
-                  type:
-                    - string
-                    - "null"
-                hspot.implementation_manager:
-                  type:
-                    - string
-                    - "null"
-                hspot.implementation_stage:
-                  type:
-                    - string
-                    - "null"
-                hspot.last_payment:
-                  type:
-                    - number
-                    - "null"
-                hspot.messages_per_100_cases:
-                  type:
-                    - number
-                    - "null"
-                hspot.notice_of_termination_date:
-                  type:
-                    - number
-                    - "null"
-                hspot.of_cases:
-                  type:
-                    - number
-                    - "null"
-                hspot.practice_area:
-                  type:
-                    - string
-                    - "null"
-                hspot.practice_areas:
-                  type:
-                    - array
-                    - "null"
-                  items:
-                    type:
-                      - string
-                      - "null"
-                hspot.scorecard__activation:
-                  type:
-                    - string
-                    - "null"
-                hspot.scorecard__activation_percentage:
-                  type:
-                    - string
-                    - "null"
-                hspot.scorecard__growth:
-                  type:
-                    - string
-                    - "null"
-                hspot.scorecard_last_updated:
-                  type:
-                    - number
-                    - "null"
-                hspot.sentiment_notes:
-                  type:
-                    - string
-                    - "null"
-                hspot.size_category:
-                  type:
-                    - string
-                    - "null"
-                hspot.starting_google_reviews:
-                  type:
-                    - number
-                    - "null"
-                hspot.state:
-                  type:
-                    - string
-                    - "null"
-                hspot.status:
-                  type:
-                    - string
-                    - "null"
-                hspot.termination_date:
-                  type:
-                    - number
-                    - "null"
-                hspot.treatments_per_100_cases:
-                  type:
-                    - number
-                    - "null"
-                last_nps_1:
-                  type:
-                    - number
-                    - "null"
-                last_nps_2:
-                  type:
-                    - number
-                    - "null"
-                last_nps_3:
-                  type:
-                    - number
-                    - "null"
-                logins_change_pct:
-                  type:
-                    - number
-                    - "null"
-                message_change_pct:
-                  type:
-                    - number
-                    - "null"
-                new_cases_change_pct:
-                  type:
-                    - number
-                    - "null"
-                nps_change_pct:
-                  type:
-                    - number
-                    - "null"
-                passives_change_pct:
-                  type:
-                    - number
-                    - "null"
-                period_cases_change_pct:
-                  type:
-                    - number
-                    - "null"
-                period_month:
-                  type:
-                    - number
-                    - "null"
-                period_year:
-                  type:
-                    - string
-                    - "null"
-                previous_activated_pct:
-                  type:
-                    - number
-                    - "null"
-                previous_csat_score:
-                  type:
-                    - number
-                    - "null"
-                previous_logins_cnt:
-                  type:
-                    - number
-                    - "null"
-                previous_messages_cnt:
-                  type:
-                    - number
-                    - "null"
-                previous_new_cases_cnt:
-                  type:
-                    - number
-                    - "null"
-                previous_passives_detractors:
-                  type:
-                    - number
-                    - "null"
-                previous_period_cases_cnt:
-                  type:
-                    - number
-                    - "null"
-                previous_period_nps:
-                  type:
-                    - number
-                    - "null"
-                previous_promoters:
-                  type:
-                    - number
-                    - "null"
-                promoters_change_pct:
-                  type:
-                    - number
-                    - "null"
-                top_avg_csat_1:
-                  type:
-                    - number
-                    - "null"
-                top_avg_csat_2:
-                  type:
-                    - number
-                    - "null"
-                top_avg_csat_3:
-                  type:
-                    - number
-                    - "null"
-                top_staff_1:
-                  type:
-                    - string
-                    - "null"
-                top_staff_2:
-                  type:
-                    - string
-                    - "null"
-                top_staff_3:
-                  type:
-                    - string
-                    - "null"
-                unhappy_client_1:
-                  type:
-                    - string
-                    - "null"
-                unhappy_client_2:
-                  type:
-                    - string
-                    - "null"
-                unhappy_client_3:
-                  type:
-                    - string
-                    - "null"
-                vitally.custom.adoptionChampions:
-                  type:
-                    - number
-                    - "null"
-                vitally.custom.executiveSponsors:
-                  type:
-                    - number
-                    - "null"
-                vitally.custom.forecast:
-                  type:
-                    - string
-                    - "null"
-                vitally.custom.forecastNotes:
-                  type:
-                    - string
-                    - "null"
-                vitally.custom.implementationProjectStatus:
-                  type:
-                    - string
-                    - "null"
-                vitally.custom.implementationStage:
-                  type:
-                    - string
-                    - "null"
-                vitally.custom.lastAccountReviewReminder:
-                  type:
-                    - number
-                    - "null"
-                vitally.custom.nextSteps:
-                  type:
-                    - string
-                    - "null"
-                vitally.custom.renewalContacts:
-                  type:
-                    - number
-                    - "null"
-                vitally.custom.renewalStage:
-                  type:
-                    - string
-                    - "null"
-            updatedAt:
-              type:
-                - string
-                - "null"
-            usersCount:
-              type:
-                - number
-                - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      email:
-        type:
-          - string
-          - "null"
-      externalId:
-        type:
-          - string
-          - "null"
-      firstKnown:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      joinDate:
-        type:
-          - string
-          - "null"
-      lastInboundMessageTimestamp:
-        type:
-          - string
-          - "null"
-      lastOutboundMessageTimestamp:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      segments:
-        type:
-          - array
-          - "null"
-      traits:
-        type:
-          - object
-          - "null"
-        properties:
-          hspot.email:
-            type:
-              - string
-              - "null"
-          hspot.executive_sponsor_:
-            type:
-              - string
-              - "null"
-          hspot.firstname:
-            type:
-              - string
-              - "null"
-          hspot.jobtitle:
-            type:
-              - string
-              - "null"
-          hspot.lastname:
-            type:
-              - string
-              - "null"
-          hspot.phone:
-            type:
-              - string
-              - "null"
-          vitally.custom.adoptionChampion:
-            type:
-              - boolean
-              - "null"
-          vitally.custom.executiveSponsor:
-            type:
-              - boolean
-              - "null"
-          vitally.custom.renewalContact:
-            type:
-              - boolean
-              - "null"
-      unsubscribedFromConversations:
-        type:
-          - boolean
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-    required:
-      - id
+    admins:
+      hasRecords: true
+      streamHash: 92e9ed5e04623087c23919d99c0cf02ed7328150
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+      isStale: false
+    accounts:
+      isStale: false
+      hasRecords: true
+      streamHash: 8e8b46e0414b117c89c0f04fe9e59fd7509d23f8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversations:
+      hasRecords: true
+      streamHash: ea4c7e3fe9b501cd8ae0b63eefcf6cff9421015a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    notes: false
+    tasks: false
+    users: false
+    admins: false
+    accounts: false
+    conversations: false
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-12-05T18:10:50.114119+00:00"
+      from_version: 6.41.5
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-12-05T18:10:50.117578+00:00"
+      from_version: 6.41.5
