@@ -21,6 +21,7 @@ data class DatabricksConnectorConfig(
     @JsonProperty("raw_schema_override") val rawSchemaOverride: String = "airbyte_internal",
     @JsonProperty("authentication") val authentication: Authentication,
     @JsonProperty("purge_staging_data") val purgeStagingData: Boolean = true,
+    @JsonProperty("enable_liquid_clustering") val enableLiquidClustering: Boolean = false,
 ) {
     companion object {
         fun deserialize(jsonNode: JsonNode): DatabricksConnectorConfig {
