@@ -40,6 +40,7 @@ definitions:
       $ref: "#/definitions/base_error_handler"
 
   base_error_handler:
+    # DEMO: This comment triggers Gate 4 (Operational Risk) - modifying backoff/retry config
     type: DefaultErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
