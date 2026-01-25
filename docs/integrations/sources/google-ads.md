@@ -329,12 +329,13 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 </HideInUI>
 
 ## Changelog
-
+Revert custom queries to Python implementation
 <details>
   <summary>Expand to review</summary>
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.4-rc.2  | 2026-01-06 | [70228](https://github.com/airbytehq/airbyte/pull/70228) | Revert custom queries to Python implementation                                                                                                                         |
 | 4.1.4-rc.1  | 2025-11-26 | [70228](https://github.com/airbytehq/airbyte/pull/70228) | Fix custom queries with tab characters and click_view custom queries                                                                                                   |
 | 4.1.3       | 2025-11-25 | [69844](https://github.com/airbytehq/airbyte/pull/69844) | Fix custom queries regular expression to be case-insensitive                                                                                                           |
 | 4.1.2       | 2025-11-24 | [69837](https://github.com/airbytehq/airbyte/pull/69837) | Fix schema loader for custom queries                                                                                                                                   |
