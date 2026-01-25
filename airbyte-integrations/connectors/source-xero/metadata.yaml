@@ -6,13 +6,18 @@ data:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   remoteRegistries:
     pypi:
       enabled: false
       packageName: airbyte-source-xero
   releases:
     breakingChanges:
+      3.0.0:
+        upgradeDeadline: "2025-06-01"
+        message:
+          The authorization method was changed to support only OAuth2 strategy. Due to changes in authorization, users can now bring their own OAuth2 apps, and use it on cloud. For more information, see our migration documentation for source Xero.
+          Important - The authentication scheme now uses only the OAuth2 strategy from this version.
       2.0.0:
         upgradeDeadline: "2024-06-30"
         message:
@@ -27,11 +32,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.4@sha256:a612db8bc977a46d7d2e0442f5c6be26da6039ee83a8aceb7be545e4cbdd7040
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.41.8@sha256:702857eda56f90ea5f2eea387c5e7f7919f7fddc4148c6c0c9e7dc1879bcc93b
   connectorSubtype: api
   connectorType: source
   definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
-  dockerImageTag: 2.1.4
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-xero
   githubIssueLabel: source-xero
   icon: xero.svg
