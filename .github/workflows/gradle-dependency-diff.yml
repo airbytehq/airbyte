@@ -3,11 +3,36 @@ on:
   pull_request:
 
 jobs:
+  detect-gradle-changes:
+    name: Detect Gradle Changes
+    runs-on: ubuntu-latest
+    outputs:
+      gradle: ${{ steps.changes.outputs.gradle }}
+    steps:
+      - name: Checkout Code
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Detect Gradle file changes
+        id: changes
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            gradle:
+              - '**/*.gradle'
+              - '**/*.gradle.kts'
+              - '**/gradle.properties'
+              - '**/gradle-wrapper.properties'
+              - 'settings.gradle'
+              - 'settings.gradle.kts'
+              - 'build.gradle'
+              - 'build.gradle.kts'
+
   dependencies-diff:
     name: Gradle Dependency Diff
+    needs: detect-gradle-changes
     runs-on: ubuntu-latest
-    # As of now, the diff analysis does not work for forks.
-    if: github.event.pull_request.head.repo.fork == false
+    # Skip if no Gradle files changed or if PR is from a fork
+    if: needs.detect-gradle-changes.outputs.gradle == 'true' && github.event.pull_request.head.repo.fork == false
     steps:
       - name: Checkout Code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
