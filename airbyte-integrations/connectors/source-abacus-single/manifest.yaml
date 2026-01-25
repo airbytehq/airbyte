@@ -1,0 +1,569 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: Pulls data from Abacus POS With Incremetnal Refresh
+
+check:
+  type: CheckStream
+  stream_names:
+    - invoices
+
+definitions:
+  linked:
+    HttpRequester:
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 14
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+              - 500
+              - 502
+              - 503
+              - 504
+              - 408
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 2
+            max_wait: 3600
+            initial_wait: 1
+        respect_retry_after_header: true
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: ApiKey {{ config['api_key'] }}
+        inject_into:
+          type: RequestOption
+          field_name: Authorization
+          inject_into: header
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+
+streams:
+  - type: DeclarativeStream
+    name: invoices
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: https://api.abacus.co/invoices
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: ApiKey {{ config['api_key'] }}
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 14
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+                - 408
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+              max_wait: 3600
+              initial_wait: 1
+          respect_retry_after_header: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - invoices
+        schema_normalization: Default
+    primary_key: invoiceNumber
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - number
+              - "null"
+          tips:
+            type:
+              - number
+              - "null"
+          guest:
+            type:
+              - number
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                tax:
+                  type:
+                    - number
+                    - "null"
+                price:
+                  type:
+                    - number
+                    - "null"
+                discount:
+                  type:
+                    - number
+                    - "null"
+                isRefund:
+                  type:
+                    - boolean
+                    - "null"
+                itemName:
+                  type:
+                    - string
+                    - "null"
+                quantity:
+                  type:
+                    - number
+                    - "null"
+                refundOn:
+                  type:
+                    - string
+                    - "null"
+                productId:
+                  type:
+                    - number
+                    - "null"
+                extraItems:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      tax:
+                        type:
+                          - number
+                          - "null"
+                      code:
+                        type:
+                          - string
+                          - "null"
+                      price:
+                        type:
+                          - number
+                          - "null"
+                      discount:
+                        type:
+                          - number
+                          - "null"
+                      isRefund:
+                        type:
+                          - boolean
+                          - "null"
+                      itemName:
+                        type:
+                          - string
+                          - "null"
+                      quantity:
+                        type:
+                          - number
+                          - "null"
+                      productId:
+                        type:
+                          - number
+                          - "null"
+                pictureURL:
+                  type:
+                    - string
+                    - "null"
+                productCode:
+                  type:
+                    - string
+                    - "null"
+                productVariant:
+                  type:
+                    - number
+                    - "null"
+          total:
+            type:
+              - number
+              - "null"
+          isPaid:
+            type:
+              - boolean
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - number
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          payments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - number
+                    - "null"
+                paymentMethod:
+                  type:
+                    - string
+                    - "null"
+                transactionNumber:
+                  type:
+                    - string
+                    - "null"
+                transactionReference:
+                  type:
+                    - string
+                    - "null"
+          rounding:
+            type:
+              - number
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          surcharge:
+            type:
+              - number
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          uniqueCode:
+            type:
+              - string
+              - "null"
+          discountTax:
+            type:
+              - number
+              - "null"
+          refundReason:
+            type:
+              - string
+              - "null"
+          shippingDate:
+            type:
+              - string
+              - "null"
+          invoiceNumber:
+            type:
+              - string
+              - "null"
+          totalExcludeTax:
+            type:
+              - number
+              - "null"
+          discountExcludeTax:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2017-01-01T00:00:00.00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.00Z"
+      lookback_window: P2D
+      start_time_option:
+        type: RequestOption
+        field_name: lastUpdated
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.00Z"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      outgoing_datetime_format: "%Y-%m-%dT%H:%M:%S.00Z"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: products
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: https://api.abacus.co/products
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: ApiKey {{ config['api_key'] }}
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 14
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+                - 408
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+              max_wait: 3600
+              initial_wait: 1
+          respect_retry_after_header: true
+        request_parameters:
+          lastUpdated: "2017-01-01T00:00:00.00Z"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - products
+        schema_normalization: Default
+    primary_key:
+      - productId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - productId
+        properties:
+          cost:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          price:
+            type:
+              - number
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+          height:
+            type:
+              - number
+              - "null"
+          length:
+            type:
+              - number
+              - "null"
+          weight:
+            type:
+              - number
+              - "null"
+          taxable:
+            type:
+              - boolean
+              - "null"
+          barcodes:
+            type:
+              - array
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          variants:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          createdOn:
+            type:
+              - string
+              - "null"
+          printName:
+            type:
+              - string
+              - "null"
+          productId:
+            type: number
+          taxAmount:
+            type:
+              - number
+              - "null"
+          updatedOn:
+            type:
+              - string
+              - "null"
+          isGiftCard:
+            type:
+              - boolean
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+          costTaxRate:
+            type:
+              - number
+              - "null"
+          isStockItem:
+            type:
+              - boolean
+              - "null"
+          productCode:
+            type:
+              - string
+              - "null"
+          productType:
+            type:
+              - number
+              - "null"
+          priceExcludeTax:
+            type:
+              - number
+              - "null"
+          shortDescription:
+            type:
+              - string
+              - "null"
+          requiredWeighting:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - admin_api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+      admin_api_key:
+        type: string
+        description: ""
+        title: HQ API Key
+        order: 1
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    invoices:
+      isStale: true
+      hasRecords: true
+      streamHash: 1feab4ae2622801f62eaee3cd15c023c34003e79
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      isStale: true
+      hasRecords: true
+      streamHash: 43fab31cb0da3756c97afaeee2ca84e850d9e127
+      hasResponse: true
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    invoices_surry_hills:
+      streamHash: ec06fb525bdea88241fd4bddcaf7259e5c32a75d
+  autoImportSchema:
+    invoices: true
+    products: true
+    invoices_surry_hills: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  max_concurrency: 1
+  default_concurrency: 1
