@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Mapping
 
 from airbyte_cdk.models import AirbyteMessage, DestinationSyncMode
 from destination_deepset import util
 from destination_deepset.api import APIError, DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
+
+
+logger = logging.getLogger("airbyte")
 
 
 class WriterError:
@@ -52,9 +56,12 @@ class DeepsetCloudFileWriter:
             AirbyteMessage: Returns an Airbyte message with a suitable status.
         """
         write_mode = util.get_file_write_mode(destination_sync_mode)
+        logger.info(f"[DEEPSET] Uploading file: {file.name}, write_mode={write_mode}")
         try:
             file_id = self.client.upload(file, write_mode=write_mode)
+            logger.info(f"[DEEPSET] Upload successful: file_id={file_id}")
         except APIError as ex:
+            logger.error(f"[DEEPSET] Upload failed: {ex}")
             return util.get_trace_message(
                 f"Failed to upload a record to deepset cloud workspace, workspace = {self.client.config.workspace}.",
                 exception=ex,
