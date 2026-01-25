@@ -10676,3 +10676,33 @@ schemas:
           - "null"
           - number
         description: Total time viewers spend on viewing content in milliseconds.
+# Snapchat Marketing API Rate Limiting Configuration
+# According to Snapchat documentation (https://developers.snap.com/api/marketing-api/Ads-API/rate-limits):
+# - App level: 20 requests/second average
+# - Token level: 10 requests/second average
+# - Returns HTTP 429 when rate limited
+#
+# Using conservative limits to stay well under the token-level cap of 10 req/s
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # Conservative limit: 80 calls per 10 seconds (8 req/s, 80% of 10 req/s token limit)
+        - limit: 80
+          interval: PT10S
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
+# Concurrency Configuration
+# Based on the rate limits and the connector's stream structure:
+# - Default concurrency of 3 provides good parallelism while staying within rate limits
+# - Max concurrency of 10 allows for higher throughput when rate limits permit
+# - Conservative defaults to prevent hitting 429 errors
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 3
+  max_concurrency: 10
