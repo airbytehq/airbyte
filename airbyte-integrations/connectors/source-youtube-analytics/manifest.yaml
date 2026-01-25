@@ -429,6 +429,11 @@ definitions:
       refresh_token: '{{ config[''credentials'']["refresh_token"] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
+      refresh_token_error_status_codes:
+        - 400
+      refresh_token_error_key: error
+      refresh_token_error_values:
+        - invalid_grant
     error_handler:
       type: DefaultErrorHandler
       response_filters:
