@@ -91,6 +91,58 @@ jobs:
           echo "Generated documentation files:"
           find docs/developers/pyairbyte/reference -name "*.md" | head -20
 
+      - name: Shift Heading Levels in airbyte/index.md
+        run: |
+          # Docusaurus expects headings to start at H2 (H1 is reserved for the page title).
+          # The airbyte/__init__.py docstring uses H1 headings, so we shift all heading levels
+          # down by one in the generated airbyte/index.md file:
+          # H1 -> H2, H2 -> H3, H3 -> H4, H4 -> H5, H5 -> H6
+          python3 << 'EOF'
+          import re
+          from pathlib import Path
+
+          def shift_heading_levels(content):
+              """Shift all markdown heading levels down by one (H1->H2, H2->H3, etc.)."""
+              lines = content.split('\n')
+              result = []
+              in_code_block = False
+              
+              for line in lines:
+                  # Track code blocks (``` or ~~~)
+                  if line.strip().startswith('```') or line.strip().startswith('~~~'):
+                      in_code_block = not in_code_block
+                      result.append(line)
+                      continue
+                  
+                  # Skip code blocks
+                  if in_code_block:
+                      result.append(line)
+                      continue
+                  
+                  # Shift heading levels: add one # to the beginning of heading lines
+                  # Match lines that start with 1-6 # characters followed by a space
+                  heading_match = re.match(r'^(#{1,6})\s', line)
+                  if heading_match:
+                      # Add one more # to shift the heading level down
+                      line = '#' + line
+                  
+                  result.append(line)
+              
+              return '\n'.join(result)
+
+          # Process only airbyte/index.md
+          filepath = Path('docs/developers/pyairbyte/reference/airbyte/index.md')
+          if filepath.exists():
+              content = filepath.read_text(encoding='utf-8')
+              shifted_content = shift_heading_levels(content)
+              filepath.write_text(shifted_content, encoding='utf-8')
+              print(f"Shifted headings in: {filepath}")
+          else:
+              print(f"File not found: {filepath}")
+
+          print("Shifted heading levels in airbyte/index.md for Docusaurus compatibility")
+          EOF
+
       - name: Add Docusaurus Frontmatter
         run: |
           # Add Docusaurus-compatible frontmatter to generated markdown files
