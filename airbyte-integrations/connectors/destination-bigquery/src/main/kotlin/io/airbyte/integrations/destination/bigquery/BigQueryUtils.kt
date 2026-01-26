@@ -174,7 +174,7 @@ object BigQueryUtils {
     private val connectorNameOrDefault: String
         get() =
             Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
-                .map { name: String -> name.replace("airbyte/", "").replace(":", "/") }
+                .map { name: String -> name.trim().replace("airbyte/", "").replace(":", "/") }
                 .orElse("destination-bigquery")
 }
 
