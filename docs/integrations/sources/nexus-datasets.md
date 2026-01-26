@@ -107,6 +107,11 @@ HMAC stands for Hash-based Message Authentication Code. In HMAC authentication, 
 
 Please refer https://developer.infornexus.com/api/authentication-choices/hmac for more details to get the data to calculate the HMAC signature.
 
+### Error Codes
+200 : Data set is ready to stream
+202 : Data set is not ready but try again later.
+304 : Data set is not ready, check the source again.
+
 
 ## Changelog
 

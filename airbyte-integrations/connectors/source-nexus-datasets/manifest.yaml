@@ -120,6 +120,7 @@ spec:
       dataset_path:
         type: string
         description: "Constant data set path."
+        default: "rest/3.1/analytics/dataset"
         airbyte_hidden: true # Hide this from UI if it's a fixed internal path
       dataset_name:
         title: "Dataset Name"
@@ -129,6 +130,7 @@ spec:
       dataset_export_prefix:
         type: string
         description: "Constant Data Export Prefix."
+        default: "export"
         airbyte_hidden: true
 schemas:
   datasets:

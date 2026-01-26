@@ -153,11 +153,17 @@ class FlexibleDecoder(Decoder):
         Returns:
             Iterable[Mapping[str, Any]]: An iterable of decoded records (dictionaries).
         """
+        # For 304 and 202 during data sync, raise error with specific message
         if response.status_code == 304:
-            self.logger.info("Source Dataset is not Ready")
+            self.logger.error("Data set is not ready, check the source")
+            raise ValueError("Data set is not ready, check the source")
             return
-        elif response.status_code not in (200, 202):
-            raise ValueError(f"Unexpected status code: {response.status_code}")
+        elif response.status_code == 202:
+            self.logger.error("Dataset is not Ready - Try again later")
+        elif response.status_code not in (200, 304, 202):
+            # Log but don't fail on other unexpected status codes - allow graceful handling
+            self.logger.error(f"Unexpected status code: {response.status_code}")
+            return
 
         content_type = response.headers.get("Content-Type", "").lower()
         content_bytes = response.content
