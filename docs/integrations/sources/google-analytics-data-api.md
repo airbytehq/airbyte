@@ -31,6 +31,14 @@ This connector works with Google Analytics 4 (GA4) and [Google Analytics 360](ht
 7. Select your new service account from the list, and open the **Keys** tab. Click **Add Key** > **Create New Key**.
 8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
 
+:::note
+When authenticating with a **service account** (Airbyte Open Source), you must also grant that service account access to the **GA4 property** in **Google Analytics**. Creating a service account and downloading the JSON key does not automatically give it permission to read Analytics data.
+
+1. In Google Analytics, go to **Admin** → under **Property**, click **Property access management**.
+2. Click **+** → **Add users**, then add the service account email (for example, `...@...iam.gserviceaccount.com`).
+3. Grant at least the **Viewer** role (read-only) for the target property.
+:::
+
 #### Enable the Google Analytics APIs
 
 Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
@@ -123,65 +131,67 @@ The Google Analytics 4 (GA4) source connector supports the following [sync modes
 
 This connector outputs the following incremental streams:
 
+All preconfigured streams and custom streams use the Google Analytics Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Each stream represents a different combination of dimensions and metrics sent to the same API endpoint. Custom reports that specify pivots use the [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) method instead.
+
 - Preconfigured streams:
-  - [daily_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [devices](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [four_weekly_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [locations](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [pages](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_sources](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [website_overview](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [weekly_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_medium_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_source_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_source_medium_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_source_platform_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_campaign_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_google_ads_ad_network_type_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_google_ads_ad_group_name_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_source_medium_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_medium_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_source_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_campaign_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_default_channel_grouping_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_source_platform_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [events_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [weekly_events_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [conversions_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [pages_title_and_screen_class_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [pages_path_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [pages_title_and_screen_name_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [content_group_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_name_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_id_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_report_combined](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_2_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_3_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_4_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_5_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_brand_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [publisher_ads_ad_unit_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [publisher_ads_page_path_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [publisher_ads_ad_format_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [publisher_ads_ad_source_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_country_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_region_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_city_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_language_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_age_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_gender_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_interest_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_browser_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_device_category_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_device_model_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_screen_resolution_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_app_version_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_platform_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_platform_device_category_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_operating_system_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_os_with_version_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-- [Custom stream\(s\)](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+  - daily_active_users
+  - devices
+  - four_weekly_active_users
+  - locations
+  - pages
+  - traffic_sources
+  - website_overview
+  - weekly_active_users
+  - user_acquisition_first_user_medium_report
+  - user_acquisition_first_user_source_report
+  - user_acquisition_first_user_source_medium_report
+  - user_acquisition_first_user_source_platform_report
+  - user_acquisition_first_user_campaign_report
+  - user_acquisition_first_user_google_ads_ad_network_type_report
+  - user_acquisition_first_user_google_ads_ad_group_name_report
+  - traffic_acquisition_session_source_medium_report
+  - traffic_acquisition_session_medium_report
+  - traffic_acquisition_session_source_report
+  - traffic_acquisition_session_campaign_report
+  - traffic_acquisition_session_default_channel_grouping_report
+  - traffic_acquisition_session_source_platform_report
+  - events_report
+  - weekly_events_report
+  - conversions_report
+  - pages_title_and_screen_class_report
+  - pages_path_report
+  - pages_title_and_screen_name_report
+  - content_group_report
+  - ecommerce_purchases_item_name_report
+  - ecommerce_purchases_item_id_report
+  - ecommerce_purchases_item_category_report_combined
+  - ecommerce_purchases_item_category_report
+  - ecommerce_purchases_item_category_2_report
+  - ecommerce_purchases_item_category_3_report
+  - ecommerce_purchases_item_category_4_report
+  - ecommerce_purchases_item_category_5_report
+  - ecommerce_purchases_item_brand_report
+  - publisher_ads_ad_unit_report
+  - publisher_ads_page_path_report
+  - publisher_ads_ad_format_report
+  - publisher_ads_ad_source_report
+  - demographic_country_report
+  - demographic_region_report
+  - demographic_city_report
+  - demographic_language_report
+  - demographic_age_report
+  - demographic_gender_report
+  - demographic_interest_report
+  - tech_browser_report
+  - tech_device_category_report
+  - tech_device_model_report
+  - tech_screen_resolution_report
+  - tech_app_version_report
+  - tech_platform_report
+  - tech_platform_device_category_report
+  - tech_operating_system_report
+  - tech_os_with_version_report
+- Custom stream(s)
 
 ## Connector-specific features
 
@@ -270,9 +280,12 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.21 | 2026-01-20 | [71924](https://github.com/airbytehq/airbyte/pull/71924) | Update dependencies |
+| 2.9.20 | 2026-01-14 | [71432](https://github.com/airbytehq/airbyte/pull/71432) | Update dependencies |
+| 2.9.19 | 2025-12-18 | [70693](https://github.com/airbytehq/airbyte/pull/70693) | Update dependencies |
 | 2.9.18 | 2025-11-25 | [69892](https://github.com/airbytehq/airbyte/pull/69892) | Update dependencies |
 | 2.9.17 | 2025-11-18 | [69414](https://github.com/airbytehq/airbyte/pull/69414) | Update dependencies |
-| 2.9.16 | 2025-11-11 | [69279](https://github.com/airbytehq/airbyte/pull/69279) | Flag authentication issues as config_error |
+| 2.9.16 | 2025-11-12 | [69279](https://github.com/airbytehq/airbyte/pull/69279) | Flag authentication issues as config_error |
 | 2.9.15 | 2025-10-29 | [69011](https://github.com/airbytehq/airbyte/pull/69011) | Update dependencies |
 | 2.9.14 | 2025-10-21 | [68302](https://github.com/airbytehq/airbyte/pull/68302) | Update dependencies |
 | 2.9.13 | 2025-10-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)     | Promoting release candidate 2.9.13-rc.1 to a main version. |

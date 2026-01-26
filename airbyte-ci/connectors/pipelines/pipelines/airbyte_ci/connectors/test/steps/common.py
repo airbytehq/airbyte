@@ -153,8 +153,51 @@ class VersionIncrementCheck(VersionCheck):
             and self.master_connector_version.patch == self.current_connector_version.patch
         )
 
+    @staticmethod
+    def _get_registry_override_tag(metadata: Optional[dict], channel: str) -> Optional[str]:
+        """Extract the dockerImageTag from registryOverrides for a given channel.
+
+        Args:
+            metadata: The metadata dictionary (master or current).
+            channel: The channel to extract from ("cloud" or "oss").
+
+        Returns:
+            The dockerImageTag value if present, None otherwise.
+        """
+        if metadata is None:
+            return None
+        try:
+            return metadata.get("data", {}).get("registryOverrides", {}).get(channel, {}).get("dockerImageTag")
+        except (TypeError, AttributeError):
+            return None
+
+    def _has_registry_override_docker_tag_change(self) -> bool:
+        """Check if registryOverrides.cloud.dockerImageTag or registryOverrides.oss.dockerImageTag has changed.
+
+        Returns:
+            bool: True if either cloud or oss dockerImageTag has been added, removed, or changed.
+        """
+        master_cloud = self._get_registry_override_tag(self.master_metadata, "cloud")
+        current_cloud = self._get_registry_override_tag(self.context.metadata, "cloud")
+
+        master_oss = self._get_registry_override_tag(self.master_metadata, "oss")
+        current_oss = self._get_registry_override_tag(self.context.metadata, "oss")
+
+        return (master_cloud != current_cloud) or (master_oss != current_oss)
+
     def validate(self) -> StepResult:
         if self.is_version_not_incremented():
+            # Allow version to stay the same if registryOverrides.cloud.dockerImageTag or
+            # registryOverrides.oss.dockerImageTag has been added, removed, or changed
+            if self._has_registry_override_docker_tag_change():
+                return StepResult(
+                    step=self,
+                    status=StepStatus.SKIPPED,
+                    stdout=(
+                        f"The current change is modifying the registryOverrides pinned version on Cloud or OSS. Skipping this check "
+                        f"because the defined version {self.current_connector_version} is allowed to be unchanged"
+                    ),
+                )
             return self._get_failure_result(
                 (
                     f"The dockerImageTag in {METADATA_FILE_NAME} was not incremented. "
@@ -173,50 +216,6 @@ class VersionIncrementCheck(VersionCheck):
                 )
 
         return self.success_result
-
-
-class QaChecks(SimpleDockerStep):
-    """A step to run QA checks for a connectors.
-    More details in https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/connectors_qa/README.md
-    """
-
-    def __init__(self, context: ConnectorContext) -> None:
-        code_directory = context.connector.code_directory
-        documentation_file_path = context.connector.documentation_file_path
-        migration_guide_file_path = context.connector.migration_guide_file_path
-        icon_path = context.connector.icon_path
-        technical_name = context.connector.technical_name
-
-        # When the connector is strict-encrypt, we should run QA checks on the main one as it's the one whose artifacts gets released
-        if context.connector.technical_name.endswith("-strict-encrypt"):
-            technical_name = technical_name.replace("-strict-encrypt", "")
-            code_directory = Path(str(code_directory).replace("-strict-encrypt", ""))
-            if documentation_file_path:
-                documentation_file_path = Path(str(documentation_file_path).replace("-strict-encrypt", ""))
-            if migration_guide_file_path:
-                migration_guide_file_path = Path(str(migration_guide_file_path).replace("-strict-encrypt", ""))
-            if icon_path:
-                icon_path = Path(str(icon_path).replace("-strict-encrypt", ""))
-
-        super().__init__(
-            title=f"Run QA checks for {technical_name}",
-            context=context,
-            paths_to_mount=[
-                MountPath(code_directory),
-                # These paths are optional
-                # But their absence might make the QA check fail
-                MountPath(documentation_file_path, optional=True),
-                MountPath(migration_guide_file_path, optional=True),
-                MountPath(icon_path, optional=True),
-            ],
-            internal_tools=[
-                MountPath(INTERNAL_TOOL_PATHS.CONNECTORS_QA.value),
-            ],
-            secret_env_variables={"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
-            if context.docker_hub_username and context.docker_hub_password
-            else None,
-            command=["connectors-qa", "run", f"--name={technical_name}"],
-        )
 
 
 class AcceptanceTests(Step):

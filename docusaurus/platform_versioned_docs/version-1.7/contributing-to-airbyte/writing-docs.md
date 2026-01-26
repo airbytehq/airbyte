@@ -19,7 +19,7 @@ Before you contribute, familiarize yourself with these concepts.
 
 ### Read Airbyte's code of conduct
 
-Read the Airbyte Community [code of conduct](/platform/community/code-of-conduct).
+Read the Airbyte Community [code of conduct](/community/code-of-conduct).
 
 ### Learn Docusaurus basics
 

@@ -2,18 +2,60 @@
 products: all
 ---
 
-# Airbyte platform
+# Platform
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
+import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 
-Airbyte is an open source data integration and activation platform. It helps you consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. Then, it helps you move data from those locations into the operational tools where work happens, like CRMs, marketing platforms, and support systems.
+Use Airbyte's data replication platform to consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems.
 
 Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data, Airbyte works for you. Airbyte offers flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise solutions.
 
-## Airbyte plans
+## Why Airbyte?
 
-Airbyte is available as a self-managed, hybrid, or fully managed cloud solution. [Compare plans and pricing >](https://airbyte.com/pricing)
+Teams and organizations need efficient and timely data access to an ever-growing list of data sources. In-house data pipelines are brittle and costly to build and maintain. Airbyte's unique open source approach enables your data stack to adapt as your data needs evolve.
+
+- **Wide connector availability:** Airbyte's connector catalog comes "out-of-the-box" with over 600 pre-built connectors. These connectors can be used to start replicating data from a source to a destination in just a few minutes.
+
+- **Long-tail connector coverage:** You can easily extend Airbyte's capability to support your custom use cases through Airbyte's [No-Code Connector Builder](/platform/connector-development/connector-builder-ui/overview).
+
+- **Robust platform** provides horizontal scaling required for large-scale data movement operations, available as [Cloud-managed](https://airbyte.com/product/airbyte-cloud) or [Self-managed](https://airbyte.com/product/airbyte-enterprise).
+
+- **Accessible User Interfaces** through the UI, [**PyAirbyte**](/developers/pyairbyte) (Python library), [**API**](/developers/api-documentation), and [**Terraform Provider**](/developers/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
+
+Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads.
+
+### The use case for data replication
+
+Airbyte's data replication platform is an extract, load, and data activation solution. You might know this as ELT/reverse ETL.
+
+Data replication is ideal when you:
+
+- Need all your data in one place
+- Need to join across datasets
+- Need more pipelines that can be slower
+- Want storage
+- Want to update content, but not trigger side effects
+- Rely on APIs that aren't good, although good APIs are preferable
+
+Data replication _isn't_ ideal when you:
+
+- Don't want storage
+- Care a lot about freshness and latency
+- Are working with a small amount of data
+- Need to trigger side effects, like sending an email or closing a ticket
+
+
+### Taxonomy of data movement
+
+<Taxonomy />
+
+## Plans
+
+Airbyte's data replication platform is available as a self-managed, hybrid, or fully managed cloud solution.
+
+[Compare plans and pricing >](https://airbyte.com/pricing)
 
 ### Self-managed plans
 
@@ -35,7 +77,7 @@ Airbyte is available as a self-managed, hybrid, or fully managed cloud solution.
 
 <CardWithIcon title="Pro" description="A cloud solution for organizations looking to scale efficiently. Role based access control, single sign on, and more ensure Pro is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
-<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution with for organizatons seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="enterprise-flex" icon="fa-lock" />
+<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution for organizations seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="enterprise-flex" icon="fa-lock" />
 
 </Grid>
 
@@ -61,18 +103,7 @@ Many people think of Airbyte and its connectors as infrastructure. The [Terrafor
 
 ### PyAirbyte
 
-If you want to use Python to move data, our Python library, [PyAirbyte](/developers/using-pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server. PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
-
-## Why Airbyte?
-
-Teams and organizations need efficient and timely data access to an ever-growing list of data sources. In-house data pipelines are brittle and costly to build and maintain. Airbyte's unique open source approach enables your data stack to adapt as your data needs evolve.
-
-- **Wide connector availability:** Airbyte's connector catalog comes "out-of-the-box" with over 600 pre-built connectors. These connectors can be used to start replicating data from a source to a destination in just a few minutes.
-- **Long-tail connector coverage:** You can easily extend Airbyte's capability to support your custom use cases through Airbyte's [No-Code Connector Builder](/platform/connector-development/connector-builder-ui/overview).
-- **Robust platform** provides horizontal scaling required for large-scale data movement operations, available as [Cloud-managed](https://airbyte.com/product/airbyte-cloud) or [Self-managed](https://airbyte.com/product/airbyte-enterprise).
-- **Accessible User Interfaces** through the UI, [**PyAirbyte**](/developers/using-pyairbyte) (Python library), [**API**](/developers/api-documentation), and [**Terraform Provider**](/developers/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
-
-Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own app or platform to power your product.
+If you want to use Python to move data, our Python library, [PyAirbyte](/developers/pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server. PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
 
 ## Contribute
 

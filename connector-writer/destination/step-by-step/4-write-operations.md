@@ -13,7 +13,7 @@
 
 ---
 
-## Phase 8: Writer & Append Mode (Business Logic)
+## Write Phase 1: Writer & Append Mode (Business Logic)
 
 **Goal:** Implement actual data writing (Writer, Aggregate, InsertBuffer)
 
@@ -28,7 +28,7 @@
 **Key insight:** Infrastructure DI (Phase 7) is separate from business logic DI (Phase 8).
 Phase 7 validates "can we start?" Phase 8 validates "can we write data?"
 
-### Step 8.1: Create InsertBuffer
+### Write Step 1: Create InsertBuffer
 
 **File:** `write/load/{DB}InsertBuffer.kt`
 
@@ -36,7 +36,7 @@ Phase 7 validates "can we start?" Phase 8 validates "can we write data?"
 package io.airbyte.integrations.destination.{db}.write.load
 
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -109,7 +109,7 @@ class {DB}InsertBuffer(
 - Buffers hold stream-specific state (table name, accumulated records)
 - AggregateFactory creates one buffer per stream
 
-### Step 8.2: Add executeInsert() to Client
+### Write Step 2: Add executeInsert() to Client
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -145,7 +145,7 @@ private fun setParameter(statement: PreparedStatement, index: Int, value: Airbyt
 
 **Note:** For non-JDBC databases, use native client APIs (e.g., MongoDB insertOne, ClickHouse native client)
 
-### Step 8.3: Create Aggregate
+### Write Step 3: Create Aggregate
 
 **File:** `dataflow/{DB}Aggregate.kt`
 
@@ -199,7 +199,7 @@ InsertBuffer.accumulate()
 Database
 ```
 
-### Step 8.4: Create AggregateFactory
+### Write Step 4: Create AggregateFactory
 
 **File:** `dataflow/{DB}AggregateFactory.kt`
 
@@ -208,13 +208,13 @@ package io.airbyte.integrations.destination.{db}.dataflow
 
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
-import io.airbyte.cdk.load.orchestration.db.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.state.StoreKey
-import io.airbyte.cdk.load.state.StreamStateStore
+import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
 import io.airbyte.integrations.destination.{db}.write.load.{DB}InsertBuffer
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Factory
 class {DB}AggregateFactory(
@@ -249,97 +249,108 @@ class {DB}AggregateFactory(
 - Can't use constructor injection (dynamic stream list)
 - Factory receives StoreKey, looks up stream config, creates Aggregate
 
-### Step 8.5: Create Writer
+### Write Step 5: Create Writer
 
 **File:** `write/{DB}Writer.kt`
 
 ```kotlin
 package io.airbyte.integrations.destination.{db}.write
 
+import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.*
-import io.airbyte.cdk.load.state.StreamStateStore
-import io.airbyte.cdk.load.table.TableCatalog
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.DatabaseInitialStatusGatherer
+import io.airbyte.cdk.load.table.directload.DirectLoadInitialStatus
+import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendStreamLoader
+import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendTruncateStreamLoader
+import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class {DB}Writer(
-    private val names: TableCatalog,
+    private val catalog: DestinationCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val client: {DB}AirbyteClient,
-    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
 
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
     override suspend fun setup() {
         // Create all namespaces
-        names.values
-            .map { it.tableNames.finalTableName!!.namespace }
+        catalog.streams
+            .map { it.tableSchema.tableNames.finalTableName!!.namespace }
             .toSet()
             .forEach { client.createNamespace(it) }
 
         // Gather initial state (which tables exist, generation IDs, etc.)
-        initialStatuses = stateGatherer.gatherInitialStatus(names)
+        initialStatuses = stateGatherer.gatherInitialStatus()
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        // Defensive: Handle streams not in catalog (for test compatibility)
-        val initialStatus = if (::initialStatuses.isInitialized) {
-            initialStatuses[stream] ?: DirectLoadInitialStatus(null, null)
-        } else {
-            DirectLoadInitialStatus(null, null)
-        }
+        val initialStatus = initialStatuses[stream]!!
 
-        val tableNameInfo = names[stream]
-        val (realTableName, tempTableName, columnNameMapping) = if (tableNameInfo != null) {
-            // Stream in catalog - use configured names
-            Triple(
-                tableNameInfo.tableNames.finalTableName!!,
-                tempTableNameGenerator.generate(tableNameInfo.tableNames.finalTableName!!),
-                tableNameInfo.columnNameMapping
-            )
-        } else {
-            // Dynamic stream (test-generated) - use descriptor names directly
-            val tableName = TableName(
-                namespace = stream.mappedDescriptor.namespace ?: "test",
-                name = stream.mappedDescriptor.name
-            )
-            Triple(tableName, tempTableNameGenerator.generate(tableName), ColumnNameMapping(emptyMap()))
-        }
-
-        // Phase 8: Append mode only
-        // Phase 10: Add truncate mode (minimumGenerationId = generationId)
-        // Phase 13: Add dedupe mode (importType is Dedupe)
-        return DirectLoadTableAppendStreamLoader(
-            stream,
-            initialStatus,
-            realTableName,
-            tempTableName,
-            columnNameMapping,
-            client,  // TableOperationsClient
-            client,  // TableSchemaEvolutionClient
-            streamStateStore,
+        // Access schema directly from stream (modern CDK pattern)
+        val realTableName = stream.tableSchema.tableNames.finalTableName!!
+        val tempTableName = stream.tableSchema.tableNames.tempTableName!!
+        val columnNameMapping = ColumnNameMapping(
+            stream.tableSchema.columnSchema.inputToFinalColumnNames
         )
+
+        // Choose StreamLoader based on sync mode
+        return when (stream.minimumGenerationId) {
+            0L ->
+                // Append mode: just insert records
+                DirectLoadTableAppendStreamLoader(
+                    stream,
+                    initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping,
+                    client,  // TableOperationsClient
+                    client,  // TableSchemaEvolutionClient
+                    streamStateStore,
+                )
+            stream.generationId ->
+                // Overwrite/truncate mode: replace table contents
+                DirectLoadTableAppendTruncateStreamLoader(
+                    stream,
+                    initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping,
+                    client,
+                    client,
+                    streamStateStore,
+                )
+            else ->
+                throw SystemErrorException(
+                    "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}"
+                )
+        }
     }
 }
 ```
 
 **What this does:**
 - **setup()**: Creates namespaces, gathers initial table state
-- **createStreamLoader()**: Creates StreamLoader for each stream
-  - AppendStreamLoader: Just insert records (this phase)
-  - TruncateStreamLoader: Overwrite table (Phase 10)
-  - DedupStreamLoader: Upsert with primary key (Phase 13)
+- **createStreamLoader()**: Creates StreamLoader for each stream based on sync mode
 
-**Defensive pattern (lines 27-52):**
-- Handles ConnectorWiringSuite creating dynamic test streams
-- Test streams not in TableCatalog → use descriptor names directly
-- Prevents NullPointerException in tests
+**Modern CDK pattern (stream.tableSchema):**
+- Schema info is embedded in `stream.tableSchema` (set by CDK)
+- Access via `stream.tableSchema.tableNames.finalTableName!!`
+- Column mappings via `stream.tableSchema.columnSchema.inputToFinalColumnNames`
+- No need for defensive null checks (CDK guarantees schema exists)
+
+**StreamLoader selection:**
+- `minimumGenerationId == 0`: Append mode (DirectLoadTableAppendStreamLoader)
+- `minimumGenerationId == generationId`: Overwrite mode (DirectLoadTableAppendTruncateStreamLoader)
+- Other combinations: Error (hybrid refresh not supported)
 
 **StreamLoader responsibilities:**
 - start(): Create/prepare table
@@ -352,7 +363,7 @@ class {DB}Writer(
 - DirectLoadTableDedupStreamLoader
 - DirectLoadTableDedupTruncateStreamLoader
 
-### Step 8.6: Create ConnectorWiringSuite Test
+### Write Step 6: Create ConnectorWiringSuite Test
 
 **File:** `src/test-integration/kotlin/.../component/{DB}WiringTest.kt`
 
@@ -433,7 +444,7 @@ class {DB}WiringTest(
 - Creates dynamic test streams
 - Focuses on write logic, not catalog parsing
 
-### Step 8.7: Validate ConnectorWiringSuite
+### Write Step 7: Validate ConnectorWiringSuite
 
 **Validate:**
 ```bash
@@ -471,7 +482,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 
 ---
 
-## Phase 9: Generation ID Support
+## Write Phase 2: Generation ID Support
 
 **Goal:** Track sync generations for refresh handling
 
@@ -486,7 +497,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 - Full refresh: minimumGenerationId = generationId (replace all data)
 - Incremental: minimumGenerationId = 0 (keep all data)
 
-### Step 9.1: Enable Generation ID Test
+### Write Step 1: Enable Generation ID Test
 
 **File:** Update `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -502,7 +513,7 @@ override fun `get generation id`() {
 - Returns 0L for tables without generation ID
 - Returns actual generation ID from `_airbyte_generation_id` column
 
-### Step 9.2: Validate
+### Write Step 2: Validate
 
 **Validate:**
 ```bash
@@ -516,7 +527,7 @@ $ ./gradlew :destination-{db}:componentTest  # 10 tests should pass
 
 ---
 
-## Phase 10: Overwrite Mode
+## Write Phase 3: Overwrite Mode
 
 **Goal:** Support full refresh (replace all data)
 
@@ -531,7 +542,7 @@ $ ./gradlew :destination-{db}:componentTest  # 10 tests should pass
 - **Append** (Phase 8): INSERT into existing table
 - **Overwrite** (Phase 10): SWAP temp table with final table
 
-### Step 10.1: Implement overwriteTable() in SQL Generator
+### Write Step 1: Implement overwriteTable() in SQL Generator
 
 **File:** Update `client/{DB}SqlGenerator.kt`
 
@@ -571,7 +582,7 @@ fun overwriteTable(source: TableName, target: TableName): List<String> {
 - **Postgres/MySQL**: DROP + RENAME requires transaction for atomicity
 - **BigQuery**: CREATE OR REPLACE TABLE (different pattern)
 
-### Step 10.2: Implement overwriteTable() in Client
+### Write Step 2: Implement overwriteTable() in Client
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -585,7 +596,7 @@ override suspend fun overwriteTable(
 }
 ```
 
-### Step 10.3: Update Writer for Truncate Mode
+### Write Step 3: Update Writer for Truncate Mode
 
 **File:** Update `write/{DB}Writer.kt`
 
@@ -637,7 +648,7 @@ override fun createStreamLoader(stream: DestinationStream): StreamLoader {
 - **AppendStreamLoader**: Writes directly to final table
 - **AppendTruncateStreamLoader**: Writes to temp table, then swaps
 
-### Step 10.4: Enable Tests
+### Write Step 4: Enable Tests
 
 **File:** Update `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -648,7 +659,7 @@ override fun `overwrite tables`() {
 }
 ```
 
-### Step 10.5: Validate
+### Write Step 5: Validate
 
 **Validate:**
 ```bash
@@ -663,7 +674,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 
 ---
 
-## Phase 11: Copy Operation
+## Write Phase 4: Copy Operation
 
 **Goal:** Support table copying (used internally by some modes)
 
@@ -674,7 +685,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 - Some overwrite implementations: Copy instead of swap
 - Schema evolution: Copy to new schema
 
-### Step 11.1: Implement copyTable() in SQL Generator
+### Write Step 1: Implement copyTable() in SQL Generator
 
 **File:** Update `client/{DB}SqlGenerator.kt`
 
@@ -724,7 +735,7 @@ fun copyTable(
 }
 ```
 
-### Step 11.2: Implement copyTable() in Client
+### Write Step 2: Implement copyTable() in Client
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -738,7 +749,7 @@ override suspend fun copyTable(
 }
 ```
 
-### Step 11.3: Enable Test
+### Write Step 3: Enable Test
 
 **File:** Update `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -749,7 +760,7 @@ override fun `copy tables`() {
 }
 ```
 
-### Step 11.4: Validate
+### Write Step 4: Validate
 
 **Validate:**
 ```bash

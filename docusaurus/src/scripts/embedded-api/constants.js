@@ -18,7 +18,7 @@ const SPEC_CACHE_PATH = path.join(PROJECT_ROOT, "src", "data", "embedded_api_spe
 const EMBEDDED_API_SPEC_URL = "https://airbyte-sonar-prod.s3.us-east-2.amazonaws.com/openapi/latest/app.json";
 
 // API documentation output directory (relative to project root)
-const API_DOCS_OUTPUT_DIR = "api-docs/embedded-api";
+const API_DOCS_OUTPUT_DIR = "../docs/ai-agents/embedded/api-reference";
 
 // Sidebar file path for generated API docs
 const API_SIDEBAR_PATH = path.join(PROJECT_ROOT, API_DOCS_OUTPUT_DIR, "sidebar.ts");

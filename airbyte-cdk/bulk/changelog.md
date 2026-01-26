@@ -1,3 +1,134 @@
+## Version 0.2.0
+
+Fully separate `legacy-task-loader` toolkit from `core-load`. Drastically simplify `core-load` by removing legacy abstractions.
+
+## Version 0.1.108
+
+load cdk: DataCoercionSuite tests null character in strings
+
+## Version 0.1.107
+
+base cdk: add utility to start ssh tunnel + return endpoint
+
+## Version 0.1.106
+
+**Load CDK**
+
+* Add `DEFAULT_AIRBYTE_INTERNAL_NAMESPACE` constant to `core-load` table package
+* Add README documentation to `legacy-task-loader` and `legacy-task-load-db` toolkits
+
+## Version 0.1.105
+
+load cdk: schema regression tests use .json extension
+
+## Version 0.1.104
+
+**Load CDK**
+
+* Add `legacy-task-loader` toolkit containing CDK 0.1.74 code for connectors not yet migrated to the modern tableSchema API
+* Add `useLegacyTaskLoader` option to `airbyteBulkConnector` plugin to automatically include the toolkit and exclude core-load
+* Rename `load-db` toolkit to `legacy-task-load-db`
+* Revert `load-db` to pre components era (cdk 0.1.52)
+
+## Version 0.1.103
+
+load cdk: add table identifier regression test
+
+## Version 0.1.102
+
+load cdk: add schema regression test
+
+## Version 0.1.101
+
+load cdk: Introduce scope and oauth server uri attributes in iceberg polaris spec
+
+## Version 0.1.100
+
+load cdk: allow override of socket count in dest connectors
+
+## Version 0.1.99
+
+load cdk: Enforce maximum parallelism for final aggregate flushes.
+
+## Version 0.1.98
+
+**Extract CDK**
+
+* Fix a bug causing query limit pull a negative number of rows.
+
+## Version 0.1.97
+
+load cdk: slightly refactor schema mapper suite
+
+## Version 0.1.96
+
+**Extract CDK**
+
+* Allow setting an upper limit for the number of rows pulled in a single query for a sequential partition read.
+
+## Version 0.1.95
+
+load cdk: add schema mapper test suite
+
+## Version 0.1.94
+
+extract cdk: fix trigger table handling of empty change tables
+
+## Version 0.1.93
+
+**Load CDK**
+
+* Add KDoc documentation to core destination interfaces: Aggregate, AggregateFactory and RecordDTO.
+
+## Version 0.1.92
+
+load cdk: datacoercion suite calls ValueCoercer.map
+
+## Version 0.1.91
+
+load cdk: upsert records test uses proper target schema
+
+## Version 0.1.90
+
+load cdk: components tests: data coercion tests cover all data types
+
+## Version 0.1.89
+
+load cdk: components tests: data coercion tests for int+number
+
+## Version 0.1.88
+
+**Load CDK**
+
+* Add CDC_CURSOR_COLUMN_NAME constant.
+
+## Version 0.1.87
+
+**Load CDK**
+
+* Properly call NamespaceMapper before calculating final table names.
+
+## Version 0.1.86
+
+**Load CDK**
+
+* Adds toFinalSchema "escape hatch" for final table schema munging
+* Refactored Component test fixtures to require explicit StreamTableSchema creation using TableSchemaFactory
+
+## Version 0.1.85
+
+**Extract CDK**
+
+* Fix CDC partition reader race condition when draining records after debezium shutdown.
+
+## Version 0.1.84
+
+load cdk: Move most DB packages into core. Refactor table schema interface into TableSchemaMapper.
+
+## Version 0.1.83
+
+load cdk: more tests to help guide dependency injection dependency implementations
+
 ## Version 0.1.82
 
 load cdk: components tests: more schema evolution testcases

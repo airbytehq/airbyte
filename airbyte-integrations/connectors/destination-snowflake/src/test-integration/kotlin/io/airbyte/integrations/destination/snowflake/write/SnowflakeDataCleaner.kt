@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write
@@ -7,11 +7,11 @@ package io.airbyte.integrations.destination.snowflake.write
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
-import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.sql.STAGE_NAME_PREFIX
+import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.sql.quote
 import java.nio.file.Files
 import java.sql.Connection

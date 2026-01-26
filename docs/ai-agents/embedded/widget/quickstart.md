@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 # Get started with the Airbyte Embedded Widget
 
 This guide walks you through implementing the Airbyte Embedded Widget into your existing web application. You'll learn how to set up connection templates, authenticate your application, and embed the widget to allow your users to sync their data. This should take approximately 30 minutes to complete.

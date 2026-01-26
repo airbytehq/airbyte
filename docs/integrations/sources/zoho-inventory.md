@@ -35,6 +35,8 @@ The Zoho Inventory connector  enables seamless data synchronization between Zoho
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.44 | 2026-01-14 | [71375](https://github.com/airbytehq/airbyte/pull/71375) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70799](https://github.com/airbytehq/airbyte/pull/70799) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [70148](https://github.com/airbytehq/airbyte/pull/70148) | Update dependencies |
 | 0.0.41 | 2025-11-18 | [69434](https://github.com/airbytehq/airbyte/pull/69434) | Update dependencies |
 | 0.0.40 | 2025-10-29 | [68841](https://github.com/airbytehq/airbyte/pull/68841) | Update dependencies |
@@ -44,10 +46,10 @@ The Zoho Inventory connector  enables seamless data synchronization between Zoho
 | 0.0.36 | 2025-09-30 | [66944](https://github.com/airbytehq/airbyte/pull/66944) | Update dependencies |
 | 0.0.35 | 2025-09-24 | [66467](https://github.com/airbytehq/airbyte/pull/66467) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65715](https://github.com/airbytehq/airbyte/pull/65715) | Update dependencies |
-| 0.0.33 | 2025-08-23 | [65413](https://github.com/airbytehq/airbyte/pull/65413) | Update dependencies |
-| 0.0.32 | 2025-08-09 | [64842](https://github.com/airbytehq/airbyte/pull/64842) | Update dependencies |
+| 0.0.33 | 2025-08-24 | [65413](https://github.com/airbytehq/airbyte/pull/65413) | Update dependencies |
+| 0.0.32 | 2025-08-10 | [64842](https://github.com/airbytehq/airbyte/pull/64842) | Update dependencies |
 | 0.0.31 | 2025-08-02 | [64365](https://github.com/airbytehq/airbyte/pull/64365) | Update dependencies |
-| 0.0.30 | 2025-07-26 | [64090](https://github.com/airbytehq/airbyte/pull/64090) | Update dependencies |
+| 0.0.30 | 2025-07-27 | [64090](https://github.com/airbytehq/airbyte/pull/64090) | Update dependencies |
 | 0.0.29 | 2025-07-19 | [63625](https://github.com/airbytehq/airbyte/pull/63625) | Update dependencies |
 | 0.0.28 | 2025-07-12 | [63202](https://github.com/airbytehq/airbyte/pull/63202) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62676](https://github.com/airbytehq/airbyte/pull/62676) | Update dependencies |

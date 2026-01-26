@@ -240,19 +240,19 @@ definitions:
       primary_key:
         - id
       retriever:
-        type: CustomRetriever
-        class_name: "source_declarative_manifest.components.IntercomScrollRetriever"
+        type: SimpleRetriever
         requester:
           $parameters:
             name: "companies"
           $ref: "#/definitions/base_requester"
           path: "companies/scroll"
+          http_method: GET
+          use_cache: false
           request_headers:
             Accept: "application/json"
             Intercom-Version: "2.11"
           error_handler:
-            type: CustomErrorHandler
-            class_name: "source_declarative_manifest.components.IntercomErrorHandler"
+            type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
                 http_codes:
@@ -267,7 +267,7 @@ definitions:
                   - 404
                 action: IGNORE
                 failure_type: transient_error
-                error_message: "Ignoring 404 response, no company records found. "
+                error_message: "Ignoring 404 response, no company records found."
               - type: HttpResponseFilter
                 http_codes:
                   - 400
@@ -276,6 +276,12 @@ definitions:
                 error_message: >-
                   Scroll already exists for this workspace. Please ensure you do not have multiple syncs running at the same time.
                   Intercom API does not allow for you to run the Companies or Company Parts streams in parallel.
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: RESET_PAGINATION
+                failure_type: transient_error
+                error_message: "HTTP 500 encountered. Resetting pagination to retry from the beginning."
         paginator:
           $parameters:
             url_base: "https://api.intercom.io/"
@@ -285,9 +291,9 @@ definitions:
             inject_into: "request_parameter"
             field_name: "scroll_param"
           pagination_strategy:
-            type: CustomPaginationStrategy
-            class_name: "source_declarative_manifest.components.IntercomScrollPagination"
+            type: CursorPagination
             cursor_value: "{{ response.get('scroll_param') }}"
+            stop_condition: "{{ response.get('data', []) | length == 0 }}"
         record_selector:
           type: RecordSelector
           $parameters:

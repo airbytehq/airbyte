@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "client_id": 1,
+      "client_name": "ABC Corp",
+      "total_hours": 120.5,
+      "billable_hours": 110.0,
+      "currency": "USD",
+      "billable_amount": 16500.0
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {}
+}
