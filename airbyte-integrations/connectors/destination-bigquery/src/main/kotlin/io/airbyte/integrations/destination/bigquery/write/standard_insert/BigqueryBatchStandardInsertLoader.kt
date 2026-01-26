@@ -45,8 +45,11 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
+import java.time.Duration
+import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
+private val writerMaxOpenDuration = Duration.ofMinutes(30)
 
 interface RecordFormatter {
     fun formatRecord(record: DestinationRecordRaw): String
@@ -68,6 +71,7 @@ class BigqueryBatchStandardInsertsLoader(
     // so we can't just flush+close a TableDataWriteChannel as soon as we reach 15MB.
     private var buffer: ByteArrayOutputStream? = ByteArrayOutputStream()
     private lateinit var writer: TableDataWriteChannel
+    private lateinit var writerDeadline: Instant
 
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
@@ -77,6 +81,10 @@ class BigqueryBatchStandardInsertsLoader(
 
         if (this::writer.isInitialized) {
             writer.write(ByteBuffer.wrap(byteArray))
+            if (Instant.now().isAfter(writerDeadline)) {
+                finish()
+                return DirectLoader.Complete
+            }
         } else {
             buffer!!.write(byteArray)
             // the default chunk size on the TableDataWriteChannel is 15MB,
@@ -125,6 +133,7 @@ class BigqueryBatchStandardInsertsLoader(
                     throw BigQueryException(e.code, e.message)
                 }
             }
+        writerDeadline = Instant.now().plus(writerMaxOpenDuration)
         val byteArray = buffer!!.toByteArray()
         // please GC this object :)
         buffer = null
