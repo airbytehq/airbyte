@@ -50,7 +50,7 @@ Data set name should be provided aliong with the other details to sync the data.
 
 ### Step 2: Set up the source connector in Airbyte
 
-### For Airbyte Cloud:
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
@@ -61,11 +61,10 @@ Data set name should be provided aliong with the other details to sync the data.
 7. Add **Secret Key**
 8. Add **API Key**
 9. Add **Dataset Name**
-10. Add **File Type**
-11. Add **Mode**
-12. Click `Set up source`.
+10. Add **Mode**
+11. Click `Set up source`.
 
-### For Airbyte OSS:
+#### For Airbyte OSS:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
@@ -76,9 +75,8 @@ Data set name should be provided aliong with the other details to sync the data.
 7. Add **Secret Key**
 8. Add **API Key**
 9. Add **Dataset Name**
-10. Add **File Type**
-11. Add **Mode**
-12. Click `Set up source`.
+10. Add **Mode**
+11. Click `Set up source`.
 
 ### Configuration
 
@@ -90,21 +88,27 @@ Data set name should be provided aliong with the other details to sync the data.
 | `secret_key` | `string` | Secret key. Enter secret key for the DAPI agent user |  |
 | `api_key` | `string` | Data API key. Enter data API key for the organization |  |
 | `dataset_name` | `string` | Name of the dataset. Enter dataset name to be synced |  |
-| `file_type` | `string` | File type. Type of the file to be synced, ex. JSONL / PARQUET / CSV |  |
 | `mode` | `string` | Sync mode. Full or Incremental | Full |
 
 
-## Supported sync modes
+### Supported sync modes
 
 The Nexus Datasets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
-## Streams
+### Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | datasets | ❌ | DefaultPaginator | ✅ |  ✅  |
+
+### Custom Components
+NexusCustomAuthenticator is a primary component which handles the HMAC authentication for nexus API. 
+
+HMAC stands for Hash-based Message Authentication Code. In HMAC authentication, every request is independently established using a cryptographic hash function. For each API request, the client computes a hashed "signature" using a secret key and submits it in the Authorization header.
+
+Please refer https://developer.infornexus.com/api/authentication-choices/hmac for more details to get the data to calculate the HMAC signature.
 
 
 ## Changelog

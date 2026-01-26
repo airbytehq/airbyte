@@ -1,47 +1,33 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
-import argparse
-import collections
-import csv
 import hashlib
 import hmac
-import io
 import json
 import logging
-import string
-import sys
-import time
-import urllib
 from base64 import b64encode
 from collections import OrderedDict
 from dataclasses import InitVar, dataclass
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Iterable, Mapping, Union
-from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
+from urllib.parse import urlparse
 
-import pandas as pd
-
-# import pyarrow.parquet as pq
 import requests
 
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
-
-
-HMAC = "HMAC_1"
 
 
 @dataclass
 class NexusCustomAuthenticator(DeclarativeAuthenticator):
     config: Config
+    parameters: InitVar[Mapping[str, Any]] = None
 
-    def __init__(self, config: Mapping[str, Any], *kwargs):
+    def __init__(self, config: Mapping[str, Any], parameters: Mapping[str, Any] = None, *kwargs):
         super().__init__()
         self.config = config
-        self.kwargs = kwargs
+        self.parameters = parameters or {}
         self.logger = logging.getLogger("airbyte")
         self.logger.setLevel(logging.DEBUG)
 
@@ -49,16 +35,8 @@ class NexusCustomAuthenticator(DeclarativeAuthenticator):
         handler.setLevel(logging.DEBUG)
         self.logger.addHandler(handler)
 
-        user_detail_stream_attr = self.config.get("datasets_stream", {})
-        path = user_detail_stream_attr.get("parameters", {})
-        self.dataset_path = self.config.get("dataset_path", "")
-        self.dataset_name = self.config.get("dataset_name", "")
-        self.export_prefix = self.config.get("dataset_export_prefix", "")
-        self.mode = self.config.get("mode", "")
-        self.input_url = self.config.get("base_url", "")
         self.userId = self.config.get("user_id", "")
         self.secretAccessKey = self.config.get("secret_key", "")
-        self.dataKey = self.config.get("api_key", "")
         self.method = self.config.get("http_method", "GET").upper()
         self.accessKeyId = self.config.get("access_key_id", "")
         self.contentType = None  # Only set if payload exists
@@ -67,48 +45,42 @@ class NexusCustomAuthenticator(DeclarativeAuthenticator):
         self.pathInfo = ""
         self.querystring = ""
         self.dapi_date = ""
+        self.url_base = self.parameters.get("url_base", "")
+        self.logger.debug(f"Parameters received: {self.parameters}")
+        self.logger.debug(f"Config: {self.config}")
+        self.logger.debug(f"url_base before interpolation: {self.url_base}")
 
-    def parseUrl(self):
-        relative_path = "/".join([self.dataset_path, self.dataset_name, self.export_prefix])
-        full_url = urljoin(self.input_url, relative_path)
-        parsedUrl = urlparse(full_url)
+        # Interpolate the url_base using config
+        for key, value in self.config.items():
+            placeholder = f"{{{{ config['{key}'] }}}}"
+            self.url_base = self.url_base.replace(placeholder, str(value))
 
-        # Optional: Add your query parameters here
-        query_params = {"mode": self.mode}
+        self.logger.debug(f"url_base after interpolation: {self.url_base}")
 
-        # If existing query parameters exist, merge them
-        existing_params = parse_qs(parsedUrl.query)
-        existing_params.update(query_params)
-
-        # Convert the query parameters to a string
-        new_query = urlencode(existing_params, doseq=True)
-
-        # Build the final URL with the updated query string
-        final_url = urlunparse(parsedUrl._replace(query=new_query))
-
-        # Parse final_url to extract components like path
-        parsed_final_url = urlparse(final_url)
+    def parse_url(self):
+        parsed_final_url = urlparse(self.url_base)
         self.pathInfo = parsed_final_url.path
         self.querystring = parsed_final_url.query
 
+    # Entry point for getting auth headers, called by the Declarative framework
     def get_auth_header(self) -> Mapping[str, Any]:
-        self.parseUrl()
-        signature = self.createAuthorizationHeader()
+        self.parse_url()
+        signature = self.create_authorization_header()
 
         custom_header_1 = self.dapi_date
         custom_header_2 = self.config.get("api_key", "")
         return {"Authorization": signature, "x-dapi-date": custom_header_1, "x-nexus-api-key": custom_header_2}
 
-    def createAuthorizationHeader(self) -> str:
-        signature = self.computeSignature()
+    def create_authorization_header(self) -> str:
+        signature = self.compute_signature()
         return f"HMAC_1 {self.accessKeyId}:{signature.decode()}:{self.userId}"
 
-    def computeSignature(self) -> bytes:
-        self.setDate()
-        signingBase = self.createSigningBase()
+    def compute_signature(self) -> bytes:
+        self.set_date()
+        signingBase = self.create_signing_base()
         return self.sign(signingBase)
 
-    def createSigningBase(self) -> bytes:
+    def create_signing_base(self) -> bytes:
         if self.querystring:
             self.pathInfo += f"?{self.querystring}"
         # self.logger.debug("signingBase pathInfo: %s", self.pathInfo)
@@ -129,7 +101,7 @@ class NexusCustomAuthenticator(DeclarativeAuthenticator):
         signingBase = "".join(components.values())
         return signingBase.encode("utf-8")
 
-    def setDate(self):
+    def set_date(self):
         self.dapi_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
     def sign(self, signingBase: bytes) -> bytes:
@@ -147,24 +119,15 @@ class FlexibleDecoder(Decoder):
     This version assumes files are NOT gzipped.
     """
 
-    parameters: InitVar[Mapping[str, Any]] = None  # Capture any other parameters from manifest
-
-    # CSV parsing options are hardcoded as class attributes or set in __post_init__
-    _csv_delimiter: str = ","
-    _csv_quote_char: str = '"'
-    _csv_encoding: str = "utf-8"
-    _csv_skip_rows_before_header: int = 0
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self):
         self.logger = logging.getLogger("airbyte")
         self.logger.setLevel(logging.DEBUG)
 
         handler = logging.StreamHandler()
         handler.setLevel(logging.DEBUG)
         self.logger.addHandler(handler)
-        pass
 
-    def _convert_all_to_strings(self, obj: Any) -> Any:
+    def convert_all_to_strings(self, obj: Any) -> Any:
         """
         Recursively converts all non-None values in a dictionary or list to strings.
         This handles Decimal, datetime.date, datetime.datetime, and other types.
@@ -174,9 +137,9 @@ class FlexibleDecoder(Decoder):
         elif isinstance(obj, (Decimal, datetime, date)):
             return str(obj)  # Convert Decimal, datetime, date to string
         elif isinstance(obj, dict):
-            return {k: self._convert_all_to_strings(v) for k, v in obj.items()}
+            return {k: self.convert_all_to_strings(v) for k, v in obj.items()}
         elif isinstance(obj, list):
-            return [self._convert_all_to_strings(elem) for elem in obj]
+            return [self.convert_all_to_strings(elem) for elem in obj]
         # For other primitive types (int, float, bool, string already), convert to string
         # This ensures consistency, even if it means converting a string to a string.
         # This is the safest approach for dynamic schemaless sources to Parquet.
@@ -190,6 +153,12 @@ class FlexibleDecoder(Decoder):
         Returns:
             Iterable[Mapping[str, Any]]: An iterable of decoded records (dictionaries).
         """
+        if response.status_code == 304:
+            self.logger.info("Source Dataset is not Ready")
+            return
+        elif response.status_code not in (200, 202):
+            raise ValueError(f"Unexpected status code: {response.status_code}")
+
         content_type = response.headers.get("Content-Type", "").lower()
         content_bytes = response.content
 
@@ -204,7 +173,7 @@ class FlexibleDecoder(Decoder):
                     try:
                         record_dict = json.loads(line)
                         # Convert all values within the record to strings
-                        processed_record = self._convert_all_to_strings(record_dict)
+                        processed_record = self.convert_all_to_strings(record_dict)
                         # Yield the entire processed record as a JSON string under a single key
                         yield {"raw_data": json.dumps(processed_record)}
                     except json.JSONDecodeError as e:
@@ -212,42 +181,3 @@ class FlexibleDecoder(Decoder):
         else:
             self.logger.error(f"Unsupported or unrecognized Content-Type: {content_type}. Cannot decode response.")
             raise ValueError(f"Unsupported or unrecognized Content-Type: {content_type}")
-        """elif "text/csv" in content_type or "application/csv" in content_type:
-            try:
-                df = pd.read_csv(
-                    io.BytesIO(content_bytes),
-                    delimiter=self._csv_delimiter,
-                    quotechar=self._csv_quote_char,
-                    skiprows=self._csv_skip_rows_before_header,
-                    encoding=self._csv_encoding,
-                )
-                for record_dict in df.to_dict(orient="records"):
-                    # Convert all values within the record to strings
-                    processed_record = self._convert_all_to_strings(record_dict)
-                    # Yield the entire processed record as a JSON string under a single key
-                    yield {"raw_data": json.dumps(processed_record)}
-            except Exception as e:
-                logging.error(f"Error decoding CSV (Content-Type: {content_type}): {e}")
-                raise
-        elif (
-            "application/parquet" in content_type
-            or "application/x-parquet" in content_type
-            or "application/vnd.apache.parquet" in content_type
-            or "application/octet-stream" in content_type
-        ):
-            try:
-                table = pq.read_table(io.BytesIO(content_bytes))
-                df = table.to_pandas()
-                for record in df.to_dict(orient="records"):
-                    # Convert all values within the record to strings
-                    processed_record = self._convert_all_to_strings(record)
-                    self.logger.debug(f"Parquet Decoded Record: {record}")
-                    # Yield the entire processed record as a JSON string under a single key
-                    yield {"raw_data": json.dumps(processed_record)}
-            except Exception as e:
-                self.logger.error(f"Error decoding Parquet (Content-Type: {content_type}): {e}")
-                raise
-        else:
-            self.logger.error(f"Unsupported or unrecognized Content-Type: {content_type}. Cannot decode response.")
-            raise ValueError(f"Unsupported or unrecognized Content-Type: {content_type}")
-        """

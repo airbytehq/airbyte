@@ -14,36 +14,96 @@ definitions:
     type: HttpRequester
     url_base: "{{ config['base_url'] }}"
     http_method: GET
-    authenticator:
-      type: CustomAuthenticator
-      class_name: source_declarative_manifest.components.NexusCustomAuthenticator # Ensure this Python class exists and is correctly implemented
-      config: "{{ config }}"
+
+# streams:
+#   - type: DeclarativeStream
+#     name: datasets # Name of your data stream
+#     $parameters:
+#       # Dynamic path construction using config properties
+#       path: "{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode={{ config['mode'] }}"
+#     retriever:
+#       type: SimpleRetriever
+#       record_selector:
+#         type: RecordSelector
+#         extractor:
+#           type: DpathExtractor
+#           field_path: [] # Assuming the records are at the root of the response, adjust if nested
+#       requester:
+#         $ref: "#/definitions/base_requester" # Reference the shared requester
+#       decoder:
+#         type: CustomDecoder # Now using CustomDecoder
+#         class_name: source_declarative_manifest.components.FlexibleDecoder # Pointing Python class
+#         $parameters: # Parameters passed to FlexibleDecoder's __init__
+#           # file_type is removed from here as it's inferred from Content-Type header
+#           config: "{{ config }}" # Explicitly pass the config object (REQUIRED for 6.36.2 CustomDecoder)
+#     schema_loader:
+#       type: InlineSchemaLoader
+#       schema:
+#         $ref: "#/schemas/datasets" # Reference the schema defined below
 
 streams:
-  - type: DeclarativeStream
-    name: datasets # Name of your data stream
-    $parameters:
-      # Dynamic path construction using config properties
-      path: "{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode={{ config['mode'] }}"
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: [] # Assuming the records are at the root of the response, adjust if nested
-      requester:
-        $ref: "#/definitions/base_requester" # Reference the shared requester
-      decoder:
-        type: CustomDecoder # Now using CustomDecoder
-        class_name: source_declarative_manifest.components.FlexibleDecoder # Pointing to your new Python class
-        $parameters: # Parameters passed to FlexibleDecoder's __init__
-          # file_type is removed from here as it's inferred from Content-Type header
-          config: "{{ config }}" # Explicitly pass the config object (REQUIRED for 6.36.2 CustomDecoder)
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/datasets" # Reference the schema defined below
+  - type: StateDelegatingStream
+    name: datasets
+    full_refresh_stream:
+      type: DeclarativeStream
+      name: datasets
+      retriever:
+        type: SimpleRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [] # Assuming the records are at the root of the response, adjust if nested
+        requester:
+          $ref: "#/definitions/base_requester"
+          url_base: "{{ config['base_url'] }}/{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode=Full"
+          authenticator:
+            type: CustomAuthenticator
+            class_name: source_declarative_manifest.components.NexusCustomAuthenticator
+            config: "{{ config }}"
+            $parameters:
+              url_base: "{{ config['base_url'] }}/{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode=Full"
+        decoder:
+          type: CustomDecoder # Now using CustomDecoder
+          class_name: source_declarative_manifest.components.FlexibleDecoder # Pointing Python class
+          $parameters: # Parameters passed to FlexibleDecoder's __init__
+            # file_type is removed from here as it's inferred from Content-Type header
+            config: "{{ config }}" # Explicitly pass the config object (REQUIRED for 6.36.2 CustomDecoder)
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets" # Reference the schema defined below
+    incremental_stream:
+      type: DeclarativeStream
+      name: datasets
+      retriever:
+        type: SimpleRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [] # Assuming the records are at the root of the response, adjust if nested
+        requester:
+          $ref: "#/definitions/base_requester"
+          url_base: "{{ config['base_url'] }}/{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode=Incremental"
+          authenticator:
+            type: CustomAuthenticator
+            class_name: source_declarative_manifest.components.NexusCustomAuthenticator
+            config: "{{ config }}"
+            $parameters:
+              url_base: "{{ config['base_url'] }}/{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode=Incremental"
+        decoder:
+          type: CustomDecoder # Now using CustomDecoder
+          class_name: source_declarative_manifest.components.FlexibleDecoder # Pointing Python class
+          $parameters: # Parameters passed to FlexibleDecoder's __init__
+            # file_type is removed from here as it's inferred from Content-Type header
+            config: "{{ config }}" # Explicitly pass the config object (REQUIRED for 6.36.2 CustomDecoder)
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets" # Reference the schema defined below
+
+
 
 spec:
   type: Spec
@@ -60,7 +120,6 @@ spec:
       - api_key
       - dataset_path
       - dataset_name
-      - mode
     additionalProperties: true
     properties:
       base_url:
@@ -69,29 +128,34 @@ spec:
         description: "The base URL of the Infor Nexus datasets API."
         pattern: "^https?://[\\w.-]+(:\\d+)?(/[\\w.-]+)*/?$"
         order: 1
+        default: "https://demo.infornexus.com"
       user_id:
         title: "User ID"
         type: "string"
-        description: "The user ID for the Infor Nexus API."
+        description: "The user ID for the Infor Nexus API to get data."
         order: 5
+        default: "DataApiAgent@3717989018023079"
       access_key_id:
         title: "Access Key ID"
         type: "string"
         description: "The access key ID for the Infor Nexus API."
         order: 6
+        default: "1001jcnZegkh5lchZfn"
       secret_key:
         title: "Secret Key"
         type: "string"
-        description: "The secret key for HMAC authentication."
+        description: "The secret key for the HMAC authentication for the Infor Nexus API."
         order: 7
+        default: "x5io4dlewi7s4dkqn4nw5iihhybw3fyr6nljzljb5yswph6zy2wwz5wibva2wh6r4q7ytulkem6ddbzm2qzyyng6v4iiewfsh2uvvli"
       api_key:
         title: "API Key"
         type: string
         description: "The Infor Nexus Data API Key."
         order: 8
+        default: "59821a6586259964c0337f743ecae1a89c50d054"
       dataset_path:
         type: string
-        description: "Data Set Path."
+        description: "Constant data set path."
         default: "rest/3.1/analytics/dataset"
         airbyte_hidden: true # Hide this from UI if it's a fixed internal path
       dataset_name:
@@ -99,21 +163,12 @@ spec:
         type: string
         description: "The name of the dataset to export."
         order: 2
+        default: "PurchaseOrderTestExport"
       dataset_export_prefix:
         type: string
-        description: "Data Export Prefix."
+        description: "Constant Data Export Prefix."
         default: "export"
-        airbyte_hidden: true # Hide this from UI if it's a fixed internal path
-      mode:
-        type: string
-        title: Mode
-        description: "Sync mode (Full or Incremental)."
-        enum:
-          - Full
-          - Incremental
-        default: Full
-        order: 4
-        additionalProperties: true # Set to false if you want to strictly define CSV options
+        airbyte_hidden: true
 schemas:
   datasets:
     type: object
