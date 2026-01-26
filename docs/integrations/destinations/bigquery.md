@@ -210,6 +210,7 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.17-rc.1 | 2026-01-20 | [72296](https://github.com/airbytehq/airbyte/pull/72296) | Upgrade CDK to 0.2.0 |
 | 3.0.16 | 2025-11-25 | [67401](https://github.com/airbytehq/airbyte/pull/67401) | Add backticks to column names in SQL generation to prevent syntax errors. |
 | 3.0.15 | 2025-11-13 | [69307](https://github.com/airbytehq/airbyte/pull/69307) | Handle out-of-range timestamps/times. |
 | 3.0.14 | 2025-11-11 | [69231](https://github.com/airbytehq/airbyte/pull/69231) | Upgrade to Bulk CDK 0.1.74. |

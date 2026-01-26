@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.TableDefinition
@@ -13,19 +14,15 @@ import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.component.ColumnChangeset
-import io.airbyte.cdk.load.component.TableColumns
-import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.component.TableSchema
-import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
+import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.AlterTableReport
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
-import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.cdk.util.containsIgnoreCase
 import io.airbyte.cdk.util.findIgnoreCase
@@ -38,13 +35,13 @@ import org.apache.commons.codec.digest.DigestUtils
 private val logger = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
-class BigqueryTableSchemaEvolutionClient(
+class BigqueryDirectLoadNativeTableOperations(
     private val bigquery: BigQuery,
-    private val sqlOperations: TableOperationsClient,
+    private val sqlOperations: BigqueryDirectLoadSqlTableOperations,
     private val databaseHandler: BigQueryDatabaseHandler,
     private val projectId: String,
     private val tempTableNameGenerator: TempTableNameGenerator,
-) : TableSchemaEvolutionClient {
+) : DirectLoadTableNativeOperations {
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
@@ -94,27 +91,19 @@ class BigqueryTableSchemaEvolutionClient(
         }
     }
 
-    // Leave these unimplemented for now, since we're just overriding ensureSchemaMatches.
-    // https://github.com/airbytehq/airbyte-internal-issues/issues/15163
-    override suspend fun discoverSchema(tableName: TableName): TableSchema {
-        TODO("Not yet implemented")
-    }
-
-    override fun computeSchema(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): TableSchema {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun applyChangeset(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping,
-        tableName: TableName,
-        expectedColumns: TableColumns,
-        columnChangeset: ColumnChangeset
-    ) {
-        TODO("Not yet implemented")
+    override suspend fun getGenerationId(tableName: TableName): Long {
+        val result =
+            bigquery.query(
+                QueryJobConfiguration.of(
+                    "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
+                ),
+            )
+        val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
+        return if (value.isNull) {
+            0
+        } else {
+            value.longValue
+        }
     }
 
     /**
