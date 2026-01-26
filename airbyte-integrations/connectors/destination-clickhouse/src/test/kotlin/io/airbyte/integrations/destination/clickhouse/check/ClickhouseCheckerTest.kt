@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination.clickhouse.check
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.insert.InsertResponse
 import com.clickhouse.data.ClickHouseFormat
-import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.PROTOCOL
-import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.PROTOCOL_ERR_MESSAGE
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -31,27 +29,25 @@ class ClickhouseCheckerTest {
 
     @MockK lateinit var client: Client
 
-    @MockK lateinit var clientFactory: RawClickHouseClientFactory
-
     @MockK lateinit var insertResponse: InsertResponse
+
+    private val config = Fixtures.config()
 
     private lateinit var checker: ClickhouseChecker
 
     @BeforeEach
     fun setup() {
-        every { clientFactory.make(any()) } returns client
         every { client.execute(any()) } returns mockk(relaxed = true)
         every { insertResponse.writtenRows } returns 1
         every { client.insert(any(), any<InputStream>(), any()) } returns
             CompletableFuture.completedFuture(insertResponse)
         every { clock.millis() } returns Fixtures.MILLIS
-        checker = ClickhouseChecker(clock, clientFactory)
+        checker = ClickhouseChecker(clock, config, client)
     }
 
     @Test
     fun `check happy path - creates check table and inserts data`() {
-        val config = Fixtures.config()
-        checker.check(config)
+        checker.check()
 
         verify {
             client.execute(
@@ -69,15 +65,12 @@ class ClickhouseCheckerTest {
 
     @Test
     fun `check happy path - table name differs between instantiations to prevent collision`() {
-        val time1 = 123L
-        every { clock.millis() } returns time1
-        val checker1 = ClickhouseChecker(clock, clientFactory)
-        val time2 = 3416L
-        every { clock.millis() } returns time2
-        val checker2 = ClickhouseChecker(clock, clientFactory)
-        val time3 = 1236L
-        every { clock.millis() } returns time3
-        val checker3 = ClickhouseChecker(clock, clientFactory)
+        every { clock.millis() } returns 123L
+        val checker1 = ClickhouseChecker(clock, config, client)
+        every { clock.millis() } returns 3416L
+        val checker2 = ClickhouseChecker(clock, config, client)
+        every { clock.millis() } returns 1236L
+        val checker3 = ClickhouseChecker(clock, config, client)
 
         assertNotEquals(checker1.tableName, checker2.tableName)
         assertNotEquals(checker1.tableName, checker3.tableName)
@@ -85,16 +78,22 @@ class ClickhouseCheckerTest {
     }
 
     @Test
-    fun `check hostname format failure`() {
-        val httpConfig = Fixtures.config(hostname = "$PROTOCOL://hostname")
-        val httpsConfig = Fixtures.config(hostname = "https://hostname")
-        val clientFactory = RawClickHouseClientFactory()
+    fun `check hostname format failure - http`() {
+        val badConfig =
+            Fixtures.config(hostname = "${ClickhouseChecker.Constants.PROTOCOL}://hostname")
+        val badChecker = ClickhouseChecker(clock, badConfig, client)
 
-        val caught1 = assertThrows<Throwable> { clientFactory.make(httpConfig) }
-        assertEquals(PROTOCOL_ERR_MESSAGE, caught1.message)
+        val caught = assertThrows<IllegalArgumentException> { badChecker.check() }
+        assertEquals(ClickhouseChecker.Constants.PROTOCOL_ERR_MESSAGE, caught.message)
+    }
 
-        val caught2 = assertThrows<Throwable> { clientFactory.make(httpsConfig) }
-        assertEquals(PROTOCOL_ERR_MESSAGE, caught2.message)
+    @Test
+    fun `check hostname format failure - https`() {
+        val badConfig = Fixtures.config(hostname = "https://hostname")
+        val badChecker = ClickhouseChecker(clock, badConfig, client)
+
+        val caught = assertThrows<IllegalArgumentException> { badChecker.check() }
+        assertEquals(ClickhouseChecker.Constants.PROTOCOL_ERR_MESSAGE, caught.message)
     }
 
     @Test
@@ -102,7 +101,7 @@ class ClickhouseCheckerTest {
         val exception = Exception("blam")
         every { client.execute(any()) } throws exception
 
-        val caught = assertThrows<Exception> { checker.check(Fixtures.config()) }
+        val caught = assertThrows<Exception> { checker.check() }
         assertEquals(exception, caught)
     }
 
@@ -111,14 +110,13 @@ class ClickhouseCheckerTest {
         val exception = Exception("blam")
         every { client.insert(any(), any<InputStream>(), any()) } throws exception
 
-        val caught = assertThrows<Exception> { checker.check(Fixtures.config()) }
+        val caught = assertThrows<Exception> { checker.check() }
         assertEquals(exception, caught)
     }
 
     @Test
     fun `cleanup happy path - drops the check table`() {
-        val config = Fixtures.config()
-        checker.cleanup(config)
+        checker.cleanup()
 
         verify { client.execute("DROP TABLE IF EXISTS ${config.database}.${checker.tableName}") }
     }
@@ -128,7 +126,7 @@ class ClickhouseCheckerTest {
         val exception = Exception("blam")
         every { client.execute(any()) } throws exception
 
-        val caught = assertThrows<Exception> { checker.cleanup(Fixtures.config()) }
+        val caught = assertThrows<Exception> { checker.cleanup() }
         assertEquals(exception, caught)
     }
 
@@ -139,7 +137,7 @@ class ClickhouseCheckerTest {
             hostname: String = "hostname",
             port: String = "port",
             protocol: String = "protocol",
-            database: String = "database",
+            database: String = "test-database",
             username: String = "username",
             password: String = "password",
             enableJson: Boolean = false,
