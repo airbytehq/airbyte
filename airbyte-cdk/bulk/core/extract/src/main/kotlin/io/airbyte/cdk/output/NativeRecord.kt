@@ -19,6 +19,7 @@ import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.net.URL
 import java.time.OffsetDateTime
@@ -62,12 +63,14 @@ fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
     }
 }
 
+val log = KotlinLogging.logger {}
 fun NativeRecordPayload.toProtobuf(
     schema: Set<FieldOrMetaField>,
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
+        log.info { "*** schema: $schema" }
         schema
             .sortedBy { it.id }
             .forEachIndexed { index, field ->
