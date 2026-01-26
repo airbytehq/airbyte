@@ -177,9 +177,9 @@ When schema is not enforced, each document will generate a record that only cont
 ```
 
 The contents of `data` will vary according to the contents of each document read from MongoDB.
-Unlike in Schema enforced mode, the same field can vary in type between document. For example field `"xyz"` may be a String on one document and a Date on another.
+Unlike in Schema enforced mode, the same field can vary in type between documents. For example, field `"xyz"` may be a String on one document and a Date on another.
 As a result no field will be omitted and no document will be rejected.
-When Schema is not enforced there is not way to deselect fields as all fields are read for every document.
+When Schema is not enforced there is no way to deselect fields as all fields are read for every document.
 
 ## Array Type Normalization
 
@@ -194,7 +194,7 @@ Most destinations can safely cast between primitive types (i.e. integer to strin
 ```
 
 :::info Important
-This normalization is intended for few type inconsistencies. If your collection has fields that frequently change types, consider using schemaless mode instead.
+This normalization is intended for occasional type inconsistencies. If your collection has fields that frequently change types, consider using schemaless mode instead.
 :::
 
 ## Limitations & Troubleshooting
