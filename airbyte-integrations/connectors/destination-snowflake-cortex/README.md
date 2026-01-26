@@ -25,6 +25,19 @@ See `integration_tests/sample_config.json` for a sample config file.
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination snowflake-cortex test creds`
 and place them into `secrets/config.json`.
 
+#### Authentication Methods
+This connector supports two authentication methods:
+
+1. **Username and Password**: Traditional authentication using a username and password.
+2. **Key Pair Authentication**: RSA key-pair authentication for enhanced security. This method is recommended for production environments and is required by organizations that have deprecated password-based authentication.
+
+To use key pair authentication, you need to:
+- Generate an RSA key pair
+- Assign the public key to your Snowflake user
+- Provide the private key (and optional passphrase) in the connector configuration
+
+For detailed instructions on setting up key pair authentication, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/key-pair-auth).
+
 ### Locally running the connector
 ```
 poetry run python main.py spec
