@@ -11,5 +11,6 @@ CONNECTOR_PATH_PREFIXES = {
     "docs/integrations/sources",
     "docs/integrations/destinations",
     "docs/ai-agents/connectors",
+    "docs/developers/pyairbyte",
 }
 MERGE_METHOD = "squash"
