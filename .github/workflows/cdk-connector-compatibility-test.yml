@@ -89,7 +89,7 @@ jobs:
 
       - name: Run CDK upgrade # Run tests against local CDK version
         if: matrix.connector
-        run: ./gradlew upgradeCdk --cdkVersion=local
+        run: ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk --cdkVersion=local
 
       - name: Run Unit Tests
         id: run-unit-tests

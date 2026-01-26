@@ -48,6 +48,85 @@ class ApiTokenAuthenticator(Authenticator):
         return f"Basic {api_token.decode('utf-8')}"
 
 
+class OAuthBearerAuthenticator(Authenticator):
+    """Authenticator for OAuth Bearer token authentication."""
+
+    def __init__(self, access_token: str) -> None:
+        super().__init__()
+        self._access_token = access_token
+
+    @property
+    def client_access_token(self) -> str:
+        return f"Bearer {self._access_token}"
+
+
+class OAuthTokenRefreshRequestBuilder:
+    """Builder for OAuth token refresh POST requests to /oauth/tokens endpoint.
+
+    This is a separate builder because the token refresh endpoint uses POST with a JSON body,
+    unlike the other Zendesk API endpoints which use GET requests.
+    """
+
+    DEFAULT_SUBDOMAIN = "d3v-airbyte"
+
+    def __init__(self, subdomain: str = DEFAULT_SUBDOMAIN) -> None:
+        self._subdomain = subdomain
+        self._grant_type: str = "refresh_token"
+        self._refresh_token: Optional[str] = None
+        self._client_id: Optional[str] = None
+        self._client_secret: Optional[str] = None
+
+    @classmethod
+    def oauth_tokens_endpoint(cls, subdomain: str = DEFAULT_SUBDOMAIN) -> "OAuthTokenRefreshRequestBuilder":
+        """Create a request builder for the POST /oauth/tokens endpoint."""
+        return cls(subdomain)
+
+    def with_refresh_token(self, refresh_token: str) -> "OAuthTokenRefreshRequestBuilder":
+        """Set the refresh_token in the request body."""
+        self._refresh_token = refresh_token
+        return self
+
+    def with_client_id(self, client_id: str) -> "OAuthTokenRefreshRequestBuilder":
+        """Set the client_id in the request body."""
+        self._client_id = client_id
+        return self
+
+    def with_client_secret(self, client_secret: str) -> "OAuthTokenRefreshRequestBuilder":
+        """Set the client_secret in the request body."""
+        self._client_secret = client_secret
+        return self
+
+    @property
+    def url(self) -> str:
+        """Build the full URL for the token refresh endpoint."""
+        return f"https://{self._subdomain}.zendesk.com/oauth/tokens"
+
+    @property
+    def body(self) -> Dict[str, Any]:
+        """Build the expected body for the token refresh request.
+
+        Note: The CDK sends this as form-urlencoded data, not JSON.
+        This property is kept for reference but not used in matching.
+        """
+        return {
+            "grant_type": self._grant_type,
+            "refresh_token": self._refresh_token,
+            "client_id": self._client_id,
+            "client_secret": self._client_secret,
+        }
+
+    def build(self) -> HttpRequest:
+        """Build and return the HttpRequest object for the token refresh.
+
+        Note: We don't include the body in the HttpRequest because the CDK's
+        OAuth authenticator sends the refresh request with form-urlencoded data
+        (using requests.request(..., data=...)), but the HttpMocker's matcher
+        tries to parse the body as JSON. By omitting the body, we match only
+        on URL, which is sufficient for testing the OAuth refresh flow.
+        """
+        return HttpRequest(url=self.url)
+
+
 class ZendeskSupportRequestBuilder:
     """
     Builder for creating HTTP requests for Zendesk Support API endpoints.

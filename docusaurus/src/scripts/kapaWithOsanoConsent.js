@@ -164,13 +164,42 @@ function isOsanoPresent() {
   );
 }
 
+/**
+ * Poll for Osano's presence and initialize once found.
+ * Osano is injected via Cloudflare and may load after our script runs.
+ * We poll for up to 5 seconds before assuming Osano is not present.
+ */
+function pollForOsanoAndInit() {
+  const maxAttempts = 10;
+  const pollInterval = 500; // 500ms between attempts
+  let attempts = 0;
+
+  function checkAndInit() {
+    attempts++;
+    const osanoPresent =
+      (typeof window.Osano !== "undefined" && window.Osano.cm) ||
+      typeof window.Osano === "function";
+
+    if (osanoPresent) {
+      initKapaWithOsanoConsent();
+    } else if (attempts < maxAttempts) {
+      setTimeout(checkAndInit, pollInterval);
+    } else {
+      // Osano not found after polling, assume it's not present (e.g., Vercel preview)
+      initKapaWithOsanoConsent();
+    }
+  }
+
+  checkAndInit();
+}
+
 // Initialize when the DOM is ready
 if (typeof window !== "undefined") {
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initKapaWithOsanoConsent);
+    document.addEventListener("DOMContentLoaded", pollForOsanoAndInit);
   } else {
-    // DOM is already ready, but wait a bit for Osano to potentially load
-    setTimeout(initKapaWithOsanoConsent, 100);
+    // DOM is already ready, start polling for Osano
+    pollForOsanoAndInit();
   }
 }
 

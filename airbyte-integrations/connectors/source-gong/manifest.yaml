@@ -377,9 +377,35 @@ definitions:
     type: HttpRequester
     url_base: https://api.gong.io/v2/
     authenticator:
-      type: BasicHttpAuthenticator
-      username: "{{ config[\"access_key\"] }}"
-      password: "{{ config[\"access_key_secret\"] }}"
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+      authenticators:
+        OAuth2.0:
+          type: OAuthAuthenticator
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          token_refresh_endpoint: https://app.gong.io/oauth2/generate-customer-token
+          grant_type: refresh_token
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
+          refresh_token_updater:
+            refresh_token_name: refresh_token
+            access_token_config_path:
+              - credentials
+              - access_token
+            refresh_token_config_path:
+              - credentials
+              - refresh_token
+            token_expiry_date_config_path:
+              - credentials
+              - token_expiry_date
+        APIKey:
+          type: BasicHttpAuthenticator
+          username: "{{ config['credentials']['access_key'] }}"
+          password: "{{ config['credentials']['access_key_secret'] }}"
 
 streams:
   - $ref: "#/definitions/streams/users"
@@ -395,21 +421,80 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - access_key
-      - access_key_secret
+      - credentials
     properties:
-      access_key:
-        type: string
-        description: Gong Access Key
-        title: Gong Access Key
-        airbyte_secret: true
+      credentials:
+        type: object
+        title: Authentication
+        description: Choose how to authenticate to Gong.
         order: 0
-      access_key_secret:
-        type: string
-        description: Gong Access Key Secret
-        title: Gong Access Key Secret
-        airbyte_secret: true
-        order: 1
+        oneOf:
+          - type: object
+            title: Authenticate via Gong (OAuth)
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: OAuth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your Gong OAuth application.
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your Gong OAuth application.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh Token to renew the expired Access Token.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: The date-time when the access token expires.
+                format: date-time
+                order: 5
+            additionalProperties: true
+          - type: object
+            title: Authenticate with API Key
+            required:
+              - auth_type
+              - access_key
+              - access_key_secret
+            properties:
+              auth_type:
+                type: string
+                const: APIKey
+                order: 0
+              access_key:
+                type: string
+                title: Gong Access Key
+                description: Gong Access Key
+                airbyte_secret: true
+                order: 1
+              access_key_secret:
+                type: string
+                title: Gong Access Key Secret
+                description: Gong Access Key Secret
+                airbyte_secret: true
+                order: 2
+            additionalProperties: true
       start_date:
         type: string
         description: >-
@@ -421,8 +506,98 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2018-02-18T08:00:00Z"
-        order: 2
+        order: 1
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: OAuth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: https://app.gong.io/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&scope={{scope_value | urlEncode}}
+        access_token_url: https://app.gong.io/oauth2/generate-customer-token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: authorization_code
+          redirect_uri: "{{ redirect_uri_value }}"
+          code: "{{ auth_code_value }}"
+        scope: api:calls:read:basic api:calls:read:extensive api:users:read api:stats:scorecards api:stats:interaction
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          token_expiry_date:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Remaps the existing config authentication format to a new format
+          OLD: {"access_key": ..., "access_key_secret": ...}
+          NEW: {"credentials": {"access_key": ..., "access_key_secret": ..., "auth_type": "APIKey"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "access_key"]
+                value: "{{ config['access_key'] }}"
+            condition: "{{ config.get('access_key', False) and not config.get('credentials', {}).get('access_key', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "access_key_secret"]
+                value: "{{ config['access_key_secret'] }}"
+            condition: "{{ config.get('access_key_secret', False) and not config.get('credentials', {}).get('access_key_secret', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "APIKey"
+            condition: "{{ config.get('access_key', False) and not config.get('credentials', {}).get('auth_type', False) }}"
 
 metadata:
   autoImportSchema:
