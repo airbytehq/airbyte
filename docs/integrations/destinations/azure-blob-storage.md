@@ -91,14 +91,14 @@ With no flattening, the output JSONL is:
 
 ```text
 { "_airbyte_raw_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_extracted_at": "1622135805000", "_airbyte_generation_id": "11", "_airbyte_meta": { "changes": [], "sync_id": 10111 }, "_airbyte_data": { "user_id": 123, "name": { "first": "John", "last": "Doe" } } }
-{ "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
+{ "_airbyte_raw_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
 
 With root level flattening, the output JSONL is:
 
 ```text
 { "_airbyte_raw_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_extracted_at": "1622135805000", "_airbyte_generation_id": "11", "_airbyte_meta": { "changes": [], "sync_id": 10111 }, "user_id": 123, "name": { "first": "John", "last": "Doe" } }
-{ "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "user_id": 456, "name": { "first": "Jane", "last": "Roe" } }
+{ "_airbyte_raw_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "user_id": 456, "name": { "first": "Jane", "last": "Roe" } }
 ```
 
 ## Getting started
@@ -106,7 +106,7 @@ With root level flattening, the output JSONL is:
 ### Requirements
 
 1. Create an AzureBlobStorage account.
-2. Check if it works under [https://portal.azure.com/](https://portal.azure.com/) -&gt; "Storage explorer \(preview\)".
+2. Check if it works under [https://portal.azure.com/](https://portal.azure.com/) -&gt; "Storage browser".
 
 ### Setup guide
 
@@ -114,7 +114,7 @@ With root level flattening, the output JSONL is:
   * **Azure Blob Storage Endpoint Domain Name**
     * Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one or use your own.
   * **Azure Blob Storage Container Name**
-    * If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp..
+    * If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp.
   * **Azure Blob Storage Account Name**
     * See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
   * **Authentication** - you must use exactly one of these:
