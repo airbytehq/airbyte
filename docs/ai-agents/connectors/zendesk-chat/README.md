@@ -54,17 +54,52 @@ uv pip install airbyte-agent-zendesk-chat
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_zendesk_chat import ZendeskChatConnector, ZendeskChatAuthConfig
+from airbyte_agent_zendesk-chat import ZendeskChatConnector
+from airbyte_agent_zendesk_chat.models import ZendeskChatAuthConfig
 
 connector = ZendeskChatConnector(
-  auth_config=ZendeskChatAuthConfig(
-    access_token="..."
-  )
+    auth_config=ZendeskChatAuthConfig(
+        access_token="<Your Zendesk Chat OAuth 2.0 access token>"
+    )
 )
-result = await connector.accounts.get()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@ZendeskChatConnector.tool_utils
+async def zendesk-chat_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_zendesk-chat import ZendeskChatConnector
+
+connector = ZendeskChatConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@ZendeskChatConnector.tool_utils
+async def zendesk-chat_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+## Replication Configuration
+
+This connector supports replication configuration for MULTI mode sources. See the [full reference documentation](./REFERENCE.md#replication-configuration) for details on available options like `start_date`.
 
 ## Full documentation
 
@@ -86,12 +121,14 @@ This connector supports the following entities and actions.
 | Triggers | [List](./REFERENCE.md#triggers-list) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Zendesk-Chat API reference](https://developer.zendesk.com/api-reference/live-chat/chat-api/introduction/).
 
 ## Version information
 
-- **Package version:** 0.1.2
-- **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** c7dab97573a377c99c730f5f0f2c02733d2b3161
+- **Package version:** 0.1.11
+- **Connector version:** 0.1.4
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

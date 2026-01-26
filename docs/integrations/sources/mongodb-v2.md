@@ -4,7 +4,7 @@ Airbyte's certified MongoDB connector offers the following features:
 
 - [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) via [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/)/[Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/).
 - Reliable replication of any collection size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of data reads.
-- **_NEW_** Full refresh syncing of collections.
+- Full refresh syncing of collections.
 
 ## Quick Start
 
@@ -157,7 +157,7 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 
 ### Full Refresh
 
-The Full refresh sync mode added in v4.0.0 allows for reading a the entire contents of a collection, repeatedly.
+The Full Refresh sync mode added in v1.3.0 allows for reading the entire contents of a collection repeatedly.
 The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for network error for example,
 Rather than starting over it will continue its full refresh read from a last known point.
 
@@ -172,7 +172,7 @@ When schema is not enforced, each document will generate a record that only cont
 ```json
 {
   "_id": <document id>,
-  "data": {<a JSON cotaining the entire set of fields found in document>}
+  "data": {<a JSON containing the entire set of fields found in document>}
 }
 ```
 
@@ -220,6 +220,9 @@ MongoDB has a 16MB maximum document size limit for BSON documents. During CDC sy
 | Size of the queue (Advanced)               | The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.                                                                                                                                                                                                                                                                                                             |
 | Discovery Sample Size (Advanced)           | The maximum number of documents to sample when attempting to discover the unique fields for a collection. Default is 10,000 with a valid range of 1,000 to 100,000. See the [MongoDB sampling method](https://www.mongodb.com/docs/compass/current/sampling/#sampling-method) for more details.                                                                                                                                            |
 | Update Capture Mode (Advanced)             | Determines how Airbyte looks up the value of an updated document. Default is "Lookup". **IMPORTANT** : "Post image" is only supported in MongoDB version 6.0+. In addition, the collections of interest must be setup to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). Failure to do so will lead to data loss.                                       |
+| Document discovery timeout in seconds (Advanced) | The amount of time the connector will wait when discovering documents. Defaults to 600 seconds. Valid range: 5 seconds to 1200 seconds.                                                                                                                                                                                                                                                                                                       |
+| Invalid CDC position behavior (Advanced)   | Determines whether Airbyte should fail or re-sync data in case of a stale or invalid cursor value in the WAL. If "Fail sync" is chosen, you will need to manually reset the connection before syncing data again. If "Re-sync data" is chosen, Airbyte will automatically trigger a full refresh, which increases cloud costs and may miss incremental changes that occurred while the cursor was invalid. Default is "Fail sync".                                                                 |
+| Initial Load Timeout in Hours (Advanced)   | The amount of time an initial load is allowed to continue before catching up on CDC logs. Default is 8 hours. Valid range: 4 to 24 hours.                                                                                                                                                                                                                                                                                                     |
 
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.10/fundamentals/connection/).
 
@@ -230,6 +233,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.7 | 2026-01-21 | [71049](https://github.com/airbytehq/airbyte/pull/71049) | Use debezium's own token validation logic to ensure that the saved resume token is present on the server (h/t @ed-kyu) |
 | 2.0.6   | 2026-01-21 | [70980](https://github.com/airbytehq/airbyte/pull/70980) | Convert non-array MongoDB values into arrays when the schema expects an array to prevent nulls.        |
 | 2.0.5   | 2026-01-14 | [71255](https://github.com/airbytehq/airbyte/pull/71255) | fix(source-mongodb-v2): Add helpful error message for BSONObjectTooLarge errors during CDC syncs |
 | 2.0.4   | 2025-09-10 | [65579](https://github.com/airbytehq/airbyte/pull/65579) | Add validation to ensure state format consistency. |

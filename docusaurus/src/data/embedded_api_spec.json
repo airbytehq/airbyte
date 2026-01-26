@@ -809,25 +809,6 @@
             "description": "The source ID to search within"
           },
           {
-            "name": "connector_instance_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Optional connector instance ID for direct API queries",
-              "title": "Connector Instance Id"
-            },
-            "description": "Optional connector instance ID for direct API queries"
-          },
-          {
             "name": "x-organization-id",
             "in": "header",
             "required": false,
@@ -1541,10 +1522,98 @@
         }
       }
     },
+    "/api/v1/connectors/sources/{source_id}/entities": {
+      "get": {
+        "summary": "Get Source Entities",
+        "description": "Get entity metadata for a source's cache configuration.\n\nReturns the schema from x-airbyte-cache without implementation details\n(x-airbyte-name fields are excluded).\n\nArgs:\n    source_id: The UUID of the source\n\nReturns:\n    EntitiesResponse containing entity metadata\n\nRaises:\n    HTTPException: 404 if source not found, 409 if cache search not supported",
+        "operationId": "get_connectors_sources_source_id_entities",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntitiesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/connectors/sources/{source_id}/execute": {
       "post": {
         "summary": "Execute Via Source",
-        "description": "Execute a connector operation using an Airbyte Platform source ID.\n\nThis endpoint provides an alternative execution path that uses Platform's\nexisting source configurations instead of Sonar-managed connector instances.\n\nArgs:\n    source_id: Airbyte Platform source ID (UUID)\n    request: Operation details (entity, action, params)\n    airbyte_client: Injected Airbyte API client\n    config_secret_processor: Injected secret processor\n\nReturns:\n    - For download actions: StreamingResponse with file data\n    - For other actions: ConnectorExecuteResponse with operation results",
+        "description": "Execute a connector operation using an Airbyte Platform source ID.\n\nThis endpoint provides an alternative execution path that uses Platform's\nexisting source configurations instead of Sonar-managed connector instances.\n\nActions:\n    - SEARCH: Uses the cache via SearchClient. Requires query field, entity is stream name.\n    - Other actions (list, get, create, download, api_search): Execute via connector SDK.\n\nArgs:\n    source_id: Airbyte Platform source ID (UUID)\n    request: Operation details (entity, action, params/query)\n    controller: Injected SourceExecuteController\n\nReturns:\n    ConnectorExecuteResponse for all actions (wraps search results for SEARCH action)",
         "operationId": "create_connectors_sources_source_id_execute",
         "security": [
           {
@@ -1638,11 +1707,99 @@
         }
       }
     },
+    "/api/v1/connectors/{connector_definition_id}/oauth-configuration-spec": {
+      "get": {
+        "summary": "Get Oauth Configuration Spec",
+        "description": "Get the OAuth configuration specification for a connector.\n\nReturns the JSON schema for the connector's OAuth configuration,\nwhich is a merge of:\n- complete_oauth_server_output_specification (server-side OAuth outputs like client_id, client_secret)\n- complete_oauth_output_specification (client-side OAuth outputs like refresh_token)\n\nArgs:\n    connector_definition_id: UUID of the connector definition\n\nReturns:\n    OAuthConfigurationSpecResponse with the OAuth config schema\n\nRaises:\n    HTTPException: 404 if connector not found, 400 if connector doesn't support OAuth",
+        "operationId": "get_connectors_connector_definition_id_oauth_configuration_spec",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connector_definition_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Connector Definition Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthConfigurationSpecResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/embedded/organizations/current-scoped": {
       "get": {
         "tags": ["Embedded"],
         "summary": "Get Scoped Token Info",
-        "description": "Get the organization and workspace id for a scoped token.",
+        "description": "Get the organization, workspace id, and external user id for a scoped token.",
         "operationId": "deprecated_get_embedded_organizations_current_scoped",
         "deprecated": true,
         "security": [
@@ -1891,7 +2048,7 @@
       "get": {
         "tags": ["Embedded"],
         "summary": "Get Scoped Token Info",
-        "description": "Get the organization and workspace id for a scoped token.",
+        "description": "Get the organization, workspace id, and external user id for a scoped token.",
         "operationId": "get_embedded_scoped_token_info",
         "security": [
           {
@@ -1979,6 +2136,18 @@
           }
         ],
         "parameters": [
+          {
+            "name": "use_global",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows.",
+              "default": false,
+              "title": "Use Global"
+            },
+            "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows."
+          },
           {
             "name": "tags",
             "in": "query",
@@ -2082,6 +2251,18 @@
           }
         ],
         "parameters": [
+          {
+            "name": "use_global",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows.",
+              "default": false,
+              "title": "Use Global"
+            },
+            "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows."
+          },
           {
             "name": "tags",
             "in": "query",
@@ -6408,6 +6589,18 @@
         ],
         "parameters": [
           {
+            "name": "use_global",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows.",
+              "default": false,
+              "title": "Use Global"
+            },
+            "description": "If true, return global templates instead of organization-specific templates. Used for onboarding flows."
+          },
+          {
             "name": "tags",
             "in": "query",
             "required": false,
@@ -8686,6 +8879,105 @@
         }
       }
     },
+    "/api/v1/internal/account/organizations/{organization_id}/agentic-onboarding-status": {
+      "patch": {
+        "tags": ["Organizations"],
+        "summary": "Update Agentic Onboarding Status",
+        "description": "Update the agentic onboarding status for an organization.\nUsed by the new agentic onboarding flow to track progress.",
+        "operationId": "update_internal_account_organizations_organization_id_agentic_onboarding_status",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgenticOnboardingStatusUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgenticOnboardingStatusUpdateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/internal/account/organizations/{organization_id}/billing-state": {
       "patch": {
         "tags": ["Organizations"],
@@ -9391,6 +9683,95 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/admin/oauth_credentials": {
+      "post": {
+        "tags": ["Admin - OAuth Credentials"],
+        "summary": "Create Global Oauth Credentials",
+        "description": "Create global OAuth credentials (admin only).\n\nThis endpoint:\n1. Validates that no global credential already exists for this connector (POST-only)\n2. Validates the configuration against the connector's OAuth spec\n3. Stores secrets and replaces them with secret coordinates\n4. Saves the record to Sonar's database (no Coral proxy for global credentials)\n\nNote: No Coral proxy call is made for global credentials.",
+        "operationId": "create_internal_admin_oauth_credentials",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCredentialsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthCredentialsResponse"
                 }
               }
             }
@@ -10538,7 +10919,7 @@
       "post": {
         "tags": ["Internal Notifications"],
         "summary": "Sync Success Notification",
-        "description": "Handle sync success notification from Airbyte.\n\nThis endpoint is called by Airbyte when a sync job completes successfully.\nIt verifies the encrypted workspace token, then delegates to the cache\nbuilder to validate ownership and create views.",
+        "description": "Handle sync success notification from Airbyte.\n\nThis endpoint is called by Airbyte when a sync job completes successfully.\nIt verifies the encrypted workspace token, then delegates to the cache\nbuilder to validate ownership and create tables.",
         "operationId": "create_internal_notifications_sync_success",
         "parameters": [
           {
@@ -10887,7 +11268,7 @@
       "post": {
         "tags": ["webhooks"],
         "summary": "Receive Orb Webhook",
-        "description": "Receive and process Orb billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to OrbWebhookFunctions controller.\n\nReturns:\n    OrbWebhookResponse with processing status",
+        "description": "Receive and process Orb billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to OrbWebhookController.\n\nReturns:\n    OrbWebhookResponse with processing status",
         "operationId": "create_internal_webhooks_orb",
         "responses": {
           "200": {
@@ -10947,7 +11328,7 @@
       "post": {
         "tags": ["webhooks"],
         "summary": "Receive Stripe Webhook",
-        "description": "Receive and process Stripe billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to StripeWebhookFunctions controller.\n\nReturns:\n    StripeWebhookResponse with processing status",
+        "description": "Receive and process Stripe billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to StripeWebhookController.\n\nReturns:\n    StripeWebhookResponse with processing status",
         "operationId": "create_internal_webhooks_stripe",
         "responses": {
           "200": {
@@ -11035,6 +11416,95 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WorkspaceSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oauth/credentials": {
+      "put": {
+        "tags": ["OAuth Credentials"],
+        "summary": "Upsert Organization Oauth Credentials",
+        "description": "Create or update OAuth credentials for the user's organization.\n\nThis endpoint:\n1. Extracts organization_id from the user's token\n2. Validates the configuration against the connector's OAuth spec\n3. Stores secrets and replaces them with secret coordinates\n4. Proxies the credentials to Coral's organization OAuth endpoint\n5. Saves the record to Sonar's database",
+        "operationId": "update_oauth_credentials",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCredentialsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthCredentialsResponse"
                 }
               }
             }
@@ -13135,17 +13605,54 @@
           "get_selected_streams",
           "set_selected_streams",
           "select_streams",
-          "search",
+          "execute",
           "list_streams",
           "get_stream_schema",
-          "list_connector_instances",
-          "get_connector_capabilities",
-          "connector_query",
           "convert_dates_to_nanos",
           "convert_nanos_to_dates"
         ],
         "title": "AgentToolName",
         "description": "Enum of tool names available to agents.\nThis enum is automatically synced to the frontend via OpenAPI generation,\nensuring type safety when handling tool calls and responses.\nWhen adding a new tool to an agent (e.g., in app/agents/chat_agent.py),\nadd the corresponding tool name here to expose it to the frontend."
+      },
+      "AgenticOnboardingStatusEnum": {
+        "type": "string",
+        "enum": [
+          "NOT_STARTED",
+          "SOURCE_CONNECTED",
+          "CONTINUE_TO_CONTEXT",
+          "CONTEXT_COMPLETE",
+          "REPLICATION_CONFIGURED",
+          "COMPLETED"
+        ],
+        "title": "AgenticOnboardingStatusEnum",
+        "description": "Status tracking for the new agentic onboarding flow."
+      },
+      "AgenticOnboardingStatusUpdateRequest": {
+        "properties": {
+          "agentic_onboarding_status": {
+            "$ref": "#/components/schemas/AgenticOnboardingStatusEnum"
+          }
+        },
+        "type": "object",
+        "required": ["agentic_onboarding_status"],
+        "title": "AgenticOnboardingStatusUpdateRequest",
+        "description": "Request to update agentic onboarding status."
+      },
+      "AgenticOnboardingStatusUpdateResponse": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "agentic_onboarding_status": {
+            "$ref": "#/components/schemas/AgenticOnboardingStatusEnum"
+          }
+        },
+        "type": "object",
+        "required": ["organization_id", "agentic_onboarding_status"],
+        "title": "AgenticOnboardingStatusUpdateResponse",
+        "description": "Response after updating agentic onboarding status."
       },
       "AirbyteHostedConnectionTemplate": {
         "properties": {
@@ -13302,6 +13809,9 @@
                   "$ref": "#/components/schemas/AnyCondition"
                 },
                 {
+                  "$ref": "#/components/schemas/HasCondition"
+                },
+                {
                   "$ref": "#/components/schemas/ContainsCondition"
                 }
               ]
@@ -13362,6 +13872,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/HasCondition"
                 },
                 {
                   "$ref": "#/components/schemas/ContainsCondition"
@@ -14281,22 +14794,15 @@
             "title": "Action"
           },
           "params": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "additionalProperties": true,
+            "type": "object",
             "title": "Params"
           }
         },
         "type": "object",
         "required": ["entity", "action"],
         "title": "ConnectorExecuteRequest",
-        "description": "Request body for connector execution."
+        "description": "Request body for connector execution.\n\nAll actions use the same unified format:\n    - entity: resource type or stream name\n    - action: operation type (list, get, create, download, search, api_search)\n    - params: operation-specific parameters\n\nFor SEARCH action, params should contain:\n    - query: Query object with filter/sort conditions\n    - limit: maximum number of results (default 10)\n    - cursor: pagination cursor for next page\n    - fields: list of field paths to include in results"
       },
       "ConnectorExecuteResponse": {
         "properties": {
@@ -14491,6 +14997,11 @@
         "type": "object",
         "required": ["connectionSpecification"],
         "title": "ConnectorSpecification"
+      },
+      "ConnectorType": {
+        "type": "string",
+        "enum": ["source", "destination"],
+        "title": "ConnectorType"
       },
       "ConnectorsForUserResponse": {
         "properties": {
@@ -15420,12 +15931,86 @@
                 "type": "null"
               }
             ]
+          },
+          "agentic_onboarding_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgenticOnboardingStatusEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
         "required": ["is_new_user", "is_enrolled"],
         "title": "EnrollmentStatusResponse",
         "description": "Response schema for enrollment status endpoint.\n\nUsed to determine if a user is new vs existing, and whether\ntheir organization is enrolled in Sonar."
+      },
+      "EntitiesResponse": {
+        "properties": {
+          "entities": {
+            "items": {
+              "$ref": "#/components/schemas/EntityMetadata"
+            },
+            "type": "array",
+            "title": "Entities"
+          }
+        },
+        "type": "object",
+        "required": ["entities"],
+        "title": "EntitiesResponse",
+        "description": "Response containing all entity metadata."
+      },
+      "EntityFieldMetadata": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Type"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": ["name", "type", "description"],
+        "title": "EntityFieldMetadata",
+        "description": "Metadata for a single entity field (x-airbyte-name excluded)."
+      },
+      "EntityMetadata": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/EntityFieldMetadata"
+            },
+            "type": "array",
+            "title": "Fields"
+          }
+        },
+        "type": "object",
+        "required": ["entity", "fields"],
+        "title": "EntityMetadata",
+        "description": "Metadata for a single entity (x-airbyte-name excluded)."
       },
       "EqCondition": {
         "properties": {
@@ -16135,6 +16720,71 @@
         "title": "GteCondition",
         "description": "Greater than or equal: field >= value (equivalent to not lt)."
       },
+      "HasCondition": {
+        "properties": {
+          "has": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NeqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/InCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LikeCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/FuzzyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/KeywordCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NotCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AndCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/OrCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/HasCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/ContainsCondition"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Has",
+            "description": "Object field condition: {json_column_name: <condition on nested fields>}"
+          }
+        },
+        "type": "object",
+        "required": ["has"],
+        "title": "HasCondition",
+        "description": "Access nested field within a JSON object column.\n\nExample: {\"has\": {\"metadata\": {\"eq\": {\"version\": \"2.0\"}}}}\nAccesses metadata->>'$.version' for comparison.\n\nCan be nested with 'any' for complex queries:\n{\"any\": {\"transitions\": {\"has\": {\"fields\": {\"eq\": {\"timespent\": 3600}}}}}}"
+      },
       "HashingMapper": {
         "properties": {
           "type": {
@@ -16507,6 +17157,9 @@
                 "$ref": "#/components/schemas/AnyCondition"
               },
               {
+                "$ref": "#/components/schemas/HasCondition"
+              },
+              {
                 "$ref": "#/components/schemas/ContainsCondition"
               }
             ],
@@ -16566,6 +17219,104 @@
         },
         "type": "object",
         "title": "OAuthConfigSpecification"
+      },
+      "OAuthConfigurationSpecResponse": {
+        "properties": {
+          "connector_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Definition Id"
+          },
+          "connector_type": {
+            "$ref": "#/components/schemas/ConnectorType"
+          },
+          "oauth_config_schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Oauth Config Schema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "connector_definition_id",
+          "connector_type",
+          "oauth_config_schema"
+        ],
+        "title": "OAuthConfigurationSpecResponse",
+        "description": "Response body for OAuth configuration specification.\n\nContains the JSON schema for the connector's OAuth configuration\nbased on the complete_oauth_server_output_specification and\ncomplete_oauth_output_specification from the connector's spec."
+      },
+      "OAuthCredentialsRequest": {
+        "properties": {
+          "connector_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Definition Id"
+          },
+          "configuration": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Configuration"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["connector_definition_id", "configuration"],
+        "title": "OAuthCredentialsRequest",
+        "description": "Request body for creating/updating OAuth credentials.\n\nNote: connector_type is NOT in the request - it's resolved on the backend\nby looking up the connector definition. This prevents mismatches.\n\nFor operator endpoint: scope_type and scope_id are determined from the token.\nFor admin endpoint: scope_type is always 'global' and scope_id is NULL."
+      },
+      "OAuthCredentialsResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "scope_type": {
+            "$ref": "#/components/schemas/ScopeType"
+          },
+          "scope_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope Id"
+          },
+          "connector_type": {
+            "$ref": "#/components/schemas/ConnectorType"
+          },
+          "connector_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Definition Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "scope_type",
+          "scope_id",
+          "connector_type",
+          "connector_definition_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "OAuthCredentialsResponse",
+        "description": "Response body for OAuth credentials.\n\nNote: configuration is NOT returned for security reasons."
       },
       "OnboardingProgressUpdateRequest": {
         "properties": {
@@ -16650,6 +17401,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/HasCondition"
                 },
                 {
                   "$ref": "#/components/schemas/ContainsCondition"
@@ -17488,6 +18242,9 @@
                 "$ref": "#/components/schemas/AnyCondition"
               },
               {
+                "$ref": "#/components/schemas/HasCondition"
+              },
+              {
                 "$ref": "#/components/schemas/ContainsCondition"
               },
               {
@@ -17495,7 +18252,7 @@
               }
             ],
             "title": "Filter",
-            "description": "Optional filter condition. If omitted, returns all documents."
+            "description": "Optional filter condition. If omitted, returns all documents. Supports dot notation for nested fields: {'eq': {'user.name': 'Alice'}} expands to {'has': {'user': {'eq': {'name': 'Alice'}}}}."
           },
           "sort": {
             "anyOf": [
@@ -17879,6 +18636,11 @@
         "required": ["source_definition_id", "source_definition_name"],
         "title": "SchemaChatAgentState"
       },
+      "ScopeType": {
+        "type": "string",
+        "enum": ["global", "organization"],
+        "title": "ScopeType"
+      },
       "ScopedTokenCreateRequest": {
         "properties": {
           "workspace_name": {
@@ -17930,10 +18692,15 @@
             "type": "string",
             "format": "uuid",
             "title": "Workspace Id"
+          },
+          "external_user_id": {
+            "type": "string",
+            "title": "External User Id",
+            "description": "The external user identifier (workspace name)."
           }
         },
         "type": "object",
-        "required": ["organization_id", "workspace_id"],
+        "required": ["organization_id", "workspace_id", "external_user_id"],
         "title": "ScopedTokenInfoGetResponse"
       },
       "SearchHit": {
@@ -18010,7 +18777,7 @@
               }
             ],
             "title": "Fields",
-            "description": "Field paths to include in results. Each path is a list of keys for nested access. Example: [['id'], ['user', 'name'], ['metadata', 'tags']] returns id, user.name, and metadata.tags."
+            "description": "Field paths to include in results. Use dot notation for nested fields. Example: ['id', 'user.name', 'metadata.tags'] returns id, user.name, and metadata.tags."
           }
         },
         "type": "object",
@@ -18292,17 +19059,35 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "workspace_id": {
+          "external_user_id": {
             "type": "string",
-            "format": "uuid",
-            "title": "Workspace Id",
-            "description": "The workspace in which to create the source."
+            "title": "External User Id",
+            "description": "External user identifier (maps to workspace name)."
           },
-          "source_template_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Source Template Id",
-            "description": "The id of the source template to create the source from."
+          "connector_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Type",
+            "description": "Connector name (case-insensitive exact match, e.g., 'Hubspot', 'hubspot', 'HUBSPOT')."
+          },
+          "definition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Definition Id",
+            "description": "Actor definition ID for the connector."
           },
           "source_config": {
             "anyOf": [
@@ -18317,7 +19102,7 @@
             "title": "Source Config",
             "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec. At least one of source_config or auth_config must be provided."
           },
-          "auth_config": {
+          "credentials": {
             "anyOf": [
               {
                 "additionalProperties": true,
@@ -18327,10 +19112,10 @@
                 "type": "null"
               }
             ],
-            "title": "Auth Config",
+            "title": "Credentials",
             "description": "Authentication configuration for the source. Required for DIRECT mode sources. At least one of source_config or auth_config must be provided."
           },
-          "user_config": {
+          "environment": {
             "anyOf": [
               {
                 "additionalProperties": true,
@@ -18340,7 +19125,7 @@
                 "type": "null"
               }
             ],
-            "title": "User Config",
+            "title": "Environment",
             "description": "User-provided configuration for the source. Required for DIRECT mode sources (can be empty dict)."
           },
           "selected_connection_template_tags": {
@@ -18358,7 +19143,7 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_template_id"],
+        "required": ["external_user_id"],
         "title": "SourceCheckConfigRequest"
       },
       "SourceCheckConfigResponse": {
@@ -18469,17 +19254,35 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "workspace_id": {
+          "external_user_id": {
             "type": "string",
-            "format": "uuid",
-            "title": "Workspace Id",
-            "description": "The workspace in which to create the source."
+            "title": "External User Id",
+            "description": "External user identifier (maps to workspace name)."
           },
-          "source_template_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Source Template Id",
-            "description": "The id of the source template to create the source from."
+          "connector_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Type",
+            "description": "Connector name (case-insensitive exact match, e.g., 'Hubspot', 'hubspot', 'HUBSPOT')."
+          },
+          "definition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Definition Id",
+            "description": "Actor definition ID for the connector."
           },
           "source_config": {
             "anyOf": [
@@ -18494,7 +19297,7 @@
             "title": "Source Config",
             "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec. At least one of source_config or auth_config must be provided."
           },
-          "auth_config": {
+          "credentials": {
             "anyOf": [
               {
                 "additionalProperties": true,
@@ -18504,10 +19307,10 @@
                 "type": "null"
               }
             ],
-            "title": "Auth Config",
+            "title": "Credentials",
             "description": "Authentication configuration for the source. Required for DIRECT mode sources. At least one of source_config or auth_config must be provided."
           },
-          "user_config": {
+          "environment": {
             "anyOf": [
               {
                 "additionalProperties": true,
@@ -18517,7 +19320,7 @@
                 "type": "null"
               }
             ],
-            "title": "User Config",
+            "title": "Environment",
             "description": "User-provided configuration for the source. Required for DIRECT mode sources (can be empty dict)."
           },
           "selected_connection_template_tags": {
@@ -18535,7 +19338,7 @@
           }
         },
         "type": "object",
-        "required": ["workspace_id", "source_template_id"],
+        "required": ["external_user_id"],
         "title": "SourceCreateRequest"
       },
       "SourceCreateResponse": {
@@ -18770,6 +19573,14 @@
           },
           "definition": {
             "$ref": "#/components/schemas/ConnectorDefinition"
+          },
+          "example_questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Example Questions",
+            "description": "Example questions that can be asked about data from this connector (max 3)"
           }
         },
         "type": "object",
@@ -21778,6 +22589,10 @@
     {
       "name": "Sonar - Files",
       "description": "Operator endpoints to access end user's file sources (GDrive, Sharepoint, S3...) without requiring credentials"
+    },
+    {
+      "name": "OAuth Credentials",
+      "description": "Operator endpoints to manage OAuth credentials for connectors at organization scope."
     }
   ]
 }
