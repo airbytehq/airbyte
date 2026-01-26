@@ -1,10 +1,10 @@
 {
-  "realm": "71....",
-  "consumer_key": "01c5....",
-  "consumer_secret": "88b....",
-  "token_key": "84e3....",
-  "token_secret": "a3c....",
-  "start_datetime": "2022-06-01T00:00:01Z",
-  "object_types": ["customer"],
-  "window_in_days": 30
+  "realm": "75..",
+  "consumer_key": "281...",
+  "consumer_secret": "ee2...",
+  "token_key": "96b0...",
+  "token_secret": "ae7ff...",
+  "start_datetime": "2025-02-25T00:00:01Z",
+  "object_types": ["salesorder"],
+  "window_in_days": 10
 }

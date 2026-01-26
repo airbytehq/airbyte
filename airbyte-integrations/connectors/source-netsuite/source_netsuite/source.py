@@ -35,6 +35,7 @@ class SourceNetsuite(AbstractSource):
     def base_url(self, config: Mapping[str, Any]) -> str:
         # the subdomain should be in format of: 12345-sb1
         subdomain = config["realm"].replace("_", "-").lower()
+        self.logger.info(f"Subdomain: {subdomain}")
         return f"https://{subdomain}.suitetalk.api.netsuite.com"
 
     def get_session(self, auth: OAuth1) -> requests.Session:
@@ -95,6 +96,7 @@ class SourceNetsuite(AbstractSource):
         """
         Calls the API for specific object type and returns schema as a dict.
         """
+        self.logger.info(f"Fetching schemas for object types: {object_name}")
         return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json()}
 
     def generate_stream(
@@ -119,13 +121,17 @@ class SourceNetsuite(AbstractSource):
 
         schema = schemas[object_name]
         schema_props = schema.get("properties")
+        self.logger.info(f"Validating what type of stream we can use for `{object_name}` by looking into {schema_props.keys()}")
         if schema_props:
             if INCREMENTAL_CURSOR in schema_props.keys():
+                self.logger.info(f"Object `{object_name}` is incremental stream.")
                 return IncrementalNetsuiteStream(**input_args)
             elif CUSTOM_INCREMENTAL_CURSOR in schema_props.keys():
+                self.logger.info(f"Object `{object_name}` is custom incremental stream.")
                 return CustomIncrementalNetsuiteStream(**input_args)
             else:
                 # all other streams are full_refresh
+                self.logger.info(f"Object `{object_name}` is full refresh stream.")
                 return NetsuiteStream(**input_args)
         else:
             retry_attempt = 1
@@ -150,7 +156,9 @@ class SourceNetsuite(AbstractSource):
 
         # retrieve all record types if `object_types` config field is not specified
         if not object_names:
+            self.logger.info(f"Object Types not specified. Fetching all available object types from {metadata_url}")
             objects_metadata = session.get(metadata_url).json().get("items")
+            self.logger.info(f"Available object types: {objects_metadata}")
             object_names = [object["name"] for object in objects_metadata]
 
         input_args = {"session": session, "metadata_url": metadata_url}
