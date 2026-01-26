@@ -71,7 +71,7 @@ connector = MailchimpConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@MailchimpConnector.describe
+@MailchimpConnector.tool_utils
 async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```

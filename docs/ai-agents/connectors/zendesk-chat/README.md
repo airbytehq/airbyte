@@ -71,7 +71,7 @@ connector = ZendeskChatConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@ZendeskChatConnector.describe
+@ZendeskChatConnector.tool_utils
 async def zendesk-chat_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -92,7 +92,7 @@ connector = ZendeskChatConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@ZendeskChatConnector.describe
+@ZendeskChatConnector.tool_utils
 async def zendesk-chat_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -129,6 +129,6 @@ For the service's official API docs, see the [Zendesk-Chat API reference](https:
 
 ## Version information
 
-- **Package version:** 0.1.10
+- **Package version:** 0.1.11
 - **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** 049f6ad546186bde8303b77e0e1001a831a58654
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

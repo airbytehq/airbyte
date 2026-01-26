@@ -8,6 +8,12 @@ If you can't find an answer to your question in the docs, Airbyte has different 
 
 ## For Airbyte Enterprise and Cloud
 
+### In-app support agent (beta)
+
+Airbyte Cloud includes an AI-powered support agent accessible directly within the app. Look for the chat button in the bottom-right corner of the screen. The support agent can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately, without creating a support ticket.
+
+### Support center
+
 - **For support with any part of Airbyte, create an issue in Airbyte's [support center](https://support.airbyte.com/hc/en-us/requests/new)**. Agents are available 7 AM to 7 PM Eastern time. Response times may vary according to your plan and SLAs.
 - For account or credit-related inquiries, [contact sales](https://airbyte.com/talk-to-sales).
 - If you don't see a connector you need, submit a [connector request](https://airbyte.com/connector-requests).

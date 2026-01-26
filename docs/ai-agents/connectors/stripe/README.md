@@ -55,7 +55,7 @@ connector = StripeConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@StripeConnector.describe
+@StripeConnector.tool_utils
 async def stripe_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -76,10 +76,11 @@ connector = StripeConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@StripeConnector.describe
+@StripeConnector.tool_utils
 async def stripe_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
+
 
 ## Full documentation
 
@@ -108,6 +109,6 @@ For the service's official API docs, see the [Stripe API reference](https://docs
 
 ## Version information
 
-- **Package version:** 0.5.58
+- **Package version:** 0.5.59
 - **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 416466da4970ae5fd6c7f2c658a68e047e51efd9
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

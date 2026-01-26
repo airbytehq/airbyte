@@ -109,7 +109,7 @@ connector = GongConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@GongConnector.describe
+@GongConnector.tool_utils
 async def gong_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
