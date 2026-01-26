@@ -61,8 +61,7 @@ Data set name should be provided aliong with the other details to sync the data.
 7. Add **Secret Key**
 8. Add **API Key**
 9. Add **Dataset Name**
-10. Add **Mode**
-11. Click `Set up source`.
+10. Click `Set up source`.
 
 #### For Airbyte OSS:
 
@@ -75,8 +74,7 @@ Data set name should be provided aliong with the other details to sync the data.
 7. Add **Secret Key**
 8. Add **API Key**
 9. Add **Dataset Name**
-10. Add **Mode**
-11. Click `Set up source`.
+10. Click `Set up source`
 
 ### Configuration
 
@@ -88,7 +86,6 @@ Data set name should be provided aliong with the other details to sync the data.
 | `secret_key` | `string` | Secret key. Enter secret key for the DAPI agent user |  |
 | `api_key` | `string` | Data API key. Enter data API key for the organization |  |
 | `dataset_name` | `string` | Name of the dataset. Enter dataset name to be synced |  |
-| `mode` | `string` | Sync mode. Full or Incremental | Full |
 
 
 ### Supported sync modes
