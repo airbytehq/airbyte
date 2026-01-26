@@ -62,7 +62,7 @@ After creating the connector, execute operations using either the Python SDK or 
 from airbyte_agent_stripe import StripeConnector
 
 connector = StripeConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )

@@ -68,7 +68,7 @@ This example assumes you've already authenticated your connector with Airbyte. S
 from airbyte_agent_amazon-ads import AmazonAdsConnector
 
 connector = AmazonAdsConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
