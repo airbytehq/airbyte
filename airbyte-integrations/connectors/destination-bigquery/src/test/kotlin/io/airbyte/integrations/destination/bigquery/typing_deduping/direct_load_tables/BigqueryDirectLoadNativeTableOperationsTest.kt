@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryTableSchemaEvolutionClient
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryTableSchemaEvolutionClient.Companion.clusteringMatches
@@ -33,6 +34,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 class BigqueryDirectLoadNativeTableOperationsTest {
     @Test
@@ -73,6 +77,8 @@ class BigqueryDirectLoadNativeTableOperationsTest {
         val existingTable = Mockito.mock(StandardTableDefinition::class.java, RETURNS_DEEP_STUBS)
         Mockito.`when`(existingTable.schema!!.fields)
             .thenReturn(FieldList.of(Field.of("a2", StandardSQLTypeName.INT64)))
+        val streamConfigProvider = mock<StreamConfigProvider>()
+        whenever(streamConfigProvider.getPartitioningField(any())).thenReturn(null)
         val alterTableReport =
             BigqueryTableSchemaEvolutionClient(
                     Mockito.mock(),
@@ -80,6 +86,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     Mockito.mock(),
                     projectId = "unused",
                     tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+                    streamConfigProvider = streamConfigProvider
                 )
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         Assertions.assertAll(
@@ -130,6 +137,8 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     )
                 )
             )
+        val streamConfigProvider = mock<StreamConfigProvider>()
+        whenever(streamConfigProvider.getPartitioningField(any())).thenReturn(null)
         val alterTableReport =
             BigqueryTableSchemaEvolutionClient(
                     Mockito.mock(),
@@ -137,6 +146,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     Mockito.mock(),
                     projectId = "unused",
                     tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+                    streamConfigProvider = streamConfigProvider
                 )
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         // NB: column names in AlterTableReport are all _after_ destination name transform
@@ -187,15 +197,18 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             )
         var columnNameMapping = ColumnNameMapping(mapOf("bar" to "foo"))
 
+        val streamConfigProvider = mock<StreamConfigProvider>()
+        whenever(streamConfigProvider.getClusteringField(any())).thenReturn(null)
+
         // Clustering is null
         val existingTable = Mockito.mock(StandardTableDefinition::class.java)
         Mockito.`when`(existingTable.clustering).thenReturn(null)
-        Assertions.assertFalse(clusteringMatches(stream, columnNameMapping, existingTable))
+        Assertions.assertFalse(clusteringMatches(stream, columnNameMapping, existingTable, streamConfigProvider))
 
         // Clustering does not contain all fields
         Mockito.`when`(existingTable.clustering)
             .thenReturn(Clustering.newBuilder().setFields(listOf("_airbyte_extracted_at")).build())
-        Assertions.assertFalse(clusteringMatches(stream, columnNameMapping, existingTable))
+        Assertions.assertFalse(clusteringMatches(stream, columnNameMapping, existingTable, streamConfigProvider))
 
         // Clustering matches
         stream =
@@ -209,7 +222,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 syncId = 0,
                 namespaceMapper = NamespaceMapper()
             )
-        Assertions.assertTrue(clusteringMatches(stream, columnNameMapping, existingTable))
+        Assertions.assertTrue(clusteringMatches(stream, columnNameMapping, existingTable, streamConfigProvider))
 
         // Clustering only the first 3 PK columns (See
         // https://github.com/airbytehq/oncall/issues/2565)
@@ -251,21 +264,26 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     "e1" to "e2",
                 )
             )
-        Assertions.assertTrue(clusteringMatches(stream, columnNameMapping, existingTable))
+        Assertions.assertTrue(clusteringMatches(stream, columnNameMapping, existingTable, streamConfigProvider))
     }
 
     @Test
     fun testPartitioningMatches() {
         val existingTable = Mockito.mock(StandardTableDefinition::class.java)
+        val stream = mock<DestinationStream>()
+        val columnNameMapping = mock<ColumnNameMapping>()
+        val streamConfigProvider = mock<StreamConfigProvider>()
+        whenever(streamConfigProvider.getPartitioningField(any())).thenReturn(null)
+
         // Partitioning is null
         Mockito.`when`(existingTable.timePartitioning).thenReturn(null)
-        Assertions.assertFalse(partitioningMatches(existingTable))
+        Assertions.assertFalse(partitioningMatches(stream, columnNameMapping, existingTable, streamConfigProvider))
         // incorrect field
         Mockito.`when`(existingTable.timePartitioning)
             .thenReturn(
                 TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_foo").build()
             )
-        Assertions.assertFalse(partitioningMatches(existingTable))
+        Assertions.assertFalse(partitioningMatches(stream, columnNameMapping, existingTable, streamConfigProvider))
         // incorrect partitioning scheme
         Mockito.`when`(existingTable.timePartitioning)
             .thenReturn(
@@ -273,7 +291,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     .setField("_airbyte_extracted_at")
                     .build()
             )
-        Assertions.assertFalse(partitioningMatches(existingTable))
+        Assertions.assertFalse(partitioningMatches(stream, columnNameMapping, existingTable, streamConfigProvider))
 
         // partitioning matches
         Mockito.`when`(existingTable.timePartitioning)
@@ -282,6 +300,6 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     .setField("_airbyte_extracted_at")
                     .build()
             )
-        Assertions.assertTrue(partitioningMatches(existingTable))
+        Assertions.assertTrue(partitioningMatches(stream, columnNameMapping, existingTable, streamConfigProvider))
     }
 }
