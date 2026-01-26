@@ -21,7 +21,7 @@ inquire further!
 
 ## Getting Started
 
-In most cases, you won't need to use the CDK directly, and should start building connectors in Connector Builder, an IDE that is powerd by Airbyte Python CDK. If you do need customization beyond what it offers, you can do so by using `airbyte_cdk` as aa dependency in your Python project.
+In most cases, you won't need to use the CDK directly, and should start building connectors in Connector Builder, an IDE that is powerd by Airbyte Python CDK. If you do need customization beyond what it offers, you can do so by using `airbyte_cdk` as a dependency in your Python project.
 
 [Airbyte CDK reference documentation](https://airbytehq.github.io/airbyte-python-cdk/airbyte_cdk.html) is published automatically with each new CDK release. The rest of this document explains the most basic concepts applicable to any Airbyte API connector.
 
