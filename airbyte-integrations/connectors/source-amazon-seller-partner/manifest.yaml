@@ -2964,9 +2964,6 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_time_option:
-        field_name: "createdSince"
-        inject_into: "request_parameter"
       end_datetime:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -2985,6 +2982,8 @@ definitions:
           content-type: "application/json"
         request_parameters:
           reportTypes: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+          # Evaluate at request time: use the more recent of stream_slice['start_time'] or (now - 90 days)
+          createdSince: "{{ max(stream_slice['start_time'], (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
       record_selector:
         type: RecordSelector
         extractor:
