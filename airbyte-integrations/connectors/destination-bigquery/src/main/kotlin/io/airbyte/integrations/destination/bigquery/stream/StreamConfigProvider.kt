@@ -17,7 +17,6 @@ import jakarta.inject.Singleton
  * 2. stream_name only
  * 3. Falls back to connector-level defaults
  */
-@Singleton
 class StreamConfigProvider(
     private val config: BigqueryConfiguration
 ) {
