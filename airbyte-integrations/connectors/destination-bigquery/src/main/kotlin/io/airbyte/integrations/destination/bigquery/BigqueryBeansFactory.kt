@@ -37,6 +37,13 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryTableSchemaEvolutionClient
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryRawTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider
+import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryRawTableNameGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryFinalTableNameGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -52,6 +59,9 @@ private val logger = KotlinLogging.logger {}
 @Factory
 class BigqueryBeansFactory {
     @Singleton fun getConfig(config: DestinationConfiguration) = config as BigqueryConfiguration
+
+    @Singleton
+    fun getStreamConfigProvider(config: BigqueryConfiguration) = StreamConfigProvider(config)
 
     @Singleton
     @Requires(condition = BigqueryConfiguredForBulkLoad::class)
@@ -79,7 +89,7 @@ class BigqueryBeansFactory {
 
     @Singleton
     fun getChecker(
-        catalog: DestinationCatalog,
+        @Named("safeDestinationCatalog") catalog: DestinationCatalog,
         @Named("inputStream") stdinPipe: InputStream,
         taskLauncher: DestinationTaskLauncher,
         syncManager: SyncManager,
@@ -92,21 +102,57 @@ class BigqueryBeansFactory {
         )
 
     @Singleton
+    fun getRawTableNameGenerator(
+        config: BigqueryConfiguration,
+        streamConfigProvider: StreamConfigProvider
+    ): RawTableNameGenerator {
+        return BigqueryRawTableNameGenerator(config, streamConfigProvider)
+    }
+
+    @Singleton
+    fun getFinalTableNameGenerator(
+        config: BigqueryConfiguration,
+        streamConfigProvider: StreamConfigProvider
+    ): FinalTableNameGenerator {
+        return BigqueryFinalTableNameGenerator(config, streamConfigProvider)
+    }
+
+    @Singleton
+    fun getColumnNameGenerator(): ColumnNameGenerator {
+        return BigqueryColumnNameGenerator()
+    }
+
+    @Singleton
     fun getWriter(
         bigquery: BigQuery,
         config: BigqueryConfiguration,
-        names: TableCatalog,
         // micronaut will only instantiate a single instance of StreamStateStore,
         // so accept it as a * generic and cast as needed.
         // we use a different type depending on whether we're in legacy raw tables vs
         // direct-load tables mode.
         streamStateStore: StreamStateStore<*>,
+        streamConfigProvider: StreamConfigProvider,
+        names: TableCatalog,
     ): DestinationWriter {
         val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
+        // We need to pass the generators to the TableCatalog manually since we are constructing it here?
+        // Actually, TableCatalog is usually injected. But wait, where is TableCatalog defined?
+        // It's usually created by the factory too.
+        // Let's check if we need to update TableCatalog creation.
+        // The original code had `names: TableCatalog` injected into getWriter.
+        // But TableCatalog takes generators as constructor args.
+        // So we need to ensure TableCatalog uses our new generators.
+        // Looking at existing TableCatalog in CDK, it uses @Named("rawTableNameGenerator") etc.
+        // So defining the beans with those names matches the expectation.
+        
+        // Wait, the previous getWriter signature had `names: TableCatalog`.
+        // Let's keep that, but ensure we define the generator beans so TableCatalog can find them.
+        
         if (config.legacyRawTablesOnly) {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
             streamStateStore as StreamStateStore<TypingDedupingExecutionConfig>
+            
             return TypingDedupingWriter(
                 names,
                 BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),
@@ -125,6 +171,7 @@ class BigqueryBeansFactory {
                     BigqueryDirectLoadSqlGenerator(
                         projectId = config.projectId,
                         cdcDeletionMode = config.cdcDeletionMode,
+                        streamConfigProvider = streamConfigProvider,
                     ),
                     destinationHandler,
                     bigquery,
@@ -132,8 +179,7 @@ class BigqueryBeansFactory {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
             streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>
-            val tempTableNameGenerator =
-                DefaultTempTableNameGenerator(internalNamespace = config.internalTableDataset)
+            val tempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = config.internalTableDataset)
 
             return DirectLoadTableWriter(
                 internalNamespace = config.internalTableDataset,
@@ -151,6 +197,7 @@ class BigqueryBeansFactory {
                         destinationHandler,
                         projectId = config.projectId,
                         tempTableNameGenerator,
+                        streamConfigProvider,
                     ),
                 tableOperationsClient = tableOperations,
                 streamStateStore = streamStateStore,

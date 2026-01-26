@@ -44,6 +44,7 @@ class BigqueryTableSchemaEvolutionClient(
     private val databaseHandler: BigQueryDatabaseHandler,
     private val projectId: String,
     private val tempTableNameGenerator: TempTableNameGenerator,
+    private val streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
 ) : TableSchemaEvolutionClient {
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
@@ -130,7 +131,7 @@ class BigqueryTableSchemaEvolutionClient(
         var tablePartitioningMatches = false
         if (existingTable is StandardTableDefinition) {
             tableClusteringMatches = clusteringMatches(stream, columnNameMapping, existingTable)
-            tablePartitioningMatches = partitioningMatches(existingTable)
+            tablePartitioningMatches = partitioningMatches(stream, columnNameMapping, existingTable)
         }
         return !tableClusteringMatches || !tablePartitioningMatches
     }
@@ -410,6 +411,7 @@ class BigqueryTableSchemaEvolutionClient(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping,
             existingTable: StandardTableDefinition,
+            streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
         ): Boolean {
             // We always want to set a clustering config, so if the table doesn't have one,
             // then we should fix it.
@@ -418,13 +420,37 @@ class BigqueryTableSchemaEvolutionClient(
             }
 
             val existingClusteringFields = HashSet<String>(existingTable.clustering!!.fields)
+
+            // Calculate expected clustering columns using the provider
+            val expectedClusteringColumns = mutableListOf<String>()
+            val customClusteringField = streamConfigProvider.getClusteringField(stream.unmappedDescriptor)
+
+            if (customClusteringField != null) {
+                val clusterFields = customClusteringField.split(",").map{ it.trim() }.filter { it.isNotEmpty() }
+
+                for (field in clusterFields) {
+                    val actualColumnName = columnNameMapping[field]
+                    if (actualColumnName != null) {
+                        expectedClusteringColumns.add(actualColumnName)
+                    }
+                }
+
+                if (expectedClusteringColumns.isEmpty()) {
+                     // Fallback to default if no columns found (shouldn't happen if validation passes elsewhere)
+                     expectedClusteringColumns.addAll(BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping))
+                }
+            } else {
+                // No custom field, use default logic
+                expectedClusteringColumns.addAll(BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping))
+            }
+
             // We're OK with a column being in the clustering config that we don't expect
             // (e.g. user set a composite PK, then makes one of those fields no longer a PK).
             // It doesn't really hurt us to have that extra clustering config.
             val clusteringConfigIsSupersetOfExpectedConfig =
                 containsAllIgnoreCase(
                     existingClusteringFields,
-                    BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping),
+                    expectedClusteringColumns,
                 )
             // We do, however, validate that all the clustering fields actually exist in the
             // intended schema.
@@ -440,12 +466,51 @@ class BigqueryTableSchemaEvolutionClient(
         }
 
         @VisibleForTesting
-        fun partitioningMatches(existingTable: StandardTableDefinition): Boolean {
+        fun partitioningMatches(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping,
+            existingTable: StandardTableDefinition,
+            streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
+        ): Boolean {
+            val expectedPartitionField =
+                resolvePartitioningField(stream, columnNameMapping, streamConfigProvider)
             return existingTable.timePartitioning != null &&
                 existingTable.timePartitioning!!
                     .field
-                    .equals("_airbyte_extracted_at", ignoreCase = true) &&
+                    .equals(expectedPartitionField, ignoreCase = true) &&
                 TimePartitioning.Type.DAY == existingTable.timePartitioning!!.type
         }
+
+        private fun resolvePartitioningField(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping,
+            streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
+        ): String {
+            val requestedField = streamConfigProvider.getPartitioningField(stream.unmappedDescriptor)
+            if (requestedField == "_airbyte_extracted_at") {
+                return requestedField
+            }
+
+            return columnNameMapping[requestedField]
+                ?: throw ConfigErrorException(
+                    "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' does not exist in the schema"
+                )
+        }
+    }
+
+    private fun partitioningMatches(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        existingTable: StandardTableDefinition,
+    ): Boolean {
+        return partitioningMatches(stream, columnNameMapping, existingTable, streamConfigProvider)
+    }
+
+    private fun clusteringMatches(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        existingTable: StandardTableDefinition,
+    ): Boolean {
+        return clusteringMatches(stream, columnNameMapping, existingTable, streamConfigProvider)
     }
 }
