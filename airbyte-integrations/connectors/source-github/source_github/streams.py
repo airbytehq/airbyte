@@ -1284,8 +1284,43 @@ class Deployments(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/deployments/deployments?apiVersion=2022-11-28#list-deployments
     """
 
+    use_cache = True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/deployments"
+
+
+class DeploymentStatuses(SemiIncrementalMixin, GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/deployments/statuses?apiVersion=2022-11-28#list-deployment-statuses
+    """
+
+    cursor_field = "created_at"
+
+    def __init__(self, parent: Deployments, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/deployments/{stream_slice['deployment_id']}/statuses"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"repository": record["repository"], "deployment_id": record["id"]}
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record["deployment_id"] = stream_slice["deployment_id"]
+        return record
 
 
 class ProjectColumns(GithubStream):

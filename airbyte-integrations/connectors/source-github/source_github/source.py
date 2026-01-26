@@ -25,6 +25,7 @@ from .streams import (
     Commits,
     ContributorActivity,
     Deployments,
+    DeploymentStatuses,
     Events,
     IssueCommentReactions,
     IssueEvents,
@@ -269,6 +270,7 @@ class SourceGithub(AbstractSource):
         teams_stream = Teams(**organization_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
+        deployments_stream = Deployments(**repository_args_with_start_date)
 
         return [
             IssueTimelineEvents(**repository_args),
@@ -280,7 +282,8 @@ class SourceGithub(AbstractSource):
             CommitComments(**repository_args_with_start_date),
             Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", [])),
             ContributorActivity(**repository_args),
-            Deployments(**repository_args_with_start_date),
+            deployments_stream,
+            DeploymentStatuses(parent=deployments_stream, **repository_args_with_start_date),
             Events(**repository_args_with_start_date),
             IssueCommentReactions(**repository_args_with_start_date),
             IssueEvents(**repository_args_with_start_date),
