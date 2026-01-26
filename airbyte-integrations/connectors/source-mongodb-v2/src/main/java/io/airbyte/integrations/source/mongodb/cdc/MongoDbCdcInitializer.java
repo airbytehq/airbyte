@@ -12,6 +12,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadTimeoutUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -164,9 +165,22 @@ public class MongoDbCdcInitializer {
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState.state());
     }
 
+    // Build cdcStreamList early - needed for validation and later CDC execution
+    final var cdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
+        .toList();
+
+    // Create Debezium properties for validation - using same pipeline as CDC resumption
+    final var validationOffsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcState.state(), Optional.empty());
+    final var validationPropertiesManager =
+        new MongoDbDebeziumPropertiesManager(Jsons.clone(defaultDebeziumProperties), config.getDatabaseConfig(), incrementalOnlyStreamsCatalog,
+            cdcStreamList);
+    final Properties validationDebeziumProperties = validationPropertiesManager.getDebeziumProperties(validationOffsetManager);
+
     final boolean savedOffsetIsValid =
         optSavedOffset
-            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, databaseNames, streamsByDatabase))
+            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, validationDebeziumProperties))
             .isPresent();
 
     if (!savedOffsetIsValid) {
@@ -220,11 +234,6 @@ public class MongoDbCdcInitializer {
 
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
-
-    final var cdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
-        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-        .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
-        .toList();
 
     // We can close the client after the initial snapshot is complete, incremental
     // iterator does not make use of the client.

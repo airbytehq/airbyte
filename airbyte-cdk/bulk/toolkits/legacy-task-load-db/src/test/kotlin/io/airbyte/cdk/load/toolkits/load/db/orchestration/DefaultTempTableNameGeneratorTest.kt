@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.toolkits.load.db.orchestration
 
-import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TableName
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
