@@ -50,17 +50,10 @@ class TestEventsDetailedStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         # events_detailed stream uses include, fields[metric], filter, and sort query parameters
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
+        # Using with_any_query_params() to handle the dynamic date range filter
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "include": "metric,attributions",
-                    "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -195,17 +188,9 @@ class TestEventsDetailedStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         # events_detailed stream uses include, fields[metric], filter, and sort query parameters
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "include": "metric,attributions",
-                    "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -254,17 +239,9 @@ class TestEventsDetailedStream(TestCase):
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"datetime": "2024-03-01T00:00:00+00:00"}).build()
 
         # events_detailed stream uses include, fields[metric], filter, and sort query parameters
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "include": "metric,attributions",
-                    "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -310,17 +287,9 @@ class TestEventsDetailedStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         # events_detailed stream uses include, fields[metric], filter, and sort query parameters
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "include": "metric,attributions",
-                    "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -366,17 +335,9 @@ class TestEventsDetailedStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         # events_detailed stream uses include, fields[metric], filter, and sort query parameters
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "include": "metric,attributions",
-                    "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -437,17 +398,9 @@ class TestEventsDetailedStream(TestCase):
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         # events_detailed stream uses include, fields[metric], filter, and sort query parameters
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint("invalid_key")
-            .with_query_params(
-                {
-                    "include": "metric,attributions",
-                    "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint("invalid_key").with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -480,17 +433,9 @@ class TestEventsDetailedStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         # events_detailed stream uses include, fields[metric], filter, and sort query parameters
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "include": "metric,attributions",
-                    "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
                 status_code=403,
@@ -520,17 +465,9 @@ class TestEventsDetailedStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         # events_detailed stream uses include, fields[metric], filter, and sort query parameters
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "include": "metric,attributions",
-                    "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"data": [], "included": [], "links": {"self": "https://a.klaviyo.com/api/events", "next": None}}),
                 status_code=200,

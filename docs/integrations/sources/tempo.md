@@ -49,7 +49,9 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
-| 0.4.40 | 2025-12-16 | [70657](https://github.com/airbytehq/airbyte/pull/70657) | Update dependencies |
+| 0.4.42 | 2026-01-20 | [72114](https://github.com/airbytehq/airbyte/pull/72114) | Update dependencies |
+| 0.4.41 | 2026-01-14 | [71576](https://github.com/airbytehq/airbyte/pull/71576) | Update dependencies |
+| 0.4.40 | 2025-12-18 | [70657](https://github.com/airbytehq/airbyte/pull/70657) | Update dependencies |
 | 0.4.39 | 2025-11-25 | [70021](https://github.com/airbytehq/airbyte/pull/70021) | Update dependencies |
 | 0.4.38 | 2025-11-18 | [69525](https://github.com/airbytehq/airbyte/pull/69525) | Update dependencies |
 | 0.4.37 | 2025-10-29 | [68989](https://github.com/airbytehq/airbyte/pull/68989) | Update dependencies |
@@ -60,7 +62,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | 0.4.32 | 2025-09-23 | [66366](https://github.com/airbytehq/airbyte/pull/66366) | Update dependencies |
 | 0.4.31 | 2025-09-09 | [65709](https://github.com/airbytehq/airbyte/pull/65709) | Update dependencies |
 | 0.4.30 | 2025-08-24 | [65494](https://github.com/airbytehq/airbyte/pull/65494) | Update dependencies |
-| 0.4.29 | 2025-08-09 | [64801](https://github.com/airbytehq/airbyte/pull/64801) | Update dependencies |
+| 0.4.29 | 2025-08-10 | [64801](https://github.com/airbytehq/airbyte/pull/64801) | Update dependencies |
 | 0.4.28 | 2025-08-02 | [64417](https://github.com/airbytehq/airbyte/pull/64417) | Update dependencies |
 | 0.4.27 | 2025-07-26 | [63997](https://github.com/airbytehq/airbyte/pull/63997) | Update dependencies |
 | 0.4.26 | 2025-06-28 | [62206](https://github.com/airbytehq/airbyte/pull/62206) | Update dependencies |

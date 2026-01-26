@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.component
 
 import io.airbyte.cdk.load.component.TableOperationsFixtures
 import io.airbyte.cdk.load.component.TableOperationsSuite
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures
 import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures.idTestWithCdcMapping
 import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures.testMapping
 import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeTestTableOperationsClient
@@ -24,7 +24,7 @@ class SnowflakeTableOperationsTest(
     override val testClient: SnowflakeTestTableOperationsClient,
     override val schemaFactory: TableSchemaFactory,
 ) : TableOperationsSuite {
-    override val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
+    override val airbyteMetaColumnMapping = SnowflakeComponentTestFixtures.airbyteMetaColumnMapping
 
     @Test
     override fun `connect to database`() {

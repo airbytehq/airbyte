@@ -100,9 +100,9 @@ The YouTube Data API source connector supports the following sync modes:
 
 ### Stream descriptions
 
-- **video**: Detailed information about videos from the specified channels, including title, description, thumbnails, publish date, tags, category, and language settings. This stream uses the `videos` parent stream to first discover video IDs, then fetches full video details for each.
+- **video**: Detailed information about videos from the specified channels. This stream uses the `videos` parent stream to first discover video IDs, then fetches full video details for each. Data includes snippet information (title, description, thumbnails, publish date, tags, category, language settings), content details (duration, dimension, definition, caption availability, region restrictions), statistics (view count, like count, comment count), player information (embed HTML), and status (upload status, privacy status, license, embeddable, made for kids).
 - **videos**: A list of video IDs discovered by searching the specified channels. This stream is used internally by the `video` and `comments` streams to identify which videos to fetch data for.
-- **channels**: Information about the specified YouTube channels, including channel description, custom URL, country, thumbnails, and subscriber/view/video counts.
+- **channels**: Information about the specified YouTube channels. Data includes snippet information (title, description, custom URL, country, thumbnails), content details (related playlists), statistics (subscriber count, view count, video count), branding settings (channel keywords, trailer, default language), topic details (topic categories), status (privacy status, made for kids), localizations, and content owner details.
 - **comments**: Comment threads on individual videos from the specified channels. For each video discovered in the channel, this stream fetches the top-level comments and their replies.
 - **channel_comments**: All comment threads related to the specified channels, including comments on the channel's videos and comments that mention the channel. This provides a broader view of channel engagement than the `comments` stream.
 
@@ -120,49 +120,50 @@ The YouTube Data API source connector supports the following sync modes:
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.44  | 2025-12-17 | [70971](https://github.com/airbytehq/airbyte/pull/71016) | Fixed schemas  
-| 0.0.43  | 2025-12-17 | [70971](https://github.com/airbytehq/airbyte/pull/70971) | Add acceptance tests                                                                                                                         
-| 0.0.42  | 2025-11-23 | [69315](https://github.com/airbytehq/airbyte/pull/69315) | Add OAuth 2.0 support                                                                                                                       |
-| 0.0.41  | 2025-11-25 | [70079](https://github.com/airbytehq/airbyte/pull/70079) | Update dependencies|
-| 0.0.40  | 2025-11-18 | [69532](https://github.com/airbytehq/airbyte/pull/69532) | Update dependencies|
-| 0.0.39  | 2025-10-29 | [68942](https://github.com/airbytehq/airbyte/pull/68942) | Update dependencies|
-| 0.0.38  | 2025-10-21 | [68456](https://github.com/airbytehq/airbyte/pull/68456) | Update dependencies|
-| 0.0.37  | 2025-10-14 | [67987](https://github.com/airbytehq/airbyte/pull/67987) | Update dependencies|
-| 0.0.36  | 2025-10-07 | [67241](https://github.com/airbytehq/airbyte/pull/67241) | Update dependencies|
-| 0.0.35  | 2025-09-30 | [66846](https://github.com/airbytehq/airbyte/pull/66846) | Update dependencies|
-| 0.0.34  | 2025-09-24 | [66475](https://github.com/airbytehq/airbyte/pull/66475) | Update dependencies|
-| 0.0.33  | 2025-09-09 | [65731](https://github.com/airbytehq/airbyte/pull/65731) | Update dependencies|
-| 0.0.32  | 2025-08-24 | [65468](https://github.com/airbytehq/airbyte/pull/65468) | Update dependencies|
-| 0.0.31  | 2025-08-09 | [64863](https://github.com/airbytehq/airbyte/pull/64863) | Update dependencies|
-| 0.0.30  | 2025-08-02 | [64386](https://github.com/airbytehq/airbyte/pull/64386) | Update dependencies|
-| 0.0.29  | 2025-07-26 | [64056](https://github.com/airbytehq/airbyte/pull/64056) | Update dependencies|
-| 0.0.28  | 2025-07-19 | [63640](https://github.com/airbytehq/airbyte/pull/63640) | Update dependencies|
-| 0.0.27  | 2025-07-12 | [63216](https://github.com/airbytehq/airbyte/pull/63216) | Update dependencies|
-| 0.0.26  | 2025-07-05 | [62701](https://github.com/airbytehq/airbyte/pull/62701) | Update dependencies|
-| 0.0.25  | 2025-06-28 | [62233](https://github.com/airbytehq/airbyte/pull/62233) | Update dependencies|
-| 0.0.24  | 2025-06-21 | [61759](https://github.com/airbytehq/airbyte/pull/61759) | Update dependencies|
-| 0.0.23  | 2025-06-15 | [61171](https://github.com/airbytehq/airbyte/pull/61171) | Update dependencies|
-| 0.0.22  | 2025-05-24 | [60786](https://github.com/airbytehq/airbyte/pull/60786) | Update dependencies|
-| 0.0.21  | 2025-05-10 | [59968](https://github.com/airbytehq/airbyte/pull/59968) | Update dependencies|
-| 0.0.20  | 2025-05-04 | [59566](https://github.com/airbytehq/airbyte/pull/59566) | Update dependencies|
-| 0.0.19  | 2025-04-26 | [58930](https://github.com/airbytehq/airbyte/pull/58930) | Update dependencies|
-| 0.0.18  | 2025-04-19 | [58550](https://github.com/airbytehq/airbyte/pull/58550) | Update dependencies|
-| 0.0.17  | 2025-04-13 | [58052](https://github.com/airbytehq/airbyte/pull/58052) | Update dependencies|
-| 0.0.16  | 2025-04-05 | [57379](https://github.com/airbytehq/airbyte/pull/57379) | Update dependencies|
-| 0.0.15  | 2025-03-29 | [56821](https://github.com/airbytehq/airbyte/pull/56821) | Update dependencies|
-| 0.0.14  | 2025-03-22 | [56338](https://github.com/airbytehq/airbyte/pull/56338) | Update dependencies|
-| 0.0.13  | 2025-03-09 | [55664](https://github.com/airbytehq/airbyte/pull/55664) | Update dependencies|
-| 0.0.12  | 2025-03-01 | [55162](https://github.com/airbytehq/airbyte/pull/55162) | Update dependencies|
-| 0.0.11  | 2025-02-23 | [54632](https://github.com/airbytehq/airbyte/pull/54632) | Update dependencies|
-| 0.0.10  | 2025-02-15 | [53087](https://github.com/airbytehq/airbyte/pull/53087) | Update dependencies|
-| 0.0.9   | 2025-01-25 | [52387](https://github.com/airbytehq/airbyte/pull/52387) | Update dependencies|
-| 0.0.8   | 2025-01-18 | [52006](https://github.com/airbytehq/airbyte/pull/52006) | Update dependencies|
-| 0.0.7   | 2025-01-11 | [51380](https://github.com/airbytehq/airbyte/pull/51380) | Update dependencies|
-| 0.0.6   | 2025-01-04 | [50753](https://github.com/airbytehq/airbyte/pull/50753) | Update dependencies|
-| 0.0.5   | 2024-12-21 | [50326](https://github.com/airbytehq/airbyte/pull/50326) | Update dependencies|
-| 0.0.4   | 2024-12-14 | [49756](https://github.com/airbytehq/airbyte/pull/49756) | Update dependencies|
-| 0.0.3   | 2024-12-12 | [49403](https://github.com/airbytehq/airbyte/pull/49403) | Update dependencies|
-| 0.0.2   | 2024-12-11 | [49125](https://github.com/airbytehq/airbyte/pull/49125) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.0.45 | 2026-01-14 | [70677](https://github.com/airbytehq/airbyte/pull/70677) | Update dependencies |
+| 0.0.44 | 2026-01-05 | [71016](https://github.com/airbytehq/airbyte/pull/71016) | Fixed schemas |
+| 0.0.43 | 2025-12-19 | [70971](https://github.com/airbytehq/airbyte/pull/70971) | Add acceptance tests |
+| 0.0.42 | 2025-12-16 | [69315](https://github.com/airbytehq/airbyte/pull/69315) | Add OAuth 2.0 support |
+| 0.0.41 | 2025-11-25 | [70079](https://github.com/airbytehq/airbyte/pull/70079) | Update dependencies |
+| 0.0.40 | 2025-11-18 | [69532](https://github.com/airbytehq/airbyte/pull/69532) | Update dependencies |
+| 0.0.39 | 2025-10-29 | [68942](https://github.com/airbytehq/airbyte/pull/68942) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68456](https://github.com/airbytehq/airbyte/pull/68456) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67987](https://github.com/airbytehq/airbyte/pull/67987) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67241](https://github.com/airbytehq/airbyte/pull/67241) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66846](https://github.com/airbytehq/airbyte/pull/66846) | Update dependencies |
+| 0.0.34 | 2025-09-24 | [66475](https://github.com/airbytehq/airbyte/pull/66475) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [65731](https://github.com/airbytehq/airbyte/pull/65731) | Update dependencies |
+| 0.0.32 | 2025-08-24 | [65468](https://github.com/airbytehq/airbyte/pull/65468) | Update dependencies |
+| 0.0.31 | 2025-08-10 | [64863](https://github.com/airbytehq/airbyte/pull/64863) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64386](https://github.com/airbytehq/airbyte/pull/64386) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [64056](https://github.com/airbytehq/airbyte/pull/64056) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63640](https://github.com/airbytehq/airbyte/pull/63640) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63216](https://github.com/airbytehq/airbyte/pull/63216) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62701](https://github.com/airbytehq/airbyte/pull/62701) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62233](https://github.com/airbytehq/airbyte/pull/62233) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61759](https://github.com/airbytehq/airbyte/pull/61759) | Update dependencies |
+| 0.0.23 | 2025-06-15 | [61171](https://github.com/airbytehq/airbyte/pull/61171) | Update dependencies |
+| 0.0.22 | 2025-05-24 | [60786](https://github.com/airbytehq/airbyte/pull/60786) | Update dependencies |
+| 0.0.21 | 2025-05-10 | [59968](https://github.com/airbytehq/airbyte/pull/59968) | Update dependencies |
+| 0.0.20 | 2025-05-04 | [59566](https://github.com/airbytehq/airbyte/pull/59566) | Update dependencies |
+| 0.0.19 | 2025-04-26 | [58930](https://github.com/airbytehq/airbyte/pull/58930) | Update dependencies |
+| 0.0.18 | 2025-04-19 | [58550](https://github.com/airbytehq/airbyte/pull/58550) | Update dependencies |
+| 0.0.17 | 2025-04-13 | [58052](https://github.com/airbytehq/airbyte/pull/58052) | Update dependencies |
+| 0.0.16 | 2025-04-05 | [57379](https://github.com/airbytehq/airbyte/pull/57379) | Update dependencies |
+| 0.0.15 | 2025-03-29 | [56821](https://github.com/airbytehq/airbyte/pull/56821) | Update dependencies |
+| 0.0.14 | 2025-03-22 | [56338](https://github.com/airbytehq/airbyte/pull/56338) | Update dependencies |
+| 0.0.13 | 2025-03-09 | [55664](https://github.com/airbytehq/airbyte/pull/55664) | Update dependencies |
+| 0.0.12 | 2025-03-01 | [55162](https://github.com/airbytehq/airbyte/pull/55162) | Update dependencies |
+| 0.0.11 | 2025-02-23 | [54632](https://github.com/airbytehq/airbyte/pull/54632) | Update dependencies |
+| 0.0.10 | 2025-02-15 | [53087](https://github.com/airbytehq/airbyte/pull/53087) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52387](https://github.com/airbytehq/airbyte/pull/52387) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [52006](https://github.com/airbytehq/airbyte/pull/52006) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51380](https://github.com/airbytehq/airbyte/pull/51380) | Update dependencies |
+| 0.0.6 | 2025-01-04 | [50753](https://github.com/airbytehq/airbyte/pull/50753) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50326](https://github.com/airbytehq/airbyte/pull/50326) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49756](https://github.com/airbytehq/airbyte/pull/49756) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [49403](https://github.com/airbytehq/airbyte/pull/49403) | Update dependencies |
+| 0.0.2 | 2024-12-11 | [49125](https://github.com/airbytehq/airbyte/pull/49125) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1   | 2024-11-08 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder                                                                                      |
 
 </details>

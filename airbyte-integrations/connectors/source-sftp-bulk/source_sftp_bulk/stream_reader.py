@@ -138,6 +138,11 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             - dir_path="/data", glob="/*/folder/folder2/*" -> True (could lead to match)
             - dir_path="/data/folder", glob="/*/folder/folder2/*" -> True (partial match)
         """
+
+        if dir_path.startswith("//"):
+            #  wcmatch.glob in filter_files_by_globs_and_start_date makes // and / equal. removing // in the beginning for ease of calculations
+            dir_path = dir_path[1:]
+
         for glob_pattern in globs:
             # Handle recursive wildcard - it matches everything
             if "**" in glob_pattern:
@@ -228,6 +233,9 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                 normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
             else:
                 normalized_globs.append(glob_pattern)
+            if glob_pattern.startswith("//"):
+                #  wcmatch.glob in filter_files_by_globs_and_start_date makes // and / equal. removing // in the beginning for ease of calculations
+                normalized_globs.append(glob_pattern[1:])
 
         # Iterate through directories and subdirectories
         while directories:
@@ -235,7 +243,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             try:
                 for item in self.sftp_client.sftp_connection.listdir_iter(current_dir):
                     if item.st_mode and stat.S_ISDIR(item.st_mode):
-                        dir_path = f"{current_dir.rstrip('/')}/{item.filename}"
+                        dir_path = f"{current_dir}/{item.filename}"
                         # Only traverse directories that could contain matching files
                         if self._directory_could_match_globs(dir_path, normalized_globs, root_folder):
                             directories.append(dir_path)

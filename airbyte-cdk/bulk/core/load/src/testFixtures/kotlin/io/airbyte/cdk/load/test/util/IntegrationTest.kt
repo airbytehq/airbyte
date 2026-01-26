@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.test.util
@@ -14,12 +14,10 @@ import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.config.NamespaceMappingConfig
-import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.message.InputMessageOther
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
-import io.airbyte.cdk.load.message.InputStreamComplete
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
@@ -82,12 +80,8 @@ abstract class IntegrationTest(
     // multiple times.
     val destinationProcessFactory = DestinationProcessFactory.get(additionalMicronautEnvs)
 
-    @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
-    private val timestampString =
-        LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-            .format(randomizedNamespaceDateFormatter)
     // stream name doesn't need to be randomized, only the namespace.
-    val randomizedNamespace = "test$timestampString$randomSuffix"
+    val randomizedNamespace = generateRandomNamespace()
 
     // junit is a bit wonky with injecting TestInfo.
     // You can declare it as a constructor param, but you get a TestInfo instance
@@ -242,55 +236,19 @@ abstract class IntegrationTest(
         useFileTransfer: Boolean = false,
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
         namespaceMappingConfig: NamespaceMappingConfig? = null,
-    ): List<AirbyteMessage> {
-        check(streamStatus == null || streamStatus == AirbyteStreamStatus.COMPLETE) {
-            "Invalid stream status: $streamStatus"
-        }
-        destinationProcessFactory.testName = testPrettyName
-
-        val destination =
-            destinationProcessFactory.createDestinationProcess(
-                "write",
-                configContents,
-                catalog.asProtocolObject(),
-                useFileTransfer = useFileTransfer,
-                micronautProperties = micronautProperties,
-                dataChannelMedium = dataChannelMedium,
-                dataChannelFormat = dataChannelFormat,
-                namespaceMappingConfig = namespaceMappingConfig
-                        ?: NamespaceMappingConfig(
-                            NamespaceDefinitionType.SOURCE,
-                        ),
-            )
-        return runBlocking(Dispatchers.IO) {
-            launch { destination.run() }
-            messages.forEach { destination.sendMessage(it) }
-            if (streamStatus != null) {
-                catalog.streams.forEach {
-                    val streamStatusMessage =
-                        when (streamStatus) {
-                            AirbyteStreamStatus.COMPLETE ->
-                                InputStreamComplete(
-                                    DestinationRecordStreamComplete(it, System.currentTimeMillis())
-                                )
-                            else ->
-                                throw IllegalStateException(
-                                    "Impossible: We checked that the stream status was valid at the start of this method. Somehow got $streamStatus."
-                                )
-                        }
-                    destination.sendMessage(
-                        streamStatusMessage,
-                        broadcast = true,
-                    )
-                }
-            }
-            destination.shutdown()
-            if (useFileTransfer) {
-                destination.verifyFileDeleted()
-            }
-            destination.readMessages()
-        }
-    }
+    ): List<AirbyteMessage> =
+        destinationProcessFactory.runSync(
+            configContents,
+            catalog,
+            messages,
+            testPrettyName,
+            dataChannelMedium,
+            dataChannelFormat,
+            streamStatus,
+            useFileTransfer,
+            namespaceMappingConfig,
+            micronautProperties,
+        )
 
     enum class UncleanSyncEndBehavior {
         /**
@@ -405,6 +363,15 @@ abstract class IntegrationTest(
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}.*")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
+
+        fun generateRandomNamespace(): String {
+            @Suppress("DEPRECATION") val randomSuffix = RandomStringUtils.randomAlphabetic(4)
+            val timestampString =
+                LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
+                    .format(randomizedNamespaceDateFormatter)
+            // stream name doesn't need to be randomized, only the namespace.
+            return "test$timestampString$randomSuffix"
+        }
 
         /**
          * When set, this property forces the CDK to invoke processRecords once per record. This
