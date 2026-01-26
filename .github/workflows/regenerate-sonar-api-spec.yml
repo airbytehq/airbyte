@@ -49,6 +49,9 @@ jobs:
         with:
           version: "9.4.0"
 
+      - name: Remove yarn to prevent package manager detection issues
+        run: rm -f "$(which yarn)" || true
+
       - name: Install dependencies
         working-directory: docusaurus
         run: pnpm install --frozen-lockfile

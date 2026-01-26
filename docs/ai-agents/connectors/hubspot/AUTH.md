@@ -78,7 +78,7 @@ connector = HubspotConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@HubspotConnector.describe
+@HubspotConnector.tool_utils
 async def hubspot_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```

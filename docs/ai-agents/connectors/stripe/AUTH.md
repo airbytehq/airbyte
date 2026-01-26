@@ -68,7 +68,7 @@ connector = StripeConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@StripeConnector.describe
+@StripeConnector.tool_utils
 async def stripe_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```

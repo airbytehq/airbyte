@@ -258,7 +258,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `created_at` | `string` | Timestamp indicating when the ticket was created |
 | `custom_fields` | `array` | Array of custom field values specific to the account's ticket configuration |
 | `custom_status_id` | `integer` | Unique identifier of the custom status applied to the ticket |
-| `deleted_ticket_form_id` | `integer` | Unique identifier of the ticket form if it was deleted after the ticket was created |
+| `deleted_ticket_form_id` | `integer` | The ID of the ticket form that was previously associated with this ticket but has since been deleted |
 | `description` | `string` | Initial description or content of the ticket when it was created |
 | `due_at` | `string` | Timestamp indicating when the ticket is due for completion or resolution |
 | `email_cc_ids` | `array` | Array of user identifiers who are CC'd on ticket email notifications |
@@ -268,7 +268,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `followup_ids` | `array` | Array of identifiers for follow-up tickets related to this ticket |
 | `forum_topic_id` | `integer` | Unique identifier linking the ticket to a forum topic if applicable |
 | `from_messaging_channel` | `boolean` | Boolean indicating whether the ticket originated from a messaging channel |
-| `generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export co... |
+| `generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export |
 | `group_id` | `integer` | Unique identifier of the agent group assigned to handle the ticket |
 | `has_incidents` | `boolean` | Boolean indicating whether this problem ticket has related incident tickets |
 | `id` | `integer` | Unique identifier for the ticket |
@@ -308,7 +308,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.created_at` | `string` | Timestamp indicating when the ticket was created |
 | `hits[].data.custom_fields` | `array` | Array of custom field values specific to the account's ticket configuration |
 | `hits[].data.custom_status_id` | `integer` | Unique identifier of the custom status applied to the ticket |
-| `hits[].data.deleted_ticket_form_id` | `integer` | Unique identifier of the ticket form if it was deleted after the ticket was created |
+| `hits[].data.deleted_ticket_form_id` | `integer` | The ID of the ticket form that was previously associated with this ticket but has since been deleted |
 | `hits[].data.description` | `string` | Initial description or content of the ticket when it was created |
 | `hits[].data.due_at` | `string` | Timestamp indicating when the ticket is due for completion or resolution |
 | `hits[].data.email_cc_ids` | `array` | Array of user identifiers who are CC'd on ticket email notifications |
@@ -318,7 +318,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.followup_ids` | `array` | Array of identifiers for follow-up tickets related to this ticket |
 | `hits[].data.forum_topic_id` | `integer` | Unique identifier linking the ticket to a forum topic if applicable |
 | `hits[].data.from_messaging_channel` | `boolean` | Boolean indicating whether the ticket originated from a messaging channel |
-| `hits[].data.generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export co... |
+| `hits[].data.generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export |
 | `hits[].data.group_id` | `integer` | Unique identifier of the agent group assigned to handle the ticket |
 | `hits[].data.has_incidents` | `boolean` | Boolean indicating whether this problem ticket has related incident tickets |
 | `hits[].data.id` | `integer` | Unique identifier for the ticket |
@@ -1894,9 +1894,9 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |------------|------|-------------|
 | `active` | `boolean` | Whether this field is currently available for use |
 | `agent_description` | `string` | A description of the ticket field that only agents can see |
-| `collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently u... |
+| `collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently used fields |
 | `created_at` | `string` | Timestamp when the custom ticket field was created |
-| `custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger, containing name a... |
+| `custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger |
 | `custom_statuses` | `array` | List of customized ticket statuses, only present for system ticket fields of type custom_status |
 | `description` | `string` | Text describing the purpose of the ticket field to users |
 | `editable_in_portal` | `boolean` | Whether this field is editable by end users in Help Center |
@@ -1915,7 +1915,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `tag` | `string` | For checkbox fields only, a tag added to tickets when the checkbox field is selected |
 | `title` | `string` | The title of the ticket field displayed to agents |
 | `title_in_portal` | `string` | The title of the ticket field displayed to end users in Help Center |
-| `type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, tagger,... |
+| `type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, or tagger |
 | `updated_at` | `string` | Timestamp when the custom ticket field was last updated |
 | `url` | `string` | The API URL for this ticket field resource |
 | `visible_in_portal` | `boolean` | Whether this field is visible to end users in Help Center |
@@ -1931,9 +1931,9 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data` | `object` | Record data containing the searchable fields listed above |
 | `hits[].data.active` | `boolean` | Whether this field is currently available for use |
 | `hits[].data.agent_description` | `string` | A description of the ticket field that only agents can see |
-| `hits[].data.collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently u... |
+| `hits[].data.collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently used fields |
 | `hits[].data.created_at` | `string` | Timestamp when the custom ticket field was created |
-| `hits[].data.custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger, containing name a... |
+| `hits[].data.custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger |
 | `hits[].data.custom_statuses` | `array` | List of customized ticket statuses, only present for system ticket fields of type custom_status |
 | `hits[].data.description` | `string` | Text describing the purpose of the ticket field to users |
 | `hits[].data.editable_in_portal` | `boolean` | Whether this field is editable by end users in Help Center |
@@ -1952,7 +1952,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.tag` | `string` | For checkbox fields only, a tag added to tickets when the checkbox field is selected |
 | `hits[].data.title` | `string` | The title of the ticket field displayed to agents |
 | `hits[].data.title_in_portal` | `string` | The title of the ticket field displayed to end users in Help Center |
-| `hits[].data.type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, tagger,... |
+| `hits[].data.type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, or tagger |
 | `hits[].data.updated_at` | `string` | Timestamp when the custom ticket field was last updated |
 | `hits[].data.url` | `string` | The API URL for this ticket field resource |
 | `hits[].data.visible_in_portal` | `boolean` | Whether this field is visible to end users in Help Center |
@@ -2962,7 +2962,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `group_id` | `integer` | The identifier of the group assigned to the ticket at the time the rating was submitted |
 | `id` | `integer` | Unique identifier for the satisfaction rating, automatically assigned upon creation |
 | `reason` | `string` | Free-text reason for a bad rating provided by the requester in a follow-up question |
-| `reason_id` | `integer` | Identifier for the predefined reason given for a negative rating, only applicable when score is '... |
+| `reason_id` | `integer` | Identifier for the predefined reason given for a negative rating |
 | `requester_id` | `integer` | The identifier of the ticket requester who submitted the satisfaction rating |
 | `score` | `string` | The satisfaction rating value: 'offered', 'unoffered', 'good', or 'bad' |
 | `ticket_id` | `integer` | The identifier of the ticket being rated |
@@ -2984,7 +2984,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.group_id` | `integer` | The identifier of the group assigned to the ticket at the time the rating was submitted |
 | `hits[].data.id` | `integer` | Unique identifier for the satisfaction rating, automatically assigned upon creation |
 | `hits[].data.reason` | `string` | Free-text reason for a bad rating provided by the requester in a follow-up question |
-| `hits[].data.reason_id` | `integer` | Identifier for the predefined reason given for a negative rating, only applicable when score is '... |
+| `hits[].data.reason_id` | `integer` | Identifier for the predefined reason given for a negative rating |
 | `hits[].data.requester_id` | `integer` | The identifier of the ticket requester who submitted the satisfaction rating |
 | `hits[].data.score` | `string` | The satisfaction rating value: 'offered', 'unoffered', 'good', or 'bad' |
 | `hits[].data.ticket_id` | `integer` | The identifier of the ticket being rated |
@@ -3417,7 +3417,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `raw_display_name` | `string` | The dynamic content placeholder if present, or the display_name value if not |
 | `raw_name` | `string` | The dynamic content placeholder if present, or the name value if not |
 | `restricted_brand_ids` | `array` | IDs of all brands that this ticket form is restricted to |
-| `ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form, ordered to determine field display sequenc... |
+| `ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form |
 | `updated_at` | `string` | Timestamp of the last update to the ticket form |
 | `url` | `string` | URL of the ticket form |
 
@@ -3444,7 +3444,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.raw_display_name` | `string` | The dynamic content placeholder if present, or the display_name value if not |
 | `hits[].data.raw_name` | `string` | The dynamic content placeholder if present, or the name value if not |
 | `hits[].data.restricted_brand_ids` | `array` | IDs of all brands that this ticket form is restricted to |
-| `hits[].data.ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form, ordered to determine field display sequenc... |
+| `hits[].data.ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form |
 | `hits[].data.updated_at` | `string` | Timestamp of the last update to the ticket form |
 | `hits[].data.url` | `string` | URL of the ticket form |
 | `next_cursor` | `string \| null` | Cursor for next page of results |
@@ -3746,5 +3746,6 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `article_id` | `integer` | Yes | The unique ID of the article |
 | `attachment_id` | `integer` | Yes | The unique ID of the attachment |
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
+
 
 

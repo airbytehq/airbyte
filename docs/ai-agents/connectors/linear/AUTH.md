@@ -68,7 +68,7 @@ connector = LinearConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@LinearConnector.describe
+@LinearConnector.tool_utils
 async def linear_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
