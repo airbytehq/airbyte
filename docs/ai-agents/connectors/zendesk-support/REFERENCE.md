@@ -31,19 +31,19 @@ The Zendesk-Support connector supports the following entities and actions.
 | Articles | [List](#articles-list), [Get](#articles-get) |
 | Article Attachments | [List](#article-attachments-list), [Get](#article-attachments-get), [Download](#article-attachments-download) |
 
-### Tickets
+## Tickets
 
-#### Tickets List
+### Tickets List
 
 Returns a list of all tickets in your account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.tickets.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -56,7 +56,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -68,7 +68,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -113,7 +113,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `via` | `object` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -123,11 +123,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Tickets Get
+### Tickets Get
 
 Returns a ticket by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.tickets.get(
@@ -135,7 +135,7 @@ await zendesk_support.tickets.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -151,7 +151,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -161,7 +161,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -208,11 +208,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Tickets Search
+### Tickets Search
 
 Search and filter tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.tickets.search(
@@ -220,7 +220,7 @@ await zendesk_support.tickets.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -235,7 +235,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -246,7 +246,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -258,7 +258,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `created_at` | `string` | Timestamp indicating when the ticket was created |
 | `custom_fields` | `array` | Array of custom field values specific to the account's ticket configuration |
 | `custom_status_id` | `integer` | Unique identifier of the custom status applied to the ticket |
-| `deleted_ticket_form_id` | `integer` | Unique identifier of the ticket form if it was deleted after the ticket was created |
+| `deleted_ticket_form_id` | `integer` | The ID of the ticket form that was previously associated with this ticket but has since been deleted |
 | `description` | `string` | Initial description or content of the ticket when it was created |
 | `due_at` | `string` | Timestamp indicating when the ticket is due for completion or resolution |
 | `email_cc_ids` | `array` | Array of user identifiers who are CC'd on ticket email notifications |
@@ -268,7 +268,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `followup_ids` | `array` | Array of identifiers for follow-up tickets related to this ticket |
 | `forum_topic_id` | `integer` | Unique identifier linking the ticket to a forum topic if applicable |
 | `from_messaging_channel` | `boolean` | Boolean indicating whether the ticket originated from a messaging channel |
-| `generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export co... |
+| `generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export |
 | `group_id` | `integer` | Unique identifier of the agent group assigned to handle the ticket |
 | `has_incidents` | `boolean` | Boolean indicating whether this problem ticket has related incident tickets |
 | `id` | `integer` | Unique identifier for the ticket |
@@ -308,7 +308,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.created_at` | `string` | Timestamp indicating when the ticket was created |
 | `hits[].data.custom_fields` | `array` | Array of custom field values specific to the account's ticket configuration |
 | `hits[].data.custom_status_id` | `integer` | Unique identifier of the custom status applied to the ticket |
-| `hits[].data.deleted_ticket_form_id` | `integer` | Unique identifier of the ticket form if it was deleted after the ticket was created |
+| `hits[].data.deleted_ticket_form_id` | `integer` | The ID of the ticket form that was previously associated with this ticket but has since been deleted |
 | `hits[].data.description` | `string` | Initial description or content of the ticket when it was created |
 | `hits[].data.due_at` | `string` | Timestamp indicating when the ticket is due for completion or resolution |
 | `hits[].data.email_cc_ids` | `array` | Array of user identifiers who are CC'd on ticket email notifications |
@@ -318,7 +318,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.followup_ids` | `array` | Array of identifiers for follow-up tickets related to this ticket |
 | `hits[].data.forum_topic_id` | `integer` | Unique identifier linking the ticket to a forum topic if applicable |
 | `hits[].data.from_messaging_channel` | `boolean` | Boolean indicating whether the ticket originated from a messaging channel |
-| `hits[].data.generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export co... |
+| `hits[].data.generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export |
 | `hits[].data.group_id` | `integer` | Unique identifier of the agent group assigned to handle the ticket |
 | `hits[].data.has_incidents` | `boolean` | Boolean indicating whether this problem ticket has related incident tickets |
 | `hits[].data.id` | `integer` | Unique identifier for the ticket |
@@ -345,19 +345,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Users
+## Users
 
-#### Users List
+### Users List
 
 Returns a list of all users in your account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.users.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -370,7 +370,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -382,7 +382,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -426,7 +426,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -436,11 +436,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Users Get
+### Users Get
 
 Returns a user by their ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.users.get(
@@ -448,7 +448,7 @@ await zendesk_support.users.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -464,7 +464,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -474,7 +474,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -520,11 +520,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Users Search
+### Users Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.users.search(
@@ -532,7 +532,7 @@ await zendesk_support.users.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -547,7 +547,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -558,7 +558,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -655,19 +655,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Organizations
+## Organizations
 
-#### Organizations List
+### Organizations List
 
 Returns a list of all organizations in your account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.organizations.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -680,7 +680,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -690,7 +690,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -710,7 +710,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -720,11 +720,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Organizations Get
+### Organizations Get
 
 Returns an organization by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.organizations.get(
@@ -732,7 +732,7 @@ await zendesk_support.organizations.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -748,7 +748,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -758,7 +758,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -780,11 +780,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Organizations Search
+### Organizations Search
 
 Search and filter organizations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.organizations.search(
@@ -792,7 +792,7 @@ await zendesk_support.organizations.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -807,7 +807,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -818,7 +818,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -867,19 +867,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Groups
+## Groups
 
-#### Groups List
+### Groups List
 
 Returns a list of all groups in your account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.groups.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -892,7 +892,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -903,7 +903,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -918,7 +918,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -928,11 +928,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Groups Get
+### Groups Get
 
 Returns a group by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.groups.get(
@@ -940,7 +940,7 @@ await zendesk_support.groups.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -956,7 +956,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -966,7 +966,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -983,11 +983,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Groups Search
+### Groups Search
 
 Search and filter groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.groups.search(
@@ -995,7 +995,7 @@ await zendesk_support.groups.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1010,7 +1010,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1021,7 +1021,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1058,13 +1058,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Ticket Comments
+## Ticket Comments
 
-#### Ticket Comments List
+### Ticket Comments List
 
 Returns a list of comments for a specific ticket
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_comments.list(
@@ -1072,7 +1072,7 @@ await zendesk_support.ticket_comments.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1088,7 +1088,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1101,7 +1101,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1119,7 +1119,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `created_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1129,11 +1129,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Ticket Comments Search
+### Ticket Comments Search
 
 Search and filter ticket comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_comments.search(
@@ -1141,7 +1141,7 @@ await zendesk_support.ticket_comments.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1156,7 +1156,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1167,7 +1167,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1220,13 +1220,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Attachments
+## Attachments
 
-#### Attachments Get
+### Attachments Get
 
 Returns an attachment by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.attachments.get(
@@ -1234,7 +1234,7 @@ await zendesk_support.attachments.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1250,7 +1250,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1260,7 +1260,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1282,11 +1282,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Attachments Download
+### Attachments Download
 
 Downloads the file content of a ticket attachment
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in zendesk_support.attachments.download(    attachment_id=0):# Process each chunk (e.g., write to file)
@@ -1295,7 +1295,7 @@ async for chunk in zendesk_support.attachments.download(    attachment_id=0):# P
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1311,7 +1311,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1319,19 +1319,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Ticket Audits
+## Ticket Audits
 
-#### Ticket Audits List
+### Ticket Audits List
 
 Returns a list of all ticket audits
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_audits.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1344,7 +1344,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1354,7 +1354,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1367,7 +1367,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `created_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1377,11 +1377,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Ticket Audits List
+### Ticket Audits List
 
 Returns a list of audits for a specific ticket
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_audits.list(
@@ -1389,7 +1389,7 @@ await zendesk_support.ticket_audits.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1405,7 +1405,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1416,7 +1416,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1429,7 +1429,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `created_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1439,11 +1439,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Ticket Audits Search
+### Ticket Audits Search
 
 Search and filter ticket audits records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_audits.search(
@@ -1451,7 +1451,7 @@ await zendesk_support.ticket_audits.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1466,7 +1466,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1477,7 +1477,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1512,19 +1512,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Ticket Metrics
+## Ticket Metrics
 
-#### Ticket Metrics List
+### Ticket Metrics List
 
 Returns a list of all ticket metrics
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_metrics.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1537,7 +1537,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1547,7 +1547,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1575,7 +1575,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1585,11 +1585,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Ticket Metrics Search
+### Ticket Metrics Search
 
 Search and filter ticket metrics records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_metrics.search(
@@ -1597,7 +1597,7 @@ await zendesk_support.ticket_metrics.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1612,7 +1612,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1623,7 +1623,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1702,19 +1702,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Ticket Fields
+## Ticket Fields
 
-#### Ticket Fields List
+### Ticket Fields List
 
 Returns a list of all ticket fields
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_fields.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1727,7 +1727,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1738,7 +1738,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1769,7 +1769,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1779,11 +1779,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Ticket Fields Get
+### Ticket Fields Get
 
 Returns a ticket field by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_fields.get(
@@ -1791,7 +1791,7 @@ await zendesk_support.ticket_fields.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1807,7 +1807,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1817,7 +1817,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1850,11 +1850,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Ticket Fields Search
+### Ticket Fields Search
 
 Search and filter ticket fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_fields.search(
@@ -1862,7 +1862,7 @@ await zendesk_support.ticket_fields.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1877,7 +1877,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1888,15 +1888,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `active` | `boolean` | Whether this field is currently available for use |
 | `agent_description` | `string` | A description of the ticket field that only agents can see |
-| `collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently u... |
+| `collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently used fields |
 | `created_at` | `string` | Timestamp when the custom ticket field was created |
-| `custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger, containing name a... |
+| `custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger |
 | `custom_statuses` | `array` | List of customized ticket statuses, only present for system ticket fields of type custom_status |
 | `description` | `string` | Text describing the purpose of the ticket field to users |
 | `editable_in_portal` | `boolean` | Whether this field is editable by end users in Help Center |
@@ -1915,7 +1915,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `tag` | `string` | For checkbox fields only, a tag added to tickets when the checkbox field is selected |
 | `title` | `string` | The title of the ticket field displayed to agents |
 | `title_in_portal` | `string` | The title of the ticket field displayed to end users in Help Center |
-| `type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, tagger,... |
+| `type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, or tagger |
 | `updated_at` | `string` | Timestamp when the custom ticket field was last updated |
 | `url` | `string` | The API URL for this ticket field resource |
 | `visible_in_portal` | `boolean` | Whether this field is visible to end users in Help Center |
@@ -1931,9 +1931,9 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data` | `object` | Record data containing the searchable fields listed above |
 | `hits[].data.active` | `boolean` | Whether this field is currently available for use |
 | `hits[].data.agent_description` | `string` | A description of the ticket field that only agents can see |
-| `hits[].data.collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently u... |
+| `hits[].data.collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently used fields |
 | `hits[].data.created_at` | `string` | Timestamp when the custom ticket field was created |
-| `hits[].data.custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger, containing name a... |
+| `hits[].data.custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger |
 | `hits[].data.custom_statuses` | `array` | List of customized ticket statuses, only present for system ticket fields of type custom_status |
 | `hits[].data.description` | `string` | Text describing the purpose of the ticket field to users |
 | `hits[].data.editable_in_portal` | `boolean` | Whether this field is editable by end users in Help Center |
@@ -1952,7 +1952,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.tag` | `string` | For checkbox fields only, a tag added to tickets when the checkbox field is selected |
 | `hits[].data.title` | `string` | The title of the ticket field displayed to agents |
 | `hits[].data.title_in_portal` | `string` | The title of the ticket field displayed to end users in Help Center |
-| `hits[].data.type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, tagger,... |
+| `hits[].data.type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, or tagger |
 | `hits[].data.updated_at` | `string` | Timestamp when the custom ticket field was last updated |
 | `hits[].data.url` | `string` | The API URL for this ticket field resource |
 | `hits[].data.visible_in_portal` | `boolean` | Whether this field is visible to end users in Help Center |
@@ -1961,19 +1961,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Brands
+## Brands
 
-#### Brands List
+### Brands List
 
 Returns a list of all brands for the account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.brands.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -1986,7 +1986,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1996,7 +1996,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2018,7 +2018,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2028,11 +2028,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Brands Get
+### Brands Get
 
 Returns a brand by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.brands.get(
@@ -2040,7 +2040,7 @@ await zendesk_support.brands.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2056,7 +2056,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2066,7 +2066,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2090,11 +2090,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Brands Search
+### Brands Search
 
 Search and filter brands records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.brands.search(
@@ -2102,7 +2102,7 @@ await zendesk_support.brands.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2117,7 +2117,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2128,7 +2128,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2179,19 +2179,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Views
+## Views
 
-#### Views List
+### Views List
 
 Returns a list of all views for the account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.views.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2204,7 +2204,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2219,7 +2219,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2237,7 +2237,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2247,11 +2247,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Views Get
+### Views Get
 
 Returns a view by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.views.get(
@@ -2259,7 +2259,7 @@ await zendesk_support.views.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2275,7 +2275,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2285,7 +2285,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2305,19 +2305,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Macros
+## Macros
 
-#### Macros List
+### Macros List
 
 Returns a list of all macros for the account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.macros.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2330,7 +2330,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2347,7 +2347,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2364,7 +2364,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2374,11 +2374,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Macros Get
+### Macros Get
 
 Returns a macro by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.macros.get(
@@ -2386,7 +2386,7 @@ await zendesk_support.macros.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2402,7 +2402,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2412,7 +2412,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2431,19 +2431,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Triggers
+## Triggers
 
-#### Triggers List
+### Triggers List
 
 Returns a list of all triggers for the account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.triggers.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2456,7 +2456,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2469,7 +2469,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2487,7 +2487,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2497,11 +2497,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Triggers Get
+### Triggers Get
 
 Returns a trigger by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.triggers.get(
@@ -2509,7 +2509,7 @@ await zendesk_support.triggers.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2525,7 +2525,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2535,7 +2535,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2555,19 +2555,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Automations
+## Automations
 
-#### Automations List
+### Automations List
 
 Returns a list of all automations for the account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.automations.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2580,7 +2580,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2592,7 +2592,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2608,7 +2608,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2618,11 +2618,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Automations Get
+### Automations Get
 
 Returns an automation by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.automations.get(
@@ -2630,7 +2630,7 @@ await zendesk_support.automations.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2646,7 +2646,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2656,7 +2656,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2674,19 +2674,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Tags
+## Tags
 
-#### Tags List
+### Tags List
 
 Returns a list of all tags used in the account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.tags.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2699,7 +2699,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2709,7 +2709,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2717,7 +2717,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `count` | `integer` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2727,11 +2727,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Tags Search
+### Tags Search
 
 Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.tags.search(
@@ -2739,7 +2739,7 @@ await zendesk_support.tags.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2754,7 +2754,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2765,7 +2765,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2788,19 +2788,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Satisfaction Ratings
+## Satisfaction Ratings
 
-#### Satisfaction Ratings List
+### Satisfaction Ratings List
 
 Returns a list of all satisfaction ratings
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.satisfaction_ratings.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2813,7 +2813,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2826,7 +2826,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2845,7 +2845,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2855,11 +2855,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Satisfaction Ratings Get
+### Satisfaction Ratings Get
 
 Returns a satisfaction rating by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.satisfaction_ratings.get(
@@ -2867,7 +2867,7 @@ await zendesk_support.satisfaction_ratings.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2883,7 +2883,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2893,7 +2893,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2914,11 +2914,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Satisfaction Ratings Search
+### Satisfaction Ratings Search
 
 Search and filter satisfaction ratings records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.satisfaction_ratings.search(
@@ -2926,7 +2926,7 @@ await zendesk_support.satisfaction_ratings.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -2941,7 +2941,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2952,7 +2952,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2962,7 +2962,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `group_id` | `integer` | The identifier of the group assigned to the ticket at the time the rating was submitted |
 | `id` | `integer` | Unique identifier for the satisfaction rating, automatically assigned upon creation |
 | `reason` | `string` | Free-text reason for a bad rating provided by the requester in a follow-up question |
-| `reason_id` | `integer` | Identifier for the predefined reason given for a negative rating, only applicable when score is '... |
+| `reason_id` | `integer` | Identifier for the predefined reason given for a negative rating |
 | `requester_id` | `integer` | The identifier of the ticket requester who submitted the satisfaction rating |
 | `score` | `string` | The satisfaction rating value: 'offered', 'unoffered', 'good', or 'bad' |
 | `ticket_id` | `integer` | The identifier of the ticket being rated |
@@ -2984,7 +2984,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.group_id` | `integer` | The identifier of the group assigned to the ticket at the time the rating was submitted |
 | `hits[].data.id` | `integer` | Unique identifier for the satisfaction rating, automatically assigned upon creation |
 | `hits[].data.reason` | `string` | Free-text reason for a bad rating provided by the requester in a follow-up question |
-| `hits[].data.reason_id` | `integer` | Identifier for the predefined reason given for a negative rating, only applicable when score is '... |
+| `hits[].data.reason_id` | `integer` | Identifier for the predefined reason given for a negative rating |
 | `hits[].data.requester_id` | `integer` | The identifier of the ticket requester who submitted the satisfaction rating |
 | `hits[].data.score` | `string` | The satisfaction rating value: 'offered', 'unoffered', 'good', or 'bad' |
 | `hits[].data.ticket_id` | `integer` | The identifier of the ticket being rated |
@@ -2995,19 +2995,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Group Memberships
+## Group Memberships
 
-#### Group Memberships List
+### Group Memberships List
 
 Returns a list of all group memberships
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.group_memberships.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3020,7 +3020,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3030,7 +3030,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3043,7 +3043,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3053,19 +3053,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Organization Memberships
+## Organization Memberships
 
-#### Organization Memberships List
+### Organization Memberships List
 
 Returns a list of all organization memberships
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.organization_memberships.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3078,7 +3078,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3088,7 +3088,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3103,7 +3103,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3113,19 +3113,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Sla Policies
+## Sla Policies
 
-#### Sla Policies List
+### Sla Policies List
 
 Returns a list of all SLA policies
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.sla_policies.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3138,7 +3138,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3148,7 +3148,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3163,7 +3163,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3173,11 +3173,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Sla Policies Get
+### Sla Policies Get
 
 Returns an SLA policy by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.sla_policies.get(
@@ -3185,7 +3185,7 @@ await zendesk_support.sla_policies.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3201,7 +3201,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3211,7 +3211,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3228,19 +3228,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Ticket Forms
+## Ticket Forms
 
-#### Ticket Forms List
+### Ticket Forms List
 
 Returns a list of all ticket forms for the account
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_forms.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3253,7 +3253,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3265,7 +3265,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3288,7 +3288,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3298,11 +3298,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Ticket Forms Get
+### Ticket Forms Get
 
 Returns a ticket form by its ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_forms.get(
@@ -3310,7 +3310,7 @@ await zendesk_support.ticket_forms.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3326,7 +3326,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3336,7 +3336,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3361,11 +3361,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Ticket Forms Search
+### Ticket Forms Search
 
 Search and filter ticket forms records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.ticket_forms.search(
@@ -3373,7 +3373,7 @@ await zendesk_support.ticket_forms.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3388,7 +3388,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3399,7 +3399,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3417,7 +3417,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `raw_display_name` | `string` | The dynamic content placeholder if present, or the display_name value if not |
 | `raw_name` | `string` | The dynamic content placeholder if present, or the name value if not |
 | `restricted_brand_ids` | `array` | IDs of all brands that this ticket form is restricted to |
-| `ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form, ordered to determine field display sequenc... |
+| `ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form |
 | `updated_at` | `string` | Timestamp of the last update to the ticket form |
 | `url` | `string` | URL of the ticket form |
 
@@ -3444,7 +3444,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.raw_display_name` | `string` | The dynamic content placeholder if present, or the display_name value if not |
 | `hits[].data.raw_name` | `string` | The dynamic content placeholder if present, or the name value if not |
 | `hits[].data.restricted_brand_ids` | `array` | IDs of all brands that this ticket form is restricted to |
-| `hits[].data.ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form, ordered to determine field display sequenc... |
+| `hits[].data.ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form |
 | `hits[].data.updated_at` | `string` | Timestamp of the last update to the ticket form |
 | `hits[].data.url` | `string` | URL of the ticket form |
 | `next_cursor` | `string \| null` | Cursor for next page of results |
@@ -3452,19 +3452,19 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Articles
+## Articles
 
-#### Articles List
+### Articles List
 
 Returns a list of all articles in the Help Center
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.articles.list()
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3477,7 +3477,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3489,7 +3489,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3511,7 +3511,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `position` | `integer` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3521,11 +3521,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Articles Get
+### Articles Get
 
 Retrieves the details of a specific article
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.articles.get(
@@ -3533,7 +3533,7 @@ await zendesk_support.articles.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3549,7 +3549,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3559,7 +3559,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3583,13 +3583,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Article Attachments
+## Article Attachments
 
-#### Article Attachments List
+### Article Attachments List
 
 Returns a list of all attachments for a specific article
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.article_attachments.list(
@@ -3597,7 +3597,7 @@ await zendesk_support.article_attachments.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3613,7 +3613,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3624,7 +3624,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3640,7 +3640,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `updated_at` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3650,11 +3650,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Article Attachments Get
+### Article Attachments Get
 
 Retrieves the metadata of a specific attachment for a specific article
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_support.article_attachments.get(
@@ -3663,7 +3663,7 @@ await zendesk_support.article_attachments.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3680,7 +3680,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3691,7 +3691,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -3709,11 +3709,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Article Attachments Download
+### Article Attachments Download
 
 Downloads the file content of a specific attachment
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in zendesk_support.article_attachments.download(    article_id=0,    attachment_id=0):# Process each chunk (e.g., write to file)
@@ -3722,7 +3722,7 @@ async for chunk in zendesk_support.article_attachments.download(    article_id=0
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
 curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
@@ -3739,7 +3739,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -3748,94 +3748,4 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-
-
-## Configuration
-
-The Zendesk-Support connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
-| Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| `subdomain` | `string` | Yes | your-subdomain | Your Zendesk subdomain |
-
-
-## Authentication
-
-The Zendesk-Support connector supports the following authentication methods.
-
-
-### OAuth 2.0
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `access_token` | `str` | Yes | OAuth 2.0 access token |
-| `refresh_token` | `str` | No | OAuth 2.0 refresh token (optional) |
-
-#### Example
-
-**Python SDK**
-
-```python
-ZendeskSupportConnector(
-  auth_config=ZendeskSupportOauth20AuthConfig(
-    access_token="<OAuth 2.0 access token>",
-    refresh_token="<OAuth 2.0 refresh token (optional)>"
-  )
-)
-```
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "workspace_id": "{your_workspace_id}",
-  "source_template_id": "{source_template_id}",
-  "auth_config": {
-    "access_token": "<OAuth 2.0 access token>",
-    "refresh_token": "<OAuth 2.0 refresh token (optional)>"
-  },
-  "name": "My Zendesk-Support Connector"
-}'
-```
-
-
-### API Token
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `email` | `str` | Yes | Your Zendesk account email address |
-| `api_token` | `str` | Yes | Your Zendesk API token from Admin Center |
-
-#### Example
-
-**Python SDK**
-
-```python
-ZendeskSupportConnector(
-  auth_config=ZendeskSupportApiTokenAuthConfig(
-    email="<Your Zendesk account email address>",
-    api_token="<Your Zendesk API token from Admin Center>"
-  )
-)
-```
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "workspace_id": "{your_workspace_id}",
-  "source_template_id": "{source_template_id}",
-  "auth_config": {
-    "email": "<Your Zendesk account email address>",
-    "api_token": "<Your Zendesk API token from Admin Center>"
-  },
-  "name": "My Zendesk-Support Connector"
-}'
-```
 

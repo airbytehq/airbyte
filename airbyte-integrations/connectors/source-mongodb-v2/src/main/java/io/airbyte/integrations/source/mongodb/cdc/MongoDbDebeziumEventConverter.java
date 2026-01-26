@@ -9,11 +9,10 @@ import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Instant;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
 
@@ -43,8 +42,9 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     final String operation = debeziumEvent.get(DebeziumEventConverter.OPERATION_FIELD).asText();
     final boolean isEnforceSchema = MongoDbCdcEventUtils.isEnforceSchema(config);
 
-    final Set<String> configuredFields = isEnforceSchema ? getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector)
-        : null;
+    final Map<String, JsonNode> configuredFields =
+        isEnforceSchema ? getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector)
+            : null;
 
     /*
      * Delete events need to be handled separately from other CrUD events, as depending on the version
@@ -66,7 +66,7 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
                                                     final JsonNode source,
                                                     final JsonNode debeziumEventKey,
                                                     final CdcMetadataInjector cdcMetadataInjector,
-                                                    final Set<String> configuredFields,
+                                                    final Map<String, JsonNode> configuredFields,
                                                     final boolean isEnforceSchema) {
 
     if ((before == null || before.isNull()) && (after == null || after.isNull())) {
@@ -88,7 +88,7 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
                                                           final JsonNode debeziumEventKey,
                                                           final JsonNode source,
                                                           final CdcMetadataInjector cdcMetadataInjector,
-                                                          final Set<String> configuredFields,
+                                                          final Map<String, JsonNode> configuredFields,
                                                           final boolean isEnforceSchema) {
     final String eventJson;
 
@@ -116,16 +116,25 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
         source, cdcMetadataInjector, true);
   }
 
-  private static Set<String> getConfiguredMongoDbCollectionFields(final JsonNode source,
-                                                                  final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-                                                                  final CdcMetadataInjector cdcMetadataInjector) {
+  /**
+   * Finds the stream and maps it to its field types.
+   *
+   * @param source the source metadata (JsonNode)
+   * @param configuredAirbyteCatalog AirbyteCatalog containing stream configurations and JSON schemas
+   * @param cdcMetadataInjector Helper to extract stream namespace and name from the source
+   * @return Map of field names to schema definitions using
+   *         MongoDbCdcEventUtils.extractFieldSchemas(). Returns an empty map if the stream is not
+   *         found.
+   */
+  private static Map<String, JsonNode> getConfiguredMongoDbCollectionFields(final JsonNode source,
+                                                                            final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                                                            final CdcMetadataInjector cdcMetadataInjector) {
     final String streamNamespace = cdcMetadataInjector.namespace(source);
     final String streamName = cdcMetadataInjector.name(source);
     return configuredAirbyteCatalog.getStreams().stream()
         .filter(s -> streamName.equals(s.getStream().getName()) && streamNamespace.equals(s.getStream().getNamespace()))
-        .map(CatalogHelpers::getTopLevelFieldNames)
-        .flatMap(Set::stream)
-        .collect(Collectors.toSet());
+        .findFirst().map(MongoDbCdcEventUtils::extractFieldSchemas)
+        .orElse(new HashMap<>());
   }
 
 }

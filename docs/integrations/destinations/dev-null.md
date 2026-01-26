@@ -49,6 +49,8 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.9.2 | 2026-01-21 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Upgrade CDK to 0.2.0 |
+| 0.9.1 | 2026-01-21 | [72226](https://github.com/airbytehq/airbyte/pull/72226) | No-op version bump to test release cycle |
 | 0.9.0 | 2026-01-09 | [71264](https://github.com/airbytehq/airbyte/pull/71264) | Promoting release candidate 0.9.0-rc.2 to a main version. |
 | 0.9.0-rc.2  | 2026-01-08 | [71242](https://github.com/airbytehq/airbyte/pull/71242) | Add missing configuration bean.                                                              |
 | 0.9.0-rc.1  | 2026-01-08 | [71191](https://github.com/airbytehq/airbyte/pull/71191) | Migrate to modern dataflow CDK architecture.                                                 |

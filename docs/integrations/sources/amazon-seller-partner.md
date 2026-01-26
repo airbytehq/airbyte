@@ -9,6 +9,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 ## Prerequisites
 
 - Amazon Seller Partner account
+- For Brand Analytics streams (Market Basket Analysis, Search Terms, Repeat Purchase, Alternate Purchase, Item Comparison reports): Registration in [Amazon Brand Registry](https://brandservices.amazon.com/) and the Brand Analytics role in your SP-API application
 
 <!-- env:cloud -->
 
@@ -33,6 +34,12 @@ This page contains the setup guide and reference information for the [Amazon Sel
 - Refresh Token
 
 <!-- /env:oss -->
+
+## Supported regions
+
+The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
+
+Both GB and UK refer to the United Kingdom marketplace and can be used interchangeably. For the complete list of Amazon marketplace IDs, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids).
 
 ## Setup guide
 
@@ -144,16 +151,18 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
+- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
+- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 <!-- env:oss -->
-- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
 - [Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
 - [Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Repeat Purchase](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
 - [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
 <!-- /env:oss -->
 
@@ -255,6 +264,8 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.0 | 2026-01-21 | [71055](https://github.com/airbytehq/airbyte/pull/71055) | Re-add 8 brand analytics and vendor analytics streams to Cloud. Fix token expiration handling for long-running syncs. |
+| 5.1.2 | 2026-01-20 | [71037](https://github.com/airbytehq/airbyte/pull/71037) | Fix GB marketplace_id config transformation |
 | 5.1.1 | 2026-01-20 | [71991](https://github.com/airbytehq/airbyte/pull/71991) | Update dependencies |
 | 5.1.0 | 2026-01-15 | [71327](https://github.com/airbytehq/airbyte/pull/71327) | Add rate limiting and hourly granularity options for ListFinancialEvents and ListFinancialEventGroups streams |
 | 5.0.2 | 2026-01-14 | [71526](https://github.com/airbytehq/airbyte/pull/71526) | Update dependencies |
