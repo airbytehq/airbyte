@@ -74,7 +74,6 @@ import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -306,7 +305,6 @@ abstract class BasicFunctionalityIntegrationTest(
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
     val unionBehavior: UnionBehavior,
     val coercesLegacyUnions: Boolean = false,
-    val supportFileTransfer: Boolean,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -347,7 +345,6 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
-    val useDataFlowPipeline: Boolean = false,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -1599,11 +1596,9 @@ abstract class BasicFunctionalityIntegrationTest(
                             totalRecords = 1L,
                             totalBytes = expectedBytes,
                             additionalStats =
-                                if (useDataFlowPipeline)
-                                    StateAdditionalStatsStore.ObservabilityMetrics.entries
-                                        .associate { it.metricName to 0.0 }
-                                        .toMutableMap()
-                                else mutableMapOf(),
+                                StateAdditionalStatsStore.ObservabilityMetrics.entries
+                                    .associate { it.metricName to 0.0 }
+                                    .toMutableMap(),
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -1648,94 +1643,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 }
             },
         )
-    }
-
-    @Test
-    open fun testBasicWriteFile() {
-        assumeTrue(supportFileTransfer)
-        val stream =
-            DestinationStream(
-                randomizedNamespace,
-                "test_stream_file",
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 42,
-                isFileBased = true,
-                includeFiles = true,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema = emptyTableSchema,
-            )
-
-        val sourcePath = "path/to/file"
-        // these must match the values hard-coded in DockerizedDestination
-        val stagingDir = "tmp"
-        val fileName = "test_file"
-        val fileContents = "123"
-
-        val fileReference =
-            AirbyteRecordMessageFileReference()
-                .withSourceFileRelativePath(sourcePath)
-                .withStagingFileUrl("/$stagingDir/$fileName")
-                .withFileSizeBytes(1234L)
-
-        val input =
-            InputRecord(
-                stream = stream,
-                data = """{"id": 5678}""",
-                emittedAtMs = 1234,
-                changes = mutableListOf(),
-                fileReference = fileReference,
-                checkpointId = checkpointKeyForMedium()?.checkpointId
-            )
-
-        val messages =
-            runSync(
-                updatedConfig,
-                stream,
-                listOf(
-                    input,
-                    InputStreamCheckpoint(
-                        unmappedName = stream.unmappedName,
-                        unmappedNamespace = stream.unmappedNamespace,
-                        blob = """{"foo": "bar"}""",
-                        sourceRecordCount = 1,
-                        checkpointKey = checkpointKeyForMedium(),
-                    )
-                ),
-                useFileTransfer = true,
-            )
-
-        val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
-        assertAll({
-            assertEquals(
-                1,
-                stateMessages.size,
-                "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
-            )
-            assertEquals(
-                StreamCheckpoint(
-                        unmappedName = stream.unmappedName,
-                        unmappedNamespace = stream.unmappedNamespace,
-                        blob = """{"foo": "bar"}""",
-                        sourceRecordCount = 1,
-                        destinationRecordCount = 1,
-                        checkpointKey = checkpointKeyForMedium(),
-                        // Files doesn't need these, but they get added anyway
-                        totalRecords = 1,
-                        totalBytes = 267L
-                    )
-                    .asProtocolMessage()
-                    .serializeToString(),
-                stateMessages.first().serializeToString()
-            )
-        })
-
-        val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
-        val fileContent = dataDumper.dumpFile(config, stream)
-
-        assertEquals(fileContents, fileContent[sourcePath])
     }
 
     /**
@@ -5276,14 +5183,13 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
-    private fun expectedAdditionalStats(): AdditionalStats? =
-        if (useDataFlowPipeline) {
-            val expectedAdditionalStats = AdditionalStats()
-            StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
-                expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
-            }
-            expectedAdditionalStats
-        } else null
+    private fun expectedAdditionalStats(): AdditionalStats {
+        val expectedAdditionalStats = AdditionalStats()
+        StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
+            expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
+        }
+        return expectedAdditionalStats
+    }
 
     fun namespaceMapperForMedium(): NamespaceMapper = dataChannelMedium.namespaceMapper()
 }

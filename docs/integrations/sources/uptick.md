@@ -68,6 +68,12 @@ The Uptick connector syncs data from the following streams, organized by functio
 - `assettypes` - Categories and specifications for asset types
 - `assettypevariants` - Variants and configurations of asset types
 - `routines` - Scheduled maintenance and inspection routines
+- `routineservices` - Routine service configurations for properties and assets
+- `routineservicelevels` - Service level definitions for routine services
+- `routineservicetypes` - Types and categories of routine services
+- `routineserviceleveltypes` - Service level type classifications
+- `servicetasks` - Individual work activities on tasks
+- `subtasks` - Links programme maintenance routines to tasks
 - `remarks` - Issues, defects, and observations during inspections
 - `remarkevents` - Events and actions taken on remarks
 - `appointments` - Scheduled appointments for work and inspections
@@ -94,49 +100,55 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| tasks | id | DefaultPaginator | ✅ | ✅ |
-| taskcategories | id | DefaultPaginator | ✅ | ✅ |
-| clients | id | DefaultPaginator | ✅ | ✅ |
-| clientgroups | id | DefaultPaginator | ✅ | ✅ |
-| properties | id | DefaultPaginator | ✅ | ✅ |
-| invoices | id | DefaultPaginator | ✅ | ✅ |
-| projects | id | DefaultPaginator | ✅ | ✅ |
-| servicequotes | id | DefaultPaginator | ✅ | ✅ |
-| defectquotes | id | DefaultPaginator | ✅ | ✅ |
-| suppliers | id | DefaultPaginator | ✅ | ✅ |
-| purchaseorders | id | DefaultPaginator | ✅ | ✅ |
-| purchaseorderlineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| assets | id | DefaultPaginator | ✅ | ✅ |
-| routines | id | DefaultPaginator | ✅ | ✅ |
-| billingcards | id | DefaultPaginator | ✅ | ✅ |
-| purchaseorderbills | id | DefaultPaginator | ✅ | ✅ |
-| purchaseorderbilllineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| purchaseorderdockets | id | DefaultPaginator | ✅ | ✅ |
-| invoicelineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| users | id | DefaultPaginator | ✅ | ✅ |
-| servicegroups | id | DefaultPaginator | ✅ | ✅ |
-| costcentres | id | DefaultPaginator | ✅ | ✅ |
-| accreditationtypes | id | DefaultPaginator | ✅ | ✅ |
-| accreditations | id | DefaultPaginator | ✅ | ✅ |
-| branches | id | DefaultPaginator | ✅ | ✅ |
-| creditnotes | id | DefaultPaginator | ✅ | ✅ |
-| creditnotelineitems | id | DefaultPaginator | ✅ | ✅ |
-| remarks | id | DefaultPaginator | ✅ | ✅ |
-| assettypes | id | DefaultPaginator | ✅ | ✅ |
-| assettypevariants | id | DefaultPaginator | ✅ | ✅ |
-| products | id | DefaultPaginator | ✅ | ✅ |
-| rounds | id | DefaultPaginator | ✅ | ✅ |
-| tasksessions | id | DefaultPaginator | ✅ | ✅ |
-| contractors | id | DefaultPaginator | ✅ | ✅ |
-| appointments | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| billingcontracts | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| billingcontractlineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| defectquotelineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| servicequotefixedlineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| servicequotedoandchargelineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| servicequoteproductlineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| remarkevents | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
-| task_profitability | task_id | DefaultPaginator | ✅ | ✅ |
+| `tasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `taskcategories` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `clients` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `clientgroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `properties` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `invoices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `projects` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicequotes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `defectquotes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `suppliers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorders` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorderlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `assets` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `routines` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `billingcards` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorderbills` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorderbilllineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorderdockets` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `invoicelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `users` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicegroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `costcentres` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `accreditationtypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `accreditations` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `branches` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `creditnotes` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `creditnotelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `remarks` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `assettypes` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `assettypevariants` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `products` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `rounds` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `tasksessions` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `contractors` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `appointments` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `billingcontracts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `billingcontractlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `defectquotelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicequotefixedlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicequotedoandchargelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicequoteproductlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `remarkevents` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `routineservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `routineservicelevels` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `routineservicetypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `routineserviceleveltypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicetasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ |
 
 ## Changelog
 
@@ -145,6 +157,8 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems, and add 6 new streams: servicetasks, routineservices, routineservicelevels, routineservicetypes, routineserviceleveltypes, subtasks |
+| 0.4.3 | 2026-01-20 | [72056](https://github.com/airbytehq/airbyte/pull/72056) | Update dependencies |
 | 0.4.2 | 2026-01-14 | [71437](https://github.com/airbytehq/airbyte/pull/71437) | Update dependencies |
 | 0.4.1 | 2025-12-18 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
 | 0.4.0 | 2025-12-10 | [68194](https://github.com/airbytehq/airbyte/pull/68194) | Remove expensive calculation fields from tasksessions, add more streams, including task profitability |
