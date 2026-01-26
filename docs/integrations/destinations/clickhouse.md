@@ -173,6 +173,7 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.22     | 2026-01-26 | [71784](https://github.com/airbytehq/airbyte/pull/71784)   | No user-facing changes (internal refactor SSH tunnel logic)                    |
 | 2.1.21     | 2026-01-20 | [72294](https://github.com/airbytehq/airbyte/pull/72294)   | Upgrade CDK to 0.2.0                                                           |
 | 2.1.20     | 2026-01-15 | [71120](https://github.com/airbytehq/airbyte/pull/71120)   | Add schema and table identifier regression tests; upgrade CDK to 0.1.105       |
 | 2.1.19     | 2026-01-08 | [70996](https://github.com/airbytehq/airbyte/pull/70996)   | Upgrade to CDK 0.1.97                                                          |
