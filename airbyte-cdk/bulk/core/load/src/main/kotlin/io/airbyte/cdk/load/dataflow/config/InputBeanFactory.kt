@@ -44,9 +44,23 @@ class InputBeanFactory {
     private val log = KotlinLogging.logger {}
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
+    @Named("socketPaths")
+    @Singleton
+    fun socketPaths(
+        @Value("\${airbyte.destination.core.data-channel.count-override}") count: Int?,
+        @Value("\${airbyte.destination.core.data-channel.socket-paths}") socketPaths: List<String>,
+    ): List<String> {
+        return if (count != null) {
+            socketPaths.take(count)
+        } else {
+            socketPaths
+        }
+    }
+
+    @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
     @Singleton
     fun sockets(
-        @Value("\${airbyte.destination.core.data-channel.socket-paths}") socketPaths: List<String>,
+        @Named("socketPaths") socketPaths: List<String>,
         @Value("\${airbyte.destination.core.data-channel.socket-buffer-size-bytes}")
         bufferSizeBytes: Int,
         @Value("\${airbyte.destination.core.data-channel.socket-connection-timeout-ms}")
