@@ -65,7 +65,7 @@ After creating the connector, execute operations using either the Python SDK or 
 from airbyte_agent_shopify import ShopifyConnector
 
 connector = ShopifyConnector(
-    external_user_id="<your_external_user_id>",
+    external_user_id="<your-scoped-token>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
