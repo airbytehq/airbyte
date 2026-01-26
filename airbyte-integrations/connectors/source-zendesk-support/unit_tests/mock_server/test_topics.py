@@ -3,6 +3,8 @@
 from datetime import timedelta
 from unittest import TestCase
 
+import freezegun
+
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -14,6 +16,7 @@ from .response_builder import ErrorResponseBuilder, TopicsRecordBuilder, TopicsR
 from .utils import get_log_messages_by_log_level, read_stream
 
 
+@freezegun.freeze_time("2025-11-01")
 class TestTopicsStreamFullRefresh(TestCase):
     """Test topics stream which uses links_next_paginator (cursor-based pagination)."""
 
@@ -41,9 +44,13 @@ class TestTopicsStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
+        # Use a recent updated_at to pass the semi_incremental_stream record filter
+        recent_updated_at = "2025-01-01T00:00:00Z"
         http_mocker.get(
             self._base_topics_request(api_token_authenticator).build(),
-            TopicsResponseBuilder.topics_response().with_record(TopicsRecordBuilder.topics_record()).build(),
+            TopicsResponseBuilder.topics_response()
+            .with_record(TopicsRecordBuilder.topics_record().with_updated_at(recent_updated_at))
+            .build(),
         )
 
         output = read_stream("topics", SyncMode.incremental, self._config)
@@ -61,17 +68,22 @@ class TestTopicsStreamFullRefresh(TestCase):
         # Create the next page request first - this URL will be used in links.next
         next_page_http_request = self._base_topics_request(api_token_authenticator).with_after_cursor("after-cursor").build()
 
+        # Use a recent updated_at to pass the semi_incremental_stream record filter
+        recent_updated_at = "2025-01-01T00:00:00Z"
+
         http_mocker.get(
             self._base_topics_request(api_token_authenticator).build(),
             TopicsResponseBuilder.topics_response(next_page_http_request)
-            .with_record(TopicsRecordBuilder.topics_record())
+            .with_record(TopicsRecordBuilder.topics_record().with_updated_at(recent_updated_at))
             .with_pagination()
             .build(),
         )
 
         http_mocker.get(
             next_page_http_request,
-            TopicsResponseBuilder.topics_response().with_record(TopicsRecordBuilder.topics_record().with_id(67890)).build(),
+            TopicsResponseBuilder.topics_response()
+            .with_record(TopicsRecordBuilder.topics_record().with_id(67890).with_updated_at(recent_updated_at))
+            .build(),
         )
 
         output = read_stream("topics", SyncMode.full_refresh, self._config)

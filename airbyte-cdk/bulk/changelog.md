@@ -1,3 +1,7 @@
+## Version 0.2.0
+
+Fully separate `legacy-task-loader` toolkit from `core-load`. Drastically simplify `core-load` by removing legacy abstractions.
+
 ## Version 0.1.108
 
 load cdk: DataCoercionSuite tests null character in strings
