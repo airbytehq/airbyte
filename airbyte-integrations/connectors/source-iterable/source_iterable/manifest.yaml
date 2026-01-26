@@ -322,6 +322,18 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%d %H:%M:%S %z"
         - "%Y-%m-%dT%H:%M:%S%z"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - firstName
+            value: "{{ record.firstname }}"
+          - path:
+              - lastName
+            value: "{{ record.lastname }}"
+          - path:
+              - phone
+            value: "{{ record.phone }}"
   - name: events
     primary_key: []
     retriever:
