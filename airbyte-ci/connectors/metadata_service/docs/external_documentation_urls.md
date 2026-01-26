@@ -533,6 +533,146 @@ externalDocumentationUrls:
     type: permissions_scopes
 ```
 
+## Best Practices for Editing metadata.yaml Files
+
+### Avoiding Unnecessary Diffs
+
+When adding or modifying `externalDocumentationUrls` in connector metadata.yaml files, it's critical to preserve the existing file formatting to avoid creating unnecessary diff noise. Follow these guidelines:
+
+#### Use Format-Preserving YAML Libraries
+
+**❌ Don't use standard PyYAML:**
+```python
+import yaml
+
+# This will re-dump the entire file with PyYAML's default formatting
+with open('metadata.yaml', 'r') as f:
+    data = yaml.safe_load(f)
+
+data['data']['externalDocumentationUrls'] = [...]
+
+with open('metadata.yaml', 'w') as f:
+    yaml.dump(data, f)  # ❌ Reformats the entire file
+```
+
+**✅ Do use ruamel.yaml with round-trip mode:**
+```python
+from ruamel.yaml import YAML
+
+yaml = YAML()
+yaml.preserve_quotes = True
+yaml.default_flow_style = False
+yaml.indent(mapping=2, sequence=2, offset=2)
+
+with open('metadata.yaml', 'r') as f:
+    data = yaml.load(f)
+
+# Only modify the specific section you need to change
+data['data']['externalDocumentationUrls'] = [...]
+
+with open('metadata.yaml', 'w') as f:
+    yaml.dump(data, f)  # ✅ Preserves original formatting
+```
+
+#### Match Repository Formatting Standards
+
+The Airbyte repository uses specific YAML formatting conventions:
+
+1. **List indentation**: Use 2-space indentation for nested lists
+   ```yaml
+   externalDocumentationUrls:
+     - title: Release notes
+       url: https://example.com
+       type: api_release_history
+   ```
+
+2. **Quote style**: Match the existing quote style in the file (typically double quotes for version strings)
+
+3. **Flow vs block style**: Preserve the existing style for arrays and objects
+   - Some files use flow style: `supportedSerialization: ["JSONL", "PROTOBUF"]`
+   - Others use block style with proper indentation
+
+4. **Multi-line strings**: Preserve the existing style (literal `|` vs folded `>` vs quoted)
+
+#### Run Pre-commit Hooks Locally
+
+Before pushing changes, run the repository's formatting tools locally:
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run on all files (or specific files)
+pre-commit run --all-files
+
+# Or run on specific files
+pre-commit run --files airbyte-integrations/connectors/destination-*/metadata.yaml
+```
+
+This catches formatting issues before they trigger CI failures or require manual cleanup.
+
+#### Test on a Small Sample First
+
+When making bulk changes across many connectors:
+
+1. **Test on 1-2 connectors first** to verify your script produces minimal diffs
+2. **Review the git diff** to ensure only the intended sections changed
+3. **Verify no unrelated formatting changes** were introduced
+4. **Scale up** only after confirming the approach is correct
+
+#### Common Pitfalls
+
+1. **Re-dumping entire files**: Using standard YAML libraries that reformat the entire file
+2. **Inconsistent indentation**: Not matching the repository's 2-space indent standard
+3. **Quote style changes**: Converting between single/double quotes unnecessarily
+4. **Flow style conversion**: Converting inline arrays to block style (or vice versa)
+5. **Skipping pre-commit**: Not running formatters locally before pushing
+
+### Example: Surgical Edit with ruamel.yaml
+
+Here's a complete example of surgically adding `externalDocumentationUrls` without touching other parts of the file:
+
+```python
+from pathlib import Path
+from ruamel.yaml import YAML
+
+def add_external_docs(metadata_path: Path, docs_urls: list):
+    """Add externalDocumentationUrls while preserving file formatting."""
+    yaml = YAML()
+    yaml.preserve_quotes = True
+    yaml.default_flow_style = False
+    yaml.indent(mapping=2, sequence=2, offset=2)
+    
+    # Load with format preservation
+    with open(metadata_path, 'r') as f:
+        data = yaml.load(f)
+    
+    # Only modify the specific field
+    if 'data' not in data:
+        data['data'] = {}
+    
+    data['data']['externalDocumentationUrls'] = docs_urls
+    
+    # Write back with preserved formatting
+    with open(metadata_path, 'w') as f:
+        yaml.dump(data, f)
+
+# Usage
+docs = [
+    {
+        'title': 'Release notes',
+        'url': 'https://cloud.google.com/bigquery/docs/release-notes',
+        'type': 'api_release_history'
+    },
+    # ... more entries
+]
+
+add_external_docs(
+    Path('airbyte-integrations/connectors/destination-bigquery/metadata.yaml'),
+    docs
+)
+```
+
 ## Regenerating Schema After Changes
 
 If you modify the schema enum in `ConnectorMetadataDefinitionV0.yaml`, regenerate the generated models:
