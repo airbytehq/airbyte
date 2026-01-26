@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <rect width="128" height="128" rx="16" fill="#0B69FF" />
+  <g fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-weight="700">
+    <text x="50%" y="44%" text-anchor="middle" font-size="44">FMP</text>
+  </g>
+  <path d="M32 84c12-14 24-28 64-28" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.9" />
+  <circle cx="40" cy="66" r="3.5" fill="#FFD166" />
+  <circle cx="64" cy="56" r="3.5" fill="#06D6A0" />
+  <circle cx="88" cy="52" r="3.5" fill="#EF476F" />
+</svg>
