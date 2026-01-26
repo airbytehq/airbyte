@@ -1307,9 +1307,7 @@ class DeploymentStatuses(SemiIncrementalMixin, GithubStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(sync_mode=SyncMode.full_refresh, **kwargs)
         for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs
-            )
+            parent_records = self.parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
             for record in parent_records:
                 yield {"repository": record["repository"], "deployment_id": record["id"]}
 
