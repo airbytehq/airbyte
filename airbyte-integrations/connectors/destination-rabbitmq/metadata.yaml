@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
-  dockerImageTag: 0.1.43
+  dockerImageTag: 0.1.44
   dockerRepository: airbyte/destination-rabbitmq
   githubIssueLabel: destination-rabbitmq
   icon: pulsar.svg
@@ -35,7 +35,7 @@ data:
     #         type: GSM
     #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   externalDocumentationUrls:
     - title: RabbitMQ documentation
       url: https://www.rabbitmq.com/documentation.html
