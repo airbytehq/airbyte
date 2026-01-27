@@ -358,8 +358,6 @@ constructor(
         const val CLIENT_KEY_STORE_URL: String = "sslkey"
         const val CLIENT_KEY_STORE_PASS: String = "sslpassword"
         const val SSL_MODE: String = "sslmode"
-        const val POSTGRES_CONNECT_TIMEOUT_KEY: String = "connectTimeout"
-        const val POSTGRES_CONNECT_TIMEOUT_DEFAULT_DURATION_SECONDS: Int = 10
     }
 
     private fun passwordOrToken(pojo: PostgresSourceConfigurationSpecification): String? {
