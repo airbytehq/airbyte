@@ -1968,15 +1968,8 @@ spec:
           See <a href="https://docs.stripe.com/api/subscriptions/list">Stripe API docs</a> for details.
         enum:
           - all
-          - active
           - canceled
           - ended
-          - incomplete
-          - incomplete_expired
-          - past_due
-          - paused
-          - trialing
-          - unpaid
         default: "all"
         order: 8
       expand_charge_refunds:
