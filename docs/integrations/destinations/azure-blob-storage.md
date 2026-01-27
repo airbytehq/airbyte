@@ -110,26 +110,26 @@ With root level flattening, the output JSONL is:
 
 ### Setup guide
 
-* Fill up AzureBlobStorage info
-  * **Azure Blob Storage Endpoint Domain Name**
-    * Leave the default value \(or leave it empty if running the container from the command line\) to use the Microsoft endpoint, or specify your own.
-  * **Azure Blob Storage Container Name**
-    * If the container does not exist, it will be created automatically. If left empty, a container named `airbytecontainer` with a timestamp suffix will be created.
-  * **Azure Blob Storage Account Name**
-    * See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
-  * **Authentication** - you must use exactly one of these:
-    * **Shared Access Signature** (recommended)
-      * See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create an SAS.
-    * **Azure Entra ID (Service Principal)**
-      * Azure Tenant ID, Azure Client ID, and Azure Client Secret from an Azure service principal with appropriate permissions.
-      * See [this](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for how to create a service principal.
-    * **Azure Blob Storage Account Key**
-      * Corresponding key to the above user.
-  * **Format**
-    * Data format that will be use for a migrated data representation in blob.
-* Make sure your user has access to Azure from the machine running Airbyte.
-  * This depends on your networking setup.
-  * The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
+- Fill up AzureBlobStorage info
+  - **Azure Blob Storage Endpoint Domain Name**
+    - Leave the default value \(or leave it empty if running the container from the command line\) to use the Microsoft endpoint, or specify your own.
+  - **Azure Blob Storage Container Name**
+    - If the container does not exist, it will be created automatically. If left empty, a container named `airbytecontainer` with a timestamp suffix will be created.
+  - **Azure Blob Storage Account Name**
+    - See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
+  - **Authentication** - you must use exactly one of these:
+    - **Shared Access Signature** (recommended)
+      - See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create an SAS.
+    - **Azure Entra ID (Service Principal)**
+      - Azure Tenant ID, Azure Client ID, and Azure Client Secret from an Azure service principal with appropriate permissions.
+      - See [this](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for how to create a service principal.
+    - **Azure Blob Storage Account Key**
+      - Corresponding key to the above user.
+  - **Format**
+    - Data format that will be use for a migrated data representation in blob.
+- Make sure your user has access to Azure from the machine running Airbyte.
+  - This depends on your networking setup.
+  - The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
 
 
 ## Changelog
