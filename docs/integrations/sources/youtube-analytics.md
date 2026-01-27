@@ -96,6 +96,7 @@ The connector retrieves bulk report data from YouTube's reporting jobs, which mi
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 1.2.2 | 2026-01-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Add clear error message for expired refresh tokens |
 | 1.2.1 | 2026-01-20 | [72048](https://github.com/airbytehq/airbyte/pull/72048) | Update dependencies |
 | 1.2.0 | 2026-01-14 | [71377](https://github.com/airbytehq/airbyte/pull/71377) | Promoting release candidate 1.2.0-rc.2 to a main version. |
 | 1.2.0-rc.2 | 2026-01-09 | [71244](https://github.com/airbytehq/airbyte/pull/71244) | Fix incorrect report_id key and remove additional error message |
