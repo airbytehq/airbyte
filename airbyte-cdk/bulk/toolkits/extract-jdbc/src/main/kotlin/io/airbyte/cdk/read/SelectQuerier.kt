@@ -218,7 +218,7 @@ class JdbcSelectQuerier(
 fun <T> querySingleValue(
     jdbcConnectionFactory: JdbcConnectionFactory,
     query: String,
-    bindParameters: ((PreparedStatement) -> Unit)?,
+    bindParameters: ((PreparedStatement) -> Unit)? = null,
     withResultSet: (ResultSet) -> T
 ): T {
     jdbcConnectionFactory.get().use { connection ->

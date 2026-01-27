@@ -49,13 +49,13 @@ class PostgresSourceDebeziumOperations(
     private val config: PostgresSourceConfiguration,
     private val connectionFactory: PostgresSourceJdbcConnectionFactory,
     private val replicationSlotManager: ReplicationSlotManager,
+    private val startupState: StartupState,
 ) :
     CdcPartitionsCreatorDebeziumOperations<PostgresSourceCdcPosition>,
     CdcPartitionReaderDebeziumOperations<PostgresSourceCdcPosition> {
 
     private val log = KotlinLogging.logger {}
     private val cdcConfig: CdcIncrementalConfiguration by lazy { config.cdc!! }
-    private val startupState: StartupState = getStartupState(connectionFactory)
 
     companion object {
         const val STATE = "state"
@@ -93,55 +93,6 @@ class PostgresSourceDebeziumOperations(
                 lsn = Lsn.valueOf(lsn),
                 lsnCommit = Lsn.valueOf(lsnCommit),
             )
-        }
-
-        data class StartupState(val txId: Long, val lsn: Long, val time: Instant)
-
-        private object StartupStateHolder {
-            var startupState: StartupState? = null
-        }
-
-        // Ensure these are fetched only once for correctness.
-        private fun getStartupState(
-            connectionFactory: PostgresSourceJdbcConnectionFactory
-        ): StartupState {
-            return StartupStateHolder.startupState
-                ?: synchronized(StartupStateHolder) {
-                    if (StartupStateHolder.startupState != null) {
-                        return StartupStateHolder.startupState!!
-                    }
-                    val txId: Long
-                    val lsn: Long
-                    // TODO: We should get the timestamp from the DB, not the application.
-                    //  The previous implementation on the Java CDK also used an application
-                    // timestamp.
-                    val time: Instant = Instant.now()
-                    connectionFactory.get().use { connection ->
-                        connection.createStatement().use {
-                            it.execute(
-                                "SELECT CASE WHEN pg_is_in_recovery() THEN txid_snapshot_xmin(txid_current_snapshot()) ELSE txid_current() END AS pg_current_txid;"
-                            )
-                            check(it.resultSet.next()) { "Query for txid produced no results" }
-                            check(it.resultSet.isLast) {
-                                "Query for txid produced more than one result"
-                            }
-                            txId = it.resultSet!!.getLong(1)
-                        }
-                        connection.createStatement().use {
-                            // pg version >= 10. For versions < 10 use query select * from
-                            // pg_current_xlog_location()
-                            it.execute(
-                                "SELECT CASE WHEN pg_is_in_recovery() THEN pg_last_wal_receive_lsn() ELSE pg_current_wal_lsn() END AS pg_current_wal_lsn;"
-                            )
-                            check(it.resultSet.next()) { "Query for lsn produced no results" }
-                            check(it.resultSet.isLast) {
-                                "Query for lsn produced more than one result"
-                            }
-                            lsn = Lsn.valueOf(it.resultSet!!.getString(1)).asLong()
-                        }
-                    }
-                    StartupState(txId, lsn, time).also { StartupStateHolder.startupState = it }
-                }
         }
     }
 
@@ -239,6 +190,7 @@ class PostgresSourceDebeziumOperations(
     private fun advanceLsn() {
         connectionFactory.get().use { connection ->
             if (connection.metaData.databaseMajorVersion < 15) return
+            connection.isReadOnly = false
             connection.autoCommit = false
             try {
                 connection.createStatement().use {
