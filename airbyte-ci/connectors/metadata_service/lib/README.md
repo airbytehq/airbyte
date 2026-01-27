@@ -10,6 +10,16 @@ To use this submodule, it is recommended that you use Poetry to manage dependenc
 poetry install
 ```
 
+### Node.js Requirement
+
+The model generation process also requires Node.js to bundle JSON schemas. Install Node.js:
+
+- On macOS: `brew install node`
+- On Ubuntu/Debian: `sudo apt-get install nodejs npm`
+- On other systems: https://nodejs.org/
+
+Node.js dependencies will be automatically installed when running `poetry run poe generate-models`.
+
 ## Generating Models
 
 This submodule includes a tool for generating Python models from JSON Schema specifications. To generate the models, we use the library [datamodel-code-generator](https://github.com/koxudaxi/datamodel-code-generator). The generated models are stored in `models/generated`.
@@ -65,7 +75,7 @@ This will copy the specified connector version to your development bucket. This 
 _💡 Note: A prerequisite is you have [gsutil](https://cloud.google.com/storage/docs/gsutil) installed and have run `gsutil auth login`_
 
 ```bash
-TARGET_BUCKET=<YOUR-DEV_BUCKET> CONNECTOR="airbyte/source-stripe" VERSION="3.17.0-dev.ea013c8741" poetry run poe copy-connector-from-prod
+TARGET_BUCKET=<YOUR-DEV_BUCKET> CONNECTOR="airbyte/source-stripe" VERSION="3.17.0-preview.ea013c8" poetry run poe copy-connector-from-prod
 ```
 
 ### Promote Connector Version to Latest
@@ -77,5 +87,5 @@ _💡 Note: A prerequisite is you have [gsutil](https://cloud.google.com/storage
 _⚠️ Warning: Its important to know that this will remove ANY existing files in the latest folder that are not in the versioned folder as it calls `gsutil rsync` with `-d` enabled._
 
 ```bash
-TARGET_BUCKET=<YOUR-DEV_BUCKET> CONNECTOR="airbyte/source-stripe" VERSION="3.17.0-dev.ea013c8741" poetry run poe promote-connector-to-latest
+TARGET_BUCKET=<YOUR-DEV_BUCKET> CONNECTOR="airbyte/source-stripe" VERSION="3.17.0-preview.ea013c8" poetry run poe promote-connector-to-latest
 ```

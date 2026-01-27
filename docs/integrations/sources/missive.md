@@ -35,6 +35,14 @@ Visit `https://missiveapp.com/help/api-documentation/rest-endpoints` for API doc
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.43 | 2026-01-20 | [72003](https://github.com/airbytehq/airbyte/pull/72003) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71525](https://github.com/airbytehq/airbyte/pull/71525) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70746](https://github.com/airbytehq/airbyte/pull/70746) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [70129](https://github.com/airbytehq/airbyte/pull/70129) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69582](https://github.com/airbytehq/airbyte/pull/69582) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [69051](https://github.com/airbytehq/airbyte/pull/69051) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68447](https://github.com/airbytehq/airbyte/pull/68447) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67818](https://github.com/airbytehq/airbyte/pull/67818) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67381](https://github.com/airbytehq/airbyte/pull/67381) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66345](https://github.com/airbytehq/airbyte/pull/66345) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [65817](https://github.com/airbytehq/airbyte/pull/65817) | Update dependencies |

@@ -42,7 +42,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 5. Click **Authenticate your Amazon Ads account**.
 6. Log in and Authorize to the Amazon account.
 7. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-8. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 90 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+8. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 9. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 11. Click **Set up source**.
@@ -58,7 +58,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 90 days in the past. If a date is not specified, yesterday's date is used. The date is treated in the timezone of the processed profile.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, yesterday's date is used. The date is treated in the timezone of the processed profile.
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 10. Click **Set up source**.
@@ -72,7 +72,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 3. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 4. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 90 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 6. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 7. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 <!-- /env:oss -->
@@ -129,7 +129,7 @@ All the reports are generated relative to the target profile's timezone.
 
 Campaign reports may sometimes have no data or may not be presenting in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
 
-Report data synchronization only covers the last 90 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
+Report data synchronization only covers the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
 
 :::note
 The 'Reports' stream(s) by default will have `timeUnit` set to `SUMMARY`. If you would like more granularity, use the `_daily` versions of the report streams, which have
@@ -140,6 +140,16 @@ The 'Reports' stream(s) by default will have `timeUnit` set to `SUMMARY`. If you
 ## Performance considerations
 
 Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
+
+### Rate Limits
+
+The Amazon Ads API uses dynamic rate limiting that varies by region and system load. Rate limits are not publicly documented with specific numbers. For more details, see the [Amazon Ads API Rate Limiting documentation](https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting).
+
+**Adjusting Concurrency Settings:**
+
+If you experience rate limiting errors (429 status codes) during syncs, decrease the "Number of concurrent workers" setting in your connector configuration to reduce the load on the API.
+
+If you need better sync performance and are not experiencing rate limiting errors, you can increase the "Number of concurrent workers" setting (up to a maximum of 20) to improve throughput.
 
 ### Data type map
 
@@ -159,73 +169,80 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.12 | 2026-01-14 | [71502](https://github.com/airbytehq/airbyte/pull/71502) | Update dependencies |
+| 7.3.11 | 2026-01-12 | [71266](https://github.com/airbytehq/airbyte/pull/71266) | Cap start date to 60 days to match Amazon Ads API limitation |
+| 7.3.10 | 2025-12-19 | [70937](https://github.com/airbytehq/airbyte/pull/70937) | Update dependencies |
+| 7.3.9 | 2025-12-11 | [69836](https://github.com/airbytehq/airbyte/pull/69836) | Increase max concurrency to 20 and add rate limits documentation |
+| 7.3.8 | 2025-11-25 | [69911](https://github.com/airbytehq/airbyte/pull/69911) | Update dependencies |
+| 7.3.7 | 2025-10-29 | [69040](https://github.com/airbytehq/airbyte/pull/69040) | Update dependencies |
+| 7.3.6 | 2025-10-21 | [68579](https://github.com/airbytehq/airbyte/pull/68579) | Raise report creation errors as customer config errors instead of system errors. |
 | 7.3.5 | 2025-09-30 | [66760](https://github.com/airbytehq/airbyte/pull/66760) | Update dependencies |
-| 7.3.4 | 2025-09-08 | [65992](https://github.com/airbytehq/airbyte/pull/65992) | Update to CDK v7 |
+| 7.3.4 | 2025-09-09 | [65992](https://github.com/airbytehq/airbyte/pull/65992) | Update to CDK v7 |
 | 7.3.3 | 2025-09-09 | [66032](https://github.com/airbytehq/airbyte/pull/66032) | Update dependencies |
 | 7.3.2 | 2025-08-09 | [64654](https://github.com/airbytehq/airbyte/pull/64654) | Update dependencies |
 | 7.3.1 | 2025-07-19 | [60633](https://github.com/airbytehq/airbyte/pull/60633) | Update dependencies |
 | 7.3.0 | 2025-07-07 | [62839](https://github.com/airbytehq/airbyte/pull/62839) | Promoting release candidate 7.3.0-rc.1 to a main version. |
 | 7.3.0-rc.1 | 2025-06-26 | [61707](https://github.com/airbytehq/airbyte/pull/61707) | Convert to manifest-only format                                                                                                                                        |
-| 7.2.3      | 2025-06-23 | [61652](https://github.com/airbytehq/airbyte/pull/61652) | Add Error Hanlding for 425 Errors With Report Streams & Configurable Concurrency Levels|
-| 7.2.2      | 2025-05-10 | [59332](https://github.com/airbytehq/airbyte/pull/59332) | Update dependencies |
-| 7.2.1      | 2025-04-28 | [55745](https://github.com/airbytehq/airbyte/pull/55745) | Enable max concurrent async job count configurability |
-| 7.2.0      | 2025-04-28 | [59121](https://github.com/airbytehq/airbyte/pull/59121) | Promoting release candidate 7.2.0-rc.2 to a main version & 7.2.0-rc.1 since they were merged at the same time. |
-| 7.2.0-rc.2 | 2025-04-23 | [58610](https://github.com/airbytehq/airbyte/pull/58610) | Used latest version of Python cdk (6.45.10) |
-| 7.2.0-rc.1 | 2025-04-22 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams & Auto-update start_date if past lookback window|
-| 7.1.7      | 2025-04-12 | [57591](https://github.com/airbytehq/airbyte/pull/57591) | Update dependencies |
-| 7.1.6      | 2025-04-05 | [57138](https://github.com/airbytehq/airbyte/pull/57138) | Update dependencies |
-| 7.1.5      | 2025-03-29 | [56554](https://github.com/airbytehq/airbyte/pull/56554) | Update dependencies |
-| 7.1.4      | 2025-03-22 | [56155](https://github.com/airbytehq/airbyte/pull/56155) | Update dependencies |
-| 7.1.3      | 2025-03-08 | [55352](https://github.com/airbytehq/airbyte/pull/55352) | Update dependencies |
-| 7.1.2      | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Added handling 401 error for Polling Requester |
-| 7.1.1      | 2025-03-01 | [54895](https://github.com/airbytehq/airbyte/pull/54895) | Update dependencies |
-| 7.1.0      | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Migrate stream `Portfolios` to Portfolios API v3 |
-| 7.0.1      | 2025-02-22 | [52918](https://github.com/airbytehq/airbyte/pull/52918) | Update dependencies |
-| 7.0.0      | 2025-02-06 | [48449](https://github.com/airbytehq/airbyte/pull/48449) | Migrate *-report streams to low-code |
-| 6.2.7      | 2025-01-25 | [52210](https://github.com/airbytehq/airbyte/pull/52210) | Update dependencies |
-| 6.2.6      | 2025-01-18 | [51722](https://github.com/airbytehq/airbyte/pull/51722) | Update dependencies |
-| 6.2.5      | 2025-01-11 | [51239](https://github.com/airbytehq/airbyte/pull/51239) | Update dependencies |
-| 6.2.4      | 2025-01-04 | [50902](https://github.com/airbytehq/airbyte/pull/50902) | Update dependencies |
-| 6.2.3      | 2024-12-28 | [50478](https://github.com/airbytehq/airbyte/pull/50478) | Update dependencies |
-| 6.2.2      | 2024-12-21 | [50202](https://github.com/airbytehq/airbyte/pull/50202) | Update dependencies |
+| 7.2.3      | 2025-06-23 | [61652](https://github.com/airbytehq/airbyte/pull/61652) | Add Error Hanlding for 425 Errors With Report Streams & Configurable Concurrency Levels                                                                                |
+| 7.2.2      | 2025-05-10 | [59332](https://github.com/airbytehq/airbyte/pull/59332) | Update dependencies                                                                                                                                                    |
+| 7.2.1      | 2025-04-28 | [55745](https://github.com/airbytehq/airbyte/pull/55745) | Enable max concurrent async job count configurability                                                                                                                  |
+| 7.2.0      | 2025-04-28 | [59121](https://github.com/airbytehq/airbyte/pull/59121) | Promoting release candidate 7.2.0-rc.2 to a main version & 7.2.0-rc.1 since they were merged at the same time.                                                         |
+| 7.2.0-rc.2 | 2025-04-23 | [58610](https://github.com/airbytehq/airbyte/pull/58610) | Used latest version of Python cdk (6.45.10)                                                                                                                            |
+| 7.2.0-rc.1 | 2025-04-22 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams & Auto-update start_date if past lookback window                                                                             |
+| 7.1.7      | 2025-04-12 | [57591](https://github.com/airbytehq/airbyte/pull/57591) | Update dependencies                                                                                                                                                    |
+| 7.1.6      | 2025-04-05 | [57138](https://github.com/airbytehq/airbyte/pull/57138) | Update dependencies                                                                                                                                                    |
+| 7.1.5      | 2025-03-29 | [56554](https://github.com/airbytehq/airbyte/pull/56554) | Update dependencies                                                                                                                                                    |
+| 7.1.4      | 2025-03-22 | [56155](https://github.com/airbytehq/airbyte/pull/56155) | Update dependencies                                                                                                                                                    |
+| 7.1.3      | 2025-03-08 | [55352](https://github.com/airbytehq/airbyte/pull/55352) | Update dependencies                                                                                                                                                    |
+| 7.1.2      | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Added handling 401 error for Polling Requester                                                                                                                         |
+| 7.1.1      | 2025-03-01 | [54895](https://github.com/airbytehq/airbyte/pull/54895) | Update dependencies                                                                                                                                                    |
+| 7.1.0      | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Migrate stream `Portfolios` to Portfolios API v3                                                                                                                       |
+| 7.0.1      | 2025-02-22 | [52918](https://github.com/airbytehq/airbyte/pull/52918) | Update dependencies                                                                                                                                                    |
+| 7.0.0      | 2025-02-06 | [48449](https://github.com/airbytehq/airbyte/pull/48449) | Migrate *-report streams to low-code                                                                                                                                   |
+| 6.2.7      | 2025-01-25 | [52210](https://github.com/airbytehq/airbyte/pull/52210) | Update dependencies                                                                                                                                                    |
+| 6.2.6      | 2025-01-18 | [51722](https://github.com/airbytehq/airbyte/pull/51722) | Update dependencies                                                                                                                                                    |
+| 6.2.5      | 2025-01-11 | [51239](https://github.com/airbytehq/airbyte/pull/51239) | Update dependencies                                                                                                                                                    |
+| 6.2.4      | 2025-01-04 | [50902](https://github.com/airbytehq/airbyte/pull/50902) | Update dependencies                                                                                                                                                    |
+| 6.2.3      | 2024-12-28 | [50478](https://github.com/airbytehq/airbyte/pull/50478) | Update dependencies                                                                                                                                                    |
+| 6.2.2      | 2024-12-21 | [50202](https://github.com/airbytehq/airbyte/pull/50202) | Update dependencies                                                                                                                                                    |
 | 6.2.1      | 2024-12-14 | [48229](https://github.com/airbytehq/airbyte/pull/48229) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 6.2.0      | 2024-11-12 | [48116](https://github.com/airbytehq/airbyte/pull/48116) | Migrate REST streams to low-code |
-| 6.1.4      | 2024-11-12 | [48471](https://github.com/airbytehq/airbyte/pull/48471) | Bumped automatically in the pull request, please see PR description |
-| 6.1.3      | 2024-11-05 | [48343](https://github.com/airbytehq/airbyte/pull/48343) | Set is_resumable only for FullRefresh streams |
-| 6.1.2      | 2024-11-04 | [48138](https://github.com/airbytehq/airbyte/pull/48138) | Add error message for TooManyRequests exception |
-| 6.1.1      | 2024-11-04 | [48128](https://github.com/airbytehq/airbyte/pull/48128) | Fix date parse in report streams |
-| 6.1.0      | 2024-11-01 | [47940](https://github.com/airbytehq/airbyte/pull/47940) | Bump CDK to ^5 |
-| 6.0.0      | 2024-10-28 | [47366](https://github.com/airbytehq/airbyte/pull/47366) | Migrate stream `SponsoredDisplayReportStream` to Amazon Ads Reports v3 |
-| 5.0.20     | 2024-10-29 | [47032](https://github.com/airbytehq/airbyte/pull/47032) | Update dependencies |
-| 5.0.19     | 2024-10-12 | [46860](https://github.com/airbytehq/airbyte/pull/46860) | Update dependencies |
-| 5.0.18     | 2024-10-05 | [46451](https://github.com/airbytehq/airbyte/pull/46451) | Update dependencies |
-| 5.0.17     | 2024-09-28 | [45794](https://github.com/airbytehq/airbyte/pull/45794) | Update dependencies |
-| 5.0.16     | 2024-09-14 | [45548](https://github.com/airbytehq/airbyte/pull/45548) | Update dependencies |
-| 5.0.15     | 2024-09-07 | [45308](https://github.com/airbytehq/airbyte/pull/45308) | Update dependencies |
-| 5.0.14     | 2024-08-31 | [45051](https://github.com/airbytehq/airbyte/pull/45051) | Update dependencies |
-| 5.0.13     | 2024-08-24 | [44648](https://github.com/airbytehq/airbyte/pull/44648) | Update dependencies |
-| 5.0.12     | 2024-08-17 | [43845](https://github.com/airbytehq/airbyte/pull/43845) | Update dependencies |
-| 5.0.11     | 2024-08-12 | [43354](https://github.com/airbytehq/airbyte/pull/43354) | Fix download request for `sponsored_products_report_stream` |
-| 5.0.10     | 2024-08-10 | [42162](https://github.com/airbytehq/airbyte/pull/42162) | Update dependencies |
-| 5.0.9      | 2024-07-13 | [41876](https://github.com/airbytehq/airbyte/pull/41876) | Update dependencies |
-| 5.0.8      | 2024-07-10 | [41487](https://github.com/airbytehq/airbyte/pull/41487) | Update dependencies |
-| 5.0.7      | 2024-07-09 | [41143](https://github.com/airbytehq/airbyte/pull/41143) | Update dependencies |
-| 5.0.6      | 2024-07-06 | [40798](https://github.com/airbytehq/airbyte/pull/40798) | Update dependencies |
-| 5.0.5      | 2024-06-25 | [40403](https://github.com/airbytehq/airbyte/pull/40403) | Update dependencies |
-| 5.0.4      | 2024-06-21 | [39926](https://github.com/airbytehq/airbyte/pull/39926) | Update dependencies |
-| 5.0.3      | 2024-06-04 | [38962](https://github.com/airbytehq/airbyte/pull/38962) | [autopull] Upgrade base image to v1.2.1 |
-| 5.0.2      | 2024-05-29 | [38737](https://github.com/airbytehq/airbyte/pull/38737) | Update authenticator to `requests_native_auth` package |
-| 5.0.1      | 2024-04-29 | [37655](https://github.com/airbytehq/airbyte/pull/37655) | Update error messages and spec with info about `agency` profile type. |
-| 5.0.0      | 2024-03-22 | [36169](https://github.com/airbytehq/airbyte/pull/36169) | Update `SponsoredBrand` and `SponsoredProduct` streams due to API endpoint deprecation |
-| 4.1.0      | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
-| 4.0.4      | 2024-02-23 | [35481](https://github.com/airbytehq/airbyte/pull/35481) | Migrate source to `YamlDeclarativeSource` with custom `check_connection` |
-| 4.0.3      | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry |
-| 4.0.2      | 2024-02-08 | [35013](https://github.com/airbytehq/airbyte/pull/35013) | Add missing field to `sponsored_display_budget_rules` stream |
-| 4.0.1      | 2023-12-28 | [33833](https://github.com/airbytehq/airbyte/pull/33833) | Updated oauth spec to put region, so we can choose oauth consent url based on it |
-| 4.0.0      | 2023-12-28 | [33817](https://github.com/airbytehq/airbyte/pull/33817) | Fix schema for streams: `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` |
-| 3.4.2      | 2023-12-12 | [33361](https://github.com/airbytehq/airbyte/pull/33361) | Fix unexpected crash when handling error messages which don't have `requestId` field |
-| 3.4.1      | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 3.4.0      | 2023-06-09 | [25913](https://github.com/airbytehq/airbyte/pull/26203) | Add Stream `DisplayCreatives`                                                                                                                                          |
+| 6.2.0      | 2024-11-12 | [48116](https://github.com/airbytehq/airbyte/pull/48116) | Migrate REST streams to low-code                                                                                                                                       |
+| 6.1.4      | 2024-11-12 | [48471](https://github.com/airbytehq/airbyte/pull/48471) | Bumped automatically in the pull request, please see PR description                                                                                                    |
+| 6.1.3      | 2024-11-05 | [48343](https://github.com/airbytehq/airbyte/pull/48343) | Set is_resumable only for FullRefresh streams                                                                                                                          |
+| 6.1.2      | 2024-11-04 | [48138](https://github.com/airbytehq/airbyte/pull/48138) | Add error message for TooManyRequests exception                                                                                                                        |
+| 6.1.1      | 2024-11-04 | [48128](https://github.com/airbytehq/airbyte/pull/48128) | Fix date parse in report streams                                                                                                                                       |
+| 6.1.0      | 2024-11-01 | [47940](https://github.com/airbytehq/airbyte/pull/47940) | Bump CDK to ^5                                                                                                                                                         |
+| 6.0.0      | 2024-10-28 | [47366](https://github.com/airbytehq/airbyte/pull/47366) | Migrate stream `SponsoredDisplayReportStream` to Amazon Ads Reports v3                                                                                                 |
+| 5.0.20     | 2024-10-29 | [47032](https://github.com/airbytehq/airbyte/pull/47032) | Update dependencies                                                                                                                                                    |
+| 5.0.19     | 2024-10-12 | [46860](https://github.com/airbytehq/airbyte/pull/46860) | Update dependencies                                                                                                                                                    |
+| 5.0.18     | 2024-10-05 | [46451](https://github.com/airbytehq/airbyte/pull/46451) | Update dependencies                                                                                                                                                    |
+| 5.0.17     | 2024-09-28 | [45794](https://github.com/airbytehq/airbyte/pull/45794) | Update dependencies                                                                                                                                                    |
+| 5.0.16     | 2024-09-14 | [45548](https://github.com/airbytehq/airbyte/pull/45548) | Update dependencies                                                                                                                                                    |
+| 5.0.15     | 2024-09-07 | [45308](https://github.com/airbytehq/airbyte/pull/45308) | Update dependencies                                                                                                                                                    |
+| 5.0.14     | 2024-08-31 | [45051](https://github.com/airbytehq/airbyte/pull/45051) | Update dependencies                                                                                                                                                    |
+| 5.0.13     | 2024-08-24 | [44648](https://github.com/airbytehq/airbyte/pull/44648) | Update dependencies                                                                                                                                                    |
+| 5.0.12     | 2024-08-17 | [43845](https://github.com/airbytehq/airbyte/pull/43845) | Update dependencies                                                                                                                                                    |
+| 5.0.11     | 2024-08-12 | [43354](https://github.com/airbytehq/airbyte/pull/43354) | Fix download request for `sponsored_products_report_stream`                                                                                                            |
+| 5.0.10     | 2024-08-10 | [42162](https://github.com/airbytehq/airbyte/pull/42162) | Update dependencies                                                                                                                                                    |
+| 5.0.9      | 2024-07-13 | [41876](https://github.com/airbytehq/airbyte/pull/41876) | Update dependencies                                                                                                                                                    |
+| 5.0.8      | 2024-07-10 | [41487](https://github.com/airbytehq/airbyte/pull/41487) | Update dependencies                                                                                                                                                    |
+| 5.0.7      | 2024-07-09 | [41143](https://github.com/airbytehq/airbyte/pull/41143) | Update dependencies                                                                                                                                                    |
+| 5.0.6      | 2024-07-06 | [40798](https://github.com/airbytehq/airbyte/pull/40798) | Update dependencies                                                                                                                                                    |
+| 5.0.5      | 2024-06-25 | [40403](https://github.com/airbytehq/airbyte/pull/40403) | Update dependencies                                                                                                                                                    |
+| 5.0.4      | 2024-06-21 | [39926](https://github.com/airbytehq/airbyte/pull/39926) | Update dependencies                                                                                                                                                    |
+| 5.0.3      | 2024-06-04 | [38962](https://github.com/airbytehq/airbyte/pull/38962) | [autopull] Upgrade base image to v1.2.1                                                                                                                                |
+| 5.0.2      | 2024-05-29 | [38737](https://github.com/airbytehq/airbyte/pull/38737) | Update authenticator to `requests_native_auth` package                                                                                                                 |
+| 5.0.1      | 2024-04-29 | [37655](https://github.com/airbytehq/airbyte/pull/37655) | Update error messages and spec with info about `agency` profile type.                                                                                                  |
+| 5.0.0      | 2024-03-22 | [36169](https://github.com/airbytehq/airbyte/pull/36169) | Update `SponsoredBrand` and `SponsoredProduct` streams due to API endpoint deprecation                                                                                 |
+| 4.1.0      | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                                                        |
+| 4.0.4      | 2024-02-23 | [35481](https://github.com/airbytehq/airbyte/pull/35481) | Migrate source to `YamlDeclarativeSource` with custom `check_connection`                                                                                               |
+| 4.0.3      | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry                                                                                                                                        |
+| 4.0.2      | 2024-02-08 | [35013](https://github.com/airbytehq/airbyte/pull/35013) | Add missing field to `sponsored_display_budget_rules` stream                                                                                                           |
+| 4.0.1      | 2023-12-28 | [33833](https://github.com/airbytehq/airbyte/pull/33833) | Updated oauth spec to put region, so we can choose oauth consent url based on it                                                                                       |
+| 4.0.0      | 2023-12-28 | [33817](https://github.com/airbytehq/airbyte/pull/33817) | Fix schema for streams: `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords`                                                                                        |
+| 3.4.2      | 2023-12-12 | [33361](https://github.com/airbytehq/airbyte/pull/33361) | Fix unexpected crash when handling error messages which don't have `requestId` field                                                                                   |
+| 3.4.1      | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                        |
+| 3.4.0      | 2023-06-09 | [26203](https://github.com/airbytehq/airbyte/pull/26203) | Add Stream `DisplayCreatives`                                                                                                                                          |
 | 3.3.0      | 2023-09-22 | [30679](https://github.com/airbytehq/airbyte/pull/30679) | Fix unexpected column for `SponsoredProductCampaigns` and `SponsoredBrandsKeywords`                                                                                    |
 | 3.2.0      | 2023-09-18 | [30517](https://github.com/airbytehq/airbyte/pull/30517) | Add suggested streams; fix unexpected column issue                                                                                                                     |
 | 3.1.2      | 2023-08-16 | [29233](https://github.com/airbytehq/airbyte/pull/29233) | Add filter for Marketplace IDs                                                                                                                                         |
@@ -271,9 +288,8 @@ Information about expected report generation waiting time can be found [here](ht
 | 0.1.5      | 2022-04-08 | [11430](https://github.com/airbytehq/airbyte/pull/11430) | Add support OAuth2.0                                                                                                                                                   |
 | 0.1.4      | 2022-02-21 | [10513](https://github.com/airbytehq/airbyte/pull/10513) | Increasing REPORT_WAIT_TIMEOUT for supporting report generation which takes longer time                                                                                |
 | 0.1.3      | 2021-12-28 | [8388](https://github.com/airbytehq/airbyte/pull/8388)   | Add retry if recoverable error occurred for reporting stream processing                                                                                                |
-| 0.1.2      | 2021-10-01 | [6367](https://github.com/airbytehq/airbyte/pull/6461)   | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback                                                        |
+| 0.1.2      | 2021-10-01 | [6461](https://github.com/airbytehq/airbyte/pull/6461)   | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback                                                        |
 | 0.1.1      | 2021-09-22 | [6367](https://github.com/airbytehq/airbyte/pull/6367)   | Add seller and vendor filters to profiles stream                                                                                                                       |
 | 0.1.0      | 2021-08-13 | [5023](https://github.com/airbytehq/airbyte/pull/5023)   | Initial version                                                                                                                                                        |
->>>>>>> master
 
 </details>

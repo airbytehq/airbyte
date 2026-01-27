@@ -45,6 +45,14 @@ To generate a live API key: log in to your Katana account.  Go to Settings &gt; 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-01-20 | [71984](https://github.com/airbytehq/airbyte/pull/71984) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71404](https://github.com/airbytehq/airbyte/pull/71404) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70782](https://github.com/airbytehq/airbyte/pull/70782) | Update dependencies |
+| 0.0.42 | 2025-11-25 | [70009](https://github.com/airbytehq/airbyte/pull/70009) | Update dependencies |
+| 0.0.41 | 2025-11-18 | [69506](https://github.com/airbytehq/airbyte/pull/69506) | Update dependencies |
+| 0.0.40 | 2025-10-29 | [68788](https://github.com/airbytehq/airbyte/pull/68788) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68485](https://github.com/airbytehq/airbyte/pull/68485) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [67937](https://github.com/airbytehq/airbyte/pull/67937) | Update dependencies |
 | 0.0.37 | 2025-10-07 | [67357](https://github.com/airbytehq/airbyte/pull/67357) | Update dependencies |
 | 0.0.36 | 2025-09-30 | [66795](https://github.com/airbytehq/airbyte/pull/66795) | Update dependencies |
 | 0.0.35 | 2025-09-09 | [65902](https://github.com/airbytehq/airbyte/pull/65902) | Update dependencies |

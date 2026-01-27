@@ -12,6 +12,7 @@ class AirbyteBulkConnectorExtension {
 
     String core // 'extract' or 'load'
     List<String> toolkits = []  // 'extract-jdbc', etc...
+    boolean useLegacyTaskLoader = false // when true, adds legacy-task-loader toolkit and excludes core-load
     private boolean isDestination
     private String cdk
     private Project project
@@ -26,6 +27,24 @@ class AirbyteBulkConnectorExtension {
         }
         if (cdk != "local" && !(cdk.matches("^[0-9]+\\.[0-9]+") || cdk.matches("^[0-9]+\\.[0-9]+\\.[0-9]+"))) {
             throw new IllegalArgumentException("'cdk' should be either a well-formed version number or 'local'")
+        }
+    }
+
+    void setUseLegacyTaskLoader(boolean use) {
+        this.useLegacyTaskLoader = use
+        if (use) {
+            // Add the legacy-task-loader toolkit
+            if (cdk == "local") {
+                addDependency(project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader"))
+            } else {
+                addDependency("io.airbyte.bulk-cdk:bulk-cdk-toolkit-legacy-task-loader:$cdk")
+            }
+            // Exclude core-load (legacy-task-loader provides compatible version)
+            if (core != null) {
+                project.configurations.all {
+                    it.exclude module: "bulk-cdk-core-$core"
+                }
+            }
         }
     }
 
@@ -92,6 +111,13 @@ class AirbyteBulkConnectorExtension {
         }
         for (dep in fromSource + fromJar) {
             addDependency(dep)
+        }
+
+        // If useLegacyTaskLoader was set before core, apply the exclusion now
+        if (useLegacyTaskLoader) {
+            project.configurations.all {
+                it.exclude module: "bulk-cdk-core-$core"
+            }
         }
     }
 
@@ -226,18 +252,33 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                     showStandardStreams = true
                 }
 
-                retry {
-                    // If running in CI, enable retries to mitigate flakiness
-                    if (System.getenv().containsKey("CI")) {
-                        // Run each test method up to three times
-                        maxRetries = 3
-                        // If any test method fails, disable retries for the other tests
-                        // (unintuitive: if you set this to 1, then as soon as a test case fails, it will disable retries, including for itself.
-                        // So we set to 2, which means: a test case failing will retry itself. If, after three retries, it still fails, then we disable retries globally.)
-                        maxFailures = 2
+                develocity {
+                    testRetry {
+                        // If running in CI, enable retries to mitigate flakiness
+                        if (System.getenv().containsKey("CI")) {
+                            // Run each test method up to three times
+                            maxRetries = 3
+                            // If any test method fails, disable retries for the other tests
+                            // (unintuitive: if you set this to 1, then as soon as a test case fails, it will disable retries, including for itself.
+                            // So we set to 2, which means: a test case failing will retry itself. If, after three retries, it still fails, then we disable retries globally.)
+                            maxFailures = 2
+                        }
+                        // If a test fails, but succeeds on retry - don't fail the task
+                        failOnPassedAfterRetry = false
+                        // If a test fails, but is skipped on retry (e.g., due to failed assumptions) - don't fail the task.
+                        // This handles cases where tests use Assumptions.assumeTrue() to conditionally skip themselves.
+                        failOnSkippedAfterRetry = false
                     }
-                    // If a test fails, but succeeds on retry - don't fail the task
-                    failOnPassedAfterRetry = false
+                }
+                reports {
+                    junitXml {
+                        // Without this flag, the generated test report will list each test attempt.
+                        // This would cause Github to see the report as containing "failed tests,"
+                        // even though the test eventually succeeded.
+                        // So we tell gradle to merge those attempts together, which should tell Github
+                        // to view the overall run as successful.
+                        mergeReruns = true
+                    }
                 }
 
                 // Always re-run integration tests no matter what.

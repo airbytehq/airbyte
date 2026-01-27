@@ -50,4 +50,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Teradata documentation
+      url: https://docs.teradata.com/
+      type: api_reference
+    - title: SQL reference
+      url: https://docs.teradata.com/r/Teradata-VantageTM-SQL-Data-Definition-Language-Syntax-and-Examples/July-2021
+      type: sql_reference
 metadataSpecVersion: "1.0"

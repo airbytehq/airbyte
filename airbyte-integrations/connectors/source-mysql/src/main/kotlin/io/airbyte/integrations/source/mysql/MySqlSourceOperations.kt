@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -102,7 +102,7 @@ class MySqlSourceOperations :
             )
         recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
             FieldValueEncoder(
-                0,
+                0.toDouble(),
                 MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
             )
         if (globalStateValue == null) {
@@ -118,7 +118,7 @@ class MySqlSourceOperations :
             )
         recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
             FieldValueEncoder(
-                position.position,
+                position.position.toDouble(),
                 MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
             )
     }

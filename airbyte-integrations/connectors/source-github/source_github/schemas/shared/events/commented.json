@@ -99,8 +99,8 @@
             "properties": {
               "url": { "type": "string" },
               "total_count": { "type": "integer" },
-              "+1": { "type": "integer" },
-              "-1": { "type": "integer" },
+              "plus_one": { "type": "integer" },
+              "minus_one": { "type": "integer" },
               "laugh": { "type": "integer" },
               "confused": { "type": "integer" },
               "heart": { "type": "integer" },

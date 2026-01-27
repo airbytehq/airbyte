@@ -16,13 +16,23 @@ Airbyte sends specific metrics to provide you with health insight in the followi
 
 ## Example dashboard
 
-Here's an example of a dashboard in Datadog using Airbyte's OTEL metrics.
+Here's an example of a dashboard in Datadog using Airbyte's OpenTelemetry metrics.
 
-![Airbyte OTEL metrics in a dashboard in Datadog](assets/otel-datadog.png)
+![Airbyte OpenTelemetry metrics in a dashboard in Datadog](assets/otel-datadog.png)
 
 ## Configure OpenTelemetry metrics
 
-1. Deploy an OpenTelemetry collector if you don't already have one. See the [OpenTelemetry documentation](https://opentelemetry.io/docs/collector/getting-started/#kubernetes) for help doing this. If you use Datadog as your monitoring tool, they have an excellent guide to [set up a collector and exporter](https://docs.datadoghq.com/opentelemetry/collector_exporter/).
+1. Deploy an OpenTelemetry Collector if you don't already have one. See the [OpenTelemetry documentation](https://opentelemetry.io/docs/collector/getting-started/#kubernetes) for help doing this. If you use Datadog as your monitoring tool, they have an in-depth guide to [set up a Datadog Collector and Exporter](https://docs.datadoghq.com/opentelemetry/collector_exporter/).
+
+    1. For Airbyte to send metrics to your server, your OpenTelemetry service (collector or otherwise) must accept OpenTelemetry Protocol (OTLP) over HTTP. If you use an OpenTelemetry Collector, your configuration would need to include some variation of the below to accept OTLP over HTTP:
+
+    ```yml
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+    ```
 
 2. Update Airbyte's `values.yaml` file to enable OpenTelemetry.
 
@@ -33,7 +43,10 @@ Here's an example of a dashboard in Datadog using Airbyte's OTEL metrics.
             enabled: true
             otlp:
                 enabled: true
-                collectorEndpoint: "YOUR_ENDPOINT" # The OTel collector endpoint Airbyte sends metrics to. You configure this endpoint outside of Airbyte as part of your OTel deployment.
+                # The OpenTelemetry Collector endpoint Airbyte sends metrics to. You configure this endpoint outside of Airbyte as part of your OpenTelemetry deployment
+                # This endpoint also needs to end in the metrics ingestion endpoint. For OpenTelemetry Collector users, this is /v1/metrics.
+                # e.g. http://localhost:4318/v1/metrics
+                collectorEndpoint: "YOUR_ENDPOINT" 
     ```
 
 3. Redeploy Airbyte with the updated values.

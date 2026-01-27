@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.sql
@@ -10,7 +10,7 @@ package io.airbyte.integrations.destination.snowflake.sql
  */
 enum class SnowflakeDataType(val typeName: String) {
     // Numeric types
-    NUMBER("NUMBER(38,0)"),
+    NUMBER("NUMBER"),
     FLOAT("FLOAT"),
 
     // String & binary types
@@ -26,5 +26,7 @@ enum class SnowflakeDataType(val typeName: String) {
     TIMESTAMP_TZ("TIMESTAMP_TZ"),
 
     // Semi-structured types
+    ARRAY("ARRAY"),
+    OBJECT("OBJECT"),
     VARIANT("VARIANT"),
 }

@@ -5,6 +5,7 @@ import org.gradle.api.Task
 import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
+import org.yaml.snakeyaml.Yaml
 
 class AirbyteConnectorDockerConventionPlugin implements Plugin<Project> {
     private static final String SHARED_DOCKERFILE = 'docker-images/Dockerfile.java-connector-non-airbyte-ci'
@@ -28,10 +29,27 @@ class AirbyteConnectorDockerConventionPlugin implements Plugin<Project> {
             }
 
             /* ------------------------------------------------------------
-             * 1. imageName default = project.name (if not already set)
+             * 1. imageName default = dockerRepository from metadata.yaml (if not already set)
+             *    Falls back to project.name if dockerRepository is not in metadata.yaml
              * ------------------------------------------------------------ */
             if (!dockerExt.imageName.present) {
-                dockerExt.imageName.convention(project.name)
+                def metadataFile = project.layout.projectDirectory.file('metadata.yaml').asFile
+                if (metadataFile.exists()) {
+                    def yaml = new Yaml()
+                    def metadata = metadataFile.withInputStream { yaml.load(it) }
+                    def dockerRepo = metadata?.data?.dockerRepository
+
+                    if (dockerRepo) {
+                        // Extract image name from repository (everything after last /)
+                        def imageName = dockerRepo.split('/').last()
+                        dockerExt.imageName.convention(imageName)
+                        project.logger.info("Using dockerRepository from metadata.yaml: ${dockerRepo} -> imageName: ${imageName}")
+                    } else {
+                        dockerExt.imageName.convention(project.name)
+                    }
+                } else {
+                    dockerExt.imageName.convention(project.name)
+                }
             }
 
             /* ------------------------------------------------------------

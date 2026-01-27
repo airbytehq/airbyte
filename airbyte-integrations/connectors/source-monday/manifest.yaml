@@ -37,6 +37,8 @@ definitions:
               #Doc: https://developer.monday.com/api-reference/docs/error-handling
               #Monday returns 200 status code even if there is an error, so we need to check the response body for error_code and fail so we can surface the actual error to the user.
               #Otherwise, we would get a misleading 'data' key not found error.
+            - predicate: "{{ 'error_code' in response and response['error_code'] == 'CursorException' and response.get('error_message', '').startswith('CursorExpiredError') }}"
+              action: RESET_PAGINATION
             - predicate: "{{ 'error_code' in response and response['error_code'] is not none }}"
               action: FAIL
               failure_type: config_error

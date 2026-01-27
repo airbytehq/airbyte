@@ -1,0 +1,42 @@
+{
+  "chats": [
+    {
+      "type": "offline_msg",
+      "unread": false,
+      "tags": [],
+      "update_timestamp": "2021-04-27T15:09:17Z",
+      "webpath": [],
+      "session": {
+        "browser": "Safari",
+        "city": "Orlando",
+        "country_code": "US",
+        "country_name": "United States",
+        "end_date": "2014-10-09T05:46:47Z",
+        "id": "141109.654464.1KhqS0Nw",
+        "ip": "67.32.299.96",
+        "platform": "Mac OS",
+        "region": "Florida",
+        "start_date": "2014-10-09T05:28:31Z",
+        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/600.1.25 (KHTML, like Gecko) Version/8.0 Safari/600.1.25"
+      },
+      "department_name": null,
+      "id": "2104.10414779.SVhDCJ9flq79a",
+      "message": "Hi there!",
+      "deleted": false,
+      "timestamp": "2021-04-26T13:54:02Z",
+      "department_id": null,
+      "visitor": {
+        "phone": "+32178763521",
+        "notes": "Test 2",
+        "id": "3.45678",
+        "name": "Jiny",
+        "email": "visitor_jiny@doe.com"
+      },
+      "zendesk_ticket_id": null
+    }
+  ],
+  "count": 1,
+  "end_id": "2310.10414779.TtDaXpxE9Wn3t",
+  "end_time": 1697795052,
+  "next_page": "https://d3v-airbyte.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time=1697795052&start_id=2310.10414779.TtDaXpxE9Wn3t"
+}

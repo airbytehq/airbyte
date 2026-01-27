@@ -1,0 +1,23 @@
+{
+  "list": [
+    {
+      "unbilled_charge": {
+        "id": "uc_001",
+        "subscription_id": "sub_001",
+        "customer_id": "cust_001",
+        "unit_amount": 1000,
+        "quantity": 1,
+        "amount": 1000,
+        "currency_code": "USD",
+        "entity_type": "plan",
+        "entity_id": "plan_001",
+        "date_from": 1705312800,
+        "date_to": 1707991200,
+        "updated_at": 1705312800,
+        "object": "unbilled_charge",
+        "cf_charge_category": "Usage",
+        "cf_billing_cycle": "Monthly"
+      }
+    }
+  ]
+}

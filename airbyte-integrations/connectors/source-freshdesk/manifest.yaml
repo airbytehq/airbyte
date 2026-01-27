@@ -1370,8 +1370,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          type: CustomRequester
-          class_name: source_declarative_manifest.components.FreshdeskTicketsIncrementalRequester
+          class_name: SimpleRetriever
           path: tickets
           http_method: GET
           request_parameters:
@@ -1383,6 +1382,11 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: RESET_PAGINATION
+                    http_codes:
+                      - 400
+                    error_message_contains: You cannot access tickets beyond the 300th page
                   - type: HttpResponseFilter
                     action: FAIL
                     http_codes:
@@ -1409,13 +1413,14 @@ definitions:
             field_name: page
             inject_into: request_parameter
           pagination_strategy:
-            type: CustomPaginationStrategy
+            type: PageIncrement
             page_size: 100
-            class_name: source_declarative_manifest.components.FreshdeskTicketsPaginationStrategy
             start_from_page: 1
+        pagination_reset:
+          type: PaginationReset
+          action: SPLIT_USING_CURSOR
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.FreshdeskTicketsIncrementalSync
+        type: DatetimeBasedCursor
         cursor_field: updated_at
         start_datetime:
           type: MinMaxDatetime

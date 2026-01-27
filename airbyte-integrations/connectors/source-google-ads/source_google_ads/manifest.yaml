@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - campaign
+    - customer
 
 definitions:
   # Authenticator Definitions
@@ -38,7 +38,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
@@ -56,7 +56,7 @@ definitions:
         action: IGNORE
         http_codes:
           - 403
-        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
+  #        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
 
   base_selector:
     type: RecordSelector
@@ -65,27 +65,15 @@ definitions:
       field_path:
         - results
 
-  cursor_paginator:
-    type: DefaultPaginator
-    pagination_strategy:
-      type: CursorPagination
-      cursor_value: "{{ response.get('nextPageToken', '') }}"
-      stop_condition: "{{ response.get('nextPageToken', '') is none }}"
-    page_token_option:
-      type: RequestOption
-      inject_into: body_json
-      field_path: ["page_token"]
-
   base_retriever:
     type: SimpleRetriever
     requester:
       $ref: "#/definitions/stream_requester"
     record_selector:
       $ref: "#/definitions/base_selector"
-    paginator:
-      $ref: "#/definitions/cursor_paginator"
     decoder:
-      type: JsonDecoder
+      type: CustomDecoder
+      class_name: "source_google_ads.components.GoogleAdsStreamingDecoder"
 
   stream_base:
     type: DeclarativeStream
@@ -199,7 +187,7 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+          url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
@@ -224,7 +212,7 @@ definitions:
     incremental_stream:
       $ref: "#/definitions/incremental_stream_base"
       $parameters:
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:search"
+        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
       retriever:
         type: CustomRetriever
         class_name: "source_google_ads.components.CriterionRetriever"
@@ -240,8 +228,6 @@ definitions:
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
-        paginator:
-          $ref: "#/definitions/cursor_paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -285,6 +271,8 @@ definitions:
       state_migrations:
         - type: CustomStateMigration
           class_name: source_google_ads.components.GoogleAdsCriterionParentStateMigration
+        - type: CustomStateMigration
+          class_name: source_google_ads.components.GoogleAdsGlobalStateMigration
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"
@@ -295,8 +283,6 @@ definitions:
         $ref: "#/definitions/base_requester"
         url_base: "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers"
         http_method: GET
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: CustomRecordExtractor
@@ -401,7 +387,7 @@ definitions:
         class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -420,8 +406,6 @@ definitions:
             parent_key: "clientCustomer"
             partition_field: "customer_id"
             stream: "#/definitions/customer_client"
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
     transformations:
       - type: CustomTransformation
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
@@ -653,12 +637,10 @@ definitions:
             $ref: "#/schemas/click_view"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: segments.date
@@ -833,8 +815,7 @@ definitions:
     $parameters:
       url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
     retriever:
-      type: CustomRetriever
-      class_name: "source_google_ads.components.ChangeStatusRetriever"
+      type: SimpleRetriever
       requester:
         type: CustomRequester
         class_name: "source_google_ads.components.ChangeStatusRequester"
@@ -848,8 +829,12 @@ definitions:
         error_handler:
           $ref: "#/definitions/base_error_handler"
         name: change_status
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
+      pagination_reset:
+        type: PaginationReset
+        action: SPLIT_USING_CURSOR
+        limits:
+          type: PaginationResetLimits
+          number_of_records: 10000
       record_selector:
         type: RecordSelector
         $parameters:
@@ -999,15 +984,19 @@ definitions:
                 "datetime_format": "%Y-%m-%d"
               }
             }
-          condition: "{{ (components_values.get('query', '').count('segments.date') == 1 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none) or (components_values.get('query', '').count('segments.date') == 2 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none and (components_values.get('query') | regex_search('ORDER BY.*?segments\\.date.*?LIMIT')) is not none) }}"
-          create_or_update: true
-        - type: ComponentMappingDefinition
-          field_path:
-            - retriever
-            - requester
-            - $parameters
-            - query
-          value: "{{ components_values.get('query', None) }}"
+          condition: >-
+            {{
+              (
+                components_values.get('query', '').count('segments.date') == 1
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+              )
+              or
+              (
+                components_values.get('query', '').count('segments.date') == 2
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+              )
+            }}
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1016,7 +1005,19 @@ definitions:
             - $parameters
             - cursor_field
           value: "segments.date"
-          condition: "{{ (components_values.get('query', '').count('segments.date') == 1 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none) or (components_values.get('query', '').count('segments.date') == 2 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none and (components_values.get('query') | regex_search('ORDER BY.*?segments\\.date.*?LIMIT')) is not none) }}"
+          condition: >-
+            {{
+              (
+                components_values.get('query', '').count('segments.date') == 1
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+              )
+              or
+              (
+                components_values.get('query', '').count('segments.date') == 2
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+              )
+            }}
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1030,7 +1031,143 @@ definitions:
             - schema_loader
             - cursor_field
           value: "segments.date"
-          condition: "{{ (components_values.get('query', '').count('segments.date') == 1 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none) or (components_values.get('query', '').count('segments.date') == 2 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none and (components_values.get('query') | regex_search('ORDER BY.*?segments\\.date.*?LIMIT')) is not none) }}"
+          condition: >-
+            {{
+              (
+                components_values.get('query', '').count('segments.date') == 1
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+              )
+              or
+              (
+                components_values.get('query', '').count('segments.date') == 2
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+              )
+            }}
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_sync
+            - step
+          value: "P1D"
+          condition: >-
+            {{
+              (
+                (
+                  components_values.get('query', '').count('segments.date') == 1
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                )
+                or
+                (
+                  components_values.get('query', '').count('segments.date') == 2
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                  and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+                )
+              ) and components_values.get('query', '') | regex_search('(?i)(\\bFROM\\s+click_view\\b)')
+            }}
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_sync
+            - start_datetime
+          value: >-
+            {
+              "type": "MinMaxDatetime",
+              "datetime": "{{ max(config.get('start_date', day_delta(-90, format='%Y-%m-%d')), day_delta(-90, format='%Y-%m-%d')) }}",
+              "datetime_format": "%Y-%m-%d"
+            }
+          condition: >-
+            {{
+              (
+                (
+                  components_values.get('query', '').count('segments.date') == 1
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                )
+                or
+                (
+                  components_values.get('query', '').count('segments.date') == 2
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                  and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+                )
+              ) and components_values.get('query', '') | regex_search('(?i)(\\bFROM\\s+click_view\\b)')
+            }}
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_sync
+            - end_datetime
+          value: >-
+            {
+              "type": "MinMaxDatetime",
+              "datetime": "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('P1D'), '%Y-%m-%d') }}",
+              "datetime_format": "%Y-%m-%d"
+            }
+          condition: >-
+            {{
+              (
+                (
+                  components_values.get('query', '').count('segments.date') == 1
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                )
+                or
+                (
+                  components_values.get('query', '').count('segments.date') == 2
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                  and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+                )
+              ) and components_values.get('query', '') | regex_search('(?i)(\\bFROM\\s+click_view\\b)')
+            }}
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_sync
+            - cursor_granularity
+          value: P1D
+          condition: >-
+            {{
+              (
+                (
+                  components_values.get('query', '').count('segments.date') == 1
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                )
+                or
+                (
+                  components_values.get('query', '').count('segments.date') == 2
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                  and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+                )
+              ) and components_values.get('query', '') | regex_search('(?i)(\\bFROM\\s+click_view\\b)')
+            }}
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - class_name
+          value: "source_google_ads.components.CustomGAQueryClickViewHttpRequester"
+          condition: >-
+            {{
+              (
+                (
+                  components_values.get('query', '').count('segments.date') == 1
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                )
+                or
+                (
+                  components_values.get('query', '').count('segments.date') == 2
+                  and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                  and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+                )
+              ) and components_values.get('query', '') | regex_search('(?i)(\\bFROM\\s+click_view\\b)')
+            }}
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - $parameters
+            - query
+          value: "{{ components_values.get('query', None) }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:

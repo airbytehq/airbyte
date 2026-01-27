@@ -38,6 +38,12 @@ Visit `https://buildkite.com/user/api-access-tokens` for getting your bearer tok
 
 | Version | Date | Pull Request | Subject |
 |---------| ------------ | --- | ---------------- |
+| 0.0.38 | 2025-12-18 | [70662](https://github.com/airbytehq/airbyte/pull/70662) | Update dependencies |
+| 0.0.37 | 2025-11-25 | [69977](https://github.com/airbytehq/airbyte/pull/69977) | Update dependencies |
+| 0.0.36 | 2025-11-18 | [69468](https://github.com/airbytehq/airbyte/pull/69468) | Update dependencies |
+| 0.0.35 | 2025-10-29 | [68751](https://github.com/airbytehq/airbyte/pull/68751) | Update dependencies |
+| 0.0.34 | 2025-10-21 | [68211](https://github.com/airbytehq/airbyte/pull/68211) | Update dependencies |
+| 0.0.33 | 2025-10-14 | [67843](https://github.com/airbytehq/airbyte/pull/67843) | Update dependencies |
 | 0.0.32 | 2025-10-07 | [67199](https://github.com/airbytehq/airbyte/pull/67199) | Update dependencies |
 | 0.0.31 | 2025-09-30 | [66322](https://github.com/airbytehq/airbyte/pull/66322) | Update dependencies |
 | 0.0.30 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |

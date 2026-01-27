@@ -85,6 +85,7 @@ class BlocksRetriever(SimpleRetriever):
                     cursor_slice=stream_slice.cursor_slice,
                 )
                 yield from self.read_records(records_schema, child_stream_slice)
+                self.current_block_depth -= 1
 
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number

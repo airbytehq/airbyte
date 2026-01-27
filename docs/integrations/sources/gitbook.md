@@ -24,6 +24,14 @@ GitBook connector  enables seamless data integration from GitBook into your data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.43 | 2026-01-20 | [71964](https://github.com/airbytehq/airbyte/pull/71964) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71381](https://github.com/airbytehq/airbyte/pull/71381) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70697](https://github.com/airbytehq/airbyte/pull/70697) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [69872](https://github.com/airbytehq/airbyte/pull/69872) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69379](https://github.com/airbytehq/airbyte/pull/69379) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [69046](https://github.com/airbytehq/airbyte/pull/69046) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68328](https://github.com/airbytehq/airbyte/pull/68328) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [68002](https://github.com/airbytehq/airbyte/pull/68002) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67261](https://github.com/airbytehq/airbyte/pull/67261) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66298](https://github.com/airbytehq/airbyte/pull/66298) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [66061](https://github.com/airbytehq/airbyte/pull/66061) | Update dependencies |

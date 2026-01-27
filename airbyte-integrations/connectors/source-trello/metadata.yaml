@@ -50,4 +50,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Trello REST API
+      url: https://developer.atlassian.com/cloud/trello/rest/
+      type: api_reference
+    - title: Trello authentication
+      url: https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/
+      type: authentication_guide
+    - title: Trello rate limits
+      url: https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/
+      type: rate_limits
 metadataSpecVersion: "1.0"

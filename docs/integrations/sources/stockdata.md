@@ -28,6 +28,14 @@ With this connector we can extract data from EOD , Intraday and news feeds strea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.44 | 2026-01-20 | [72102](https://github.com/airbytehq/airbyte/pull/72102) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71603](https://github.com/airbytehq/airbyte/pull/71603) | Update dependencies |
+| 0.0.42 | 2025-12-18 | [70635](https://github.com/airbytehq/airbyte/pull/70635) | Update dependencies |
+| 0.0.41 | 2025-11-25 | [70042](https://github.com/airbytehq/airbyte/pull/70042) | Update dependencies |
+| 0.0.40 | 2025-11-18 | [69561](https://github.com/airbytehq/airbyte/pull/69561) | Update dependencies |
+| 0.0.39 | 2025-10-29 | [69019](https://github.com/airbytehq/airbyte/pull/69019) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68524](https://github.com/airbytehq/airbyte/pull/68524) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67877](https://github.com/airbytehq/airbyte/pull/67877) | Update dependencies |
 | 0.0.36 | 2025-10-07 | [67462](https://github.com/airbytehq/airbyte/pull/67462) | Update dependencies |
 | 0.0.35 | 2025-09-30 | [66874](https://github.com/airbytehq/airbyte/pull/66874) | Update dependencies |
 | 0.0.34 | 2025-09-23 | [66364](https://github.com/airbytehq/airbyte/pull/66364) | Update dependencies |

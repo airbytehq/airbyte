@@ -5,6 +5,7 @@
 import io
 import json
 from typing import Dict, List, Union
+from unittest.mock import Mock, patch
 
 import dpath
 import pytest
@@ -12,6 +13,7 @@ import requests
 from components import (
     DpathSchemaExtractor,
     DpathSchemaMatchingExtractor,
+    GridDataErrorHandler,
     RawSchemaParser,
     _sanitization,
 )
@@ -143,6 +145,61 @@ def test_dpath_schema_extractor(body, expected_records: List):
 )
 def test_parse_raw_schema_value(raw_schema_data, expected_data):
     extractor = RawSchemaParser()
+    parsed_data = extractor.parse_raw_schema_values(
+        raw_schema_data,
+        schema_pointer=_SCHEMA_TYPE_IDENTIFIERS["schema_pointer"],
+        key_pointer=_SCHEMA_TYPE_IDENTIFIERS["key_pointer"],
+        names_conversion=False,
+    )
+    assert parsed_data == expected_data
+
+
+@pytest.mark.parametrize(
+    "raw_schema_data, expected_data",
+    [
+        pytest.param(
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"}), (1, "column_B", {"formattedValue": ""}), (2, "h3", {"formattedValue": "h3"})],
+            id="blank_header_in_middle_generates_placeholder",
+        ),
+        pytest.param(
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"}), (1, "column_B", {"formattedValue": "   "}), (2, "h3", {"formattedValue": "h3"})],
+            id="whitespace_header_generates_placeholder",
+        ),
+        pytest.param(
+            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
+            [(0, "column_A", {"formattedValue": ""}), (1, "column_B", {"formattedValue": ""}), (2, "h3", {"formattedValue": "h3"})],
+            id="multiple_blank_headers_generate_placeholders",
+        ),
+        pytest.param(
+            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]},
+            [(0, "column_A", {"formattedValue": ""}), (1, "column_B", {"formattedValue": ""}), (2, "column_C", {"formattedValue": ""})],
+            id="all_blank_headers_generate_placeholders",
+        ),
+        pytest.param(
+            {
+                "values": [
+                    {"formattedValue": "columnA"},
+                    {"formattedValue": "columnB"},
+                    {"formattedValue": ""},
+                    {"formattedValue": "columnD"},
+                ]
+            },
+            [
+                (0, "columnA", {"formattedValue": "columnA"}),
+                (1, "columnB", {"formattedValue": "columnB"}),
+                (2, "column_C", {"formattedValue": ""}),
+                (3, "columnD", {"formattedValue": "columnD"}),
+            ],
+            id="empty_header_does_not_skip_subsequent_columns",
+        ),
+    ],
+)
+def test_parse_raw_schema_value_with_read_empty_header_columns_enabled(raw_schema_data, expected_data):
+    """Test that when read_empty_header_columns is enabled, empty headers get placeholder names."""
+    extractor = RawSchemaParser()
+    extractor.config = {"read_empty_header_columns": True}
     parsed_data = extractor.parse_raw_schema_values(
         raw_schema_data,
         schema_pointer=_SCHEMA_TYPE_IDENTIFIERS["schema_pointer"],
@@ -295,3 +352,62 @@ def test_dpath_schema_matching_extractor_without_properties_to_match():
     assert extractor is not None
     assert extractor._values_to_match_key == "values"
     assert extractor._indexed_properties_to_match == {}
+
+
+@pytest.mark.parametrize(
+    "alt_status_code, expected_action, expected_message",
+    [
+        (200, "IGNORE", "Skipping sheet 'TestSheet' due to corrupt grid data"),
+        (500, "RETRY", "Internal server error encountered. Retrying with backoff."),
+    ],
+    ids=["alt_200_ignore", "alt_500_retry"],
+)
+@patch("components.requests.get")
+@patch("components.logger")
+def test_grid_data_error_handler_500_filter(mock_logger, mock_requests_get, alt_status_code, expected_action, expected_message):
+    """Test Filter 3: grid_data_500 handling in GridDataErrorHandler.
+
+    When a 500 error occurs with includeGridData=true, the handler immediately tests
+    with includeGridData=false to determine if it's corrupt grid data or a genuine server error.
+    """
+    # Create handler
+    handler = GridDataErrorHandler(config={}, parameters={"max_retries": 5})
+
+    # Create mock response for 500 error with grid data
+    mock_response = create_response({})
+    mock_response.status_code = 500
+    mock_response.request = Mock()
+    mock_response.request.url = "https://sheets.googleapis.com/v4/spreadsheets/test?includeGridData=true&ranges=TestSheet!1:1"
+    mock_response.request.headers = {"Authorization": "Bearer test"}
+    mock_response.json = Mock(return_value={"error": "Internal Server Error"})
+
+    # Mock the alt response for the test without grid data
+    mock_alt_response = Mock()
+    mock_alt_response.status_code = alt_status_code
+    mock_requests_get.return_value = mock_alt_response
+
+    # Call interpret_response - it should immediately test without grid data
+    resolution = handler.interpret_response(mock_response)
+
+    # Verify the alt request was made immediately
+    mock_requests_get.assert_called_once_with(
+        "https://sheets.googleapis.com/v4/spreadsheets/test?includeGridData=false&ranges=TestSheet!1:1",
+        headers={"Authorization": "Bearer test"},
+        timeout=30,
+    )
+
+    # Check the result based on alt_status_code
+    assert resolution.response_action.name == expected_action
+    assert expected_message in resolution.error_message
+
+    # Verify appropriate logging
+    if alt_status_code == 200:
+        # Corrupt grid data case - should log warning
+        mock_logger.warning.assert_called_once()
+        assert "corrupt or incompatible grid data" in mock_logger.warning.call_args[0][0]
+    else:
+        # Genuine server error case - should log info about retrying
+        mock_logger.info.assert_called()
+        # Check that one of the info calls mentions the failure
+        info_calls = [call[0][0] for call in mock_logger.info.call_args_list]
+        assert any("also failed" in msg for msg in info_calls)

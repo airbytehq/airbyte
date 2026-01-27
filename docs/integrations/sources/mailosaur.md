@@ -24,6 +24,14 @@ Docs : https://mailosaur.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2026-01-20 | [72025](https://github.com/airbytehq/airbyte/pull/72025) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71524](https://github.com/airbytehq/airbyte/pull/71524) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70752](https://github.com/airbytehq/airbyte/pull/70752) | Update dependencies |
+| 0.0.39 | 2025-11-25 | [70114](https://github.com/airbytehq/airbyte/pull/70114) | Update dependencies |
+| 0.0.38 | 2025-11-18 | [69554](https://github.com/airbytehq/airbyte/pull/69554) | Update dependencies |
+| 0.0.37 | 2025-10-29 | [69065](https://github.com/airbytehq/airbyte/pull/69065) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68432](https://github.com/airbytehq/airbyte/pull/68432) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [67847](https://github.com/airbytehq/airbyte/pull/67847) | Update dependencies |
 | 0.0.34 | 2025-10-07 | [67382](https://github.com/airbytehq/airbyte/pull/67382) | Update dependencies |
 | 0.0.33 | 2025-09-30 | [66338](https://github.com/airbytehq/airbyte/pull/66338) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [65747](https://github.com/airbytehq/airbyte/pull/65747) | Update dependencies |

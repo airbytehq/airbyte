@@ -25,6 +25,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -58,6 +61,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -116,6 +122,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -137,8 +146,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 1000
-            cursor_value: '{{ response.get("end_time", {}) }}'
-            stop_condition: "{{ last_page_size < 1_000 }}"
+            cursor_value: '{{ response.get("next_page", {}) }}'
+            stop_condition: "{{ response.get('count', 0) < 1000 }}"
       name: agent_timeline
       primary_key:
         - id
@@ -189,6 +198,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -247,6 +259,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -268,8 +283,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 1000
-            cursor_value: '{{ response.get("end_time", {}) }}'
-            stop_condition: "{{ last_page_size < 1_000 }}"
+            cursor_value: '{{ response.get("next_page", {}) }}'
+            stop_condition: '{{ response.get("count", 0) < 1000 }}'
       name: chats
       primary_key:
         - id
@@ -305,6 +320,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -337,6 +355,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -369,6 +390,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -401,6 +425,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -431,6 +458,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -463,6 +493,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -495,6 +528,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After

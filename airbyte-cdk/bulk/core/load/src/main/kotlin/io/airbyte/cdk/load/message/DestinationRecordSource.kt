@@ -1,6 +1,8 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
+
+@file:Suppress("DEPRECATION")
 
 package io.airbyte.cdk.load.message
 
@@ -24,7 +26,6 @@ import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 sealed interface DestinationRecordSource {
     val emittedAtMs: Long
     val sourceMeta: Meta
-    val fileReference: FileReference?
     fun asJsonRecord(orderedSchema: Array<FieldAccessor>): JsonNode
     fun asAirbyteValueProxy(): AirbyteValueProxy
 }
@@ -46,9 +47,6 @@ value class DestinationRecordJsonSource(val source: AirbyteMessage) : Destinatio
                     }
                         ?: emptyList()
             )
-
-    override val fileReference: FileReference?
-        get() = source.record.fileReference?.let { FileReference.fromProtocol(it) }
 
     override fun asJsonRecord(orderedSchema: Array<FieldAccessor>): JsonNode = source.record.data
 
@@ -75,12 +73,10 @@ value class DestinationRecordProtobufSource(val source: AirbyteMessageProtobuf) 
                         ?: emptyList()
             )
 
-    override val fileReference: FileReference?
-        get() = null
-
     override fun asJsonRecord(orderedSchema: Array<FieldAccessor>): JsonNode =
         asAirbyteValueProxy().asJson(orderedSchema)
 
+    @Suppress("DEPRECATION")
     override fun asAirbyteValueProxy(): AirbyteValueProxy =
         AirbyteValueProtobufProxy(source.record.dataList)
 }

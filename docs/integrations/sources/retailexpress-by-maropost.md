@@ -108,6 +108,14 @@ It is unclear what populates this API and the sandbox environment does not provi
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2026-01-20 | [72043](https://github.com/airbytehq/airbyte/pull/72043) | Update dependencies |
+| 0.0.33 | 2026-01-14 | [71454](https://github.com/airbytehq/airbyte/pull/71454) | Update dependencies |
+| 0.0.32 | 2025-12-18 | [70625](https://github.com/airbytehq/airbyte/pull/70625) | Update dependencies |
+| 0.0.31 | 2025-11-25 | [70030](https://github.com/airbytehq/airbyte/pull/70030) | Update dependencies |
+| 0.0.30 | 2025-11-18 | [69589](https://github.com/airbytehq/airbyte/pull/69589) | Update dependencies |
+| 0.0.29 | 2025-10-29 | [68869](https://github.com/airbytehq/airbyte/pull/68869) | Update dependencies |
+| 0.0.28 | 2025-10-21 | [68360](https://github.com/airbytehq/airbyte/pull/68360) | Update dependencies |
+| 0.0.27 | 2025-10-14 | [67907](https://github.com/airbytehq/airbyte/pull/67907) | Update dependencies |
 | 0.0.26 | 2025-10-07 | [67535](https://github.com/airbytehq/airbyte/pull/67535) | Update dependencies |
 | 0.0.25 | 2025-09-30 | [66439](https://github.com/airbytehq/airbyte/pull/66439) | Update dependencies |
 | 0.0.24 | 2025-09-09 | [65687](https://github.com/airbytehq/airbyte/pull/65687) | Update dependencies |

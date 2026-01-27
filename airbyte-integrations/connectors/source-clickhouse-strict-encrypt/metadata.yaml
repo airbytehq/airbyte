@@ -26,4 +26,14 @@ data:
   releaseStage: alpha
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: ClickHouse HTTP interface
+      url: https://clickhouse.com/docs/en/interfaces/http
+      type: api_reference
+    - title: ClickHouse authentication
+      url: https://clickhouse.com/docs/en/operations/access-rights
+      type: authentication_guide
+    - title: ClickHouse SQL reference
+      url: https://clickhouse.com/docs/en/sql-reference
+      type: sql_reference
 metadataSpecVersion: "1.0"

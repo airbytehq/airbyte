@@ -31,12 +31,19 @@ Zoho Expense connector enables seamless data synchronization between Zoho Expens
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2026-01-14 | [71383](https://github.com/airbytehq/airbyte/pull/71383) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70801](https://github.com/airbytehq/airbyte/pull/70801) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [70139](https://github.com/airbytehq/airbyte/pull/70139) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69432](https://github.com/airbytehq/airbyte/pull/69432) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68939](https://github.com/airbytehq/airbyte/pull/68939) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68497](https://github.com/airbytehq/airbyte/pull/68497) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67977](https://github.com/airbytehq/airbyte/pull/67977) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67240](https://github.com/airbytehq/airbyte/pull/67240) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66945](https://github.com/airbytehq/airbyte/pull/66945) | Update dependencies |
 | 0.0.33 | 2025-09-24 | [66460](https://github.com/airbytehq/airbyte/pull/66460) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [65743](https://github.com/airbytehq/airbyte/pull/65743) | Update dependencies |
-| 0.0.31 | 2025-08-23 | [65395](https://github.com/airbytehq/airbyte/pull/65395) | Update dependencies |
-| 0.0.30 | 2025-08-09 | [64814](https://github.com/airbytehq/airbyte/pull/64814) | Update dependencies |
+| 0.0.31 | 2025-08-24 | [65395](https://github.com/airbytehq/airbyte/pull/65395) | Update dependencies |
+| 0.0.30 | 2025-08-10 | [64814](https://github.com/airbytehq/airbyte/pull/64814) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64332](https://github.com/airbytehq/airbyte/pull/64332) | Update dependencies |
 | 0.0.28 | 2025-07-26 | [64062](https://github.com/airbytehq/airbyte/pull/64062) | Update dependencies |
 | 0.0.27 | 2025-07-20 | [63665](https://github.com/airbytehq/airbyte/pull/63665) | Update dependencies |

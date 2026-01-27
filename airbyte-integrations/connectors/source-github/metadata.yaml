@@ -6,11 +6,11 @@ data:
     hosts:
       - ${api_url}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 1.9.0-rc.2
+  dockerImageTag: 2.1.8
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   erdUrl: https://dbdocs.io/airbyteio/source-github?view=relationships
@@ -30,8 +30,21 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    breakingChanges:
+      2.0.0:
+        message: "This release renames reaction fields for compatibility across all destinations. The +1 and -1 fields have been renamed to plus_one and minus_one in streams containing reactions (comments, commit_comments, issue_events, issues, releases, review_comments). Users should refresh their source schema and reset affected streams after upgrading."
+        upgradeDeadline: "2025-11-21"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "comments"
+              - "commit_comments"
+              - "issue_events"
+              - "issues"
+              - "releases"
+              - "review_comments"
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   suggestedStreams:
     streams:
       - branches
@@ -68,4 +81,29 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Breaking changes
+      url: https://docs.github.com/en/rest/about-the-rest-api/breaking-changes
+      type: api_deprecations
+    - title: GitHub REST API reference
+      url: https://docs.github.com/en/rest
+      type: api_reference
+    - title: API Versions
+      url: https://docs.github.com/en/rest/about-the-rest-api/api-versions
+      type: api_release_history
+    - title: GitHub API changelog
+      url: https://github.blog/changelog/label/api/
+      type: api_release_history
+    - title: GitHub authentication
+      url: https://docs.github.com/en/rest/overview/authenticating-to-the-rest-api
+      type: authentication_guide
+    - title: GitHub REST API OpenAPI specification
+      url: https://github.com/github/rest-api-description
+      type: openapi_spec
+    - title: GitHub rate limits
+      url: https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api
+      type: rate_limits
+    - title: GitHub Status
+      url: https://www.githubstatus.com/
+      type: status_page
 metadataSpecVersion: "1.0"

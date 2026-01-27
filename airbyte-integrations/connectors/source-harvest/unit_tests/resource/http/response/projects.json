@@ -1,0 +1,39 @@
+{
+  "projects": [
+    {
+      "id": 14307913,
+      "name": "Online Store - Phase 1",
+      "code": "OS1",
+      "is_active": true,
+      "is_billable": true,
+      "is_fixed_fee": false,
+      "bill_by": "Project",
+      "client_id": 5735776,
+      "starts_on": "2023-01-01",
+      "ends_on": null,
+      "budget": 5000.0,
+      "budget_by": "project",
+      "budget_is_monthly": false,
+      "notify_when_over_budget": true,
+      "over_budget_notification_percentage": 80.0,
+      "show_budget_to_all": false,
+      "created_at": "2023-01-15T11:00:00Z",
+      "updated_at": "2023-06-20T15:00:00Z",
+      "cost_budget": null,
+      "cost_budget_include_expenses": false,
+      "hourly_rate": 100.0,
+      "fee": null,
+      "notes": "Main project for online store development"
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {
+    "first": "https://api.harvestapp.com/v2/projects?page=1&per_page=50",
+    "last": "https://api.harvestapp.com/v2/projects?page=1&per_page=50",
+    "previous": null,
+    "next": null
+  }
+}

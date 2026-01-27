@@ -26,6 +26,14 @@ Documentation: https://developer.ebay.com/api-docs/sell/fulfillment/overview.htm
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.22 | 2026-01-20 | [71892](https://github.com/airbytehq/airbyte/pull/71892) | Update dependencies |
+| 0.0.21 | 2026-01-14 | [71557](https://github.com/airbytehq/airbyte/pull/71557) | Update dependencies |
+| 0.0.20 | 2025-12-18 | [70581](https://github.com/airbytehq/airbyte/pull/70581) | Update dependencies |
+| 0.0.19 | 2025-11-25 | [70173](https://github.com/airbytehq/airbyte/pull/70173) | Update dependencies |
+| 0.0.18 | 2025-11-18 | [69422](https://github.com/airbytehq/airbyte/pull/69422) | Update dependencies |
+| 0.0.17 | 2025-10-29 | [68728](https://github.com/airbytehq/airbyte/pull/68728) | Update dependencies |
+| 0.0.16 | 2025-10-21 | [68559](https://github.com/airbytehq/airbyte/pull/68559) | Update dependencies |
+| 0.0.15 | 2025-10-14 | [67770](https://github.com/airbytehq/airbyte/pull/67770) | Update dependencies |
 | 0.0.14 | 2025-10-07 | [67287](https://github.com/airbytehq/airbyte/pull/67287) | Update dependencies |
 | 0.0.13 | 2025-09-30 | [66286](https://github.com/airbytehq/airbyte/pull/66286) | Update dependencies |
 | 0.0.12 | 2025-09-09 | [65799](https://github.com/airbytehq/airbyte/pull/65799) | Update dependencies |

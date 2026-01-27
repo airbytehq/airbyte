@@ -47,9 +47,17 @@ Using this connector we can extract data from various streams such as contacts ,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-01-20 | [71933](https://github.com/airbytehq/airbyte/pull/71933) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71606](https://github.com/airbytehq/airbyte/pull/71606) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70596](https://github.com/airbytehq/airbyte/pull/70596) | Update dependencies |
+| 0.0.42 | 2025-11-25 | [69854](https://github.com/airbytehq/airbyte/pull/69854) | Update dependencies |
+| 0.0.41 | 2025-11-18 | [69415](https://github.com/airbytehq/airbyte/pull/69415) | Update dependencies |
+| 0.0.40 | 2025-10-29 | [68742](https://github.com/airbytehq/airbyte/pull/68742) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68378](https://github.com/airbytehq/airbyte/pull/68378) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [67725](https://github.com/airbytehq/airbyte/pull/67725) | Update dependencies |
 | 0.0.37 | 2025-10-07 | [67421](https://github.com/airbytehq/airbyte/pull/67421) | Update dependencies |
 | 0.0.36 | 2025-09-30 | [66923](https://github.com/airbytehq/airbyte/pull/66923) | Update dependencies |
-| 0.0.35 | 2025-09-23 | [66615](https://github.com/airbytehq/airbyte/pull/66615) | Update dependencies |
+| 0.0.35 | 2025-09-24 | [66615](https://github.com/airbytehq/airbyte/pull/66615) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65830](https://github.com/airbytehq/airbyte/pull/65830) | Update dependencies |
 | 0.0.33 | 2025-08-23 | [65169](https://github.com/airbytehq/airbyte/pull/65169) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64676](https://github.com/airbytehq/airbyte/pull/64676) | Update dependencies |

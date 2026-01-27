@@ -77,10 +77,20 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.19 | 2026-01-20 | [71994](https://github.com/airbytehq/airbyte/pull/71994) | Update dependencies |
+| 2.4.18 | 2026-01-14 | [71513](https://github.com/airbytehq/airbyte/pull/71513) | Update dependencies |
+| 2.4.17 | 2025-12-18 | [70552](https://github.com/airbytehq/airbyte/pull/70552) | Update dependencies |
+| 2.4.16 | 2025-12-03 | [69718](https://github.com/airbytehq/airbyte/pull/69718) | Add pagination reset handling for Monday CursorExpiredError |
+| 2.4.15 | 2025-11-25 | [69883](https://github.com/airbytehq/airbyte/pull/69883) | Update dependencies |
+| 2.4.14 | 2025-11-18 | [69367](https://github.com/airbytehq/airbyte/pull/69367) | Update dependencies |
+| 2.4.13 | 2025-10-29 | [69048](https://github.com/airbytehq/airbyte/pull/69048) | Update dependencies |
+| 2.4.12 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 2.4.11 | 2025-10-21 | [68416](https://github.com/airbytehq/airbyte/pull/68416) | Update dependencies |
+| 2.4.10 | 2025-10-14 | [67840](https://github.com/airbytehq/airbyte/pull/67840) | Update dependencies |
 | 2.4.9 | 2025-10-07 | [67393](https://github.com/airbytehq/airbyte/pull/67393) | Update dependencies |
-| 2.4.8 | 2025-09-30 | [66938](https://github.com/airbytehq/airbyte/pull/66938) | Surface HTTP 200 Error Messages |
+| 2.4.8 | 2025-10-02 | [66938](https://github.com/airbytehq/airbyte/pull/66938) | Surface HTTP 200 Error Messages |
 | 2.4.7 | 2025-09-30 | [66336](https://github.com/airbytehq/airbyte/pull/66336) | Update dependencies |
-| 2.4.6 | 2025-09-09 | [65884](https://github.com/airbytehq/airbyte/pull/65884) | Update dependencies |
+| 2.4.6 | 2025-09-10 | [65884](https://github.com/airbytehq/airbyte/pull/65884) | Update dependencies |
 | 2.4.5 | 2025-08-23 | [64705](https://github.com/airbytehq/airbyte/pull/64705) | Update dependencies |
 | 2.4.4 | 2025-08-11 | [64878](https://github.com/airbytehq/airbyte/pull/64878) | Pass query in json body of request instead of query params. |
 | 2.4.3 | 2025-08-02 | [64220](https://github.com/airbytehq/airbyte/pull/64220) | Update dependencies |
@@ -94,7 +104,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 | 2.2.0      | 2025-03-14 | [52780](https://github.com/airbytehq/airbyte/pull/52780)  | Add optional config parameter to control which boards are fetched when syncing the `Boards` stream                                                                     |
 | 2.1.13     | 2025-02-01 | [52780](https://github.com/airbytehq/airbyte/pull/52780)  | Update dependencies                                                                                                                                                    |
 | 2.1.12     | 2025-01-25 | [51833](https://github.com/airbytehq/airbyte/pull/51833)  | Update dependencies                                                                                                                                                    |
-| 2.1.11     | 2025-01-14 | [51147](https://github.com/airbytehq/airbyte/pull/10311)  | Update API version to 2024-10                                                                                                                                          |
+| 2.1.11     | 2025-01-14 | [10311](https://github.com/airbytehq/airbyte/pull/10311)  | Update API version to 2024-10                                                                                                                                          |
 | 2.1.10     | 2025-01-11 | [51147](https://github.com/airbytehq/airbyte/pull/51147)  | Update dependencies                                                                                                                                                    |
 | 2.1.9      | 2025-01-08 | [50984](https://github.com/airbytehq/airbyte/pull/50984)  | Update the `spec` to support `Jinja` style variables for `DeclarativeOAuthFlow`                                                                                        |
 | 2.1.8      | 2024-12-28 | [50624](https://github.com/airbytehq/airbyte/pull/50624)  | Update dependencies                                                                                                                                                    |
@@ -118,7 +128,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 | 1.1.0      | 2023-07-05 | [27944](https://github.com/airbytehq/airbyte/pull/27944)  | Add incremental sync for Items and Boards streams                                                                                                                      |
 | 1.0.0      | 2023-06-20 | [27410](https://github.com/airbytehq/airbyte/pull/27410)  | Add new streams: Tags, Workspaces. Add new fields for existing streams.                                                                                                |
 | 0.2.6      | 2023-06-12 | [27244](https://github.com/airbytehq/airbyte/pull/27244)  | Added http error handling for `403` and `500` HTTP errors                                                                                                              |
-| 0.2.5      | 2023-05-22 | [225881](https://github.com/airbytehq/airbyte/pull/25881) | Fix pagination for the items stream                                                                                                                                    |
+| 0.2.5      | 2023-05-22 | [25881](https://github.com/airbytehq/airbyte/pull/25881) | Fix pagination for the items stream                                                                                                                                    |
 | 0.2.4      | 2023-04-26 | [25277](https://github.com/airbytehq/airbyte/pull/25277)  | Increase row limit to 100                                                                                                                                              |
 | 0.2.3      | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231)  | Publish using low-code CDK Beta version                                                                                                                                |
 | 0.2.2      | 2023-01-04 | [20996](https://github.com/airbytehq/airbyte/pull/20996)  | Fix json schema loader                                                                                                                                                 |

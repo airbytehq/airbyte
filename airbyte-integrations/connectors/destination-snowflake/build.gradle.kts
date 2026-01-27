@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-db")
+    toolkits = listOf("load-csv")
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -53,7 +53,5 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
-    integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
-    integrationTestImplementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
     integrationTestImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
 }

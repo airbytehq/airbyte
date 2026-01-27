@@ -40,6 +40,14 @@ Docs : https://developers.rentcast.io/reference/introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.43 | 2026-01-20 | [72039](https://github.com/airbytehq/airbyte/pull/72039) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71480](https://github.com/airbytehq/airbyte/pull/71480) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70586](https://github.com/airbytehq/airbyte/pull/70586) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [70005](https://github.com/airbytehq/airbyte/pull/70005) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69626](https://github.com/airbytehq/airbyte/pull/69626) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68917](https://github.com/airbytehq/airbyte/pull/68917) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68383](https://github.com/airbytehq/airbyte/pull/68383) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67887](https://github.com/airbytehq/airbyte/pull/67887) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67532](https://github.com/airbytehq/airbyte/pull/67532) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66432](https://github.com/airbytehq/airbyte/pull/66432) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [65698](https://github.com/airbytehq/airbyte/pull/65698) | Update dependencies |

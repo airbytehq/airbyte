@@ -27,4 +27,8 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: CSV specification
+      url: https://datatracker.ietf.org/doc/html/rfc4180
+      type: api_reference
 metadataSpecVersion: "1.0"

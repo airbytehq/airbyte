@@ -1,0 +1,47 @@
+# WARNING: This docker-compose.gcs.yml file is tightly coupled with PolarisEnvironment.kt.
+# Any change in ports, credentials, service names, or paths must be mirrored in PolarisEnvironment.kt.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: POLARIS
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  polaris:
+    image: apache/polaris:1.1.0-incubating
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      QUARKUS_HTTP_PORT: "8181"
+      QUARKUS_MANAGEMENT_PORT: "8182"
+
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/POLARIS
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: postgres
+
+      # Bootstrap credentials: tenant "POLARIS", principal "root", secret "s3cr3t"
+      JAVA_OPTS_APPEND: "-Dpolaris.bootstrap.credentials=POLARIS,root,s3cr3t"
+
+      QUARKUS_LOG_LEVEL: INFO
+
+      # Polaris needs ADC to talk to GCS server-side (catalog create / validate paths, etc.)
+      GOOGLE_APPLICATION_CREDENTIALS: /creds/gcs-sa.json
+    ports:
+      - "8181:8181" # Catalog API
+      - "8182:8182" # Health/metrics
+    volumes:
+      # Place your SA key file here:
+      #   src/test-integration/resources/polaris/secrets/gcs-sa.json
+      - ./gcs-creds/gcs-sa.json:/creds/gcs-sa.json:ro
+    restart: unless-stopped
+
+volumes:
+  pg-data:

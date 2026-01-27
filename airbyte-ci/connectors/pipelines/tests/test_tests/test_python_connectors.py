@@ -156,7 +156,8 @@ class TestPyAirbyteValidationTests:
         result = await PyAirbyteValidation(context_for_valid_connector)._run(mocker.MagicMock())
         assert isinstance(result, StepResult)
         assert result.status == StepStatus.SUCCESS
-        assert "Getting `spec` output from connector..." in result.stdout
+        # Verify the connector name appears in output (stable across PyAirbyte versions)
+        assert context_for_valid_connector.connector.technical_name in (result.stdout + result.stderr)
 
     async def test__run_validation_skip_unpublished_connector(
         self,

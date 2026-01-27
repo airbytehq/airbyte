@@ -33,10 +33,18 @@ The Nylas platform provides an integration layer that makes it easy to connect a
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.47 | 2026-01-20 | [71953](https://github.com/airbytehq/airbyte/pull/71953) | Update dependencies |
+| 0.0.46 | 2026-01-14 | [71636](https://github.com/airbytehq/airbyte/pull/71636) | Update dependencies |
+| 0.0.45 | 2025-12-18 | [70578](https://github.com/airbytehq/airbyte/pull/70578) | Update dependencies |
+| 0.0.44 | 2025-11-25 | [69881](https://github.com/airbytehq/airbyte/pull/69881) | Update dependencies |
+| 0.0.43 | 2025-11-18 | [69370](https://github.com/airbytehq/airbyte/pull/69370) | Update dependencies |
+| 0.0.42 | 2025-10-29 | [68703](https://github.com/airbytehq/airbyte/pull/68703) | Update dependencies |
+| 0.0.41 | 2025-10-21 | [68349](https://github.com/airbytehq/airbyte/pull/68349) | Update dependencies |
+| 0.0.40 | 2025-10-14 | [67757](https://github.com/airbytehq/airbyte/pull/67757) | Update dependencies |
 | 0.0.39 | 2025-10-07 | [67415](https://github.com/airbytehq/airbyte/pull/67415) | Update dependencies |
 | 0.0.38 | 2025-09-30 | [66930](https://github.com/airbytehq/airbyte/pull/66930) | Update dependencies |
-| 0.0.37 | 2025-09-23 | [66612](https://github.com/airbytehq/airbyte/pull/66612) | Update dependencies |
-| 0.0.36 | 2025-09-09 | [65825](https://github.com/airbytehq/airbyte/pull/65825) | Update dependencies |
+| 0.0.37 | 2025-09-24 | [66612](https://github.com/airbytehq/airbyte/pull/66612) | Update dependencies |
+| 0.0.36 | 2025-09-10 | [65825](https://github.com/airbytehq/airbyte/pull/65825) | Update dependencies |
 | 0.0.35 | 2025-08-23 | [65180](https://github.com/airbytehq/airbyte/pull/65180) | Update dependencies |
 | 0.0.34 | 2025-08-09 | [64734](https://github.com/airbytehq/airbyte/pull/64734) | Update dependencies |
 | 0.0.33 | 2025-08-02 | [64190](https://github.com/airbytehq/airbyte/pull/64190) | Update dependencies |

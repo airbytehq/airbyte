@@ -34,6 +34,13 @@ API Reference: https://developer.paddle.com/api-reference/overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.12 | 2026-01-20 | [71651](https://github.com/airbytehq/airbyte/pull/71651) | Update dependencies |
+| 0.2.11 | 2025-12-18 | [70506](https://github.com/airbytehq/airbyte/pull/70506) | Update dependencies |
+| 0.2.10 | 2025-11-25 | [70089](https://github.com/airbytehq/airbyte/pull/70089) | Update dependencies |
+| 0.2.9 | 2025-11-18 | [69694](https://github.com/airbytehq/airbyte/pull/69694) | Update dependencies |
+| 0.2.8 | 2025-10-29 | [69016](https://github.com/airbytehq/airbyte/pull/69016) | Update dependencies |
+| 0.2.7 | 2025-10-21 | [68291](https://github.com/airbytehq/airbyte/pull/68291) | Update dependencies |
+| 0.2.6 | 2025-10-14 | [67785](https://github.com/airbytehq/airbyte/pull/67785) | Update dependencies |
 | 0.2.5 | 2025-10-07 | [67336](https://github.com/airbytehq/airbyte/pull/67336) | Update dependencies |
 | 0.2.4 | 2025-09-30 | [66390](https://github.com/airbytehq/airbyte/pull/66390) | Update dependencies |
 | 0.2.3 | 2025-09-09 | [65806](https://github.com/airbytehq/airbyte/pull/65806) | Update dependencies |

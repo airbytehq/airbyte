@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
@@ -203,18 +203,18 @@ class BigqueryDirectLoadNativeTableOperations(
             // but that seems like a weird enough situation that we shouldn't worry about it.
             return """
                 CAST(
-                  CASE JSON_TYPE($columnName)
-                    WHEN 'object' THEN TO_JSON_STRING($columnName)
-                    WHEN 'array' THEN TO_JSON_STRING($columnName)
-                    ELSE JSON_VALUE($columnName)
+                  CASE JSON_TYPE(`$columnName`)
+                    WHEN 'object' THEN TO_JSON_STRING(`$columnName`)
+                    WHEN 'array' THEN TO_JSON_STRING(`$columnName`)
+                    ELSE JSON_VALUE(`$columnName`)
                   END
                   AS $newType
                 )
                 """.trimIndent()
         } else if (newType == StandardSQLTypeName.JSON) {
-            return "TO_JSON($columnName)"
+            return "TO_JSON(`$columnName`)"
         } else {
-            return "CAST($columnName AS $newType)"
+            return "CAST(`$columnName` AS $newType)"
         }
     }
 
@@ -383,12 +383,12 @@ class BigqueryDirectLoadNativeTableOperations(
             databaseHandler.executeWithRetries(
                 """
                 ALTER TABLE $tableId
-                  RENAME COLUMN `$realColumnName` TO $backupColumnName,
-                  RENAME COLUMN `$tempColumnName` TO $realColumnName
+                  RENAME COLUMN `$realColumnName` TO `$backupColumnName`,
+                  RENAME COLUMN `$tempColumnName` TO `$realColumnName`
                 """.trimIndent(),
             )
             databaseHandler.executeWithRetries(
-                """ALTER TABLE $tableId DROP COLUMN $backupColumnName""",
+                """ALTER TABLE $tableId DROP COLUMN `$backupColumnName`""",
             )
         }
     }

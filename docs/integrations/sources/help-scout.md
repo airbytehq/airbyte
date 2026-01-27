@@ -32,6 +32,14 @@ Auth Overview: https://developer.helpscout.com/mailbox-api/overview/authenticati
 
 | Version          | Date              | Pull Request                                         | Subject        |
 |------------------|-------------------|------------------------------------------------------|----------------|
+| 0.0.36 | 2026-01-20 | [71899](https://github.com/airbytehq/airbyte/pull/71899) | Update dependencies |
+| 0.0.35 | 2026-01-14 | [71694](https://github.com/airbytehq/airbyte/pull/71694) | Update dependencies |
+| 0.0.34 | 2025-12-18 | [70489](https://github.com/airbytehq/airbyte/pull/70489) | Update dependencies |
+| 0.0.33 | 2025-11-25 | [70020](https://github.com/airbytehq/airbyte/pull/70020) | Update dependencies |
+| 0.0.32 | 2025-11-18 | [69407](https://github.com/airbytehq/airbyte/pull/69407) | Update dependencies |
+| 0.0.31 | 2025-10-29 | [68833](https://github.com/airbytehq/airbyte/pull/68833) | Update dependencies |
+| 0.0.30 | 2025-10-21 | [68275](https://github.com/airbytehq/airbyte/pull/68275) | Update dependencies |
+| 0.0.29 | 2025-10-14 | [67864](https://github.com/airbytehq/airbyte/pull/67864) | Update dependencies |
 | 0.0.28 | 2025-10-07 | [67411](https://github.com/airbytehq/airbyte/pull/67411) | Update dependencies |
 | 0.0.27 | 2025-09-30 | [66405](https://github.com/airbytehq/airbyte/pull/66405) | Update dependencies |
 | 0.0.26 | 2025-09-09 | [66051](https://github.com/airbytehq/airbyte/pull/66051) | Update dependencies |

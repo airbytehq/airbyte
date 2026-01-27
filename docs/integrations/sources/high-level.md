@@ -33,6 +33,14 @@ Proxy connector for [Go High Level](https://gohighlevel.com) (Lead Connector). R
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.43 | 2026-01-20 | [71907](https://github.com/airbytehq/airbyte/pull/71907) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71706](https://github.com/airbytehq/airbyte/pull/71706) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70521](https://github.com/airbytehq/airbyte/pull/70521) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [70036](https://github.com/airbytehq/airbyte/pull/70036) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69369](https://github.com/airbytehq/airbyte/pull/69369) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68820](https://github.com/airbytehq/airbyte/pull/68820) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68246](https://github.com/airbytehq/airbyte/pull/68246) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67893](https://github.com/airbytehq/airbyte/pull/67893) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67409](https://github.com/airbytehq/airbyte/pull/67409) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66406](https://github.com/airbytehq/airbyte/pull/66406) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [66066](https://github.com/airbytehq/airbyte/pull/66066) | Update dependencies |

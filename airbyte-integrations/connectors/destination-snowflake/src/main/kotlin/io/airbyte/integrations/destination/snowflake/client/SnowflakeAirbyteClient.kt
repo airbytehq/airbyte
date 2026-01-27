@@ -1,23 +1,28 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.client
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.load.client.AirbyteClient
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.cdk.load.component.ColumnChangeset
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.TableColumns
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchema
+import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
+import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
@@ -25,6 +30,7 @@ import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
+internal const val DESCRIBE_TABLE_COLUMN_TYPE_FIELD = "data_type"
 
 private val log = KotlinLogging.logger {}
 
@@ -33,12 +39,9 @@ private val log = KotlinLogging.logger {}
 class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
-    private val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val snowflakeConfiguration: SnowflakeConfiguration,
-) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
-
-    private val airbyteColumnNames =
-        snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
+    private val columnManager: SnowflakeColumnManager,
+) : TableOperationsClient, TableSchemaEvolutionClient {
 
     override suspend fun countTable(tableName: TableName): Long? =
         try {
@@ -61,44 +64,55 @@ class SnowflakeAirbyteClient(
             null
         }
 
-    override suspend fun createNamespace(namespace: String) {
-        // Check if the schema exists first
-        val schemaExistsResult =
-            dataSource.connection.use { connection ->
-                val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
-                val statement =
-                    connection.prepareStatement(
-                        """
+    /**
+     * TEST ONLY. We have a much more performant implementation in
+     * [io.airbyte.integrations.destination.snowflake.db.SnowflakeDirectLoadDatabaseInitialStatusGatherer]
+     * .
+     */
+    override suspend fun tableExists(table: TableName) = countTable(table) != null
+
+    override suspend fun namespaceExists(namespace: String): Boolean {
+        return dataSource.connection.use { connection ->
+            val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
+            val statement =
+                connection.prepareStatement(
+                    """
                         SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
                         FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
                         WHERE SCHEMA_NAME = ?
                     """.andLog()
-                    )
+                )
 
-                // When querying information_schema, snowflake needs the "true" schema name,
-                // so we unescape it here.
-                val unescapedNamespace = namespace.replace("\"\"", "\"")
-                statement.setString(1, unescapedNamespace)
+            // When querying information_schema, snowflake needs the "true" schema name,
+            // so we unescape it here.
+            val unescapedNamespace = namespace.replace("\"\"", "\"")
+            statement.setString(1, unescapedNamespace)
 
-                statement.use {
-                    val resultSet = it.executeQuery()
-                    resultSet.use { rs ->
-                        if (rs.next()) {
-                            rs.getBoolean("SCHEMA_EXISTS")
-                        } else {
-                            false
-                        }
+            statement.use {
+                val resultSet = it.executeQuery()
+                resultSet.use { rs ->
+                    if (rs.next()) {
+                        rs.getBoolean("SCHEMA_EXISTS")
+                    } else {
+                        false
                     }
                 }
             }
-
-        if (!schemaExistsResult) {
-            // Create the schema only if it doesn't exist
-            execute(sqlGenerator.createNamespace(namespace))
         }
+    }
 
-        // Create the CSV file format in the schema if it does not exist
-        execute(sqlGenerator.createFileFormat(namespace))
+    override suspend fun createNamespace(namespace: String) {
+        try {
+            // Check if the schema exists first
+            val schemaExistsResult = namespaceExists(namespace)
+
+            if (!schemaExistsResult) {
+                // Create the schema only if it doesn't exist
+                execute(sqlGenerator.createNamespace(namespace))
+            }
+        } catch (e: SnowflakeSQLException) {
+            handleSnowflakePermissionError(e)
+        }
     }
 
     override suspend fun createTable(
@@ -107,7 +121,7 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ) {
-        execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
+        execute(sqlGenerator.createTable(tableName, stream.tableSchema, replace))
         execute(sqlGenerator.createSnowflakeStage(tableName))
     }
 
@@ -144,7 +158,15 @@ class SnowflakeAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(sqlGenerator.copyTable(columnNameMapping, sourceTableName, targetTableName))
+        // Get all column names from the mapping (both meta columns and user columns)
+        val columnNames = buildSet {
+            // Add Airbyte meta columns (using uppercase constants)
+            addAll(columnManager.getMetaColumnNames())
+            // Add user columns from mapping
+            addAll(columnNameMapping.values)
+        }
+
+        execute(sqlGenerator.copyTable(columnNames, sourceTableName, targetTableName))
     }
 
     override suspend fun upsertTable(
@@ -153,9 +175,7 @@ class SnowflakeAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(
-            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
-        )
+        execute(sqlGenerator.upsertTable(stream.tableSchema, sourceTableName, targetTableName))
     }
 
     override suspend fun dropTable(tableName: TableName) {
@@ -176,89 +196,80 @@ class SnowflakeAirbyteClient(
         if (snowflakeConfiguration.legacyRawTablesOnly) {
             return
         }
-        val columnsInDb = getColumnsFromDb(tableName)
-        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
-        val (addedColumns, deletedColumns, modifiedColumns) =
-            generateSchemaChanges(columnsInDb, columnsInStream)
+        super.ensureSchemaMatches(stream, tableName, columnNameMapping)
+    }
 
+    override suspend fun discoverSchema(tableName: TableName): TableSchema {
+        return TableSchema(getColumnsFromDb(tableName))
+    }
+
+    override fun computeSchema(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): TableSchema {
+        return TableSchema(stream.tableSchema.columnSchema.finalSchema)
+    }
+
+    override suspend fun applyChangeset(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        tableName: TableName,
+        expectedColumns: TableColumns,
+        columnChangeset: ColumnChangeset,
+    ) {
         if (
-            addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()
+            columnChangeset.columnsToAdd.isNotEmpty() ||
+                columnChangeset.columnsToDrop.isNotEmpty() ||
+                columnChangeset.columnsToChange.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
-            log.info { "Added columns: $addedColumns" }
-            log.info { "Deleted columns: $deletedColumns" }
-            log.info { "Modified columns: $modifiedColumns" }
+            log.info { "Added columns: ${columnChangeset.columnsToAdd}" }
+            log.info { "Deleted columns: ${columnChangeset.columnsToDrop}" }
+            log.info { "Modified columns: ${columnChangeset.columnsToChange}" }
             sqlGenerator
-                .alterTable(tableName, addedColumns, deletedColumns, modifiedColumns)
+                .alterTable(
+                    tableName,
+                    columnChangeset.columnsToAdd,
+                    columnChangeset.columnsToDrop,
+                    columnChangeset.columnsToChange,
+                )
                 .forEach { execute(it) }
         }
     }
 
-    internal fun getColumnsFromDb(tableName: TableName): Set<ColumnDefinition> {
-        val sql =
-            sqlGenerator.describeTable(schemaName = tableName.namespace, tableName = tableName.name)
-        dataSource.connection.use { connection ->
-            val statement = connection.createStatement()
-            return statement.use {
-                val rs: ResultSet = it.executeQuery(sql)
-                val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
-
-                while (rs.next()) {
-                    val columnName = rs.getString("name").toSnowflakeCompatibleName()
-
-                    // Filter out airbyte columns
-                    if (airbyteColumnNames.contains(columnName)) {
-                        continue
-                    }
-                    val dataType = rs.getString("type").takeWhile { char -> char != '(' }
-
-                    columnsInDb.add(ColumnDefinition(columnName, dataType, false))
-                }
-
-                columnsInDb
-            }
-        }
-    }
-
-    internal fun getColumnsFromStream(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ) =
-        snowflakeColumnUtils
-            .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
-            .filter { column -> column.columnName !in airbyteColumnNames }
-            .map { column ->
-                ColumnDefinition(
-                    name = column.columnName,
-                    type =
-                        column.columnType.takeWhile { char ->
-                            // This is to remove any precision parts of the dialect type
-                            char != '('
-                        },
-                    // Not used to ensure schema
-                    isPrimaryKey = false,
+    internal fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> {
+        try {
+            val sql =
+                sqlGenerator.describeTable(
+                    schemaName = tableName.namespace,
+                    tableName = tableName.name
                 )
-            }
-            .toSet()
+            dataSource.connection.use { connection ->
+                val statement = connection.createStatement()
+                return statement.use {
+                    val rs: ResultSet = it.executeQuery(sql)
+                    val columnsInDb: MutableMap<String, ColumnType> = mutableMapOf()
 
-    internal fun generateSchemaChanges(
-        columnsInDb: Set<ColumnDefinition>,
-        columnsInStream: Set<ColumnDefinition>
-    ): Triple<Set<ColumnDefinition>, Set<ColumnDefinition>, Set<ColumnDefinition>> {
-        val addedColumns =
-            columnsInStream.filter { it.name !in columnsInDb.map { col -> col.name } }.toSet()
-        val deletedColumns =
-            columnsInDb.filter { it.name !in columnsInStream.map { col -> col.name } }.toSet()
-        val commonColumns =
-            columnsInStream.filter { it.name in columnsInDb.map { col -> col.name } }.toSet()
-        val modifiedColumns =
-            commonColumns
-                .filter {
-                    val dbType = columnsInDb.find { column -> it.name == column.name }?.type
-                    it.type != dbType
+                    while (rs.next()) {
+                        val columnName = escapeJsonIdentifier(rs.getString("name"))
+
+                        // Filter out airbyte columns
+                        if (columnManager.getMetaColumnNames().contains(columnName)) {
+                            continue
+                        }
+                        val dataType = rs.getString("type").takeWhile { char -> char != '(' }
+                        // yes, this is how we live. The value is, in fact "Y" or "N".
+                        val nullable = rs.getString("null?") == "Y"
+
+                        columnsInDb[columnName] = ColumnType(dataType, nullable)
+                    }
+
+                    columnsInDb
                 }
-                .toSet()
-        return Triple(addedColumns, deletedColumns, modifiedColumns)
+            }
+        } catch (e: SnowflakeSQLException) {
+            handleSnowflakePermissionError(e)
+        }
     }
 
     override suspend fun getGenerationId(tableName: TableName): Long =
@@ -273,7 +284,7 @@ class SnowflakeAirbyteClient(
                          * format.  In order to make sure these strings will match any column names
                          * that we have formatted in-memory, re-apply the escaping.
                          */
-                        resultSet.getLong(snowflakeColumnUtils.getGenerationIdColumnName())
+                        resultSet.getLong(columnManager.getGenerationIdColumnName())
                     } else {
                         log.warn {
                             "No generation ID found for table ${tableName.toPrettyString()}, returning 0"
@@ -298,25 +309,68 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.putInStage(tableName, tempFilePath))
     }
 
-    fun copyFromStage(tableName: TableName, filename: String) {
-        execute(sqlGenerator.copyFromStage(tableName, filename))
+    fun copyFromStage(tableName: TableName, filename: String, columnNames: List<String>) {
+        execute(sqlGenerator.copyFromStage(tableName, filename, columnNames))
     }
 
-    fun describeTable(tableName: TableName): List<String> =
-        dataSource.connection.use { connection ->
-            val statement = connection.createStatement()
-            return statement.use {
-                val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
-                val columns = mutableListOf<String>()
-                while (resultSet.next()) {
-                    columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
+    fun describeTable(tableName: TableName): LinkedHashMap<String, String> =
+        try {
+            dataSource.connection.use { connection ->
+                val statement = connection.createStatement()
+                return statement.use {
+                    val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
+                    val columns = linkedMapOf<String, String>()
+                    while (resultSet.next()) {
+                        val columnName = resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD)
+                        // this is... incredibly annoying. The resultset will give us a string like
+                        // `{"type":"VARIANT","nullable":true}`.
+                        // So we need to parse that JSON, and then fetch the actual thing we care
+                        // about.
+                        // Also, some of the type names aren't the ones we're familiar with (e.g.
+                        // `FIXED` for numeric columns),
+                        // so the output here is not particularly ergonomic.
+                        val columnType =
+                            resultSet
+                                .getString(DESCRIBE_TABLE_COLUMN_TYPE_FIELD)
+                                .deserializeToNode()["type"]
+                                .asText()
+                        columns[columnName] = columnType
+                    }
+                    columns
                 }
-                columns
             }
+        } catch (e: SnowflakeSQLException) {
+            handleSnowflakePermissionError(e)
         }
 
-    internal fun execute(query: String) =
-        dataSource.connection.use { connection ->
-            connection.createStatement().use { it.executeQuery(query) }
+    internal fun execute(query: String): ResultSet =
+        try {
+            dataSource.execute(query)
+        } catch (e: SnowflakeSQLException) {
+            handleSnowflakePermissionError(e)
         }
+
+    /**
+     * Checks if a SnowflakeSQLException is related to permissions and wraps it as a
+     * ConfigErrorException. Otherwise, rethrows the original exception.
+     */
+    private fun handleSnowflakePermissionError(e: SnowflakeSQLException): Nothing {
+        val errorMessage = e.message?.lowercase() ?: ""
+
+        // Check for known permission-related error patterns
+        when {
+            errorMessage.contains("current role has no privileges on it") -> {
+                throw ConfigErrorException(e.message ?: "Permission error", e)
+            }
+            else -> {
+                // Not a known permission error, rethrow as-is
+                throw e
+            }
+        }
+    }
 }
+
+fun DataSource.execute(query: String): ResultSet =
+    this.connection.use { connection ->
+        connection.createStatement().use { it.executeQuery(query) }
+    }

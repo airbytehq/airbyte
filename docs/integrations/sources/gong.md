@@ -2,38 +2,43 @@
 
 ## Sync overview
 
-The Gong source supports both Full Refresh only.
-
-This source can sync data for the [Gong API](https://us-14321.app.gong.io/settings/api/documentation#overview).
+The Gong source supports both Full Refresh and Incremental syncs. This source can sync data for the [Gong API](https://help.gong.io/docs/what-the-gong-api-provides).
 
 ### Output schema
 
-This Source is capable of syncing the following core Streams:
+This source syncs the following streams:
 
-- [answered scorecards](https://us-14321.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards)
-- [calls](https://us-14321.app.gong.io/settings/api/documentation#get-/v2/calls)
-- [extensive calls](https://us-56804.app.gong.io/settings/api/documentation#post-/v2/calls/extensive)
-- [scorecards](https://us-14321.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards)
-- [users](https://us-14321.app.gong.io/settings/api/documentation#get-/v2/users)
+| Stream | Sync Mode | Description |
+| :----- | :-------- | :---------- |
+| [answered scorecards](https://gong.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards) | Incremental | Scorecard responses with review timestamps |
+| [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps |
+| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including transcripts, topics, and interaction stats |
+| [scorecards](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
+| [users](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
 
 ### Features
 
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | Yes                  |       |
-| Namespaces                | No                   |       |
+| Feature                   | Supported? | Notes |
+| :------------------------ | :--------- | :---- |
+| Full Refresh Sync         | Yes        |       |
+| Incremental - Append Sync | Yes        | Supported for calls, extensive calls, and answered scorecards |
+| Namespaces                | No         |       |
 
 ### Performance considerations
 
-The Gong connector should not run into Gong API limitations under normal usage.
-By default Gong limits your company's access to the service to 3 API calls per second, and 10,000 API calls per day.
+The Gong connector should not run into Gong API limitations under normal usage. Gong limits API access to 3 calls per second and 10,000 calls per day. If you exceed these limits, the API returns HTTP status code 429 with a Retry-After header indicating when to retry.
 
 ## Requirements
 
-- **Gong API keys**. See the [Gong docs](https://us-14321.app.gong.io/settings/api/documentation#overview) for information on how to obtain the API keys.
-- **Start Date**. To fetch data from. This just applies to Incremental syncs. Default value is 90 days from today.
+You can authenticate to Gong using one of two methods:
 
+- **OAuth 2.0 (recommended for Airbyte Cloud)**. Authenticate through Gong's OAuth flow. This method is available in Airbyte Cloud and handles token refresh automatically. You need a Gong account with technical administrator permissions to authorize the connection.
+
+- **API Key**. Authenticate using an access key and secret. You must be a Gong technical administrator to obtain API credentials. In your Gong account, navigate to **Company Settings**, then **Ecosystem**, then **API** to generate an access key and secret. See the [Gong API documentation](https://help.gong.io/docs/receive-access-to-the-api) for detailed instructions.
+
+Additionally, you can configure:
+
+- **Start Date** (optional). The date from which to fetch data in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector fetches data from the last 90 days.
 
 ## Changelog
 
@@ -42,6 +47,9 @@ By default Gong limits your company's access to the service to 3 API calls per s
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.5.1 | 2026-01-20 | [65382](https://github.com/airbytehq/airbyte/pull/65382) | Update dependencies |
+| 0.5.0 | 2026-01-16 | [71356](https://github.com/airbytehq/airbyte/pull/71356) | Add OAuth 2.0 authentication support with SelectiveAuthenticator |
+| 0.4.14 | 2026-01-13 | [71344](https://github.com/airbytehq/airbyte/pull/71344) | Add 404 error handlers and fix CDK import path |
 | 0.4.13 | 2025-08-09 | [64594](https://github.com/airbytehq/airbyte/pull/64594) | Update dependencies |
 | 0.4.12 | 2025-08-02 | [64200](https://github.com/airbytehq/airbyte/pull/64200) | Update dependencies |
 | 0.4.11 | 2025-07-19 | [63504](https://github.com/airbytehq/airbyte/pull/63504) | Update dependencies |

@@ -38,16 +38,29 @@ export const ProductInformation = ({ products }) => {
     products["oss-enterprise"] || products["oss-*"] || products["all"];
   const cloud = products["cloud"] || products["cloud-teams"] || products["all"];
   // cloud add-ons need to be specifically marked and are not part of the "all" shorthand
+  const cloudPlus = products["cloud-plus"];
   const cloudTeams = products["cloud-teams"];
   const enterpriseFlex = products["enterprise-flex"];
   const embedded = products["embedded"];
 
   return (
     <div className={styles.badges}>
-      <Badge available={ossCommunity} title="Formerly Self-Managed Community">Core</Badge>
-      <Badge available={cloud && !cloudTeams && !enterpriseFlex} title="Formerly Cloud">Standard</Badge>
-      <Badge available={cloud || cloudTeams} title="Formerly Cloud Teams">Pro</Badge>
-      <Badge available={cloud || cloudTeams || enterpriseFlex}>Enterprise Flex</Badge>
+      <Badge available={ossCommunity} title="Formerly Self-Managed Community">
+        Core
+      </Badge>
+      <Badge
+        available={cloud && !cloudTeams && !enterpriseFlex}
+        title="Formerly Cloud"
+      >
+        Standard
+      </Badge>
+      <Badge available={cloud && !cloudTeams && !enterpriseFlex || cloudPlus}>Plus</Badge>
+      <Badge available={cloudPlus || cloud || cloudTeams} title="Formerly Cloud Teams">
+        Pro
+      </Badge>
+      <Badge available={cloudPlus || cloud || cloudTeams || enterpriseFlex}>
+        Enterprise Flex
+      </Badge>
       <Badge available={ossEnterprise}>Self-Managed Enterprise</Badge>
       {embedded && <Badge available={true}>Embedded</Badge>}
       <a

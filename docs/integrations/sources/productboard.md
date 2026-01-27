@@ -36,6 +36,14 @@ A manifest only source for Productboard. https://www.productboard.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.48 | 2026-01-20 | [72061](https://github.com/airbytehq/airbyte/pull/72061) | Update dependencies |
+| 0.0.47 | 2026-01-14 | [71477](https://github.com/airbytehq/airbyte/pull/71477) | Update dependencies |
+| 0.0.46 | 2025-12-18 | [70612](https://github.com/airbytehq/airbyte/pull/70612) | Update dependencies |
+| 0.0.45 | 2025-11-25 | [70010](https://github.com/airbytehq/airbyte/pull/70010) | Update dependencies |
+| 0.0.44 | 2025-11-18 | [69620](https://github.com/airbytehq/airbyte/pull/69620) | Update dependencies |
+| 0.0.43 | 2025-10-29 | [68919](https://github.com/airbytehq/airbyte/pull/68919) | Update dependencies |
+| 0.0.42 | 2025-10-21 | [68371](https://github.com/airbytehq/airbyte/pull/68371) | Update dependencies |
+| 0.0.41 | 2025-10-14 | [67880](https://github.com/airbytehq/airbyte/pull/67880) | Update dependencies |
 | 0.0.40 | 2025-10-07 | [67533](https://github.com/airbytehq/airbyte/pull/67533) | Update dependencies |
 | 0.0.39 | 2025-09-30 | [66436](https://github.com/airbytehq/airbyte/pull/66436) | Update dependencies |
 | 0.0.38 | 2025-09-09 | [66119](https://github.com/airbytehq/airbyte/pull/66119) | Update dependencies |

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.datagen
 
 import io.airbyte.cdk.ConfigErrorException
@@ -13,6 +13,7 @@ import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.integrations.source.datagen.flavor.Flavor
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
+import io.airbyte.integrations.source.datagen.flavor.types.TypesFlavor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
@@ -79,11 +80,16 @@ constructor(
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
-        // TODO: use factory method to select and instantiate flavor
+        val flavorSpec = pojo.getFlavor()
+        val flavor: Flavor =
+            when (flavorSpec) {
+                Incremental -> IncrementFlavor
+                Types -> TypesFlavor
+            }
 
         return DataGenSourceConfiguration(
             maxConcurrency = maxConcurrency,
-            flavor = IncrementFlavor,
+            flavor = flavor,
             maxRecords = pojo.maxRecords
         )
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake
@@ -7,21 +7,20 @@ package io.airbyte.integrations.destination.snowflake
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.load.check.CheckOperationV2
-import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.config.DataChannelMedium
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
-import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
-import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
@@ -196,31 +195,32 @@ class SnowflakeBeanFactory {
     @Named("snowflakePrivateKeyFileName")
     fun snowflakePrivateKeyFileName() = PRIVATE_KEY_FILE_NAME
 
-    @Primary
     @Singleton
-    @Requires(property = Operation.PROPERTY, value = "check")
-    fun checkOperation(
-        destinationChecker: DestinationCheckerV2,
-        outputConsumer: OutputConsumer,
-    ) = CheckOperationV2(destinationChecker, outputConsumer)
+    fun snowflakeRecordFormatter(
+        snowflakeConfiguration: SnowflakeConfiguration
+    ): SnowflakeRecordFormatter {
+        return if (snowflakeConfiguration.legacyRawTablesOnly) {
+            SnowflakeRawRecordFormatter()
+        } else {
+            SnowflakeSchemaRecordFormatter()
+        }
+    }
 
     @Singleton
-    fun getMemoryAndParallelismConfig(
-        dataChannelMedium: DataChannelMedium
-    ): MemoryAndParallelismConfig {
+    fun aggregatePublishingConfig(dataChannelMedium: DataChannelMedium): AggregatePublishingConfig {
         // NOT speed mode
         return if (dataChannelMedium == DataChannelMedium.STDIO) {
-            MemoryAndParallelismConfig(
+            AggregatePublishingConfig(
                 maxRecordsPerAgg = 10_000_000_000_000L,
                 maxEstBytesPerAgg = 350_000_000L,
+                maxEstBytesAllAggregates = 350_000_000L * 5,
             )
         } else {
-            MemoryAndParallelismConfig(
+            AggregatePublishingConfig(
                 maxRecordsPerAgg = 10_000_000_000_000L,
                 maxEstBytesPerAgg = 350_000_000L,
+                maxEstBytesAllAggregates = 350_000_000L * 5,
                 maxBufferedAggregates = 6,
-                maxOpenAggregates = 8,
-                maxConcurrentLifecycleOperations = 10
             )
         }
     }

@@ -28,6 +28,14 @@ API Reference: https://docs.imagga.com/#introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2026-01-20 | [71934](https://github.com/airbytehq/airbyte/pull/71934) | Update dependencies |
+| 0.0.27 | 2026-01-14 | [71429](https://github.com/airbytehq/airbyte/pull/71429) | Update dependencies |
+| 0.0.26 | 2025-12-18 | [70463](https://github.com/airbytehq/airbyte/pull/70463) | Update dependencies |
+| 0.0.25 | 2025-11-25 | [70163](https://github.com/airbytehq/airbyte/pull/70163) | Update dependencies |
+| 0.0.24 | 2025-11-18 | [69514](https://github.com/airbytehq/airbyte/pull/69514) | Update dependencies |
+| 0.0.23 | 2025-10-29 | [68775](https://github.com/airbytehq/airbyte/pull/68775) | Update dependencies |
+| 0.0.22 | 2025-10-21 | [68504](https://github.com/airbytehq/airbyte/pull/68504) | Update dependencies |
+| 0.0.21 | 2025-10-14 | [67903](https://github.com/airbytehq/airbyte/pull/67903) | Update dependencies |
 | 0.0.20 | 2025-10-07 | [67410](https://github.com/airbytehq/airbyte/pull/67410) | Update dependencies |
 | 0.0.19 | 2025-09-30 | [66803](https://github.com/airbytehq/airbyte/pull/66803) | Update dependencies |
 | 0.0.18 | 2025-09-09 | [65899](https://github.com/airbytehq/airbyte/pull/65899) | Update dependencies |

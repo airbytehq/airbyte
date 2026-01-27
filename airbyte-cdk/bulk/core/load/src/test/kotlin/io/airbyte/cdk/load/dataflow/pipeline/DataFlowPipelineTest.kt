@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.pipeline
 
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import io.mockk.coEvery
 import io.mockk.coVerifySequence
@@ -22,9 +22,8 @@ class DataFlowPipelineTest {
     private val state = mockk<DataFlowStage>()
     private val completionHandler = mockk<PipelineCompletionHandler>()
 
-    private val memoryAndParallelismConfig =
-        MemoryAndParallelismConfig(
-            maxOpenAggregates = 2,
+    private val aggregatePublishingConfig =
+        AggregatePublishingConfig(
             maxBufferedAggregates = 2,
         )
 
@@ -46,7 +45,7 @@ class DataFlowPipelineTest {
                 flush,
                 state,
                 completionHandler,
-                memoryAndParallelismConfig,
+                aggregatePublishingConfig,
                 aggregationDispatcher,
                 flushDispatcher,
             )

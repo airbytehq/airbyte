@@ -52,6 +52,14 @@ The Airbyte connector for e-conomic enables seamless integration with the e-cono
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.43 | 2026-01-20 | [71889](https://github.com/airbytehq/airbyte/pull/71889) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71588](https://github.com/airbytehq/airbyte/pull/71588) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70570](https://github.com/airbytehq/airbyte/pull/70570) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [70192](https://github.com/airbytehq/airbyte/pull/70192) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69374](https://github.com/airbytehq/airbyte/pull/69374) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68739](https://github.com/airbytehq/airbyte/pull/68739) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68554](https://github.com/airbytehq/airbyte/pull/68554) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67789](https://github.com/airbytehq/airbyte/pull/67789) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67282](https://github.com/airbytehq/airbyte/pull/67282) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66282](https://github.com/airbytehq/airbyte/pull/66282) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [65784](https://github.com/airbytehq/airbyte/pull/65784) | Update dependencies |

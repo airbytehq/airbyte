@@ -6,7 +6,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
-import requests_mock
 from requests import Response
 
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder

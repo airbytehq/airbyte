@@ -45,6 +45,14 @@ Visit `https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments`
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.43 | 2026-01-20 | [72116](https://github.com/airbytehq/airbyte/pull/72116) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71579](https://github.com/airbytehq/airbyte/pull/71579) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70658](https://github.com/airbytehq/airbyte/pull/70658) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [70051](https://github.com/airbytehq/airbyte/pull/70051) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69546](https://github.com/airbytehq/airbyte/pull/69546) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [69015](https://github.com/airbytehq/airbyte/pull/69015) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68491](https://github.com/airbytehq/airbyte/pull/68491) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67904](https://github.com/airbytehq/airbyte/pull/67904) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67461](https://github.com/airbytehq/airbyte/pull/67461) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66889](https://github.com/airbytehq/airbyte/pull/66889) | Update dependencies |
 | 0.0.33 | 2025-09-23 | [66363](https://github.com/airbytehq/airbyte/pull/66363) | Update dependencies |

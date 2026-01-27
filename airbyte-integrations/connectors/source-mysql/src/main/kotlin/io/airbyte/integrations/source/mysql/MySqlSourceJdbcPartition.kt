@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql
@@ -255,6 +255,7 @@ class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
+    override val isLowerBoundIncluded: Boolean,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
     override val completeState: OpaqueStateValue
         get() =
@@ -364,6 +365,7 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
     override val upperBound: List<JsonNode>?,
     cursor: Field,
     cursorUpperBound: JsonNode?,
+    override val isLowerBoundIncluded: Boolean
 ) :
     MySqlSourceJdbcCursorPartition(
         selectQueryGenerator,

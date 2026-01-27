@@ -1,0 +1,165 @@
+---
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
+    extract:
+      jdbc:
+        mode: concurrent
+        with-sampling: true
+        table-sample-size: 1024
+        throughput-bytes-per-second: 10000000
+        min-fetch-size: 10
+        default-fetch-size: 1024
+        max-fetch-size: 1000000000
+        memory-capacity-ratio: 0.6
+        estimated-record-overhead-bytes: 16
+        estimated-field-overhead-bytes: 16
+    check:
+      jdbc:
+        queries:
+          - >-
+            SELECT 1 WHERE 1 = 0;
+
+    exception-classifiers:
+      regex:
+        # The following rules are for the RegexExceptionClassifier [0] which are applied
+        # sequentially on a Throwable's message [1] and its nested messages by cause [2].
+        #
+        # This classifier's rules are applied ahead of the JdbcExceptionClassifier's further down.
+        #
+        # [0] https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/output/ExceptionClassifier.kt
+        # [1] https://docs.oracle.com/javase/8/docs/api/java/lang/Throwable.html#getMessage--
+        # [2] https://docs.oracle.com/javase/8/docs/api/java/lang/Throwable.html#getCause--
+
+        rules:
+          ## REGEX RULE TEMPLATE:
+          # pattern: Required; regex pattern, c.f. https://www.freeformatter.com/java-regex-tester.html.
+          #          Note that regex patterns are not case-sensitive and are multiline.
+          # input-example: Required, string matching regex pattern.
+          # error: Required, one of (transient|config|system).
+          # group: Optional, string prefixing user-facing error message.
+          # output: Optional, user-facing error message; when not set, the exception message is used instead.
+          # reference-links: Optional, list of URLs appended to user-facing message after a newline.
+
+          - pattern: (?i).*connection is not available, request timed out after.*
+            input-example: >-
+              java.sql.SQLTransientConnectionException: HikariPool-x - 
+              Connection is not available, request timed out after 10 ms
+            error: transient
+            group: Hikari Connection Pool Timeout
+            output: The sync encountered a database read failure due to a connection timeout, will retry.
+            reference-links: https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
+
+          - pattern: (?i).*the tcp\/ip connection to the host.*has failed.*
+            input-example: >-
+              com.microsoft.sqlserver.jdbc.SQLServerException: The TCP/IP connection to the host localhost, port 1433 has failed.
+            error: transient
+            group: SQL Server Connection Error
+            output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
+            reference-links: https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
+
+          - pattern: (?i).*login failed for user.*
+            input-example: >-
+              com.microsoft.sqlserver.jdbc.SQLServerException: Login failed for user 'sa'.
+            error: config
+            group: SQL Server Authentication Error
+            output: >-
+              The sync failed because the provided credentials are invalid. 
+              Please verify your username and password configuration.
+            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/troubleshoot-connecting-to-the-sql-server-database-engine
+
+          - pattern: (?i).*cannot open database.*requested by the login.*
+            input-example: >-
+              com.microsoft.sqlserver.jdbc.SQLServerException: Cannot open database "testdb" requested by the login. The login failed.
+            error: config
+            group: SQL Server Database Access Error
+            output: >-
+              The sync failed because the specified database cannot be accessed with the provided credentials. 
+              Please verify your database name and user permissions.
+            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles
+
+          - pattern: (?i).*invalid object name.*
+            input-example: >-
+              com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'dbo.test_table'.
+            error: config
+            group: SQL Server Object Error
+            output: >-
+              The sync failed because a required table or view does not exist in the database. 
+              Please verify your table/view names and schema configuration.
+            reference-links: https://docs.microsoft.com/en-us/sql/t-sql/language-elements/database-identifiers
+
+          - pattern: (?i).*timeout expired.*
+            input-example: >-
+              com.microsoft.sqlserver.jdbc.SQLServerException: The query has timed out.
+            error: transient
+            group: SQL Server Query Timeout
+            output: The sync was aborted because the query took too long to return results, will retry.
+            reference-links: https://docs.microsoft.com/en-us/sql/connect/jdbc/setting-the-connection-properties
+
+          - pattern: (?i).*an exception occurred in the change event producer.*
+            input-example: >-
+              java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: 
+              An exception occurred in the change event producer. This connector will be stopped.
+            error: config
+            group: SQL Server CDC Error
+            output: >-
+              The sync encountered an unexpected error in the change event producer and has stopped. 
+              Please ensure CDC is properly configured and the SQL Server Agent is running.
+            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/enable-and-disable-change-data-capture-sql-server
+
+      jdbc:
+        # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
+        # SQL Server's error code [1]. The vendor error code is printed in the exception
+        # message, and is not to be confused with the SQLState [2] which is also in the message.
+        #
+        # [0] https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/toolkits/extract-jdbc/src/main/kotlin/io/airbyte/cdk/output/JdbcExceptionClassifier.kt
+        # [1] https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors
+        # [2] https://en.wikipedia.org/wiki/SQLSTATE
+        #
+        rules:
+          ## JDBC RULE TEMPLATE
+          # code: Required, SQL Server vendor error code.
+          # error: Required, one of (transient|config|system).
+          # output: Optional, user-facing error message; the exception message is used instead when this is not defined.
+          # reference-links: Optional, list of URLs appended to user-facing message after newline.
+
+          - code: 18456
+            error: config
+            output: >-
+              The sync failed because the provided credentials are invalid. 
+              Please verify your username and password configuration.
+            group: SQL Server Authentication Error
+            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/troubleshoot-connecting-to-the-sql-server-database-engine
+
+          - code: 4060
+            error: config
+            output: >-
+              The sync failed because the specified database cannot be accessed. 
+              Please verify your database name and connection configuration.
+            group: SQL Server Database Access Error
+            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-4060-database-engine-error
+
+          - code: 208
+            error: config
+            output: >-
+              The sync failed because a required table or view does not exist in the database. 
+              Please verify your table/view names and schema configuration.
+            group: SQL Server Object Error
+            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-208-database-engine-error
+
+          - code: 2
+            error: transient
+            output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
+            group: SQL Server Network Error
+            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-2-database-engine-error
+
+          - code: 1205
+            error: transient
+            output: The sync was aborted due to a deadlock, will retry.
+            group: SQL Server Deadlock
+            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-1205-database-engine-error

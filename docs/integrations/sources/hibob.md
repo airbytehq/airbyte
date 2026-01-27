@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the Hibob sourc
 
 ### Step 1: (For Airbyte Open Source) Setup a HiBob Account
 
-Setup and account in [HiBob](https://www.hibob.com/). 
+Set up an account in [HiBob](https://www.hibob.com/). 
 
 
 ### Step 2: (For Airbyte Open Source) Obtain an api key
@@ -80,6 +80,14 @@ Link to HiBob API documentation [here](https://apidocs.hibob.com/docs/).
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.41 | 2026-01-20 | [71872](https://github.com/airbytehq/airbyte/pull/71872) | Update dependencies |
+| 0.2.40 | 2026-01-14 | [71734](https://github.com/airbytehq/airbyte/pull/71734) | Update dependencies |
+| 0.2.39 | 2025-12-18 | [70520](https://github.com/airbytehq/airbyte/pull/70520) | Update dependencies |
+| 0.2.38 | 2025-11-25 | [70032](https://github.com/airbytehq/airbyte/pull/70032) | Update dependencies |
+| 0.2.37 | 2025-11-18 | [69418](https://github.com/airbytehq/airbyte/pull/69418) | Update dependencies |
+| 0.2.36 | 2025-10-29 | [68829](https://github.com/airbytehq/airbyte/pull/68829) | Update dependencies |
+| 0.2.35 | 2025-10-21 | [68251](https://github.com/airbytehq/airbyte/pull/68251) | Update dependencies |
+| 0.2.34 | 2025-10-14 | [67915](https://github.com/airbytehq/airbyte/pull/67915) | Update dependencies |
 | 0.2.33 | 2025-10-07 | [67404](https://github.com/airbytehq/airbyte/pull/67404) | Update dependencies |
 | 0.2.32 | 2025-09-30 | [66400](https://github.com/airbytehq/airbyte/pull/66400) | Update dependencies |
 | 0.2.31 | 2025-09-09 | [66072](https://github.com/airbytehq/airbyte/pull/66072) | Update dependencies |

@@ -36,6 +36,14 @@ Airbyte connector for Fulcrum would enable seamless data extraction from the Ful
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-01-20 | [71970](https://github.com/airbytehq/airbyte/pull/71970) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71420](https://github.com/airbytehq/airbyte/pull/71420) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70671](https://github.com/airbytehq/airbyte/pull/70671) | Update dependencies |
+| 0.0.42 | 2025-11-25 | [69868](https://github.com/airbytehq/airbyte/pull/69868) | Update dependencies |
+| 0.0.41 | 2025-11-18 | [69382](https://github.com/airbytehq/airbyte/pull/69382) | Update dependencies |
+| 0.0.40 | 2025-10-29 | [68811](https://github.com/airbytehq/airbyte/pull/68811) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68314](https://github.com/airbytehq/airbyte/pull/68314) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [68034](https://github.com/airbytehq/airbyte/pull/68034) | Update dependencies |
 | 0.0.37 | 2025-10-07 | [67312](https://github.com/airbytehq/airbyte/pull/67312) | Update dependencies |
 | 0.0.36 | 2025-09-30 | [66773](https://github.com/airbytehq/airbyte/pull/66773) | Update dependencies |
 | 0.0.35 | 2025-09-24 | [66431](https://github.com/airbytehq/airbyte/pull/66431) | Update dependencies |

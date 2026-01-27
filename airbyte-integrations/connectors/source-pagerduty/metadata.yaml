@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2544ac39-02be-4bf5-82ad-f52bbb833bf5
-  dockerImageTag: 0.3.22
+  dockerImageTag: 0.3.30
   dockerRepository: airbyte/source-pagerduty
   githubIssueLabel: source-pagerduty
   icon: pagerduty.svg
@@ -43,5 +43,18 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.1@sha256:04afd30e90f276dae049019427cd519c126203e92a9993de262ff29f73bd8955
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
+  externalDocumentationUrls:
+    - title: PagerDuty API reference
+      url: https://developer.pagerduty.com/api-reference/
+      type: api_reference
+    - title: PagerDuty authentication
+      url: https://developer.pagerduty.com/docs/ZG9jOjExMDI5NTUw-authentication
+      type: authentication_guide
+    - title: PagerDuty rate limits
+      url: https://developer.pagerduty.com/docs/ZG9jOjExMDI5NTUx-rate-limiting
+      type: rate_limits
+    - title: PagerDuty Status
+      url: https://status.pagerduty.com/
+      type: status_page
 metadataSpecVersion: "1.0"

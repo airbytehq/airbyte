@@ -366,7 +366,21 @@ class ZipContentReader:
         data = self.buffer[:size]
         self.buffer = self.buffer[size:]
 
-        return data.decode(self.encoding) if self.encoding else bytes(data)
+        try:
+            return data.decode(self.encoding) if self.encoding else bytes(data)
+        except UnicodeDecodeError:
+            if self.encoding == "utf_8_sig":
+                # utf_8_sig considers `\xef\xbb\xbf` as a single character and therefore calling `bytearray(b'\xef').decode("utf_8_sig") will
+                # cause an exception to be raised.
+                number_of_bytes_to_add = size - 1
+                if data.endswith(bytearray(b"\xef")):
+                    number_of_bytes_to_add += 2
+                elif data.endswith(bytearray(b"\xbb")):
+                    number_of_bytes_to_add += 1
+                data = data + self.buffer[:number_of_bytes_to_add]
+                self.buffer = self.buffer[number_of_bytes_to_add:]
+                return data.decode(self.encoding) if self.encoding else bytes(data)
+            raise
 
     def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
         """

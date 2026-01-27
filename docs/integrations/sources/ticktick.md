@@ -22,14 +22,22 @@ Source for the ticktick openapi endpoint at https://developer.ticktick.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.17 | 2026-01-20 | [72015](https://github.com/airbytehq/airbyte/pull/72015) | Update dependencies |
+| 0.0.16 | 2026-01-14 | [71386](https://github.com/airbytehq/airbyte/pull/71386) | Update dependencies |
+| 0.0.15 | 2025-12-18 | [70787](https://github.com/airbytehq/airbyte/pull/70787) | Update dependencies |
+| 0.0.14 | 2025-11-25 | [69869](https://github.com/airbytehq/airbyte/pull/69869) | Update dependencies |
+| 0.0.13 | 2025-11-18 | [69673](https://github.com/airbytehq/airbyte/pull/69673) | Update dependencies |
+| 0.0.12 | 2025-10-29 | [68914](https://github.com/airbytehq/airbyte/pull/68914) | Update dependencies |
+| 0.0.11 | 2025-10-21 | [68549](https://github.com/airbytehq/airbyte/pull/68549) | Update dependencies |
+| 0.0.10 | 2025-10-14 | [67889](https://github.com/airbytehq/airbyte/pull/67889) | Update dependencies |
 | 0.0.9 | 2025-10-07 | [67510](https://github.com/airbytehq/airbyte/pull/67510) | Update dependencies |
 | 0.0.8 | 2025-09-30 | [66828](https://github.com/airbytehq/airbyte/pull/66828) | Update dependencies |
-| 0.0.7 | 2025-09-23 | [66370](https://github.com/airbytehq/airbyte/pull/66370) | Update dependencies |
+| 0.0.7 | 2025-09-24 | [66370](https://github.com/airbytehq/airbyte/pull/66370) | Update dependencies |
 | 0.0.6 | 2025-09-09 | [65718](https://github.com/airbytehq/airbyte/pull/65718) | Update dependencies |
-| 0.0.5 | 2025-09-03 | [64942](https://github.com/airbytehq/airbyte/pull/64947) | Add oauth2 method. Ignore archived projects on stream `projects`. Added API budget to proactively not hit rate limits. |
+| 0.0.5 | 2025-09-07 | [64947](https://github.com/airbytehq/airbyte/pull/64947) | Add oauth2 method. Ignore archived projects on stream `projects`. Added API budget to proactively not hit rate limits. |
 | 0.0.4 | 2025-08-24 | [65458](https://github.com/airbytehq/airbyte/pull/65458) | Update dependencies |
 | 0.0.3 | 2025-08-16 | [64962](https://github.com/airbytehq/airbyte/pull/64962) | Update dependencies |
-| 0.0.2 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.0.2 | 2025-08-15 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.1 | 2025-08-05 | | Initial release by [@luutuankiet](https://github.com/luutuankiet) via Connector Builder |
 
 </details>

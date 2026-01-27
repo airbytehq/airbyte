@@ -48,8 +48,8 @@ from .streams import (
 )
 
 
-_DEFAULT_CONCURRENCY = 10
-_MAX_CONCURRENCY = 10
+_DEFAULT_CONCURRENCY = 20
+_MAX_CONCURRENCY = 50
 logger = logging.getLogger("airbyte")
 
 
@@ -60,7 +60,6 @@ class AirbyteStopSync(AirbyteTracedException):
 class SourceSalesforce(ConcurrentSourceAdapter):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
-    MAX_WORKERS = 5
     stop_sync_on_stream_failure = True
     message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
 
@@ -76,7 +75,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         super().__init__(concurrent_source)
         self.catalog = catalog
         self.state = state
-        self._job_tracker = JobTracker(limit=5)
+        self._job_tracker = JobTracker(limit=100)
 
     @staticmethod
     def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:

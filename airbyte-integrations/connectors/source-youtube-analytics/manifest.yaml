@@ -1,0 +1,1834 @@
+version: 6.42.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - channel_annotations_a1
+
+definitions:
+  streams:
+    jobs:
+      type: DeclarativeStream
+      name: jobs
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.JobRequester
+          path: jobs
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - jobs
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['reportTypeId'] == parameters['report_type_id'] }}"
+    report:
+      type: DeclarativeStream
+      name: report
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: jobs/{{ stream_partition['id'] }}/reports
+          request_parameters:
+            startTimeAtOrAfter: "{{ stream_interval['start_time'] if '1990-01-01T00:00:00.000000Z' != stream_interval['start_time'] else '' }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reports
+            record_filter:
+              type: RecordFilter
+              condition: "{{ record['startTime'] >= stream_interval['start_time'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/jobs"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y%m%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        global_substream_cursor: true
+        start_datetime:
+          datetime: "{{ '1990-01-01T00:00:00.000000Z' if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT00:00:00.000000Z')}}"
+
+    base_report_stream:
+      type: DeclarativeStream
+      retriever:
+        $ref: "#/definitions/base_retriever"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        global_substream_cursor: true
+        start_datetime:
+          datetime: "19900101"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: >-
+                {{ record['date'] | int }}
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.ReportsStateMigration
+    
+    channel_annotations_a1:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_annotations_a1
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - annotation_type
+        - annotation_id
+      $parameters:
+        report_type_id: channel_annotations_a1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_annotations_a1"
+    channel_basic_a3:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_basic_a3
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+      $parameters:
+        report_type_id: channel_basic_a3
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_basic_a3"
+    channel_cards_a1:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_cards_a1
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - card_type
+        - card_id
+      $parameters:
+        report_type_id: channel_cards_a1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_cards_a1"
+    channel_combined_a3:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_combined_a3
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - playback_location_type
+        - traffic_source_type
+        - device_type
+        - operating_system
+      $parameters:
+        report_type_id: channel_combined_a3
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_combined_a3"
+    channel_demographics_a1:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_demographics_a1
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - age_group
+        - gender
+      $parameters:
+        report_type_id: channel_demographics_a1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_demographics_a1"
+    channel_device_os_a3:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_device_os_a3
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - device_type
+        - operating_system
+      $parameters:
+        report_type_id: channel_device_os_a3
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_device_os_a3"
+    channel_end_screens_a1:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_end_screens_a1
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - end_screen_element_type
+        - end_screen_element_id
+      $parameters:
+        report_type_id: channel_end_screens_a1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_end_screens_a1"
+    channel_playback_location_a3:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_playback_location_a3
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - playback_location_type
+        - playback_location_detail
+      $parameters:
+        report_type_id: channel_playback_location_a3
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_playback_location_a3"
+    channel_province_a3:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_province_a3
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - province_code
+      $parameters:
+        report_type_id: channel_province_a3
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_province_a3"
+    channel_sharing_service_a1:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_sharing_service_a1
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - sharing_service
+      $parameters:
+        report_type_id: channel_sharing_service_a1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_sharing_service_a1"
+    channel_subtitles_a3:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_subtitles_a3
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - subtitle_language
+      $parameters:
+        report_type_id: channel_subtitles_a3
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_subtitles_a3"
+    channel_traffic_source_a3:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_traffic_source_a3
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - traffic_source_type
+        - traffic_source_detail
+      $parameters:
+        report_type_id: channel_traffic_source_a3
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_traffic_source_a3"
+    playlist_basic_a2:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: playlist_basic_a2
+      primary_key:
+        - date
+        - channel_id
+        - playlist_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+      $parameters:
+        report_type_id: playlist_basic_a2
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/playlist_basic_a2"
+    playlist_combined_a2:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: playlist_combined_a2
+      primary_key:
+        - date
+        - channel_id
+        - playlist_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - playback_location_type
+        - traffic_source_type
+        - device_type
+        - operating_system
+      $parameters:
+        report_type_id: playlist_combined_a2
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/playlist_combined_a2"
+    playlist_device_os_a2:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: playlist_device_os_a2
+      primary_key:
+        - date
+        - channel_id
+        - playlist_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - device_type
+        - operating_system
+      $parameters:
+        report_type_id: playlist_device_os_a2
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/playlist_device_os_a2"
+    playlist_playback_location_a2:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: playlist_playback_location_a2
+      primary_key:
+        - date
+        - channel_id
+        - playlist_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - playback_location_type
+        - playback_location_detail
+      $parameters:
+        report_type_id: playlist_playback_location_a2
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/playlist_playback_location_a2"
+    playlist_province_a2:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: playlist_province_a2
+      primary_key:
+        - date
+        - channel_id
+        - playlist_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - province_code
+      $parameters:
+        report_type_id: playlist_province_a2
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/playlist_province_a2"
+    playlist_traffic_source_a2:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: playlist_traffic_source_a2
+      primary_key:
+        - date
+        - channel_id
+        - playlist_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - traffic_source_type
+        - traffic_source_detail
+      $parameters:
+        report_type_id: playlist_traffic_source_a2
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/playlist_traffic_source_a2"
+
+  base_requester:
+    type: CustomRequester
+    class_name: source_declarative_manifest.components.ContentOwnerRequester
+    url_base: https://youtubereporting.googleapis.com/v1/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: '{{ config[''credentials'']["client_id"] }}'
+      grant_type: refresh_token
+      client_secret: '{{ config[''credentials'']["client_secret"] }}'
+      refresh_token: '{{ config[''credentials'']["refresh_token"] }}'
+      refresh_request_body: {}
+      token_refresh_endpoint: https://oauth2.googleapis.com/token
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          error_message: Authentication failed. Please verify your credentials.
+        - type: HttpResponseFilter
+          http_codes:
+            - 403
+          error_message: >-
+            Authorization failed. Please ensure you have the correct
+            permissions.
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes: []
+          predicate: >-
+            {{ 'code' in response and response['error']['code'] >= 500 and
+            response['error']['code'] < 600 }}
+        - type: HttpResponseFilter
+          action: RETRY
+          predicate: >-
+            {{ 'code' in response and response['error']['code'] == 429 and
+            'FreeQuotaRequestsPerDayPerProject' not in response }}
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 30
+  base_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+      url_base: "{{ stream_partition['extra_fields']['downloadUrl'] }}"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: [ ]
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: id
+          partition_field: id
+          extra_fields:
+            - [ "downloadUrl" ]
+          stream:
+            $ref: "#/definitions/streams/report"
+          incremental_dependency: true
+    decoder:
+      type: CustomDecoder
+      class_name: source_declarative_manifest.components.CustomDecoder
+
+streams:
+  - $ref: "#/definitions/streams/channel_annotations_a1"
+  - $ref: "#/definitions/streams/channel_basic_a3"
+  - $ref: "#/definitions/streams/channel_cards_a1"
+  - $ref: "#/definitions/streams/channel_combined_a3"
+  - $ref: "#/definitions/streams/channel_demographics_a1"
+  - $ref: "#/definitions/streams/channel_device_os_a3"
+  - $ref: "#/definitions/streams/channel_end_screens_a1"
+  - $ref: "#/definitions/streams/channel_playback_location_a3"
+  - $ref: "#/definitions/streams/channel_province_a3"
+  - $ref: "#/definitions/streams/channel_sharing_service_a1"
+  - $ref: "#/definitions/streams/channel_subtitles_a3"
+  - $ref: "#/definitions/streams/channel_traffic_source_a3"
+  - $ref: "#/definitions/streams/playlist_basic_a2"
+  - $ref: "#/definitions/streams/playlist_combined_a2"
+  - $ref: "#/definitions/streams/playlist_device_os_a2"
+  - $ref: "#/definitions/streams/playlist_playback_location_a2"
+  - $ref: "#/definitions/streams/playlist_province_a2"
+  - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    title: YouTube Analytics Spec
+    required:
+      - credentials
+    additionalProperties: true
+    properties:
+      content_owner_id:
+        type: string
+        title: Content Owner ID
+        description: >-
+          The ID of the content owner for whom the API request is being made.
+          This is useful if you manage multiple YouTube channels and need to
+          specify which content owner's data to retrieve. If not provided, the
+          API will use the channel associated with your OAuth credentials.
+        order: 0
+      credentials:
+        type: object
+        title: Authenticate via OAuth 2.0
+        required:
+          - client_id
+          - client_secret
+          - refresh_token
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            description: The Client ID of your developer application
+            title: Client ID
+            airbyte_secret: true
+          client_secret:
+            type: string
+            description: The client secret of your developer application
+            title: Client Secret
+            airbyte_secret: true
+          refresh_token:
+            type: string
+            description: A refresh token generated using the above client ID and secret
+            title: Refresh Token
+            airbyte_secret: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+
+metadata:
+  autoImportSchema:
+    channel_annotations_a1: false
+    channel_basic_a3: false
+    channel_cards_a1: false
+    channel_combined_a3: false
+    channel_demographics_a1: false
+    channel_device_os_a3: false
+    channel_end_screens_a1: false
+    channel_playback_location_a3: false
+    channel_province_a3: false
+    channel_sharing_service_a1: false
+    channel_subtitles_a3: false
+    channel_traffic_source_a3: false
+    playlist_basic_a2: false
+    playlist_combined_a2: false
+    playlist_device_os_a2: false
+    playlist_playback_location_a2: false
+    playlist_province_a2: false
+    playlist_traffic_source_a2: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  channel_annotations_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      annotation_click_through_rate:
+        type:
+          - "null"
+          - string
+      annotation_clickable_impressions:
+        type:
+          - "null"
+          - string
+      annotation_clicks:
+        type:
+          - "null"
+          - string
+      annotation_closable_impressions:
+        type:
+          - "null"
+          - string
+      annotation_close_rate:
+        type:
+          - "null"
+          - string
+      annotation_closes:
+        type:
+          - "null"
+          - string
+      annotation_id:
+        type:
+          - "null"
+          - string
+      annotation_impressions:
+        type:
+          - "null"
+          - string
+      annotation_type:
+        type:
+          - "null"
+          - string
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+  channel_basic_a3:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      annotation_click_through_rate:
+        type:
+          - "null"
+          - number
+      annotation_clickable_impressions:
+        type:
+          - "null"
+          - integer
+      annotation_clicks:
+        type:
+          - "null"
+          - integer
+      annotation_closable_impressions:
+        type:
+          - "null"
+          - integer
+      annotation_close_rate:
+        type:
+          - "null"
+          - number
+      annotation_closes:
+        type:
+          - "null"
+          - integer
+      annotation_impressions:
+        type:
+          - "null"
+          - integer
+      average_view_duration_percentage:
+        type:
+          - "null"
+          - number
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      card_click_rate:
+        type:
+          - "null"
+          - number
+      card_clicks:
+        type:
+          - "null"
+          - integer
+      card_impressions:
+        type:
+          - "null"
+          - integer
+      card_teaser_click_rate:
+        type:
+          - "null"
+          - number
+      card_teaser_clicks:
+        type:
+          - "null"
+          - integer
+      card_teaser_impressions:
+        type:
+          - "null"
+          - integer
+      channel_id:
+        type:
+          - "null"
+          - string
+      comments:
+        type:
+          - "null"
+          - integer
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      dislikes:
+        type:
+          - "null"
+          - integer
+      likes:
+        type:
+          - "null"
+          - integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      red_views:
+        type:
+          - "null"
+          - integer
+      red_watch_time_minutes:
+        type:
+          - "null"
+          - number
+      shares:
+        type:
+          - "null"
+          - integer
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      subscribers_gained:
+        type:
+          - "null"
+          - integer
+      subscribers_lost:
+        type:
+          - "null"
+          - integer
+      video_id:
+        type:
+          - "null"
+          - string
+      videos_added_to_playlists:
+        type:
+          - "null"
+          - integer
+      videos_removed_from_playlists:
+        type:
+          - "null"
+          - integer
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  channel_cards_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      card_click_rate:
+        type:
+          - "null"
+          - string
+      card_clicks:
+        type:
+          - "null"
+          - string
+      card_id:
+        type:
+          - "null"
+          - string
+      card_impressions:
+        type:
+          - "null"
+          - string
+      card_teaser_click_rate:
+        type:
+          - "null"
+          - string
+      card_teaser_clicks:
+        type:
+          - "null"
+          - string
+      card_teaser_impressions:
+        type:
+          - "null"
+          - string
+      card_type:
+        type:
+          - "null"
+          - string
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+  channel_combined_a3:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_percentage:
+        type:
+          - "null"
+          - number
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      device_type:
+        type:
+          - "null"
+          - integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      operating_system:
+        type:
+          - "null"
+          - integer
+      playback_location_type:
+        type:
+          - "null"
+          - integer
+      red_views:
+        type:
+          - "null"
+          - integer
+      red_watch_time_minutes:
+        type:
+          - "null"
+          - number
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      traffic_source_type:
+        type:
+          - "null"
+          - integer
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  channel_demographics_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      age_group:
+        type:
+          - "null"
+          - string
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      gender:
+        type:
+          - "null"
+          - string
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      views_percentage:
+        type:
+          - "null"
+          - string
+  channel_device_os_a3:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_percentage:
+        type:
+          - "null"
+          - number
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      device_type:
+        type:
+          - "null"
+          - integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      operating_system:
+        type:
+          - "null"
+          - integer
+      red_views:
+        type:
+          - "null"
+          - integer
+      red_watch_time_minutes:
+        type:
+          - "null"
+          - number
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  channel_end_screens_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      end_screen_element_click_rate:
+        type:
+          - "null"
+          - string
+      end_screen_element_clicks:
+        type:
+          - "null"
+          - string
+      end_screen_element_id:
+        type:
+          - "null"
+          - string
+      end_screen_element_impressions:
+        type:
+          - "null"
+          - string
+      end_screen_element_type:
+        type:
+          - "null"
+          - string
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+  channel_playback_location_a3:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_percentage:
+        type:
+          - "null"
+          - number
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      playback_location_detail:
+        type:
+          - "null"
+          - string
+      playback_location_type:
+        type:
+          - "null"
+          - integer
+      red_views:
+        type:
+          - "null"
+          - integer
+      red_watch_time_minutes:
+        type:
+          - "null"
+          - number
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  channel_province_a3:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      annotation_click_through_rate:
+        type:
+          - "null"
+          - integer
+      annotation_clickable_impressions:
+        type:
+          - "null"
+          - integer
+      annotation_clicks:
+        type:
+          - "null"
+          - integer
+      annotation_closable_impressions:
+        type:
+          - "null"
+          - integer
+      annotation_close_rate:
+        type:
+          - "null"
+          - integer
+      annotation_closes:
+        type:
+          - "null"
+          - integer
+      annotation_impressions:
+        type:
+          - "null"
+          - integer
+      average_view_duration_percentage:
+        type:
+          - "null"
+          - number
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      card_click_rate:
+        type:
+          - "null"
+          - integer
+      card_clicks:
+        type:
+          - "null"
+          - integer
+      card_impressions:
+        type:
+          - "null"
+          - integer
+      card_teaser_click_rate:
+        type:
+          - "null"
+          - integer
+      card_teaser_clicks:
+        type:
+          - "null"
+          - integer
+      card_teaser_impressions:
+        type:
+          - "null"
+          - integer
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      province_code:
+        type:
+          - "null"
+          - string
+      red_views:
+        type:
+          - "null"
+          - integer
+      red_watch_time_minutes:
+        type:
+          - "null"
+          - number
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  channel_sharing_service_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      shares:
+        type:
+          - "null"
+          - string
+      sharing_service:
+        type:
+          - "null"
+          - string
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+  channel_subtitles_a3:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_percentage:
+        type:
+          - "null"
+          - number
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      red_views:
+        type:
+          - "null"
+          - integer
+      red_watch_time_minutes:
+        type:
+          - "null"
+          - number
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      subtitle_language:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+      subtitle_language_autotranslated:
+        type:
+          - "null"
+          - string
+  channel_traffic_source_a3:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_percentage:
+        type:
+          - "null"
+          - number
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      red_views:
+        type:
+          - "null"
+          - integer
+      red_watch_time_minutes:
+        type:
+          - "null"
+          - number
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      traffic_source_detail:
+        type:
+          - "null"
+          - string
+      traffic_source_type:
+        type:
+          - "null"
+          - integer
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  playlist_basic_a2:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      playlist_id:
+        type:
+          - "null"
+          - string
+      playlist_saves_added:
+        type:
+          - "null"
+          - integer
+      playlist_saves_removed:
+        type:
+          - "null"
+          - integer
+      playlist_starts:
+        type:
+          - "null"
+          - integer
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  playlist_combined_a2:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      device_type:
+        type:
+          - "null"
+          - integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      operating_system:
+        type:
+          - "null"
+          - integer
+      playback_location_type:
+        type:
+          - "null"
+          - integer
+      playlist_id:
+        type:
+          - "null"
+          - string
+      playlist_saves_added:
+        type:
+          - "null"
+          - integer
+      playlist_saves_removed:
+        type:
+          - "null"
+          - integer
+      playlist_starts:
+        type:
+          - "null"
+          - integer
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      traffic_source_type:
+        type:
+          - "null"
+          - integer
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  playlist_device_os_a2:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      device_type:
+        type:
+          - "null"
+          - integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      operating_system:
+        type:
+          - "null"
+          - integer
+      playlist_id:
+        type:
+          - "null"
+          - string
+      playlist_saves_added:
+        type:
+          - "null"
+          - integer
+      playlist_saves_removed:
+        type:
+          - "null"
+          - integer
+      playlist_starts:
+        type:
+          - "null"
+          - integer
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  playlist_playback_location_a2:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      playback_location_detail:
+        type:
+          - "null"
+          - string
+      playback_location_type:
+        type:
+          - "null"
+          - integer
+      playlist_id:
+        type:
+          - "null"
+          - string
+      playlist_saves_added:
+        type:
+          - "null"
+          - integer
+      playlist_saves_removed:
+        type:
+          - "null"
+          - integer
+      playlist_starts:
+        type:
+          - "null"
+          - integer
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  playlist_province_a2:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      playlist_id:
+        type:
+          - "null"
+          - string
+      playlist_saves_added:
+        type:
+          - "null"
+          - string
+      playlist_saves_removed:
+        type:
+          - "null"
+          - string
+      playlist_starts:
+        type:
+          - "null"
+          - string
+      province_code:
+        type:
+          - "null"
+          - string
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - string
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+  playlist_traffic_source_a2:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      average_view_duration_seconds:
+        type:
+          - "null"
+          - number
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      playlist_id:
+        type:
+          - "null"
+          - string
+      playlist_saves_added:
+        type:
+          - "null"
+          - integer
+      playlist_saves_removed:
+        type:
+          - "null"
+          - integer
+      playlist_starts:
+        type:
+          - "null"
+          - integer
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      traffic_source_detail:
+        type:
+          - "null"
+          - string
+      traffic_source_type:
+        type:
+          - "null"
+          - integer
+      video_id:
+        type:
+          - "null"
+          - string
+      views:
+        type:
+          - "null"
+          - integer
+      watch_time_minutes:
+        type:
+          - "null"
+          - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min
+        - limit: 60
+          interval: PT1M
+      matchers: [] # all requests
+  status_codes_for_ratelimit_hit: [429]

@@ -40,4 +40,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SmartEngage API documentation
+      url: https://smartengage.com/docs/api/
+      type: api_reference
 metadataSpecVersion: "1.0"

@@ -28,7 +28,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
-  dockerImageTag: 1.5.0
+  dockerImageTag: 1.5.1
   dockerRepository: airbyte/source-asana
   githubIssueLabel: source-asana
   icon: asana.svg
@@ -57,4 +57,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://developers.asana.com/reference/rest-api-reference
+      type: api_reference
+    - title: Authentication
+      url: https://developers.asana.com/docs/authentication
+      type: authentication_guide
+    - title: Rate limits
+      url: https://developers.asana.com/docs/rate-limits
+      type: rate_limits
+    - title: Asana Status
+      url: https://status.asana.com/
+      type: status_page
 metadataSpecVersion: "1.0"

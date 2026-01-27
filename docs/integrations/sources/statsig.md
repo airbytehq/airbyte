@@ -43,6 +43,14 @@ See the [API docs](https://docs.statsig.com/http-api) for steps to generate the 
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.42 | 2026-01-20 | [72133](https://github.com/airbytehq/airbyte/pull/72133) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71624](https://github.com/airbytehq/airbyte/pull/71624) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70611](https://github.com/airbytehq/airbyte/pull/70611) | Update dependencies |
+| 0.0.39 | 2025-11-25 | [70067](https://github.com/airbytehq/airbyte/pull/70067) | Update dependencies |
+| 0.0.38 | 2025-11-18 | [69559](https://github.com/airbytehq/airbyte/pull/69559) | Update dependencies |
+| 0.0.37 | 2025-10-29 | [69042](https://github.com/airbytehq/airbyte/pull/69042) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68543](https://github.com/airbytehq/airbyte/pull/68543) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [67914](https://github.com/airbytehq/airbyte/pull/67914) | Update dependencies |
 | 0.0.34 | 2025-10-07 | [67458](https://github.com/airbytehq/airbyte/pull/67458) | Update dependencies |
 | 0.0.33 | 2025-09-30 | [66887](https://github.com/airbytehq/airbyte/pull/66887) | Update dependencies |
 | 0.0.32 | 2025-09-23 | [66374](https://github.com/airbytehq/airbyte/pull/66374) | Update dependencies |

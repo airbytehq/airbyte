@@ -9,16 +9,26 @@ There are three components to Airbyte Embedded:
 
 You can read more about about how Airbyte Embedded fits in your application [here](https://airbyte.com/blog/how-to-build-ai-apps-with-customer-context).
 
-There are two approaches to set up Airbyte Embedded:
+Before using any Airbyte developer tools, ensure you have:
+
+- **Airbyte Cloud account**: Sign up at [cloud.airbyte.com](https://cloud.airbyte.com)
+- **Embedded access**: Contact michel@airbyte.io or teo@airbyte.io to enable Airbyte Embedded on your account
+- **API credentials**: Available in your Airbyte Cloud dashboard under Settings > Applications
+
+There are two approaches to set up Airbyte Embedded: the widget and the API.
 
 ## When to Use the Widget
+
 Use the [Airbyte Embedded Widget](./widget/README.md) if you:
+
 - Want to get started quickly with minimal development effort
 - Are comfortable with a pre-built UI that matches Airbyte's design
 - Want Airbyte to handle authentication, error states, and validation
 
 ## When to Use the API
+
 Use the [Airbyte API](./api/README.md) if you:
+
 - Need complete control over the user experience and UI design
 - Want to integrate data source configuration into your existing workflows
 
