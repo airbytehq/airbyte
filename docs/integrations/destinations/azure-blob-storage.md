@@ -112,9 +112,9 @@ With root level flattening, the output JSONL is:
 
 * Fill up AzureBlobStorage info
   * **Azure Blob Storage Endpoint Domain Name**
-    * Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one or use your own.
+    * Leave the default value \(or leave it empty if running the container from the command line\) to use the Microsoft endpoint, or specify your own.
   * **Azure Blob Storage Container Name**
-    * If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp.
+    * If the container does not exist, it will be created automatically. If left empty, a container named `airbytecontainer` with a timestamp suffix will be created.
   * **Azure Blob Storage Account Name**
     * See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
   * **Authentication** - you must use exactly one of these:
