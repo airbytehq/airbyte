@@ -189,6 +189,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.0 | 2026-01-22 | [71752](https://github.com/airbytehq/airbyte/pull/71752) | Add user-configurable page_size option for ticket_comments stream |
 | 5.0.1 | 2026-01-22 | [71714](https://github.com/airbytehq/airbyte/pull/71714) | Update dependencies |
 | 5.0.0 | 2026-01-21 | [70990](https://github.com/airbytehq/airbyte/pull/70990) | Add OAuth2.0 with refresh token support. Users using OAuth must re-authenticate to use the new flow with rotating refresh tokens. |
 | 4.10.18 | 2025-12-18 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
