@@ -22,6 +22,11 @@ API: https://judge.me/api/docs#tag/Reviews/operation/reviews#index
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2026-01-20 | [71958](https://github.com/airbytehq/airbyte/pull/71958) | Update dependencies |
+| 0.0.17 | 2026-01-14 | [71396](https://github.com/airbytehq/airbyte/pull/71396) | Update dependencies |
+| 0.0.16 | 2025-12-18 | [70524](https://github.com/airbytehq/airbyte/pull/70524) | Update dependencies |
+| 0.0.15 | 2025-11-25 | [70196](https://github.com/airbytehq/airbyte/pull/70196) | Update dependencies |
+| 0.0.14 | 2025-11-18 | [69528](https://github.com/airbytehq/airbyte/pull/69528) | Update dependencies |
 | 0.0.13 | 2025-10-29 | [68796](https://github.com/airbytehq/airbyte/pull/68796) | Update dependencies |
 | 0.0.12 | 2025-10-21 | [68510](https://github.com/airbytehq/airbyte/pull/68510) | Update dependencies |
 | 0.0.11 | 2025-10-14 | [67938](https://github.com/airbytehq/airbyte/pull/67938) | Update dependencies |

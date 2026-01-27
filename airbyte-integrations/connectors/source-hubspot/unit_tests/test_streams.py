@@ -346,6 +346,7 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
         ),
     )
 
+    config["lookback_window"] = 10
     stream = find_stream("deal_splits", config, [stream_state])
 
     data_field = stream._stream_partition_generator._partition_factory._retriever.record_selector.extractor.field_path[0]
@@ -372,7 +373,7 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
             "limit": 200,
             "sorts": [{"propertyName": "hs_object_id", "direction": "ASCENDING"}],
             "filters": [
-                {"propertyName": "hs_lastmodifieddate", "operator": "GTE", "value": 1643673600000},
+                {"propertyName": "hs_lastmodifieddate", "operator": "GTE", "value": 1643673000000},
                 {"propertyName": "hs_lastmodifieddate", "operator": "LTE", "value": 1645808400000},
                 {"propertyName": "hs_object_id", "operator": "GTE", "value": 0},
             ],

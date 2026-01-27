@@ -4,7 +4,7 @@ dockerRepository: airbyte/destination-hubspot
 
 # HubSpot Destination
 
-This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector. This connector supports [data activation](/platform/next/move-data/elt-data-activation) for operational workflows.
+This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector. This connector supports [data activation](/platform/move-data/elt-data-activation) for operational workflows.
 
 ## Prerequisites
 
@@ -59,6 +59,7 @@ The HubSpot destination connector supports the following streams:
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies): Upsert on unique field
 - [Contacts](https://developers.hubspot.com/docs/methods/contacts): Upsert on email
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals): Upsert on unique field
+- [Products](https://developers.hubspot.com/docs/api/crm/products): Upsert on unique field
 - [Custom Objects](https://developers.hubspot.com/docs/guides/api/crm/objects/custom-objects): Upsert on unique field
 
 ## Limitations & Troubleshooting
@@ -101,11 +102,12 @@ Hubspot has **scopes** for each API call. Each stream is tied to a scope and wil
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
-| 0.0.8 | 2025-11-01 | [69131](https://github.com/airbytehq/airbyte/pull/69131) | Upgrade to Bulk CDK 0.1.61. |
+| 0.0.9 | 2026-01-26 | [72304](https://github.com/airbytehq/airbyte/pull/72304) | Upgrade CDK to 0.2.0 |
+| 0.0.8 | 2025-11-05 | [69131](https://github.com/airbytehq/airbyte/pull/69131) | Upgrade to Bulk CDK 0.1.61. |
 | 0.0.7   | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)        | Pin to CDK artifact                       |
-| 0.0.6   | 2025-09-09 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                     |
+| 0.0.6   | 2025-09-10 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                     |
 | 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec |
-| 0.0.4   | 2025-08-01 | [64144](https://github.com/airbytehq/airbyte/pull/64144)        | OSS release                               |
+| 0.0.4   | 2025-07-31 | [64144](https://github.com/airbytehq/airbyte/pull/64144)        | OSS release                               |
 | 0.0.3   | 2025-07-18 | [205](https://github.com/airbytehq/airbyte-enterprise/pull/205) | Forcing new release                       |
 | 0.0.2   | 2025-07-18 | [204](https://github.com/airbytehq/airbyte-enterprise/pull/204) | Fixing auth                               |
 | 0.0.1   | 2025-07-18 | [201](https://github.com/airbytehq/airbyte-enterprise/pull/201) | First iteration internally                |

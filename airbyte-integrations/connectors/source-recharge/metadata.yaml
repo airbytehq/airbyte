@@ -66,4 +66,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Recharge API reference
+      url: https://developer.rechargepayments.com/
+      type: api_reference
+    - title: Recharge authentication
+      url: https://developer.rechargepayments.com/#authentication
+      type: authentication_guide
+    - title: Recharge rate limits
+      url: https://developer.rechargepayments.com/#rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

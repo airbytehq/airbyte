@@ -110,14 +110,14 @@ class PublishConnectorContext(ConnectorContext):
 
     @property
     def pre_release_suffix(self) -> str:
-        return self.git_revision[:10]
+        return self.git_revision[:7]
 
     @property
     def docker_image_tag(self) -> str:
         # get the docker image tag from the parent class
         metadata_tag = super().docker_image_tag
         if self.pre_release:
-            return f"{metadata_tag}-dev.{self.pre_release_suffix}"
+            return f"{metadata_tag}-preview.{self.pre_release_suffix}"
         else:
             return metadata_tag
 

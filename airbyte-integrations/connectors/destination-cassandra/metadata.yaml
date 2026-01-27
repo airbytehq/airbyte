@@ -21,4 +21,14 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  externalDocumentationUrls:
+    - title: Cassandra documentation
+      url: https://cassandra.apache.org/doc/latest/
+      type: api_reference
+    - title: Authentication
+      url: https://cassandra.apache.org/doc/latest/cassandra/configuration/cass_yaml_file.html#authenticator
+      type: authentication_guide
+    - title: CQL reference
+      url: https://cassandra.apache.org/doc/latest/cassandra/cql/
+      type: sql_reference
 metadataSpecVersion: "1.0"

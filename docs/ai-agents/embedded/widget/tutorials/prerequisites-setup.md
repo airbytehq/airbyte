@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 # 2-Minute Quickstart
 
 ## Setup (all apps)

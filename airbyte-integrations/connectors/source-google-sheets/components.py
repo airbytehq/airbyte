@@ -90,13 +90,17 @@ class RawSchemaParser:
     ) -> Any:
         """
         Sets data in the body based on the provided extraction path.
+        Creates the path if it doesn't exist (using dpath.new).
         """
         if not extraction_path:
             body = value
+            return
 
         path = [node.eval(self.config) if not isinstance(node, str) else node for node in extraction_path]
 
-        dpath.set(body, path, value=value)
+        # Use dpath.new to create the path if it doesn't exist
+        # dpath.set silently fails if the key doesn't exist
+        dpath.new(body, path, value)
 
     def parse_raw_schema_values(
         self,
@@ -106,9 +110,10 @@ class RawSchemaParser:
         names_conversion: bool,
     ):
         """
-        1. Parses sheet headers from the provided raw schema. This method assumes that data is contiguous
+        1. Parses sheet headers from the provided raw schema. By default, this method assumes that data is contiguous
             i.e: every cell contains a value and the first cell which does not contain a value denotes the end
-            of the headers.
+            of the headers. If read_empty_header_columns is enabled, empty headers will be assigned generated
+            column names (e.g., "column_C") and processing will continue.
         2. Makes name conversion if required.
         3. Deduplicates fields from the schema by appending cell positions to duplicate headers.
         Return a list of tuples with correct property index (by found in array), value and raw_schema
@@ -117,6 +122,7 @@ class RawSchemaParser:
         parsed_schema_values = []
         # Gather all sanitisation flags from config
         config = getattr(self, "config", {})
+        read_empty_header_columns = config.get("read_empty_header_columns", False)
         flags = {
             "remove_leading_trailing_underscores": config.get("remove_leading_trailing_underscores", False),
             "combine_number_word_pairs": config.get("combine_number_word_pairs", False),
@@ -129,7 +135,10 @@ class RawSchemaParser:
         for property_index, raw_schema_property in enumerate(raw_schema_properties):
             raw_schema_property_value = self._extract_data(raw_schema_property, key_pointer)
             if not raw_schema_property_value or raw_schema_property_value.isspace():
-                break
+                if not read_empty_header_columns:
+                    break
+                # Generate a placeholder column name for empty headers
+                raw_schema_property_value = f"column_{sheet_column_label(property_index)}"
             # Use sanitzation if any flag is set, else legacy
             if names_conversion and use_sanitzation:
                 raw_schema_property_value = safe_sanitzation_conversion(raw_schema_property_value, **flags)
@@ -220,14 +229,14 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         return indexed_properties
 
     @staticmethod
-    def match_properties_with_values(unmatched_values: List[str], indexed_properties: Dict[int, str]):
+    def match_properties_with_values(unmatched_values: List[str], indexed_properties: Dict[int, str], include_empty_values: bool = False):
         data = {}
         for relevant_index in sorted(indexed_properties.keys()):
             if relevant_index >= len(unmatched_values):
                 break
 
             unmatch_value = unmatched_values[relevant_index]
-            if unmatch_value.strip() != "":
+            if unmatch_value.strip() != "" or include_empty_values:
                 data[indexed_properties[relevant_index]] = unmatch_value
         yield data
 
@@ -247,6 +256,7 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
         raw_records_extracted = super().extract_records(response=response)
+        include_empty_values = self.config.get("read_empty_header_columns", False)
         for raw_record in raw_records_extracted:
             unmatched_values_collection = raw_record.get(self._values_to_match_key, [])
             for unmatched_values in unmatched_values_collection:
@@ -254,7 +264,7 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
                     unmatched_values
                 ) and DpathSchemaMatchingExtractor.row_contains_relevant_data(unmatched_values, self._indexed_properties_to_match.keys()):
                     yield from DpathSchemaMatchingExtractor.match_properties_with_values(
-                        unmatched_values, self._indexed_properties_to_match
+                        unmatched_values, self._indexed_properties_to_match, include_empty_values
                     )
 
 

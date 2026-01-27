@@ -55,4 +55,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Orb API reference
+      url: https://docs.withorb.com/reference/api-reference
+      type: api_reference
+    - title: Orb authentication
+      url: https://docs.withorb.com/reference/authentication
+      type: authentication_guide
+    - title: Orb Status
+      url: https://status.withorb.com/
+      type: status_page
 metadataSpecVersion: "1.0"

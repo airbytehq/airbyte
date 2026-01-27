@@ -6,6 +6,8 @@ This version upgrades Destination Snowflake to the [Direct-Load](/platform/using
 
 This version also adds an option to enable CDC deletions as soft-deletes.
 
+The connector now requires `ALTER TABLE` permissions to support schema evolution and table modifications. Grant your Snowflake user this permission before upgrading.
+
 If you do not interact with the raw tables, you can safely upgrade. There is no breakage for this usecase.
 
 If you _only_ interact with the raw tables, make sure that you have the `Disable Final Tables` option enabled before upgrading. This will automatically enable the `Legacy raw tables` option after upgrading.

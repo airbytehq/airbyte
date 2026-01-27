@@ -139,8 +139,8 @@ runs:
           CONNECTOR_VERSION_TAG="${{ inputs.tag-override }}"
           echo "🏷 Using provided tag override: $CONNECTOR_VERSION_TAG"
         elif [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
-          hash=$(git rev-parse --short=10 HEAD)
-          CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-dev.${hash}"
+          hash=$(git rev-parse --short=7 HEAD)
+          CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-preview.${hash}"
           echo "🏷 Using pre-release tag: $CONNECTOR_VERSION_TAG"
         else
           CONNECTOR_VERSION_TAG="$CONNECTOR_VERSION"

@@ -1,0 +1,10 @@
+[
+  {
+    "code": "US",
+    "type": "country"
+  },
+  {
+    "code": "US:CA",
+    "type": "state"
+  }
+]

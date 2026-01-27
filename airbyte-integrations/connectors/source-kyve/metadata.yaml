@@ -49,4 +49,8 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  externalDocumentationUrls:
+    - title: KYVE documentation
+      url: https://docs.kyve.network/
+      type: api_reference
 metadataSpecVersion: "1.0"

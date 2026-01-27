@@ -47,4 +47,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Wikimedia Pageviews API
+      url: https://wikitech.wikimedia.org/wiki/Analytics/AQS/Pageviews
+      type: api_reference
 metadataSpecVersion: "1.0"

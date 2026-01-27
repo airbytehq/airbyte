@@ -17,6 +17,9 @@ data:
   dockerRepository: airbyte/source-salesforce
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   externalDocumentationUrls:
+    - title: REST API Release Notes
+      url: https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/rest_rns.htm
+      type: api_release_history
     - title: Winter 2026 release notes - API
       url: https://help.salesforce.com/s/articleView?id=release-notes.salesforce_release_notes.htm&release=258&type=5
       type: api_release_history
