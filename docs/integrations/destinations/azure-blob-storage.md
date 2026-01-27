@@ -91,14 +91,14 @@ With no flattening, the output JSONL is:
 
 ```text
 { "_airbyte_raw_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_extracted_at": "1622135805000", "_airbyte_generation_id": "11", "_airbyte_meta": { "changes": [], "sync_id": 10111 }, "_airbyte_data": { "user_id": 123, "name": { "first": "John", "last": "Doe" } } }
-{ "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
+{ "_airbyte_raw_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
 
 With root level flattening, the output JSONL is:
 
 ```text
 { "_airbyte_raw_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_extracted_at": "1622135805000", "_airbyte_generation_id": "11", "_airbyte_meta": { "changes": [], "sync_id": 10111 }, "user_id": 123, "name": { "first": "John", "last": "Doe" } }
-{ "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "user_id": 456, "name": { "first": "Jane", "last": "Roe" } }
+{ "_airbyte_raw_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "user_id": 456, "name": { "first": "Jane", "last": "Roe" } }
 ```
 
 ## Getting started
@@ -106,31 +106,30 @@ With root level flattening, the output JSONL is:
 ### Requirements
 
 1. Create an AzureBlobStorage account.
-2. Check if it works under [https://portal.azure.com/](https://portal.azure.com/) -&gt; "Storage explorer \(preview\)".
+2. Check if it works under [https://portal.azure.com/](https://portal.azure.com/) -&gt; "Storage browser".
 
 ### Setup guide
 
-* Fill up AzureBlobStorage info
-  * **Azure Blob Storage Endpoint Domain Name**
-    * Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one or use your own.
-  * **Azure Blob Storage Container Name**
-    * If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp..
-  * **Azure Blob Storage Account Name**
-    * See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
-  * **Authentication** - you must use exactly one of these:
-    * **Shared Access Signature** (recommended)
-      * See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create an SAS.
-    * **Azure Entra ID (Service Principal)**
-      * Azure Tenant ID, Azure Client ID, and Azure Client Secret from an Azure service principal with appropriate permissions.
-      * See [this](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for how to create a service principal.
-    * **Azure Blob Storage Account Key**
-      * Corresponding key to the above user.
-  * **Format**
-    * Data format that will be use for a migrated data representation in blob.
-* Make sure your user has access to Azure from the machine running Airbyte.
-  * This depends on your networking setup.
-  * The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
-
+- Fill up AzureBlobStorage info
+  - **Azure Blob Storage Endpoint Domain Name**
+    - Leave the default value \(or leave it empty if running the container from the command line\) to use the Microsoft endpoint, or specify your own.
+  - **Azure Blob Storage Container Name**
+    - If the container does not exist, it will be created automatically. If left empty, a container named `airbytecontainer` with a timestamp suffix will be created.
+  - **Azure Blob Storage Account Name**
+    - See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
+  - **Authentication** - you must use exactly one of these:
+    - **Shared Access Signature** (recommended)
+      - See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create an SAS.
+    - **Azure Entra ID (Service Principal)**
+      - Azure Tenant ID, Azure Client ID, and Azure Client Secret from an Azure service principal with appropriate permissions.
+      - See [this](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for how to create a service principal.
+    - **Azure Blob Storage Account Key**
+      - Corresponding key to the above user.
+  - **Format**
+    - Data format that will be use for a migrated data representation in blob.
+- Make sure your user has access to Azure from the machine running Airbyte.
+  - This depends on your networking setup.
+  - The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
 
 ## Changelog
 
@@ -139,6 +138,7 @@ With root level flattening, the output JSONL is:
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.6 | 2026-01-26 | [72355](https://github.com/airbytehq/airbyte/pull/72355) | Fix sync failures for sources with empty schemas by upgrading CDK to 0.2.1 |
 | 1.1.5 | 2026-01-20 | [72301](https://github.com/airbytehq/airbyte/pull/72301) | Upgrade CDK to 0.2.0 |
 | 1.1.4 | 2025-11-05 | [69127](https://github.com/airbytehq/airbyte/pull/69127) | Upgrade to Bulk CDK 0.1.61. |
 | 1.1.3 | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
