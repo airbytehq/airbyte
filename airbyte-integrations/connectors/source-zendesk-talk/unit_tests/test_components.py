@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator
 
 
@@ -89,6 +90,7 @@ def test_ivr_routes_record_extractor(components_module, response_data, expected_
         ({"access_token": "dummy_token", "email": "dummy@example.com"}, BasicHttpAuthenticator),
         ({"credentials": {"auth_type": "api_token"}}, BasicHttpAuthenticator),
         ({"credentials": {"auth_type": "oauth2.0"}}, BearerAuthenticator),
+        ({"credentials": {"auth_type": "oauth2_refresh"}}, DeclarativeSingleUseRefreshTokenOauth2Authenticator),
     ],
 )
 def test_zendesk_talk_authenticator(components_module, config, authenticator_type):
@@ -96,8 +98,9 @@ def test_zendesk_talk_authenticator(components_module, config, authenticator_typ
     legacy_basic_auth = MagicMock(spec=BasicHttpAuthenticator)
     basic_auth = MagicMock(spec=BasicHttpAuthenticator)
     oauth = MagicMock(spec=BearerAuthenticator)
+    oauth_refresh = MagicMock(spec=DeclarativeSingleUseRefreshTokenOauth2Authenticator)
 
-    authenticator = ZendeskTalkAuthenticator(legacy_basic_auth, basic_auth, oauth, config)
+    authenticator = ZendeskTalkAuthenticator(legacy_basic_auth, basic_auth, oauth, oauth_refresh, config)
     assert isinstance(authenticator, authenticator_type)
 
 
@@ -105,5 +108,5 @@ def test_zendesk_talk_authenticator_invalid(components_module):
     ZendeskTalkAuthenticator = components_module.ZendeskTalkAuthenticator
     with pytest.raises(Exception) as excinfo:
         config = {"credentials": {"auth_type": "invalid"}}
-        ZendeskTalkAuthenticator(None, None, None, config)
+        ZendeskTalkAuthenticator(None, None, None, None, config)
     assert "Missing valid authenticator" in str(excinfo.value)

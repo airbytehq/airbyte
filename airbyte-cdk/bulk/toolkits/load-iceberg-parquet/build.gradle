@@ -3,10 +3,14 @@ ext {
 }
 
 dependencies {
-    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-s3')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-aws')
 
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+
+    // Hadoop Configuration class used by Iceberg
+    implementation 'org.apache.hadoop:hadoop-common:3.4.1'
+
     api "org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}"
     api("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
