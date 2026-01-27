@@ -27,7 +27,7 @@ Zendesk is transitioning to OAuth with rotating refresh tokens. All customers mu
 
 **For Airbyte Cloud:**
 
-We highly recommend using OAuth 2.0 with Refresh Token to authenticate your Zendesk Support account, as it simplifies the setup process, allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector), and automatically handles token refresh with rotating refresh tokens.
+We highly recommend using OAuth 2.0 with Refresh Token to authenticate your Zendesk Support account, as it simplifies the setup process, allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-connector-in-airbyte), and automatically handles token refresh with rotating refresh tokens.
 
 <!-- /env:cloud -->
 
