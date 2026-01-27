@@ -12,8 +12,12 @@ import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.integrations.source.postgres.config.EncryptionDisable
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationFactory
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
+import io.airbyte.integrations.source.postgres.config.StandardReplicationMethodConfigurationSpecification
+import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
+import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase.BaseImage
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceStreamFactory
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
@@ -66,10 +70,32 @@ class PostgresSourceCursorBasedIntegrationTest {
 
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: PostgreSQLContainer<*> = PostgresContainerFactory.shared17()
+        private val testdb: PostgresTestDatabase = PostgresTestDatabase.`in`(this.serverImage)
 
-        val config: PostgresSourceConfigurationSpecification =
-            PostgresContainerFactory.config(dbContainer)
+        protected val serverImage: BaseImage
+            get() = BaseImage.POSTGRES_17
+
+        fun config(
+            postgresContainer: PostgreSQLContainer<*>,
+            schemas: List<String> = listOf("public"),
+        ): PostgresSourceConfigurationSpecification =
+            PostgresSourceConfigurationSpecification().apply {
+                host = postgresContainer.host
+                port = postgresContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
+                username = postgresContainer.username
+                password = postgresContainer.password
+                jdbcUrlParams = ""
+                encryptionJson = EncryptionDisable
+                database = "test"
+                this.schemas = schemas
+                checkpointTargetIntervalSeconds = 60
+                max_db_connections = 1
+                setIncrementalConfigurationSpecificationValue(
+                    StandardReplicationMethodConfigurationSpecification
+                )
+            }
+
+        val config: PostgresSourceConfigurationSpecification = config(testdb.container)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(PostgresSourceConfigurationFactory().make(config))
@@ -85,7 +111,7 @@ class PostgresSourceCursorBasedIntegrationTest {
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
             val stream: AirbyteStream =
-                PostgresSourceStreamFactory()
+                PostgresSourceStreamFactory(connectionFactory)
                     .create(PostgresSourceConfigurationFactory().make(config), discoveredStream)
 
             val configuredStream: ConfiguredAirbyteStream =

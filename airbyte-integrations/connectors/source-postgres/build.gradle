@@ -22,4 +22,5 @@ dependencies {
 
     testImplementation 'org.testcontainers:postgresql:1.21.3'
     testImplementation("io.mockk:mockk:1.14.7")
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
 }

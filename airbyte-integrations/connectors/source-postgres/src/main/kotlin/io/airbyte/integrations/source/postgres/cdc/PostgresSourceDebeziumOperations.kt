@@ -87,9 +87,9 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
         }
     }
 
-    val cdcConfig = config.cdc!!
+    val cdcConfig by lazy { config.cdc!! }
 
-    val commonPropertiesBuilder =
+    val commonPropertiesBuilder by lazy {
         DebeziumPropertiesBuilder()
             .withDefault()
             // TODO: could be moved to withDefault()? Seems all connectors need this...
@@ -110,8 +110,9 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
             .with("plugin.name", "pgoutput")
             .with("slot.name", cdcConfig.replicationSlot)
             .with("publication.name", cdcConfig.publication)
-    // TODO: heartbeat.action.query
-    // TODO: SSL support
+        // TODO: heartbeat.action.query
+        // TODO: SSL support
+    }
 
     // Ensure these are fetched only once for correctness.
     // This class is a @Singleton and "lazy" is synchronized.
@@ -190,6 +191,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
         commonPropertiesBuilder.withStreams(streams).buildMap()
 
+    @Suppress("UNCHECKED_CAST")
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,

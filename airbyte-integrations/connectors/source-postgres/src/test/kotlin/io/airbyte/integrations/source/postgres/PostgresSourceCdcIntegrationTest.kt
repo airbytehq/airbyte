@@ -13,9 +13,12 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.test.fixtures.cleanup.TestAssetResourceNamer
 import io.airbyte.cdk.test.fixtures.connector.JdbcTestDbExecutor
-import io.airbyte.integrations.source.postgres.PostgresSourceFieldTypeMapperTest.Companion.container
+import io.airbyte.integrations.source.postgres.config.EncryptionDisable
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationFactory
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
+import io.airbyte.integrations.source.postgres.config.StandardReplicationMethodConfigurationSpecification
+import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
+import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase.BaseImage
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceStreamFactory
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
@@ -33,16 +36,38 @@ import org.testcontainers.containers.PostgreSQLContainer
 class PostgresSourceCdcIntegrationTest {
 
     private val schema = TestAssetResourceNamer().getName()
-    val configSpec = PostgresContainerFactory.config(container, listOf(schema))
+    val configSpec = config(testdb.container, listOf(schema))
     val executor = JdbcTestDbExecutor(schema, jdbcConfig)
     private val jdbcConfig: JdbcSourceConfiguration
         get() = PostgresSourceConfigurationFactory().make(configSpec)
 
     companion object {
-        val dbContainer: PostgreSQLContainer<*> = PostgresContainerFactory.shared17()
+        fun config(
+            postgresContainer: PostgreSQLContainer<*>,
+            schemas: List<String> = listOf("public"),
+        ): PostgresSourceConfigurationSpecification =
+            PostgresSourceConfigurationSpecification().apply {
+                host = postgresContainer.host
+                port = postgresContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
+                username = postgresContainer.username
+                password = postgresContainer.password
+                jdbcUrlParams = ""
+                encryptionJson = EncryptionDisable
+                database = "test"
+                this.schemas = schemas
+                checkpointTargetIntervalSeconds = 60
+                max_db_connections = 1
+                setIncrementalConfigurationSpecificationValue(
+                    StandardReplicationMethodConfigurationSpecification
+                )
+            }
 
-        val config: PostgresSourceConfigurationSpecification =
-            PostgresContainerFactory.config(dbContainer)
+        private val testdb: PostgresTestDatabase = PostgresTestDatabase.`in`(this.serverImage)
+
+        protected val serverImage: BaseImage
+            get() = BaseImage.POSTGRES_17
+
+        val config: PostgresSourceConfigurationSpecification = config(testdb.container)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(PostgresSourceConfigurationFactory().make(config))
@@ -58,7 +83,7 @@ class PostgresSourceCdcIntegrationTest {
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
             val stream: AirbyteStream =
-                PostgresSourceStreamFactory()
+                PostgresSourceStreamFactory(connectionFactory)
                     .create(PostgresSourceConfigurationFactory().make(config), discoveredStream)
 
             val configuredStream: ConfiguredAirbyteStream =

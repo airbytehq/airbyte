@@ -33,7 +33,8 @@ import java.net.URL
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
@@ -206,6 +207,10 @@ constructor(
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
+        val namespaces: Set<String> =
+            pojo.schemas?.filter { it.isNotBlank() }?.toSet()?.takeUnless { it.isEmpty() }
+                ?: setOf("public")
+
         return PostgresSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -214,7 +219,7 @@ constructor(
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             database = pojo.database,
-            namespaces = pojo.schemas?.toSet() ?: setOf("public"),
+            namespaces = namespaces,
             incrementalConfiguration = incremental,
             maxConcurrency = maxConcurrency,
             checkpointTargetInterval = checkpointTargetInterval,
@@ -297,17 +302,13 @@ constructor(
                 ?: UUID.randomUUID().toString()
 
         extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
-        // Make keystore for CA cert with given password or generate a new password.
-        val caCertKeyStoreUrl: URL =
-            buildKeyStore("trust") {
-                SSLCertificateUtils.keyStoreFromCertificate(
-                    sslData.caCertificate,
-                    password,
-                    FileSystems.getDefault(),
-                    directory = "",
-                )
-            }
-        extraJdbcProperties[TRUST_KEY_STORE_URL] = Paths.get(caCertKeyStoreUrl.toURI()).toString()
+        // Save CA certificate to a temporary file
+        val caCertFileURI: URI = saveCACertificate {
+            val caCertFile = Files.createTempFile(null, null)
+            Files.write(caCertFile, sslData.caCertificate.toByteArray(StandardCharsets.UTF_8))
+                .also { it.toFile().deleteOnExit() }
+        }
+        extraJdbcProperties[TRUST_KEY_STORE_URL] = Paths.get(caCertFileURI).toString()
 
         if (sslData.clientCertificate.isNullOrBlank() || sslData.clientKey.isNullOrBlank()) {
             // if Client cert is not available - done
@@ -352,6 +353,109 @@ constructor(
         log.debug { "URL for $kind certificate keystore is $keyStoreUrl" }
         return keyStoreUrl
     }
+
+    private fun saveCACertificate(uriSupplier: () -> Path): URI {
+        val caCertPath: Path =
+            try {
+                uriSupplier()
+            } catch (ex: Exception) {
+                throw ConfigErrorException("Failed to create CA certificate file", ex)
+            }
+        val caCertUrl: URI =
+            try {
+                caCertPath.toUri()
+            } catch (ex: MalformedURLException) {
+                throw ConfigErrorException("Unable to get a URI for certificate file", ex)
+            }
+        log.debug { "URI for certificate file is $caCertUrl" }
+        return caCertUrl
+    }
+
+    // Debug functions to validate encryption functionality
+    /*private fun validateCertificateFile(certPath: String, kind: String) {
+        try {
+            val certFile = File(certPath)
+            if (!certFile.exists()) {
+                throw ConfigErrorException("$kind file not found at: $certPath")
+            }
+
+            if (!certFile.canRead()) {
+                throw ConfigErrorException("$kind file is not readable at: $certPath")
+            }
+
+            // Read and validate the PEM certificate
+            val certContent = certFile.readText()
+            if (!certContent.contains("BEGIN CERTIFICATE")) {
+                throw ConfigErrorException("$kind file does not appear to be a valid PEM certificate at: $certPath")
+            }
+
+            // Try to parse the certificate to ensure it's valid
+            val certificateFactory = java.security.cert.CertificateFactory.getInstance("X.509")
+            certFile.inputStream().use { fis ->
+                val cert = certificateFactory.generateCertificate(fis) as java.security.cert.X509Certificate
+                log.info { "$kind validated successfully at $certPath" }
+                log.debug { "  Subject: ${cert.subjectX500Principal}" }
+                log.debug { "  Issuer: ${cert.issuerX500Principal}" }
+                log.debug { "  Valid from: ${cert.notBefore} to: ${cert.notAfter}" }
+            }
+
+        } catch (ex: java.security.cert.CertificateException) {
+            throw ConfigErrorException("Invalid $kind format at $certPath", ex)
+        } catch (ex: java.io.IOException) {
+            throw ConfigErrorException("Failed to read $kind at $certPath", ex)
+        }
+    }
+
+    private fun validateKeyStore(keystorePath: String, password: String?, kind: String) {
+        try {
+            val keystoreFile = File(keystorePath)
+            if (!keystoreFile.exists()) {
+                throw ConfigErrorException("$kind keystore file not found at: $keystorePath")
+            }
+
+            if (!keystoreFile.canRead()) {
+                throw ConfigErrorException("$kind keystore file is not readable at: $keystorePath")
+            }
+
+            // Load and validate the PKCS12 keystore
+            val keyStore = java.security.KeyStore.getInstance("PKCS12")
+            keystoreFile.inputStream().use { fis ->
+                keyStore.load(fis, password?.toCharArray())
+            }
+
+            // Log keystore contents for debugging
+            val aliases = keyStore.aliases().toList()
+            log.info { "$kind keystore validated successfully at $keystorePath with ${aliases.size} entries" }
+
+            aliases.forEach { alias ->
+                val isCertificate = keyStore.isCertificateEntry(alias)
+                val isKey = keyStore.isKeyEntry(alias)
+                log.debug { "  Alias: $alias, isCertificate: $isCertificate, isKey: $isKey" }
+
+                if (isCertificate) {
+                    val cert = keyStore.getCertificate(alias)
+                    log.debug { "  Certificate type: ${cert.type}" }
+                }
+            }
+
+            if (aliases.isEmpty()) {
+                log.warn { "$kind keystore at $keystorePath contains no entries" }
+            }
+
+        } catch (ex: java.security.KeyStoreException) {
+            throw ConfigErrorException("Invalid $kind keystore format at $keystorePath", ex)
+        } catch (ex: java.security.cert.CertificateException) {
+            throw ConfigErrorException("Invalid certificate in $kind keystore at $keystorePath", ex)
+        } catch (ex: java.security.NoSuchAlgorithmException) {
+            throw ConfigErrorException("Unsupported algorithm in $kind keystore at $keystorePath", ex)
+        } catch (ex: java.io.IOException) {
+            if (ex.cause is java.security.UnrecoverableKeyException ||
+                ex.message?.contains("password", ignoreCase = true) == true) {
+                throw ConfigErrorException("Incorrect password for $kind keystore at $keystorePath", ex)
+            }
+            throw ConfigErrorException("Failed to read $kind keystore at $keystorePath", ex)
+        }
+    }*/
 
     companion object {
         const val TRUST_KEY_STORE_URL: String = "sslrootcert"

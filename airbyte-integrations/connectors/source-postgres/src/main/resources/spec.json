@@ -208,6 +208,20 @@
             "required": ["method"]
           },
           {
+            "title": "Detect Changes with Xmin System Column",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "<i>Recommended</i> - Incrementally reads new inserts and updates via Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#xmin\">Xmin system column</a>. Suitable for databases that have low transaction pressure.",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["Xmin"],
+                "default": "Xmin"
+              }
+            },
+            "required": ["method"]
+          },
+          {
             "title": "Read Changes using Change Data Capture (CDC)",
             "type": "object",
             "additionalProperties": true,
