@@ -213,20 +213,28 @@ class JdbcSelectQuerier(
  * @param bindParameters Optional lambda to bind parameters to the PreparedStatement before
  * execution
  * @param withResultSet Lambda function to process the ResultSet and extract the desired value
+ * @param noResultsCase Lambda to execute if the query returns no results
+ * @param multipleResultsCase Lambda to execute if the query returns multiple results
  * @return The value extracted from the single result row using the withRS function
  */
 fun <T> querySingleValue(
     jdbcConnectionFactory: JdbcConnectionFactory,
     query: String,
     bindParameters: ((PreparedStatement) -> Unit)? = null,
-    withResultSet: (ResultSet) -> T
+    withResultSet: (ResultSet) -> T,
+    noResultsCase: () -> Unit = {
+        throw IllegalStateException("Query unexpectedly produced no results: [$query]")
+    },
+    multipleResultsCase: () -> Unit = {
+        throw IllegalStateException("Query unexpectedly produced more than one result: [$query]")
+    },
 ): T {
     jdbcConnectionFactory.get().use { connection ->
         connection.prepareStatement(query).use { stmt ->
             bindParameters?.invoke(stmt)
             stmt.executeQuery().use { rs ->
-                check(rs.next()) { "Query unexpectedly produced no results: [$query]" }
-                check(rs.isLast) { "Query unexpectedly produced more than one result: [$query]" }
+                if (!rs.next()) noResultsCase()
+                if (!rs.isLast) multipleResultsCase()
                 return withResultSet(rs)
             }
         }

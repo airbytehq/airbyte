@@ -6,13 +6,13 @@ package io.airbyte.integrations.source.postgres.cdc
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.TransientErrorException
+import io.airbyte.cdk.read.querySingleValue
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.debezium.connector.postgresql.connection.Lsn
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.sql.PreparedStatement
 import java.sql.SQLException
 
 @Singleton
@@ -30,6 +30,7 @@ class ReplicationSlotManager(
         }
         config.cdc as CdcIncrementalConfiguration
     }
+    private val slot = cdcConfig.replicationSlot
 
     @Synchronized
     fun advanceLsn(lsn: Lsn) {
@@ -82,108 +83,82 @@ class ReplicationSlotManager(
 
     // ensure that the lsn is available
     fun validate(lsn: Lsn) {
-        val sql =
-            "SELECT * FROM pg_replication_slots " +
-                "WHERE plugin = 'pgoutput' AND slot_name = ? AND database = ?"
-        connectionFactory.get().use { conn ->
-            val ps: PreparedStatement = conn.prepareStatement(sql)
-            val slot = cdcConfig.replicationSlot
-            ps.setString(1, slot)
-            ps.setString(2, config.database)
-            ps.executeQuery().use { rs ->
-                if (!rs.next()) {
-                    throw ConfigErrorException(
-                        "Replication slot '$slot' not found using the query: $ps"
-                    )
-                }
-                val confirmedFlushLsnStr = rs.getString("confirmed_flush_lsn")
-                val confirmedFlushLsn = confirmedFlushLsnStr?.let { Lsn.valueOf(it) }
-                val restartLsnStr = rs.getString("restart_lsn")
-                val restartLsn = restartLsnStr?.let { Lsn.valueOf(it) }
-                val walStatus = rs.getString("wal_status")
-                val invalidationReason = rs.getString("invalidation_reason")
-                if (rs.next()) {
-                    throw ConfigErrorException(
-                        "Multiple replication slots found using the query: $ps"
-                    )
-                }
-                if (restartLsn == null) {
-                    throw ConfigErrorException(
-                        "Replication slot '$slot' is not valid: " +
-                            "wal_status = '$walStatus', " +
-                            "invalidation_reason = '$invalidationReason'."
-                    )
-                }
-                if (confirmedFlushLsn != null) {
-                    if (confirmedFlushLsn > lsn) {
-                        throw ConfigErrorException(
-                            "Replication slot '$slot' has advanced beyond the source's state LSN. " +
-                                "Confirmed flush LSN: $confirmedFlushLsn, source LSN: $lsn."
-                        )
-                    }
-                    log.info {
-                        "Replication slot '$slot' is valid. " +
-                            "Confirmed flush LSN: $confirmedFlushLsn, source state LSN: $lsn."
-                    }
-                } else {
-                    // PG version < 9.6 doesn't have confirmed_flush_lsn: fall back to restart_lsn
-                    if (restartLsn > lsn) {
-                        throw ConfigErrorException(
-                            "Replication slot '$slot' has advanced beyond the source's state LSN. " +
-                                "Restart LSN: $restartLsn, source LSN: $lsn."
-                        )
-                    }
-                    log.info {
-                        "Replication slot '$slot' is valid. " +
-                            "Restart LSN: $restartLsn, source state LSN: $lsn."
-                    }
-                }
+        val slotInfo = getSlotInfo()
+        if (slotInfo.restartLsn == null) {
+            throw ConfigErrorException(
+                "Replication slot '$slot' is not valid: " +
+                    "wal_status = '${slotInfo.walStatus}', " +
+                    "invalidation_reason = '${slotInfo.invalidationReason}'."
+            )
+        }
+        if (slotInfo.confirmedFlushLsn != null) {
+            if (slotInfo.confirmedFlushLsn > lsn) {
+                throw ConfigErrorException(
+                    "Replication slot '$slot' has advanced beyond the source's state LSN. " +
+                        "Confirmed flush LSN: ${slotInfo.confirmedFlushLsn}, source LSN: $lsn."
+                )
+            }
+            log.info {
+                "Replication slot '$slot' is valid. " +
+                    "Confirmed flush LSN: ${slotInfo.confirmedFlushLsn}, source state LSN: $lsn."
+            }
+        } else {
+            // PG version < 9.6 doesn't have confirmed_flush_lsn: fall back to restart_lsn
+            if (slotInfo.restartLsn > lsn) {
+                throw ConfigErrorException(
+                    "Replication slot '$slot' has advanced beyond the source's state LSN. " +
+                        "Restart LSN: ${slotInfo.restartLsn}, source LSN: $lsn."
+                )
+            }
+            log.info {
+                "Replication slot '$slot' is valid. " +
+                    "Restart LSN: ${slotInfo.restartLsn}, source state LSN: $lsn."
             }
         }
     }
 
-    data class ReplicationSlotInfo(
+    private data class ReplicationSlotInfo(
         val name: String,
         val xmin: Any?,
         val catalogXmin: Any?,
-        val restartLsn: String?,
-        val confirmedFlushLsn: String?,
-        val walStatus: String?
+        val restartLsn: Lsn?,
+        val confirmedFlushLsn: Lsn?,
+        val walStatus: String?,
+        val invalidationReason: String?,
     )
 
-    fun getSlotInfo(): ReplicationSlotInfo {
-        val conn = connectionFactory.get()
-        val query =
+    private fun getSlotInfo(): ReplicationSlotInfo {
+        val sql =
             """
             SELECT slot_name, xmin, catalog_xmin, restart_lsn, confirmed_flush_lsn, wal_status
             FROM pg_replication_slots
-            WHERE slot_name = ?
+            WHERE plugin = 'pgoutput' AND slot_name = ? AND database = ?
         """.trimIndent()
-        conn.prepareStatement(query).use { stmt ->
-            stmt.setString(1, cdcConfig.replicationSlot)
-            stmt.executeQuery().use { rs ->
-                if (!rs.next()) {
-                    throw ConfigErrorException(
-                        "Replication slot '${cdcConfig.replicationSlot}' not found",
-                    )
-                }
-                val slotInfo =
-                    ReplicationSlotInfo(
-                        name = rs.getString("slot_name"),
-                        xmin = rs.getObject("xmin"),
-                        catalogXmin = rs.getObject("catalog_xmin"),
-                        restartLsn = rs.getString("restart_lsn"),
-                        confirmedFlushLsn = rs.getString("confirmed_flush_lsn"),
-                        walStatus = rs.getString("wal_status"),
-                    )
-                if (rs.next()) {
-                    throw IllegalStateException(
-                        "Query for replication slot '${cdcConfig.replicationSlot}' returned " +
-                            "multiple rows: $stmt.",
-                    )
-                }
-                return slotInfo
+        val slot = cdcConfig.replicationSlot
+        return querySingleValue(
+            jdbcConnectionFactory = connectionFactory,
+            query = sql,
+            bindParameters = { stmt ->
+                stmt.setString(1, slot)
+                stmt.setString(2, config.database)
+            },
+            withResultSet = { rs ->
+                ReplicationSlotInfo(
+                    name = rs.getString("slot_name"),
+                    xmin = rs.getObject("xmin"),
+                    catalogXmin = rs.getObject("catalog_xmin"),
+                    restartLsn = rs.getString("restart_lsn")?.let { Lsn.valueOf(it) },
+                    confirmedFlushLsn =
+                        rs.getString("confirmed_flush_lsn")?.let { Lsn.valueOf(it) },
+                    walStatus = rs.getString("wal_status"),
+                    invalidationReason = rs.getString("invalidation_reason"),
+                )
+            },
+            noResultsCase = {
+                throw ConfigErrorException(
+                    "Replication slot '$slot' not found using the query: $sql"
+                )
             }
-        }
+        )
     }
 }
