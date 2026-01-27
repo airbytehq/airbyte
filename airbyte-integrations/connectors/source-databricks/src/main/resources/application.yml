@@ -1,0 +1,51 @@
+---
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 4096
+
+    extract:
+      jdbc:
+        mode: concurrent
+        with-sampling: true
+        table-sample-size: 1024
+        throughput-bytes-per-second: 10000000
+        min-fetch-size: 10
+        default-fetch-size: 1000
+        max-fetch-size: 10000000
+        memory-capacity-ratio: 0.6
+        estimated-record-overhead-bytes: 16
+        estimated-field-overhead-bytes: 16
+        namespace-kind: CATALOG_AND_SCHEMA
+
+    check:
+      jdbc:
+        # The following queries are run during the CHECK operation [0].
+        # A query which returns anything will cause the check to fail.
+        # NULL values and empty strings are ignored.
+        #
+        # [0] https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/toolkits/extract-jdbc/src/main/kotlin/io/airbyte/cdk/check/JdbcCheckQueries.kt
+        #
+        queries:
+          - >-
+            SELECT 1 WHERE 1 = 0;
+    exception-classifiers:
+      regex:
+        rules:
+          - pattern: socket is closed
+            input-example: "Socket is closed"
+            error: transient
+            group: Transient Connection Error
+            output: Connection to database closed unexpectedly (TCP socket was closed). This is often a temporary network issue.
+
+          - pattern: (?i)JWT token is invalid
+            input-example: "JWT token is invalid."
+            error: transient
+            group: Authentication Error
+            output: The session token has expired. This is a temporary issue and the connection will be re-established automatically.
+            reference-links:
+              - https://docs.databricks.com/en/user-guide/jdbc-configure
