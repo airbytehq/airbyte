@@ -11,7 +11,8 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-csv", "load-dlq", "load-http", "load-low-code")
+    toolkits = listOf("load-csv", "legacy-task-load-dlq", "load-http", "legacy-task-load-low-code")
+    useLegacyTaskLoader = true
 }
 
 application {
