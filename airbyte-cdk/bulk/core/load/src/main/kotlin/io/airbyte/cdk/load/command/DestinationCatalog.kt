@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.load.config.CHECK_STREAM_NAMESPACE
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
@@ -142,7 +141,7 @@ class DefaultDestinationCatalogFactory {
         val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
         // generate 5 random characters
         val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
-        val namespace = checkNamespace ?: "${CHECK_STREAM_NAMESPACE}_$date$random"
+        val namespace = checkNamespace ?: "airbyte_internal_test_$date$random"
         return DestinationCatalog(
             listOf(
                 DestinationStream(

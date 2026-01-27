@@ -27,15 +27,15 @@ This page guides you through the process of setting up the Typeform source conne
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
-To get the API token for your application follow this [steps](https://developer.typeform.com/get-started/personal-access-token/)
+To get the API token for your application, follow these [steps](https://developer.typeform.com/get-started/personal-access-token/):
 
-- Log in to your account at Typeform.
-- In the upper-right corner, in the drop-down menu next to your profile photo, click My Account.
-- In the left menu, click Personal tokens.
-- Click Generate a new token.
-- In the Token name field, type a name for the token to help you identify it.
-- Choose needed scopes \(API actions this token can perform - or permissions it has\). See [here](https://www.typeform.com/developers/get-started/scopes/) for more details on scopes.
-- Click Generate token.
+1. Log in to your account at Typeform.
+2. In the upper-right corner, in the drop-down menu next to your profile photo, click **My Account**.
+3. In the left menu, click **Personal tokens**.
+4. Click **Generate a new token**.
+5. In the **Token name** field, type a name for the token to help you identify it.
+6. Choose the scopes you need (API actions this token can perform). See [OAuth 2.0 scopes](https://www.typeform.com/developers/get-started/scopes/) for more details.
+7. Click **Generate token**.
 <!-- /env:oss -->
 
 <!-- env:cloud -->
@@ -56,8 +56,8 @@ This step is not needed in Airbyte Cloud. Skip to the next step.
 3. On the source setup page, select **Typeform** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your Typeform account` by selecting Oauth or Personal Access Token for Authentication.
 5. Log in and Authorize to the Typeform account.
-6. **Start date (Optional)** - Date to start fetching Responses stream data from. If start date is not set, Responses stream will fetch data from a year ago from today.
-7. **Form IDs (Optional)** - List of Form Ids to sync. If not passed - sync all account`s forms.
+6. **Start date (Optional)** - The date from which to start fetching Responses stream data, in the format `YYYY-MM-DDT00:00:00Z`. If not set, the Responses stream fetches data from one year ago.
+7. **Form IDs (Optional)** - List of Form IDs to sync. If not specified, all forms in your account are synced.
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -65,11 +65,11 @@ This step is not needed in Airbyte Cloud. Skip to the next step.
 
 **For Airbyte Open Source:**
 
-1. Go to local Airbyte page.
+1. Go to your local Airbyte instance.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
-3. On the Set up the source page, enter the name for the connector and select **Typeform** from the Source type dropdown.
-4. Fill-in **API Token** and **Start Date**
-5. click **Set up source**
+3. On the Set up the source page, enter a name for the connector and select **Typeform** from the Source type dropdown.
+4. Enter your **API Token** and optionally set a **Start Date**.
+5. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
@@ -90,7 +90,7 @@ Typeform API page size limit per source:
 - Forms - 200
 - Responses - 1000
 
-Connector performs additional API call to fetch all possible `form ids` on an account using [retrieve forms endpoint](https://developer.typeform.com/create/reference/retrieve-forms/)
+The connector performs an additional API call to fetch all form IDs in your account using the [retrieve forms endpoint](https://developer.typeform.com/create/reference/retrieve-forms/).
 
 API rate limits \(2 requests per second\): [https://developer.typeform.com/get-started/\#rate-limits](https://developer.typeform.com/get-started/#rate-limits)
 
@@ -101,8 +101,9 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.5 | 2026-01-22 | [72261](https://github.com/airbytehq/airbyte/pull/72261) | Update CDK version from 7.0.1 to 7.6.5 |
 | 1.4.4 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
-| 1.4.3 | 2025-09-11 | [66140](https://github.com/airbytehq/airbyte/pull/66140) | Update to CDK v7 |
+| 1.4.3 | 2025-09-15 | [66140](https://github.com/airbytehq/airbyte/pull/66140) | Update to CDK v7 |
 | 1.4.2 | 2025-05-31 | [53033](https://github.com/airbytehq/airbyte/pull/53033) | Update dependencies |
 | 1.4.1 | 2025-02-26 | [54690](https://github.com/airbytehq/airbyte/pull/54690) | Fix missing records for non `image` streams & formatting |
 | 1.4.0 | 2025-02-22 | [47018](https://github.com/airbytehq/airbyte/pull/47018) | Migrate to manifest-only format |

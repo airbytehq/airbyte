@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.write
@@ -41,7 +41,15 @@ class PostgresWriter(
     override suspend fun setup() {
         catalog.streams
             .map { it.tableSchema.tableNames.finalTableName!!.namespace }
+            .toSet()
             .forEach { postgresClient.createNamespace(it) }
+
+        catalog.streams
+            .map { it.tableSchema.tableNames.tempTableName!!.namespace }
+            .toSet()
+            .forEach { postgresClient.createNamespace(it) }
+
+        postgresConfiguration.internalTableSchema?.let { postgresClient.createNamespace(it) }
 
         initialStatuses = stateGatherer.gatherInitialStatus()
     }

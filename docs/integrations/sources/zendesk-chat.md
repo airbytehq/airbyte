@@ -83,6 +83,9 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.31 | 2026-01-20 | [72091](https://github.com/airbytehq/airbyte/pull/72091) | Update dependencies |
+| 1.2.30 | 2026-01-14 | [71701](https://github.com/airbytehq/airbyte/pull/71701) | Update dependencies |
+| 1.2.29 | 2025-12-18 | [70681](https://github.com/airbytehq/airbyte/pull/70681) | Update dependencies |
 | 1.2.28 | 2025-11-25 | [70128](https://github.com/airbytehq/airbyte/pull/70128) | Update dependencies |
 | 1.2.27 | 2025-11-18 | [69513](https://github.com/airbytehq/airbyte/pull/69513) | Update dependencies |
 | 1.2.26 | 2025-10-29 | [68958](https://github.com/airbytehq/airbyte/pull/68958) | Update dependencies |
@@ -95,7 +98,7 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 | 1.2.19 | 2025-09-30 | [66845](https://github.com/airbytehq/airbyte/pull/66845) | Update dependencies |
 | 1.2.18 | 2025-09-24 | [66459](https://github.com/airbytehq/airbyte/pull/66459) | Update dependencies |
 | 1.2.17 | 2025-09-09 | [65491](https://github.com/airbytehq/airbyte/pull/65491) | Update dependencies |
-| 1.2.16 | 2025-08-09 | [64864](https://github.com/airbytehq/airbyte/pull/64864) | Update dependencies |
+| 1.2.16 | 2025-08-10 | [64864](https://github.com/airbytehq/airbyte/pull/64864) | Update dependencies |
 | 1.2.15 | 2025-08-02 | [64305](https://github.com/airbytehq/airbyte/pull/64305) | Update dependencies |
 | 1.2.14 | 2025-07-26 | [64053](https://github.com/airbytehq/airbyte/pull/64053) | Update dependencies |
 | 1.2.13 | 2025-07-20 | [63650](https://github.com/airbytehq/airbyte/pull/63650) | Update dependencies |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 plugins {
@@ -11,7 +11,8 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-csv", "load-dlq", "load-http", "load-low-code")
+    toolkits = listOf("load-csv", "legacy-task-load-dlq", "load-http", "legacy-task-load-low-code")
+    useLegacyTaskLoader = true
 }
 
 application {

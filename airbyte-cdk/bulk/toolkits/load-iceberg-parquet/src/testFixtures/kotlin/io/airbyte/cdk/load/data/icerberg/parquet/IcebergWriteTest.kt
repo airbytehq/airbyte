@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data.icerberg.parquet
@@ -53,7 +53,6 @@ abstract class IcebergWriteTest(
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(

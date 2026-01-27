@@ -30,6 +30,9 @@ Zoho Analytics Metadata api connector enables seamless data syncing from Zoho An
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.44 | 2026-01-20 | [72045](https://github.com/airbytehq/airbyte/pull/72045) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71680](https://github.com/airbytehq/airbyte/pull/71680) | Update dependencies |
+| 0.0.42 | 2025-12-18 | [70678](https://github.com/airbytehq/airbyte/pull/70678) | Update dependencies |
 | 0.0.41 | 2025-11-25 | [70064](https://github.com/airbytehq/airbyte/pull/70064) | Update dependencies |
 | 0.0.40 | 2025-11-18 | [69549](https://github.com/airbytehq/airbyte/pull/69549) | Update dependencies |
 | 0.0.39 | 2025-10-29 | [68981](https://github.com/airbytehq/airbyte/pull/68981) | Update dependencies |
@@ -39,8 +42,8 @@ Zoho Analytics Metadata api connector enables seamless data syncing from Zoho An
 | 0.0.35 | 2025-09-30 | [66847](https://github.com/airbytehq/airbyte/pull/66847) | Update dependencies |
 | 0.0.34 | 2025-09-24 | [66458](https://github.com/airbytehq/airbyte/pull/66458) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [65728](https://github.com/airbytehq/airbyte/pull/65728) | Update dependencies |
-| 0.0.32 | 2025-08-23 | [65396](https://github.com/airbytehq/airbyte/pull/65396) | Update dependencies |
-| 0.0.31 | 2025-08-09 | [64866](https://github.com/airbytehq/airbyte/pull/64866) | Update dependencies |
+| 0.0.32 | 2025-08-24 | [65396](https://github.com/airbytehq/airbyte/pull/65396) | Update dependencies |
+| 0.0.31 | 2025-08-10 | [64866](https://github.com/airbytehq/airbyte/pull/64866) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64355](https://github.com/airbytehq/airbyte/pull/64355) | Update dependencies |
 | 0.0.29 | 2025-07-26 | [64068](https://github.com/airbytehq/airbyte/pull/64068) | Update dependencies |
 | 0.0.28 | 2025-07-20 | [63654](https://github.com/airbytehq/airbyte/pull/63654) | Update dependencies |

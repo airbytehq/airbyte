@@ -1,0 +1,27 @@
+{
+  "sla_policies": [
+    {
+      "id": 12345,
+      "title": "Default SLA Policy",
+      "description": "Default SLA policy for all tickets",
+      "position": 1,
+      "filter": {
+        "all": [],
+        "any": []
+      },
+      "policy_metrics": [
+        {
+          "priority": "normal",
+          "metric": "first_reply_time",
+          "target": 480,
+          "business_hours": true
+        }
+      ],
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "next_page": null,
+  "previous_page": null,
+  "count": 1
+}

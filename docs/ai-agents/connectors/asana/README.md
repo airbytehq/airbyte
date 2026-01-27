@@ -1,24 +1,28 @@
-# Airbyte Asana AI Connector
+# Asana agent connector
 
 Asana is a work management platform that helps teams organize, track, and manage
 projects and tasks. This connector provides access to tasks, projects, workspaces,
 teams, and users for project tracking, workload analysis, and productivity insights.
 
 
-## Example Questions
+## Example questions
+
+The Asana connector is optimized to handle prompts like these.
 
 - What tasks are assigned to me this week?
 - List all projects in my workspace
 - Summarize my team's workload and task completion rates
-- Show me the tasks for the [ProjectName] project
-- Who are the team members in my [TeamName] team?
-- Find all tasks related to [ClientName] across my workspaces
+- Show me the tasks for the \{project_name\} project
+- Who are the team members in my \{team_name\} team?
+- Find all tasks related to \{client_name\} across my workspaces
 - Analyze the most active projects in my workspace last month
 - Compare task completion rates between my different teams
 - Identify overdue tasks across all my projects
 - Show me details of my current workspace and its users
 
-## Unsupported Questions
+## Unsupported questions
+
+The Asana connector isn't currently able to handle prompts like these.
 
 - Create a new task for [TeamMember]
 - Update the priority of this task
@@ -35,21 +39,53 @@ uv pip install airbyte-agent-asana
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_asana import AsanaConnector, AsanaAuthConfig
+from airbyte_agent_asana import AsanaConnector
+from airbyte_agent_asana.models import AsanaPersonalAccessTokenAuthConfig
 
 connector = AsanaConnector(
-  auth_config=AsanaAuthConfig(
-    access_token="...",
-    refresh_token="...",
-    client_id="...",
-    client_secret="..."
-  )
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
 )
-result = connector.tasks.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@AsanaConnector.tool_utils
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
-## Documentation
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_asana import AsanaConnector
+
+connector = AsanaConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@AsanaConnector.tool_utils
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -77,14 +113,14 @@ result = connector.tasks.list()
 | Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see [Asana API Reference](https://developers.asana.com/reference/rest-api-reference).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-## Version Information
+For the service's official API docs, see the [Asana API reference](https://developers.asana.com/reference/rest-api-reference).
 
-**Package Version:** 0.19.19
+## Version information
 
-**Connector Version:** 0.1.4
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.19.61
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

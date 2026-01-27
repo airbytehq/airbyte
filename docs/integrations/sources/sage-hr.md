@@ -31,6 +31,9 @@ The Sage HR Airbyte Connector enables seamless data integration, allowing you to
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-01-20 | [72098](https://github.com/airbytehq/airbyte/pull/72098) | Update dependencies |
+| 0.0.46 | 2026-01-14 | [71535](https://github.com/airbytehq/airbyte/pull/71535) | Update dependencies |
+| 0.0.45 | 2025-12-18 | [70758](https://github.com/airbytehq/airbyte/pull/70758) | Update dependencies |
 | 0.0.44 | 2025-11-25 | [69986](https://github.com/airbytehq/airbyte/pull/69986) | Update dependencies |
 | 0.0.43 | 2025-11-18 | [69681](https://github.com/airbytehq/airbyte/pull/69681) | Update dependencies |
 | 0.0.42 | 2025-10-29 | [68884](https://github.com/airbytehq/airbyte/pull/68884) | Update dependencies |
@@ -38,11 +41,11 @@ The Sage HR Airbyte Connector enables seamless data integration, allowing you to
 | 0.0.40 | 2025-10-14 | [67925](https://github.com/airbytehq/airbyte/pull/67925) | Update dependencies |
 | 0.0.39 | 2025-10-07 | [67217](https://github.com/airbytehq/airbyte/pull/67217) | Update dependencies |
 | 0.0.38 | 2025-09-30 | [66867](https://github.com/airbytehq/airbyte/pull/66867) | Update dependencies |
-| 0.0.37 | 2025-09-23 | [66633](https://github.com/airbytehq/airbyte/pull/66633) | Update dependencies |
+| 0.0.37 | 2025-09-24 | [66633](https://github.com/airbytehq/airbyte/pull/66633) | Update dependencies |
 | 0.0.36 | 2025-09-09 | [66116](https://github.com/airbytehq/airbyte/pull/66116) | Update dependencies |
 | 0.0.35 | 2025-08-24 | [65502](https://github.com/airbytehq/airbyte/pull/65502) | Update dependencies |
 | 0.0.34 | 2025-08-16 | [65035](https://github.com/airbytehq/airbyte/pull/65035) | Update dependencies |
-| 0.0.33 | 2025-08-02 | [64469](https://github.com/airbytehq/airbyte/pull/64469) | Update dependencies |
+| 0.0.33 | 2025-08-03 | [64469](https://github.com/airbytehq/airbyte/pull/64469) | Update dependencies |
 | 0.0.32 | 2025-07-26 | [63982](https://github.com/airbytehq/airbyte/pull/63982) | Update dependencies |
 | 0.0.31 | 2025-07-12 | [63041](https://github.com/airbytehq/airbyte/pull/63041) | Update dependencies |
 | 0.0.30 | 2025-07-05 | [62724](https://github.com/airbytehq/airbyte/pull/62724) | Update dependencies |
