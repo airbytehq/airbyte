@@ -3,8 +3,10 @@
 #
 
 import json
+from http.client import RemoteDisconnected
 
 import pytest
+import requests
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams import Activities, AdAccount, AdCreatives, Campaigns, Videos
@@ -431,3 +433,55 @@ class TestBackoff:
                 "12",
                 "6",
             ]
+
+    def test_connection_error_retry(self, requests_mock, api, account_id):
+        """Test that ConnectionError (e.g., RemoteDisconnected) is retried and eventually succeeds"""
+        account_data = {
+            "account_id": "unknown_account",
+            "id": 1,
+            "updated_time": "2020-09-25T00:00:00Z",
+            "name": "Some name",
+        }
+
+        # First request raises ConnectionError, second succeeds
+        call_count = {"count": 0}
+
+        def request_callback(request, context):
+            call_count["count"] += 1
+            if call_count["count"] == 1:
+                raise requests.exceptions.ConnectionError(
+                    "Connection aborted.",
+                    RemoteDisconnected("Remote end closed connection without response"),
+                )
+            context.status_code = 200
+            return account_data
+
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/business_users",
+            json={"data": []},
+        )
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/",
+            json=request_callback,
+        )
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/{account_data['id']}/",
+            json=account_data,
+        )
+
+        stream = AdAccount(api=api, account_ids=[account_id])
+        accounts = list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_state={},
+                stream_slice={"account_id": account_id},
+            )
+        )
+
+        # Verify that we got the account data after retry
+        assert accounts == [account_data]
+        # Verify that we made 2 calls (first failed, second succeeded)
+        assert call_count["count"] == 2
