@@ -159,7 +159,7 @@ tasks.register('dokkaGenerate') {
 }
 
 // Helper function to check if a version exists in the Maven repository
-def checkVersionExists(String artifactName, String versionToCheck, boolean allow404 = false) {
+def checkVersionExists(String artifactName, String versionToCheck) {
     var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
     var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
     var artifactUrl = "${groupIdUrl}/${artifactName}"
@@ -171,18 +171,8 @@ def checkVersionExists(String artifactName, String versionToCheck, boolean allow
         connection.setDoInput(true)
         var responseCode = connection.getResponseCode()
 
-        if (responseCode == 404) {
-            if (allow404) {
-                println "${artifactName} artifact not found in repository (first publish)"
-                return
-            } else {
-                throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
-            }
-        }
-
         if (responseCode != 200) {
-            var expected = allow404 ? "200 or 404" : "200"
-            throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected ${expected}.")
+            throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
         }
 
         InputStream responseContent = connection.inputStream
@@ -226,7 +216,7 @@ tasks.register('bulkCdkPublish').configure {
 tasks.register('checkBaseVersion') {
     description = "Check that the base version doesn't exist"
     doLast {
-        checkVersionExists('bulk-cdk-core-base', baseVersion.toString(), true)
+        checkVersionExists('bulk-cdk-core-base', baseVersion.toString())
     }
 }
 
