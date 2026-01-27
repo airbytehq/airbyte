@@ -58,6 +58,10 @@ definitions:
           type: RequestOption
           field_name: since_timestamp
           inject_into: request_parameter
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.CustomFieldsTransformation
+          fields_endpoint: v1/dealFields
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -273,6 +277,10 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.CustomFieldsTransformation
+          fields_endpoint: v1/leadFields
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -379,6 +387,10 @@ definitions:
           type: RequestOption
           field_name: since_timestamp
           inject_into: request_parameter
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.CustomFieldsTransformation
+          fields_endpoint: v1/activityFields
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -529,6 +541,10 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.CustomFieldsTransformation
+          fields_endpoint: v1/organizationFields
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -635,6 +651,10 @@ definitions:
           type: RequestOption
           field_name: since_timestamp
           inject_into: request_parameter
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.CustomFieldsTransformation
+          fields_endpoint: v1/personFields
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -772,6 +792,10 @@ definitions:
           type: RequestOption
           field_name: since_timestamp
           inject_into: request_parameter
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.CustomFieldsTransformation
+          fields_endpoint: v1/productFields
       schema_loader:
         type: InlineSchemaLoader
         schema:
