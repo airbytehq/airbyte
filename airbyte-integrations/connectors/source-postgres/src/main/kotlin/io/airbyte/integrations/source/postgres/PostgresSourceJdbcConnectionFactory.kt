@@ -67,7 +67,6 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
                         "CDC replication. Please read the docs and add required privileges."
                 )
             }
-            // TODO: is another exception more appropriate? I see config/transient/system...
             throw ConfigErrorException(
                 "Unexpected failure while creating replication connection.",
                 exception
