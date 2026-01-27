@@ -9,12 +9,12 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
-  dockerImageTag: 1.1.25
+  dockerImageTag: 1.1.26
   dockerRepository: airbyte/source-posthog
   documentationUrl: https://docs.airbyte.com/integrations/sources/posthog
   githubIssueLabel: source-posthog
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   icon: posthog.svg
   license: ELv2
   name: PostHog
