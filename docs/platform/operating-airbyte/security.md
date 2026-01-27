@@ -131,6 +131,8 @@ Our compliance efforts for Airbyte Cloud include:
 - ISO 27001 certification: We received our ISO 27001 certification in November 2022. A copy of the certificate is available upon request.
 - Assessments and penetration tests: We use tools provided by the Cloud platforms as well as third-party assessments and penetration tests.
 
+For more information about Airbyte's security practices and compliance certifications, visit the [Airbyte Trust Center](https://trust.airbyte.com/).
+
 ## Reporting Vulnerabilities​
 
 :::warning
