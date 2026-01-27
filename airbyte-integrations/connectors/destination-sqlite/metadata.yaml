@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: b76be0a6-27dc-4560-95f6-2623da0bd7b6
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.10
   dockerRepository: airbyte/destination-sqlite
   githubIssueLabel: destination-sqlite
   icon: sqlite.svg
@@ -26,7 +26,7 @@ data:
     - suite: unitTests
     - suite: integrationTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   externalDocumentationUrls:
     - title: SQLite documentation
       url: https://www.sqlite.org/docs.html
