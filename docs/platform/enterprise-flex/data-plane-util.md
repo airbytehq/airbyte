@@ -20,6 +20,8 @@ Before you begin, ensure you satisfy all of these requirements.
 
 - An active subscription to Airbyte Enterprise Flex
 - You must be an organization Admin to manage data planes
+- You need to use a [secrets manager](https://docs.airbyte.com/platform/deploying-airbyte/integrations/secrets) for the connections on your data plane. Modifying the configuration of connector secret storage will cause all existing connectors to fail, so we recommend only using newly created workspaces on the data plane.
+
 
 ### Infrastructure requirements
 
