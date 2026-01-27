@@ -11,13 +11,13 @@ import java.sql.JDBCType;
 import java.sql.Types;
 
 /**
- * Custom source operations for ClickHouse that handles type mapping differences
- * in newer JDBC driver versions (0.6.x+).
+ * Custom source operations for ClickHouse that handles type mapping differences in newer JDBC
+ * driver versions (0.6.x+).
  *
- * The ClickHouse JDBC driver 0.6.x+ returns JDBCType.OTHER for many ClickHouse-specific
- * types that don't have exact JDBC equivalents (e.g., UInt64, Int128). This class
- * maps those types to appropriate standard JDBC types based on the column type name,
- * ensuring cursor type validation works correctly for incremental syncs.
+ * The ClickHouse JDBC driver 0.6.x+ returns JDBCType.OTHER for many ClickHouse-specific types that
+ * don't have exact JDBC equivalents (e.g., UInt64, Int128). This class maps those types to
+ * appropriate standard JDBC types based on the column type name, ensuring cursor type validation
+ * works correctly for incremental syncs.
  */
 public class ClickHouseSourceOperations extends JdbcSourceOperations {
 
@@ -36,9 +36,8 @@ public class ClickHouseSourceOperations extends JdbcSourceOperations {
   }
 
   /**
-   * Maps ClickHouse-specific type names to standard JDBC types.
-   * This ensures that columns with ClickHouse types can be used as cursors
-   * for incremental sync.
+   * Maps ClickHouse-specific type names to standard JDBC types. This ensures that columns with
+   * ClickHouse types can be used as cursors for incremental sync.
    */
   private JDBCType mapClickHouseTypeToJdbcType(final String typeName) {
     // Integer types
