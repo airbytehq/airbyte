@@ -37,6 +37,9 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
   - `/poe source example lock` - Alias for `/poe connector source-example lock`.
   - `/poe source example use-cdk-branch my/branch` - Pin the `source-example` CDK reference to the branch name specified.
   - `/poe source example use-cdk-latest` - Update the `source-example` CDK dependency to the latest available version.
+- Admin commands:
+  - `/force-merge reason="<REASON>"` - Force merges the PR using admin privileges, bypassing CI checks. Requires a reason.
+    Example: `/force-merge reason="CI is flaky, tests pass locally"`
 
 </details>
 
