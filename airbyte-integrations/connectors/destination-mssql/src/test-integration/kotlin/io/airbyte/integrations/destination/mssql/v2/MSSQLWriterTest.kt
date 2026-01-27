@@ -267,6 +267,8 @@ object MSSQLDataCleaner : DestinationCleaner {
     }
 }
 
+// Re-enable once we fix our Azure account
+@Disabled("Our Azure creds are not functioning right now")
 internal class StandardInsert :
     MSSQLWriterTest(
         configPath = MSSQLTestConfigUtil.getConfigPath("check/valid.json"),
@@ -300,6 +302,8 @@ internal class StandardInsert :
     }
 }
 
+// Re-enable once we fix our Azure account
+@Disabled("Our Azure creds are not functioning right now")
 internal class BulkInsert :
     MSSQLWriterTest(
         configPath = Path.of(CONFIG_FILE),

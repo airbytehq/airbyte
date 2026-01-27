@@ -30,7 +30,7 @@ internal class SnowflakeCheckerTest {
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
 
-        val columnManager: SnowflakeColumnManager = SnowflakeColumnManager(snowflakeConfiguration)
+        val columnManager = SnowflakeColumnManager(snowflakeConfiguration)
 
         val checker =
             SnowflakeChecker(
