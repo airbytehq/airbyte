@@ -324,6 +324,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.10 | 2026-01-27 | [72377](https://github.com/airbytehq/airbyte/pull/72377) | Update dependencies |
 | 0.5.9 | 2026-01-20 | [71890](https://github.com/airbytehq/airbyte/pull/71890) | Update dependencies |
 | 0.5.8 | 2026-01-14 | [71735](https://github.com/airbytehq/airbyte/pull/71735) | Update dependencies |
 | 0.5.7 | 2025-12-18 | [70532](https://github.com/airbytehq/airbyte/pull/70532) | Update dependencies |
