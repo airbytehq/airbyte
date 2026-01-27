@@ -80,7 +80,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                   |
 |:--------|:-----------|:------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 0.3.0 | 2026-01-27 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Upgrade ClickHouse JDBC driver to 0.9.5 with custom type mapping to fix getResultSet not implemented error and cursor type validation issues |
+| 0.3.0 | 2026-01-27 | [72395](https://github.com/airbytehq/airbyte/pull/72395) | Upgrade ClickHouse JDBC driver to 0.9.5 with custom type mapping to fix getResultSet not implemented error and cursor type validation issues |
 | 0.2.6 | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714) | Revert JDBC driver upgrade |
 | 0.2.5 | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66482) | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0 |
 | 0.2.4 | 2025-07-10 | [62912](https://github.com/airbytehq/airbyte/pull/62912) | Convert to new gradle build flow |
