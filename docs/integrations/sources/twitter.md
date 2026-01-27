@@ -42,6 +42,7 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.12 | 2026-01-27 | [60771](https://github.com/airbytehq/airbyte/pull/60771) | Update dependencies |
 | 0.3.11 | 2025-05-10 | [60003](https://github.com/airbytehq/airbyte/pull/60003) | Update dependencies |
 | 0.3.10 | 2025-05-04 | [59620](https://github.com/airbytehq/airbyte/pull/59620) | Update dependencies |
 | 0.3.9 | 2025-04-27 | [58398](https://github.com/airbytehq/airbyte/pull/58398) | Update dependencies |
@@ -78,6 +79,6 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 | 0.1.3 | 2024-05-21 | [38525](https://github.com/airbytehq/airbyte/pull/38525) | [autopull] base image + poetry + up_to_date |
 | 0.1.2 | 2023-03-06 | [23749](https://github.com/airbytehq/airbyte/pull/23749) | Spec and docs are improved for beta certification |
 | 0.1.1 | 2023-03-03 | [23661](https://github.com/airbytehq/airbyte/pull/23661) | Incremental added for the "tweets" stream |
-| 0.1.0   | 2022-11-01 | [18858](https://github.com/airbytehq/airbyte/pull/18858) | 🎉 New Source: Twitter                            |
+| 0.1.0 | 2022-11-01 | [18858](https://github.com/airbytehq/airbyte/pull/18858) | 🎉 New Source: Twitter |
 
 </details>
