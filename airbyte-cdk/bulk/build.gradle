@@ -15,6 +15,7 @@ plugins {
 
 final var versionFile = file("version.properties")
 final var baseVersionFile = file("core/base/version.properties")
+final var loadVersionFile = file("core/load/version.properties")
 
 final var cdkVersion = {
     var props = new Properties()
@@ -22,10 +23,16 @@ final var cdkVersion = {
     return props.getProperty('version', 'undefined')
 }()
 
-// Base package has its own independent version
+// Base and load packages have their own independent versions
 final var baseVersion = {
     var props = new Properties()
     baseVersionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+final var loadVersion = {
+    var props = new Properties()
+    loadVersionFile.withInputStream(props::load)
     return props.getProperty('version', 'undefined')
 }()
 
@@ -92,9 +99,12 @@ allprojects {
     }
 }
 
-// Override base package to use its own independent version
+// Override base and load packages to use their own independent versions
 project(':airbyte-cdk:bulk:core:bulk-cdk-core-base') {
     version = baseVersion
+}
+project(':airbyte-cdk:bulk:core:bulk-cdk-core-load') {
+    version = loadVersion
 }
 
 // Configure Dokka for all subprojects
@@ -220,7 +230,14 @@ tasks.register('checkBaseVersion') {
     }
 }
 
-// Build and publish tasks for base package only
+tasks.register('checkLoadVersion') {
+    description = "Check that the load version doesn't exist"
+    doLast {
+        checkVersionExists('bulk-cdk-core-load', loadVersion.toString())
+    }
+}
+
+// Build and publish tasks for individual packages
 tasks.register('baseCdkBuild') {
     description = "Build the base CDK package"
     dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:build'
@@ -228,6 +245,15 @@ tasks.register('baseCdkBuild') {
 tasks.register('baseCdkPublish') {
     description = "Publish the base CDK package"
     dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:publish'
+}
+
+tasks.register('loadCdkBuild') {
+    description = "Build the load CDK package (includes base as transitive dependency)"
+    dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-load:build'
+}
+tasks.register('loadCdkPublish') {
+    description = "Publish the load CDK package"
+    dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-load:publish'
 }
 
 class BumpBulkCdkVersionTask extends DefaultTask {

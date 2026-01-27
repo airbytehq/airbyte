@@ -1,0 +1,75 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+name: Publish Bulk CDK Load
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "airbyte-cdk/bulk/core/load/**"
+      - "airbyte-cdk/bulk/toolkits/load-*/**"
+      - "airbyte-cdk/bulk/toolkits/legacy-task-load*/**"
+  workflow_dispatch:
+
+concurrency:
+  group: publish-bulk-cdk-load
+  cancel-in-progress: false
+
+env:
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  publish-bulk-cdk-load:
+    name: Publish Bulk CDK Load
+    runs-on: linux-24.04-large
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - name: Setup Java
+        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Docker login
+        uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7 # v1.14.1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Error if Load CDK Version Exists
+        uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
+        env:
+          CI: true
+        with:
+          job-id: bulk-cdk-load-publish
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:checkLoadVersion
+
+      - name: Build Load CDK
+        uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
+        env:
+          CI: true
+        with:
+          job-id: bulk-cdk-load-publish
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:loadCdkBuild
+
+      - name: Publish Load CDK to CloudRepo
+        uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
+        env:
+          CI: true
+          CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+          CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        with:
+          job-id: bulk-cdk-load-publish
+          read-only: true
+          concurrent: true
+          execution-only-caches: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:loadCdkPublish
