@@ -46,6 +46,7 @@ Please read [How to find your API key](https://support.freshdesk.com/en/support/
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.5.5 | 2026-01-27 | [68793](https://github.com/airbytehq/airbyte/pull/68793) | Update dependencies |
 | 0.5.4 | 2025-10-21 | [68444](https://github.com/airbytehq/airbyte/pull/68444) | Update dependencies |
 | 0.5.3 | 2025-10-14 | [68067](https://github.com/airbytehq/airbyte/pull/68067) | Update dependencies |
 | 0.5.2 | 2025-10-07 | [67300](https://github.com/airbytehq/airbyte/pull/67300) | Update dependencies |
@@ -80,8 +81,8 @@ Please read [How to find your API key](https://support.freshdesk.com/en/support/
 | 0.3.3 | 2024-07-06 | [40843](https://github.com/airbytehq/airbyte/pull/40843) | Update dependencies |
 | 0.3.2 | 2024-07-01 | [40618](https://github.com/airbytehq/airbyte/pull/40618) | Migrate to base image and poetry, update CDK |
 | 0.3.1 | 2023-11-28 | [32874](https://github.com/airbytehq/airbyte/pull/32874) | 🐛 Source: fix page_size_option parameter in spec |
-| 0.3.0   | 2023-10-24 | [14759](https://github.com/airbytehq/airbyte/pull/14759) | ✨ Source: Migrate to Low Code CDK                |
-| 0.2.0   | 2023-05-15 | [26065](https://github.com/airbytehq/airbyte/pull/26065) | Fix spec type check for `start_date`              |
-| 0.1.0   | 2022-08-11 | [14759](https://github.com/airbytehq/airbyte/pull/14759) | 🎉 New Source: Freshcaller                        |
+| 0.3.0 | 2023-10-24 | [14759](https://github.com/airbytehq/airbyte/pull/14759) | ✨ Source: Migrate to Low Code CDK |
+| 0.2.0 | 2023-05-15 | [26065](https://github.com/airbytehq/airbyte/pull/26065) | Fix spec type check for `start_date` |
+| 0.1.0 | 2022-08-11 | [14759](https://github.com/airbytehq/airbyte/pull/14759) | 🎉 New Source: Freshcaller |
 
 </details>
