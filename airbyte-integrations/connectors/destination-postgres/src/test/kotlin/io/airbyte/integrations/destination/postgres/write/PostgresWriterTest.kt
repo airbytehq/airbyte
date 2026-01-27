@@ -64,11 +64,13 @@ class PostgresWriterTest {
     @Test
     fun `test createStreamLoader with normal mode and Dedupe`() = runBlocking {
         every { postgresConfiguration.legacyRawTablesOnly } returns false
+        every { postgresConfiguration.internalTableSchema } returns "internal_schema"
 
         val stream = mockk<DestinationStream>()
         val finalTableName = TableName("ns", "name")
+        val tempTableName = TableName("ns", "temp_name")
 
-        val tableNames = TableNames(finalTableName = finalTableName)
+        val tableNames = TableNames(finalTableName = finalTableName, tempTableName = tempTableName)
         val columnSchema =
             ColumnSchema(
                 inputSchema = emptyMap(),
@@ -102,11 +104,13 @@ class PostgresWriterTest {
     @Test
     fun `test createStreamLoader with raw mode and Dedupe`() = runBlocking {
         every { postgresConfiguration.legacyRawTablesOnly } returns true
+        every { postgresConfiguration.internalTableSchema } returns "internal_schema"
 
         val stream = mockk<DestinationStream>()
         val finalTableName = TableName("ns", "name")
+        val tempTableName = TableName("ns", "temp_name")
 
-        val tableNames = TableNames(finalTableName = finalTableName)
+        val tableNames = TableNames(finalTableName = finalTableName, tempTableName = tempTableName)
         val columnSchema =
             ColumnSchema(
                 inputSchema = emptyMap(),
@@ -143,11 +147,13 @@ class PostgresWriterTest {
     @Test
     fun `test createStreamLoader with raw mode and Append`() = runBlocking {
         every { postgresConfiguration.legacyRawTablesOnly } returns true
+        every { postgresConfiguration.internalTableSchema } returns "internal_schema"
 
         val stream = mockk<DestinationStream>()
         val finalTableName = TableName("ns", "name")
+        val tempTableName = TableName("ns", "temp_name")
 
-        val tableNames = TableNames(finalTableName = finalTableName)
+        val tableNames = TableNames(finalTableName = finalTableName, tempTableName = tempTableName)
         val columnSchema =
             ColumnSchema(
                 inputSchema = emptyMap(),

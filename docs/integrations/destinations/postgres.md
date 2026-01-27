@@ -115,38 +115,38 @@ When using the legacy "Raw tables only" mode, raw tables and schemas are created
    destination**.
 3. On the Set up the destination page, enter the name for the Postgres connector and select
    **Postgres** from the Destination type dropdown.
-4. Enter a name for your source.
+4. Enter a name for your destination.
 5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
    Postgres database.
 6. List the **Default Schemas**.
 
-:::note
+   :::note
 
-The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
-used at one time. No schemas set explicitly - will sync all of existing.
+   The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
+   used at one time. No schemas set explicitly - will sync all of existing.
 
-:::
+   :::
 
 7. For **User** and **Password**, enter the username and password you created in
-   [Step 1](#step-1-optional-create-a-dedicated-read-only-user).
-8. For Airbyte Open Source, toggle the switch to connect using SSL. For Airbyte Cloud uses SSL by
+   [Step 1](#step-1-set-up-postgres).
+8. For Airbyte Open Source, toggle the switch to connect using SSL. Airbyte Cloud uses SSL by
    default.
 9. For SSL Modes, select:
-   - **disable** to disable encrypted communication between Airbyte and the source
-   - **allow** to enable encrypted communication only when required by the source
-   - **prefer** to allow unencrypted communication only when the source doesn't support encryption
-   - **require** to always require encryption. Note: The connection will fail if the source doesn't
+   - **disable** to disable encrypted communication between Airbyte and the destination
+   - **allow** to enable encrypted communication only when required by the destination
+   - **prefer** to allow unencrypted communication only when the destination doesn't support encryption
+   - **require** to always require encryption. Note: The connection will fail if the destination doesn't
      support encryption.
-   - **verify-ca** to always require encryption and verify that the source has a valid SSL
+   - **verify-ca** to always require encryption and verify that the destination has a valid SSL
      certificate
-   - **verify-full** to always require encryption and verify the identity of the source
+   - **verify-full** to always require encryption and verify the identity of the destination
 10. To customize the JDBC connection beyond common options, specify additional supported
     [JDBC URL parameters](https://jdbc.postgresql.org/documentation/head/connect.html) as key-value
     pairs separated by the symbol & in the **JDBC URL Parameters (Advanced)** field.
 
     Example: key1=value1&key2=value2&key3=value3
 
-    These parameters will be added at the end of the JDBC URL that the AirByte will use to connect
+    These parameters will be added at the end of the JDBC URL that Airbyte will use to connect
     to your Postgres database.
 
     The connector now supports `connectTimeout` and defaults to 60 seconds. Setting connectTimeout
@@ -218,7 +218,7 @@ Raw tables are deprecated starting with version 3.0.0. The connector now uses Di
 
 Each stream will be mapped to a separate raw table in Postgres. The default schema in which the raw
 tables are created is `airbyte_internal`. This can be overridden in the configuration. Each table
-will contain 3 columns:
+will contain 4 columns:
 
 - `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
   Postgres is `VARCHAR`.
@@ -284,12 +284,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 ## Vendor-Specific Connector Limitations
 
-:::warning
-
-Not all implementations or deployments of a database will be the same. This section lists specific limitations and known issues with the connector based on _how_ or
-_where_ it is deployed.
-
-:::
+For vendor-specific limitations and known issues, see the [Postgres Troubleshooting Guide](postgres/postgres-troubleshooting.md#vendor-specific-connector-limitations).
 
 ## Changelog
 
@@ -298,6 +293,7 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.8-rc1 | 2026-01-22 | [71183](https://github.com/airbytehq/airbyte/pull/71183) | Refactor schema utilities to follow CDK pattern.                                                                                                                                       |
 | 3.0.7 | 2026-01-20 | [71745](https://github.com/airbytehq/airbyte/pull/71745)    | Improve error message for dependent views/rules with CASCADE option guidance.                                                                                                          |
 | 3.0.6 | 2026-01-06 | [71146](https://github.com/airbytehq/airbyte/pull/71146)    | Fix: Only apply CASCADE to DROP COLUMN, not ALTER COLUMN TYPE during schema changes.                                                                                                   |
 | 3.0.5 | 2025-12-12 | [70895](https://github.com/airbytehq/airbyte/pull/70895)    | Update CDK to 0.1.86.                                                                                                                                                                  |

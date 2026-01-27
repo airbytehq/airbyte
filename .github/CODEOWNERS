@@ -51,6 +51,16 @@
 /oss/airbyte-oauth/src/main/kotlin/io/airbyte/oauth/ @airbytehq/dev-api-sources
 
 # -----------------------------------------------------------------------------
+# NO OWNERSHIP - Markdown files
+# -----------------------------------------------------------------------------
+# Documentation changes don't require team review. These rules override the
+# directory ownership rules above. The BREAKING CHANGES section below will
+# re-assign ownership for migration docs specifically.
+/airbyte-integrations/connectors/source-*/**/*.md
+/airbyte-integrations/connectors/destination-*/**/*.md
+/docs/**/*.md
+
+# -----------------------------------------------------------------------------
 # BREAKING CHANGES
 # -----------------------------------------------------------------------------
 # This rule ensures that breaking changes to connectors are reviewed by the
