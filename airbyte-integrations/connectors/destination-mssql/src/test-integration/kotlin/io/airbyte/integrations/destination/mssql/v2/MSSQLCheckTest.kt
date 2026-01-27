@@ -10,7 +10,10 @@ import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLSpecification
 import java.nio.file.Files
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 
+// Re-enable once we fix our Azure account
+@Disabled("Our Azure creds are not functioning right now")
 internal class MSSQLCheckTest :
     CheckIntegrationTest<MSSQLSpecification>(
         successConfigFilenames =

@@ -1,3 +1,7 @@
+## Version 0.2.1
+
+Revert schema parsing change in `legacy-task-loader` that failed streams when handling empty schemas. Schemas without a `type` field now default to object type again.
+
 ## Version 0.2.0
 
 Fully separate `legacy-task-loader` toolkit from `core-load`. Drastically simplify `core-load` by removing legacy abstractions.
