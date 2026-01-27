@@ -1845,6 +1845,31 @@ definitions:
           $ref: "#/schemas/tickets"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  details_stream:
+    $ref: "#/definitions/stream_without_pagination"
+    name: details
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /account-info/v3/details
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/details"
+    $parameters:
+      name: details
+      path: /account-info/v3/details
+      required_scopes: oauth
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_stream"
@@ -1878,6 +1903,7 @@ streams:
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
+  - "#/definitions/details_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -2279,6 +2305,48 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  details:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      accountType:
+        type:
+          - "string"
+          - "null"
+      additionalCurrencies:
+        type:
+          - "array"
+          - "null"
+      companyCurrency:
+        type:
+          - "string"
+          - "null"
+      dataHostingLocation:
+        type:
+          - "string"
+          - "null"
+      portalId:
+        type:
+          - "number"
+          - "null"
+      timeZone:
+        type:
+          - "string"
+          - "null"
+      uiDomain:
+        type:
+          - "string"
+          - "null"
+      utcOffset:
+        type:
+          - "string"
+          - "null"
+      utcOffsetMilliseconds:
+        type:
+          - "number"
+          - "null"
+
   contact_lists:
     $schema: http://json-schema.org/draft-07/schema#
     type:
