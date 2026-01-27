@@ -57,9 +57,6 @@ data class PostgresSourceConfiguration(
     override val sshTunnel: SshTunnelMethodConfiguration?,
     override val sshConnectionOptions: SshConnectionOptions,
     override val jdbcUrlFmt: String,
-    // TODO: Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
-    //  https://github.com/airbytehq/airbyte/issues/24796
-    // mapOf(PREPARE_THRESHOLD, "0", TCP_KEEP_ALIVE, "true")
     override val jdbcProperties: Map<String, String>,
     val database: String,
     override val namespaces: Set<String>,
@@ -176,6 +173,8 @@ constructor(
         jdbcProperties.putAll(sslJdbcProperties)
         log.info { "SSL mode: ${sslJdbcProperties["sslmode"]}" }
 
+        applyDefaultJdbcProperties(jdbcProperties)
+
         // Configure cursor.
         val incremental: IncrementalConfiguration =
             fromIncrementalSpec(pojo.getIncrementalConfigurationSpecificationValue())
@@ -207,8 +206,6 @@ constructor(
                 SOCKET -> maxDBConnections ?: socketPaths.size
             }
         log.info { "Effective concurrency: $maxConcurrency" }
-
-        applyDefaultJdbcProperties(jdbcProperties)
 
         return PostgresSourceConfiguration(
             realHost = realHost,
