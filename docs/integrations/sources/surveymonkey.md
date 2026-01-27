@@ -87,6 +87,7 @@ SurveyMonkey's API has [default rate limits](https://developer.surveymonkey.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.48 | 2026-01-27 | [69027](https://github.com/airbytehq/airbyte/pull/69027) | Update dependencies |
 | 0.3.47 | 2025-10-21 | [68542](https://github.com/airbytehq/airbyte/pull/68542) | Update dependencies |
 | 0.3.46 | 2025-10-14 | [67916](https://github.com/airbytehq/airbyte/pull/67916) | Update dependencies |
 | 0.3.45 | 2025-10-07 | [67476](https://github.com/airbytehq/airbyte/pull/67476) | Update dependencies |
@@ -147,15 +148,15 @@ SurveyMonkey's API has [default rate limits](https://developer.surveymonkey.com/
 | 0.1.12 | 2022-10-13 | [17964](https://github.com/airbytehq/airbyte/pull/17964) | Add OAuth for Eu and Ca |
 | 0.1.11 | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states |
 | 0.1.10 | 2022-09-14 | [16706](https://github.com/airbytehq/airbyte/pull/16706) | Fix 404 error when handling nonexistent surveys |
-| 0.1.9   | 2022-07-28 | [14998](https://github.com/airbytehq/airbyte/pull/14998) | Fix state for response stream, fixed backoff behaviour, added unittest           |
-| 0.1.8   | 2022-05-20 | [13046](https://github.com/airbytehq/airbyte/pull/13046) | Fix incremental streams                                                          |
-| 0.1.7   | 2022-02-24 | [8768](https://github.com/airbytehq/airbyte/pull/8768)   | Add custom survey IDs to limit API calls                                         |
-| 0.1.6   | 2022-01-14 | [9508](https://github.com/airbytehq/airbyte/pull/9508)   | Scopes change                                                                    |
-| 0.1.5   | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628)   | Update fields in source-connectors specifications                                |
-| 0.1.4   | 2021-11-11 | [7868](https://github.com/airbytehq/airbyte/pull/7868)   | Improve 'check' using '/users/me' API call                                       |
-| 0.1.3   | 2021-11-01 | [7433](https://github.com/airbytehq/airbyte/pull/7433)   | Remove unsused oAuth flow parameters                                             |
-| 0.1.2   | 2021-10-27 | [7433](https://github.com/airbytehq/airbyte/pull/7433)   | Add OAuth support                                                                |
-| 0.1.1   | 2021-09-10 | [5983](https://github.com/airbytehq/airbyte/pull/5983)   | Fix caching for gzip compressed http response                                    |
-| 0.1.0   | 2021-07-06 | [4097](https://github.com/airbytehq/airbyte/pull/4097)   | Initial Release                                                                  |
+| 0.1.9 | 2022-07-28 | [14998](https://github.com/airbytehq/airbyte/pull/14998) | Fix state for response stream, fixed backoff behaviour, added unittest |
+| 0.1.8 | 2022-05-20 | [13046](https://github.com/airbytehq/airbyte/pull/13046) | Fix incremental streams |
+| 0.1.7 | 2022-02-24 | [8768](https://github.com/airbytehq/airbyte/pull/8768) | Add custom survey IDs to limit API calls |
+| 0.1.6 | 2022-01-14 | [9508](https://github.com/airbytehq/airbyte/pull/9508) | Scopes change |
+| 0.1.5 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
+| 0.1.4 | 2021-11-11 | [7868](https://github.com/airbytehq/airbyte/pull/7868) | Improve 'check' using '/users/me' API call |
+| 0.1.3 | 2021-11-01 | [7433](https://github.com/airbytehq/airbyte/pull/7433) | Remove unsused oAuth flow parameters |
+| 0.1.2 | 2021-10-27 | [7433](https://github.com/airbytehq/airbyte/pull/7433) | Add OAuth support |
+| 0.1.1 | 2021-09-10 | [5983](https://github.com/airbytehq/airbyte/pull/5983) | Fix caching for gzip compressed http response |
+| 0.1.0 | 2021-07-06 | [4097](https://github.com/airbytehq/airbyte/pull/4097) | Initial Release |
 
 </details>
