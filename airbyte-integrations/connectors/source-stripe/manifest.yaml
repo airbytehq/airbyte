@@ -291,14 +291,6 @@ definitions:
         name: shipping_rates
     balance_transactions:
       $ref: "#/definitions/created_stream"
-      retriever:
-        $ref: "#/definitions/base_retriever"
-        requester:
-          $ref: "#/definitions/base_requester"
-          request_parameters:
-            type: "{{ config.get('balance_transaction_type', '') }}"
-        $parameters:
-          path: balance_transactions
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1907,60 +1899,6 @@ spec:
           API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
           calls per second for test and production tokens respectively.
         order: 6
-      balance_transaction_type:
-        type: string
-        title: Balance Transaction Type Filter
-        description: >-
-          Filter balance transactions by type. If not specified, all types will be synced.
-          See <a href="https://docs.stripe.com/api/balance_transactions/list">Stripe API docs</a> for available types.
-        enum:
-          - adjustment
-          - advance
-          - advance_funding
-          - anticipation_repayment
-          - application_fee
-          - application_fee_refund
-          - charge
-          - climate_order_purchase
-          - climate_order_refund
-          - connect_collection_transfer
-          - contribution
-          - issuing_authorization_hold
-          - issuing_authorization_release
-          - issuing_dispute
-          - issuing_transaction
-          - obligation_outbound
-          - obligation_reversal_inbound
-          - payment
-          - payment_failure_refund
-          - payment_network_reserve_hold
-          - payment_network_reserve_release
-          - payment_refund
-          - payment_reversal
-          - payment_unreconciled
-          - payout
-          - payout_cancel
-          - payout_failure
-          - payout_minimum_balance_hold
-          - payout_minimum_balance_release
-          - refund
-          - refund_failure
-          - reserve_transaction
-          - reserved_funds
-          - reserve_hold
-          - reserve_release
-          - stripe_fee
-          - stripe_fx_fee
-          - stripe_balance_payment_debit
-          - stripe_balance_payment_debit_reversal
-          - tax_fee
-          - topup
-          - topup_reversal
-          - transfer
-          - transfer_cancel
-          - transfer_failure
-          - transfer_refund
-        order: 7
       subscription_status:
         type: string
         title: Subscription Status Filter
@@ -1972,7 +1910,7 @@ spec:
           - canceled
           - ended
         default: "all"
-        order: 8
+        order: 7
       expand_charge_refunds:
         type: boolean
         title: Expand Charge Refunds
@@ -1981,7 +1919,7 @@ spec:
           When disabled, only refund IDs are included, reducing response size.
           See <a href="https://docs.stripe.com/api/charges/list">Stripe API docs</a> for details.
         default: true
-        order: 9
+        order: 8
       expand_invoice_details:
         type: boolean
         title: Expand Invoice Details
@@ -1990,7 +1928,7 @@ spec:
           When disabled, only IDs are included, reducing response size.
           See <a href="https://docs.stripe.com/api/invoices/list">Stripe API docs</a> for details.
         default: true
-        order: 10
+        order: 9
 
 api_budget:
   type: HTTPAPIBudget
