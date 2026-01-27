@@ -257,6 +257,19 @@ We recommend next steps to overcome the rate limits issue:
 
 This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
 
+### InvalidInput error for ListFinancialEvents stream
+
+```
+The API returned an InvalidInput error for the ListFinancialEvents stream. This typically occurs when the response exceeds the maximum number of transactions or 10 MB per page.
+```
+
+This error occurs when the ListFinancialEvents stream returns more data than the API can handle in a single page response. According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference), if the response exceeds the maximum number of transactions or 10 MB, the API returns an `InvalidInput` error. This is a known limitation for accounts with high transaction volumes.
+
+**Solution:**
+
+1. Use a smaller **Financial Events Step Size** (e.g., 1H, 2H, or 6H) to reduce the amount of data fetched per request.
+2. If the issue persists, contact Airbyte support for assistance with configuring a lower MaxResultsPerPage value for your connection.
+
 ## Changelog
 
 <details>
@@ -264,6 +277,7 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.3.0 | 2026-01-22 | [72259](https://github.com/airbytehq/airbyte/pull/72259) | Add error handler for InvalidInput errors on ListFinancialEvents stream with user guidance |
 | 5.2.0 | 2026-01-21 | [71055](https://github.com/airbytehq/airbyte/pull/71055) | Re-add 8 brand analytics and vendor analytics streams to Cloud. Fix token expiration handling for long-running syncs. |
 | 5.1.2 | 2026-01-20 | [71037](https://github.com/airbytehq/airbyte/pull/71037) | Fix GB marketplace_id config transformation |
 | 5.1.1 | 2026-01-20 | [71991](https://github.com/airbytehq/airbyte/pull/71991) | Update dependencies |

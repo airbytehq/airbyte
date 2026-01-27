@@ -282,7 +282,6 @@ spec:
         default: 2
         minimum: 1
         order: 15
-
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -999,6 +998,18 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 400
+                    predicate: "{{ 'InvalidInput' in response.get('errors', [{}])[0].get('code', '') }}"
+                    error_message: >-
+                      The API returned an InvalidInput error for the ListFinancialEvents stream. This
+                      typically occurs when the response exceeds the maximum number of transactions or
+                      10 MB per page. This is a known limitation of the Amazon Seller Partner API for
+                      accounts with high transaction volumes. Please contact Airbyte support for
+                      assistance with configuring a lower MaxResultsPerPage value for your connection.
                 backoff_strategies:
                   - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
