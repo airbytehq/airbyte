@@ -9,6 +9,9 @@ import io.airbyte.cdk.read.Stream
 
 interface CdcPartitionsCreatorDebeziumOperations<T : PartiallyOrdered<T>> {
 
+    /** Optional startup hook. */
+    fun startup(offset: DebeziumOffset) {}
+
     /** Extracts the WAL position from a [DebeziumOffset]. */
     fun position(offset: DebeziumOffset): T
 

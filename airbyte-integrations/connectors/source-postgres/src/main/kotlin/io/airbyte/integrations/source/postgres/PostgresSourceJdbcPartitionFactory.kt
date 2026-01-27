@@ -52,6 +52,7 @@ open class PostgresSourceJdbcPartitionFactory(
     val selectQueryGenerator: PostgresSourceSelectQueryGenerator,
     val config: PostgresSourceConfiguration,
     val handler: CatalogValidationFailureHandler,
+    val connectionFactory: PostgresSourceJdbcConnectionFactory,
 ) :
     JdbcPartitionFactory<
         DefaultJdbcSharedState,
@@ -132,7 +133,7 @@ open class PostgresSourceJdbcPartitionFactory(
 
     val tidRangeScanCapableDBServer: Boolean by
         lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
-            isTidRangeScanCapableDBServer(JdbcConnectionFactory(config))
+            isTidRangeScanCapableDBServer(connectionFactory)
         }
 
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): PostgresSourceJdbcPartition? {
@@ -140,8 +141,8 @@ open class PostgresSourceJdbcPartitionFactory(
         val streamState: PostgresSourceJdbcStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
 
-        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
-        // to read it
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempts
+        // to read it.
         if (opaqueStateValue?.isNull == true) {
             return null
         }
@@ -344,7 +345,7 @@ open class PostgresSourceJdbcPartitionFactory(
     }
 
     private fun getStreamFilenode(streamState: JdbcStreamState<*>): Filenode? {
-        return getStreamFilenode(streamState, JdbcConnectionFactory(config))
+        return getStreamFilenode(streamState, connectionFactory)
     }
 
     companion object {
