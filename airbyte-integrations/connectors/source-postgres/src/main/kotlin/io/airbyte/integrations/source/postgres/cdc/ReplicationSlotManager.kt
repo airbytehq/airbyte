@@ -130,7 +130,8 @@ class ReplicationSlotManager(
     private fun getSlotInfo(): ReplicationSlotInfo {
         val sql =
             """
-            SELECT slot_name, xmin, catalog_xmin, restart_lsn, confirmed_flush_lsn, wal_status
+            SELECT slot_name, xmin, catalog_xmin, restart_lsn, confirmed_flush_lsn, wal_status,
+                invalidation_reason
             FROM pg_replication_slots
             WHERE plugin = 'pgoutput' AND slot_name = ? AND database = ?
         """.trimIndent()
