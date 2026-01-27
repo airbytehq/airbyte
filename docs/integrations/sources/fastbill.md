@@ -64,6 +64,7 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.21 | 2026-01-27 | [60429](https://github.com/airbytehq/airbyte/pull/60429) | Update dependencies |
 | 0.3.20 | 2025-05-10 | [60050](https://github.com/airbytehq/airbyte/pull/60050) | Update dependencies |
 | 0.3.19 | 2025-05-03 | [59385](https://github.com/airbytehq/airbyte/pull/59385) | Update dependencies |
 | 0.3.18 | 2025-04-26 | [58315](https://github.com/airbytehq/airbyte/pull/58315) | Update dependencies |
@@ -110,6 +111,6 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 | 0.2.2 | 2024-04-15 | [37159](https://github.com/airbytehq/airbyte/pull/37159) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37159](https://github.com/airbytehq/airbyte/pull/37159) | schema descriptions |
 | 0.2.0 | 2023-08-13 | [29390](https://github.com/airbytehq/airbyte/pull/29390) | Migrated to Low Code CDK |
-| 0.1.0   | 2022-11-08 | [18593](https://github.com/airbytehq/airbyte/pull/18593) | New Source: Fastbill                                                            |
+| 0.1.0 | 2022-11-08 | [18593](https://github.com/airbytehq/airbyte/pull/18593) | New Source: Fastbill |
 
 </details>
