@@ -304,6 +304,7 @@ definitions:
         schema:
           $ref: "#/schemas/balance_transactions"
       $parameters:
+        path: balance_transactions
         name: balance_transactions
     files:
       $ref: "#/definitions/created_stream"
