@@ -36,8 +36,10 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.FileSystems
 import java.nio.file.Paths
 import java.time.Duration
-import java.util.UUID
-import kotlin.String
+import java.util.*
+import org.postgresql.PGProperty.CONNECT_TIMEOUT
+import org.postgresql.PGProperty.PREPARE_THRESHOLD
+import org.postgresql.PGProperty.TCP_KEEP_ALIVE
 import org.postgresql.jdbc.SslMode.ALLOW
 import org.postgresql.jdbc.SslMode.DISABLE
 import org.postgresql.jdbc.SslMode.PREFER
@@ -205,6 +207,8 @@ constructor(
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
+        applyDefaultJdbcProperties(jdbcProperties)
+
         return PostgresSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -219,6 +223,12 @@ constructor(
             checkpointTargetInterval = checkpointTargetInterval,
             checkPrivileges = pojo.checkPrivileges ?: true,
         )
+    }
+
+    private fun applyDefaultJdbcProperties(jdbcProperties: MutableMap<String, String>) {
+        jdbcProperties.putIfAbsent(CONNECT_TIMEOUT.name, CONNECT_TIMEOUT.defaultValue.toString())
+        jdbcProperties.putIfAbsent(PREPARE_THRESHOLD.name, "0")
+        jdbcProperties.putIfAbsent(TCP_KEEP_ALIVE.name, "true")
     }
 
     private fun fromIncrementalSpec(
@@ -348,6 +358,8 @@ constructor(
         const val CLIENT_KEY_STORE_URL: String = "sslkey"
         const val CLIENT_KEY_STORE_PASS: String = "sslpassword"
         const val SSL_MODE: String = "sslmode"
+        const val POSTGRES_CONNECT_TIMEOUT_KEY: String = "connectTimeout"
+        const val POSTGRES_CONNECT_TIMEOUT_DEFAULT_DURATION_SECONDS: Int = 10
     }
 
     private fun passwordOrToken(pojo: PostgresSourceConfigurationSpecification): String? {
