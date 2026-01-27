@@ -76,6 +76,12 @@ jobs:
 
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
+      - name: Validate reason is provided
+        if: github.event.inputs.reason == ''
+        run: |
+          echo "::error::A reason must be provided for force-merge. Usage: /force-merge reason=\"<REASON>\""
+          exit 1
+
       - name: Force merge PR
         id: merge
         env:
