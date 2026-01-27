@@ -15,16 +15,19 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 ## Set up Zendesk Support
 
-The Zendesk Support source connector supports two authentication methods:
+The Zendesk Support source connector supports the following authentication methods:
 
-- OAuth 2.0
-- API token
+- OAuth 2.0 with Refresh Token (recommended for Airbyte Cloud)
+- API Token (recommended for Airbyte Open Source)
+- OAuth 2.0 (Legacy) for existing connections
+
+Zendesk is transitioning to OAuth with rotating refresh tokens. All customers must adopt this new OAuth flow by April 30, 2026. For more information, see [Zendesk's OAuth refresh token announcement](https://support.zendesk.com/hc/en-us/articles/9182123625370).
 
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
-We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector).
+We highly recommend using OAuth 2.0 with Refresh Token to authenticate your Zendesk Support account, as it simplifies the setup process, allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector), and automatically handles token refresh with rotating refresh tokens.
 
 <!-- /env:cloud -->
 
@@ -76,7 +79,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
 <!-- env:cloud -->
 
-- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
+- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0 with Refresh Token** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account. This method uses rotating refresh tokens to automatically maintain your connection.
   <!-- /env:cloud -->
   <!-- env:oss -->
 - **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
