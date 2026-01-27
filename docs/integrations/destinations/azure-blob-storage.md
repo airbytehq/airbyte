@@ -131,7 +131,6 @@ With root level flattening, the output JSONL is:
   - This depends on your networking setup.
   - The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
 
-
 ## Changelog
 
 <details>
