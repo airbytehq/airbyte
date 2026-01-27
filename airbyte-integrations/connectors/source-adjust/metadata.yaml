@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d3b7fa46-111b-419a-998a-d7f046f6d66d
-  dockerImageTag: 0.1.33
+  dockerImageTag: 0.1.34
   dockerRepository: airbyte/source-adjust
   documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
   githubIssueLabel: source-adjust
@@ -29,7 +29,7 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   externalDocumentationUrls:
     - title: API documentation
       url: https://help.adjust.com/en/article/reports-endpoint
