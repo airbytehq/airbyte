@@ -158,46 +158,61 @@ tasks.register('dokkaGenerate') {
     dependsOn 'docsGenerate'
 }
 
-tasks.register('checkBuildNumber') {
-    description = "Check that the version doesn't exist"
+// Helper function to check if a version exists in the Maven repository
+def checkVersionExists(String artifactName, String versionToCheck, boolean allow404 = false) {
+    var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+    var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
+    var artifactUrl = "${groupIdUrl}/${artifactName}"
+    var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
 
-    doLast {
-        var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
-        var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
-        var artifactUrl = "${groupIdUrl}/bulk"
-        var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
+    var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
+    try {
+        connection.setRequestMethod("GET")
+        connection.setDoInput(true)
+        var responseCode = connection.getResponseCode()
 
-        var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
-        try {
-            connection.setRequestMethod("GET")
-            connection.setDoInput(true)
-            var responseCode = connection.getResponseCode()
-            if (responseCode != 200) {
+        if (responseCode == 404) {
+            if (allow404) {
+                println "${artifactName} artifact not found in repository (first publish)"
+                return
+            } else {
                 throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
             }
-            InputStream responseContent = connection.inputStream
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
-            DocumentBuilder builder = factory.newDocumentBuilder()
-            Document doc = builder.parse(responseContent); // Replace with your XML file path
-
-            doc.getDocumentElement().normalize()
-
-            XPath xpath = XPathFactory.newInstance().newXPath()
-
-            String expression = "/metadata/versioning/versions/version"
-
-            var versionNodes = xpath.compile(expression).evaluate(doc, XPathConstants.NODESET)
-            var allVersions = []
-            for (int i = 0; i < versionNodes.length; i++) {
-                allVersions.add(versionNodes.item(i).textContent)
-            }
-
-            if (allVersions.contains(version.toString())) {
-                throw new GradleException("Version ${version} already exists in the repository")
-            }
-        } finally {
-            connection.disconnect()
         }
+
+        if (responseCode != 200) {
+            var expected = allow404 ? "200 or 404" : "200"
+            throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected ${expected}.")
+        }
+
+        InputStream responseContent = connection.inputStream
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
+        DocumentBuilder builder = factory.newDocumentBuilder()
+        Document doc = builder.parse(responseContent)
+
+        doc.getDocumentElement().normalize()
+
+        XPath xpath = XPathFactory.newInstance().newXPath()
+        String expression = "/metadata/versioning/versions/version"
+
+        var versionNodes = xpath.compile(expression).evaluate(doc, XPathConstants.NODESET)
+        var allVersions = []
+        for (int i = 0; i < versionNodes.length; i++) {
+            allVersions.add(versionNodes.item(i).textContent)
+        }
+
+        if (allVersions.contains(versionToCheck)) {
+            throw new GradleException("${artifactName} version ${versionToCheck} already exists in the repository")
+        }
+    } finally {
+        connection.disconnect()
+    }
+}
+
+tasks.register('checkBuildNumber') {
+    description = "Check that the version doesn't exist"
+    doLast {
+        checkVersionExists('bulk', version.toString())
     }
 }
 
@@ -208,52 +223,10 @@ tasks.register('bulkCdkPublish').configure {
     dependsOn allprojects.collect {it.tasks.named('publish')}
 }
 
-// Check that base version doesn't already exist in the repository
 tasks.register('checkBaseVersion') {
     description = "Check that the base version doesn't exist"
-
     doLast {
-        var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
-        var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
-        var artifactUrl = "${groupIdUrl}/bulk-cdk-core-base"
-        var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
-
-        var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
-        try {
-            connection.setRequestMethod("GET")
-            connection.setDoInput(true)
-            var responseCode = connection.getResponseCode()
-            if (responseCode == 404) {
-                // Artifact doesn't exist yet, which is fine for first publish
-                println "Base artifact not found in repository (first publish)"
-                return
-            }
-            if (responseCode != 200) {
-                throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200 or 404.")
-            }
-            InputStream responseContent = connection.inputStream
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
-            DocumentBuilder builder = factory.newDocumentBuilder()
-            Document doc = builder.parse(responseContent)
-
-            doc.getDocumentElement().normalize()
-
-            XPath xpath = XPathFactory.newInstance().newXPath()
-
-            String expression = "/metadata/versioning/versions/version"
-
-            var versionNodes = xpath.compile(expression).evaluate(doc, XPathConstants.NODESET)
-            var allVersions = []
-            for (int i = 0; i < versionNodes.length; i++) {
-                allVersions.add(versionNodes.item(i).textContent)
-            }
-
-            if (allVersions.contains(baseVersion.toString())) {
-                throw new GradleException("Base version ${baseVersion} already exists in the repository")
-            }
-        } finally {
-            connection.disconnect()
-        }
+        checkVersionExists('bulk-cdk-core-base', baseVersion.toString(), true)
     }
 }
 
