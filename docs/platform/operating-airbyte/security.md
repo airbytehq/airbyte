@@ -6,7 +6,7 @@ products: all
 
 Airbyte is committed to keeping your data safe by following industry-standard practices for securing physical deployments, setting access policies, and leveraging the security features of leading Cloud providers.
 
-If you have any security concerns with Airbyte or believe you have uncovered a vulnerability, contact us at [security@airbyte.io](mailto:security@airbyte.io)
+If you have any security concerns with Airbyte or believe you have uncovered a vulnerability, contact us at [security@airbyte.io](mailto:security@airbyte.io). For more information about Airbyte's security practices and compliance certifications, visit the [Airbyte Trust Center](https://trust.airbyte.com/).
 
 ## Securing your data
 
