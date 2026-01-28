@@ -539,9 +539,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     if (isXmin(config)) {
       checkOperations.add(database -> {
         if (PostgresQueryUtils.getXminStatus(database).getNumWraparound() > 0) {
-          throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
+          /*throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
               "which makes this sync option inefficient and can lead to higher credit consumption. " +
-              "Please change the replication method to CDC or cursor based.");
+              "Please change the replication method to CDC or cursor based.");*/
+            LOGGER.warn("*** XMIN transaction wraparound detected");
         }
       });
     }
@@ -567,11 +568,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final XminStatus xminStatus;
       try {
         xminStatus = PostgresQueryUtils.getXminStatus(database);
-        if (xminStatus.getNumWraparound() > 0) {
+        /*if (xminStatus.getNumWraparound() > 0) {
           throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
               "which makes this sync option inefficient and can lead to higher credit consumption. " +
               "Please change the replication method to CDC or cursor based.");
-        }
+        }*/
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
