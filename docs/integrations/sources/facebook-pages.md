@@ -2,6 +2,10 @@
 
 This page contains the setup guide and reference information for the Facebook Pages source connector.
 
+:::tip Looking for Facebook Marketing?
+This connector is for the **Facebook Pages API** (page posts, page insights, engagement metrics). If you need to sync **Facebook Ads** data (campaigns, ad sets, ad insights), use the [Facebook Marketing connector](./facebook-marketing.md) instead.
+:::
+
 ## Prerequisites
 
 To set up the Facebook Pages source connector with Airbyte, you'll need to create your Facebook Application and use both long-lived Page access token and Facebook Page ID.
