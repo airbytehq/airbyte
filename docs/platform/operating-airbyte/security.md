@@ -26,7 +26,7 @@ Airbyte retains configuration details and data points such as table and column n
 
 As Airbyte is not aware of the data being transferred, users are required to follow the [Terms of Services](https://airbyte.com/terms) and are ultimately responsible for ensuring their data transfer is compliant with their jurisdiction.
 
-For more information, see [Airbyte’s Privacy Policy](https://airbyte.com/privacy-policy)
+For more information, see [Airbyte’s Privacy Policy](https://airbyte.com/privacy-policy).
 
 ## Securing Airbyte Open Source
 
