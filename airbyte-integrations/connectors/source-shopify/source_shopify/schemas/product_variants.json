@@ -52,12 +52,20 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
+          "id": {
+            "description": "The unique identifier for the product option.",
+            "type": ["null", "integer"]
+          },
+          "position": {
+            "description": "The display position of the product option.",
+            "type": ["null", "integer"]
+          },
           "name": {
-            "description": "The product option’s name.",
+            "description": "The product option's name.",
             "type": ["null", "string"]
           },
           "value": {
-            "description": "The product option’s value.",
+            "description": "The product option's value.",
             "type": ["null", "string"]
           },
           "option_value": {
