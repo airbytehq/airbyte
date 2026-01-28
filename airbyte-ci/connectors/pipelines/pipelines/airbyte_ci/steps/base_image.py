@@ -51,14 +51,42 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
         else:
             raise NotImplementedError(f"Registry for language {language} is not implemented yet.")
 
-    def _parse_latest_stable_tag(self, tags: List[str]) -> Optional[str]:
-        """Parse tags to find latest stable (non-prerelease) version."""
+    def _extract_major_version_from_base_image(self, base_image: str) -> Optional[int]:
+        """Extract the major version from a base image string.
+
+        Args:
+            base_image: Base image string (e.g., "docker.io/airbyte/source-declarative-manifest:6.60.16@sha256...")
+
+        Returns:
+            Major version as an integer, or None if parsing fails
+        """
+        try:
+            # Parse version between ':' and '@' (or end of string if no digest)
+            version_part = base_image.split(":")[-1].split("@")[0]
+            current_version = semver.VersionInfo.parse(version_part)
+            return current_version.major
+        except (ValueError, IndexError) as e:
+            self.context.logger.warning(f"Could not parse base image version from '{base_image}': {e}")
+            return None
+
+    def _parse_latest_stable_tag(self, tags: List[str], max_major_version: Optional[int] = None) -> Optional[str]:
+        """Parse tags to find latest stable (non-prerelease) version.
+
+        Args:
+            tags: List of available tags
+            max_major_version: Maximum major version to include (e.g., 6 will exclude version 7.x.x and above)
+
+        Returns:
+            Latest stable version string, constrained by max_major_version if provided
+        """
         valid_versions = []
         for tag in tags:
             try:
                 version = semver.VersionInfo.parse(tag)
                 if not version.prerelease:  # Exclude pre-release versions
-                    valid_versions.append(version)
+                    # If max_major_version is set, only include versions up to that major version
+                    if max_major_version is None or version.major <= max_major_version:
+                        valid_versions.append(version)
             except ValueError:
                 continue  # Skip non-semver tags
 
@@ -78,7 +106,19 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
             tags_output = await crane_container.with_exec(["crane", "ls", f"docker.io/{repository}"]).stdout()
             tags = [tag.strip() for tag in tags_output.strip().split("\n") if tag.strip()]
 
-            latest_tag = self._parse_latest_stable_tag(tags)
+            # Extract current major version from connector's base image to prevent major version bumps
+            max_major_version = None
+            current_base_image = self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage")
+            if current_base_image:
+                max_major_version = self._extract_major_version_from_base_image(current_base_image)
+                if max_major_version is not None:
+                    self.context.logger.info(f"Constraining updates to major version {max_major_version}")
+            else:
+                self.context.logger.warning(
+                    "No baseImage found in metadata.yaml connectorBuildOptions, proceeding without major version constraint"
+                )
+
+            latest_tag = self._parse_latest_stable_tag(tags, max_major_version=max_major_version)
             if latest_tag:
                 # Get the digest for the specific tag to ensure immutable reference
                 digest_output = await crane_container.with_exec(["crane", "digest", f"docker.io/{repository}:{latest_tag}"]).stdout()
