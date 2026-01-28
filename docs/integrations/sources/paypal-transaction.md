@@ -26,13 +26,13 @@ After creating your account you will be able to get your `Client ID` and `Secret
 
    a. If this is your first time creating a source, use the search bar and enter **Paypal Transaction** and select it.
 
-   b. If you already have sources configured, go to the top-right corner and click **+new source**. Then enter **Paypal Transaction** in the searech bar and select the connector.
+   b. If you already have sources configured, go to the top-right corner and click **+new source**. Then enter **Paypal Transaction** in the search bar and select the connector.
 
 3. Set the name for your source
 4. Enter your `Client ID`
 5. Enter your `Client secret`
 6. `Start Date`: Use the provided datepicker or enter manually a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`.
-7. Switch ON/Off the Sandbox toggle. By defaukt the toggle is OFF, meaning it work only in a produciton environment.
+7. Switch ON/Off the Sandbox toggle. By default the toggle is OFF, meaning it works only in a production environment.
 8. \_(Optional) `Dispute Start Date Range`: Use the provided datepicker or enter manually a UTC date and time in the format `YYYY-MM-DDTHH:MM:SS.sssZ`. - If you don't add a date and you sync the `lists_disputes stream`, it will use the default value of 180 days in the past to retrieve data - It is mandatory to add the milliseconds is you enter a datetime. - This option only works for `lists_disputes stream`
 
 9. _(Optional)`Refresh Token`:_ You can enter manually a refresh token. Right now the stream does this automatically.
@@ -72,7 +72,7 @@ This Source is capable of syncing the following core Streams:
 
 ### Transactions Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `Transactions`            |
 | :--------------------------- | :------------------------ |
@@ -93,7 +93,7 @@ The below table contains the configuraiton parameters available for this connect
 
 ### Balances Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `Balances`                |
 | :--------------------------- | :------------------------ |
@@ -114,7 +114,7 @@ The below table contains the configuraiton parameters available for this connect
 
 ### List Products Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `List Products`        |
 | :--------------------------- | :--------------------- |
@@ -141,7 +141,7 @@ When configuring your stream take in consideration that the way the API works li
 
 ### Show Products Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `Show Prod. Details`   |
 | :--------------------------- | :--------------------- |
@@ -170,7 +170,7 @@ Depending on the size of the catalog it could take several hours to sync.
 
 ### List Disputes Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `List Disputes`          |
 | :--------------------------- | :----------------------- |
@@ -191,7 +191,7 @@ The below table contains the configuraiton parameters available for this connect
 
 ### Search Invoices Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `Search Invoices`         |
 | :--------------------------- | :------------------------ |
@@ -220,7 +220,7 @@ The `start_end` from the configuration, is passed to the body of the request and
 
 ### List Payments Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features.
+The below table contains the configuration parameters available for this connector and the default values and available features.
 
 | **Param/Feature**            | `List Payments`           |
 | :--------------------------- | :------------------------ |
@@ -264,7 +264,7 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| 2.6.22 | 2026-01-22 | [70967](https://github.com/airbytehq/airbyte/pull/70967) | Update HTTP response action for 400 error transactions from IGNORE to FAIL |
+| 2.6.22 | 2026-01-22 | [71846](https://github.com/airbytehq/airbyte/pull/71846) | Update HTTP response action for 400 error transactions from IGNORE to FAIL |
 | 2.6.21 | 2026-01-20 | [71652](https://github.com/airbytehq/airbyte/pull/71652) | Update dependencies |
 | 2.6.20 | 2025-12-18 | [70505](https://github.com/airbytehq/airbyte/pull/70505) | Update dependencies |
 | 2.6.19 | 2025-11-25 | [69974](https://github.com/airbytehq/airbyte/pull/69974) | Update dependencies |
