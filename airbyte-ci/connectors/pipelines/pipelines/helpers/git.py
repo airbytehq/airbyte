@@ -3,15 +3,19 @@
 #
 
 import functools
-from typing import Set
+from typing import TYPE_CHECKING, Optional, Set
 
 import git
 from dagger import Connection, SessionError
 
+from pipelines import main_logger
 from pipelines.consts import CIContext
 from pipelines.dagger.containers.git import checked_out_git_container
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL
 from pipelines.helpers.utils import DAGGER_CONFIG, DIFF_FILTER
+
+if TYPE_CHECKING:
+    from github import PullRequest
 
 
 def get_current_git_revision() -> str:  # noqa D103
@@ -107,6 +111,24 @@ def get_git_repo_path() -> str:
     return str(get_git_repo().working_tree_dir)
 
 
+def get_modified_files_from_pull_request(pull_request: "PullRequest.PullRequest") -> Set[str]:
+    """Get the list of modified files from a pull request using the GitHub API.
+
+    This is more reliable than git diff for fork PRs because GitHub already knows
+    which files are changed in the PR, regardless of how far behind the fork is from master.
+
+    Args:
+        pull_request: The PyGithub PullRequest object.
+
+    Returns:
+        Set[str]: The set of modified file paths.
+    """
+    modified_files = set()
+    for file in pull_request.get_files():
+        modified_files.add(file.filename)
+    return modified_files
+
+
 async def get_modified_files(
     git_branch: str,
     git_revision: str,
@@ -114,11 +136,16 @@ async def get_modified_files(
     is_local: bool,
     ci_context: CIContext,
     git_repo_url: str = AIRBYTE_GITHUB_REPO_URL,
+    pull_request: Optional["PullRequest.PullRequest"] = None,
 ) -> Set[str]:
     """Get the list of modified files in the current git branch.
     If the current branch is master, it will return the list of modified files in the head commit.
     The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
     Pipelines like "publish on merge" are triggered on each new commit on master.
+
+    If a pull_request object is provided, it will use the GitHub API to get the list of modified files.
+    This is more reliable for fork PRs because GitHub already knows which files are changed,
+    regardless of how far behind the fork is from master.
 
     If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
     If the current branch is not master, it will return the list of modified files in the current branch.
@@ -126,4 +153,12 @@ async def get_modified_files(
     """
     if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
         return await get_modified_files_in_commit(git_branch, git_revision, is_local)
+
+    # Use GitHub API to get PR files when available - this is more reliable for fork PRs
+    # because it correctly identifies only the files changed in the PR, not files that
+    # differ between the fork and master due to the fork being behind.
+    if pull_request is not None:
+        main_logger.info(f"Using GitHub API to get modified files from PR #{pull_request.number}")
+        return get_modified_files_from_pull_request(pull_request)
+
     return await get_modified_files_in_branch(git_repo_url, git_branch, git_revision, diffed_branch, is_local)
