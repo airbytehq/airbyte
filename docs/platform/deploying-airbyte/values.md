@@ -9,14 +9,7 @@ This is the complete reference for Airbyte's values.yaml file. Use the one that 
 <Tabs>
   <TabItem value="helm-1" label="Helm chart V1" default>
 
-:::note
-The V1 Helm chart has been removed from the main branch. The content below is preserved from the last version (commit 9652352b0c3c6e56adae752c50ce1419f8a4d9cf, November 10, 2025).
-:::
-
 ```yaml
-### TEST FOR RELEASE WORKFLOW
-
-
 # Global params that are overwritten with umbrella chart
 global:
   # -- Service Account name override
