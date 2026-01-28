@@ -1,0 +1,1779 @@
+version: 7.6.5
+
+type: DeclarativeSource
+
+description: This connector help getting data from Salsify (PMX)
+
+check:
+  type: CheckStream
+  stream_names:
+    - PRODUCT
+
+streams:
+  - type: DeclarativeStream
+    name: PRODUCT
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 50
+          start_from_page: 1
+      requester:
+        type: HttpRequester
+        url: >-
+          https://app.salsify.com/api/v1/orgs/s-d02b6ccb-2b2d-4038-b2b1-7346781c3b8c/products
+        http_method: GET
+        request_body:
+          type: RequestBodyJsonObject
+          value: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_headers: {}
+        request_parameters:
+          per_page: "50"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - salsify:id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - salsify:id
+        properties:
+          MHD:
+            type:
+              - string
+              - "null"
+          Base:
+            type:
+              - string
+              - "null"
+          Case:
+            type:
+              - string
+              - "null"
+          Logo:
+            type:
+              - string
+              - "null"
+          MOOD:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          VE_VPE:
+            type:
+              - string
+              - "null"
+          Artwork:
+            type:
+              - string
+              - "null"
+          GTIN VE:
+            type:
+              - string
+              - "null"
+          Haartyp:
+            type:
+              - string
+              - "null"
+          Hauttyp:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          MHD Art:
+            type:
+              - string
+              - "null"
+          QR Code:
+            type:
+              - string
+              - "null"
+          kbA [%]:
+            type:
+              - string
+              - "null"
+          pH-Wert:
+            type:
+              - string
+              - "null"
+          Allergen:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          GPC Code:
+            type:
+              - string
+              - "null"
+          GTIN VPE:
+            type:
+              - string
+              - "null"
+          Lagerort:
+            type:
+              - string
+              - "null"
+          Mehl [%]:
+            type:
+              - string
+              - "null"
+          Retailer:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          BOP [jpg]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          BOP [png]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Basisname:
+            type:
+              - string
+              - "null"
+          E-Nummern:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          FOP [jpg]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          FOP [png]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Gefahrgut:
+            type:
+              - boolean
+              - "null"
+          Kommentar:
+            type:
+              - string
+              - "null"
+          SEO Titel:
+            type:
+              - string
+              - "null"
+          SOP [jpg]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          SOP [png]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          VE / Lage:
+            type:
+              - string
+              - "null"
+          Zielmarkt:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Gluten [%]:
+            type:
+              - string
+              - "null"
+          Höhe [mm]:
+            type:
+              - string
+              - "null"
+          Laufnummer:
+            type:
+              - string
+              - "null"
+          Markenname:
+            type:
+              - string
+              - "null"
+          Nachfolger:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Produkttyp:
+            type:
+              - string
+              - "null"
+          Tiefe [mm]:
+            type:
+              - string
+              - "null"
+          VPE / Lage:
+            type:
+              - string
+              - "null"
+          Vorgänger:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          salsify:id:
+            type: string
+          BOP 2 [jpg]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          BOP 2 [png]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Breite [mm]:
+            type:
+              - string
+              - "null"
+          CCG Inbound:
+            type:
+              - string
+              - "null"
+          Duftfamilie:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Einheit MHD:
+            type:
+              - string
+              - "null"
+          FOP 2 [jpg]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          FOP 2 [png]:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Glukose [%]:
+            type:
+              - string
+              - "null"
+          Launch Date:
+            type:
+              - string
+              - "null"
+          Listungsart:
+            type:
+              - string
+              - "null"
+          Palettenart:
+            type:
+              - string
+              - "null"
+          Portion [g]:
+            type:
+              - string
+              - "null"
+          Produkttext:
+            type:
+              - string
+              - "null"
+          SOP 2 [jpg]:
+            type:
+              - string
+              - "null"
+          SOP 2 [png]:
+            type:
+              - string
+              - "null"
+          Stammnummer:
+            type:
+              - string
+              - "null"
+          Stärke [%]:
+            type:
+              - string
+              - "null"
+          Warengruppe:
+            type:
+              - string
+              - "null"
+          Änderungen:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Artikelebene:
+            type:
+              - string
+              - "null"
+          Basisartikel:
+            type:
+              - boolean
+              - "null"
+          CCG Outbound:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Fruktose [%]:
+            type:
+              - string
+              - "null"
+          Kostenstelle:
+            type:
+              - string
+              - "null"
+          Lagerortcode:
+            type:
+              - string
+              - "null"
+          Maismehl [%]:
+            type:
+              - string
+              - "null"
+          Pfandartikel:
+            type:
+              - string
+              - "null"
+          UVP AT [€]:
+            type:
+              - string
+              - "null"
+          UVP DE [€]:
+            type:
+              - string
+              - "null"
+          Warnhinweise:
+            type:
+              - string
+              - "null"
+          DPG Datenbank:
+            type:
+              - boolean
+              - "null"
+          Dichte [g/ml]:
+            type:
+              - string
+              - "null"
+          Kalium [mg/L]:
+            type:
+              - string
+              - "null"
+          Liefereinheit:
+            type:
+              - boolean
+              - "null"
+          Markeninhaber:
+            type:
+              - string
+              - "null"
+          Milchfett [%]:
+            type:
+              - string
+              - "null"
+          Naturkosmetik:
+            type:
+              - string
+              - "null"
+          Nitrat [mg/L]:
+            type:
+              - string
+              - "null"
+          Altersfreigabe:
+            type:
+              - string
+              - "null"
+          Artikelversion:
+            type:
+              - string
+              - "null"
+          Bestelleinheit:
+            type:
+              - boolean
+              - "null"
+          Calcium [mg/L]:
+            type:
+              - string
+              - "null"
+          Chlorid [mg/L]:
+            type:
+              - string
+              - "null"
+          Druckverfahren:
+            type:
+              - string
+              - "null"
+          Fluorid [mg/L]:
+            type:
+              - string
+              - "null"
+          Hersteller GLN:
+            type:
+              - string
+              - "null"
+          Isoglukose [%]:
+            type:
+              - string
+              - "null"
+          Name Lieferant:
+            type:
+              - string
+              - "null"
+          Natrium [mg/L]:
+            type:
+              - string
+              - "null"
+          Overall Status:
+            type:
+              - string
+              - "null"
+          Pfandpflichtig:
+            type:
+              - boolean
+              - "null"
+          Purchase costs:
+            type:
+              - string
+              - "null"
+          Rezepturnummer:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Saccharose [%]:
+            type:
+              - string
+              - "null"
+          Sat.1 Kampagne:
+            type:
+              - boolean
+              - "null"
+          Spendenprojekt:
+            type:
+              - string
+              - "null"
+          Steuersatz [%]:
+            type:
+              - string
+              - "null"
+          Verpackungsart:
+            type:
+              - string
+              - "null"
+          Verzehrhinweis:
+            type:
+              - string
+              - "null"
+          Website Claims:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          share category:
+            type:
+              - string
+              - "null"
+          standing/lying:
+            type:
+              - string
+              - "null"
+          Anteil Glas [g]:
+            type:
+              - string
+              - "null"
+          Feature Benefit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          Höhe Lage [mm]:
+            type:
+              - string
+              - "null"
+          Maisstärke [%]:
+            type:
+              - string
+              - "null"
+          NaCl-Gehalt [%]:
+            type:
+              - string
+              - "null"
+          NaCl-Gehalt [g]:
+            type:
+              - string
+              - "null"
+          Nettofüllmenge:
+            type:
+              - string
+              - "null"
+          Palettennutzung:
+            type:
+              - string
+              - "null"
+          "Sensorik: Farbe":
+            type:
+              - string
+              - "null"
+          salsify:version:
+            type:
+              - number
+              - "null"
+          Art Datenträger:
+            type:
+              - string
+              - "null"
+          Artikelname kurz:
+            type:
+              - string
+              - "null"
+          Chargencodierung:
+            type:
+              - string
+              - "null"
+          Fakturiereinheit:
+            type:
+              - boolean
+              - "null"
+          Magnesium [mg/L]:
+            type:
+              - string
+              - "null"
+          Marketing Claims:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Milchprotein [%]:
+            type:
+              - string
+              - "null"
+          Nettogewicht [g]:
+            type:
+              - string
+              - "null"
+          Produktabbildung:
+            type:
+              - string
+              - "null"
+          SEO Beschreibung:
+            type:
+              - string
+              - "null"
+          "Sensorik: Geruch":
+            type:
+              - string
+              - "null"
+          Verwendungszweck:
+            type:
+              - string
+              - "null"
+          Währungseinheit:
+            type:
+              - string
+              - "null"
+          mod. Stärke [%]:
+            type:
+              - string
+              - "null"
+          Anteil Karton [g]:
+            type:
+              - string
+              - "null"
+          Anwendungsbereich:
+            type:
+              - string
+              - "null"
+          Bicarbonat [mg/L]:
+            type:
+              - string
+              - "null"
+          Bruttogewicht [g]:
+            type:
+              - string
+              - "null"
+          CCG1 VE / Palette:
+            type:
+              - string
+              - "null"
+          CCG1 stapelfähig:
+            type:
+              - boolean
+              - "null"
+          CCG2 VE / Palette:
+            type:
+              - string
+              - "null"
+          Herkunft Rohwaren:
+            type:
+              - string
+              - "null"
+          Lieferzeit [Tage]:
+            type:
+              - string
+              - "null"
+          Listungsart tegut:
+            type:
+              - string
+              - "null"
+          Mehrweg Kastenart:
+            type:
+              - string
+              - "null"
+          Stückliste (BOM):
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                salsify:quantity:
+                  type:
+                    - number
+                    - "null"
+                salsify:product_id:
+                  type:
+                    - string
+                    - "null"
+          dm Onlineshop URL:
+            type:
+              - string
+              - "null"
+          salsify:system_id:
+            type:
+              - string
+              - "null"
+          Artikelname extern:
+            type:
+              - string
+              - "null"
+          Artikelname intern:
+            type:
+              - string
+              - "null"
+          CCG1 VPE / Palette:
+            type:
+              - string
+              - "null"
+          CCG2 VPE / Palette:
+            type:
+              - string
+              - "null"
+          Fett [g / 100g/ml]:
+            type:
+              - string
+              - "null"
+          Fett [g / Portion]:
+            type:
+              - string
+              - "null"
+          Influencer Katalog:
+            type:
+              - boolean
+              - "null"
+          Konsumenteneinheit:
+            type:
+              - boolean
+              - "null"
+          Lagerungskategorie:
+            type:
+              - string
+              - "null"
+          Listungsart  dm AT:
+            type:
+              - string
+              - "null"
+          Listungsart  dm CZ:
+            type:
+              - string
+              - "null"
+          Listungsart  dm DE:
+            type:
+              - string
+              - "null"
+          Listungsart Oda DE:
+            type:
+              - string
+              - "null"
+          Produktionsstätte:
+            type:
+              - string
+              - "null"
+          Salz [g / 100g/ml]:
+            type:
+              - string
+              - "null"
+          Salz [g / Portion]:
+            type:
+              - string
+              - "null"
+          "Sensorik: Aussehen":
+            type:
+              - string
+              - "null"
+          Viskosität [mPas]:
+            type:
+              - string
+              - "null"
+          salsify:created_at:
+            type:
+              - string
+              - "null"
+          salsify:updated_at:
+            type:
+              - string
+              - "null"
+          shares pro Produkt:
+            type:
+              - string
+              - "null"
+          Listungsart  LSG DE:
+            type:
+              - string
+              - "null"
+          Listungsart Rewe AT:
+            type:
+              - string
+              - "null"
+          Listungstiefe dm AT:
+            type:
+              - string
+              - "null"
+          Listungstiefe dm CZ:
+            type:
+              - string
+              - "null"
+          Listungstiefe dm DE:
+            type:
+              - string
+              - "null"
+          Listungszyklus (LC):
+            type:
+              - string
+              - "null"
+          Medizinische Pflege:
+            type:
+              - string
+              - "null"
+          Mehrweg Flaschenart:
+            type:
+              - string
+              - "null"
+          Pfeilwurzelmehl [%]:
+            type:
+              - string
+              - "null"
+          Pflicht Lebensweise:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Produktionsstandort:
+            type:
+              - string
+              - "null"
+          REWE Onlineshop URL:
+            type:
+              - string
+              - "null"
+          "Sensorik: Geschmack":
+            type:
+              - string
+              - "null"
+          Spendenbetrag [€]:
+            type:
+              - string
+              - "null"
+          Spendenorganisation:
+            type:
+              - string
+              - "null"
+          Status Partnerships:
+            type:
+              - string
+              - "null"
+          Taxonomie Nummer ID:
+            type:
+              - string
+              - "null"
+          Verkehrsbezeichnung:
+            type:
+              - string
+              - "null"
+          Verpackungsmaterial:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Zubereitungshinweis:
+            type:
+              - string
+              - "null"
+          Anteil Aluminium [g]:
+            type:
+              - string
+              - "null"
+          Artikelnummer intern:
+            type:
+              - string
+              - "null"
+          CCG1 Lagen / Palette:
+            type:
+              - string
+              - "null"
+          CCG2 Lagen / Palette:
+            type:
+              - string
+              - "null"
+          Funktionsbezeichnung:
+            type:
+              - string
+              - "null"
+          Kartoffelstärke [%]:
+            type:
+              - string
+              - "null"
+          Koffein [mg/100g/ml]:
+            type:
+              - string
+              - "null"
+          Listungsart  BIPA AT:
+            type:
+              - string
+              - "null"
+          Listungsart  Ikea DE:
+            type:
+              - string
+              - "null"
+          Listungsart  REWE DE:
+            type:
+              - string
+              - "null"
+          Listungsart Libro AT:
+            type:
+              - string
+              - "null"
+          Listungstiefe Oda DE:
+            type:
+              - string
+              - "null"
+          Mehrwegkennzeichnung:
+            type:
+              - boolean
+              - "null"
+          Palette stapelfähig:
+            type:
+              - boolean
+              - "null"
+          Pflicht Allergencode:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Recycling Anteil [%]:
+            type:
+              - string
+              - "null"
+          "Sensorik: Konsistenz":
+            type:
+              - string
+              - "null"
+          Verpackungsauslobung:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Website Beschreibung:
+            type:
+              - string
+              - "null"
+          "Zusatzstoffe: Klasse":
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Anteil Kunststoff [g]:
+            type:
+              - string
+              - "null"
+          Eiweiß [g / 100g/ml]:
+            type:
+              - string
+              - "null"
+          Eiweiß [g / Portion]:
+            type:
+              - string
+              - "null"
+          Inhalt auf Verpackung:
+            type:
+              - boolean
+              - "null"
+          Laufzeit nach Öffnen:
+            type:
+              - string
+              - "null"
+          Listungsart  Billa AT:
+            type:
+              - string
+              - "null"
+          Listungsart  Budni DE:
+            type:
+              - string
+              - "null"
+          Listungsart  Flink DE:
+            type:
+              - string
+              - "null"
+          Listungstiefe BIPA AT:
+            type:
+              - string
+              - "null"
+          Listungstiefe Ikea DE:
+            type:
+              - string
+              - "null"
+          Listungstiefe Rewe DE:
+            type:
+              - string
+              - "null"
+          Name Inverkehrbringer:
+            type:
+              - string
+              - "null"
+          RLZ garantiert [Tage]:
+            type:
+              - string
+              - "null"
+          Ökologische Herkunft:
+            type:
+              - string
+              - "null"
+          Anzahl der Druckfarben:
+            type:
+              - string
+              - "null"
+          Listungsart  ALDI Süd:
+            type:
+              - string
+              - "null"
+          Listungsart  Amazon DE:
+            type:
+              - string
+              - "null"
+          Listungsart  Billa+ AT:
+            type:
+              - string
+              - "null"
+          Listungsart  Globus DE:
+            type:
+              - string
+              - "null"
+          Listungsart  MPREIS AT:
+            type:
+              - string
+              - "null"
+          Listungsart Printus DE:
+            type:
+              - string
+              - "null"
+          Listungstiefe Billa AT:
+            type:
+              - string
+              - "null"
+          Mood Online Shop share:
+            type:
+              - string
+              - "null"
+          Restentleerbarkeit [%]:
+            type:
+              - string
+              - "null"
+          salsify:digital_assets:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                Tags:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                Usage:
+                  type:
+                    - string
+                    - "null"
+                Keywords:
+                  type:
+                    - string
+                    - "null"
+                Copyrights:
+                  type:
+                    - string
+                    - "null"
+                salsify:id:
+                  type:
+                    - string
+                    - "null"
+                salsify:url:
+                  type:
+                    - string
+                    - "null"
+                salsify:etag:
+                  type:
+                    - string
+                    - "null"
+                salsify:name:
+                  type:
+                    - string
+                    - "null"
+                Generated for:
+                  type:
+                    - string
+                    - "null"
+                salsify:bytes:
+                  type:
+                    - number
+                    - "null"
+                salsify:format:
+                  type:
+                    - string
+                    - "null"
+                salsify:status:
+                  type:
+                    - string
+                    - "null"
+                General Category:
+                  anyOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                salsify:filename:
+                  type:
+                    - string
+                    - "null"
+                Status in Library:
+                  type:
+                    - boolean
+                    - "null"
+                salsify:system_id:
+                  type:
+                    - string
+                    - "null"
+                Digital Asset Type:
+                  type:
+                    - string
+                    - "null"
+                salsify:created_at:
+                  type:
+                    - string
+                    - "null"
+                salsify:updated_at:
+                  type:
+                    - string
+                    - "null"
+                salsify:asset_width:
+                  type:
+                    - number
+                    - "null"
+                salsify:asset_height:
+                  type:
+                    - number
+                    - "null"
+                Social Impact Approval:
+                  type:
+                    - boolean
+                    - "null"
+                salsify:is_primary_image:
+                  type:
+                    - boolean
+                    - "null"
+                salsify:asset_resource_type:
+                  type:
+                    - string
+                    - "null"
+          Dermatologisch getestet:
+            type:
+              - boolean
+              - "null"
+          Einheit Nettofüllmenge:
+            type:
+              - string
+              - "null"
+          Enthält Risikorohstoff:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Hydrogencarbonat [mg/L]:
+            type:
+              - string
+              - "null"
+          Listungsart  Müller DE:
+            type:
+              - string
+              - "null"
+          Listungsart  Selecta DE:
+            type:
+              - string
+              - "null"
+          Listungsart Alnatura DE:
+            type:
+              - string
+              - "null"
+          Listungsart Chef Sam ES:
+            type:
+              - string
+              - "null"
+          Listungsart Franprix FR:
+            type:
+              - string
+              - "null"
+          Listungsart Monoprix FR:
+            type:
+              - string
+              - "null"
+          Listungstiefe Billa+ AT:
+            type:
+              - string
+              - "null"
+          Listungstiefe Globus DE:
+            type:
+              - string
+              - "null"
+          Magnesium [mg/ 100g/ml]:
+            type:
+              - string
+              - "null"
+          Adresse Inverkehrbringer:
+            type:
+              - string
+              - "null"
+          Brennwert [kJ / 100g/ml]:
+            type:
+              - string
+              - "null"
+          Brennwert [kJ / Portion]:
+            type:
+              - string
+              - "null"
+          Code Öko Kontrollstelle:
+            type:
+              - string
+              - "null"
+          Listungsart  Kaufland DE:
+            type:
+              - string
+              - "null"
+          Listungsart  Rossmann DE:
+            type:
+              - string
+              - "null"
+          Listungsart Carrefour FR:
+            type:
+              - string
+              - "null"
+          Listungsart Edeka Minden:
+            type:
+              - string
+              - "null"
+          Listungsart shopapotheke:
+            type:
+              - string
+              - "null"
+          Listungstiefe Müller DE:
+            type:
+              - string
+              - "null"
+          Listungstiefe Selecta DE:
+            type:
+              - string
+              - "null"
+          Pfandsystem Einzelstück:
+            type:
+              - string
+              - "null"
+          Portionen pro Verpackung:
+            type:
+              - string
+              - "null"
+          Sulfat 4+ (Salze) [mg/L]:
+            type:
+              - string
+              - "null"
+          Zolltarifnummer (ZTN) EU:
+            type:
+              - string
+              - "null"
+          salsify:profile_asset_id:
+            type:
+              - string
+              - "null"
+          Bio Qualitätskennzeichen:
+            type:
+              - string
+              - "null"
+          Code Akkreditierungslabel:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          Geschlecht der Zielgruppe:
+            type:
+              - string
+              - "null"
+          Höhe Ladungsträger [mm]:
+            type:
+              - string
+              - "null"
+          "Importklassifikation: Art":
+            type:
+              - string
+              - "null"
+          Kundenartikelnummer dm AT:
+            type:
+              - string
+              - "null"
+          Listungsart  Decathlon DE:
+            type:
+              - string
+              - "null"
+          Listungsart  Interspar AT:
+            type:
+              - string
+              - "null"
+          Listungsart Soennecken DE:
+            type:
+              - string
+              - "null"
+          Listungstiefe Kaufland DE:
+            type:
+              - string
+              - "null"
+          Listungstiefe Rossmann DE:
+            type:
+              - string
+              - "null"
+          Los-/Chargenkennzeichnung:
+            type:
+              - boolean
+              - "null"
+          Shelf Ready Tray (Yes/no):
+            type:
+              - string
+              - "null"
+          sonstige Zertifizierungen:
+            type:
+              - string
+              - "null"
+          Brennwert [kcal / 100g/ml]:
+            type:
+              - string
+              - "null"
+          Brennwert [kcal / Portion]:
+            type:
+              - string
+              - "null"
+          Listungsart  Lekkerland DE:
+            type:
+              - string
+              - "null"
+          Listungsart 3rd Channel AT:
+            type:
+              - string
+              - "null"
+          Listungsart 3rd Channel DE:
+            type:
+              - string
+              - "null"
+          Listungsart Ethno & Co. CH:
+            type:
+              - string
+              - "null"
+          Listungstiefe Decathlon DE:
+            type:
+              - string
+              - "null"
+          "Mikrobiologie: Salmonellen":
+            type:
+              - string
+              - "null"
+          RLZ nach Produktion [Tage]:
+            type:
+              - string
+              - "null"
+          davon Zucker [g / 100g/ml]:
+            type:
+              - string
+              - "null"
+          davon Zucker [g / Portion]:
+            type:
+              - string
+              - "null"
+          Ballaststoffe [g / 100g/ml]:
+            type:
+              - string
+              - "null"
+          Ballaststoffe [g / Portion]:
+            type:
+              - string
+              - "null"
+          Besondere Lagerungshinweise:
+            type:
+              - string
+              - "null"
+          Kohlenhydrate [g / 100g/ml]:
+            type:
+              - string
+              - "null"
+          Kohlenhydrate [g / Portion]:
+            type:
+              - string
+              - "null"
+          Lagerhinweis auf Verpackung:
+            type:
+              - string
+              - "null"
+          Listungsart Best in Food DE:
+            type:
+              - string
+              - "null"
+          "Mikrobiologie: E.coli [KbE]":
+            type:
+              - string
+              - "null"
+          Grad der Recyclingfähigkeit:
+            type:
+              - string
+              - "null"
+          Listungsart Edeka Hessenring:
+            type:
+              - string
+              - "null"
+          Listungsart Edeka Rhein-Ruhr:
+            type:
+              - string
+              - "null"
+          Ort der Chargenkennzeichnung:
+            type:
+              - string
+              - "null"
+          Pfandsatz Einzelstück [€]:
+            type:
+              - string
+              - "null"
+          Pflicht Produkteigenschaften:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          DAN Kundenartikelnummer dm DE:
+            type:
+              - string
+              - "null"
+          Einheit Laufzeit nach Öffnen:
+            type:
+              - string
+              - "null"
+          Kundenartikelnummer Globus DE:
+            type:
+              - string
+              - "null"
+          Lagerungshinweise Großhandel:
+            type:
+              - string
+              - "null"
+          Lagerungstemperatur max [°C]:
+            type:
+              - string
+              - "null"
+          Lagerungstemperatur min [°C]:
+            type:
+              - string
+              - "null"
+          Listungsart  Deutsche Bahn DE:
+            type:
+              - string
+              - "null"
+          Listungsart share Online Shop:
+            type:
+              - string
+              - "null"
+          Zolltarifnummer (ZTN) Schweiz:
+            type:
+              - string
+              - "null"
+          alte Versionen Digital Assets:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          weitere mögliche Auslobungen:
+            type:
+              - string
+              - "null"
+          Grundpreisauszeichnungspflicht:
+            type:
+              - boolean
+              - "null"
+          Kundenartikelnummer Müller DE:
+            type:
+              - string
+              - "null"
+          Lagerungshinweise Einzelhandel:
+            type:
+              - string
+              - "null"
+          Listungstiefe Deutsche Bahn DE:
+            type:
+              - string
+              - "null"
+          Produktbesonderheiten Logistik:
+            type:
+              - string
+              - "null"
+          Produkttext auf der Verpackung:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          CCG1 Inbound Höhe Palette [mm]:
+            type:
+              - string
+              - "null"
+          CCG2 Inbound Höhe Palette [mm]:
+            type:
+              - string
+              - "null"
+          Kundenartikelnummer Kaufland DE:
+            type:
+              - string
+              - "null"
+          NAN Kundenartikelnummer Rewe DE:
+            type:
+              - string
+              - "null"
+          Nettogewicht Ladungsträger [g]:
+            type:
+              - string
+              - "null"
+          Outbound Bruttogewicht Lage [g]:
+            type:
+              - string
+              - "null"
+          Warenbereitstellungszeit [Tage]:
+            type:
+              - string
+              - "null"
+          CCG1 Outbound Höhe Palette [mm]:
+            type:
+              - string
+              - "null"
+          CCG2 Outbound Höhe Palette [mm]:
+            type:
+              - string
+              - "null"
+          Kundenartikelnummer ALDI Süd DE:
+            type:
+              - string
+              - "null"
+          Kundenartikelnummer Decathlon DE:
+            type:
+              - string
+              - "null"
+          Beschreibung der Einzelverpackung:
+            type:
+              - string
+              - "null"
+          DAN Kundenartikelnummer dm DE 2023:
+            type:
+              - string
+              - "null"
+          "Einheit Mikrobiologie: Salmonellen":
+            type:
+              - string
+              - "null"
+          Anteil nachwachsender Rohstoffe [%]:
+            type:
+              - string
+              - "null"
+          "Mikrobiologie: Gesamtkeimzahl [KbE]":
+            type:
+              - string
+              - "null"
+          Pfandrückführung durch Hersteller:
+            type:
+              - boolean
+              - "null"
+          Verpackungsgewicht (ohne Inhalt) [g]:
+            type:
+              - string
+              - "null"
+          VOC-Gehalt gemäß Schweizer VOCV [%]:
+            type:
+              - string
+              - "null"
+          VOC-Gehalt gemäß Schweizer VOCV [g]:
+            type:
+              - string
+              - "null"
+          Akkreditierunglabel auf der Verpackung:
+            type:
+              - string
+              - "null"
+          Anteil Getränkekartonverpackungen [g]:
+            type:
+              - string
+              - "null"
+          CCG1 Inbound Bruttogewicht Palette [g]:
+            type:
+              - string
+              - "null"
+          CCG2 Inbound Bruttogewicht Palette [g]:
+            type:
+              - string
+              - "null"
+          Anteil sonstige Verbundverpackungen [g]:
+            type:
+              - string
+              - "null"
+          CCG1 Outbound Bruttogewicht Palette [g]:
+            type:
+              - string
+              - "null"
+          CCG2 Outbound Bruttogewicht Palette [g]:
+            type:
+              - string
+              - "null"
+          Outbound Bruttogewicht Zwischenlage [g]:
+            type:
+              - string
+              - "null"
+          "Mikrobiologie: Hefen/Schimmelpilze [KbE]":
+            type:
+              - string
+              - "null"
+          Transport zum Markt Temperatur max [°C]:
+            type:
+              - string
+              - "null"
+          Transport zum Markt Temperatur min [°C]:
+            type:
+              - string
+              - "null"
+          Ursprungsland (im zollrechtlichen Sinne):
+            type:
+              - string
+              - "null"
+          Verwendungshinweise für den Konsumenten:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Sondervorschriften Gefahrgutkennzeichnung:
+            type:
+              - string
+              - "null"
+          Aufbewahrungshinweise für den Konsumenten:
+            type:
+              - string
+              - "null"
+          davon gesättigte Fettsäuren [g / 100g/ml]:
+            type:
+              - string
+              - "null"
+          davon gesättigte Fettsäuren [g / Portion]:
+            type:
+              - string
+              - "null"
+          EU Öko Basisverordnung VO (EG) Nr. 2018/848:
+            type:
+              - boolean
+              - "null"
+          Rechtlich vorgeschriebene Produktbezeichnung:
+            type:
+              - string
+              - "null"
+          Deklarationspflichtige Riech- und Aromastoffe:
+            type:
+              - string
+              - "null"
+          Entsorgungshinweis für die Endverbraucher:innen:
+            type:
+              - string
+              - "null"
+          "Mikrobiologie: Gesamtkeimzahl bei 20°C [KbE/ml]":
+            type:
+              - string
+              - "null"
+          "Mikrobiologie: Gesamtkeimzahl bei 37°C [KbE/ml]":
+            type:
+              - string
+              - "null"
+          Transport zum Verteilzentrum Temperatur max [°C]:
+            type:
+              - string
+              - "null"
+          Transport zum Verteilzentrum Temperatur min [°C]:
+            type:
+              - string
+              - "null"
+          vereinbarte RLZ (abweichend von Standard) Rewe AT:
+            type:
+              - string
+              - "null"
+          Listungsart 3rd channel (OMV, ADEG, Unimarkt, N+F):
+            type:
+              - string
+              - "null"
+          Zutatenliste / INCI / Material-Zusammensetzung Hersteller:
+            type:
+              - string
+              - "null"
+          Zutatenliste / INCI / Material-Zusammensetzung Verpackung:
+            type:
+              - string
+              - "null"
+          Herkunftsangabe des Inhaltsstoffes gemäß EU-Öko-Verordnung:
+            type:
+              - string
+              - "null"
+          Deklarationspflichtige Zusatzstoffe und Ergänzungen der Bezeichnung:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          Produkt ist enthalten auf Produkt-Positivliste gemäß Schweizer VOCV:
+            type:
+              - boolean
+              - "null"
+          zusätzlich Ergänzung der Nährwerte (Enthält geringfügige Mengen an ...):
+            type:
+              - string
+              - "null"
+          regulierte oder beschränkte Ausgangsstoffe für Explosivstoffe VO (EU) 2019/1148:
+            type:
+              - string
+              - "null"
+          Obst, Gemüse, Hülsenfrüchte, Schalenfrüchte, Raps-, Nuss- und Olivenöle (%/100g oder 100mL):
+            type:
+              - string
+              - "null"
+          "Mikrobiologie: Gesamtanzahl aerober mesophile Mikroorganismen (Bakterien + Hefen + Schimmelpilze)  [KbE]":
+            type:
+              - string
+              - "null"
+          Abfrage über die manuelle Trennbarkeit der Verpackung für den Endverbraucher und 95/5-Regel nach dem VerpackG:
+            type:
+              - string
+              - "null"
+          "Mikrobiologie: Spezifische Mikroorganismen (Escherichia coli, Pseudomonas aeruginosa, Staphylococcus aureus, Candida albicans) [in 1g/ml]":
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    PRODUCT:
+      isStale: false
+      hasRecords: true
+      streamHash: a4b65e6c93dca6f8e3f52ccc0cc71ae00efc3b78
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    PRODUCT: true
