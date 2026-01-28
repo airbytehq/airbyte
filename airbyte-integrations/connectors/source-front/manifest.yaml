@@ -31,10 +31,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -89,10 +89,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -132,10 +132,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -185,10 +185,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -251,10 +251,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -304,10 +304,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -364,10 +364,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -430,10 +430,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -479,10 +479,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -532,10 +532,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -600,10 +600,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -645,10 +645,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -705,10 +705,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -773,10 +773,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -831,10 +831,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -876,10 +876,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -942,10 +942,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -987,10 +987,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1047,10 +1047,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1115,10 +1115,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1181,10 +1181,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1226,10 +1226,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1292,10 +1292,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1337,10 +1337,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1403,10 +1403,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1469,10 +1469,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1518,10 +1518,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1571,10 +1571,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1629,10 +1629,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1695,10 +1695,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1763,10 +1763,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1821,10 +1821,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1874,10 +1874,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1932,10 +1932,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1985,10 +1985,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 5
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitUntilTimeFromHeader
+                    header: x-ratelimit-reset
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
