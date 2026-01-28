@@ -44,6 +44,7 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "MetafieldProductVariants": ("read_products",),
     "CustomCollections": ("read_products",),
     "Collects": ("read_products",),
+    "CollectionProducts": ("read_products",),
     "ProductVariants": ("read_products", "read_inventory"),
     "MetafieldCollections": ("read_products",),
     "SmartCollections": ("read_products",),

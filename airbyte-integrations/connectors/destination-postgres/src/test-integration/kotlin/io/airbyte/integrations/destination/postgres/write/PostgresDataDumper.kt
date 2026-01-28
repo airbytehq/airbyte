@@ -44,8 +44,11 @@ class PostgresDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
-        val finalTableNameGenerator = DefaultTempTableNameGenerator()
-        val tableSchemaMapper = PostgresTableSchemaMapper(config, finalTableNameGenerator)
+        val schemaMapper =
+            PostgresTableSchemaMapper(
+                config,
+                DefaultTempTableNameGenerator(),
+            )
         val dataSource =
             PostgresBeanFactory()
                 .postgresDataSource(
@@ -69,7 +72,7 @@ class PostgresDataDumper(
                 val statement = connection.createStatement()
 
                 // Use the TableSchemaMapper to get the correct table name
-                val tableName = tableSchemaMapper.toFinalTableName(stream.mappedDescriptor)
+                val tableName = schemaMapper.toFinalTableName(stream.mappedDescriptor)
                 val quotedTableName = "\"${tableName.namespace}\".\"${tableName.name}\""
 
                 // First check if the table exists
