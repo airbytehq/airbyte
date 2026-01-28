@@ -99,7 +99,6 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     -d '{
       "connector_type": "github",
       "external_user_id": "<external_user_id>",
-      "environment": {"repositories": "airbytehq/airbyte"},
       "credentials": {"token": "<GitHub personal access token (fine-grained or classic)>"}
     }'
 ```
