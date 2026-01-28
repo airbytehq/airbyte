@@ -74,6 +74,33 @@
                 "order": 1
               }
             }
+          },
+          {
+            "title": "Client Credentials",
+            "description": "OAuth 2.0 Client Credentials Grant for apps created via the Shopify Dev Dashboard. Tokens are automatically refreshed every 24 hours.",
+            "type": "object",
+            "required": ["auth_method", "client_id", "client_secret"],
+            "properties": {
+              "auth_method": {
+                "type": "string",
+                "const": "client_credentials",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID from your Shopify Dev Dashboard app.",
+                "airbyte_secret": true,
+                "order": 1
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "The Client Secret from your Shopify Dev Dashboard app.",
+                "airbyte_secret": true,
+                "order": 2
+              }
+            }
           }
         ]
       },
