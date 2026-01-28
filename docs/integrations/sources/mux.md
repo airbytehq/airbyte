@@ -34,12 +34,17 @@ Visit `https://docs.mux.com/api-reference` for API documentation
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.48 | 2026-01-20 | [71957](https://github.com/airbytehq/airbyte/pull/71957) | Update dependencies |
+| 0.0.47 | 2026-01-14 | [71628](https://github.com/airbytehq/airbyte/pull/71628) | Update dependencies |
+| 0.0.46 | 2025-12-18 | [70563](https://github.com/airbytehq/airbyte/pull/70563) | Update dependencies |
+| 0.0.45 | 2025-11-25 | [69886](https://github.com/airbytehq/airbyte/pull/69886) | Update dependencies |
+| 0.0.44 | 2025-11-18 | [69416](https://github.com/airbytehq/airbyte/pull/69416) | Update dependencies |
 | 0.0.43 | 2025-10-29 | [69047](https://github.com/airbytehq/airbyte/pull/69047) | Update dependencies |
 | 0.0.42 | 2025-10-21 | [68374](https://github.com/airbytehq/airbyte/pull/68374) | Update dependencies |
 | 0.0.41 | 2025-10-14 | [67810](https://github.com/airbytehq/airbyte/pull/67810) | Update dependencies |
 | 0.0.40 | 2025-10-07 | [67387](https://github.com/airbytehq/airbyte/pull/67387) | Update dependencies |
 | 0.0.39 | 2025-09-30 | [66937](https://github.com/airbytehq/airbyte/pull/66937) | Update dependencies |
-| 0.0.38 | 2025-09-23 | [66342](https://github.com/airbytehq/airbyte/pull/66342) | Update dependencies |
+| 0.0.38 | 2025-09-24 | [66342](https://github.com/airbytehq/airbyte/pull/66342) | Update dependencies |
 | 0.0.37 | 2025-09-09 | [65768](https://github.com/airbytehq/airbyte/pull/65768) | Update dependencies |
 | 0.0.36 | 2025-08-23 | [65222](https://github.com/airbytehq/airbyte/pull/65222) | Update dependencies |
 | 0.0.35 | 2025-08-09 | [64689](https://github.com/airbytehq/airbyte/pull/64689) | Update dependencies |

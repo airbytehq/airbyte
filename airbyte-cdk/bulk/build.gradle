@@ -9,11 +9,23 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.w3c.dom.Document
 
+plugins {
+    id 'org.jetbrains.dokka' version '2.0.0'
+}
+
 final var versionFile = file("version.properties")
+final var baseVersionFile = file("core/base/version.properties")
 
 final var cdkVersion = {
     var props = new Properties()
     versionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+// Base package has its own independent version
+final var baseVersion = {
+    var props = new Properties()
+    baseVersionFile.withInputStream(props::load)
     return props.getProperty('version', 'undefined')
 }()
 
@@ -22,6 +34,7 @@ allprojects {
     version = cdkVersion
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
+    apply plugin: 'org.jetbrains.dokka'
 
     group 'io.airbyte.bulk-cdk'
 
@@ -79,41 +92,117 @@ allprojects {
     }
 }
 
-tasks.register('checkBuildNumber') {
-    description = "Check that the version doesn't exist"
+// Override base package to use its own independent version
+project(':airbyte-cdk:bulk:core:bulk-cdk-core-base') {
+    version = baseVersion
+}
+
+// Configure Dokka for all subprojects
+subprojects {
+    tasks.withType(org.jetbrains.dokka.gradle.DokkaTask.class) {
+        dokkaSourceSets {
+            configureEach {
+                // Only document public APIs
+                includeNonPublic.set(false)
+                skipEmptyPackages.set(true)
+
+                // Report undocumented members
+                reportUndocumented.set(true)
+
+                // Add external documentation links
+                externalDocumentationLinks {
+                    create("kotlin") {
+                        url.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/").toURL())
+                        packageListUrl.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/package-list").toURL())
+                    }
+                    create("kotlinx-coroutines") {
+                        url.set(uri("https://kotlinlang.org/api/kotlinx.coroutines/").toURL())
+                    }
+                    create("micronaut") {
+                        url.set(uri("https://docs.micronaut.io/latest/api/").toURL())
+                    }
+                }
+
+                // Source links back to GitHub
+                sourceLink {
+                    localDirectory.set(file("src/main"))
+                    remoteUrl.set(uri("https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/bulk/${project.name}/src/main").toURL())
+                    remoteLineSuffix.set("#L")
+                }
+            }
+        }
+    }
+}
+
+// Configure the multi-module documentation task
+tasks.named('dokkaHtmlMultiModule') {
+    moduleName.set("Airbyte Kotlin Bulk CDK")
+    outputDirectory.set(layout.buildDirectory.dir("dokka/htmlMultiModule"))
+}
+
+// Convenience task for local development
+tasks.register('docsGenerate') {
+    group = 'documentation'
+    description = 'Generate Dokka documentation for all modules'
+    dependsOn 'dokkaHtmlMultiModule'
 
     doLast {
-        var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
-        var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
-        var artifactUrl = "${groupIdUrl}/bulk"
-        var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
+        println "Documentation generated at: ${layout.buildDirectory.dir("dokka/htmlMultiModule").get()}"
+    }
+}
 
-        var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
-        try {
-            connection.setRequestMethod("GET")
-            connection.setDoInput(true)
-            var responseCode = connection.getResponseCode()
-            if (responseCode != 200) {
-                throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
-            }
-            InputStream responseContent = connection.inputStream
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
-            DocumentBuilder builder = factory.newDocumentBuilder()
-            Document doc = builder.parse(responseContent); // Replace with your XML file path
+// Backwards-compatible alias
+tasks.register('dokkaGenerate') {
+    group = 'documentation'
+    description = 'Generate Dokka documentation for all modules (alias for docsGenerate)'
+    dependsOn 'docsGenerate'
+}
 
-            doc.getDocumentElement().normalize()
+// Helper function to check if a version exists in the Maven repository
+def checkVersionExists(String artifactName, String versionToCheck) {
+    var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+    var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
+    var artifactUrl = "${groupIdUrl}/${artifactName}"
+    var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
 
-            XPath xpath = XPathFactory.newInstance().newXPath()
+    var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
+    try {
+        connection.setRequestMethod("GET")
+        connection.setDoInput(true)
+        var responseCode = connection.getResponseCode()
 
-            String expression = "/metadata/versioning/latest"
-
-            String latestVersion = (String) xpath.compile(expression).evaluate(doc, XPathConstants.STRING)
-            if (version.toString() == latestVersion) {
-                throw new GradleException("Version already exist")
-            }
-        } finally {
-            connection.disconnect()
+        if (responseCode != 200) {
+            throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
         }
+
+        InputStream responseContent = connection.inputStream
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
+        DocumentBuilder builder = factory.newDocumentBuilder()
+        Document doc = builder.parse(responseContent)
+
+        doc.getDocumentElement().normalize()
+
+        XPath xpath = XPathFactory.newInstance().newXPath()
+        String expression = "/metadata/versioning/versions/version"
+
+        var versionNodes = xpath.compile(expression).evaluate(doc, XPathConstants.NODESET)
+        var allVersions = []
+        for (int i = 0; i < versionNodes.length; i++) {
+            allVersions.add(versionNodes.item(i).textContent)
+        }
+
+        if (allVersions.contains(versionToCheck)) {
+            throw new GradleException("${artifactName} version ${versionToCheck} already exists in the repository")
+        }
+    } finally {
+        connection.disconnect()
+    }
+}
+
+tasks.register('checkBuildNumber') {
+    description = "Check that the version doesn't exist"
+    doLast {
+        checkVersionExists('bulk', version.toString())
     }
 }
 
@@ -122,6 +211,23 @@ tasks.register('bulkCdkBuild').configure {
 }
 tasks.register('bulkCdkPublish').configure {
     dependsOn allprojects.collect {it.tasks.named('publish')}
+}
+
+tasks.register('checkBaseVersion') {
+    description = "Check that the base version doesn't exist"
+    doLast {
+        checkVersionExists('bulk-cdk-core-base', baseVersion.toString())
+    }
+}
+
+// Build and publish tasks for base package only
+tasks.register('baseCdkBuild') {
+    description = "Build the base CDK package"
+    dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:build'
+}
+tasks.register('baseCdkPublish') {
+    description = "Publish the base CDK package"
+    dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:publish'
 }
 
 class BumpBulkCdkVersionTask extends DefaultTask {

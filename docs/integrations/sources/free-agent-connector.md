@@ -54,9 +54,14 @@ Download all your data from FreeAgent, a friendly and easy to use cloud based ac
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.7 | 2026-01-20 | [71932](https://github.com/airbytehq/airbyte/pull/71932) | Update dependencies |
+| 0.1.6 | 2026-01-14 | [71640](https://github.com/airbytehq/airbyte/pull/71640) | Update dependencies |
+| 0.1.5 | 2025-12-18 | [70538](https://github.com/airbytehq/airbyte/pull/70538) | Update dependencies |
+| 0.1.4 | 2025-11-25 | [69969](https://github.com/airbytehq/airbyte/pull/69969) | Update dependencies |
+| 0.1.3 | 2025-11-18 | [69467](https://github.com/airbytehq/airbyte/pull/69467) | Update dependencies |
 | 0.1.2 | 2025-10-29 | [68832](https://github.com/airbytehq/airbyte/pull/68832) | Update dependencies |
 | 0.1.1 | 2025-10-21 | [68451](https://github.com/airbytehq/airbyte/pull/68451) | Update dependencies |
-| 0.1.0 | 2025-10-07 | [67023](https://github.com/airbytehq/airbyte/pull/67023) | Added Project Notes stream and reworked Payslips stream to use payroll periods as parent instead of accounting periods. Non-breaking change |
+| 0.1.0 | 2025-10-17 | [67023](https://github.com/airbytehq/airbyte/pull/67023) | Added Project Notes stream and reworked Payslips stream to use payroll periods as parent instead of accounting periods. Non-breaking change |
 | 0.0.37 | 2025-10-14 | [68060](https://github.com/airbytehq/airbyte/pull/68060) | Update dependencies |
 | 0.0.36 | 2025-10-07 | [67306](https://github.com/airbytehq/airbyte/pull/67306) | Update dependencies |
 | 0.0.35 | 2025-09-30 | [66763](https://github.com/airbytehq/airbyte/pull/66763) | Update dependencies |

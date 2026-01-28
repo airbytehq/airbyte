@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.transform.medium
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.ArrayType
@@ -38,9 +37,8 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
-import io.airbyte.cdk.load.dataflow.transform.defaults.NoOpColumnNameMapper
+import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
@@ -56,7 +54,6 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
 
 /**
@@ -65,47 +62,22 @@ import javax.inject.Singleton
  */
 @Singleton
 class ProtobufConverter(
-    private val columnNameMapper: ColumnNameMapper,
     private val coercer: ValueCoercer,
-) {
+    private val validationResultHandler: ValidationResultHandler,
+) : MediumConverter {
 
-    private val isNoOpMapper = columnNameMapper is NoOpColumnNameMapper
     private val decoder = AirbyteValueProtobufDecoder()
 
-    private val perStreamMappedNames =
-        ConcurrentHashMap<DestinationStream.Descriptor, Array<String>>()
-
-    private fun mappedNamesFor(
-        stream: DestinationStream,
-        fieldAccessors: Array<FieldAccessor>
-    ): Array<String> {
-        val key = stream.mappedDescriptor
-        return perStreamMappedNames.computeIfAbsent(key) {
-            val maxIndex = fieldAccessors.maxOfOrNull { it.index } ?: -1
-            val arr = Array(maxIndex + 1) { "" }
-            fieldAccessors.forEach { fa ->
-                val mapped = columnNameMapper.getMappedColumnName(stream, fa.name) ?: fa.name
-                arr[fa.index] = mapped
-            }
-            arr
+    override fun convert(input: ConversionInput): Map<String, AirbyteValue> {
+        check(input.msg.rawData is DestinationRecordProtobufSource) {
+            "The raw data must be a protobuf source."
         }
-    }
-
-    /**
-     * Converts protobuf data to a complete map of AirbyteValue including metadata fields. This
-     * method handles both data fields and metadata fields in one operation.
-     *
-     * @param msg The destination record raw containing stream information
-     * @param source The protobuf source containing data and metadata
-     * @return Map of column names to AirbyteValue including all metadata fields
-     */
-    fun convert(
-        msg: DestinationRecordRaw,
-        source: DestinationRecordProtobufSource,
-    ): Map<String, AirbyteValue> {
-        val stream = msg.stream
+        checkNotNull(input.msg.rawData) {
+            "The protobuf source containing data and metadata must be non-null."
+        }
+        val stream = input.msg.stream
         val fieldAccessors = stream.airbyteValueProxyFieldAccessors
-        val data = source.source.record.dataList
+        val data = input.msg.rawData.source.record.dataList
 
         val result =
             HashMap<String, AirbyteValue>(fieldAccessors.size + 4) // +4 for metadata fields
@@ -132,22 +104,24 @@ class ProtobufConverter(
             enrichedValue.abValue = airbyteValue
 
             val mappedValue = coercer.map(enrichedValue)
-            val validatedValue = coercer.validate(mappedValue)
+            val validatedValue =
+                validationResultHandler.handle(
+                    partitionKey = input.partitionKey,
+                    stream = stream.mappedDescriptor,
+                    result = coercer.validate(mappedValue),
+                    value = mappedValue
+                )
 
             allParsingFailures.addAll(validatedValue.changes)
 
             if (validatedValue.abValue !is NullValue || validatedValue.type !is UnknownType) {
-                val columnName =
-                    if (isNoOpMapper) accessor.name
-                    else
-                        mappedNamesFor(stream, fieldAccessors).getOrElse(accessor.index) {
-                            accessor.name
-                        }
+                // Use column mapping from stream
+                val columnName = stream.tableSchema.getFinalColumnName(accessor.name)
                 result[columnName] = validatedValue.abValue
             }
         }
 
-        addMetadataFields(result, msg, source, allParsingFailures)
+        addMetadataFields(result, input.msg, input.msg.rawData, allParsingFailures)
 
         return result
     }

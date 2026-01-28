@@ -57,4 +57,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Amazon SQS API reference
+      url: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/
+      type: api_reference
+    - title: Authentication and access control
+      url: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-authentication-and-access-control.html
+      type: authentication_guide
+    - title: Quotas
+      url: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-quotas.html
+      type: rate_limits
 metadataSpecVersion: "1.0"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.aggregate
@@ -113,8 +113,8 @@ class AggregateStoreTest {
         val entry = aggregateStore.getOrCreate(testKey)
         assertEquals(1L, entry.recordCountTrigger.watermark())
         assertEquals(50L, entry.estimatedBytesTrigger.watermark())
-        assertEquals(1L, entry.partitionCountsHistogram.get(PartitionKey("partition1")))
-        assertEquals(50L, entry.partitionBytesHistogram.get(PartitionKey("partition1")))
+        assertEquals(1L, entry.partitionCountsHistogram.get(PartitionKey("partition1"))?.toLong())
+        assertEquals(50L, entry.partitionBytesHistogram.get(PartitionKey("partition1"))?.toLong())
     }
 
     @Test

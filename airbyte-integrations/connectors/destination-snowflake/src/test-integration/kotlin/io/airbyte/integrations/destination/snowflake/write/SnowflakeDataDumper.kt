@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write
@@ -9,18 +9,25 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.commons.json.Jsons.deserializeExact
+import io.airbyte.cdk.load.util.UUIDGenerator
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
-import io.airbyte.integrations.destination.snowflake.db.SnowflakeFinalTableNameGenerator
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeTableSchemaMapper
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeSqlNameUtils
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.sqlEscape
 import java.math.BigDecimal
+import java.sql.Date
+import java.sql.Time
+import java.sql.Timestamp
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
 
 private val AIRBYTE_META_COLUMNS = Meta.COLUMN_NAMES + setOf(CDC_DELETED_AT_COLUMN)
@@ -33,8 +40,14 @@ class SnowflakeDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
-        val sqlUtils = SnowflakeSqlNameUtils(config)
-        val snowflakeFinalTableNameGenerator = SnowflakeFinalTableNameGenerator(config)
+        val snowflakeFinalTableNameGenerator =
+            SnowflakeTableSchemaMapper(
+                config = config,
+                tempTableNameGenerator = DefaultTempTableNameGenerator(),
+            )
+        val snowflakeColumnManager = SnowflakeColumnManager(config)
+        val sqlGenerator =
+            SnowflakeDirectLoadSqlGenerator(UUIDGenerator(), config, snowflakeColumnManager)
         val dataSource =
             SnowflakeBeanFactory()
                 .snowflakeDataSource(snowflakeConfiguration = config, airbyteEdition = "COMMUNITY")
@@ -45,7 +58,7 @@ class SnowflakeDataDumper(
             ds.connection.use { connection ->
                 val statement = connection.createStatement()
                 val tableName =
-                    snowflakeFinalTableNameGenerator.getTableName(stream.mappedDescriptor)
+                    snowflakeFinalTableNameGenerator.toFinalTableName(stream.mappedDescriptor)
 
                 // First check if the table exists
                 val tableExistsQuery =
@@ -68,7 +81,7 @@ class SnowflakeDataDumper(
 
                 val resultSet =
                     statement.executeQuery(
-                        "SELECT * FROM ${sqlUtils.fullyQualifiedName(tableName)}"
+                        "SELECT * FROM ${sqlGenerator.fullyQualifiedName(tableName)}"
                     )
 
                 while (resultSet.next()) {
@@ -128,30 +141,24 @@ class SnowflakeDataDumper(
     }
 
     private fun unformatJsonValue(columnType: String, value: Any): Any {
-        /*
-         * Snowflake automatically pretty-prints JSON results for variant, object and array
-         * when selecting them via a SQL query.  You can get around this by using the `TO_JSON`
-         * function on the column when running the query.  However, we do not have access to the
-         * catalog in the dumper to know which columns need to be un-prettied/modified to match
-         * the toPrettyString() method of the Jackson JsonNode.  To compensate for this, we will
-         * read the JSON string into a JsonNode and then re-pretty-ify it into a string so that
-         * it can match what the expected record mapper is doing.
-         */
         return when (columnType.lowercase()) {
             "variant",
             "array",
-            "object" -> deserializeExact(value.toString()).toPrettyString()
+            "object" ->
+                // blind cast to string is safe - snowflake JDBC driver getObject returns String
+                // for variant/array/object
+                (value as String).deserializeToNode().toAirbyteValue()
             else -> value
         }
     }
 
-    private fun convertValue(value: Any): Any =
+    private fun convertValue(value: Any?): Any? =
         when (value) {
             is BigDecimal -> value.toBigInteger()
-            is java.sql.Date -> value.toLocalDate()
+            is Date -> value.toLocalDate()
             is SnowflakeTimestampWithTimezone -> value.toZonedDateTime()
-            is java.sql.Time -> value.toLocalTime()
-            is java.sql.Timestamp -> value.toLocalDateTime()
+            is Time -> value.toLocalTime()
+            is Timestamp -> value.toLocalDateTime()
             else -> value
         }
 }

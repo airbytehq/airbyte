@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write
@@ -46,11 +46,11 @@ class SnowflakeInsertAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
-    override fun testFunkyCharactersDedup() {
-        super.testFunkyCharactersDedup()
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
     }
 }
 
@@ -63,7 +63,7 @@ class SnowflakeInsertIgnoreCasingAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -134,6 +134,12 @@ class SnowflakeRawInsertProtoAcceptanceTest :
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
+
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15495")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
 }
 
 abstract class SnowflakeAcceptanceTest(
@@ -159,12 +165,11 @@ abstract class SnowflakeAcceptanceTest(
         isStreamSchemaRetroactiveForUnknownTypeToString =
             isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = dedupBehavior,
-        stringifySchemalessObjects = true,
+        stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
         stringifyUnionObjects = false,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = false,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
@@ -186,14 +191,7 @@ abstract class SnowflakeAcceptanceTest(
         recordMangler = recordMapper,
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
-    ) {
-
-    @Disabled override fun testUnions() {}
-
-    @Disabled override fun testAppendJsonSchemaEvolution() {}
-
-    @Disabled override fun testContainerTypes() {}
-}
+    )
 
 fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
     if (metaAsString.isNullOrEmpty()) {

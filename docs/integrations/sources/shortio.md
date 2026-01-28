@@ -44,6 +44,11 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.45 | 2026-01-20 | [72153](https://github.com/airbytehq/airbyte/pull/72153) | Update dependencies |
+| 0.3.44 | 2026-01-14 | [71623](https://github.com/airbytehq/airbyte/pull/71623) | Update dependencies |
+| 0.3.43 | 2025-12-18 | [70705](https://github.com/airbytehq/airbyte/pull/70705) | Update dependencies |
+| 0.3.42 | 2025-11-25 | [70125](https://github.com/airbytehq/airbyte/pull/70125) | Update dependencies |
+| 0.3.41 | 2025-11-18 | [69456](https://github.com/airbytehq/airbyte/pull/69456) | Update dependencies |
 | 0.3.40 | 2025-10-29 | [68789](https://github.com/airbytehq/airbyte/pull/68789) | Update dependencies |
 | 0.3.39 | 2025-10-21 | [68266](https://github.com/airbytehq/airbyte/pull/68266) | Update dependencies |
 | 0.3.38 | 2025-10-14 | [67740](https://github.com/airbytehq/airbyte/pull/67740) | Update dependencies |
@@ -102,6 +107,6 @@ This Source is capable of syncing the following Streams:
 | 0.1.3 | 2022-08-01 | [15066](https://github.com/airbytehq/airbyte/pull/15066) | Update primary key to `idString` |
 | 0.1.2 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
 | 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.0   | 2021-08-16 | [3787](https://github.com/airbytehq/airbyte/pull/5418)   | Add Native Shortio Source Connector               |
+| 0.1.0 | 2021-08-16 | [5418](https://github.com/airbytehq/airbyte/pull/5418) | Add Native Shortio Source Connector |
 
 </details>

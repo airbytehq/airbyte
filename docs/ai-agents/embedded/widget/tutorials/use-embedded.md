@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 # Use Airbyte Embedded
 
 With your app up and running, you will be prompted to enter your web password before continuing. After authentication, you will be presented with a screen to allow customers to onboard by adding their email address.

@@ -95,4 +95,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: File source documentation
+      url: https://docs.airbyte.com/integrations/sources/file
+      type: other
 metadataSpecVersion: "1.0"

@@ -49,7 +49,7 @@ You should already have considered [what regions and workspaces](getting-started
 
 ## Part 1. Install Airbox
 
-You can install Airbox [as a binary](https://github.com/airbytehq/abctl/releases/tag/airbox-v0.1.0-beta1). Downloads are available for Windows, Mac, and Linux.
+You can install the latest version of Airbox [as a binary](https://github.com/airbytehq/abctl/releases). Downloads are available for Windows, Mac, and Linux.
 
 ## Part 2: Install Docker Desktop
 

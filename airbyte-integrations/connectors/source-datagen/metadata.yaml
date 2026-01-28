@@ -28,4 +28,8 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: Airbyte data generator documentation
+      url: https://docs.airbyte.com/integrations/sources/datagen
+      type: other
 metadataSpecVersion: "1.0"

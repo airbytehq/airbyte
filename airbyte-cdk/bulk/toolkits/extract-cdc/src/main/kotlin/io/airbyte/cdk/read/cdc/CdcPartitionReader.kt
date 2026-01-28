@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read.cdc
@@ -278,15 +278,11 @@ class CdcPartitionReader<T : Comparable<T>>(
                 watchdogJob?.cancel()
             }
 
-            if (engineShuttingDown.get()) {
-                // If we're already shutting down, don't process any more events.
-                return
-            }
-
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
-            // Update counters.
-            updateCounters(event, eventType)
+            if (!engineShuttingDown.get()) {
+                updateCounters(event, eventType)
+            }
             // Look for reasons to close down the engine.
             val closeReason: CloseReason = findCloseReason(event, eventType) ?: return
             // At this point, if we haven't returned already, we want to close down the engine.
@@ -328,17 +324,30 @@ class CdcPartitionReader<T : Comparable<T>>(
             val deserializedRecord: DeserializedRecord =
                 readerOps.deserializeRecord(event.key, event.value, stream)
                     ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
-            // Emit the record at the end of the happy path.
-            outputMessageRouter.recordAcceptors[streamId]?.invoke(
-                deserializedRecord.data,
-                deserializedRecord.changes
-            )
-                ?: run {
-                    log.warn {
-                        "No record acceptor found for stream $streamId, skipping record emission."
+            val recordAcceptor =
+                outputMessageRouter.recordAcceptors[streamId]
+                    ?: run {
+                        log.warn {
+                            "No record acceptor found for stream $streamId, skipping record emission."
+                        }
+                        return EventType.RECORD_DISCARDED_BY_STREAM_ID
                     }
-                    return EventType.RECORD_DISCARDED_BY_STREAM_ID
-                }
+
+            // Emit the record at the end of the happy path.
+            when (engineShuttingDown.get()) {
+                // While the engine is shutting down, we emit records in our thread to prevent
+                // debezium from unexpectedly killing the thread.
+                // As this may lead to corrupt hald records or to causing an unexpected socket
+                // closure.
+                true ->
+                    runBlocking(Dispatchers.IO) {
+                        recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
+                        updateCounters(event, EventType.RECORD_EMITTED)
+                    }
+                // While the engine is running normally, we can emit records synchronously for
+                // better performance.
+                false -> recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
+            }
             return EventType.RECORD_EMITTED
         }
 

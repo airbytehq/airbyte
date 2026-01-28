@@ -375,11 +375,13 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.40 | 2025-11-01 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61. |
-| 0.3.39  | 2025-10-16 | [68108](https://github.com/airbytehq/airbyte/pull/68108)   | Implement Polaris support                                                                                                       |
+| 0.3.42  | 2026-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Implement support for scope and OAuth server URI attributes for Polaris catalog                                                 |
+| 0.3.41  | 2025-11-07 | [69232](https://github.com/airbytehq/airbyte/pull/69232) | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns                                                        |
+| 0.3.40  | 2025-11-05 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61.                                                                                                     |
+| 0.3.39  | 2025-10-15 | [68108](https://github.com/airbytehq/airbyte/pull/68108)   | Implement Polaris support                                                                                                       |
 | 0.3.38  | 2025-10-07 | [67005](https://github.com/airbytehq/airbyte/pull/67005)   | Fix: Treat empty string role_arn as null to prevent misleading config errors                                                    |
 | 0.3.37  | 2025-10-07 | [67150](https://github.com/airbytehq/airbyte/pull/67150)   | Fix check operation to use unique table names, preventing conflicts with stale metadata and concurrent operations               |
-| 0.3.36  | 2025-09-25 | [66711](https://github.com/airbytehq/airbyte/pull/66711)   | CHECK operation uses configured default dataset instead of `airbyte_test_namespace`                                             |
+| 0.3.36  | 2025-09-26 | [66711](https://github.com/airbytehq/airbyte/pull/66711)   | CHECK operation uses configured default dataset instead of `airbyte_test_namespace`                                             |
 | 0.3.35  | 2025-07-23 | [63746](https://github.com/airbytehq/airbyte/pull/63746)   | Remove unnecessary properties from table                                                                                        |
 | 0.3.34  | 2025-07-11 | [62952](https://github.com/airbytehq/airbyte/pull/62952)   | Update CDK version                                                                                                              |
 | 0.3.33  | 2025-07-09 | [62888](https://github.com/airbytehq/airbyte/pull/62888)   | Update CDK version to handle compaction issue when deleting files in a truncate refresh scenario                                |

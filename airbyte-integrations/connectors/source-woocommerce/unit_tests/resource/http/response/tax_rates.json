@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "country": "US",
+    "state": "CA",
+    "postcode": "",
+    "city": "",
+    "postcodes": [],
+    "cities": [],
+    "rate": "7.2500",
+    "name": "CA Tax",
+    "priority": 0,
+    "compound": false,
+    "shipping": true,
+    "order": 0,
+    "class": "standard"
+  }
+]

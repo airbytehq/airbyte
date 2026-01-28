@@ -100,4 +100,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Mixpanel API reference
+      url: https://developer.mixpanel.com/reference/overview
+      type: api_reference
+    - title: Mixpanel authentication
+      url: https://developer.mixpanel.com/reference/authentication
+      type: authentication_guide
+    - title: Mixpanel rate limits
+      url: https://developer.mixpanel.com/reference/rate-limits
+      type: rate_limits
+    - title: Mixpanel Status
+      url: https://status.mixpanel.com/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -13,6 +13,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMALESS_M
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -401,6 +402,34 @@ public class MongoUtil {
 
   private static boolean isSupportedCollection(final String collectionName) {
     return IGNORED_COLLECTIONS.stream().noneMatch(collectionName::startsWith);
+  }
+
+  /**
+   * Checks if the given exception is caused by a BSONObjectTooLarge error (MongoDB error code 10334).
+   * This error occurs when a BSON document exceeds the 16MB size limit, which can happen during CDC
+   * (Change Data Capture) operations when change stream events become too large.
+   *
+   * @param exception The exception to check.
+   * @return true if the exception is caused by a BSONObjectTooLarge error, false otherwise.
+   */
+  public static boolean isBsonObjectTooLargeException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        if (mongoException.getErrorCode() == MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE) {
+          return true;
+        }
+      }
+      // Also check the error message for cases where the error code might not be directly accessible
+      if (current.getMessage() != null &&
+          (current.getMessage().contains("BSONObjectTooLarge") ||
+              current.getMessage().contains("BSONObj size") ||
+              current.getMessage().contains("error 10334"))) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
   }
 
   /**

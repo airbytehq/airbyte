@@ -32,4 +32,14 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: Amazon Redshift documentation
+      url: https://docs.aws.amazon.com/redshift/
+      type: api_reference
+    - title: Redshift authentication
+      url: https://docs.aws.amazon.com/redshift/latest/mgmt/generating-user-credentials.html
+      type: authentication_guide
+    - title: AWS Status
+      url: https://health.aws.amazon.com/health/status
+      type: status_page
 metadataSpecVersion: "1.0"

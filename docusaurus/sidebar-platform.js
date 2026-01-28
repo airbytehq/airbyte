@@ -241,7 +241,7 @@ module.exports = {
     {
       type: "category",
       collapsible: false,
-      label: "Airbyte Platform",
+      label: "Data replication platform",
       link: {
         type: "doc",
         id: "readme",
@@ -382,6 +382,7 @@ module.exports = {
               items: [
                 "organizations-workspaces/organizations/switch-organizations",
                 "cloud/managing-airbyte-cloud/manage-credits",
+                "cloud/managing-airbyte-cloud/manage-data-workers",
               ],
             },
             {
@@ -445,7 +446,6 @@ module.exports = {
           },
           items: [
             "enterprise-setup/implementation-guide",
-            "enterprise-setup/api-access-config",
             "enterprise-setup/multi-region",
             "enterprise-setup/audit-logging",
             "enterprise-setup/scaling-airbyte",
@@ -463,6 +463,7 @@ module.exports = {
           },
           items: [
             "enterprise-flex/getting-started",
+            "enterprise-flex/external-secrets",
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
           ],
@@ -528,7 +529,6 @@ module.exports = {
           type: "category",
           label: "Integrating with Airbyte",
           items: [
-            "using-airbyte/configuring-api-access",
             "operator-guides/using-the-airflow-airbyte-operator",
             "operator-guides/using-prefect-task",
             "operator-guides/using-dagster-integration",
@@ -536,20 +536,8 @@ module.exports = {
             "operator-guides/using-orchestra-task",
           ],
         },
-        sectionHeader("Developer guides"),
-        {
-          type: "doc",
-          id: "api-documentation",
-        },
-        {
-          type: "doc",
-          id: "terraform-documentation",
-        },
-        {
-          type: "doc",
-          label: "Using PyAirbyte",
-          id: "using-airbyte/pyairbyte/getting-started",
-        },
+        sectionHeader("Advanced"),
+        "using-airbyte/configuring-api-access",
         understandingAirbyte,
       ],
     },

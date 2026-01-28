@@ -87,13 +87,13 @@ export default function Home() {
     {
       title: 'Platform',
       link: '/platform/',
-      description: 'Deploy Airbyte locally, to cloud providers, or use Airbyte Cloud. Create connections, build custom connectors, and start syncing data in minutes.',
+      description: 'Use Airbyte\'s data replication platform to create connections, build custom connectors, and start syncing data in minutes.',
       icon: PlatformIcon,
     },
     {
       title: 'Connectors',
       link: '/integrations/',
-      description: 'Browse Airbyte\'s catalog of over 600 sources and destinations, and learn to set them up in Airbyte.',
+      description: 'Browse Airbyte\'s catalog of over 600 sources and destinations, and learn to set them up in Airbyte\'s data replication platform.',
       icon: ConnectorsIcon,
     },
     {
@@ -105,12 +105,12 @@ export default function Home() {
     {
       title: 'AI agents',
       link: '/ai-agents/',
-      description: 'Explore AI Agent tools and capabilities for building intelligent data pipelines.',
+      description: 'Equip your AI agents to explore and work with your data.',
       icon: AIAgentsIcon,
     },
     {
       title: 'Developers',
-      link: '/platform/api-documentation',
+      link: '/developers',
       description: 'Interact with Airbyte programmatically using our API, Terraform provider, and more.',
       icon: DevelopersIcon,
     },
@@ -134,11 +134,9 @@ export default function Home() {
           <div className={styles.heroContainer}>
             <div className={styles.heroLeft}>
               <p className={styles.heroDescription}>
-                Airbyte is an open source data integration and activation platform. 
-                It helps you consolidate data from hundreds of sources into your data 
-                warehouses, data lakes, and databases. Then, it helps you move data 
-                from those locations into the operational tools where work happens, 
-                like CRMs, marketing platforms, and support systems.
+                Airbyte is an open source data integration, activation, and agentic data platform.
+                Use our data replication platform to consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. 
+                Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems.
               </p>
             </div>
             <div className={styles.heroRight}>

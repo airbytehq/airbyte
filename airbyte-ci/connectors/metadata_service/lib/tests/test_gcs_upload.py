@@ -582,7 +582,7 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
 def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_files, tmp_path):
     mocker.spy(gcs_upload, "_file_upload")
     mocker.spy(gcs_upload, "upload_file_if_changed")
-    prerelease_image_tag = "1.5.6-dev.f80318f754"
+    prerelease_image_tag = "1.5.6-preview.f80318f"
 
     for valid_metadata_upload_file in valid_metadata_upload_files:
         tmp_metadata_file_path = tmp_path / "metadata.yaml"
@@ -701,7 +701,7 @@ def test_upload_metadata_to_gcs_release_candidate(mocker, get_fixture_path, tmp_
     )
     assert metadata.data.releases.rolloutConfiguration.enableProgressiveRollout
 
-    prerelease_tag = "1.5.6-dev.f80318f754" if prerelease else None
+    prerelease_tag = "1.5.6-preview.f80318f" if prerelease else None
 
     upload_info = gcs_upload.upload_metadata_to_gcs(
         "my_bucket",

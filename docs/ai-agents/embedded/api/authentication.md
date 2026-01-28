@@ -14,6 +14,52 @@ The Airbyte Embedded API uses a hierarchical authentication system with three ty
 
 The Operator Bearer Token provides full organization-level access and is used for administrative operations.
 
+### Obtaining an operator bearer token
+
+To obtain an Operator Bearer Token, use the client credentials endpoint with your application credentials.
+
+#### Endpoint
+
+```bash
+POST https://api.airbyte.ai/api/v1/account/applications/token
+
+```
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `client_id` | string | Yes | Your application client ID |
+| `client_secret` | string | Yes | Your application client secret |
+
+You can find your credentials in the Airbyte Cloud dashboard under **Settings > Applications**.
+
+#### Request example
+
+```bash
+curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "client_id": "your_client_id",
+    "client_secret": "your_client_secret"
+  }'
+
+```
+
+#### Response example
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "expires_in": 900,
+  "organization_id": "12345678-1234-1234-1234-123456789012"
+}
+
+```
+
+The `access_token` in the response is your Operator Bearer Token. Use this token in the `Authorization` header for all subsequent API calls.
+
 ### Use cases
 
 - Creating and managing source templates

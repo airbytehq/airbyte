@@ -148,7 +148,7 @@ The [Good Docs Project](https://www.thegooddocsproject.dev/) maintains a collect
 | --------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | Concept         | Explain a concept, context, or background information about a product or its features.              | [Template](https://gitlab.com/tgdp/templates/-/tree/main/concept)         |
 | How-to          | A concise set of numbered steps to do one task with the product.                                    | [Template](https://gitlab.com/tgdp/templates/-/tree/main/how-to)          |
-| Tutorial        | Instructions to set up an example project intended for hands-on learning.        | [Template](https://gitlab.com/tgdp/templates/-/tree/main/tutorial)        |
+| Tutorial        | Instructions to set up an example project intended for hands-on learning.                           | [Template](https://gitlab.com/tgdp/templates/-/tree/main/tutorial)        |
 | Troubleshooting | Common problems experienced by users, an explanation of the causes, and steps to resolve the issue. | [Template](https://gitlab.com/tgdp/templates/-/tree/main/troubleshooting) |
 | Reference       | Specific, in-depth details about a particular topic.                                                | [Template](https://gitlab.com/tgdp/templates/-/tree/main/reference)       |
 | Release note    | Communicate new features, improvements, bug fixes, and known issues about a product.                | [Template](https://gitlab.com/tgdp/templates/-/tree/main/release-notes)   |
@@ -162,6 +162,35 @@ You can only use these templates for platform docs. Docs for connectors have the
 ## Write connector docs {#connector-docs}
 
 If you're writing docs for a data source or destination, there are special rules you must follow. See the [Connector Documentation Guide](/platform/connector-development/writing-connector-docs). Platform documentation is less formulaic.
+
+### Agent connector documentation {#agent-connector-docs}
+
+Agent connector documentation follows a different workflow than traditional connector docs. Agent connectors are Python packages that equip AI agents to call third-party APIs. Their documentation is fully automated and flows through a three-stage pipeline that requires no manual intervention.
+
+#### How agent connector docs are delivered
+
+The documentation pipeline involves three repositories and two GitHub Apps:
+
+1. **Source repository (sonar)**: Connector definitions live in the private [sonar](https://github.com/airbytehq/sonar) repository under `integrations/*/connector.yaml`. When changes merge to `main`, the [publish-connectors.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-connectors.yml) workflow generates Python packages including documentation files. The [BlessedConnectorGenerator](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/generator.py) class uses Jinja2 templates ([README.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/templates/README.md.jinja2), [REFERENCE.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/templates/REFERENCE.md.jinja2)) to generate README.md and REFERENCE.md, while [generate-changelog.py](https://github.com/airbytehq/sonar/blob/main/scripts/connectors/generate-changelog.py) creates CHANGELOG.md entries. The `octavia-bot-hoard` GitHub App authenticates and pushes these generated files to the airbyte-agent-connectors repository.
+
+2. **Generated repository (airbyte-agent-connectors)**: The [airbyte-agent-connectors](https://github.com/airbytehq/airbyte-agent-connectors) repository receives the generated connector packages. Each connector has its own directory under `connectors/` containing the Python package and documentation files. The [publish.yml](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/.github/workflows/publish.yml) workflow publishes packages to PyPI and creates GitHub releases.
+
+3. **Documentation repository (airbyte)**: The [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) workflow runs every two hours (or on manual trigger). It checks out the airbyte-agent-connectors repository, copies all markdown files from `connectors/*/` to `docs/ai-agents/connectors/`, and creates an auto-merge pull request using the `octavia-bot` GitHub App. When the PR merges, Vercel deploys the updated docs automatically.
+
+#### Key characteristics
+
+- **Fully automated**: No manual steps are required. Changes to connector definitions in sonar automatically propagate to the public documentation.
+- **Two-hour sync cycle**: Documentation updates appear on docs.airbyte.com within two hours of changes merging to airbyte-agent-connectors.
+- **Bot-managed PRs**: The `octavia-bot-hoard` and `octavia-bot` GitHub Apps handle authentication and PR creation across repositories.
+- **Auto-merge enabled**: Documentation sync PRs are labeled for auto-merge, minimizing manual review overhead.
+
+#### Workflow files reference
+
+| Repository | Workflow | Purpose |
+| --- | --- | --- |
+| [sonar](https://github.com/airbytehq/sonar) | [publish-connectors.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-connectors.yml) | Generates connector packages and pushes to airbyte-agent-connectors |
+| [airbyte-agent-connectors](https://github.com/airbytehq/airbyte-agent-connectors) | [publish.yml](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/.github/workflows/publish.yml) | Publishes packages to PyPI |
+| [airbyte](https://github.com/airbytehq/airbyte) | [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) | Syncs docs from airbyte-agent-connectors to Docusaurus |
 
 ## Multiple instances and versions
 
@@ -218,22 +247,24 @@ Certain Airbyte products reserve some platform features. To avoid confusion and 
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-**Badge display:** all 5 badges always appear in order - Core, Standard, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
+**Badge display:** all 6 badges always appear in order - Core, Standard, Plus, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
 
 **Metadata keys:**
 
-- `all`: Core, Self-Managed Enterprise, and Standard - doesn't include Pro, Enterprise Flex, or Embedded
+- `all`: Core, Self-Managed Enterprise, Standard, and Plus - doesn't include Pro, Enterprise Flex, or Embedded
 - `oss-community`: Core only
 - `oss-enterprise`: Self-Managed Enterprise only
-- `cloud`: Standard only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
+- `cloud`: Standard and Plus (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
+- `cloud-plus`: Plus only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
 - `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
 
 **Cloud tier inheritance:** higher Cloud plans automatically inherit availability from lower tiers:
 
-- If you specify `cloud`: Standard, Pro, and Enterprise Flex badges all become enabled
-- If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard turns off
+- If you specify `cloud`: Standard, Plus, Pro, and Enterprise Flex badges all become enabled
+- If you specify `cloud-plus`: Plus, Pro, and Enterprise Flex badges become enabled - Standard turns off
+- If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard and Plus turn off
 - If you specify `enterprise-flex`: Only Enterprise Flex badge becomes enabled
 
 **Self-managed plans** Core and Self-Managed Enterprise don't inherit from each other.
@@ -250,7 +281,7 @@ products: oss-community
 Some text.
 ```
 
-In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, and Self-Managed Enterprise badges appear grayed out.
+In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, Plus, and Self-Managed Enterprise badges appear grayed out.
 
 ```markdown
 ---
@@ -348,10 +379,11 @@ Vale and MarkDownLint are newly implemented. They might still generate false pos
 
 Both Vale and MarkDownLint run automatically on pull requests through the [Reviewdog workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/reviewdog.yml). When you open or update a pull request that modifies documentation in `docs/**/*.md`, the workflow:
 
-- Runs Vale with a minimum alert level of **warning** (errors and warnings are reported, suggestions are not)
-- Runs MarkDownLint to check for structural issues
-- Posts any violations as annotations on the "Files Changed" page in your pull request
+- Runs Vale with a minimum alert level of **warning** (errors and warnings are reported, suggestions are not). Vale prints violations to the CI job logs only (no PR annotations or comments).
+- Runs MarkDownLint to check for structural issues. MarkDownLint posts violations as annotations on the "Files changed" tab in your pull request.
 - Does not fail the build (compliance is optional but recommended)
+
+To view Vale results in CI: open your PR's Checks tab → select "Docs / Vale" → expand the step that runs Vale to see the log output.
 
 Running the linters locally before opening a pull request is optional but recommended. When you run the linters locally as described in the sections below, you'll see all violation levels including **suggestions**, which provide additional guidance that isn't shown in CI. This gives you the opportunity to improve your documentation beyond the minimum requirements before submitting for review.
 
@@ -408,18 +440,17 @@ You can run Vale in a command line tool or you can install an extension for most
    ```
 
 2. Lint your content. You can lint a single file or an entire directory and its subdirectories.
-
    - To lint a file, type the relative path to the file.
 
-      ```bash
-      vale ../docs/myfolder/myfile.md
-      ```
+     ```bash
+     vale ../docs/myfolder/myfile.md
+     ```
 
    - To lint a folder, type the relative path to that folder and end with a slash.
 
-      ```bash
-      vale ../docs/myfolder/
-      ```
+     ```bash
+     vale ../docs/myfolder/
+     ```
 
    - For more command-line tool help, see [Vale's docs](https://vale.sh/docs/cli).
 
@@ -445,29 +476,29 @@ brew install markdownlint-cli2
 
 To lint files:
 
-   - To lint a single file:
+- To lint a single file:
 
-      ```bash
-      markdownlint-cli2 "./docs/myfolder/myfile.md"
-      ```
+  ```bash
+  markdownlint-cli2 "./docs/myfolder/myfile.md"
+  ```
 
-   - To lint a single directory but not its subdirectories:
+- To lint a single directory but not its subdirectories:
 
-      ```bash
-      markdownlint-cli2 "./docs/myfolder/*.md"
-      ```
+  ```bash
+  markdownlint-cli2 "./docs/myfolder/*.md"
+  ```
 
-   - To lint a directory and its subdirectories recursively:
+- To lint a directory and its subdirectories recursively:
 
-      ```bash
-      markdownlint-cli2 "./docs/folder/**/*.md"
-      ```
+  ```bash
+  markdownlint-cli2 "./docs/folder/**/*.md"
+  ```
 
-   - To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
+- To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
 
-      ```bash
-      markdownlint-cli2 --fix "../docs/myfolder/*.md"
-      ```
+  ```bash
+  markdownlint-cli2 --fix "../docs/myfolder/*.md"
+  ```
 
 For full usage details, see the tool's [GitHub readme](https://github.com/DavidAnson/markdownlint-cli2?tab=readme-ov-file#use).
 
@@ -525,19 +556,17 @@ When you release a new major version of Airbyte like 2.0 or 2.1, generate a docu
 
 2. Open a terminal, change to the docusaurus folder, and run the command to generate a version. `<version>` can be a number like `2.0` or anything else you like. Be consistent with Airbyte and other versions on the docs site. Whatever string you enter here later appears in the docs UI.
 
-      ```bash
-      cd docusaurus
-      pnpm run docusaurus docs:version:platform <version>
-      ```
+   ```bash
+   cd docusaurus
+   pnpm run docusaurus docs:version:platform <version>
+   ```
 
-      Docusaurus automatically does three things at this point. It:
-
-      - Defines the existence of that version in the `/docusaurus/platform_versions.json` file
-      - Creates a physical copy of the versioned platform docs in `/docusaurus/platform_versioned_docs`
-      - Creates a physical copy of the versioned platform sidebar in `/docusaurus/platform_versioned_sidebars`
+   Docusaurus automatically does three things at this point. It:
+   - Defines the existence of that version in the `/docusaurus/platform_versions.json` file
+   - Creates a physical copy of the versioned platform docs in `/docusaurus/platform_versioned_docs`
+   - Creates a physical copy of the versioned platform sidebar in `/docusaurus/platform_versioned_sidebars`
 
 3. Test your build locally to make sure everything looks as expected. Verify:
-
    - The docs site builds locally
    - Your local Docusaurus build doesn't report new broken links
    - The version selector in the navigation contains your new version

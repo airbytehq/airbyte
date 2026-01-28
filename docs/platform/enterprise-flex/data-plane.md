@@ -59,6 +59,15 @@ For a production-ready deployment of self-managed data planes, you require the f
 | Object Storage (Optional)| Amazon S3 bucket with a directory for log storage.                                                                         |
 
 </TabItem>
+<TabItem value="Azure" label="Azure" default>
+
+| Component                | Recommendation                                                                                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kubernetes Cluster       | Azure Kubernetes Service cluster running in [2 or more availability zones](https://learn.microsoft.com/en-us/azure/aks/reliability-zone-resiliency-recommendations). |
+| External Secrets Manager | [Azure Key Vault](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/enterprise-setup/implementation-guide#azure-key-vault-policy). |
+| Object Storage (Optional)| Azure Blob Storage with a directory for log storage.                                                                         |
+
+</TabItem>
 </Tabs>
 
 A few notes on Kubernetes cluster provisioning for self-managed data planes and Airbyte Enterprise Flex:
@@ -253,6 +262,39 @@ kubectl create secret generic airbyte-config-secrets \
 ```
 
 </TabItem>
+
+<TabItem value="Azure" label="Azure" default>
+
+```yaml title="values.yaml"
+airbyteUrl: https://cloud.airbyte.com # Base URL for the control plane so Airbyte knows where to authenticate
+
+dataPlane:
+  # Used to render the data plane creds secret into the Helm chart.
+  secretName: airbyte-config-secrets
+  id: "preview-data-plane"
+
+  # Describe secret name and key where each of the client ID and secret are stored
+  clientIdSecretName: airbyte-config-secrets
+  clientIdSecretKey: DATA_PLANE_CLIENT_ID
+  clientSecretSecretName: airbyte-config-secrets
+  clientSecretSecretKey: DATA_PLANE_CLIENT_SECRET
+
+# Secret manager secrets/config
+# Must be set to the same secrets manager as the control plane
+secretsManager:
+  secretName: airbyte-config-secrets
+  type: AZURE_KEY_VAULT
+  azureKeyVault:
+      vaultUrl: ## https://my-vault.vault.azure.net/
+      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+      clientId: ""
+      clientIdSecretKey: ""
+      clientSecret: ""
+      clientSecretSecretKey: ""
+```
+
+</TabItem>
+
 </Tabs>
 </details>
 

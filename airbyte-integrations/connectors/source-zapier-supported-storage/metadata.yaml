@@ -36,4 +36,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Zapier Storage documentation
+      url: https://help.zapier.com/hc/en-us/articles/8496293271053-Save-and-retrieve-data-from-Zaps
+      type: other
 metadataSpecVersion: "1.0"

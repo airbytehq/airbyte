@@ -23,7 +23,7 @@ This will enable our team to make sure your contribution does not overlap with e
 5. Ensure all tests, including connector acceptance tests, pass
 6. Update the `metadata.yaml` following the [guidelines](./resources/pull-requests-handbook.md#semantic-versioning-for-connectors)
 7. Update the changelog entry in documentation in `docs/integrations/<connector-name>.md`
-8. Make sure your contribution passes our [QA checks](./resources/qa-checks.md)
+8. Make sure your contribution passes our [QA checks](/community/contributing-to-airbyte/resources/qa-checks)
 
 :::info
 There is a README file inside each connector folder containing instructions to run that connector's tests locally.
