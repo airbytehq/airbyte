@@ -6,19 +6,29 @@ on:
     types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
 
 jobs:
-  shared-pr-labeller:
-    name: "Add Labels to PRs.  Safe to Merge on fail"
+  auto-label-prs:
+    name: "Add Labels to PRs. Safe to Merge on fail"
     runs-on: ubuntu-24.04
     steps:
-      # TODO: Replace PAT with a GitHub App token.
-      # The "private-action-loader" action does not seem to be compatible with it,
-      # so we should consider moving off of this specialized action onto a normal
-      # action step.
-      - name: Run Issue Command from workflow-actions
-        uses: nick-fields/private-action-loader@6fa713597d3de3707f8b7a3029a5c262f32c5bca # v3.0.12
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
         with:
-          pal-repo-token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
-          pal-repo-name: airbytehq/workflow-actions@2a848ffce5eaf8da66d4176b66f55dd2e1007016
-          # the following input gets passed to the private action
-          token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
-          command: "pull"
+          owner: "airbytehq"
+          repositories: "airbyte,workflow-actions"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Dispatch to workflow-actions
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: auto-labeling.yml
+          repo: airbytehq/workflow-actions
+          token: ${{ steps.get-app-token.outputs.token }}
+          inputs: |
+            {
+              "github_repo": "${{ github.repository }}",
+              "type": "pull",
+              "number": "${{ github.event.pull_request.number }}",
+              "action": "${{ github.event.action }}"
+            }
