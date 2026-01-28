@@ -90,8 +90,6 @@ Once you have a scoped token, create a connector with your API credentials. Airb
 
   - `environment`: Connector-specific configurations for the connector.
 
-  - `replication_config`: Optional replication-specific settings like `start_date`, `lookback_window`, etc.
-
 This is what the request looks like when you're using a personal access token. See more examples in the [authentication docs](/ai-agents/connectors/github/AUTH).
 
 ```bash title="Request"
