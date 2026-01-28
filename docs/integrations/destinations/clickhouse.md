@@ -36,7 +36,7 @@ If you use a different cursor column type, like `string`, the connector falls ba
 
 :::warning
 
-Airbyte's ClickHouse connector leveragese the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine to handle deduplication.
+Airbyte's ClickHouse connector leverages the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine to handle deduplication.
 To guarantee deduplicated results at query time, you can add the `FINAL` operator to your query string. For example:
 
 ```sql
@@ -136,6 +136,7 @@ Replace `{namespace}` with each custom namespace you plan to use.
     - **Username**: The ClickHouse user you created (for example, `airbyte_user`)
     - **Password**: The password for the ClickHouse user
     - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
+    - **Record Window Size** (advanced): The maximum number of records to write in a single batch. Tuning this parameter can impact performance. The batch size is also limited to 70 MB regardless of this setting. Most users don't need to change this value.
 
 ### 4. SSH tunnel (optional)
 
@@ -173,23 +174,27 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.18     | 2025-12-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX)   | Internal refactor: Remove name generator classes, simplify naming utilities    |
-| 2.1.17     | 2025-12-12 | [70835](https://github.com/airbytehq/airbyte/pull/70835)   | Fix: Skip CDC cursor for version column consideration for dedupe.              |
+| 2.1.22     | 2026-01-26 | [71784](https://github.com/airbytehq/airbyte/pull/71784)   | No user-facing changes (internal refactor SSH tunnel logic)                    |
+| 2.1.21     | 2026-01-20 | [72294](https://github.com/airbytehq/airbyte/pull/72294)   | Upgrade CDK to 0.2.0                                                           |
+| 2.1.20     | 2026-01-15 | [71120](https://github.com/airbytehq/airbyte/pull/71120)   | Add schema and table identifier regression tests; upgrade CDK to 0.1.105       |
+| 2.1.19     | 2026-01-08 | [70996](https://github.com/airbytehq/airbyte/pull/70996)   | Upgrade to CDK 0.1.97                                                          |
+| 2.1.18     | 2025-12-17 | [70963](https://github.com/airbytehq/airbyte/pull/70963)   | Internal refactor: Remove name generator classes, simplify naming utilities    |
+| 2.1.17     | 2025-12-10 | [70835](https://github.com/airbytehq/airbyte/pull/70835)   | Fix: Skip CDC cursor for version column consideration for dedupe.              |
 | 2.1.16     | 2025-12-12 | [70897](https://github.com/airbytehq/airbyte/pull/70897)   | Promoting release candidate 2.1.16-rc.3 to a main version.                     |
 | 2.1.16-rc.3| 2025-12-09 | [70835](https://github.com/airbytehq/airbyte/pull/70835)   | Pick up CDK fixes for namespace / prefix handling                              |
 | 2.1.16-rc.2| 2025-12-09 | [70358](https://github.com/airbytehq/airbyte/pull/70358)   | Internal refactor: Use TableSchemaMapper for schema operations cont.           |
 | 2.1.16-rc.1| 2025-12-04 | [70279](https://github.com/airbytehq/airbyte/pull/70279)   | Internal refactor: Use TableSchemaMapper for schema operations                 |
-| 2.1.15     | 2025-12-03 | [69829](https://github.com/airbytehq/airbyte/pull/69829)   | Bump ClickHouse client to 0.9.4                                                |
+| 2.1.15     | 2025-12-16 | [69829](https://github.com/airbytehq/airbyte/pull/69829)   | Bump ClickHouse client to 0.9.4                                                |
 | 2.1.14     | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)   | Upgrade to CDK 0.1.78                                                          |
 | 2.1.13     | 2025-11-11 | [69116](https://github.com/airbytehq/airbyte/pull/69116)   | Upgrade to CDK 0.1.74 (internal refactor for schema evolution)                 |
 | 2.1.12     | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)   | Improved additional statistics handling                                        |
 | 2.1.11     | 2025-11-05 | [69200](https://github.com/airbytehq/airbyte/pull/69200)   | Add support for observability metrics                                          |
-| 2.1.10     | 2025-11-03 | [69154](https://github.com/airbytehq/airbyte/pull/69154)   | Fix decimal validation                                                         |
-| 2.1.9      | 2025-10-30 | [69100](https://github.com/airbytehq/airbyte/pull/69100)   | Upgrade to CDK 0.1.61 to fix state index bug                                   |
-| 2.1.8      | 2025-10-28 | [68186](https://github.com/airbytehq/airbyte/pull/68186)   | Upgrade to CDK 0.1.59                                                          |
+| 2.1.10     | 2025-11-04 | [69154](https://github.com/airbytehq/airbyte/pull/69154)   | Fix decimal validation                                                         |
+| 2.1.9      | 2025-11-03 | [69100](https://github.com/airbytehq/airbyte/pull/69100)   | Upgrade to CDK 0.1.61 to fix state index bug                                   |
+| 2.1.8      | 2025-10-29 | [68186](https://github.com/airbytehq/airbyte/pull/68186)   | Upgrade to CDK 0.1.59                                                          |
 | 2.1.7      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)   | Implement new proto schema implementation                                      |
 | 2.1.6      | 2025-10-16 | [68144](https://github.com/airbytehq/airbyte/pull/68144)   | Implement TableOperationsSuite component tests.                                |
-| 2.1.5      | 2025-10-09 | [67598](https://github.com/airbytehq/airbyte/pull/67598)   | Improve handling of heavily interleaved streams.                               |
+| 2.1.5      | 2025-10-10 | [67598](https://github.com/airbytehq/airbyte/pull/67598)   | Improve handling of heavily interleaved streams.                               |
 | 2.1.4      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743)   | Activate speed mode.                                                           |
 | 2.1.3      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743)   | Promoting release candidate 2.1.3-rc.1 to a main version.                      |
 | 2.1.3-rc.1 | 2025-09-25 | [66699](https://github.com/airbytehq/airbyte/pull/66699)   | Prepare for speed mode. Fix interleaved stream state handling.                 |

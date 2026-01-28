@@ -78,7 +78,9 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
-| 1.2.43 | 2025-12-16 | [70573](https://github.com/airbytehq/airbyte/pull/70573) | Update dependencies |
+| 1.2.45 | 2026-01-20 | [71929](https://github.com/airbytehq/airbyte/pull/71929) | Update dependencies |
+| 1.2.44 | 2026-01-14 | [71592](https://github.com/airbytehq/airbyte/pull/71592) | Update dependencies |
+| 1.2.43 | 2025-12-18 | [70573](https://github.com/airbytehq/airbyte/pull/70573) | Update dependencies |
 | 1.2.42 | 2025-11-25 | [69879](https://github.com/airbytehq/airbyte/pull/69879) | Update dependencies |
 | 1.2.41 | 2025-11-18 | [69398](https://github.com/airbytehq/airbyte/pull/69398) | Update dependencies |
 | 1.2.40 | 2025-10-29 | [68699](https://github.com/airbytehq/airbyte/pull/68699) | Update dependencies |
@@ -86,7 +88,7 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 | 1.2.38 | 2025-10-14 | [67769](https://github.com/airbytehq/airbyte/pull/67769) | Update dependencies |
 | 1.2.37 | 2025-10-07 | [67418](https://github.com/airbytehq/airbyte/pull/67418) | Update dependencies |
 | 1.2.36 | 2025-09-30 | [66933](https://github.com/airbytehq/airbyte/pull/66933) | Update dependencies |
-| 1.2.35 | 2025-09-23 | [66618](https://github.com/airbytehq/airbyte/pull/66618) | Update dependencies |
+| 1.2.35 | 2025-09-24 | [66618](https://github.com/airbytehq/airbyte/pull/66618) | Update dependencies |
 | 1.2.34 | 2025-09-09 | [65751](https://github.com/airbytehq/airbyte/pull/65751) | Update dependencies |
 | 1.2.33 | 2025-08-23 | [65224](https://github.com/airbytehq/airbyte/pull/65224) | Update dependencies |
 | 1.2.32 | 2025-08-09 | [64719](https://github.com/airbytehq/airbyte/pull/64719) | Update dependencies |

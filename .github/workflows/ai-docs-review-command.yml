@@ -1,0 +1,203 @@
+# AI Docs Review Workflow
+#
+# This workflow provides AI-powered documentation recommendations for PRs that modify
+# connector code. It uses Devin AI to review the proposed changes and provide
+# documentation guidance.
+#
+# Workflow triggers:
+# - Triggered via /ai-docs-review slash command on PRs
+# - Only processes PRs with connector changes
+# - Requires PR number input (fails gracefully if missing)
+#
+# Security model:
+# - Slash commands require write permission (only collaborators can trigger)
+# - This is workflow_dispatch, so secrets are always available
+# - Works for fork PRs because we don't execute PR code, only analyze files via API
+
+name: AI Docs Review Command
+
+on:
+  workflow_dispatch:
+    # Note on "required: false" for all inputs:
+    # GitHub's "required" field only affects the manual "Run workflow" UI, not runtime behavior.
+    # We set required: false to allow the workflow to start and fail gracefully with helpful
+    # error messages (see "Validate required inputs" step) instead of GitHub's generic errors.
+    # The slash command dispatcher always provides these inputs when triggered via /ai-docs-review.
+    inputs:
+      pr:
+        description: "Pull request number (required for execution, validated at runtime)"
+        type: number
+        required: false
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with the status. (optional)"
+        required: false
+      # Note: repo and gitref are passed by the slash command dispatcher but are NOT used by this workflow.
+      # We use github.repository and refs/pull/N/head instead for fork PR compatibility.
+      # These inputs are kept to maintain compatibility with the dispatcher's static-args contract.
+      repo:
+        description: "Repo in owner/repo format (passed by dispatcher, unused - kept for compatibility)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref (passed by dispatcher, unused - we use refs/pull/N/head instead)"
+        required: false
+
+run-name: "AI Docs Review for PR #${{ github.event.inputs.pr || 'unknown' }}"
+
+# Prevent duplicate runs for the same PR
+concurrency:
+  group: ai-docs-review-${{ github.event.inputs.pr || 'unknown' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  recommend-documentation-updates:
+    name: Recommend documentation updates with AI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get job variables
+        id: job-vars
+        run: |
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Validate required inputs
+        id: validate
+        run: |
+          PR_INPUT="${{ inputs.pr }}"
+          if [ -z "$PR_INPUT" ] || [ "$PR_INPUT" = "0" ]; then
+            echo "::error::Missing required input: pr. This workflow must be triggered from a PR using the /ai-docs-review slash command."
+            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Strict numeric validation to prevent injection attacks
+          if ! [[ "$PR_INPUT" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid PR number format: '$PR_INPUT'. PR number must be a positive integer."
+            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "valid=true" >> $GITHUB_OUTPUT
+
+      - name: Authenticate as GitHub App
+        if: steps.validate.outputs.valid == 'true'
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Post error comment (missing PR input)
+        if: steps.validate.outputs.valid == 'false' && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        with:
+          token: ${{ github.token }}
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > **AI Docs Review Failed**
+            >
+            > Missing required input: PR number. This workflow must be triggered from a PR using the `/ai-docs-review` slash command.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Fail if inputs invalid
+        if: steps.validate.outputs.valid == 'false'
+        run: exit 1
+
+      - name: Checkout PR code
+        if: steps.validate.outputs.valid == 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          # Use refs/pull/N/head which works for both fork and non-fork PRs
+          ref: refs/pull/${{ inputs.pr }}/head
+
+      - name: Get files changed in this PR
+        if: steps.validate.outputs.valid == 'true'
+        id: pr-files
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          echo "Fetching files changed in PR #${{ inputs.pr }}..."
+
+          # Use github.repository (base repo) for API calls - works for both fork and non-fork PRs
+          # Note: inputs.repo is the head repo which may be a fork, but PR number exists in base repo
+          # Use --paginate to handle PRs with more than 30 changed files
+          FILES=$(gh api --paginate repos/${{ github.repository }}/pulls/${{ inputs.pr }}/files --jq '.[].filename' | jq -R -s -c 'split("\n")[:-1]')
+
+          if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
+            echo "No files changed in this PR - skipping documentation recommendations."
+            echo "has_connector_changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Successfully fetched changed files list"
+
+          # Check if any files match the connector path pattern
+          CONNECTOR_FILES=$(echo "$FILES" | jq -r '.[] | select(test("^airbyte-integrations/connectors/[^/]+/"))')
+
+          if [ -z "$CONNECTOR_FILES" ]; then
+            echo "No connector files found in changed files - skipping documentation recommendations."
+            echo "has_connector_changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Connector changes detected - documentation recommendations needed"
+          echo "has_connector_changes=true" >> $GITHUB_OUTPUT
+
+      - name: Post start comment
+        if: inputs.comment-id != '' && steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'true'
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **AI Docs Review Started**
+            >
+            > Analyzing connector changes and preparing documentation recommendations.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Post skip comment (no connector changes)
+        if: inputs.comment-id != '' && steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'false'
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **AI Docs Review Skipped**
+            >
+            > No connector changes detected in this PR. Documentation review is only triggered for PRs that modify connector code.
+
+      - name: Start AI documentation recommendation session
+        if: steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'true'
+        uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4 # Pinned to specific commit for security
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          playbook-macro: "!connectordocs_pr_review"
+          prompt-text: "The pull request to review is ${{ inputs.pr }}."
+          start-message: "AI Docs Review session starting... Analyzing connector changes and preparing documentation recommendations."
+          tags: |
+            area/documentation
+            team/documentation
+
+      - name: Post failure comment
+        if: failure() && inputs.comment-id != '' && steps.validate.outputs.valid == 'true'
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token || github.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **AI Docs Review Failed**
+            >
+            > An error occurred while processing the documentation review. Please check the workflow logs for details.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.check
@@ -30,13 +30,20 @@ internal class SnowflakeCheckerTest {
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
 
-        val columnManager: SnowflakeColumnManager = SnowflakeColumnManager(snowflakeConfiguration)
+        val columnManager = SnowflakeColumnManager(snowflakeConfiguration)
 
         val checker =
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 columnManager = columnManager,
+                snowflakeRecordFormatter =
+                    if (isLegacyRawTablesOnly)
+                        io.airbyte.integrations.destination.snowflake.write.load
+                            .SnowflakeRawRecordFormatter()
+                    else
+                        io.airbyte.integrations.destination.snowflake.write.load
+                            .SnowflakeSchemaRecordFormatter(),
             )
         checker.check()
 
@@ -70,6 +77,13 @@ internal class SnowflakeCheckerTest {
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 columnManager = columnManager,
+                snowflakeRecordFormatter =
+                    if (isLegacyRawTablesOnly)
+                        io.airbyte.integrations.destination.snowflake.write.load
+                            .SnowflakeRawRecordFormatter()
+                    else
+                        io.airbyte.integrations.destination.snowflake.write.load
+                            .SnowflakeSchemaRecordFormatter(),
             )
 
         assertThrows<IllegalArgumentException> { checker.check() }

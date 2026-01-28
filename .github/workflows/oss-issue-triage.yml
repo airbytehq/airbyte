@@ -1,0 +1,95 @@
+name: OSS Issue Triage
+
+# This workflow automatically triggers AI triage for issues opened by community members
+# (users without write access to the repository). It helps provide quick initial responses
+# and escalates actionable issues to the internal oncall team.
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-permissions:
+    name: Check User Permissions
+    runs-on: ubuntu-24.04
+    outputs:
+      is-community-member: ${{ steps.check-access.outputs.is-community-member }}
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Check if user has write access
+        id: check-access
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          set -euo pipefail
+
+          echo "Checking permissions for user: $ISSUE_AUTHOR"
+
+          # Get the user's permission level for this repository
+          PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/$ISSUE_AUTHOR/permission \
+            --jq '.permission' 2>/dev/null || echo "none")
+
+          echo "User permission level: $PERMISSION"
+
+          # Users with write, maintain, or admin access are NOT community members
+          # Users with read or no access ARE community members
+          if [[ "$PERMISSION" == "admin" || "$PERMISSION" == "maintain" || "$PERMISSION" == "write" ]]; then
+            echo "User has write access - skipping AI triage"
+            echo "is-community-member=false" >> $GITHUB_OUTPUT
+          else
+            echo "User is a community member - triggering AI triage"
+            echo "is-community-member=true" >> $GITHUB_OUTPUT
+          fi
+
+  ai-triage:
+    name: AI Triage for Community Issue
+    needs: check-permissions
+    # if: needs.check-permissions.outputs.is-community-member == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte,oncall"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Run AI Triage
+        uses: aaronsteers/devin-action@v0.2.0
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          playbook-macro: "!oss_issue_triage"
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          start-message: |
+            **AI Triage Starting...**
+
+            Thank you for opening this issue! I'm an AI assistant that will help with initial triage.
+
+            I'll review your issue and:
+            - Ask clarifying questions if needed
+            - Provide immediate guidance if available
+            - Escalate to the appropriate team if this requires engineering attention
+
+            [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/oss_issue_triage.md)
+          tags: |
+            oss-issue-triage
+            community-issue

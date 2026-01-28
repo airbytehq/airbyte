@@ -26,7 +26,9 @@ Buy and sell tickets online for concerts, sports, theater, family and other even
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.40 | 2025-12-16 | [70763](https://github.com/airbytehq/airbyte/pull/70763) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [72000](https://github.com/airbytehq/airbyte/pull/72000) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71394](https://github.com/airbytehq/airbyte/pull/71394) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70763](https://github.com/airbytehq/airbyte/pull/70763) | Update dependencies |
 | 0.0.39 | 2025-11-25 | [69870](https://github.com/airbytehq/airbyte/pull/69870) | Update dependencies |
 | 0.0.38 | 2025-11-18 | [69656](https://github.com/airbytehq/airbyte/pull/69656) | Update dependencies |
 | 0.0.37 | 2025-10-29 | [69039](https://github.com/airbytehq/airbyte/pull/69039) | Update dependencies |
@@ -34,11 +36,11 @@ Buy and sell tickets online for concerts, sports, theater, family and other even
 | 0.0.35 | 2025-10-14 | [67879](https://github.com/airbytehq/airbyte/pull/67879) | Update dependencies |
 | 0.0.34 | 2025-10-07 | [67467](https://github.com/airbytehq/airbyte/pull/67467) | Update dependencies |
 | 0.0.33 | 2025-09-30 | [66875](https://github.com/airbytehq/airbyte/pull/66875) | Update dependencies |
-| 0.0.32 | 2025-09-23 | [66360](https://github.com/airbytehq/airbyte/pull/66360) | Update dependencies |
+| 0.0.32 | 2025-09-24 | [66360](https://github.com/airbytehq/airbyte/pull/66360) | Update dependencies |
 | 0.0.31 | 2025-09-09 | [65685](https://github.com/airbytehq/airbyte/pull/65685) | Update dependencies |
 | 0.0.30 | 2025-08-24 | [65496](https://github.com/airbytehq/airbyte/pull/65496) | Update dependencies |
 | 0.0.29 | 2025-08-16 | [65039](https://github.com/airbytehq/airbyte/pull/65039) | Update dependencies |
-| 0.0.28 | 2025-08-02 | [64475](https://github.com/airbytehq/airbyte/pull/64475) | Update dependencies |
+| 0.0.28 | 2025-08-03 | [64475](https://github.com/airbytehq/airbyte/pull/64475) | Update dependencies |
 | 0.0.27 | 2025-07-19 | [63615](https://github.com/airbytehq/airbyte/pull/63615) | Update dependencies |
 | 0.0.26 | 2025-07-12 | [63083](https://github.com/airbytehq/airbyte/pull/63083) | Update dependencies |
 | 0.0.25 | 2025-06-28 | [62288](https://github.com/airbytehq/airbyte/pull/62288) | Update dependencies |
