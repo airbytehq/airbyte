@@ -156,7 +156,14 @@ class DestinationMotherDuck(Destination):
         Get sql processor for processing queries
         """
         catalog_provider = CatalogProvider(configured_catalog)
+
         if self._is_motherduck(db_path):
+            airbyte_version = os.getenv("AIRBYTE_VERSION")
+            custom_user_agent = f"airbyte/{airbyte_version}" if airbyte_version else "airbyte"
+
+            edition = os.getenv("AIRBYTE_EDITION")
+            custom_user_agent = f"{custom_user_agent}({edition})" if edition else custom_user_agent
+
             return MotherDuckSqlProcessor(
                 sql_config=MotherDuckConfig(
                     schema_name=schema_name,
@@ -164,6 +171,7 @@ class DestinationMotherDuck(Destination):
                     db_path=db_path,
                     database=urlparse(db_path).path,
                     api_key=SecretString(motherduck_token),
+                    custom_user_agent=custom_user_agent,
                 ),
                 catalog_provider=catalog_provider,
             )
