@@ -64,7 +64,13 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
    If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
 
-10. Click **Set up source** and wait for the tests to complete.
+10. (Optional) For **Subscription Status Filter**, you can filter which subscriptions are synced. By default, all subscriptions are synced (including canceled). You can choose to sync only `canceled` or `ended` subscriptions to reduce data volume. See the [Stripe Subscriptions API](https://docs.stripe.com/api/subscriptions/list) for details.
+
+11. (Optional) For **Expand Charge Refunds**, you can disable this to exclude full refund objects from the charges stream, reducing response payload sizes. When disabled, only refund IDs are included. This setting only affects full refresh syncs. See the [Stripe Charges API](https://docs.stripe.com/api/charges/list) for details.
+
+12. (Optional) For **Expand Invoice Details**, you can disable this to exclude full discount and tax rate objects from the invoices stream, reducing response payload sizes. When disabled, only IDs are included. This setting only affects full refresh syncs. See the [Stripe Invoices API](https://docs.stripe.com/api/invoices/list) for details.
+
+13. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -157,6 +163,10 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
 Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
+
+#### Performance optimization settings
+
+The **Expand Charge Refunds** and **Expand Invoice Details** configuration options only affect **full refresh** syncs, which use the direct List APIs. **Incremental** syncs use the [Events API](https://docs.stripe.com/api/events/list) which returns full objects without expand parameters, so these settings have no effect on incremental sync performance.
 
 ### Troubleshooting
 
