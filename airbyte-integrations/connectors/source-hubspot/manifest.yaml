@@ -1262,7 +1262,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: created
       datetime_format: "%ms"
-      step: P30D
+      step: "{{ config.get('sync_step', 'P30D') }}"
       cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
@@ -1447,7 +1447,7 @@ definitions:
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      step: P30D
+      step: "{{ config.get('sync_step', 'P30D') }}"
       cursor_granularity: PT0.001S
       lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
@@ -1593,7 +1593,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: timestamp
       datetime_format: "%ms"
-      step: P30D
+      step: "{{ config.get('sync_step', 'P30D') }}"
       cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
@@ -2213,6 +2213,18 @@ spec:
         default: 10
         examples: [ 1, 2, 3 ]
         description: The number of worker threads to use for the sync.
+      sync_step:
+        type: string
+        title: Sync Step
+        default: P30D
+        examples:
+          - P30D
+          - P7D
+          - P1D
+        description: >-
+          The time window size (step) for incremental sync in ISO 8601 duration format.
+          This controls how the sync partitions time ranges when fetching data.
+          Default is P30D (30 days). Use smaller values like P7D or P1D if you encounter issues with large date ranges.
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
