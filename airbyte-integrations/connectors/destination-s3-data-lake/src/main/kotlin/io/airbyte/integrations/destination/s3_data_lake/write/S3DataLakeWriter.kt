@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3_data_lake.write
 
 import io.airbyte.cdk.ConfigErrorException
@@ -12,8 +16,8 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
-import org.apache.iceberg.catalog.TableIdentifier
 import javax.inject.Singleton
+import org.apache.iceberg.catalog.TableIdentifier
 
 @Singleton
 class S3DataLakeWriter(

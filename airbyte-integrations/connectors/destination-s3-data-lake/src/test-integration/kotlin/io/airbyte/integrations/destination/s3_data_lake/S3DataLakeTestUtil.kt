@@ -12,11 +12,11 @@ import io.airbyte.cdk.load.command.aws.AwsEnvVarConstants
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfigurationFactory
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeSpecification
-import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import java.nio.file.Files
 import java.nio.file.Path
 import org.apache.iceberg.catalog.Catalog

@@ -4,20 +4,12 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.write.transform
 
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
-import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import jakarta.inject.Singleton
 import java.math.BigDecimal
@@ -34,7 +26,9 @@ import java.math.BigInteger
  * Logic extracted from IcebergUtil.toRecord() to work with the dataflow model.
  */
 @Singleton
-class S3DataLakeValueCoercer : ValueCoercer {
+class S3DataLakeValueCoercer(
+    private val icebergUtil: IcebergUtil,
+) : ValueCoercer {
     companion object {
         private val MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE)
         private val MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE)
@@ -43,33 +37,14 @@ class S3DataLakeValueCoercer : ValueCoercer {
     }
 
     /**
-     * Transforms values after initial conversion.
-     * Stringifies complex types that Iceberg represents as strings.
+     * Transforms values after initial conversion. Stringifies complex types that Iceberg represents
+     * as strings.
      */
-    override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        // Stringify complex types - these are stored as JSON strings in Iceberg
-        // Note: Null values should NOT be stringified
-        if (value.abValue !is NullValue) {
-            when (value.type) {
-                is ObjectType,
-                ObjectTypeWithEmptySchema,
-                ObjectTypeWithoutSchema,
-                is UnionType,
-                is UnknownType,
-                ArrayTypeWithoutSchema -> {
-                    value.abValue = StringValue(value.abValue.serializeToString())
-                }
-                else -> {
-                    // No transformation needed
-                }
-            }
-        }
-        return value
-    }
+    override fun map(value: EnrichedAirbyteValue) = icebergUtil.mungeForIceberg(value)
 
     /**
-     * Validates values against Iceberg/Parquet constraints.
-     * Nullifies values that exceed destination limits.
+     * Validates values against Iceberg/Parquet constraints. Nullifies values that exceed
+     * destination limits.
      */
     override fun validate(value: EnrichedAirbyteValue): ValidationResult {
         return when (val abValue = value.abValue) {

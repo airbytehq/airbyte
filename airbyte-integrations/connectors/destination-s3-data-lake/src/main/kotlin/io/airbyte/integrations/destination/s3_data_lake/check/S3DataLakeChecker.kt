@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3_data_lake.check
 
 import io.airbyte.cdk.load.check.DestinationChecker
@@ -14,10 +18,10 @@ import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAM
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.spec.TEST_TABLE
 import jakarta.inject.Singleton
+import java.util.UUID
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.types.Types
-import java.util.UUID
 
 /**
  * Validates S3 Data Lake destination connectivity by creating and cleaning up a test Iceberg table.

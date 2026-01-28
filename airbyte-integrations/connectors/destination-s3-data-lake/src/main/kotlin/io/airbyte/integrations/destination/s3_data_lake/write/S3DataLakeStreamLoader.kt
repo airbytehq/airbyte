@@ -12,10 +12,10 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
-import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
