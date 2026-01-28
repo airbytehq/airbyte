@@ -33,11 +33,17 @@ The following versions of Airbyte can use Helm chart V2:
 
 - Airbyte version 1.6.0 and later, if installed and managed with Helm
 
+- Airbyte installed and managed with abctl version 0.30.0 or later (abctl uses Helm chart V2 by default starting with version 0.30.0)
+
 The following versions of Airbyte can't use Helm chart V2:
 
 - Airbyte versions before 1.6.0
 
-- Airbyte versions installed and managed with abctl
+- Airbyte installed and managed with abctl versions before 0.30.0
+
+:::note abctl users
+If you use abctl to manage Airbyte, you don't need to follow this migration guide. Simply upgrade abctl to version 0.30.0 or later, and it will automatically use Helm chart V2 for new installations. Run `abctl local install` to upgrade your existing installation.
+:::
 
 ## Schedule time with Airbyte
 
