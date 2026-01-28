@@ -14,9 +14,9 @@ import java.sql.Types;
  * Custom source operations for ClickHouse that handles type mapping differences.
  *
  * <p>
- * The ClickHouse JDBC driver returns JDBCType.OTHER for many ClickHouse-specific types that don't
- * have exact JDBC equivalents (e.g., UInt64, Int128). This class maps those types to appropriate
- * standard JDBC types based on the column type name.
+ * The ClickHouse JDBC driver 0.9.x returns JDBCType.OTHER for large integer types that don't have
+ * exact JDBC equivalents (UInt64, Int128, Int256, UInt128, UInt256). This class maps those types to
+ * NUMERIC so they can be used as cursor columns for incremental sync.
  */
 public class ClickHouseSourceOperations extends JdbcSourceOperations {
 
@@ -35,72 +35,21 @@ public class ClickHouseSourceOperations extends JdbcSourceOperations {
   }
 
   /**
-   * Maps ClickHouse type names to standard JDBC types when the driver returns JDBCType.OTHER.
+   * Maps ClickHouse type names to standard JDBC types when the driver returns JDBCType.OTHER. Only
+   * handles types that actually return as OTHER (large integers without JDBC equivalents).
    */
   private JDBCType mapOtherTypeToJdbcType(final String rawTypeName) {
     final String typeName = rawTypeName.toLowerCase();
-    // Integer types
-    if (typeName.startsWith("int8") || typeName.startsWith("int16")) {
-      return JDBCType.SMALLINT;
-    }
-    if (typeName.startsWith("int32") || typeName.startsWith("uint8") || typeName.startsWith("uint16")) {
-      return JDBCType.INTEGER;
-    }
-    if (typeName.startsWith("int64") || typeName.startsWith("uint32")) {
-      return JDBCType.BIGINT;
-    }
-    // Large integers - use NUMERIC for UInt64, Int128, Int256, UInt128, UInt256
+
+    // Large integers that don't have standard JDBC equivalents return as OTHER
+    // UInt64 can't fit in signed BIGINT, and Int128/Int256/UInt128/UInt256 have no JDBC equivalent
     if (typeName.startsWith("uint64") || typeName.startsWith("int128") ||
         typeName.startsWith("int256") || typeName.startsWith("uint128") ||
         typeName.startsWith("uint256")) {
       return JDBCType.NUMERIC;
     }
 
-    // Floating point types
-    if (typeName.startsWith("float32")) {
-      return JDBCType.REAL;
-    }
-    if (typeName.startsWith("float64")) {
-      return JDBCType.DOUBLE;
-    }
-
-    // Decimal types
-    if (typeName.startsWith("decimal")) {
-      return JDBCType.DECIMAL;
-    }
-
-    // Date and time types
-    if (typeName.equals("date") || typeName.startsWith("date32")) {
-      return JDBCType.DATE;
-    }
-    if (typeName.startsWith("datetime64")) {
-      return JDBCType.TIMESTAMP;
-    }
-    if (typeName.startsWith("datetime")) {
-      return JDBCType.TIMESTAMP;
-    }
-
-    // String types
-    if (typeName.startsWith("string") || typeName.startsWith("fixedstring")) {
-      return JDBCType.VARCHAR;
-    }
-
-    // UUID type
-    if (typeName.equals("uuid")) {
-      return JDBCType.VARCHAR;
-    }
-
-    // Boolean type
-    if (typeName.equals("bool") || typeName.equals("boolean")) {
-      return JDBCType.BOOLEAN;
-    }
-
-    // Array types
-    if (typeName.startsWith("array")) {
-      return JDBCType.ARRAY;
-    }
-
-    // Default to VARCHAR for unknown types
+    // Default to VARCHAR for any other types that unexpectedly return as OTHER
     return JDBCType.VARCHAR;
   }
 
