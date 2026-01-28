@@ -67,6 +67,19 @@ definitions:
                 Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
                 child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
                 you may safely ignore this warning.
+        # Handle 429 rate limit errors with exponential backoff retry
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message: >-
+                Rate limited by Stripe API. Retrying with backoff...
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+          max_retries: 6
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['client_secret'] }}"
@@ -1896,8 +1909,15 @@ spec:
         examples: [25, 100]
         description: >-
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
-          API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
-          calls per second for test and production tokens respectively.
+          API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25
+          calls per second for test/sandbox tokens and 100 for production tokens.
+
+# Concurrency level controls how many partition slices are processed in parallel.
+# Each worker handles a different time slice, preventing overlap.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 20
 
 api_budget:
   type: HTTPAPIBudget
@@ -1914,9 +1934,13 @@ api_budget:
 
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 100 if 'sk_test_' in config['client_secret'] else 25 }}"
+        # Use call_rate_limit from config if provided, otherwise default to 25 (test/sandbox) or 100 (live)
+        # Per Stripe docs: Live mode = 100 ops/sec, Sandbox = 25 ops/sec
+        - limit: "{{ config.get('call_rate_limit', 25 if 'sk_test_' in config['client_secret'] else 100) }}"
           interval: PT1S
       matchers: []
+  # Tell the CDK to recognize 429 as rate limit hit and back off accordingly
+  status_codes_for_ratelimit_hit: [429]
 schemas:
   accounts:
     $schema: https://json-schema.org/draft-07/schema#
