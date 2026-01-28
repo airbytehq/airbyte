@@ -39,34 +39,47 @@ uv pip install airbyte-agent-github
 
 ## Usage
 
-This connector supports multiple authentication methods:
+Connectors can run in open source or hosted mode.
 
-### OAuth 2
+### Open source
 
-```python
-from airbyte_agent_github import GithubConnector
-from airbyte_agent_github.models import GithubOauth2AuthConfig
-
-connector = GithubConnector(
-  auth_config=GithubOauth2AuthConfig(
-    access_token="..."
-  )
-)
-result = await connector.repositories.get()
-```
-
-### Personal Access Token
+In open source mode, you provide API credentials directly to the connector.
 
 ```python
 from airbyte_agent_github import GithubConnector
 from airbyte_agent_github.models import GithubPersonalAccessTokenAuthConfig
 
 connector = GithubConnector(
-  auth_config=GithubPersonalAccessTokenAuthConfig(
-    token="..."
-  )
+    auth_config=GithubPersonalAccessTokenAuthConfig(
+        token="<GitHub personal access token (fine-grained or classic)>"
+    )
 )
-result = await connector.repositories.get()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GithubConnector.tool_utils
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_github import GithubConnector
+
+connector = GithubConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GithubConnector.tool_utils
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
 
@@ -99,12 +112,14 @@ This connector supports the following entities and actions.
 | Project Items | [List](./REFERENCE.md#project-items-list) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Github API reference](https://docs.github.com/en/rest).
 
 ## Version information
 
-- **Package version:** 0.18.50
-- **Connector version:** 0.1.7
-- **Generated with Connector SDK commit SHA:** ca5acdda8030d8292c059c82f498a95b2227c106
+- **Package version:** 0.18.62
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

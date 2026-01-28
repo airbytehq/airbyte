@@ -18,6 +18,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class MSSQLDataValidator(
@@ -103,6 +104,8 @@ class MSSQLStandardInsertPerformanceTest :
     }
 }
 
+// Re-enable once we fix our Azure account
+@Disabled("Our Azure creds are not functioning right now")
 class MSSQLBulkInsertPerformanceTest :
     MSSQLPerformanceTest(
         configContents = Files.readString(Path.of("secrets/bulk_upload_config.json")),

@@ -74,9 +74,10 @@ In order to configure this connector, you need to generate your Track API Key an
 
 | Version | Date       | Pull Request                                              | Subject                                                   |
 |:--------|:-----------|:----------------------------------------------------------|:----------------------------------------------------------|
+| 0.0.9 | 2026-01-26 | [72303](https://github.com/airbytehq/airbyte/pull/72303) | Upgrade CDK to 0.2.0 |
 | 0.0.8 | 2025-11-05 | [69132](https://github.com/airbytehq/airbyte/pull/69132) | Upgrade to Bulk CDK 0.1.61. |
 | 0.0.7   | 2025-09-23 | [66571](https://github.com/airbytehq/airbyte/pull/66571)      | Fix person_identify in incremental mode                   |
-| 0.0.6   | 2025-09-16 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)      | Use low-code discover definition and pin to a CDK version |
+| 0.0.6   | 2025-09-18 | [66238](https://github.com/airbytehq/airbyte/pull/66238)  | Use low-code discover definition and pin to a CDK version |
 | 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)  | Update following breaking changes on spec                 |
 | 0.0.4   | 2025-08-20 | [#65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                               |
 | 0.0.3   | 2025-07-08 | [#62848](https://github.com/airbytehq/airbyte/pull/62848) | Improve UX on connector configuration                     |
