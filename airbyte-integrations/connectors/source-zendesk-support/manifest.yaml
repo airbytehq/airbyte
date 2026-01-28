@@ -25,7 +25,6 @@ definitions:
     token_refresh_endpoint: "https://{{ config['subdomain'] }}.zendesk.com/oauth/tokens"
     refresh_request_body:
       grant_type: "refresh_token"
-      expires_in: 172800
       refresh_token: "{{ config['credentials']['refresh_token'] }}"
       client_id: "{{ config['credentials']['client_id'] }}"
       client_secret: "{{ config['credentials']['client_secret'] }}"
