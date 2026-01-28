@@ -5,6 +5,8 @@ on:
   pull_request_target:
     types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
 
+permissions: {}
+
 jobs:
   auto-label-prs:
     name: "Add Labels to PRs. Safe to Merge on fail"
