@@ -33,6 +33,7 @@ class SFTPClient:
         username: str,
         password: str = None,
         private_key: Optional[str] = None,
+        private_key_passphrase: Optional[str] = None,
         port: Optional[int] = None,
         timeout: Optional[int] = REQUEST_TIMEOUT,
     ):
@@ -41,7 +42,7 @@ class SFTPClient:
         self.password = password
         self.port = int(port) or 22
 
-        self.key = paramiko.RSAKey.from_private_key(io.StringIO(private_key)) if private_key else None
+        self.key = paramiko.RSAKey.from_private_key(io.StringIO(private_key), password=private_key_passphrase) if private_key else None
         self.timeout = float(timeout) if timeout else REQUEST_TIMEOUT
 
         self._connect()
