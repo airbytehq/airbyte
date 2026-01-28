@@ -28,7 +28,8 @@ definitions:
       Private App Credentials: "#/definitions/api_token_auth"
 
   base_requester:
-    type: HttpRequester
+    type: CustomRequester
+    class_name: source_declarative_manifest.components.HubspotHttpRequester
     url_base: "https://api.hubapi.com"
     authenticator:
       $ref: "#/definitions/authenticator"
@@ -267,7 +268,8 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: HttpRequester
+                  type: CustomRequester
+                  class_name: source_declarative_manifest.components.HubspotHttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -357,7 +359,8 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: HttpRequester
+                  type: CustomRequester
+                  class_name: source_declarative_manifest.components.HubspotHttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -479,7 +482,8 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: HttpRequester
+                  type: CustomRequester
+                  class_name: source_declarative_manifest.components.HubspotHttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -1258,7 +1262,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: created
       datetime_format: "%ms"
-      step: P30D
+      step: "P{{ config.get('sync_step', 30) }}D"
       cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
@@ -1443,7 +1447,7 @@ definitions:
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      step: P30D
+      step: "P{{ config.get('sync_step', 30) }}D"
       cursor_granularity: PT0.001S
       lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
@@ -1589,7 +1593,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: timestamp
       datetime_format: "%ms"
-      step: P30D
+      step: "P{{ config.get('sync_step', 30) }}D"
       cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
@@ -2209,6 +2213,19 @@ spec:
         default: 10
         examples: [ 1, 2, 3 ]
         description: The number of worker threads to use for the sync.
+      sync_step:
+        type: integer
+        title: Sync Step (Days)
+        default: 30
+        minimum: 1
+        examples:
+          - 30
+          - 7
+          - 1
+        description: >-
+          The time window size (step) in days for incremental sync.
+          This controls how the sync partitions time ranges when fetching data.
+          Default is 30 days. Use smaller values like 7 or 1 if you encounter issues with large date ranges.
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
