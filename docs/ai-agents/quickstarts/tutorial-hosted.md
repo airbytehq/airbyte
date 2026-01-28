@@ -86,11 +86,9 @@ Once you have a scoped token, create a connector with your API credentials. Airb
 
 - Additional configuration fields that may or may not be mandatory, depending on the source. If applicable, these fields are explained in the reference docs for your connector.
 
-  - `source_config`: Connector-specific configurations for direct connectors.
-
   - `credentials`: Authentication information for your connector.
 
-  - `environment`: Connector-specific configurations for replication connectors.
+  - `environment`: Connector-specific configurations for the connector.
 
 This is what the request looks like when you're using a personal access token. See more examples in the [authentication docs](/ai-agents/connectors/github/AUTH).
 
@@ -101,7 +99,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     -d '{
       "connector_type": "github",
       "external_user_id": "<external_user_id>",
-      "source_config": {"repositories": "airbytehq/airbyte"},
+      "environment": {"repositories": "airbytehq/airbyte"},
       "credentials": {"token": "<GitHub personal access token (fine-grained or classic)>"}
     }'
 ```
