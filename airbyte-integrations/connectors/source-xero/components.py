@@ -84,7 +84,8 @@ class CustomExtractor(RecordExtractor):
                 self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-        response_body = self.decoder.decode(response)
+        # self.decoder.decode(response) = <generator object JsonDecoder.decode>
+        response_body = next(self.decoder.decode(response))
         if len(self.field_path) == 0:
             extracted = response_body
         else:
