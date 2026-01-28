@@ -58,14 +58,10 @@ class SnowflakeAirbyteClient(
                 }
             }
         } catch (e: SnowflakeSQLException) {
-            if (e.message?.contains("does not exist or not authorized") ?: false) {
-                log.debug(e) {
-                    "Table ${tableName.toPrettyString()} does not exist.  Returning a null count to signal a missing table."
-                }
-                null
-            } else {
-                throw e
+            log.debug(e) {
+                "Table ${tableName.toPrettyString()} does not exist.  Returning a null count to signal a missing table."
             }
+            null
         }
 
     /**
