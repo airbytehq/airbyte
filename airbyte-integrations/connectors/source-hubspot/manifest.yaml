@@ -19,6 +19,10 @@ definitions:
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     token_refresh_endpoint: "https://api.hubapi.com/oauth/v1/token"
+    refresh_token_updater:
+      access_token_config_path:
+        - credentials
+        - access_token
 
   authenticator:
     type: SelectiveAuthenticator
@@ -28,8 +32,7 @@ definitions:
       Private App Credentials: "#/definitions/api_token_auth"
 
   base_requester:
-    type: CustomRequester
-    class_name: source_declarative_manifest.components.HubspotHttpRequester
+    type: HttpRequester
     url_base: "https://api.hubapi.com"
     authenticator:
       $ref: "#/definitions/authenticator"
@@ -268,8 +271,7 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: CustomRequester
-                  class_name: source_declarative_manifest.components.HubspotHttpRequester
+                  type: HttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -359,8 +361,7 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: CustomRequester
-                  class_name: source_declarative_manifest.components.HubspotHttpRequester
+                  type: HttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -482,8 +483,7 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: CustomRequester
-                  class_name: source_declarative_manifest.components.HubspotHttpRequester
+                  type: HttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
