@@ -1,8 +1,4 @@
-/*
- * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
- */
-
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.integrations.destination.s3_data_lake.check
 
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationStream
@@ -13,11 +9,15 @@ import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
+import io.airbyte.integrations.destination.s3_data_lake.spec.TEST_TABLE
 import jakarta.inject.Singleton
-import java.util.UUID
 import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
 import org.apache.iceberg.types.Types
+import java.util.UUID
 
 /**
  * Validates S3 Data Lake destination connectivity by creating and cleaning up a test Iceberg table.
@@ -77,7 +77,7 @@ class S3DataLakeChecker(
             )
         s3DataLakeUtil.createNamespaceWithGlueHandling(testTableIdentifier, catalog)
 
-        var table: org.apache.iceberg.Table? = null
+        var table: Table? = null
         try {
             table =
                 icebergUtil.createTable(
