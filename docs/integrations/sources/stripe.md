@@ -167,7 +167,6 @@ However, not all the entities are supported by the Events API, so the Stripe con
 - `Events`
 - `File Links`
 - `Files`
-- `Refunds`
 - `Setup Attempts`
 - `Shipping Rates`
 
@@ -207,6 +206,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Plans`
 - `Prices`
 - `Products`
+- `Refunds`
 - `Reviews`
 - `Setup Intents`
 - `Subscription Schedule`
