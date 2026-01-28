@@ -246,7 +246,8 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.15.17 | 2026-01-27 | [72393](https://github.com/airbytehq/airbyte/pull/72393) | feat(source-stripe): Add optional config parameters for performance optimization |
+| 5.16.0 | 2026-01-28 | [72393](https://github.com/airbytehq/airbyte/pull/72393) | feat(source-stripe): Add optional config parameters for performance optimization |
+| 5.15.17 | 2026-01-27 | [72363](https://github.com/airbytehq/airbyte/pull/72363) | fix(source-stripe): Add date filtering for checkout_sessions full refresh |
 | 5.15.16 | 2026-01-20 | [72106](https://github.com/airbytehq/airbyte/pull/72106) | Update dependencies |
 | 5.15.15 | 2026-01-14 | [71614](https://github.com/airbytehq/airbyte/pull/71614) | Update dependencies |
 | 5.15.14 | 2025-12-18 | [70638](https://github.com/airbytehq/airbyte/pull/70638) | Update dependencies |
