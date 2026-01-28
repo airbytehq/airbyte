@@ -13,9 +13,9 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
 import io.airbyte.cdk.load.command.iceberg.parquet.CatalogType
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogSpecification
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogSpecifications
-import io.airbyte.cdk.load.command.s3.S3BucketRegion
-import io.airbyte.cdk.load.command.s3.S3BucketSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
+import io.airbyte.integrations.destination.s3_data_lake.config.S3BucketRegion
+import io.airbyte.integrations.destination.s3_data_lake.config.S3BucketSpecification
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 

@@ -35,15 +35,12 @@ import org.apache.iceberg.types.Types
  */
 @Singleton
 class S3DataLakeChecker(
+    private val config: S3DataLakeConfiguration,
     private val icebergTableCleaner: IcebergTableCleaner,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val icebergUtil: IcebergUtil,
     private val tableIdGenerator: TableIdGenerator,
-) : DestinationChecker<S3DataLakeConfiguration> {
-
-    override fun check(config: S3DataLakeConfiguration) {
-        catalogValidation(config)
-    }
+) : DestinationChecker {
 
     /**
      * Validates catalog connectivity by creating a temporary test table and cleaning it up.
@@ -51,11 +48,10 @@ class S3DataLakeChecker(
      * Creates a uniquely-named test table in the configured namespace, then immediately cleans it
      * up. The cleanup is guaranteed via try-finally to prevent orphaned resources.
      *
-     * @param config The S3 Data Lake destination configuration
      * @throws Exception if catalog validation fails (e.g., invalid credentials, missing
      * permissions)
      */
-    private fun catalogValidation(config: S3DataLakeConfiguration) {
+    override fun check() {
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
 
