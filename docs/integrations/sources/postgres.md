@@ -278,14 +278,15 @@ The command produces the private key in PEM format and the public key remains in
 
 ## Configuring Entra authentication
 
-The Airbyte source can be configured to authenticate as a Microsoft Entra service principal. 
-This allows Airbyte to use short-lived identity tokens to authenticate to an Azure Postgres server. 
-Consult the Microsoft [documentation on this topic](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-azure-ad-authentication) for more detail on configuring the server and other Entra resources.
+The Airbyte Postgres source can authenticate as a Microsoft Entra service principal, allowing Airbyte to use short-lived identity tokens to authenticate to an Azure Database for PostgreSQL flexible server. Consult the [Microsoft Entra authentication documentation](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-concepts) for more detail on configuring the server and other Entra resources.
 
-To configure the Airbyte Postgres source with Entra authentication, set the `Username` to the Entra ID, as discussed 
-in [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-configure-sign-in-azure-ad-authentication).
-Set the password to a client secret for your Entra service principal.
-Expand the Optional Fields and provide the Entra tenant ID and Entra client (or app) ID of the service principal.
+To configure the Airbyte Postgres source with Entra authentication:
+
+1. Set the **Username** to the Entra principal name. This is typically the user principal name (UPN) of the Microsoft Entra user or the display name of the Entra group that the service principal belongs to. See [Microsoft's documentation on configuring Entra authentication](https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-configure) for details.
+2. Set the **Password** to the client secret for your Entra service principal.
+3. Enable the **Entra service principal authentication** option. This tells the connector to interpret the password as a client secret and use it to obtain an access token.
+4. Provide the **Entra tenant ID**, which is the ID of your Microsoft Entra tenant.
+5. Provide the **Entra client ID**, which is the application (client) ID of your service principal.
 
 ## Limitations & Troubleshooting
 
