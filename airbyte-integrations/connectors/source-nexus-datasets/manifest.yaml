@@ -1,0 +1,143 @@
+version: 6.5.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - "datasets"
+
+definitions:
+  # Base Requester with Authentication
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url'] }}"
+    http_method: GET
+
+streams:
+  - type: StateDelegatingStream
+    name: datasets
+    full_refresh_stream:
+      type: DeclarativeStream
+      name: datasets
+      retriever:
+        type: SimpleRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [] # Assuming the records are at the root of the response, adjust if nested
+        requester:
+          $ref: "#/definitions/base_requester"
+          url_base: "{{ config['base_url'] }}/{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode=Full"
+          authenticator:
+            type: CustomAuthenticator
+            class_name: source_declarative_manifest.components.NexusCustomAuthenticator
+            config: "{{ config }}"
+            $parameters:
+              url_base: "{{ config['base_url'] }}/{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode=Full"
+        decoder:
+          type: CustomDecoder # Now using CustomDecoder
+          class_name: source_declarative_manifest.components.FlexibleDecoder # Pointing Python class
+          $parameters: # Parameters passed to FlexibleDecoder's __init__
+            config: "{{ config }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets" # Reference the schema defined below
+    incremental_stream:
+      type: DeclarativeStream
+      name: datasets
+      retriever:
+        type: SimpleRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [] # Assuming the records are at the root of the response, adjust if nested
+        requester:
+          $ref: "#/definitions/base_requester"
+          url_base: "{{ config['base_url'] }}/{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode=Incremental"
+          authenticator:
+            type: CustomAuthenticator
+            class_name: source_declarative_manifest.components.NexusCustomAuthenticator
+            config: "{{ config }}"
+            $parameters:
+              url_base: "{{ config['base_url'] }}/{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode=Incremental"
+        decoder:
+          type: CustomDecoder # Now using CustomDecoder
+          class_name: source_declarative_manifest.components.FlexibleDecoder # Pointing Python class
+          $parameters: # Parameters passed to FlexibleDecoder's __init__
+            config: "{{ config }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets" # Reference the schema defined below
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/nexus-datasets # Replace with your connector's documentation URL
+  connection_specification:
+    title: Infor Nexus Datasets Spec
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - base_url
+      - user_id
+      - access_key_id
+      - secret_key
+      - api_key
+      - dataset_path
+      - dataset_name
+    additionalProperties: true
+    properties:
+      base_url:
+        title: "Base URL"
+        type: "string"
+        description: "The base URL of the Infor Nexus datasets API."
+        pattern: "^https?://[\\w.-]+(:\\d+)?(/[\\w.-]+)*/?$"
+        order: 1
+      user_id:
+        title: "User ID"
+        type: "string"
+        description: "The user ID for the Infor Nexus API to get data."
+        order: 5
+      access_key_id:
+        title: "Access Key ID"
+        type: "string"
+        description: "The access key ID for the Infor Nexus API."
+        order: 6
+      secret_key:
+        title: "Secret Key"
+        type: "string"
+        description: "The secret key for the HMAC authentication for the Infor Nexus API."
+        order: 7
+      api_key:
+        title: "API Key"
+        type: string
+        description: "The Infor Nexus Data API Key."
+        order: 8
+      dataset_path:
+        type: string
+        description: "Constant data set path."
+        default: "rest/3.1/analytics/dataset"
+        airbyte_hidden: true # Hide this from UI if it's a fixed internal path
+      dataset_name:
+        title: "Dataset Name"
+        type: string
+        description: "The name of the dataset to export."
+        order: 2
+      dataset_export_prefix:
+        type: string
+        description: "Constant Data Export Prefix."
+        default: "export"
+        airbyte_hidden: true
+schemas:
+  datasets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true # IMPORTANT: Set to false if you only want the 'raw_data' column
+    properties:
+      raw_data: # Define a single property for the entire record as a JSON string
+        type: ["string", "null"]
+        description: "The entire record as a JSON string."
