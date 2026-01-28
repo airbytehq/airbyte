@@ -147,7 +147,7 @@ def test_oauth_refresh_token_updater(
             request_headers={"Authorization": f"Bearer {expected_token}"},
         )
 
-        output = _read_stream("owners", config)
+        _read_stream("owners", config)
 
         # Verify token refresh was called (or not) based on expiry
         if should_refresh:
