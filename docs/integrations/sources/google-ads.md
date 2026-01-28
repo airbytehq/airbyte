@@ -328,6 +328,34 @@ This source is constrained by the [Google Ads API limits](https://developers.goo
 Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
 </HideInUI>
 
+## Limitations & Troubleshooting
+
+### Empty Array Fields Now Return Null
+
+Starting with version 4.1.0, there is a change in how empty array/list fields are represented in the data:
+
+**What changed:**
+- Array fields that were previously empty (e.g., `[]`) are now returned as `null`
+- This affects custom queries from version 4.1.0 and other streams that were migrated to low-code
+
+**Why this changed:**
+- Prior to 4.1.0, custom queries used the Google Ads Python library (protobuf-based), which represents empty repeated fields as empty arrays `[]`
+- Starting with 4.1.0, custom queries use the REST API (JSON-based), where empty/unset array fields are returned as `null`
+- This same behavior also applies to other streams when they were migrated to low-code
+
+**Example affected fields:**
+- `metrics.interaction_event_types`
+- Other array/list type fields across various streams
+
+**How to resolve:**
+To maintain consistent data format in your destination:
+1. Clear (reset) the affected streams after upgrading to version 4.1.0 or later
+2. Perform a full re-sync of the data
+3. All historical and new data will then use the new format (null instead of empty arrays)
+
+**Note:** This is not a bug but a behavioral difference between the Google Ads Python library and the REST API. The new format (null for empty arrays) is the standard JSON representation.
+
+
 ## Changelog
 
 <details>
