@@ -71,7 +71,7 @@ class PostgresDataDumper(
             ds.connection.use { connection ->
                 val statement = connection.createStatement()
 
-                // Use the FinalTableNameGenerator to get the correct table name
+                // Use the TableSchemaMapper to get the correct table name
                 val tableName = schemaMapper.toFinalTableName(stream.mappedDescriptor)
                 val quotedTableName = "\"${tableName.namespace}\".\"${tableName.name}\""
 
