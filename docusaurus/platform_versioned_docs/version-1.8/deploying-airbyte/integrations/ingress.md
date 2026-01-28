@@ -21,7 +21,7 @@ Set appropriate backend timeout values for the Airbyte UI ingress. Timeout value
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
 
-If you don't already have an NGINX controller installed, you can do it by running `helm install my-release oci://ghcr.io/nginxinc/charts/nginx-ingress --version 1.3.1` or following the [instructions](https://docs.nginx.com/nginx-ingress-controller/installation/installing-nic/installation-with-helm/) from NGINX.
+If you don't already have an NGINX controller installed, you can do it by running `helm install my-release oci://ghcr.io/nginxinc/charts/nginx-ingress --version 2.3.0` or following the [instructions](https://docs.nginx.com/nginx-ingress-controller/installation/installing-nic/installation-with-helm/) from NGINX.
 
 ```yaml
 apiVersion: networking.k8s.io/v1
