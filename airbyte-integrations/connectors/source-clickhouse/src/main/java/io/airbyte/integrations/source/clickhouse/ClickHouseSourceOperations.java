@@ -11,13 +11,12 @@ import java.sql.JDBCType;
 import java.sql.Types;
 
 /**
- * Custom source operations for ClickHouse that handles type mapping differences in newer JDBC
- * driver versions (0.6.x+).
+ * Custom source operations for ClickHouse that handles type mapping differences.
  *
- * The ClickHouse JDBC driver 0.6.x+ returns JDBCType.OTHER for many ClickHouse-specific types that
- * don't have exact JDBC equivalents (e.g., UInt64, Int128). This class maps those types to
- * appropriate standard JDBC types based on the column type name, ensuring cursor type validation
- * works correctly for incremental syncs.
+ * <p>
+ * The ClickHouse JDBC driver returns JDBCType.OTHER for many ClickHouse-specific types that don't
+ * have exact JDBC equivalents (e.g., UInt64, Int128). This class maps those types to appropriate
+ * standard JDBC types based on the column type name.
  */
 public class ClickHouseSourceOperations extends JdbcSourceOperations {
 
@@ -27,8 +26,8 @@ public class ClickHouseSourceOperations extends JdbcSourceOperations {
 
     // If the driver returns OTHER, look at the type name and map it appropriately
     if (columnType == Types.OTHER) {
-      final String typeName = field.get(JdbcConstants.INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
-      return mapClickHouseTypeToJdbcType(typeName);
+      final String typeName = field.get(JdbcConstants.INTERNAL_COLUMN_TYPE_NAME).asText();
+      return mapOtherTypeToJdbcType(typeName);
     }
 
     // For standard JDBC types, use the parent implementation
@@ -36,10 +35,10 @@ public class ClickHouseSourceOperations extends JdbcSourceOperations {
   }
 
   /**
-   * Maps ClickHouse-specific type names to standard JDBC types. This ensures that columns with
-   * ClickHouse types can be used as cursors for incremental sync.
+   * Maps ClickHouse type names to standard JDBC types when the driver returns JDBCType.OTHER.
    */
-  private JDBCType mapClickHouseTypeToJdbcType(final String typeName) {
+  private JDBCType mapOtherTypeToJdbcType(final String rawTypeName) {
+    final String typeName = rawTypeName.toLowerCase();
     // Integer types
     if (typeName.startsWith("int8") || typeName.startsWith("int16")) {
       return JDBCType.SMALLINT;
