@@ -16,7 +16,7 @@ application {
 }
 
 dependencies {
-    implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
+    implementation 'com.clickhouse:clickhouse-jdbc:0.9.5:all'
 
     testImplementation 'org.testcontainers:clickhouse:1.19.4'
 }
