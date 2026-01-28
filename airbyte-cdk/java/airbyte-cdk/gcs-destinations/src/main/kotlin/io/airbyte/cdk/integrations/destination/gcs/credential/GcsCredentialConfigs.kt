@@ -4,7 +4,6 @@
 package io.airbyte.cdk.integrations.destination.gcs.credential
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.commons.json.Jsons
 import java.util.*
 
 object GcsCredentialConfigs {
@@ -15,9 +14,9 @@ object GcsCredentialConfigs {
                 credentialConfig["credential_type"].asText().uppercase(Locale.getDefault())
             )
 
-        if (credentialType == GcsCredentialType.HMAC_KEY) {
-            return GcsHmacKeyCredentialConfig(credentialConfig)
+        return when (credentialType) {
+            GcsCredentialType.HMAC_KEY -> GcsHmacKeyCredentialConfig(credentialConfig)
+            GcsCredentialType.SERVICE_ACCOUNT -> GcsServiceAccountCredentialConfig(credentialConfig)
         }
-        throw RuntimeException("Unexpected credential: " + Jsons.serialize(credentialConfig))
     }
 }
