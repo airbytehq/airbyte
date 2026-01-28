@@ -170,6 +170,30 @@ ssh-keygen -t rsa -m PEM -f myuser_rsa
 
 This produces the private key in pem format, and the public key remains in the standard format used by the `authorized_keys` file on your bastion host. The public key should be added to your bastion host to whichever user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen, so it may log in to the bastion.
 
+## Source Configuration
+
+The source settings page used to connect your MySQL source also includes the option
+to edit some configurations to improve performance and accommodate any server limitations. These can be found in the "Optional fields" dropdown.
+
+<details>
+    <summary>Max Concurrent Queries to Database</summary>
+
+This configuration controls how many simultaneous database queries the MySQL source can execute at once.
+
+#### Default behavior 
+If left empty, Airbyte automatically optimizes the number based on your setup.
+
+### Why it matters 
+- More concurrent connections can speed up data extraction by parallelizing work.
+- However, a large number of connections can overwhelm the server, especially if the source is being used in multiple syncs.
+
+### Best practices 
+- **Leave unset for optimal performance**: Unless you have specific connection constraints, leave this field empty to let Airbyte automatically manage connections for best performance.
+- **Multiple syncs**: If you're using this source in multiple syncs simultaneously, consider setting a lower value to avoid hitting server limits.
+- **Check your database limits**: Verify your MySQL `max_connections` setting can accommodate the total connections across all syncs. You can check this with: `SHOW VARIABLES LIKE 'max_connections';`
+
+</details>
+
 ## Limitations & Troubleshooting
 
 To see connector limitations, or troubleshoot your MySQL connector, see more [in our MySQL troubleshooting guide](/integrations/sources/mysql/mysql-troubleshooting).
