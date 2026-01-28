@@ -338,9 +338,36 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
 
 
 class IterableExportEventsStreamAdjustableRange(IterableExportStreamAdjustableRange, ABC):
+    """
+    Base class for event streams that use the 'events' schema.
+
+    These streams need special parsing to extract common fields and restructure
+    the remaining fields into a 'data' object to match the events.json schema.
+    """
+
+    COMMON_FIELDS = ("itblInternal", "_type", "createdAt", "email")
+
     def get_json_schema(self) -> Mapping[str, Any]:
         """All child stream share the same 'events' schema"""
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("events")
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        Parse the JSONL response and restructure records to match the events schema.
+
+        The Iterable export API returns flat JSON records. This method extracts common
+        fields (itblInternal, _type, createdAt, email) and puts all remaining fields
+        into a 'data' object to match the events.json schema structure.
+
+        This mirrors the transformation done by EventsRecordExtractor in components.py.
+        """
+        for obj in response.iter_lines():
+            record = json.loads(obj)
+            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
+            common_fields_dict = {}
+            for field in self.COMMON_FIELDS:
+                common_fields_dict[field] = record.pop(field, None)
+            yield {**common_fields_dict, "data": record}
 
 
 class Campaigns(IterableStream):
