@@ -259,6 +259,7 @@ async def connectors(
                 ctx.obj["is_local"],
                 ctx.obj["ci_context"],
                 ctx.obj["git_repo_url"],
+                ctx.obj.get("pull_request"),
             )
         )
 
