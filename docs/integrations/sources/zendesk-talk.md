@@ -1,20 +1,28 @@
 # Zendesk Talk
 
+This page contains the setup guide and reference information for the Zendesk Talk source connector.
+
+:::info Breaking change in version 2.0.0
+Version 2.0.0 introduces OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens. See the [migration guide](./zendesk-talk-migrations.md) for details.
+:::
+
 ## Prerequisites
 
 - Zendesk API Token or Zendesk OAuth Client
-- Zendesk Email (For API Token authentication)
+- Zendesk Email (for API Token authentication)
 - Zendesk Subdomain
 
 ## Setup guide
 
 ### Step 1: Set up Zendesk
 
-Generate an API access token as described in [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-)
+The connector supports three authentication methods:
 
-We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte is able to access.
+**API Token (recommended for Airbyte Open Source):** Generate an API access token as described in the [Zendesk documentation](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-). We recommend creating a restricted, read-only key specifically for Airbyte access. This allows you to control which resources Airbyte can access.
 
-Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) for details.
+**OAuth2.0 (recommended for Airbyte Cloud):** This method uses rotating refresh tokens for enhanced security. See the [Zendesk OAuth documentation](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/) for details on how OAuth grant-type tokens work.
+
+**OAuth2.0 (Legacy):** This method uses static access tokens that do not expire. Zendesk is deprecating non-expiring OAuth access tokens by September 30, 2025, so we recommend migrating to the new OAuth2.0 flow.
 
 <!-- env:cloud -->
 
@@ -26,11 +34,27 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Zendesk Talk connector and select **Zendesk Talk** from the Source type dropdown.
 4. Fill in the rest of the fields:
-   - _Subdomain_
-   - _Authentication (API Token / OAuth2.0)_
-   - _Start Date_
+   - **Subdomain**: Your Zendesk subdomain (the part before `.zendesk.com` in your account URL)
+   - **Authentication**: Select OAuth2.0 and complete the authorization flow
+   - **Start Date**: The date from which you want to start syncing data (format: `YYYY-MM-DDT00:00:00Z`)
 5. Click **Set up source**
+
 <!-- /env:cloud -->
+
+<!-- env:oss -->
+
+**For Airbyte Open Source:**
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Zendesk Talk connector and select **Zendesk Talk** from the Source type dropdown.
+4. Fill in the rest of the fields:
+   - **Subdomain**: Your Zendesk subdomain (the part before `.zendesk.com` in your account URL)
+   - **Authentication**: Select API Token and enter your email address and API token
+   - **Start Date**: The date from which you want to start syncing data (format: `YYYY-MM-DDT00:00:00Z`)
+5. Click **Set up source**
+
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -41,27 +65,27 @@ The **Zendesk Talk** source connector supports the following [sync modes](https:
 
 ## Supported Streams
 
-This Source is capable of syncing the following core Streams:
+This source is capable of syncing the following streams:
 
-- [Account Overview](https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-account-overview)
-- [Addresses](https://developer.zendesk.com/rest_api/docs/voice-api/phone_numbers#list-phone-numbers)
-- [Agents Activity](https://developer.zendesk.com/rest_api/docs/voice-api/stats#list-agents-activity)
-- [Agents Overview](https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-agents-overview)
-- [Calls](https://developer.zendesk.com/rest_api/docs/voice-api/incremental_exports#incremental-calls-export) \(Incremental sync\)
-- [Call Legs](https://developer.zendesk.com/rest_api/docs/voice-api/incremental_exports#incremental-call-legs-export) \(Incremental sync\)
-- [Current Queue Activity](https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-current-queue-activity)
-- [Greeting Categories](https://developer.zendesk.com/rest_api/docs/voice-api/greetings#list-greeting-categories)
-- [Greetings](https://developer.zendesk.com/rest_api/docs/voice-api/greetings#list-greetings)
-- [IVRs](https://developer.zendesk.com/rest_api/docs/voice-api/ivrs#list-ivrs)
-- [IVR Menus](https://developer.zendesk.com/rest_api/docs/voice-api/ivrs#list-ivrs)
-- [IVR Routes](https://developer.zendesk.com/rest_api/docs/voice-api/ivr_routes#list-ivr-routes)
-- [Phone Numbers](https://developer.zendesk.com/rest_api/docs/voice-api/phone_numbers#list-phone-numbers)
+- [Account Overview](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#show-account-overview)
+- [Addresses](https://developer.zendesk.com/api-reference/voice/talk-api/phone_numbers/#list-phone-numbers)
+- [Agents Activity](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#list-agents-activity)
+- [Agents Overview](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#show-agents-overview)
+- [Calls](https://developer.zendesk.com/api-reference/voice/talk-api/incremental_exports/#incremental-calls-export) (Incremental sync)
+- [Call Legs](https://developer.zendesk.com/api-reference/voice/talk-api/incremental_exports/#incremental-call-legs-export) (Incremental sync)
+- [Current Queue Activity](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#show-current-queue-activity)
+- [Greeting Categories](https://developer.zendesk.com/api-reference/voice/talk-api/greetings/#list-greeting-categories)
+- [Greetings](https://developer.zendesk.com/api-reference/voice/talk-api/greetings/#list-greetings)
+- [IVRs](https://developer.zendesk.com/api-reference/voice/talk-api/ivrs/#list-ivrs)
+- [IVR Menus](https://developer.zendesk.com/api-reference/voice/talk-api/ivrs/#list-ivrs)
+- [IVR Routes](https://developer.zendesk.com/api-reference/voice/talk-api/ivr_routes/#list-ivr-routes)
+- [Phone Numbers](https://developer.zendesk.com/api-reference/voice/talk-api/phone_numbers/#list-phone-numbers)
 
 ## Performance considerations
 
-The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/voice-api/introduction#rate-limits).
+The connector is restricted by normal Zendesk [rate limits](https://developer.zendesk.com/api-reference/voice/talk-api/introduction/#rate-limits). The Talk API has the following rate limits: 15,000 requests per 5 minutes for most endpoints, and 2,500 requests per 5 minutes for the Current Queue Activity endpoint.
 
-The Zendesk connector should not run into Zendesk API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Zendesk Talk connector should not run into API limitations under normal usage. If you encounter rate limit issues that are not automatically retried, please [create an issue](https://github.com/airbytehq/airbyte/issues).
 
 ## Data type map
 
@@ -80,8 +104,8 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
 | 2.0.2 | 2026-01-28 | [72424](https://github.com/airbytehq/airbyte/pull/72424) | Update breaking change deadline from Jan 31 to Jan 30 |
-| 2.0.1 | 2026-01-27 | [72383](https://github.com/airbytehq/airbyte/pull/72383) | Fix OAuth race condition with concurrent token refresh |
-| 2.0.0 | 2026-01-21 | [71857](https://github.com/airbytehq/airbyte/pull/71857) | Add OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate. |
+| 2.0.1 | 2026-01-28 | [72383](https://github.com/airbytehq/airbyte/pull/72383) | Fix OAuth race condition with concurrent token refresh |
+| 2.0.0 | 2026-01-22 | [71857](https://github.com/airbytehq/airbyte/pull/71857) | Add OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate. |
 | 1.2.29 | 2026-01-14 | [71686](https://github.com/airbytehq/airbyte/pull/71686) | Update dependencies |
 | 1.2.28 | 2025-12-18 | [70683](https://github.com/airbytehq/airbyte/pull/70683) | Update dependencies |
 | 1.2.27 | 2025-11-25 | [70102](https://github.com/airbytehq/airbyte/pull/70102) | Update dependencies |
