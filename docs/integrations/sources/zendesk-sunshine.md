@@ -68,6 +68,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.42 | 2026-01-27 | [72384](https://github.com/airbytehq/airbyte/pull/72384) | Fix OAuth race condition with concurrent token refresh |
 | 0.3.41 | 2026-01-20 | [72044](https://github.com/airbytehq/airbyte/pull/72044) | Update dependencies |
 | 0.3.40 | 2026-01-14 | [71709](https://github.com/airbytehq/airbyte/pull/71709) | Update dependencies |
 | 0.3.39 | 2025-12-18 | [70704](https://github.com/airbytehq/airbyte/pull/70704) | Update dependencies |
