@@ -74,12 +74,12 @@ class S3DataLakeStreamLoader(
         targetSchema = computeOrExecuteSchemaUpdate().schema
         try {
             logger.info {
-                "maybe creating branch ${DEFAULT_STAGING_BRANCH} for stream ${stream.mappedDescriptor}"
+                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.mappedDescriptor}"
             }
             table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
         } catch (e: IllegalArgumentException) {
             logger.info {
-                "branch ${DEFAULT_STAGING_BRANCH} already exists for stream ${stream.mappedDescriptor}"
+                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.mappedDescriptor}"
             }
         }
 
