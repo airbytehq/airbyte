@@ -113,6 +113,7 @@ class PostgresSourceDebeziumOperations(
             .with("converters", "datetime")
             .with("datetime.type", PostgresDebeziumDatetimeConverter::class.java.name)
             .with("include.unknown.datatypes", "true")
+            // TODO: This will eventually be deprecated in favor of lsn.flush.mode
             .with("flush.lsn.source", cdcConfig.debeziumCommitsLsn.toString())
             .with("plugin.name", "pgoutput")
             .with("slot.name", cdcConfig.replicationSlot)

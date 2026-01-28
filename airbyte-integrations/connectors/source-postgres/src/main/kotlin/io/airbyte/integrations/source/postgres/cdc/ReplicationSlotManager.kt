@@ -44,6 +44,8 @@ class ReplicationSlotManager(
                 .withSlotName("\"${cdcConfig.replicationSlot}\"")
                 .withSlotOption("proto_version", 1)
                 .withSlotOption("publication_names", cdcConfig.publication)
+                // TODO: This may become necessary when taking up Debezium 3.2+ with PgJDBC 42.7.6+
+                //.withAutomaticFlush(false)
                 .apply {
                     val serverVersionStr = conn.parameterStatuses["server_version"]
                     if (serverVersionStr == null) {
