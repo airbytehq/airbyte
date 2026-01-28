@@ -25,16 +25,16 @@
       "id": "90014330517797123/insights/saved/lifetime"
     },
     {
-      "name": "video_views",
+      "name": "views",
       "period": "lifetime",
       "values": [
         {
           "value": 5000
         }
       ],
-      "title": "Video Views",
+      "title": "Views",
       "description": "The number of times your video was viewed.",
-      "id": "90014330517797123/insights/video_views/lifetime"
+      "id": "90014330517797123/insights/views/lifetime"
     }
   ]
 }
