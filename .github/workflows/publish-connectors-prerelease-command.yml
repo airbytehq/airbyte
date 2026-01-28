@@ -48,13 +48,6 @@ jobs:
   init:
     name: Initialize Pre-release Publish
     runs-on: ubuntu-24.04
-    outputs:
-      run-url: ${{ steps.job-vars.outputs.run-url }}
-      pr-number: ${{ steps.job-vars.outputs.pr-number }}
-      comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
-      short-sha: ${{ steps.get-sha.outputs.short-sha }}
-      connector-name: ${{ steps.resolve-connector.outputs.connector-name }}
-      connector-version: ${{ steps.connector-version.outputs.connector-version }}
     steps:
       - name: Checkout to get commit SHA
         uses: actions/checkout@v4
@@ -121,6 +114,27 @@ jobs:
           fi
           echo "connector-version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: Compute prerelease tag
+        id: compute-prerelease-tag
+        run: |
+          set -euo pipefail
+          CONNECTOR_NAME="${{ steps.resolve-connector.outputs.connector-name }}"
+          SHORT_SHA="${{ steps.get-sha.outputs.short-sha }}"
+          BASE_VERSION="${{ steps.connector-version.outputs.connector-version }}"
+
+          # Use airbyte-ops-mcp CLI to compute the prerelease tag (single source of truth)
+          # Pass --base-version to avoid GitHub API call since we already have the version locally
+          PRERELEASE_TAG=$(uvx airbyte-internal-ops registry connector compute-prerelease-tag \
+            --connector-name "$CONNECTOR_NAME" \
+            --sha "$SHORT_SHA" \
+            --base-version "$BASE_VERSION")
+
+          echo "Computed prerelease tag: $PRERELEASE_TAG"
+          echo "prerelease-tag=$PRERELEASE_TAG" >> "$GITHUB_OUTPUT"
+
       - name: Append start comment
         id: append-start-comment
         if: inputs.comment-id != '' || inputs.pr != ''
@@ -139,6 +153,14 @@ jobs:
             > and are available for version pinning via the scoped_configuration API.
             >
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+    outputs:
+      run-url: ${{ steps.job-vars.outputs.run-url }}
+      pr-number: ${{ steps.job-vars.outputs.pr-number }}
+      comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
+      short-sha: ${{ steps.get-sha.outputs.short-sha }}
+      connector-name: ${{ steps.resolve-connector.outputs.connector-name }}
+      connector-version: ${{ steps.connector-version.outputs.connector-version }}
+      prerelease-tag: ${{ steps.compute-prerelease-tag.outputs.prerelease-tag }}
 
   publish:
     name: Publish Pre-release
@@ -148,6 +170,7 @@ jobs:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
       release-type: pre-release
       gitref: refs/pull/${{ inputs.pr }}/head
+      prerelease-tag: ${{ needs.init.outputs.prerelease-tag }}
     secrets: inherit
 
   post-completion:
