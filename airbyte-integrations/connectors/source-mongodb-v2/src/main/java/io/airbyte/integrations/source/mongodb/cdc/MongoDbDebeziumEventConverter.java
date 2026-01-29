@@ -96,10 +96,10 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
    * - If schema is enforced AND shouldFilterFields: filter to discovered fields only
    * - If schema is enforced AND NOT shouldFilterFields: include all fields (new default behavior)
    */
-  private static JsonNode transformEventData(final String eventJson,
-                                             final Map<String, JsonNode> configuredFields,
-                                             final boolean isEnforceSchema,
-                                             final boolean shouldFilterFields) {
+  private static com.fasterxml.jackson.databind.node.ObjectNode transformEventData(final String eventJson,
+                                                                                    final Map<String, JsonNode> configuredFields,
+                                                                                    final boolean isEnforceSchema,
+                                                                                    final boolean shouldFilterFields) {
     if (!isEnforceSchema) {
       return MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson);
     } else if (shouldFilterFields) {
