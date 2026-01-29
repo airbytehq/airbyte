@@ -1,8 +1,20 @@
 # This workflow builds the documentation for the project using `poe` and `uv`.
 # It is redundant with the Vercel Preview deployment, but is runs unprivileged and
 # can be used on forks to verify the documentation build without deploying it.
+#
+# Caching Strategy:
+# - On master pushes: Build and save caches for pnpm store, Rspack, and Docusaurus
+# - On PRs: Restore caches from master branch (fallback) for faster builds
+# - This provides a Vercel-like experience where PRs benefit from production cache
 name: Docs
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+      - 'docusaurus/**'
+      - '.markdownlint.jsonc'
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -10,6 +22,8 @@ jobs:
   detect-changes:
     name: Detect Changes
     runs-on: ubuntu-24.04
+    # Skip change detection on push events (master) - always build to refresh cache
+    if: github.event_name == 'pull_request'
     steps:
       # Checkout not required from `pull_request` event.
       # The detection method uses the GitHub REST API.
@@ -30,15 +44,18 @@ jobs:
   build-docs:
     name: Build Airbyte Docs
     runs-on: ubuntu-24.04
-    needs: detect-changes
-    if: needs.detect-changes.outputs.changed == 'true'
+    # Only depend on detect-changes for PRs (it's skipped on push events)
+    needs: [detect-changes]
+    # Run on master pushes (always) or on PRs when docs changed
+    # Using always() to allow running even when detect-changes is skipped
+    if: always() && (github.event_name == 'push' || needs.detect-changes.outputs.changed == 'true')
     steps:
       - name: Checkout Current Branch
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 0
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.head_ref }}
+          repository: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
 
       - name: Check For Skip Conditions
         id: check-skip
@@ -60,10 +77,53 @@ jobs:
 
       - name: Set Up pnpm
         if: steps.check-skip.outputs.skip-build != 'true'
-        # pnpm is used to manage the dependencies of the documentation build.
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
           version: 10.12.1
+
+      - name: Setup Node.js
+        if: steps.check-skip.outputs.skip-build != 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: 'docusaurus/.nvmrc'
+
+      - name: Get pnpm store directory
+        if: steps.check-skip.outputs.skip-build != 'true'
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Restore pnpm store cache
+        if: steps.check-skip.outputs.skip-build != 'true'
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: docs-pnpm-${{ runner.os }}-${{ hashFiles('docusaurus/pnpm-lock.yaml') }}
+          restore-keys: |
+            docs-pnpm-${{ runner.os }}-
+
+      - name: Restore Rspack cache
+        if: steps.check-skip.outputs.skip-build != 'true'
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: docusaurus/node_modules/.cache/rspack
+          key: docs-rspack-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('docs/**', 'docusaurus/**') }}
+          restore-keys: |
+            docs-rspack-${{ runner.os }}-${{ github.ref_name }}-
+            docs-rspack-${{ runner.os }}-master-
+            docs-rspack-${{ runner.os }}-
+
+      - name: Restore Docusaurus cache
+        if: steps.check-skip.outputs.skip-build != 'true'
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: docusaurus/.docusaurus
+          key: docs-docusaurus-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('docs/**', 'docusaurus/**') }}
+          restore-keys: |
+            docs-docusaurus-${{ runner.os }}-${{ github.ref_name }}-
+            docs-docusaurus-${{ runner.os }}-master-
+            docs-docusaurus-${{ runner.os }}-
 
       - name: Install uv
         if: steps.check-skip.outputs.skip-build != 'true'
