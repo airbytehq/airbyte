@@ -67,19 +67,6 @@ definitions:
                 Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
                 child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
                 you may safely ignore this warning.
-        # Handle 429 rate limit errors with exponential backoff retry
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 429
-              error_message: >-
-                Rate limited by Stripe API. Retrying with backoff...
-          backoff_strategies:
-            - type: ExponentialBackoffStrategy
-              factor: 2
-          max_retries: 6
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['client_secret'] }}"
