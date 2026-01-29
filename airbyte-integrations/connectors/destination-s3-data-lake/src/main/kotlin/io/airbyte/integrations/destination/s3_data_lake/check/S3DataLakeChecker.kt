@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.integrations.destination.s3_data_lake.check
 
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationStream
@@ -13,10 +13,14 @@ import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
+import io.airbyte.integrations.destination.s3_data_lake.spec.TEST_TABLE
 import jakarta.inject.Singleton
 import java.util.UUID
 import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
 import org.apache.iceberg.types.Types
 
 /**
@@ -35,15 +39,12 @@ import org.apache.iceberg.types.Types
  */
 @Singleton
 class S3DataLakeChecker(
+    private val config: S3DataLakeConfiguration,
     private val icebergTableCleaner: IcebergTableCleaner,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val icebergUtil: IcebergUtil,
     private val tableIdGenerator: TableIdGenerator,
-) : DestinationChecker<S3DataLakeConfiguration> {
-
-    override fun check(config: S3DataLakeConfiguration) {
-        catalogValidation(config)
-    }
+) : DestinationChecker {
 
     /**
      * Validates catalog connectivity by creating a temporary test table and cleaning it up.
@@ -51,11 +52,10 @@ class S3DataLakeChecker(
      * Creates a uniquely-named test table in the configured namespace, then immediately cleans it
      * up. The cleanup is guaranteed via try-finally to prevent orphaned resources.
      *
-     * @param config The S3 Data Lake destination configuration
      * @throws Exception if catalog validation fails (e.g., invalid credentials, missing
      * permissions)
      */
-    private fun catalogValidation(config: S3DataLakeConfiguration) {
+    override fun check() {
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
 
@@ -81,7 +81,7 @@ class S3DataLakeChecker(
             )
         s3DataLakeUtil.createNamespaceWithGlueHandling(testTableIdentifier, catalog)
 
-        var table: org.apache.iceberg.Table? = null
+        var table: Table? = null
         try {
             table =
                 icebergUtil.createTable(

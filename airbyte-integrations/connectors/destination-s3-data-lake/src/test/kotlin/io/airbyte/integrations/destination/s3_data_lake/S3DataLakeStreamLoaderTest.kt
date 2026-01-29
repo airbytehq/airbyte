@@ -34,7 +34,11 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
+import io.airbyte.integrations.destination.s3_data_lake.write.S3DataLakeStreamLoader
+import io.airbyte.integrations.destination.s3_data_lake.write.S3DataLakeStreamState
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.just

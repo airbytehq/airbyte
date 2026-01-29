@@ -41,7 +41,8 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
 import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeConfiguration
+import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
