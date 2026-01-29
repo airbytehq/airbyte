@@ -61,12 +61,12 @@ def get_trace_message(message: str, exception: Exception | None = None) -> Airby
         type=Type.TRACE,
         trace=AirbyteTraceMessage(
             type=TraceType.ERROR,
-            emitted_at=time(),
+            emitted_at=time() * 1000,
             error=AirbyteErrorTraceMessage(
                 message=message,
                 internal_message=str(exception) if exception else None,
                 stack_trace=format_exc(),
-                failure_type=FailureType.transient_error.value,
+                failure_type=FailureType.transient_error,
             ),
         ),
     )
