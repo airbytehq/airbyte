@@ -38,36 +38,48 @@ uv pip install airbyte-agent-zendesk-support
 
 ## Usage
 
-This connector supports multiple authentication methods:
+Connectors can run in open source or hosted mode.
 
-### OAuth 2.0
+### Open source
 
-```python
-from airbyte_agent_zendesk_support import ZendeskSupportConnector
-from airbyte_agent_zendesk_support.models import ZendeskSupportOauth20AuthConfig
-
-connector = ZendeskSupportConnector(
-  auth_config=ZendeskSupportOauth20AuthConfig(
-    access_token="...",
-    refresh_token="..."
-  )
-)
-result = await connector.tickets.list()
-```
-
-### API Token
+In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_zendesk_support import ZendeskSupportConnector
+from airbyte_agent_zendesk-support import ZendeskSupportConnector
 from airbyte_agent_zendesk_support.models import ZendeskSupportApiTokenAuthConfig
 
 connector = ZendeskSupportConnector(
-  auth_config=ZendeskSupportApiTokenAuthConfig(
-    email="...",
-    api_token="..."
-  )
+    auth_config=ZendeskSupportApiTokenAuthConfig(
+        email="<Your Zendesk account email address>",
+        api_token="<Your Zendesk API token from Admin Center>"
+    )
 )
-result = await connector.tickets.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@ZendeskSupportConnector.tool_utils
+async def zendesk-support_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_zendesk-support import ZendeskSupportConnector
+
+connector = ZendeskSupportConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@ZendeskSupportConnector.tool_utils
+async def zendesk-support_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
 
@@ -101,12 +113,14 @@ This connector supports the following entities and actions.
 | Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Zendesk-Support API reference](https://developer.zendesk.com/api-reference/ticketing/introduction/).
 
 ## Version information
 
-- **Package version:** 0.18.33
-- **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** e519b73d1e90df7073e48d3ed7e11a9fb1af3953
+- **Package version:** 0.18.61
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

@@ -311,6 +311,8 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.11 | 2026-01-20 | [71921](https://github.com/airbytehq/airbyte/pull/71921) | Update dependencies |
+| 0.8.10 | 2026-01-14 | [71450](https://github.com/airbytehq/airbyte/pull/71450) | Update dependencies |
 | 0.8.9 | 2026-01-07 | [71000](https://github.com/airbytehq/airbyte/pull/71000) | Enable 'Copy raw files' delivery method for file transfers |
 | 0.8.8 | 2025-12-18 | [70804](https://github.com/airbytehq/airbyte/pull/70804) | Update dependencies |
 | 0.8.7 | 2025-12-03 | [70316](https://github.com/airbytehq/airbyte/pull/70316) | Increase memory for check_connection to 4096Mi |

@@ -5,7 +5,7 @@ This directory contains the manifest-only connector for [`source-factorial`](htt
 Visit `https://apidoc.factorialhr.com/reference` for API documentation
 
 ## Authentication setup
-`Factorial` uses API token authentication, Visit `https://app.factorialhr.com/settings/api-keys` for getting your api token. Refer `https://apidoc.factorialhr.com/docs/api-keys`.
+`Factorial` uses API token authentication. Visit `https://app.factorialhr.com/settings/api-keys` to get your API token. Refer to `https://apidoc.factorialhr.com/docs/api-keys`.
 
 ## Configuration
 
@@ -13,7 +13,7 @@ Visit `https://apidoc.factorialhr.com/reference` for API documentation
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
 | `start_date` | `string` | Start date.  |  |
-| `limit` | `string` | Limit. Max records per page limit | 50 |
+| `limit` | `string` | Maximum number of records per page | 50 |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -53,6 +53,8 @@ Visit `https://apidoc.factorialhr.com/reference` for API documentation
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.44 | 2026-01-20 | [71873](https://github.com/airbytehq/airbyte/pull/71873) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71586](https://github.com/airbytehq/airbyte/pull/71586) | Update dependencies |
 | 0.0.42 | 2025-12-18 | [70567](https://github.com/airbytehq/airbyte/pull/70567) | Update dependencies |
 | 0.0.41 | 2025-11-25 | [70151](https://github.com/airbytehq/airbyte/pull/70151) | Update dependencies |
 | 0.0.40 | 2025-11-18 | [69389](https://github.com/airbytehq/airbyte/pull/69389) | Update dependencies |

@@ -33,6 +33,8 @@ Refer `https://developers.survicate.com/data-export/setup/#authentication` for m
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.45 | 2026-01-20 | [72154](https://github.com/airbytehq/airbyte/pull/72154) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71601](https://github.com/airbytehq/airbyte/pull/71601) | Update dependencies |
 | 0.0.43 | 2025-12-18 | [70620](https://github.com/airbytehq/airbyte/pull/70620) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [70058](https://github.com/airbytehq/airbyte/pull/70058) | Update dependencies |
 | 0.0.41 | 2025-11-18 | [69558](https://github.com/airbytehq/airbyte/pull/69558) | Update dependencies |

@@ -39,6 +39,8 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.47 | 2026-01-20 | [72186](https://github.com/airbytehq/airbyte/pull/72186) | Update dependencies |
+| 0.3.46 | 2026-01-14 | [71541](https://github.com/airbytehq/airbyte/pull/71541) | Update dependencies |
 | 0.3.45 | 2025-12-18 | [70514](https://github.com/airbytehq/airbyte/pull/70514) | Update dependencies |
 | 0.3.44 | 2025-11-25 | [69964](https://github.com/airbytehq/airbyte/pull/69964) | Update dependencies |
 | 0.3.43 | 2025-11-18 | [69659](https://github.com/airbytehq/airbyte/pull/69659) | Update dependencies |
@@ -104,7 +106,7 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 | 0.1.5 | 2022-05-18 | [12942](https://github.com/airbytehq/airbyte/pull/12942) | Fix example inputs |
 | 0.1.4 | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
 | 0.1.3 | 2021-12-03 | [8432](https://github.com/airbytehq/airbyte/pull/8432) | Migrate from base_python to CDK, add SAT tests. |
-| 0.1.1   | 2020-06-29 | [4410](https://github.com/airbytehq/airbyte/pull/4410)   | Fix runtime UI error from GitHub store path.    |
-| 0.1.0   | 2020-05-04 | [3149](https://github.com/airbytehq/airbyte/pull/3149)   | Add source for PokeAPI.                         |
+| 0.1.1 | 2020-06-29 | [4410](https://github.com/airbytehq/airbyte/pull/4410) | Fix runtime UI error from GitHub store path. |
+| 0.1.0 | 2020-05-04 | [3149](https://github.com/airbytehq/airbyte/pull/3149) | Add source for PokeAPI. |
 
 </details>

@@ -38,17 +38,49 @@ uv pip install airbyte-agent-salesforce
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_salesforce import SalesforceConnector, SalesforceAuthConfig
+from airbyte_agent_salesforce import SalesforceConnector
+from airbyte_agent_salesforce.models import SalesforceAuthConfig
 
 connector = SalesforceConnector(
-  auth_config=SalesforceAuthConfig(
-    refresh_token="...",
-    client_id="...",
-    client_secret="..."
-  )
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    )
 )
-result = await connector.accounts.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@SalesforceConnector.tool_utils
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_salesforce import SalesforceConnector
+
+connector = SalesforceConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@SalesforceConnector.tool_utils
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
 
@@ -58,19 +90,21 @@ This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](./REFERENCE.md#accounts-list), [Get](./REFERENCE.md#accounts-get), [Search](./REFERENCE.md#accounts-search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Search](./REFERENCE.md#contacts-search) |
-| Leads | [List](./REFERENCE.md#leads-list), [Get](./REFERENCE.md#leads-get), [Search](./REFERENCE.md#leads-search) |
-| Opportunities | [List](./REFERENCE.md#opportunities-list), [Get](./REFERENCE.md#opportunities-get), [Search](./REFERENCE.md#opportunities-search) |
-| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Search](./REFERENCE.md#tasks-search) |
-| Events | [List](./REFERENCE.md#events-list), [Get](./REFERENCE.md#events-get), [Search](./REFERENCE.md#events-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Search](./REFERENCE.md#campaigns-search) |
-| Cases | [List](./REFERENCE.md#cases-list), [Get](./REFERENCE.md#cases-get), [Search](./REFERENCE.md#cases-search) |
-| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [Search](./REFERENCE.md#notes-search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Get](./REFERENCE.md#accounts-get), [Api_search](./REFERENCE.md#accounts-api_search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Api_search](./REFERENCE.md#contacts-api_search) |
+| Leads | [List](./REFERENCE.md#leads-list), [Get](./REFERENCE.md#leads-get), [Api_search](./REFERENCE.md#leads-api_search) |
+| Opportunities | [List](./REFERENCE.md#opportunities-list), [Get](./REFERENCE.md#opportunities-get), [Api_search](./REFERENCE.md#opportunities-api_search) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Api_search](./REFERENCE.md#tasks-api_search) |
+| Events | [List](./REFERENCE.md#events-list), [Get](./REFERENCE.md#events-get), [Api_search](./REFERENCE.md#events-api_search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Api_search](./REFERENCE.md#campaigns-api_search) |
+| Cases | [List](./REFERENCE.md#cases-list), [Get](./REFERENCE.md#cases-get), [Api_search](./REFERENCE.md#cases-api_search) |
+| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [Api_search](./REFERENCE.md#notes-api_search) |
 | Content Versions | [List](./REFERENCE.md#content-versions-list), [Get](./REFERENCE.md#content-versions-get), [Download](./REFERENCE.md#content-versions-download) |
 | Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
 | Query | [List](./REFERENCE.md#query-list) |
 
+
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
@@ -78,6 +112,6 @@ For the service's official API docs, see the [Salesforce API reference](https://
 
 ## Version information
 
-- **Package version:** 0.1.26
-- **Connector version:** 1.0.4
-- **Generated with Connector SDK commit SHA:** e519b73d1e90df7073e48d3ed7e11a9fb1af3953
+- **Package version:** 0.1.51
+- **Connector version:** 1.0.5
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

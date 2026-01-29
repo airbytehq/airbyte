@@ -42,17 +42,52 @@ uv pip install airbyte-agent-intercom
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_intercom import IntercomConnector, IntercomAuthConfig
+from airbyte_agent_intercom import IntercomConnector
+from airbyte_agent_intercom.models import IntercomAuthConfig
 
 connector = IntercomConnector(
-  auth_config=IntercomAuthConfig(
-    access_token="..."
-  )
+    auth_config=IntercomAuthConfig(
+        access_token="<Your Intercom API Access Token>"
+    )
 )
-result = await connector.contacts.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@IntercomConnector.tool_utils
+async def intercom_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_intercom import IntercomConnector
+
+connector = IntercomConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@IntercomConnector.tool_utils
+async def intercom_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+## Replication Configuration
+
+This connector supports replication configuration for MULTI mode sources. See the [full reference documentation](./REFERENCE.md#replication-configuration) for details on available options like `start_date`.
 
 ## Full documentation
 
@@ -69,12 +104,14 @@ This connector supports the following entities and actions.
 | Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get) |
 
 
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
 For the service's official API docs, see the [Intercom API reference](https://developers.intercom.com/docs/references/rest-api/api.intercom.io).
 
 ## Version information
 
-- **Package version:** 0.1.4
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** e519b73d1e90df7073e48d3ed7e11a9fb1af3953
+- **Package version:** 0.1.30
+- **Connector version:** 0.1.3
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

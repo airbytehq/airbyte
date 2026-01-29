@@ -79,6 +79,10 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| 2.0.2 | 2026-01-28 | [72424](https://github.com/airbytehq/airbyte/pull/72424) | Update breaking change deadline from Jan 31 to Jan 30 |
+| 2.0.1 | 2026-01-27 | [72383](https://github.com/airbytehq/airbyte/pull/72383) | Fix OAuth race condition with concurrent token refresh |
+| 2.0.0 | 2026-01-21 | [71857](https://github.com/airbytehq/airbyte/pull/71857) | Add OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate. |
+| 1.2.29 | 2026-01-14 | [71686](https://github.com/airbytehq/airbyte/pull/71686) | Update dependencies |
 | 1.2.28 | 2025-12-18 | [70683](https://github.com/airbytehq/airbyte/pull/70683) | Update dependencies |
 | 1.2.27 | 2025-11-25 | [70102](https://github.com/airbytehq/airbyte/pull/70102) | Update dependencies |
 | 1.2.26 | 2025-11-18 | [69569](https://github.com/airbytehq/airbyte/pull/69569) | Update dependencies |

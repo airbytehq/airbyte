@@ -9,6 +9,8 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.43 | 2026-01-20 | [72119](https://github.com/airbytehq/airbyte/pull/72119) | Update dependencies |
+| 0.4.42 | 2026-01-14 | [71702](https://github.com/airbytehq/airbyte/pull/71702) | Update dependencies |
 | 0.4.41 | 2025-12-18 | [70655](https://github.com/airbytehq/airbyte/pull/70655) | Update dependencies |
 | 0.4.40 | 2025-11-25 | [69929](https://github.com/airbytehq/airbyte/pull/69929) | Update dependencies |
 | 0.4.39 | 2025-11-18 | [69625](https://github.com/airbytehq/airbyte/pull/69625) | Update dependencies |

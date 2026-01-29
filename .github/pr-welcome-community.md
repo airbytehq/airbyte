@@ -2,13 +2,10 @@
 
 Thank you for your contribution from **{{ .repo_name }}**! We're excited to have you in the Airbyte community.
 
-### Helpful Resources
+If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
 
-- [PR Guidelines](https://docs.airbyte.com/contributing-to-airbyte): Check our guidelines for contributions.
-- [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes): Guide to breaking changes, migration guides, and upgrade deadlines.
-- [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development): Learn how to set up your environment and develop connectors locally.
-- If you enable [BYO Connector Credentials](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets) within your fork, you can view your test results [here](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml):
-  [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/{{ .repo_name }}/run-connector-tests-command.yml?style=for-the-badge&label=Fork%20CI%20Status)](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml)
+<details>
+<summary><b>💡 Show Tips and Tricks</b></summary>
 
 ### PR Slash Commands
 
@@ -22,8 +19,7 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 - `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}`) for all modified connectors in the PR.
 - `/ai-review` - AI-powered PR review for connector safety and quality gates.
-
-If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
+- `/force-merge reason="<A_GOOD_REASON>"` - Force merges the PR using admin privileges, bypassing CI checks. Requires a reason.
 
 ### Tips for Working with CI
 
@@ -32,4 +28,19 @@ If you have any questions, feel free to ask in the PR comments or join our [Slac
 2. **Connector CI Tests.** Some failures here may be expected if your tests require credentials. Please review these results to ensure (1) unit tests are passing, if applicable, and (2) integration tests pass to the degree possible and expected.
 3. **(Optional.) [BYO Connector Credentials](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets) for tests in your fork.** You can _optionally_ set up your fork with BYO credentials for your connector. This can significantly speed up your review, ensuring your changes are fully tested before the maintainers begin their review.
 
+</details>
+
+<details>
+<summary><b>📚 Show Repo Guidance</b></summary>
+
+### Helpful Resources
+
+- [PR Guidelines](https://docs.airbyte.com/contributing-to-airbyte): Check our guidelines for contributions.
+- [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes): Guide to breaking changes, migration guides, and upgrade deadlines.
+- [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development): Learn how to set up your environment and develop connectors locally.
+- If you enable [BYO Connector Credentials](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets) within your fork, you can view your test results [here](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml):
+  [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/{{ .repo_name }}/run-connector-tests-command.yml?style=for-the-badge&label=Fork%20CI%20Status)](https://github.com/{{ .repo_name }}/actions/workflows/run-connector-tests-command.yml)
+
 [📝 _Edit this welcome message._](https://github.com/airbytehq/airbyte/blob/master/.github/pr-welcome-community.md)
+
+</details>
