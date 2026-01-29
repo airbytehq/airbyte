@@ -19,6 +19,7 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 - `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}`) for all modified connectors in the PR.
 - `/ai-review` - AI-powered PR review for connector safety and quality gates.
+- `/force-merge reason="<REASON>"` - Force merges the PR using admin privileges, bypassing CI checks. Requires a reason.
 
 ### Tips for Working with CI
 
