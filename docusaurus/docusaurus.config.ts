@@ -3,10 +3,7 @@ import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Options as ClassicPresetOptions } from "@docusaurus/preset-classic";
 import { PluginOptions as LLmPluginOptions } from "@signalwire/docusaurus-plugin-llms-txt";
-import {
-  loadSonarApiSidebar,
-  replaceApiReferenceCategory,
-} from "./src/scripts/embedded-api/sidebar-generator";
+// API docs generation removed for testing - keeping AI agents section without API docs
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -22,11 +19,7 @@ const getRemarkPlugins = () => ({
 
 const plugins = getRemarkPlugins();
 
-// Import constants for embedded API sidebar generation
-const {
-  SPEC_CACHE_PATH,
-  API_SIDEBAR_PATH,
-} = require("./src/scripts/embedded-api/constants");
+// Constants import removed - API docs generation disabled for testing
 
 const lightCodeTheme = prismThemes.github;
 const darkCodeTheme = prismThemes.dracula;
@@ -52,7 +45,7 @@ const config: Config = {
   themes: [
     "@docusaurus/theme-mermaid",
     "@saucelabs/theme-github-codeblock",
-    "docusaurus-theme-openapi-docs",
+    // "docusaurus-theme-openapi-docs" removed for testing - no API docs
   ],
   title: "Airbyte Docs",
   tagline:
@@ -162,6 +155,7 @@ const config: Config = {
       },
     ],
     // This plugin controls AI Agent Tools docs, which are not versioned
+    // API docs rendering removed for testing - keeping AI agents section without API docs
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -169,16 +163,8 @@ const config: Config = {
         path: "../docs/ai-agents",
         routeBasePath: "/ai-agents",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-        docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
-        async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
-          const sidebarItems = await defaultSidebarItemsGenerator(args);
-
-          // Load and filter the Sonar API sidebar based on allowed tags
-          const sonarApiItems = loadSonarApiSidebar();
-
-          // Replace the "api-reference" category with the filtered API items
-          return replaceApiReferenceCategory(sidebarItems, sonarApiItems);
-        },
+        // docItemComponent removed - no API docs rendering
+        sidebarPath: "./sidebar-ai-agents.js",
         remarkPlugins: [
           plugins.docsHeaderDecoration,
           plugins.enterpriseDocsHeaderInformation,
@@ -261,25 +247,7 @@ const config: Config = {
         ],
       },
     ],
-    [
-      "docusaurus-plugin-openapi-docs",
-      {
-        id: "embedded-api",
-        docsPluginId: "ai-agents",
-        config: {
-          embedded: {
-            specPath: "src/data/embedded_api_spec.json",
-            outputDir: "../docs/ai-agents/embedded/api-reference",
-            sidebarOptions: {
-              groupPathsBy: "tag",
-              categoryLinkSource: "tag",
-              sidebarCollapsed: false,
-              sidebarCollapsible: false,
-            },
-          },
-        },
-      },
-    ],
+    // docusaurus-plugin-openapi-docs removed for testing - no API docs generation
     require.resolve("./src/plugins/enterpriseConnectors"),
     [
       "@signalwire/docusaurus-plugin-llms-txt",
