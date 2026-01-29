@@ -41,9 +41,14 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     final JsonNode source = debeziumEvent.get(DebeziumEventConverter.SOURCE_EVENT);
     final String operation = debeziumEvent.get(DebeziumEventConverter.OPERATION_FIELD).asText();
     final boolean isEnforceSchema = MongoDbCdcEventUtils.isEnforceSchema(config);
+    final boolean failSyncOnSchemaMismatch = MongoDbCdcEventUtils.isFailSyncOnSchemaMismatch(config);
 
+    // Only filter fields when both schema is enforced AND fail_sync_on_schema_mismatch is enabled.
+    // This decouples schema detection from schema enforcement, allowing users to get rich downstream
+    // schemas without introducing sync fragility from undiscovered fields.
+    final boolean shouldFilterFields = isEnforceSchema && failSyncOnSchemaMismatch;
     final Map<String, JsonNode> configuredFields =
-        isEnforceSchema ? getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector)
+        shouldFilterFields ? getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector)
             : null;
 
     /*
@@ -53,8 +58,9 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
      */
     final JsonNode data = switch (operation) {
       case "c", "i", "u" -> formatMongoDbDebeziumData(
-          before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, isEnforceSchema);
-      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
+          before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, isEnforceSchema, shouldFilterFields);
+      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema,
+          shouldFilterFields);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
 
@@ -67,20 +73,39 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
                                                     final JsonNode debeziumEventKey,
                                                     final CdcMetadataInjector cdcMetadataInjector,
                                                     final Map<String, JsonNode> configuredFields,
-                                                    final boolean isEnforceSchema) {
+                                                    final boolean isEnforceSchema,
+                                                    final boolean shouldFilterFields) {
 
     if ((before == null || before.isNull()) && (after == null || after.isNull())) {
       // In case a mongodb document was updated and then deleted, the update change event will not have
       // any information ({after: null})
       // We are going to treat it as a delete.
-      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
+      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema,
+          shouldFilterFields);
     } else {
       final String eventJson = (after.isNull() ? before : after).asText();
       return DebeziumEventConverter.addCdcMetadata(
-          isEnforceSchema
-              ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
-              : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
+          transformEventData(eventJson, configuredFields, isEnforceSchema, shouldFilterFields),
           source, cdcMetadataInjector, false);
+    }
+  }
+
+  /**
+   * Transforms event data based on schema enforcement and field filtering settings.
+   * - If schema is not enforced: use schemaless mode (wrap in data field)
+   * - If schema is enforced AND shouldFilterFields: filter to discovered fields only
+   * - If schema is enforced AND NOT shouldFilterFields: include all fields (new default behavior)
+   */
+  private static JsonNode transformEventData(final String eventJson,
+                                             final Map<String, JsonNode> configuredFields,
+                                             final boolean isEnforceSchema,
+                                             final boolean shouldFilterFields) {
+    if (!isEnforceSchema) {
+      return MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson);
+    } else if (shouldFilterFields) {
+      return MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields);
+    } else {
+      return MongoDbCdcEventUtils.transformDataTypesAllFields(eventJson);
     }
   }
 
@@ -89,7 +114,8 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
                                                           final JsonNode source,
                                                           final CdcMetadataInjector cdcMetadataInjector,
                                                           final Map<String, JsonNode> configuredFields,
-                                                          final boolean isEnforceSchema) {
+                                                          final boolean isEnforceSchema,
+                                                          final boolean shouldFilterFields) {
     final String eventJson;
 
     /*
@@ -110,9 +136,7 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     }
 
     return DebeziumEventConverter.addCdcMetadata(
-        isEnforceSchema
-            ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
-            : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
+        transformEventData(eventJson, configuredFields, isEnforceSchema, shouldFilterFields),
         source, cdcMetadataInjector, true);
   }
 

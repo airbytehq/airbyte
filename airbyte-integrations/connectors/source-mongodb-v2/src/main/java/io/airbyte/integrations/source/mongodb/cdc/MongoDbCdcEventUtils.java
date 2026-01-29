@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.FAIL_SYNC_ON_SCHEMA_MISMATCH_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.SCHEMALESS_MODE_DATA_FIELD;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static java.util.Arrays.asList;
@@ -144,6 +145,21 @@ public class MongoDbCdcEventUtils {
     return normalizeObjectIdNoSchema(objectNode);
   }
 
+  /**
+   * Transforms the Debezium event data including ALL fields from the document, without filtering
+   * to the discovered schema. This is used when schema_enforced=true but fail_sync_on_schema_mismatch=false,
+   * allowing users to get rich downstream schemas without sync fragility from undiscovered fields.
+   *
+   * @param json The Debezium event data as JSON.
+   * @return The transformed Debezium event data as JSON with all fields included.
+   */
+  public static ObjectNode transformDataTypesAllFields(final String json) {
+    final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+    final Document document = Document.parse(json);
+    formatDocumentAllFields(document, objectNode);
+    return normalizeObjectId(objectNode);
+  }
+
   public static JsonNode toJsonNode(final Document document, final Map<String, JsonNode> columnNamesAndTypes) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     formatDocument(document, objectNode, columnNamesAndTypes);
@@ -173,6 +189,20 @@ public class MongoDbCdcEventUtils {
       readDocument(reader, (ObjectNode) objectNode.get(SCHEMALESS_MODE_DATA_FIELD), Collections.emptyMap(), true);
       final Optional<JsonNode> maybeId = Optional.ofNullable(objectNode.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD));
       maybeId.ifPresent(id -> objectNode.set(DOCUMENT_OBJECT_ID_FIELD, id));
+    } catch (final Exception e) {
+      LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Formats a MongoDB document including ALL fields, without wrapping in a data field.
+   * This is used when schema_enforced=true but fail_sync_on_schema_mismatch=false.
+   */
+  private static void formatDocumentAllFields(final Document document, final ObjectNode objectNode) {
+    final BsonDocument bsonDocument = toBsonDocument(document);
+    try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
+      readDocument(reader, objectNode, Collections.emptyMap(), true);
     } catch (final Exception e) {
       LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
@@ -406,6 +436,18 @@ public class MongoDbCdcEventUtils {
         || (config.has(SCHEMA_ENFORCED_CONFIGURATION_KEY) && config.get(
             SCHEMA_ENFORCED_CONFIGURATION_KEY).asBoolean(true));
 
+  }
+
+  /**
+   * Parses source-mongodbv2 configuration json for the value of fail_sync_on_schema_mismatch.
+   * This controls whether to filter fields during sync based on the discovered schema.
+   *
+   * @param config config json
+   * @return false unless fail_sync_on_schema_mismatch is explicitly configured to true
+   */
+  public static boolean isFailSyncOnSchemaMismatch(final JsonNode config) {
+    return config != null && config.has(FAIL_SYNC_ON_SCHEMA_MISMATCH_KEY)
+        && config.get(FAIL_SYNC_ON_SCHEMA_MISMATCH_KEY).asBoolean(false);
   }
 
 }

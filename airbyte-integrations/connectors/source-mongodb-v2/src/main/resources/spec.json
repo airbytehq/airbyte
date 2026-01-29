@@ -78,6 +78,14 @@
                 "type": "boolean",
                 "always_show": true,
                 "order": 7
+              },
+              "fail_sync_on_schema_mismatch": {
+                "title": "Fail Sync on Schema Mismatch",
+                "description": "When enabled, syncs will fail if a document contains fields not present in the discovered schema. When disabled (default), all fields from documents will be synced regardless of whether they were in the discovered schema. This allows for richer downstream schemas without introducing sync fragility from schema changes in MongoDB.",
+                "default": false,
+                "type": "boolean",
+                "always_show": true,
+                "order": 8
               }
             }
           },
@@ -139,6 +147,14 @@
                 "type": "boolean",
                 "always_show": true,
                 "order": 7
+              },
+              "fail_sync_on_schema_mismatch": {
+                "title": "Fail Sync on Schema Mismatch",
+                "description": "When enabled, syncs will fail if a document contains fields not present in the discovered schema. When disabled (default), all fields from documents will be synced regardless of whether they were in the discovered schema. This allows for richer downstream schemas without introducing sync fragility from schema changes in MongoDB.",
+                "default": false,
+                "type": "boolean",
+                "always_show": true,
+                "order": 8
               }
             }
           }
