@@ -30,6 +30,7 @@ OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "line_item",
     "meetings",
     "notes",
+    "service",
     "tasks",
     "product",
     "ticket",
