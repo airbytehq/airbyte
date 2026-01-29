@@ -82,18 +82,18 @@ def test_streams(requests_mock, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     streams = get_source(config).streams(config)
 
-    assert len(streams) == 32
+    assert len(streams) == 33
 
 
 def test_streams_forbidden_returns_default_streams(requests_mock, config):
-    # 403 forbidden → no custom streams, should fall back to the 32 built-in ones
+    # 403 forbidden → no custom streams, should fall back to the 33 built-in ones
     requests_mock.get(
         "https://api.hubapi.com/crm/v3/schemas",
         json={"status": "error", "message": "This access_token does not have proper permissions!"},
         status_code=403,
     )
     streams = get_source(config).streams(config)
-    assert len(streams) == 32
+    assert len(streams) == 33
 
 
 def test_check_credential_title_exception(config):
@@ -104,7 +104,7 @@ def test_check_credential_title_exception(config):
 
 
 def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_schema_requests):
-    # 200 OK → one custom “cars” stream added to the 32 built-ins, total = 33
+    # 200 OK → one custom "cars" stream added to the 33 built-ins, total = 34
     adapter = requests_mock.get(
         "https://api.hubapi.com/crm/v3/schemas",
         json={"results": [{"name": "cars", "fullyQualifiedName": "cars", "properties": {}}]},
@@ -112,7 +112,7 @@ def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_s
     )
     streams = discover(get_source(config), config).catalog.catalog.streams
     assert adapter.called
-    assert len(streams) == 33
+    assert len(streams) == 34
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
