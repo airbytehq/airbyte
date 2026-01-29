@@ -1,0 +1,421 @@
+version: 7.6.5
+
+type: DeclarativeSource
+
+description: >-
+  Grafana is an observability and analytics platform that lets teams visualize,
+  explore, and alert on their data from dozens of sources in one place. This
+  connector replicates Grafana resources such as datasources, dashboards,
+  folders, and users into your warehouse or lake, so you can audit configuration
+  changes, analyze usage, and join Grafana metadata with the rest of your
+  operational data. By syncing Grafana objects on a schedule, you can track how
+  dashboards evolve over time, understand which teams and visualizations are
+  most active, and build governance and reliability reporting on top of your
+  Grafana estate.
+
+check:
+  type: CheckStream
+  stream_names:
+    - datasources
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+
+streams:
+  - type: DeclarativeStream
+    name: datasources
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        url: "{{ config['url'] }}/api/datasources"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type: integer
+          uid:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          user:
+            type:
+              - string
+              - "null"
+          orgId:
+            type:
+              - integer
+              - "null"
+          access:
+            type:
+              - string
+              - "null"
+          database:
+            type:
+              - string
+              - "null"
+          jsonData:
+            type:
+              - object
+              - "null"
+          readOnly:
+            type:
+              - boolean
+              - "null"
+          typeName:
+            type:
+              - string
+              - "null"
+          basicAuth:
+            type:
+              - boolean
+              - "null"
+          isDefault:
+            type:
+              - boolean
+              - "null"
+          typeLogoUrl:
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: folders
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        url: "{{ config['url'] }}/api/folders"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          version:
+            type:
+              - integer
+              - "null"
+          id:
+            type: integer
+          uid:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          hasAcl:
+            type:
+              - boolean
+              - "null"
+          canEdit:
+            type:
+              - boolean
+              - "null"
+          canSave:
+            type:
+              - boolean
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+          updated:
+            type:
+              - string
+              - "null"
+          canAdmin:
+            type:
+              - boolean
+              - "null"
+          canDelete:
+            type:
+              - boolean
+              - "null"
+          createdBy:
+            type:
+              - string
+              - "null"
+          parentUid:
+            type:
+              - string
+              - "null"
+          updatedBy:
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: dashboards
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          type: dash-db
+        url: "{{ config['url'] }}/api/search"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type: integer
+          uid:
+            type:
+              - string
+              - "null"
+          uri:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          title:
+            type:
+              - string
+              - "null"
+          folderId:
+            type:
+              - integer
+              - "null"
+          sortMeta:
+            type:
+              - integer
+              - "null"
+          folderUid:
+            type:
+              - string
+              - "null"
+          folderUrl:
+            type:
+              - string
+              - "null"
+          isStarred:
+            type:
+              - boolean
+              - "null"
+          folderTitle:
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: teams
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        url: "{{ config['url'] }}/api/teams/search"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - teams
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          orgId:
+            type:
+              - integer
+              - "null"
+          avatarUrl:
+            type:
+              - string
+              - "null"
+          permission:
+            type:
+              - integer
+              - "null"
+          memberCount:
+            type:
+              - integer
+              - "null"
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        url: "{{ config['url'] }}/api/org/users"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - userId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          login:
+            type:
+              - string
+              - "null"
+          orgId:
+            type:
+              - integer
+              - "null"
+          userId:
+            type: integer
+          avatarUrl:
+            type:
+              - string
+              - "null"
+          lastSeenAt:
+            type:
+              - string
+              - "null"
+          lastSeenAtAge:
+            type:
+              - string
+              - "null"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - url
+      - api_key
+    properties:
+      url:
+        type: string
+        description: >-
+          The URL of your Grafana instance (e.g.,
+          https://your-grafana.grafana.net)
+        order: 0
+        title: Grafana URL
+      api_key:
+        type: string
+        description: Grafana API Key or Service Account Token
+        order: 1
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    datasources:
+      streamHash: 632db596acd7392732b64582118969f31df99f37
+    folders:
+      streamHash: bdaea1c44c334a5ff8fd2eafcb5053dcdee24f76
+    dashboards:
+      streamHash: 5b9cd3bd8ae135a6da3664e7efd65d121ea70e36
+    teams:
+      streamHash: ebba94b6885df184b17bd90741669a8db33abef5
+    users:
+      streamHash: 3d8ff25861ff73a712de3faaa402fd86711d4cff
+  autoImportSchema: {}

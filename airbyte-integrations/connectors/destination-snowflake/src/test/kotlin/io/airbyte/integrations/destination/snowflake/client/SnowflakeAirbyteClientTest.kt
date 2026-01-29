@@ -21,6 +21,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -68,9 +69,16 @@ internal class SnowflakeAirbyteClientTest {
                 every { executeQuery(any()) } returns resultSet
                 every { close() } just Runs
             }
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery().next() } returns true
+                every { close() } just runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
                 every { createStatement() } returns statement
             }
 
@@ -79,19 +87,23 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.countTable(tableName)
             assertEquals(1L, result)
-            verify(exactly = 1) { mockConnection.close() }
+            verify(exactly = 2) { mockConnection.close() }
         }
     }
 
     @Test
     fun testCountMissingTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
-        val statement =
-            mockk<Statement> { every { executeQuery(any()) } throws SnowflakeSQLException("test") }
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery().next() } returns false
+                every { close() } just runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
-                every { createStatement() } returns statement
+                every { prepareStatement(any()) } returns preparedStatement
             }
 
         every { dataSource.connection } returns mockConnection
@@ -112,9 +124,16 @@ internal class SnowflakeAirbyteClientTest {
                 every { executeQuery(any()) } returns resultSet
                 every { close() } just Runs
             }
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery().next() } returns true
+                every { close() } just runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
                 every { createStatement() } returns statement
             }
 
@@ -123,7 +142,7 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.countTable(tableName)
             assertEquals(0L, result)
-            verify(exactly = 1) { mockConnection.close() }
+            verify(exactly = 2) { mockConnection.close() }
         }
     }
 
