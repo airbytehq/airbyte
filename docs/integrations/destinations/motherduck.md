@@ -2,9 +2,9 @@
 
 ## Overview
 
-[DuckDB](https://duckdb.org/) is an in-process SQL OLAP database management system and this destination is meant to use locally if you have multiple smaller sources such as GitHub repos, some social media and local CSVs or files you want to run analytics workloads on. This destination writes data to the [MotherDuck](https://motherduck.com) service, or to a file on the _local_ filesystem on the host running Airbyte.
+[MotherDuck](https://motherduck.com) is a serverless cloud data warehouse built on [DuckDB](https://duckdb.org/). This destination writes data to the MotherDuck cloud service, or to a local DuckDB file on the host running Airbyte.
 
-For file-based DBs, data is written to `/tmp/airbyte_local` by default. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
+When writing to local DuckDB files, data is written to `/tmp/airbyte_local` by default. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
 
 ## Destinations V2
 
@@ -13,8 +13,6 @@ This destination implements [Destinations V2](/release_notes/upgrading_to_destin
 Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping).
 
 ## Use with MotherDuck
-
-This DuckDB destination is compatible with [MotherDuck](https://motherduck.com).
 
 ### Specifying a MotherDuck Database
 
@@ -72,7 +70,7 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| 0.2.1 | 2025-12-19 | [70999](https://github.com/airbytehq/airbyte/pull/70999) | Fix for empty STRUCTs |
+| 0.2.1 | 2026-01-29 | [70999](https://github.com/airbytehq/airbyte/pull/70999) | Fix for empty STRUCTs |
 | 0.2.0 | 2025-12-01 | [70221](https://github.com/airbytehq/airbyte/pull/70221) | Upgrade DuckDB to v1.4.2 and duckdb-engine to v0.17.0 |
 | 0.1.26 | 2025-10-21 | [68338](https://github.com/airbytehq/airbyte/pull/68338) | Update dependencies |
 | 0.1.25 | 2025-10-14 | [67952](https://github.com/airbytehq/airbyte/pull/67952) | Update dependencies |
