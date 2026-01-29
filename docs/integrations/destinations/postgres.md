@@ -298,7 +298,6 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.7 | 2026-01-28 | [71340](https://github.com/airbytehq/airbyte/pull/71340) | Resolve the generator returned from JsonDecoder into dictionary |
 | 3.0.6 | 2026-01-06 | [71146](https://github.com/airbytehq/airbyte/pull/71146) | Fix: Only apply CASCADE to DROP COLUMN, not ALTER COLUMN TYPE during schema changes. |
 | 3.0.5 | 2025-12-12 | [70895](https://github.com/airbytehq/airbyte/pull/70895) | Update CDK to 0.1.86. |
 | 3.0.5-rc.1 | 2025-12-09 | [70338](https://github.com/airbytehq/airbyte/pull/70338)    | Update CDK to 0.1.86.                                                                                                                                                                  |
