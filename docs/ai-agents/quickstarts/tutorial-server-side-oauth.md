@@ -13,26 +13,21 @@ The server-side OAuth flow involves four main steps:
 3. **Handle callback**: After authorization, the user is redirected back to your application with a `secret_id`.
 4. **Create connector**: You use the `secret_id` to create a connector without handling raw credentials.
 
-```
-Your App                         Airbyte                          Third-Party (e.g., HubSpot)
-   │                               │                                      │
-   │  POST /connectors/oauth/      │                                      │
-   │  initiate                     │                                      │
-   │──────────────────────────────>│                                      │
-   │                               │                                      │
-   │<─────── consent_url ──────────│                                      │
-   │                               │                                      │
-   │  Redirect user ───────────────────────────────────────────────────────>
-   │                               │                                      │
-   │                               │         User authorizes access       │
-   │                               │                                      │
-   │<──────────────────────── Redirect with secret_id ─────────────────────
-   │                               │                                      │
-   │  POST /connectors             │                                      │
-   │  (with secret_id)             │                                      │
-   │──────────────────────────────>│                                      │
-   │                               │                                      │
-   │<────── connector created ─────│                                      │
+```mermaid
+sequenceDiagram
+    participant App as Your App
+    participant Airbyte as Airbyte
+    participant ThirdParty as Third-Party (e.g., HubSpot)
+
+    App->>Airbyte: POST /connectors/oauth/initiate
+    Airbyte-->>App: consent_url
+
+    App->>ThirdParty: Redirect user to consent_url
+    Note over ThirdParty: User authorizes access
+    ThirdParty-->>App: Redirect with secret_id
+
+    App->>Airbyte: POST /connectors (with secret_id)
+    Airbyte-->>App: connector created
 ```
 
 ## Prerequisites
