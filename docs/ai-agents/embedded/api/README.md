@@ -26,5 +26,3 @@ For each user who wants to connect their data:
 1. **[Generate User Tokens & Configure Sources](./configuring-sources.md)**: Authenticate users and collect their source credentials
 
 This approach separates one-time organizational setup from per-user operations, making your integration more scalable.
-
-[Full Agent Engine API reference](/ai-agents/embedded/api-reference/sonar).
