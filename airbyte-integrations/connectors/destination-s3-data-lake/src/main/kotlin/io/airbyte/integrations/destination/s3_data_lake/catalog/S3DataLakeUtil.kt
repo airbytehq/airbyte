@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake.io
+package io.airbyte.integrations.destination.s3_data_lake.catalog
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
@@ -12,16 +12,7 @@ import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.PolarisCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
-import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
-import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_ARN
-import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_EXTERNAL_ID
-import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_REGION
-import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE
-import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE_ASSUME_ROLE
-import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE_STATIC_CREDS
-import io.airbyte.integrations.destination.s3_data_lake.GlueCredentialsProvider
-import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeConfiguration
-import io.airbyte.integrations.destination.s3_data_lake.SECRET_ACCESS_KEY
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import org.apache.iceberg.CatalogProperties

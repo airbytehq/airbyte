@@ -2,18 +2,20 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.integrations.destination.s3_data_lake.write
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
+import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -63,7 +65,7 @@ class S3DataLakeStreamLoader(
         // change immediately. This is intentional.
         // If we commit the schema change right now, then affected columns might become unqueryable.
         // Instead, we write data using the new schema to the staging branch - that data will be
-        // unqueryable during the sync (which is fine).
+        // un-queryable during the sync (which is fine).
         // Also note that we're not wrapping the entire sync in a transaction
         // (i.e. `table.newTransaction()`).
         // This is also intentional - the airbyte protocol requires that we commit data
@@ -89,8 +91,8 @@ class S3DataLakeStreamLoader(
         streamStateStore.put(stream.mappedDescriptor, state)
     }
 
-    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        if (streamFailure == null) {
+    override suspend fun teardown(completedSuccessfully: Boolean) {
+        if (completedSuccessfully) {
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
             logger.info {
