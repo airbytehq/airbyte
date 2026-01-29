@@ -71,13 +71,13 @@ class AirbyteBulkConnectorExtension {
                 ? project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-$core")
                 : "io.airbyte.bulk-cdk:bulk-cdk-core-$core:$cdk"
 
-        // Read micronaut version from version.properties (single source of truth)
-        def cdkPropsFile = project.rootProject.file("airbyte-cdk/bulk/version.properties")
+        // Read micronaut version from gradle.properties (single source of truth)
+        def cdkPropsFile = project.rootProject.file("airbyte-cdk/bulk/gradle.properties")
         def cdkProps = new Properties()
         cdkPropsFile.withInputStream { cdkProps.load(it) }
         def micronautBomVersion = cdkProps.getProperty("micronautVersion")
         if (micronautBomVersion == null) {
-            throw new IllegalArgumentException("Missing 'micronautVersion' in airbyte-cdk/bulk/version.properties")
+            throw new IllegalArgumentException("Missing 'micronautVersion' in airbyte-cdk/bulk/gradle.properties")
         }
 
         // KSP annotation processors don't propagate transitively - they're compile-time tools.
