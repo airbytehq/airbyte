@@ -268,7 +268,8 @@ const config: Config = {
         docsPluginId: "ai-agents",
         config: {
           embedded: {
-            specPath: "src/data/embedded_api_spec.json",
+            // Load spec directly from S3 instead of local cache
+            specPath: "https://airbyte-sonar-prod.s3.us-east-2.amazonaws.com/openapi/latest/app.json",
             outputDir: "../docs/ai-agents/embedded/api-reference",
             sidebarOptions: {
               groupPathsBy: "tag",

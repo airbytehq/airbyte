@@ -1,16 +1,22 @@
-import { API_SIDEBAR_PATH, SPEC_CACHE_PATH } from "./constants";
+import { API_SIDEBAR_PATH, EMBEDDED_API_SPEC_URL } from "./constants";
 import * as fs from "fs";
+import { execSync } from "child_process";
 
 const loadAllowedTags = (): string[] => {
-  if (fs.existsSync(SPEC_CACHE_PATH)) {
-    try {
-      const spec = JSON.parse(fs.readFileSync(SPEC_CACHE_PATH, "utf8"));
-      return spec.tags?.map((tag: any) => tag.name) || [];
-    } catch (e) {
-      console.warn("Could not load OpenAPI spec for tag filtering:", e);
-    }
+  // Fetch spec directly from S3 using curl (synchronous)
+  try {
+    console.log("Fetching OpenAPI spec from S3 for tag filtering...");
+    const specData = execSync(`curl -s "${EMBEDDED_API_SPEC_URL}"`, {
+      encoding: "utf8",
+      timeout: 30000,
+    });
+    const spec = JSON.parse(specData);
+    console.log("Successfully fetched spec from S3");
+    return spec.tags?.map((tag: any) => tag.name) || [];
+  } catch (e) {
+    console.warn("Could not fetch OpenAPI spec from S3 for tag filtering:", e);
+    return [];
   }
-  return [];
 };
 
 export const loadSonarApiSidebar = (): any[] => {
