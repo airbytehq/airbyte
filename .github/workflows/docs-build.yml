@@ -12,9 +12,9 @@ on:
     branches:
       - master
     paths:
-      - 'docs/**'
-      - 'docusaurus/**'
-      - '.markdownlint.jsonc'
+      - "docs/**"
+      - "docusaurus/**"
+      - ".markdownlint.jsonc"
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -85,7 +85,7 @@ jobs:
         if: steps.check-skip.outputs.skip-build != 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: 'docusaurus/.nvmrc'
+          node-version-file: "docusaurus/.nvmrc"
 
       - name: Get pnpm store directory
         if: steps.check-skip.outputs.skip-build != 'true'
