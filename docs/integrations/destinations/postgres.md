@@ -40,6 +40,11 @@ You'll need the following information to configure the Postgres destination:
 - **Database** - The database name. The default is to connect to a database with the same name as
   the user name.
 - **JDBC URL Params** (optional)
+- **CDC deletion mode** (optional) - How to handle deletions from CDC sources. Defaults to hard
+  delete.
+- **Airbyte Internal Schema Name** (optional) - Schema for Airbyte internal tables. Defaults to
+  `airbyte_internal`.
+- **Unconstrained numeric columns** (optional) - Use unconstrained `DECIMAL` for numeric columns.
 
 [Refer to this guide for more details](https://jdbc.postgresql.org/documentation/use/#connecting-to-the-database)
 
@@ -176,7 +181,21 @@ Mode**; otherwise, the connection will fail.
 
 :::
 
-12. Click **Set up destination**.
+12. For **CDC deletion mode**, select how to handle deletions from CDC sources:
+    - **Hard delete** (default) to propagate source deletions to the destination by removing the
+      corresponding rows.
+    - **Soft delete** to leave a tombstone record in the destination instead of deleting the row.
+      The `_airbyte_meta` column will contain deletion metadata.
+
+13. (Optional) For **Airbyte Internal Schema Name**, specify the schema where Airbyte stores
+    internal tables. In legacy raw tables mode, raw tables are stored in this schema. Defaults to
+    `airbyte_internal`.
+
+14. (Optional) Enable **Unconstrained numeric columns** to create numeric columns as unconstrained
+    `DECIMAL` instead of `NUMERIC(38, 9)`. This allows increased precision in numeric values and
+    is recommended for new connections.
+
+15. Click **Set up destination**.
 
 ## Supported sync modes
 
