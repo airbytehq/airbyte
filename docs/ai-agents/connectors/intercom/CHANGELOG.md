@@ -1,5 +1,65 @@
 # Intercom changelog
 
+## [0.1.42] - 2026-01-29
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: 43200eed
+- SDK version: 0.1.0
+
+## [0.1.41] - 2026-01-29
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: c718c683
+- SDK version: 0.1.0
+
+## [0.1.40] - 2026-01-28
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: 97007bbd
+- SDK version: 0.1.0
+
+## [0.1.39] - 2026-01-28
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: f6c6fca2
+- SDK version: 0.1.0
+
+## [0.1.38] - 2026-01-28
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: 9aef9bd2
+- SDK version: 0.1.0
+
+## [0.1.37] - 2026-01-28
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: 71f48c10
+- SDK version: 0.1.0
+
+## [0.1.36] - 2026-01-27
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: 0f5e1914
+- SDK version: 0.1.0
+
+## [0.1.35] - 2026-01-27
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: a01f6b16
+- SDK version: 0.1.0
+
+## [0.1.34] - 2026-01-27
+- Updated connector definition (YAML version 0.1.4)
+- Source commit: c9b05509
+- SDK version: 0.1.0
+
+## [0.1.33] - 2026-01-27
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: 4bded58d
+- SDK version: 0.1.0
+
+## [0.1.32] - 2026-01-26
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: 74809153
+- SDK version: 0.1.0
+
+## [0.1.31] - 2026-01-26
+- Updated connector definition (YAML version 0.1.3)
+- Source commit: b73c71e0
+- SDK version: 0.1.0
+
 ## [0.1.30] - 2026-01-24
 - Updated connector definition (YAML version 0.1.3)
 - Source commit: 609c1d86

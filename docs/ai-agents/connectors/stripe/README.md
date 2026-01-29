@@ -70,7 +70,7 @@ This example assumes you've already authenticated your connector with Airbyte. S
 from airbyte_agent_stripe import StripeConnector
 
 connector = StripeConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
@@ -81,34 +81,37 @@ async def stripe_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [Api_search](./REFERENCE.md#customers-api_search) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Api_search](./REFERENCE.md#invoices-api_search) |
-| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [Api_search](./REFERENCE.md#charges-api_search) |
-| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [Api_search](./REFERENCE.md#subscriptions-api_search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [API Search](./REFERENCE.md#customers-api_search) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [API Search](./REFERENCE.md#invoices-api_search) |
+| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [API Search](./REFERENCE.md#charges-api_search) |
+| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [API Search](./REFERENCE.md#subscriptions-api_search) |
 | Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get) |
-| Products | [List](./REFERENCE.md#products-list), [Create](./REFERENCE.md#products-create), [Get](./REFERENCE.md#products-get), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [Api_search](./REFERENCE.md#products-api_search) |
+| Products | [List](./REFERENCE.md#products-list), [Create](./REFERENCE.md#products-create), [Get](./REFERENCE.md#products-get), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [API Search](./REFERENCE.md#products-api_search) |
 | Balance | [Get](./REFERENCE.md#balance-get) |
 | Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Get](./REFERENCE.md#balance-transactions-get) |
-| Payment Intents | [List](./REFERENCE.md#payment-intents-list), [Get](./REFERENCE.md#payment-intents-get), [Api_search](./REFERENCE.md#payment-intents-api_search) |
+| Payment Intents | [List](./REFERENCE.md#payment-intents-list), [Get](./REFERENCE.md#payment-intents-get), [API Search](./REFERENCE.md#payment-intents-api_search) |
 | Disputes | [List](./REFERENCE.md#disputes-list), [Get](./REFERENCE.md#disputes-get) |
 | Payouts | [List](./REFERENCE.md#payouts-list), [Get](./REFERENCE.md#payouts-get) |
 
 
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
+### Authentication and configuration
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see the [Stripe API reference](https://docs.stripe.com/api).
+### Stripe API docs
+
+See the official [Stripe API reference](https://docs.stripe.com/api).
 
 ## Version information
 
-- **Package version:** 0.5.59
-- **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
+- **Package version:** 0.5.70
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** 43200eed5845ee089ef5b9afc0199a8af3966169
