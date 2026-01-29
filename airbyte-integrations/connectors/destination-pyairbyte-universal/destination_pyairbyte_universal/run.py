@@ -3,7 +3,7 @@
 
 import sys
 
-from airbyte.destinations.universal import DestinationPyAirbyteUniversal
+from airbyte.cli.universal_connector import DestinationPyAirbyteUniversal
 
 
 def run() -> None:
