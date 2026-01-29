@@ -24,10 +24,8 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
-import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.util.serializeToString
@@ -45,7 +43,6 @@ import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.data.GenericRecord
-import org.apache.iceberg.data.Record
 import org.apache.iceberg.exceptions.AlreadyExistsException
 
 private val logger = KotlinLogging.logger {}
@@ -54,19 +51,7 @@ const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
 @Singleton
 class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
-    class InvalidFormatException(message: String) : Exception(message)
-
-    private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
-
     private val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
-
-    fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
-        if (!generationIdRegex.matches(generationId)) {
-            throw InvalidFormatException(
-                "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>-e'",
-            )
-        }
-    }
 
     fun constructGenerationIdSuffix(stream: DestinationStream): String {
         return constructGenerationIdSuffix(stream.generationId)
@@ -148,30 +133,6 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         }
     }
 
-    /**
-     * Converts an Airbyte [EnrichedDestinationRecordAirbyteValue] into an Iceberg [Record]. The
-     * converted record will be wrapped to include [Operation] information, which is used by the
-     * writer to determine how to write the data to the underlying Iceberg files.
-     *
-     * @param record The Airbyte [EnrichedDestinationRecordAirbyteValue] record to be converted for
-     * writing by Iceberg.
-     * @param stream The Airbyte [DestinationStream] that contains information about the stream.
-     * @param tableSchema The Iceberg [Table] [Schema].
-     * @return An Iceberg [Record] representation of the [EnrichedDestinationRecordAirbyteValue].
-     */
-    fun toRecord(
-        record: EnrichedDestinationRecordAirbyteValue,
-        stream: DestinationStream,
-        tableSchema: Schema,
-    ): Record {
-        record.declaredFields.forEach { (_, value) -> this.mungeForIceberg(value) }
-
-        return RecordWrapper(
-            delegate = record.allTypedFields.toIcebergRecord(tableSchema),
-            operation = getOperation(record = record, importType = stream.importType),
-        )
-    }
-
     fun mungeForIceberg(value: EnrichedAirbyteValue) =
         value.transformValueRecursingIntoArrays { element, elementType ->
             when (elementType) {
@@ -223,21 +184,6 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         schema.identifierFieldNames().forEach { builder.asc(it) }
         return builder.build()
     }
-
-    fun getOperation(
-        record: EnrichedDestinationRecordAirbyteValue,
-        importType: ImportType,
-    ): Operation =
-        if (
-            record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN] != null &&
-                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.abValue !is NullValue
-        ) {
-            Operation.DELETE
-        } else if (importType is Dedupe) {
-            Operation.UPDATE
-        } else {
-            Operation.INSERT
-        }
 
     fun getOperation(
         fields: Map<String, AirbyteValue>,
