@@ -261,7 +261,7 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 ### InvalidInput error for ListFinancialEvents stream
 
-```
+```text
 The API returned an InvalidInput error. This typically occurs when the response exceeds the maximum number of transactions or 10 MB per page.
 ```
 
