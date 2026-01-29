@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
@@ -90,19 +89,9 @@ class DestinationCatalogTest {
             DestinationStream(
                 unmappedNamespace = "namespace",
                 unmappedName = "name",
-                importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 1,
-                schema =
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "z" to FieldType(StringType, nullable = true),
-                                "y" to FieldType(BooleanType, nullable = true),
-                                "x" to FieldType(IntegerType, nullable = true),
-                            )
-                    ),
                 namespaceMapper = NamespaceMapper(),
                 tableSchema =
                     StreamTableSchema(
@@ -142,11 +131,9 @@ class DestinationCatalogTest {
                         DestinationStream(
                             unmappedNamespace = null,
                             unmappedName = "foo",
-                            importType = Append,
                             generationId = 1,
                             minimumGenerationId = 0,
                             syncId = 1,
-                            schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
                             tableSchema =
                                 StreamTableSchema(
@@ -164,11 +151,9 @@ class DestinationCatalogTest {
                         DestinationStream(
                             unmappedNamespace = null,
                             unmappedName = "foo",
-                            importType = Append,
                             generationId = 1,
                             minimumGenerationId = 0,
                             syncId = 1,
-                            schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
                             tableSchema =
                                 StreamTableSchema(
@@ -198,12 +183,9 @@ class DestinationCatalogTest {
                         DestinationStream(
                             unmappedNamespace = null,
                             unmappedName = "foo",
-                            importType =
-                                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
                             generationId = 1,
                             minimumGenerationId = 0,
                             syncId = 1,
-                            schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
                             tableSchema =
                                 StreamTableSchema(
@@ -240,18 +222,9 @@ class DestinationCatalogTest {
                         DestinationStream(
                             unmappedNamespace = null,
                             unmappedName = "foo",
-                            importType =
-                                Dedupe(
-                                    primaryKey = listOf(listOf("id")),
-                                    cursor = listOf("updated_at"),
-                                ),
                             generationId = 1,
                             minimumGenerationId = 0,
                             syncId = 1,
-                            schema =
-                                ObjectType(
-                                    linkedMapOf("id" to FieldType(IntegerType, nullable = true))
-                                ),
                             namespaceMapper = NamespaceMapper(),
                             tableSchema =
                                 StreamTableSchema(

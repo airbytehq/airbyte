@@ -186,18 +186,14 @@ interface ConnectorWiringSuite {
         name: String = "test_stream_${UUID.randomUUID()}",
         importType: io.airbyte.cdk.load.command.ImportType = Append
     ): DestinationStream {
+        val schema =
+            linkedMapOf(
+                "id" to FieldType(IntegerType, nullable = false),
+                "name" to FieldType(StringType, nullable = true)
+            )
         return DestinationStream(
             unmappedNamespace = namespace,
             unmappedName = name,
-            importType = importType,
-            schema =
-                ObjectType(
-                    properties =
-                        linkedMapOf(
-                            "id" to FieldType(IntegerType, nullable = false),
-                            "name" to FieldType(StringType, nullable = true)
-                        )
-                ),
             generationId = 0,
             minimumGenerationId = 0,
             syncId = 42,
@@ -206,12 +202,12 @@ interface ConnectorWiringSuite {
                 StreamTableSchema(
                     columnSchema =
                         ColumnSchema(
-                            inputSchema = mapOf(),
-                            inputToFinalColumnNames = mapOf(),
+                            inputSchema = schema,
+                            inputToFinalColumnNames = schema.keys.associateWith { it },
                             finalSchema = mapOf(),
                         ),
-                    importType = Append,
-                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                    importType = importType,
+                    tableNames = TableNames(finalTableName = TableName(namespace, name)),
                 ),
         )
     }
