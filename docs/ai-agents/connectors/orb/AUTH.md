@@ -1,6 +1,6 @@
-# Jira authentication and configuration
+# Orb authentication and configuration
 
-This page documents the authentication and configuration options for the Jira agent connector.
+This page documents the authentication and configuration options for the Orb agent connector.
 
 ## Authentication
 
@@ -17,19 +17,17 @@ This authentication method isn't available for this connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `username` | `str` | Yes | Your Atlassian account email address |
-| `password` | `str` | Yes | Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens |
+| `api_key` | `str` | Yes | Your Orb API key |
 
 Example request:
 
 ```python
-from airbyte_agent_jira import JiraConnector
-from airbyte_agent_jira.models import JiraAuthConfig
+from airbyte_agent_orb import OrbConnector
+from airbyte_agent_orb.models import OrbAuthConfig
 
-connector = JiraConnector(
-    auth_config=JiraAuthConfig(
-        username="<Your Atlassian account email address>",
-        password="<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
+connector = OrbConnector(
+    auth_config=OrbAuthConfig(
+        api_key="<Your Orb API key>"
     )
 )
 ```
@@ -49,8 +47,7 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `username` | `str` | Yes | Your Atlassian account email address |
-| `password` | `str` | Yes | Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens |
+| `api_key` | `str` | Yes | Your Orb API key |
 
 Example request:
 
@@ -61,11 +58,10 @@ curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
   -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
-    "connector_type": "Jira",
-    "name": "My Jira Connector",
+    "connector_type": "Orb",
+    "name": "My Orb Connector",
     "credentials": {
-      "username": "<Your Atlassian account email address>",
-      "password": "<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
+      "api_key": "<Your Orb API key>"
     }
   }'
 ```
@@ -77,17 +73,17 @@ After creating the connector, execute operations using either the Python SDK or 
 **Python SDK**
 
 ```python
-from airbyte_agent_jira import JiraConnector
+from airbyte_agent_orb import OrbConnector
 
-connector = JiraConnector(
+connector = OrbConnector(
     external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@JiraConnector.tool_utils
-async def jira_execute(entity: str, action: str, params: dict | None = None):
+@OrbConnector.tool_utils
+async def orb_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -101,10 +97,3 @@ curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/ex
 ```
 
 
-## Configuration
-
-The Jira connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
-| Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| `subdomain` | `string` | Yes | \{subdomain\} | Your Jira Cloud subdomain |
