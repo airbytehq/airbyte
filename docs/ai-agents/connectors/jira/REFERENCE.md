@@ -1866,4 +1866,3 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `issueIdOrKey` | `string` | Yes | The issue ID or key (e.g., "PROJ-123" or "10000") |
 
 
-
