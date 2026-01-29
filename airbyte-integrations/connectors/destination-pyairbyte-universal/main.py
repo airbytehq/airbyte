@@ -3,5 +3,6 @@
 
 from destination_pyairbyte_universal.run import run
 
+
 if __name__ == "__main__":
     run()
