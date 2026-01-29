@@ -56,12 +56,13 @@ Data set name should be provided aliong with the other details to sync the data.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Nexus Datasets** from the Source type dropdown and enter a name for this connector.
 4. Add **Base URL**
-5. Add **User ID**
-6. Add **Access Key ID**
-7. Add **Secret Key**
-8. Add **API Key**
-9. Add **Dataset Name**
-10. Click `Set up source`.
+5. Add **Dataset Name**
+6. Add **Infor Streaming Mode (default Full)**
+7. Add **User ID**
+8. Add **Access Key ID**
+9. Add **Secret Key**
+10. Add **API Key**
+11. Click `Set up source`
 
 #### For Airbyte OSS:
 
@@ -69,23 +70,26 @@ Data set name should be provided aliong with the other details to sync the data.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Nexus Datasets** from the Source type dropdown and enter a name for this connector.
 4. Add **Base URL**
-5. Add **User ID**
-6. Add **Access Key ID**
-7. Add **Secret Key**
-8. Add **API Key**
-9. Add **Dataset Name**
-10. Click `Set up source`
+5. Add **Dataset Name**
+6. Add **Infor Streaming Mode (default Full)**
+7. Add **User ID**
+8. Add **Access Key ID**
+9. Add **Secret Key**
+10. Add **API Key**
+11. Click `Set up source`.
 
 ### Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `base_url` | `string` | Base URL. Enter base url for your data set |  |
+| `dataset_name` | `string` | Name of the dataset. Enter dataset name to be synced |  |
+| `infor_streaming_mode` | `string` | Name of the dataset. Enter dataset name to be synced |  |
 | `user_id` | `string` | Data API agent user ID. Enter DAPI agent user id configured in the nexus |  |
 | `access_key_id` | `string` | Access key ID. Enter access key ID for the DAPI agent user |  |
 | `secret_key` | `string` | Secret key. Enter secret key for the DAPI agent user |  |
 | `api_key` | `string` | Data API key. Enter data API key for the organization |  |
-| `dataset_name` | `string` | Name of the dataset. Enter dataset name to be synced |  |
+
 
 
 ### Supported sync modes
@@ -121,7 +125,5 @@ Please refer https://developer.infornexus.com/api/authentication-choices/hmac fo
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
 | 0.1.0 | 2025-09-30 |  | Nexus datasets connector first version |
-
-
 
 </details>
