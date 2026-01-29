@@ -102,6 +102,11 @@ def other_test_table_name(test_table_name) -> str:
     return test_table_name + "_other"
 
 
+@pytest.fixture(scope="module")
+def duplicate_column_name_test_table_name(test_table_name) -> str:
+    return test_table_name + "_broken"
+
+
 @pytest.fixture
 def test_large_table_name() -> str:
     letters = string.ascii_lowercase
@@ -115,7 +120,7 @@ def table_schema() -> str:
         "type": "object",
         "properties": {
             "key1": {"type": ["null", "string"]},
-            "key2": {"type": ["null", "string"]},
+            "keyUpperCase": {"type": ["null", "string"]},
         },
     }
     return schema
@@ -134,12 +139,26 @@ def other_table_schema() -> str:
 
 
 @pytest.fixture
+def duplicate_column_name_table_schema() -> str:
+    schema = {
+        "type": "object",
+        "properties": {
+            "uppercase": {"type": ["null", "string"]},
+            "upperCase": {"type": ["null", "string"]},
+        },
+    }
+    return schema
+
+
+@pytest.fixture
 def configured_catalogue(
     test_table_name: str,
     other_test_table_name: str,
+    duplicate_column_name_test_table_name: str,
     test_large_table_name: str,
     table_schema: str,
     other_table_schema: str,
+    duplicate_column_name_table_schema: str,
 ) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
@@ -160,6 +179,16 @@ def configured_catalogue(
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
         primary_key=[["key3"]],
+    )
+    duplicate_column_name_append_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(
+            name=duplicate_column_name_test_table_name,
+            json_schema=duplicate_column_name_table_schema,
+            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+        ),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+        primary_key=[["uppercase"]],
     )
     append_stream_large = ConfiguredAirbyteStream(
         stream=AirbyteStream(
@@ -211,7 +240,7 @@ def airbyte_message1(test_table_name: str):
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=test_table_name,
-            data={"key1": fake.unique.first_name(), "key2": str(fake.ssn())},
+            data={"key1": fake.unique.first_name(), "keyUpperCase": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -225,7 +254,7 @@ def airbyte_message2(test_table_name: str):
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=test_table_name,
-            data={"key1": fake.unique.first_name(), "key2": str(fake.ssn())},
+            data={"key1": fake.unique.first_name(), "keyUpperCase": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -241,7 +270,7 @@ def airbyte_message2_update(airbyte_message2: AirbyteMessage, test_table_name: s
             stream=test_table_name,
             data={
                 "key1": airbyte_message2.record.data["key1"],
-                "key2": str(fake.ssn()),
+                "keyUpperCase": str(fake.ssn()),
             },
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
@@ -276,6 +305,20 @@ def airbyte_message5(other_test_table_name: str):
         record=AirbyteRecordMessage(
             stream=other_test_table_name,
             data={"key3": fake.unique.first_name(), "default": str(fake.ssn())},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
+        ),
+    )
+
+
+@pytest.fixture
+def duplicate_column_name_airbyte_message(test_table_name: str):
+    fake = Faker()
+    Faker.seed(0)
+    return AirbyteMessage(
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(
+            stream=test_table_name,
+            data={"uppercase": fake.unique.first_name(), "upperCase": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -346,7 +389,7 @@ def test_write(
     assert len(result) == 1
 
     sql_result = sql_processor._execute_sql(
-        "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
+        "SELECT key1, keyuppercase, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
         f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
     )
 
@@ -380,7 +423,7 @@ def test_write_dupe(
     assert len(result) == 1
 
     sql_result = sql_processor._execute_sql(
-        "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
+        "SELECT key1, keyuppercase, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
         f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
     )
 
@@ -389,6 +432,34 @@ def test_write_dupe(
     assert sql_result[1][0] == "Megan"
     assert sql_result[0][1] == "138-73-1034"
     assert sql_result[1][1] == "777-54-0664"
+
+
+def test_writing_to_schema_with_duplicate_column_names_after_normalization_doesnt_work(
+    config: Dict[str, str],
+    request,
+    configured_catalogue: ConfiguredAirbyteCatalog,
+    duplicate_column_name_airbyte_message: AirbyteMessage,
+    test_table_name: str,
+    test_schema_name: str,
+    sql_processor,
+):
+    destination = DestinationMotherDuck()
+    generator = destination.write(
+        config,
+        configured_catalogue,
+        [duplicate_column_name_airbyte_message],
+    )
+
+    assert len(list(generator)) == 0
+    assert (
+        len(
+            sql_processor._execute_sql(
+                "SELECT key1, keyuppercase, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
+                f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
+            )
+        )
+        == 0
+    )
 
 
 def _airbyte_messages(n: int, batch_size: int, table_name: str) -> Generator[AirbyteMessage, None, None]:
@@ -406,7 +477,7 @@ def _airbyte_messages(n: int, batch_size: int, table_name: str) -> Generator[Air
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
                     stream=table_name,
-                    data={"key1": fake.unique.name(), "key2": str(fake.ssn())},
+                    data={"key1": fake.unique.name(), "keyUpperCase": str(fake.ssn())},
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
@@ -433,7 +504,7 @@ def _airbyte_messages_with_inconsistent_json_fields(n: int, batch_size: int, tab
                     data=(
                         {
                             "key1": fake.unique.name(),
-                            "key2": str(fake.ssn()) if random.random() < 0.5 else str(random.randrange(1000, 9999999999999)),
+                            "keyUpperCase": str(fake.ssn()) if random.random() < 0.5 else str(random.randrange(1000, 9999999999999)),
                             "nested1": (
                                 {}
                                 if random.random() < 0.1
