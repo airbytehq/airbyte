@@ -1,4 +1,4 @@
-# Airbyte Github AI Connector
+# Github agent connector
 
 GitHub is a platform for version control and collaborative software development
 using Git. This connector provides access to repositories, branches, commits, issues,
@@ -6,12 +6,14 @@ pull requests, reviews, comments, releases, organizations, teams, and users for
 development workflow analysis and project management insights.
 
 
-## Example Questions
+## Example questions
+
+The Github connector is optimized to handle prompts like these.
 
 - Show me all open issues in my repositories this month
 - List the top 5 repositories I've starred recently
 - Analyze the commit trends in my main project over the last quarter
-- Find all pull requests created by [teamMember] in the past two weeks
+- Find all pull requests created by \{team_member\} in the past two weeks
 - Search for repositories related to machine learning in my organizations
 - Compare the number of contributors across my different team projects
 - Identify the most active branches in my main repository
@@ -19,7 +21,9 @@ development workflow analysis and project management insights.
 - List all milestones for our current development sprint
 - Show me insights about pull request review patterns in our team
 
-## Unsupported Questions
+## Unsupported questions
+
+The Github connector isn't currently able to handle prompts like these.
 
 - Create a new issue in the project repository
 - Update the status of this pull request
@@ -30,58 +34,92 @@ development workflow analysis and project management insights.
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-github
+uv pip install airbyte-agent-github
 ```
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_ai_github import GithubConnector, GithubAuthConfig
+from airbyte_agent_github import GithubConnector
+from airbyte_agent_github.models import GithubPersonalAccessTokenAuthConfig
 
 connector = GithubConnector(
-  auth_config=GithubAuthConfig(
-    access_token="...",
-    refresh_token="...",
-    client_id="...",
-    client_secret="..."
-  )
+    auth_config=GithubPersonalAccessTokenAuthConfig(
+        token="<GitHub personal access token (fine-grained or classic)>"
+    )
 )
-result = connector.repositories.get()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GithubConnector.tool_utils
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
-## Documentation
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_github import GithubConnector
+
+connector = GithubConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GithubConnector.tool_utils
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [Search](./REFERENCE.md#repositories-search) |
+| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [Api_search](./REFERENCE.md#repositories-api_search) |
 | Org Repositories | [List](./REFERENCE.md#org-repositories-list) |
 | Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get) |
 | Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get) |
 | Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get) |
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Search](./REFERENCE.md#issues-search) |
-| Pull Requests | [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [Search](./REFERENCE.md#pull-requests-search) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Api_search](./REFERENCE.md#issues-api_search) |
+| Pull Requests | [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [Api_search](./REFERENCE.md#pull-requests-api_search) |
 | Reviews | [List](./REFERENCE.md#reviews-list) |
 | Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get) |
 | Pr Comments | [List](./REFERENCE.md#pr-comments-list), [Get](./REFERENCE.md#pr-comments-get) |
 | Labels | [List](./REFERENCE.md#labels-list), [Get](./REFERENCE.md#labels-get) |
 | Milestones | [List](./REFERENCE.md#milestones-list), [Get](./REFERENCE.md#milestones-get) |
 | Organizations | [Get](./REFERENCE.md#organizations-get), [List](./REFERENCE.md#organizations-list) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Search](./REFERENCE.md#users-search) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Api_search](./REFERENCE.md#users-api_search) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
 | Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get) |
 | Stargazers | [List](./REFERENCE.md#stargazers-list) |
 | Viewer | [Get](./REFERENCE.md#viewer-get) |
 | Viewer Repositories | [List](./REFERENCE.md#viewer-repositories-list) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
+| Project Items | [List](./REFERENCE.md#project-items-list) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see [Github API Reference](https://docs.github.com/en/rest).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-## Version Information
+For the service's official API docs, see the [Github API reference](https://docs.github.com/en/rest).
 
-**Package Version:** 0.18.10
+## Version information
 
-**Connector Version:** 0.1.1
-
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+- **Package version:** 0.18.62
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

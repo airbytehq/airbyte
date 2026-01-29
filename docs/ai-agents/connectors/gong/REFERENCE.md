@@ -1,12 +1,16 @@
-# Gong
+# Gong full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Gong agent connector.
+
+## Supported entities and actions
+
+The Gong connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get) |
-| Calls | [List](#calls-list), [Get](#calls-get) |
-| Calls Extensive | [List](#calls-extensive-list) |
+| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
+| Calls | [List](#calls-list), [Get](#calls-get), [Search](#calls-search) |
+| Calls Extensive | [List](#calls-extensive-list), [Search](#calls-extensive-search) |
 | Call Audio | [Download](#call-audio-download) |
 | Call Video | [Download](#call-video-download) |
 | Workspaces | [List](#workspaces-list) |
@@ -14,29 +18,29 @@
 | Stats Activity Aggregate | [List](#stats-activity-aggregate-list) |
 | Stats Activity Day By Day | [List](#stats-activity-day-by-day-list) |
 | Stats Interaction | [List](#stats-interaction-list) |
-| Settings Scorecards | [List](#settings-scorecards-list) |
+| Settings Scorecards | [List](#settings-scorecards-list), [Search](#settings-scorecards-search) |
 | Settings Trackers | [List](#settings-trackers-list) |
 | Library Folders | [List](#library-folders-list) |
 | Library Folder Content | [List](#library-folder-content-list) |
 | Coaching | [List](#coaching-list) |
-| Stats Activity Scorecards | [List](#stats-activity-scorecards-list) |
+| Stats Activity Scorecards | [List](#stats-activity-scorecards-list), [Search](#stats-activity-scorecards-search) |
 
-### Users
+## Users
 
-#### Users List
+### Users List
 
 Returns a list of all users in the Gong account
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.users.list()
+await gong.users.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -46,7 +50,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -56,7 +60,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -78,7 +82,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `spokenLanguages` | `array<object>` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -90,22 +94,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Users Get
+### Users Get
 
 Get a single user by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.users.get(
+await gong.users.get(
     id="<str>"
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -118,7 +122,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -128,7 +132,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -152,22 +156,111 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Calls
+### Users Search
 
-#### Calls List
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await gong.users.search(
+    query={"filter": {"eq": {"active": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"active": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `active` | `boolean` | Indicates if the user is currently active or not |
+| `created` | `string` | The timestamp denoting when the user account was created |
+| `emailAddress` | `string` | The primary email address associated with the user |
+| `emailAliases` | `array` | Additional email addresses that can be used to reach the user |
+| `extension` | `string` | The phone extension number for the user |
+| `firstName` | `string` | The first name of the user |
+| `id` | `string` | Unique identifier for the user |
+| `lastName` | `string` | The last name of the user |
+| `managerId` | `string` | The ID of the user's manager |
+| `meetingConsentPageUrl` | `string` | URL for the consent page related to meetings |
+| `personalMeetingUrls` | `array` | URLs for personal meeting rooms assigned to the user |
+| `phoneNumber` | `string` | The phone number associated with the user |
+| `settings` | `object` | User-specific settings and configurations |
+| `spokenLanguages` | `array` | Languages spoken by the user |
+| `title` | `string` | The job title or position of the user |
+| `trustedEmailAddress` | `string` | An email address that is considered trusted for the user |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.active` | `boolean` | Indicates if the user is currently active or not |
+| `hits[].data.created` | `string` | The timestamp denoting when the user account was created |
+| `hits[].data.emailAddress` | `string` | The primary email address associated with the user |
+| `hits[].data.emailAliases` | `array` | Additional email addresses that can be used to reach the user |
+| `hits[].data.extension` | `string` | The phone extension number for the user |
+| `hits[].data.firstName` | `string` | The first name of the user |
+| `hits[].data.id` | `string` | Unique identifier for the user |
+| `hits[].data.lastName` | `string` | The last name of the user |
+| `hits[].data.managerId` | `string` | The ID of the user's manager |
+| `hits[].data.meetingConsentPageUrl` | `string` | URL for the consent page related to meetings |
+| `hits[].data.personalMeetingUrls` | `array` | URLs for personal meeting rooms assigned to the user |
+| `hits[].data.phoneNumber` | `string` | The phone number associated with the user |
+| `hits[].data.settings` | `object` | User-specific settings and configurations |
+| `hits[].data.spokenLanguages` | `array` | Languages spoken by the user |
+| `hits[].data.title` | `string` | The job title or position of the user |
+| `hits[].data.trustedEmailAddress` | `string` | An email address that is considered trusted for the user |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
+## Calls
+
+### Calls List
 
 Retrieve calls data by date range
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.calls.list()
+await gong.calls.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -177,7 +270,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -189,7 +282,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -215,7 +308,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `calendarEventId` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -227,22 +320,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Calls Get
+### Calls Get
 
 Get specific call data by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.calls.get(
+await gong.calls.get(
     id="<str>"
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -255,7 +348,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -265,7 +358,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -293,24 +386,121 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Calls Extensive
+### Calls Search
 
-#### Calls Extensive List
+Search and filter calls records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await gong.calls.search(
+    query={"filter": {"eq": {"calendarEventId": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "calls",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"calendarEventId": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `calendarEventId` | `string` | Unique identifier for the calendar event associated with the call. |
+| `clientUniqueId` | `string` | Unique identifier for the client related to the call. |
+| `customData` | `string` | Custom data associated with the call. |
+| `direction` | `string` | Direction of the call (inbound/outbound). |
+| `duration` | `integer` | Duration of the call in seconds. |
+| `id` | `string` | Unique identifier for the call. |
+| `isPrivate` | `boolean` | Indicates if the call is private or not. |
+| `language` | `string` | Language used in the call. |
+| `media` | `string` | Media type used for communication (voice, video, etc.). |
+| `meetingUrl` | `string` | URL for accessing the meeting associated with the call. |
+| `primaryUserId` | `string` | Unique identifier for the primary user involved in the call. |
+| `purpose` | `string` | Purpose or topic of the call. |
+| `scheduled` | `string` | Scheduled date and time of the call. |
+| `scope` | `string` | Scope or extent of the call. |
+| `sdrDisposition` | `string` | Disposition set by the sales development representative. |
+| `started` | `string` | Start date and time of the call. |
+| `system` | `string` | System information related to the call. |
+| `title` | `string` | Title or headline of the call. |
+| `url` | `string` | URL associated with the call. |
+| `workspaceId` | `string` | Identifier for the workspace to which the call belongs. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.calendarEventId` | `string` | Unique identifier for the calendar event associated with the call. |
+| `hits[].data.clientUniqueId` | `string` | Unique identifier for the client related to the call. |
+| `hits[].data.customData` | `string` | Custom data associated with the call. |
+| `hits[].data.direction` | `string` | Direction of the call (inbound/outbound). |
+| `hits[].data.duration` | `integer` | Duration of the call in seconds. |
+| `hits[].data.id` | `string` | Unique identifier for the call. |
+| `hits[].data.isPrivate` | `boolean` | Indicates if the call is private or not. |
+| `hits[].data.language` | `string` | Language used in the call. |
+| `hits[].data.media` | `string` | Media type used for communication (voice, video, etc.). |
+| `hits[].data.meetingUrl` | `string` | URL for accessing the meeting associated with the call. |
+| `hits[].data.primaryUserId` | `string` | Unique identifier for the primary user involved in the call. |
+| `hits[].data.purpose` | `string` | Purpose or topic of the call. |
+| `hits[].data.scheduled` | `string` | Scheduled date and time of the call. |
+| `hits[].data.scope` | `string` | Scope or extent of the call. |
+| `hits[].data.sdrDisposition` | `string` | Disposition set by the sales development representative. |
+| `hits[].data.started` | `string` | Start date and time of the call. |
+| `hits[].data.system` | `string` | System information related to the call. |
+| `hits[].data.title` | `string` | Title or headline of the call. |
+| `hits[].data.url` | `string` | URL associated with the call. |
+| `hits[].data.workspaceId` | `string` | Identifier for the workspace to which the call belongs. |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
+## Calls Extensive
+
+### Calls Extensive List
 
 Retrieve detailed call data including participants, interaction stats, and content
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.calls_extensive.list(
+await gong.calls_extensive.list(
     filter={}
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -323,7 +513,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -362,7 +552,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -374,7 +564,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `media` | `object` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -386,15 +576,90 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Call Audio
+### Calls Extensive Search
 
-#### Call Audio Download
+Search and filter calls extensive records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await gong.calls_extensive.search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "calls_extensive",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the call (from metaData.id). |
+| `startdatetime` | `string` | Datetime for extensive calls. |
+| `collaboration` | `object` | Collaboration information added to the call |
+| `content` | `object` | Analysis of the interaction content. |
+| `context` | `object` | A list of the agenda of each part of the call. |
+| `interaction` | `object` | Metrics collected around the interaction during the call. |
+| `media` | `object` | The media urls of the call. |
+| `metaData` | `object` | call's metadata. |
+| `parties` | `array` | A list of the call's participants |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.id` | `integer` | Unique identifier for the call (from metaData.id). |
+| `hits[].data.startdatetime` | `string` | Datetime for extensive calls. |
+| `hits[].data.collaboration` | `object` | Collaboration information added to the call |
+| `hits[].data.content` | `object` | Analysis of the interaction content. |
+| `hits[].data.context` | `object` | A list of the agenda of each part of the call. |
+| `hits[].data.interaction` | `object` | Metrics collected around the interaction during the call. |
+| `hits[].data.media` | `object` | The media urls of the call. |
+| `hits[].data.metaData` | `object` | call's metadata. |
+| `hits[].data.parties` | `array` | A list of the call's participants |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
+## Call Audio
+
+### Call Audio Download
 
 Downloads the audio media file for a call. Temporarily, the request body must be configured with:
-`{"filter": {"callIds": [CALL_ID]}, "contentSelector": {"exposedFields": {"media": true}}}`
+\{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in gong.call_audio.download():# Process each chunk (e.g., write to file)
@@ -403,10 +668,10 @@ async for chunk in gong.call_audio.download():# Process each chunk (e.g., write 
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -416,7 +681,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -428,15 +693,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Call Video
+## Call Video
 
-#### Call Video Download
+### Call Video Download
 
 Downloads the video media file for a call. Temporarily, the request body must be configured with:
-`{"filter": {"callIds": [CALL_ID]}, "contentSelector": {"exposedFields": {"media": true}}}`
+\{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in gong.call_video.download():# Process each chunk (e.g., write to file)
@@ -445,10 +710,10 @@ async for chunk in gong.call_video.download():# Process each chunk (e.g., write 
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -458,7 +723,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -470,22 +735,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Workspaces
+## Workspaces
 
-#### Workspaces List
+### Workspaces List
 
 List all company workspaces
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.workspaces.list()
+await gong.workspaces.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -499,7 +764,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -511,22 +776,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Call Transcripts
+## Call Transcripts
 
-#### Call Transcripts List
+### Call Transcripts List
 
 Returns transcripts for calls in a specified date range or specific call IDs
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.call_transcripts.list()
+await gong.call_transcripts.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -536,7 +801,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -550,7 +815,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -558,7 +823,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `transcript` | `array<object>` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -570,22 +835,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Stats Activity Aggregate
+## Stats Activity Aggregate
 
-#### Stats Activity Aggregate List
+### Stats Activity Aggregate List
 
 Provides aggregated user activity metrics across a specified period
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.stats_activity_aggregate.list()
+await gong.stats_activity_aggregate.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -595,7 +860,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -608,7 +873,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -632,7 +897,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `userAggregateActivityStats.callsMarkedAsFeedbackReceived` | `integer` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -644,22 +909,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Stats Activity Day By Day
+## Stats Activity Day By Day
 
-#### Stats Activity Day By Day List
+### Stats Activity Day By Day List
 
 Delivers daily user activity metrics across a specified date range
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.stats_activity_day_by_day.list()
+await gong.stats_activity_day_by_day.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -669,7 +934,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -682,7 +947,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -708,7 +973,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `userDailyActivityStats[].toDate` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -720,22 +985,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Stats Interaction
+## Stats Interaction
 
-#### Stats Interaction List
+### Stats Interaction List
 
 Returns interaction stats for users based on calls that have Whisper turned on
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.stats_interaction.list()
+await gong.stats_interaction.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -745,7 +1010,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -758,7 +1023,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -769,7 +1034,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `personInteractionStats[].value` | `number` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -781,22 +1046,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Settings Scorecards
+## Settings Scorecards
 
-#### Settings Scorecards List
+### Settings Scorecards List
 
 Retrieve all scorecard configurations in the company
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.settings_scorecards.list()
+await gong.settings_scorecards.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -806,7 +1071,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -816,7 +1081,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -846,22 +1111,95 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Settings Trackers
+### Settings Scorecards Search
 
-#### Settings Trackers List
+Search and filter settings scorecards records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await gong.settings_scorecards.search(
+    query={"filter": {"eq": {"created": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "settings_scorecards",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"created": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `created` | `string` | The timestamp when the scorecard was created |
+| `enabled` | `boolean` | Indicates if the scorecard is enabled or disabled |
+| `questions` | `array` | An array of questions related to the scorecard |
+| `scorecardId` | `string` | The unique identifier of the scorecard |
+| `scorecardName` | `string` | The name of the scorecard |
+| `updated` | `string` | The timestamp when the scorecard was last updated |
+| `updaterUserId` | `string` | The user ID of the person who last updated the scorecard |
+| `workspaceId` | `string` | The unique identifier of the workspace associated with the scorecard |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.created` | `string` | The timestamp when the scorecard was created |
+| `hits[].data.enabled` | `boolean` | Indicates if the scorecard is enabled or disabled |
+| `hits[].data.questions` | `array` | An array of questions related to the scorecard |
+| `hits[].data.scorecardId` | `string` | The unique identifier of the scorecard |
+| `hits[].data.scorecardName` | `string` | The name of the scorecard |
+| `hits[].data.updated` | `string` | The timestamp when the scorecard was last updated |
+| `hits[].data.updaterUserId` | `string` | The user ID of the person who last updated the scorecard |
+| `hits[].data.workspaceId` | `string` | The unique identifier of the workspace associated with the scorecard |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
+## Settings Trackers
+
+### Settings Trackers List
 
 Retrieve all keyword tracker configurations in the company
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.settings_trackers.list()
+await gong.settings_trackers.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -871,7 +1209,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -881,7 +1219,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -904,24 +1242,24 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Library Folders
+## Library Folders
 
-#### Library Folders List
+### Library Folders List
 
 Retrieve the folder structure of the call library
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.library_folders.list(
+await gong.library_folders.list(
     workspace_id="<str>"
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -934,7 +1272,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -944,7 +1282,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -957,24 +1295,24 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Library Folder Content
+## Library Folder Content
 
-#### Library Folder Content List
+### Library Folder Content List
 
 Retrieve calls in a specific library folder
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.library_folder_content.list(
+await gong.library_folder_content.list(
     folder_id="<str>"
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -987,7 +1325,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -998,7 +1336,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1010,7 +1348,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `url` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1022,16 +1360,16 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Coaching
+## Coaching
 
-#### Coaching List
+### Coaching List
 
 Retrieve coaching metrics for a manager and their direct reports
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.coaching.list(
+await gong.coaching.list(
     workspace_id="<str>",
     manager_id="<str>",
     from_="2025-01-01T00:00:00Z",
@@ -1039,10 +1377,10 @@ gong.coaching.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1058,7 +1396,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1071,7 +1409,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1089,22 +1427,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Stats Activity Scorecards
+## Stats Activity Scorecards
 
-#### Stats Activity Scorecards List
+### Stats Activity Scorecards List
 
 Retrieve answered scorecards for applicable reviewed users or scorecards for a date range
 
-**Python SDK**
+#### Python SDK
 
 ```python
-gong.stats_activity_scorecards.list()
+await gong.stats_activity_scorecards.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1114,7 +1452,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1131,7 +1469,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1160,7 +1498,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `visibility` | `string` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1172,46 +1510,81 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
+### Stats Activity Scorecards Search
 
+Search and filter stats activity scorecards records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-## Authentication
-
-The Gong connector supports the following authentication methods:
-
-
-### Access Key Authentication
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `access_key` | `str` | Yes | Your Gong API Access Key |
-| `access_key_secret` | `str` | Yes | Your Gong API Access Key Secret |
-
-#### Example
-
-**Python SDK**
+#### Python SDK
 
 ```python
-GongConnector(
-  auth_config=GongAuthConfig(
-    access_key="<Your Gong API Access Key>",
-    access_key_secret="<Your Gong API Access Key Secret>"
-  )
+await gong.stats_activity_scorecards.search(
+    query={"filter": {"eq": {"answeredScorecardId": "<str>"}}}
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-  "connector_definition_id": "32382e40-3b49-4b99-9c5c-4076501914e7",
-  "auth_config": {
-    "access_key": "<Your Gong API Access Key>",
-    "access_key_secret": "<Your Gong API Access Key Secret>"
-  },
-  "name": "My Gong Connector"
+    "entity": "stats_activity_scorecards",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"answeredScorecardId": "<str>"}}}
+    }
 }'
 ```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `answeredScorecardId` | `string` | Unique identifier for the answered scorecard instance. |
+| `answers` | `array` | Contains the answered questions in the scorecards |
+| `callId` | `string` | Unique identifier for the call associated with the answered scorecard. |
+| `callStartTime` | `string` | Timestamp indicating the start time of the call. |
+| `reviewTime` | `string` | Timestamp indicating when the review of the answered scorecard was completed. |
+| `reviewedUserId` | `string` | Unique identifier for the user whose performance was reviewed. |
+| `reviewerUserId` | `string` | Unique identifier for the user who performed the review. |
+| `scorecardId` | `string` | Unique identifier for the scorecard template used. |
+| `scorecardName` | `string` | Name or title of the scorecard template used. |
+| `visibilityType` | `string` | Type indicating the visibility permissions for the answered scorecard. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.answeredScorecardId` | `string` | Unique identifier for the answered scorecard instance. |
+| `hits[].data.answers` | `array` | Contains the answered questions in the scorecards |
+| `hits[].data.callId` | `string` | Unique identifier for the call associated with the answered scorecard. |
+| `hits[].data.callStartTime` | `string` | Timestamp indicating the start time of the call. |
+| `hits[].data.reviewTime` | `string` | Timestamp indicating when the review of the answered scorecard was completed. |
+| `hits[].data.reviewedUserId` | `string` | Unique identifier for the user whose performance was reviewed. |
+| `hits[].data.reviewerUserId` | `string` | Unique identifier for the user who performed the review. |
+| `hits[].data.scorecardId` | `string` | Unique identifier for the scorecard template used. |
+| `hits[].data.scorecardName` | `string` | Name or title of the scorecard template used. |
+| `hits[].data.visibilityType` | `string` | Type indicating the visibility permissions for the answered scorecard. |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
 

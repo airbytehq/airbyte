@@ -1,11 +1,9 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse.write.load
 
-import com.clickhouse.client.api.Client
-import com.clickhouse.client.api.ClientFaultCause
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -30,12 +28,10 @@ import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.clickhouse.ClickhouseConfigUpdater
 import io.airbyte.integrations.destination.clickhouse.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse.Utils
-import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.fixtures.ClickhouseExpectedRecordMapper
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
+import io.airbyte.integrations.destination.clickhouse.schema.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificationOss
-import io.airbyte.integrations.destination.clickhouse.write.load.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.nio.file.Path
@@ -126,12 +122,7 @@ abstract class ClickhouseAcceptanceTest(
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
         configSpecClass = ClickhouseSpecificationOss::class.java,
-        dataDumper =
-            ClickhouseDataDumper { spec ->
-                val configOverrides = mutableMapOf<String, String>()
-                ClickhouseConfigurationFactory()
-                    .makeWithOverrides(spec as ClickhouseSpecificationOss, configOverrides)
-            },
+        dataDumper = ClickhouseDataDumper(),
         destinationCleaner = ClickhouseDataCleaner,
         recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
@@ -141,7 +132,6 @@ abstract class ClickhouseAcceptanceTest(
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRINGIFY,
         stringifyUnionObjects = true,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = true,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
@@ -160,7 +150,6 @@ abstract class ClickhouseAcceptanceTest(
         dedupChangeUsesDefault = true,
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
-        useDataFlowPipeline = true,
     ) {
     companion object {
         @JvmStatic
@@ -175,29 +164,23 @@ abstract class ClickhouseAcceptanceTest(
             ClickhouseContainerHelper.stop()
         }
     }
-
-    @Disabled("Clickhouse does not support file transfer, so this test is skipped.")
-    override fun testBasicWriteFile() {
-        // Clickhouse does not support file transfer, so this test is skipped.
-    }
 }
 
-class ClickhouseDataDumper(
-    private val configProvider: (ConfigurationSpecification) -> ClickhouseConfiguration
-) : DestinationDataDumper {
+class ClickhouseDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val config = configProvider(spec)
-        val client = getClient(config)
+        val config = Utils.specToConfig(spec)
+        val client = Utils.getClickhouseClient(config)
 
         val isDedup = stream.importType is Dedupe
 
         val output = mutableListOf<OutputRecord>()
 
         val cleanedNamespace =
-            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}".toClickHouseCompatibleName()
+            (stream.mappedDescriptor.namespace ?: config.resolvedDatabase)
+                .toClickHouseCompatibleName()
         val cleanedStreamName = stream.mappedDescriptor.name.toClickHouseCompatibleName()
 
         val namespacedTableName = "$cleanedNamespace.$cleanedStreamName"
@@ -255,14 +238,14 @@ object ClickhouseDataCleaner : DestinationCleaner {
                     "hostname" to ClickhouseContainerHelper.getIpAddress()!!,
                     "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
                     "protocol" to "http",
-                    "username" to ClickhouseContainerHelper.getUsername()!!,
-                    "password" to ClickhouseContainerHelper.getPassword()!!,
+                    "username" to ClickhouseContainerHelper.getUsername(),
+                    "password" to ClickhouseContainerHelper.getPassword(),
                 )
             )
 
     override fun cleanup() {
         try {
-            val client = getClient(config)
+            val client = Utils.getClickhouseClient(config)
 
             val query = "select * from system.databases where name like 'test%'"
 
@@ -275,7 +258,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
 
                 client.query("DROP DATABASE IF EXISTS $databaseName").get()
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // swallow the exception, we don't want to fail the test suite if the cleanup fails
         }
     }
@@ -305,16 +288,4 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
         changes = changes,
         syncId = metaJson["sync_id"].longValue(),
     )
-}
-
-object ClientProvider {
-    fun getClient(config: ClickhouseConfiguration): Client {
-        return Client.Builder()
-            .setPassword(config.password)
-            .setUsername(config.username)
-            .addEndpoint(config.endpoint)
-            .setDefaultDatabase(config.resolvedDatabase)
-            .retryOnFailures(ClientFaultCause.None)
-            .build()
-    }
 }

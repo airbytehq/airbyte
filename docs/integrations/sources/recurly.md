@@ -66,17 +66,20 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.3.41 | 2026-01-20 | [72016](https://github.com/airbytehq/airbyte/pull/72016) | Update dependencies |
+| 1.3.40 | 2026-01-14 | [71471](https://github.com/airbytehq/airbyte/pull/71471) | Update dependencies |
+| 1.3.39 | 2025-12-18 | [70642](https://github.com/airbytehq/airbyte/pull/70642) | Update dependencies |
 | 1.3.38 | 2025-11-25 | [70003](https://github.com/airbytehq/airbyte/pull/70003) | Update dependencies |
 | 1.3.37 | 2025-11-18 | [69622](https://github.com/airbytehq/airbyte/pull/69622) | Update dependencies |
 | 1.3.36 | 2025-10-29 | [68903](https://github.com/airbytehq/airbyte/pull/68903) | Update dependencies |
 | 1.3.35 | 2025-10-21 | [68341](https://github.com/airbytehq/airbyte/pull/68341) | Update dependencies |
 | 1.3.34 | 2025-10-14 | [67882](https://github.com/airbytehq/airbyte/pull/67882) | Update dependencies |
-| 1.3.33 | 2025-10-07 | [67545](https://github.com/airbytehq/airbyte/pull/67545) | Update dependencies |
+| 1.3.33 | 2025-10-08 | [67545](https://github.com/airbytehq/airbyte/pull/67545) | Update dependencies |
 | 1.3.32 | 2025-09-30 | [66434](https://github.com/airbytehq/airbyte/pull/66434) | Update dependencies |
 | 1.3.31 | 2025-09-09 | [65702](https://github.com/airbytehq/airbyte/pull/65702) | Update dependencies |
 | 1.3.30 | 2025-08-24 | [65439](https://github.com/airbytehq/airbyte/pull/65439) | Update dependencies |
 | 1.3.29 | 2025-08-16 | [64996](https://github.com/airbytehq/airbyte/pull/64996) | Update dependencies |
-| 1.3.28 | 2025-08-02 | [64476](https://github.com/airbytehq/airbyte/pull/64476) | Update dependencies |
+| 1.3.28 | 2025-08-03 | [64476](https://github.com/airbytehq/airbyte/pull/64476) | Update dependencies |
 | 1.3.27 | 2025-07-20 | [63657](https://github.com/airbytehq/airbyte/pull/63657) | Update dependencies |
 | 1.3.26 | 2025-07-07 | [63356](https://github.com/airbytehq/airbyte/pull/63356) | Update Schema and add configurable concurrency |
 | 1.3.25 | 2025-07-05 | [62679](https://github.com/airbytehq/airbyte/pull/62679) | Update dependencies |

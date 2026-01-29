@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse.client
 
+import io.airbyte.cdk.load.table.CDC_CURSOR_COLUMN
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes.VALID_VERSION_COLUMN_TYPES
 
 object ClickhouseSqlTypes {
@@ -23,4 +24,9 @@ object ClickhouseSqlTypes {
         )
 }
 
-fun String.isValidVersionColumnType() = VALID_VERSION_COLUMN_TYPES.contains(this)
+// Warning: if any munging changes the name of the CDC column name this will break.
+// Currently, that is not the case.
+fun isValidVersionColumn(name: String, type: String) =
+    // CDC cursors cannot be used as a version column since they are null
+    // during the initial CDC snapshot.
+    name != CDC_CURSOR_COLUMN && VALID_VERSION_COLUMN_TYPES.contains(type)

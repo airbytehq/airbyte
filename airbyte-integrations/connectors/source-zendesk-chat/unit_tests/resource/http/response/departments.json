@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "Sales",
+    "description": "Sales department",
+    "enabled": 1,
+    "members": [1001, 1002],
+    "settings": {
+      "chat_enabled": true
+    }
+  }
+]

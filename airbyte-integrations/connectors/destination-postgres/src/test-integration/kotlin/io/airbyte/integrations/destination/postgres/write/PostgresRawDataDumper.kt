@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.write
@@ -36,7 +36,7 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.postgres.config.PostgresBeanFactory
-import io.airbyte.integrations.destination.postgres.db.toPostgresCompatibleName
+import io.airbyte.integrations.destination.postgres.schema.toPostgresCompatibleName
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -267,7 +267,7 @@ class PostgresRawDataDumper(
                         .lowercase()
                         .toPostgresCompatibleName()
 
-                val fullyQualifiedTableName = "$rawNamespace.$rawName"
+                val fullyQualifiedTableName = "\"$rawNamespace\".\"$rawName\""
 
                 // Check if table exists first
                 val tableExistsQuery =
@@ -302,6 +302,26 @@ class PostgresRawDataDumper(
                         false
                     }
 
+                // Build the column name mapping from original names to transformed names
+                // We use the stream schema to get the original field names, then transform them
+                // using the postgres name transformation logic
+                val finalToInputColumnNames = mutableMapOf<String, String>()
+                if (stream.schema is ObjectType) {
+                    val objectSchema = stream.schema as ObjectType
+                    for (fieldName in objectSchema.properties.keys) {
+                        val transformedName = fieldName.toPostgresCompatibleName()
+                        // Map transformed name back to original name
+                        finalToInputColumnNames[transformedName] = fieldName
+                    }
+                }
+                // Also check if inputToFinalColumnNames mapping is available
+                val inputToFinalColumnNames =
+                    stream.tableSchema.columnSchema.inputToFinalColumnNames
+                // Add entries from the existing mapping (in case it was populated)
+                for ((input, final) in inputToFinalColumnNames) {
+                    finalToInputColumnNames[final] = input
+                }
+
                 while (resultSet.next()) {
                     val rawData =
                         if (hasDataColumn) {
@@ -313,8 +333,22 @@ class PostgresRawDataDumper(
                                     else -> dataObject?.toString() ?: "{}"
                                 }
 
-                            // Parse JSON to AirbyteValue, then coerce it to match the schema
-                            dataJson?.deserializeToNode()?.toAirbyteValue() ?: NullValue
+                            // Parse JSON to AirbyteValue, then map column names back to originals
+                            val parsedValue =
+                                dataJson?.deserializeToNode()?.toAirbyteValue() ?: NullValue
+                            // If the parsed value is an ObjectValue, map the column names back
+                            if (parsedValue is ObjectValue) {
+                                val mappedProperties = linkedMapOf<String, AirbyteValue>()
+                                for ((key, value) in parsedValue.values) {
+                                    // Map final column name back to input column name if mapping
+                                    // exists
+                                    val originalKey = finalToInputColumnNames[key] ?: key
+                                    mappedProperties[originalKey] = value
+                                }
+                                ObjectValue(mappedProperties)
+                            } else {
+                                parsedValue
+                            }
                         } else {
                             // Typed table mode: read from individual columns and reconstruct the
                             // object
@@ -333,10 +367,19 @@ class PostgresRawDataDumper(
 
                                 for ((fieldName, fieldType) in objectSchema.properties) {
                                     try {
+                                        // Map input field name to the transformed final column name
+                                        // First check the inputToFinalColumnNames mapping, then
+                                        // fall
+                                        // back to applying postgres transformation directly
+                                        val transformedColumnName =
+                                            inputToFinalColumnNames[fieldName]
+                                                ?: fieldName.toPostgresCompatibleName()
+
                                         // Try to find the actual column name (case-insensitive
                                         // lookup)
                                         val actualColumnName =
-                                            columnMap[fieldName.lowercase()] ?: fieldName
+                                            columnMap[transformedColumnName.lowercase()]
+                                                ?: transformedColumnName
                                         val columnValue = resultSet.getObject(actualColumnName)
                                         properties[fieldName] =
                                             when (columnValue) {

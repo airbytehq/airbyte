@@ -1,0 +1,27 @@
+{
+  "satisfaction_ratings": [
+    {
+      "id": 35436,
+      "url": "https://company.zendesk.com/api/v2/satisfaction_ratings/35436.json",
+      "assignee_id": 235323,
+      "group_id": 98738,
+      "requester_id": 20978392,
+      "ticket_id": 35436,
+      "score": "good",
+      "comment": "Great support!",
+      "reason": "The issue was resolved quickly",
+      "reason_id": 123,
+      "created_at": "2009-07-20T22:55:29Z",
+      "updated_at": "2011-05-05T10:38:52Z"
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": "after-cursor",
+    "before_cursor": "before-cursor"
+  },
+  "links": {
+    "next": null,
+    "prev": null
+  }
+}

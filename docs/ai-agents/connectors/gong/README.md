@@ -1,4 +1,4 @@
-# Airbyte Gong AI Connector
+# Gong agent connector
 
 Gong is a revenue intelligence platform that captures and analyzes customer interactions
 across calls, emails, and web conferences. This connector provides access to users,
@@ -6,7 +6,9 @@ recorded calls with transcripts, activity statistics, scorecards, trackers, work
 coaching metrics, and library content for sales performance analysis and revenue insights.
 
 
-## Example Questions
+## Example questions
+
+The Gong connector is optimized to handle prompts like these.
 
 - List all users in my Gong account
 - Show me calls from last week
@@ -17,7 +19,9 @@ coaching metrics, and library content for sales performance analysis and revenue
 - What trackers are set up in my account?
 - Get coaching metrics for manager user123
 
-## Unsupported Questions
+## Unsupported questions
+
+The Gong connector isn't currently able to handle prompts like these.
 
 - Create a new user in Gong
 - Delete a call recording
@@ -29,24 +33,59 @@ coaching metrics, and library content for sales performance analysis and revenue
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-gong
+uv pip install airbyte-agent-gong
 ```
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_ai_gong import GongConnector, GongAuthConfig
+from airbyte_agent_gong import GongConnector
+from airbyte_agent_gong.models import GongAccessKeyAuthenticationAuthConfig
 
 connector = GongConnector(
-  auth_config=GongAuthConfig(
-    access_key="...",
-    access_key_secret="..."
-  )
+    auth_config=GongAccessKeyAuthenticationAuthConfig(
+        access_key="<Your Gong API Access Key>",
+        access_key_secret="<Your Gong API Access Key Secret>"
+    )
 )
-result = connector.users.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GongConnector.tool_utils
+async def gong_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
-## Documentation
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_gong import GongConnector
+
+connector = GongConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GongConnector.tool_utils
+async def gong_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -68,14 +107,14 @@ result = connector.users.list()
 | Stats Activity Scorecards | [List](./REFERENCE.md#stats-activity-scorecards-list) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see [Gong API Reference](https://gong.app.gong.io/settings/api/documentation).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-## Version Information
+For the service's official API docs, see the [Gong API reference](https://gong.app.gong.io/settings/api/documentation).
 
-**Package Version:** 0.19.12
+## Version information
 
-**Connector Version:** 0.1.3
-
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+- **Package version:** 0.19.65
+- **Connector version:** 0.1.12
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

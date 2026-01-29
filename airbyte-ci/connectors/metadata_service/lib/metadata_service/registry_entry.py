@@ -434,7 +434,7 @@ def generate_and_persist_registry_entry(
         bucket_name (str): The name of the GCS bucket.
         repo_metadata_file_path (pathlib.Path): The path to the spec file.
         registry_type (str): The registry type.
-        docker_image_tag (str): The docker image tag associated with this release. Typically a semver string (e.g. '1.2.3'), possibly with a suffix (e.g. '1.2.3-dev.abcde12345')
+        docker_image_tag (str): The docker image tag associated with this release. Typically a semver string (e.g. '1.2.3'), possibly with a suffix (e.g. '1.2.3-preview.abcde12')
         is_prerelease (bool): Whether this is a prerelease, or a main release.
     """
     # Read the repo metadata dict to bootstrap ourselves. We need the docker repository,
@@ -444,7 +444,7 @@ def generate_and_persist_registry_entry(
 
     try:
         # Now that we have the docker repo, read the appropriate versioned metadata from GCS.
-        # This metadata will differ in a few fields (e.g. in prerelease mode, dockerImageTag will contain the actual prerelease tag `1.2.3-dev.abcde12345`),
+        # This metadata will differ in a few fields (e.g. in prerelease mode, dockerImageTag will contain the actual prerelease tag `1.2.3-preview.abcde12`),
         # so we'll treat this as the source of truth (ish. See below for how we handle the registryOverrides field.)
         gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
         bucket = gcs_client.bucket(bucket_name)
@@ -533,7 +533,9 @@ def generate_and_persist_registry_entry(
 
     # For latest versions that are disabled, delete any existing registry entry to remove it from the registry
     if (
-        "-rc" not in metadata_dict["data"]["dockerImageTag"] and "-dev" not in metadata_dict["data"]["dockerImageTag"]
+        "-rc" not in metadata_dict["data"]["dockerImageTag"]
+        and "-dev" not in metadata_dict["data"]["dockerImageTag"]
+        and "-preview" not in metadata_dict["data"]["dockerImageTag"]
     ) and not metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
         logger.info(
             f"{registry_type} is not enabled: deleting existing {registry_type} registry entry for {metadata_dict['data']['dockerRepository']} at latest path."

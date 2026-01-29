@@ -53,6 +53,9 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 
 | Version | Date       | Pull Request                                                   | Subject                              |
 | :------ | :--------- | :------------------------------------------------------------- | :----------------------------------- |
+| 0.3.30 | 2026-01-20 | [72171](https://github.com/airbytehq/airbyte/pull/72171) | Update dependencies |
+| 0.3.29 | 2026-01-14 | [71671](https://github.com/airbytehq/airbyte/pull/71671) | Update dependencies |
+| 0.3.28 | 2025-12-18 | [70522](https://github.com/airbytehq/airbyte/pull/70522) | Update dependencies |
 | 0.3.27 | 2025-11-25 | [70092](https://github.com/airbytehq/airbyte/pull/70092) | Update dependencies |
 | 0.3.26 | 2025-11-18 | [69672](https://github.com/airbytehq/airbyte/pull/69672) | Update dependencies |
 | 0.3.25 | 2025-10-29 | [68998](https://github.com/airbytehq/airbyte/pull/68998) | Update dependencies |
@@ -60,7 +63,7 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 | 0.3.23 | 2025-10-14 | [67782](https://github.com/airbytehq/airbyte/pull/67782) | Update dependencies |
 | 0.3.22 | 2025-10-07 | [67345](https://github.com/airbytehq/airbyte/pull/67345) | Update dependencies |
 | 0.3.21 | 2025-09-30 | [66395](https://github.com/airbytehq/airbyte/pull/66395) | Update dependencies |
-| 0.3.20 | 2025-09-09 | [65858](https://github.com/airbytehq/airbyte/pull/65858) | Update dependencies |
+| 0.3.20 | 2025-09-10 | [65858](https://github.com/airbytehq/airbyte/pull/65858) | Update dependencies |
 | 0.3.19 | 2025-08-23 | [65170](https://github.com/airbytehq/airbyte/pull/65170) | Update dependencies |
 | 0.3.18 | 2025-08-09 | [64767](https://github.com/airbytehq/airbyte/pull/64767) | Update dependencies |
 | 0.3.17 | 2025-08-02 | [64253](https://github.com/airbytehq/airbyte/pull/64253) | Update dependencies |

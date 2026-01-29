@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import io.airbyte.cdk.load.write.db.DbConstants
+import io.airbyte.cdk.load.table.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import jakarta.inject.Singleton
 
@@ -54,7 +54,7 @@ class PostgresConfigurationFactory :
             internalTableSchema =
                 if (spec.legacyRawTablesOnly == true) {
                     if (spec.internalTableSchema.isNullOrBlank()) {
-                        DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
+                        DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
                     } else {
                         spec.internalTableSchema
                     }

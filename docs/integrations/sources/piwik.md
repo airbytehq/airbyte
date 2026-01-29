@@ -41,15 +41,18 @@ Visit `https://developers.piwik.pro/en/latest/platform/getting_started.html#gene
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.48 | 2026-01-20 | [72177](https://github.com/airbytehq/airbyte/pull/72177) | Update dependencies |
+| 0.0.47 | 2026-01-14 | [71563](https://github.com/airbytehq/airbyte/pull/71563) | Update dependencies |
+| 0.0.46 | 2025-12-18 | [70467](https://github.com/airbytehq/airbyte/pull/70467) | Update dependencies |
 | 0.0.45 | 2025-11-25 | [69979](https://github.com/airbytehq/airbyte/pull/69979) | Update dependencies |
 | 0.0.44 | 2025-11-18 | [69611](https://github.com/airbytehq/airbyte/pull/69611) | Update dependencies |
 | 0.0.43 | 2025-10-29 | [68926](https://github.com/airbytehq/airbyte/pull/68926) | Update dependencies |
 | 0.0.42 | 2025-10-21 | [68260](https://github.com/airbytehq/airbyte/pull/68260) | Update dependencies |
 | 0.0.41 | 2025-10-14 | [67836](https://github.com/airbytehq/airbyte/pull/67836) | Update dependencies |
 | 0.0.40 | 2025-10-07 | [67498](https://github.com/airbytehq/airbyte/pull/67498) | Update dependencies |
-| 0.0.39 | 2025-09-30 | [66961](https://github.com/airbytehq/airbyte/pull/66961) | Update dependencies |
+| 0.0.39 | 2025-10-01 | [66961](https://github.com/airbytehq/airbyte/pull/66961) | Update dependencies |
 | 0.0.38 | 2025-09-23 | [66423](https://github.com/airbytehq/airbyte/pull/66423) | Update dependencies |
-| 0.0.37 | 2025-09-09 | [65846](https://github.com/airbytehq/airbyte/pull/65846) | Update dependencies |
+| 0.0.37 | 2025-09-10 | [65846](https://github.com/airbytehq/airbyte/pull/65846) | Update dependencies |
 | 0.0.36 | 2025-08-23 | [65213](https://github.com/airbytehq/airbyte/pull/65213) | Update dependencies |
 | 0.0.35 | 2025-08-09 | [64760](https://github.com/airbytehq/airbyte/pull/64760) | Update dependencies |
 | 0.0.34 | 2025-08-02 | [64211](https://github.com/airbytehq/airbyte/pull/64211) | Update dependencies |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.component
@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
@@ -84,6 +85,18 @@ object TableOperationsFixtures {
                 "array" to FieldType(ArrayType(FieldType(StringType, true)), true),
                 "object" to
                     FieldType(ObjectType(linkedMapOf("key" to FieldType(StringType, true))), true),
+                "union" to
+                    FieldType(
+                        UnionType(setOf(StringType, IntegerType), isLegacyUnion = false),
+                        true
+                    ),
+                // Most destinations just ignore the isLegacyUnion flag, which is totally fine.
+                // This is here for the small set of connectors that respect it.
+                "legacy_union" to
+                    FieldType(
+                        UnionType(setOf(StringType, IntegerType), isLegacyUnion = true),
+                        true
+                    ),
                 "unknown" to FieldType(UnknownType(Jsons.readTree("""{"type": "potato"}""")), true),
             ),
         )
@@ -101,6 +114,8 @@ object TableOperationsFixtures {
                 "time_ntz" to "time_ntz",
                 "array" to "array",
                 "object" to "object",
+                "union" to "union",
+                "legacy_union" to "legacy_union",
                 "unknown" to "unknown",
             )
         )

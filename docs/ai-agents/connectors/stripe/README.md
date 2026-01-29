@@ -1,75 +1,114 @@
-# Airbyte Stripe AI Connector
+# Stripe agent connector
 
 Stripe is a payment processing platform that enables businesses to accept payments,
 manage subscriptions, and handle financial transactions. This connector provides
 access to customers for payment analytics and customer management.
 
 
-## Example Questions
+## Example questions
+
+The Stripe connector is optimized to handle prompts like these.
 
 - Show me my top 10 customers by total revenue this month
 - List all customers who have spent over $5,000 in the last quarter
 - Analyze payment trends for my Stripe customers
 - Identify which customers have the most consistent subscription payments
 - Give me insights into my customer retention rates
-- Summarize the payment history for [customerX]
+- Summarize the payment history for \{customer\}
 - Compare customer spending patterns from last month to this month
 - Show me details about my highest-value Stripe customers
 - What are the key financial insights from my customer base?
 - Break down my customers by their average transaction value
 
-## Unsupported Questions
+## Unsupported questions
+
+The Stripe connector isn't currently able to handle prompts like these.
 
 - Create a new customer profile in Stripe
-- Update the billing information for [customerX]
+- Update the billing information for \{customer\}
 - Delete a customer record
-- Send a payment reminder to [customerX]
-- Schedule an automatic invoice for [Company]
+- Send a payment reminder to \{customer\}
+- Schedule an automatic invoice for \{company\}
 
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-stripe
+uv pip install airbyte-agent-stripe
 ```
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_ai_stripe import StripeConnector, StripeAuthConfig
+from airbyte_agent_stripe import StripeConnector
+from airbyte_agent_stripe.models import StripeAuthConfig
 
 connector = StripeConnector(
-  auth_config=StripeAuthConfig(
-    api_key="..."
-  )
+    auth_config=StripeAuthConfig(
+        api_key="<Your Stripe API Key (starts with sk_test_ or sk_live_)>"
+    )
 )
-result = connector.customers.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@StripeConnector.tool_utils
+async def stripe_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
-## Documentation
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_stripe import StripeConnector
+
+connector = StripeConnector(
+    external_user_id="<your-scoped-token>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@StripeConnector.tool_utils
+async def stripe_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Search](./REFERENCE.md#customers-search) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Search](./REFERENCE.md#invoices-search) |
-| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [Search](./REFERENCE.md#charges-search) |
-| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [Search](./REFERENCE.md#subscriptions-search) |
-| Refunds | [List](./REFERENCE.md#refunds-list), [Get](./REFERENCE.md#refunds-get) |
-| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Search](./REFERENCE.md#products-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [Api_search](./REFERENCE.md#customers-api_search) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Api_search](./REFERENCE.md#invoices-api_search) |
+| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [Api_search](./REFERENCE.md#charges-api_search) |
+| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [Api_search](./REFERENCE.md#subscriptions-api_search) |
+| Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get) |
+| Products | [List](./REFERENCE.md#products-list), [Create](./REFERENCE.md#products-create), [Get](./REFERENCE.md#products-get), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [Api_search](./REFERENCE.md#products-api_search) |
 | Balance | [Get](./REFERENCE.md#balance-get) |
 | Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Get](./REFERENCE.md#balance-transactions-get) |
-| Payment Intents | [List](./REFERENCE.md#payment-intents-list), [Get](./REFERENCE.md#payment-intents-get), [Search](./REFERENCE.md#payment-intents-search) |
+| Payment Intents | [List](./REFERENCE.md#payment-intents-list), [Get](./REFERENCE.md#payment-intents-get), [Api_search](./REFERENCE.md#payment-intents-api_search) |
 | Disputes | [List](./REFERENCE.md#disputes-list), [Get](./REFERENCE.md#disputes-get) |
 | Payouts | [List](./REFERENCE.md#payouts-list), [Get](./REFERENCE.md#payouts-get) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see [Stripe API Reference](https://docs.stripe.com/api).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-## Version Information
+For the service's official API docs, see the [Stripe API reference](https://docs.stripe.com/api).
 
-**Package Version:** 0.5.11
+## Version information
 
-**Connector Version:** 0.1.2
-
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+- **Package version:** 0.5.59
+- **Connector version:** 0.1.5
+- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3

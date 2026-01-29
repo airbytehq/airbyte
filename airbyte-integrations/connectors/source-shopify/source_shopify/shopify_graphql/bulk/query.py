@@ -952,6 +952,114 @@ class Collection(ShopifyBulkQuery):
         yield record
 
 
+class CollectionProduct(ShopifyBulkQuery):
+    """
+    Returns the products associated with each collection, including both custom collections
+    and smart collections. This provides all product<>collection associations, not just
+    manually associated products (which is what the Collects REST API provides).
+
+    {
+        collections(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    __typename
+                    id
+                    handle
+                    updatedAt
+                    products {
+                        edges {
+                            node {
+                                __typename
+                                id
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "collections"
+    sort_key = "UPDATED_AT"
+
+    products_fields: List[Field] = [
+        Field(
+            name="edges",
+            fields=[
+                Field(
+                    name="node",
+                    fields=[
+                        "__typename",
+                        "id",
+                    ],
+                )
+            ],
+        )
+    ]
+
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        Field(name="handle"),
+        Field(name="updatedAt"),
+        Field(name="products", fields=products_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Collection",
+        "record_components": ["Product"],
+    }
+
+    def _process_product_components(self, products: List[dict]) -> List[dict]:
+        """
+        Process product components to resolve IDs from string to int and preserve the original ID.
+
+        Args:
+            products: List of product dictionaries with string IDs
+
+        Returns:
+            List of processed product dictionaries with both id (int) and admin_graphql_api_id (str)
+        """
+        for product in products:
+            # Save the original string ID before resolving
+            product["admin_graphql_api_id"] = product.get("id")
+            # Resolve the ID from string to int
+            product["id"] = self.tools.resolve_str_id(product.get("id"))
+        return products
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        """
+        Process collection records and yield one record per collection-product association.
+        """
+        record_components = record.get("record_components", {})
+        products = record_components.get("Product", [])
+
+        # Get collection info - id is already resolved to int, admin_graphql_api_id has the string version
+        collection_id = record.get("id")
+        collection_admin_graphql_api_id = record.get("admin_graphql_api_id")
+        collection_handle = record.get("handle")
+        collection_updated_at = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+
+        if products:
+            # Process products to resolve their IDs
+            products = self._process_product_components(products)
+
+            for product in products:
+                product_id = product.get("id")
+                product_admin_graphql_api_id = product.get("admin_graphql_api_id")
+
+                yield {
+                    "collection_id": collection_id,
+                    "collection_admin_graphql_api_id": collection_admin_graphql_api_id,
+                    "collection_handle": collection_handle,
+                    "collection_updated_at": collection_updated_at,
+                    "product_id": product_id,
+                    "product_admin_graphql_api_id": product_admin_graphql_api_id,
+                    "shop_url": self.config.get("shop"),
+                }
+
+
 class CustomerAddresses(ShopifyBulkQuery):
     """
     {

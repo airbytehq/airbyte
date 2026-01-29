@@ -23,6 +23,8 @@ XKCD does not perform rate limiting.
 
 | Version | Date       | Pull Request                                             | Subject                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
+| 0.2.32 | 2026-01-14 | [71712](https://github.com/airbytehq/airbyte/pull/71712) | Update dependencies |
+| 0.2.31 | 2025-12-18 | [70711](https://github.com/airbytehq/airbyte/pull/70711) | Update dependencies |
 | 0.2.30 | 2025-11-25 | [70126](https://github.com/airbytehq/airbyte/pull/70126) | Update dependencies |
 | 0.2.29 | 2025-11-18 | [69517](https://github.com/airbytehq/airbyte/pull/69517) | Update dependencies |
 | 0.2.28 | 2025-10-29 | [68956](https://github.com/airbytehq/airbyte/pull/68956) | Update dependencies |
@@ -31,10 +33,10 @@ XKCD does not perform rate limiting.
 | 0.2.25 | 2025-10-07 | [67318](https://github.com/airbytehq/airbyte/pull/67318) | Update dependencies |
 | 0.2.24 | 2025-09-30 | [66447](https://github.com/airbytehq/airbyte/pull/66447) | Update dependencies |
 | 0.2.23 | 2025-09-09 | [65734](https://github.com/airbytehq/airbyte/pull/65734) | Update dependencies |
-| 0.2.22 | 2025-08-23 | [65427](https://github.com/airbytehq/airbyte/pull/65427) | Update dependencies |
-| 0.2.21 | 2025-08-09 | [64865](https://github.com/airbytehq/airbyte/pull/64865) | Update dependencies |
+| 0.2.22 | 2025-08-24 | [65427](https://github.com/airbytehq/airbyte/pull/65427) | Update dependencies |
+| 0.2.21 | 2025-08-10 | [64865](https://github.com/airbytehq/airbyte/pull/64865) | Update dependencies |
 | 0.2.20 | 2025-08-02 | [64317](https://github.com/airbytehq/airbyte/pull/64317) | Update dependencies |
-| 0.2.19 | 2025-07-26 | [64089](https://github.com/airbytehq/airbyte/pull/64089) | Update dependencies |
+| 0.2.19 | 2025-07-27 | [64089](https://github.com/airbytehq/airbyte/pull/64089) | Update dependencies |
 | 0.2.18 | 2025-07-20 | [63660](https://github.com/airbytehq/airbyte/pull/63660) | Update dependencies |
 | 0.2.17 | 2025-07-12 | [63193](https://github.com/airbytehq/airbyte/pull/63193) | Update dependencies |
 | 0.2.16 | 2025-07-05 | [61236](https://github.com/airbytehq/airbyte/pull/61236) | Update dependencies |

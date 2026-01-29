@@ -20,6 +20,9 @@ For Magic The Gathering fans. Here is a simple data source for all the cards and
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.44 | 2026-01-20 | [72094](https://github.com/airbytehq/airbyte/pull/72094) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71515](https://github.com/airbytehq/airbyte/pull/71515) | Update dependencies |
+| 0.0.42 | 2025-12-18 | [70761](https://github.com/airbytehq/airbyte/pull/70761) | Update dependencies |
 | 0.0.41 | 2025-11-25 | [69983](https://github.com/airbytehq/airbyte/pull/69983) | Update dependencies |
 | 0.0.40 | 2025-11-18 | [69648](https://github.com/airbytehq/airbyte/pull/69648) | Update dependencies |
 | 0.0.39 | 2025-10-29 | [68892](https://github.com/airbytehq/airbyte/pull/68892) | Update dependencies |
@@ -27,7 +30,7 @@ For Magic The Gathering fans. Here is a simple data source for all the cards and
 | 0.0.37 | 2025-10-14 | [67908](https://github.com/airbytehq/airbyte/pull/67908) | Update dependencies |
 | 0.0.36 | 2025-10-07 | [67224](https://github.com/airbytehq/airbyte/pull/67224) | Update dependencies |
 | 0.0.35 | 2025-09-30 | [66858](https://github.com/airbytehq/airbyte/pull/66858) | Update dependencies |
-| 0.0.34 | 2025-09-23 | [66636](https://github.com/airbytehq/airbyte/pull/66636) | Update dependencies |
+| 0.0.34 | 2025-09-24 | [66636](https://github.com/airbytehq/airbyte/pull/66636) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [65655](https://github.com/airbytehq/airbyte/pull/65655) | Update dependencies |
 | 0.0.32 | 2025-08-24 | [65431](https://github.com/airbytehq/airbyte/pull/65431) | Update dependencies |
 | 0.0.31 | 2025-08-16 | [64990](https://github.com/airbytehq/airbyte/pull/64990) | Update dependencies |

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.check
 
 import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
-import io.airbyte.cdk.load.check.DestinationCheckerV2
+import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -35,7 +35,7 @@ internal const val CHECK_COLUMN_NAME = "test_key"
 class PostgresOssChecker(
     private val postgresAirbyteClient: PostgresAirbyteClient,
     private val postgresConfiguration: PostgresConfiguration,
-) : DestinationCheckerV2 {
+) : DestinationChecker {
 
     override fun check() {
         val data =

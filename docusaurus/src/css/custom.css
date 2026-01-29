@@ -90,8 +90,6 @@ html[data-theme="dark"] {
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
-  --markprompt-background: var(--ifm-background-color) !important;
-  --markprompt-background-accent: var(--ifm-background-color) !important;
 }
 
 /* Hide sidebar on the homepage */
@@ -364,49 +362,9 @@ nav a.navbar__link--active {
   border-bottom: 3px solid var(--ifm-color-primary);
 }
 
-.MarkpromptContentDialog[data-variant="sheet"] {
-  z-index: 201 !important; /* This needs to be greater than var(--ifm-z-index-fixed) */
-}
-.MarkpromptBranding {
+/* Hide Ask AI button until Osano consent is granted */
+.kapa-ai-hidden {
   display: none !important;
-}
-
-.MarkpromptDefaultViewExamplePromptButton {
-  color: var(--color-gray-40) !important;
-  border: 1px solid var(--color-dark-blue-40) !important;
-  border-radius: 4px !important;
-}
-
-.MarkpromptOverlay {
-  z-index: 201 !important;
-}
-
-.MarkpromptContentDialog[data-variant="sheet"] {
-  max-width: 580px !important;
-}
-
-.MarkpromptMessageAvatarContainer {
-  width: 48px !important;
-  height: 48px !important;
-}
-
-.MarkpromptMessageAvatarImage {
-  width: 48px !important;
-  height: 48px !important;
-}
-
-.MarkpromptMessageAvatar {
-  width: 48px !important;
-  height: 48px !important;
-}
-
-.MarkpromptContentDialog {
-  --markprompt-text-size: 1em !important;
-  --markprompt-text-size-code: 1em !important;
-}
-
-.MarkpromptPrompt {
-  padding-block: 0.35rem !important;
 }
 
 /* Header with button styling */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.write
@@ -43,7 +43,6 @@ class PostgresAcceptanceTest :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
         stringifyUnionObjects = false,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = false,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
@@ -58,7 +57,6 @@ class PostgresAcceptanceTest :
         nullEqualsUnset = true,
         configUpdater = PostgresConfigUpdater(),
         recordMangler = PostgresTimestampNormalizationMapper,
-        useDataFlowPipeline = true,
     ) {
     companion object {
         @JvmStatic

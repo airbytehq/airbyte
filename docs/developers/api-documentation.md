@@ -16,7 +16,7 @@ This article shows you how to get an access token and make your first request, a
 
 ## Get an access token
 
-Before you can make requests to the API, you need an access token. For help with this, see [Get an access token](/platform/next/using-airbyte/configuring-api-access).
+Before you can make requests to the API, you need an access token. For help with this, see [Get an access token](/platform/using-airbyte/configuring-api-access).
 
 ## Use the right base URL
 
