@@ -92,7 +92,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 365) }}D
+    step: P{{ config.get('slice_range', 30) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -159,7 +159,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 365) }}D
+    step: P{{ config.get('slice_range', 30) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -249,7 +249,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 365) }}D
+    step: P{{ config.get('slice_range', 30) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
