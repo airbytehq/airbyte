@@ -80,7 +80,9 @@ class AirbyteBulkConnectorExtension {
             throw new IllegalArgumentException("Missing 'micronautVersion' in airbyte-cdk/bulk/version.properties")
         }
 
-        // Add micronaut BOM and KSP dependencies
+        // KSP annotation processors don't propagate transitively - they're compile-time tools.
+        // So, each connector using Micronaut annotations needs its own KSP processor declared
+        // such that it runs during that project's compilation.
         project.dependencies {
             implementation platform("io.micronaut:micronaut-core-bom:$micronautBomVersion")
             ksp platform("io.micronaut:micronaut-core-bom:$micronautBomVersion")
