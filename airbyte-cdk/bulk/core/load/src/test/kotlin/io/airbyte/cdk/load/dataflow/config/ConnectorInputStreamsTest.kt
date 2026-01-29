@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.config
 
+import io.airbyte.cdk.load.dataflow.config.model.ConnectorInputStreams
 import io.mockk.mockk
 import io.mockk.verify
 import java.io.InputStream
