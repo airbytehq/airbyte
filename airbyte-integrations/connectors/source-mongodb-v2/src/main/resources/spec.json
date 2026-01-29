@@ -144,7 +144,7 @@
           }
         ]
       },
-      "initial_waiting_seconds":{
+      "initial_waiting_seconds": {
         "type": "integer",
         "title": "Initial Waiting Time in Seconds (Advanced)",
         "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.",
