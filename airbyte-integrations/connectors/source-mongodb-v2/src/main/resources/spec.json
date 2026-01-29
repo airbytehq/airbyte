@@ -78,14 +78,6 @@
                 "type": "boolean",
                 "always_show": true,
                 "order": 7
-              },
-              "fail_sync_on_schema_mismatch": {
-                "title": "Fail Sync on Schema Mismatch",
-                "description": "When enabled, syncs will fail if a document contains fields not present in the discovered schema. When disabled (default), all fields from documents will be synced regardless of whether they were in the discovered schema. This allows for richer downstream schemas without introducing sync fragility from schema changes in MongoDB.",
-                "default": false,
-                "type": "boolean",
-                "always_show": true,
-                "order": 8
               }
             }
           },
@@ -147,20 +139,12 @@
                 "type": "boolean",
                 "always_show": true,
                 "order": 7
-              },
-              "fail_sync_on_schema_mismatch": {
-                "title": "Fail Sync on Schema Mismatch",
-                "description": "When enabled, syncs will fail if a document contains fields not present in the discovered schema. When disabled (default), all fields from documents will be synced regardless of whether they were in the discovered schema. This allows for richer downstream schemas without introducing sync fragility from schema changes in MongoDB.",
-                "default": false,
-                "type": "boolean",
-                "always_show": true,
-                "order": 8
               }
             }
           }
         ]
       },
-      "initial_waiting_seconds": {
+      "initial_waiting_seconds":{
         "type": "integer",
         "title": "Initial Waiting Time in Seconds (Advanced)",
         "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.",

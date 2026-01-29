@@ -92,11 +92,6 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
         : true;
   }
 
-  public boolean getFailSyncOnSchemaMismatch() {
-    return getDatabaseConfig().has(FAIL_SYNC_ON_SCHEMA_MISMATCH_KEY) ? getDatabaseConfig().get(FAIL_SYNC_ON_SCHEMA_MISMATCH_KEY).asBoolean(false)
-        : false;
-  }
-
   public Integer getInitialWaitingTimeSeconds() {
     if (rawConfig.has(INITIAL_RECORD_WAITING_TIME_SEC)) {
       return rawConfig.get(INITIAL_RECORD_WAITING_TIME_SEC).asInt(DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC);

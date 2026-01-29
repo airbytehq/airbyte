@@ -72,21 +72,17 @@ class MongoDbDebeziumEventConverterTest {
     final AirbyteMessage expectedDelete = createAirbyteMessage(stream, emittedAt, "mongodb/delete_airbyte_message.json");
     final AirbyteMessage expectedDeleteNoBefore = createAirbyteMessage(stream, emittedAt, "mongodb/delete_no_before_airbyte_message.json");
 
-    // Use fail_sync_on_schema_mismatch=true to test the strict filtering behavior
-    // (filtering to only discovered schema fields)
-    final JsonNode strictSchemaConfig =
-        Jsons.jsonNode(Map.of(MongoDbDebeziumConstants.Configuration.FAIL_SYNC_ON_SCHEMA_MISMATCH_KEY, true));
     final AirbyteMessage actualInsert = new MongoDbDebeziumEventConverter(
-        cdcMetadataInjector, buildFromAirbyteMessage(expectedInsert), emittedAt, strictSchemaConfig)
+        cdcMetadataInjector, buildFromAirbyteMessage(expectedInsert), emittedAt, Jsons.emptyObject())
             .toAirbyteMessage(insertChangeEvent);
     final AirbyteMessage actualUpdate = new MongoDbDebeziumEventConverter(
-        cdcMetadataInjector, buildFromAirbyteMessage(expectedUpdate), emittedAt, strictSchemaConfig)
+        cdcMetadataInjector, buildFromAirbyteMessage(expectedUpdate), emittedAt, Jsons.emptyObject())
             .toAirbyteMessage(updateChangeEvent);
     final AirbyteMessage actualDelete = new MongoDbDebeziumEventConverter(
-        cdcMetadataInjector, buildFromAirbyteMessage(expectedDelete), emittedAt, strictSchemaConfig)
+        cdcMetadataInjector, buildFromAirbyteMessage(expectedDelete), emittedAt, Jsons.emptyObject())
             .toAirbyteMessage(deleteChangeEvent);
     final AirbyteMessage actualDeleteNoBefore = new MongoDbDebeziumEventConverter(
-        cdcMetadataInjector, buildFromAirbyteMessage(expectedDeleteNoBefore), emittedAt, strictSchemaConfig)
+        cdcMetadataInjector, buildFromAirbyteMessage(expectedDeleteNoBefore), emittedAt, Jsons.emptyObject())
             .toAirbyteMessage(deleteChangeEventNoBefore);
 
     deepCompare(expectedInsert, actualInsert);

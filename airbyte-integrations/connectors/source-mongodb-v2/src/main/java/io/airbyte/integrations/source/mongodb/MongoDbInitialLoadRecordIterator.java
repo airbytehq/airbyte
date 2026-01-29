@@ -40,7 +40,6 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbInitialLoadRecordIterator.class);
   private final boolean isEnforceSchema;
-  private final boolean failSyncOnSchemaMismatch;
   private final MongoCollection<Document> collection;
   private final Bson fields;
   // Represents the number of rows to get with each query.
@@ -61,7 +60,6 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
                                    final Bson fields,
                                    final Optional<MongoDbStreamState> existingState,
                                    final boolean isEnforceSchema,
-                                   final boolean failSyncOnSchemaMismatch,
                                    final int chunkSize,
                                    final Instant startInstant,
                                    final Optional<Duration> cdcInitialLoadTimeout) {
@@ -69,7 +67,6 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     this.fields = fields;
     this.currentState = existingState;
     this.isEnforceSchema = isEnforceSchema;
-    this.failSyncOnSchemaMismatch = failSyncOnSchemaMismatch;
     this.chunkSize = chunkSize;
     // lazy init mongo cursor, otherwise it will risk time out (10 minutes).
     this.currentIterator = null;
@@ -136,12 +133,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private MongoCursor<Document> buildNewQueryIterator() {
     Bson filter = buildFilter();
-    // Only use projection (field filtering) when both schema is enforced AND
-    // fail_sync_on_schema_mismatch is enabled. This decouples schema detection from schema
-    // enforcement, allowing users to get rich downstream schemas without introducing sync fragility
-    // from undiscovered fields.
-    final boolean shouldUseProjection = isEnforceSchema && failSyncOnSchemaMismatch;
-    return shouldUseProjection ? collection.find()
+    return isEnforceSchema ? collection.find()
         .filter(filter)
         .projection(fields)
         .limit(chunkSize)

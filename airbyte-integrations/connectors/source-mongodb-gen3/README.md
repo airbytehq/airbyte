@@ -30,12 +30,15 @@ Gen3 decouples these concerns and provides stable defaults out of the box.
 
 ### Configuration Differences
 
-| V2 Config | Gen3 Equivalent | Notes |
-|-----------|-----------------|-------|
-| `schema_enforced: true` | Removed | Gen3 always performs schema discovery for rich downstream metadata |
-| `schema_enforced: false` | Removed | Schemaless mode is no longer needed - Gen3 handles schema evolution gracefully |
-| `fail_sync_on_schema_mismatch: false` | Default behavior | All fields are synced regardless of discovered schema |
-| `fail_sync_on_schema_mismatch: true` | `strict_schema_validation: true` | Opt-in strict mode for users who want validation |
+Gen3 replaces the single `schema_enforced` boolean with two clearer options:
+
+**V2 `schema_enforced=true` (default) migrates to:**
+- `use_packed_mode: false` - Data delivered as top-level columns
+- `detect_schema: true` - Rich schema discovery for downstream metadata
+
+**V2 `schema_enforced=false` migrates to:**
+- `use_packed_mode: true` - Data wrapped in a single "data" column (Fivetran-style "packed mode")
+- `detect_schema: false` - Users can opt-in to rich schema detection if desired
 
 ### Behavior Differences
 

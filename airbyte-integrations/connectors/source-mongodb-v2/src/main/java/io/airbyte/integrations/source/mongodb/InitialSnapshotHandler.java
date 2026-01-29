@@ -57,7 +57,6 @@ public class InitialSnapshotHandler {
                                                                   final Instant emittedAt,
                                                                   final Optional<Duration> cdcInitialLoadTimeout) {
     final boolean isEnforceSchema = config.getEnforceSchema();
-    final boolean failSyncOnSchemaMismatch = config.getFailSyncOnSchemaMismatch();
     final var checkpointInterval = config.getCheckpointInterval();
     final String MULTIPLE_ID_TYPES_ANALYTICS_MESSAGE_KEY = "db-sources-mongo-multiple-id-types";
 
@@ -90,7 +89,7 @@ public class InitialSnapshotHandler {
 
           final Optional<CollectionStatistics> collectionStatistics = MongoUtil.getCollectionStatistics(database, airbyteStream);
           final var recordIterator = new MongoDbInitialLoadRecordIterator(collection, fields, existingState, isEnforceSchema,
-              failSyncOnSchemaMismatch, MongoUtil.getChunkSizeForCollection(collectionStatistics, airbyteStream), emittedAt, cdcInitialLoadTimeout);
+              MongoUtil.getChunkSizeForCollection(collectionStatistics, airbyteStream), emittedAt, cdcInitialLoadTimeout);
           final var stateIterator =
               new SourceStateIterator<>(recordIterator, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
                   MongoConstants.CHECKPOINT_DURATION));
