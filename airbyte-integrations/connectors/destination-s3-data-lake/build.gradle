@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = ['load-iceberg-parquet', 'load-aws']
+    toolkits = ['load-iceberg-parquet']
 }
 
 application {
@@ -28,6 +28,12 @@ ext {
 configurations.configureEach {
     // Exclude additional SLF4J providers from all classpaths
     exclude group:"org.slf4j", module:"slf4j-reload4j"
+
+      resolutionStrategy {
+        // Keep override load / toolkits to desired version — leaving base at 0.2.1
+        force 'io.airbyte.bulk-cdk:bulk-cdk-core-load:0.2.3'
+        force 'io.airbyte.bulk-cdk:bulk-cdk-toolkit-load-iceberg-parquet:0.2.3'
+      }
 }
 
 // Uncomment to run locally

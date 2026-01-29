@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
-import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NumberType
@@ -23,6 +22,8 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.integrations.destination.s3_data_lake.catalog.GlueTableIdGenerator
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.nio.file.Files
