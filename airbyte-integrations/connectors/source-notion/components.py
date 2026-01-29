@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
@@ -11,6 +12,10 @@ from airbyte_cdk.sources.streams.core import StreamData
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
+# cursor field used for incremental sync
+CURSOR_FIELD = "last_edited_time"
+# datetime format used by Notion API
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 logger = logging.getLogger("airbyte")
 
 
@@ -61,11 +66,41 @@ class BlocksRetriever(SimpleRetriever):
     According to that fact that block's entity may have children entities that stream also need to retrieve
     BlocksRetriever calls read_records when received record.has_children is True.
 
+    This retriever also implements client-side incremental filtering since the CDK's
+    ClientSideIncrementalRecordFilterDecorator is not applied to CustomRetriever components.
+    Records are filtered based on their last_edited_time against the cursor state.
     """
+
+    # Cursor state value for filtering - will be set from the stream slice's cursor_slice
+    _cursor_state_value: Optional[str] = field(default=None, init=False, repr=False)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+
+    def _should_be_synced(self, record_data: Mapping[str, Any]) -> bool:
+        """
+        Check if a record should be synced based on its last_edited_time.
+        Returns True if the record's cursor value is >= the cursor state value.
+        """
+        if not self._cursor_state_value:
+            # No cursor state, sync all records
+            return True
+
+        record_cursor_value = record_data.get(CURSOR_FIELD)
+        if not record_cursor_value:
+            # No cursor field in record, sync it to be safe
+            logger.warning(f"Could not find cursor field `{CURSOR_FIELD}` in record. The record will be synced.")
+            return True
+
+        try:
+            record_time = datetime.strptime(record_cursor_value, DATETIME_FORMAT)
+            state_time = datetime.strptime(self._cursor_state_value, DATETIME_FORMAT)
+            return record_time >= state_time
+        except ValueError as e:
+            # If parsing fails, sync the record to be safe
+            logger.warning(f"Failed to parse datetime for filtering: {e}. The record will be synced.")
+            return True
 
     def read_records(
         self,
@@ -76,6 +111,14 @@ class BlocksRetriever(SimpleRetriever):
         if self.current_block_depth > MAX_BLOCK_DEPTH:
             logger.info("Reached max block depth limit. Exiting.")
             return
+
+        # Extract cursor state from the stream slice for filtering
+        # The cursor_slice contains the state from the GlobalSubstreamCursor
+        if stream_slice and stream_slice.cursor_slice and self.current_block_depth == 0:
+            # Only set cursor state at the top level to avoid overwriting during recursion
+            cursor_state = stream_slice.cursor_slice.get(CURSOR_FIELD)
+            if cursor_state:
+                self._cursor_state_value = cursor_state
 
         for sequence_number, stream_data in enumerate(super().read_records(records_schema, stream_slice)):
             if stream_data.data.get("has_children"):
@@ -90,4 +133,6 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            # Apply client-side incremental filtering
+            if self._should_be_synced(stream_data.data):
+                yield stream_data
