@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.integrations.destination.s3_data_lake.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
@@ -10,8 +10,6 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfigurationProvider
-import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
-import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -23,16 +21,11 @@ data class S3DataLakeConfiguration(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
-    // Now that partitioning is enabled, we can run more than one worker.
-    // This will likely not show performance improvements in the cloud without additional
-    // resources. In the future, if enterprise or oss users need more flexibility, we can
-    // expose this in their configurations.
-    override val numProcessRecordsWorkers: Int = 2
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
     IcebergCatalogConfigurationProvider,
-    S3BucketConfigurationProvider {}
+    S3BucketConfigurationProvider
 
 @Singleton
 class S3DataLakeConfigurationFactory :
