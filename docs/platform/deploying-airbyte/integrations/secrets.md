@@ -137,6 +137,8 @@ To decrypt secrets in the secret manager with AWS KMS, configure the `kms` field
 
 Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#secrets). For simplicity, we recommend provisioning a single service account with access to both GCS and GSM.
 
+Optionally, you can specify a `region` to use Google Secret Manager's regional endpoints. When specified, Airbyte will use the regional endpoint `secretmanager.<region>.rep.googleapis.com` instead of the global endpoint. This ensures data residency compliance by keeping secrets within a specific geographic region.
+
 <Tabs groupId="helm-chart-version">
 <TabItem value='helm-1' label='Helm chart V1' default>
 
@@ -149,6 +151,7 @@ global:
       projectId: <project-id>
       region: "" ## Optional - e.g. us-central1
       credentialsSecretKey: gcp.json
+      region: <region> # Optional - specify region for regional Secret Manager endpoints (e.g. us-east1)
 ```
 
 </TabItem>
@@ -163,6 +166,7 @@ global:
       projectId: <project-id>
       region: "" ## Optional - e.g. us-central1
       credentialsSecretKey: gcp.json
+      region: <region> # Optional - specify region for regional Secret Manager endpoints (e.g. us-east1)
 ```
 
 </TabItem>
