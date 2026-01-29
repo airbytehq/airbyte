@@ -274,7 +274,7 @@ The SDK handles the token exchange automatically. You don't need to manage token
 </TabItem>
 <TabItem value="api" label="API">
 
-```
+```text
 POST https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute
 ```
 
