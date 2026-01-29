@@ -11,17 +11,29 @@ kotlin {
     }
 }
 
+// Pin base version explicitly - manually bump when load needs newer base
+final def BASE_VERSION = '1.0.0'
+
 dependencies {
     api("com.github.f4b6a3:uuid-creator:6.1.1")
     implementation 'commons-codec:commons-codec:1.16.0'
 
-    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    // Use local project for development, pinned version for publishing
+    if (rootProject.findProperty('cdkVersion') == 'local') {
+        api project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    } else {
+        api "io.airbyte.bulk-cdk:bulk-cdk-core-base:$BASE_VERSION"
+    }
     implementation 'org.apache.commons:commons-lang3:3.17.0'
 
     // For ranges and rangesets
     implementation("com.google.guava:guava:33.3.0-jre")
 
-    testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+    if (rootProject.findProperty('cdkVersion') == 'local') {
+        testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+    } else {
+        testFixturesApi "io.airbyte.bulk-cdk:bulk-cdk-core-base:$BASE_VERSION:test-fixtures"
+    }
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     testFixturesApi("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")

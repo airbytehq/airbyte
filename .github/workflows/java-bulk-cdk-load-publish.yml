@@ -1,11 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-name: Publish Bulk CDK Base
+name: Publish Bulk CDK Load
 on:
   workflow_dispatch:
 
 concurrency:
-  group: publish-bulk-cdk-base
+  group: publish-bulk-cdk-load
   cancel-in-progress: false
 
 env:
@@ -13,8 +13,8 @@ env:
   S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 
 jobs:
-  publish-bulk-cdk-base:
-    name: Publish Bulk CDK Base
+  publish-bulk-cdk-load:
+    name: Publish Bulk CDK Load
     runs-on: linux-24.04-large
     timeout-minutes: 30
     steps:
@@ -33,36 +33,36 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Error if Base CDK Version Exists
+      - name: Error if Load CDK Version Exists
         uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
         env:
           CI: true
         with:
-          job-id: bulk-cdk-base-publish
+          job-id: bulk-cdk-load-publish
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false
-          arguments: --scan :airbyte-cdk:bulk:checkBaseVersion
+          arguments: --scan :airbyte-cdk:bulk:checkLoadVersion
 
-      - name: Build Base CDK
+      - name: Build Load CDK
         uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
         env:
           CI: true
         with:
-          job-id: bulk-cdk-base-publish
+          job-id: bulk-cdk-load-publish
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false
-          arguments: --scan :airbyte-cdk:bulk:baseCdkBuild
+          arguments: --scan :airbyte-cdk:bulk:loadCdkBuild
 
-      - name: Publish Base CDK to CloudRepo
+      - name: Publish Load CDK to CloudRepo
         uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
         env:
           CI: true
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         with:
-          job-id: bulk-cdk-base-publish
+          job-id: bulk-cdk-load-publish
           read-only: true
           concurrent: true
           execution-only-caches: true
           gradle-distribution-sha-256-sum-warning: false
-          arguments: --scan :airbyte-cdk:bulk:baseCdkPublish
+          arguments: --scan :airbyte-cdk:bulk:loadCdkPublish
