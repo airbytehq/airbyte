@@ -8,6 +8,8 @@ import com.google.api.gax.retrying.RetrySettings
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
+import com.google.cloud.bigquery.storage.v1.BigQueryWriteClient
+import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings
 import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -26,6 +28,7 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.StorageWriteApiConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploader
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
@@ -245,5 +248,29 @@ class BigqueryBeansFactory {
             )
             .build()
             .service
+    }
+
+    @Singleton
+    fun getBigqueryWriteClient(config: BigqueryConfiguration): BigQueryWriteClient {
+        val credentials =
+            if (config.credentialsJson == null) {
+                logger.info {
+                    "No service account key json is provided. Using the default service account credential from environment."
+                }
+                GoogleCredentials.getApplicationDefault()
+            } else {
+                GoogleCredentials.fromStream(
+                    ByteArrayInputStream(
+                        config.credentialsJson.toByteArray(StandardCharsets.UTF_8)
+                    ),
+                )
+            }
+
+        val settings = BigQueryWriteSettings.newBuilder()
+            .setCredentialsProvider { credentials }
+            .setHeaderProvider(BigQueryUtils.headerProvider)
+            .build()
+
+        return BigQueryWriteClient.create(settings)
     }
 }

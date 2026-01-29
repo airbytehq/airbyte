@@ -46,6 +46,12 @@ data class GcsStagingConfiguration(
     val filePostProcessing: GcsFilePostProcessing,
 ) : LoadingMethodConfiguration
 
+data class StorageWriteApiConfiguration(
+    val maxInflightRequests: Int = 1000,
+    val maxInflightBytes: Long = 10 * 1024 * 1024, // 10MB
+    val batchSize: Int = 1000, // Records per batch
+) : LoadingMethodConfiguration
+
 @Singleton
 class BigqueryConfigurationFactory :
     DestinationConfigurationFactory<BigquerySpecification, BigqueryConfiguration> {
@@ -57,6 +63,14 @@ class BigqueryConfigurationFactory :
                     GcsStagingConfiguration(
                         GcsClientConfiguration(gcsStagingSpec, pojo.datasetLocation.gcsRegion),
                         gcsStagingSpec.filePostProcessing ?: GcsFilePostProcessing.DELETE,
+                    )
+                }
+                is StorageWriteApiSpecification -> {
+                    val storageApiSpec = pojo.loadingMethod as StorageWriteApiSpecification
+                    StorageWriteApiConfiguration(
+                        maxInflightRequests = storageApiSpec.maxInflightRequests ?: 1000,
+                        maxInflightBytes = storageApiSpec.maxInflightBytes ?: (10 * 1024 * 1024),
+                        batchSize = storageApiSpec.batchSize ?: 1000,
                     )
                 }
                 is BatchedStandardInsertSpecification,

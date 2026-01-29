@@ -40,6 +40,10 @@ dependencies {
     // https://github.com/airbytehq/airbyte-internal-issues/issues/13662
     implementation 'com.google.cloud:google-cloud-bigquery:2.53.0'
 
+    // BigQuery Storage Write API for streaming writes (bypasses partition modification quota)
+    implementation 'com.google.cloud:google-cloud-bigquerystorage:3.17.2'
+
     integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
+    integrationTestImplementation 'com.google.cloud:google-cloud-bigquerystorage'
     testImplementation "io.mockk:mockk:1.13.13"
 }

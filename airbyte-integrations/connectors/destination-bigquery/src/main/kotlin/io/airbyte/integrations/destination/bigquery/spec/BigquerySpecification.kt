@@ -167,11 +167,13 @@ data class SingleStreamConfiguration(
 @JsonSubTypes(
     JsonSubTypes.Type(value = BatchedStandardInsertSpecification::class, name = "Standard"),
     JsonSubTypes.Type(value = GcsStagingSpecification::class, name = "GCS Staging"),
+    JsonSubTypes.Type(value = StorageWriteApiSpecification::class, name = "Storage Write API"),
 )
 sealed class LoadingMethodSpecification(@JsonProperty("method") val method: LoadingMethod) {
     enum class LoadingMethod(@get:JsonValue val typeName: String) {
         BATCHED_STANDARD_INSERT("Standard"),
         GCS("GCS Staging"),
+        STORAGE_WRITE_API("Storage Write API"),
     }
 }
 
@@ -200,6 +202,37 @@ class GcsStagingSpecification :
     override val path: String = ""
     override val credential: GcsAuthSpecification =
         GcsHmacKeySpecification(accessKeyId = "", secretAccessKey = "")
+}
+
+@JsonSchemaTitle("Storage Write API")
+@JsonSchemaDescription(
+    "Uses BigQuery Storage Write API for direct streaming writes. This method bypasses partition modification quota limits and provides better throughput for high-frequency syncs.",
+)
+class StorageWriteApiSpecification :
+    LoadingMethodSpecification(LoadingMethod.STORAGE_WRITE_API) {
+    @get:JsonSchemaTitle("Max Inflight Requests")
+    @get:JsonPropertyDescription(
+        """Maximum number of concurrent append requests. Higher values increase throughput but consume more memory. Default: 1000""",
+    )
+    @get:JsonProperty("max_inflight_requests")
+    @get:JsonSchemaInject(json = """{"order": 0}""")
+    val maxInflightRequests: Int? = null
+
+    @get:JsonSchemaTitle("Max Inflight Bytes")
+    @get:JsonPropertyDescription(
+        """Maximum bytes buffered in memory for inflight requests. Default: 10485760 (10MB)""",
+    )
+    @get:JsonProperty("max_inflight_bytes")
+    @get:JsonSchemaInject(json = """{"order": 1}""")
+    val maxInflightBytes: Long? = null
+
+    @get:JsonSchemaTitle("Batch Size")
+    @get:JsonPropertyDescription(
+        """Number of records to batch before appending to BigQuery. Higher values reduce API calls but increase latency. Default: 1000""",
+    )
+    @get:JsonProperty("batch_size")
+    @get:JsonSchemaInject(json = """{"order": 2}""")
+    val batchSize: Int? = null
 }
 
 // bigquery supports a subset of GCS regions.
