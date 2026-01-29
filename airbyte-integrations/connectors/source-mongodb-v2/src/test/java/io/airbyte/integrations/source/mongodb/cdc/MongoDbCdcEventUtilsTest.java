@@ -309,4 +309,88 @@ class MongoDbCdcEventUtilsTest {
     assertEquals(50, transformed.get("scores").get(0).asInt());
   }
 
+  /**
+   * Tests the new transformDataTypesAllFields method which includes ALL fields from the document
+   * without filtering to a discovered schema. This is used when schema_enforced=true but
+   * fail_sync_on_schema_mismatch=false (the new default behavior).
+   */
+  @Test
+  void testTransformDataTypesAllFields() {
+    final BsonTimestamp bsonTimestamp = new BsonTimestamp(394, 1926745562);
+    final String expectedTimestamp = DataTypeUtils.toISO8601StringWithMilliseconds(bsonTimestamp.getValue());
+
+    final Document document = new Document("field1", new BsonBoolean(true))
+        .append("field2", new BsonInt32(1))
+        .append("field3", new BsonInt64(2))
+        .append("field4", new BsonDouble(3.0))
+        .append("field5", new BsonDecimal128(new Decimal128(4)))
+        .append("field6", bsonTimestamp)
+        .append("field7", new BsonDateTime(bsonTimestamp.getValue()))
+        .append("field8", new BsonBinary("test".getBytes(Charset.defaultCharset())))
+        .append("field9", new BsonSymbol("test2"))
+        .append("field10", new BsonString("test3"))
+        .append("field11", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("field12", new BsonJavaScript("code"))
+        .append("field13", new BsonJavaScriptWithScope("code2", new BsonDocument("scope", new BsonString("scope"))))
+        .append("field14", new BsonRegularExpression("pattern"))
+        .append("field15", new BsonNull())
+        .append("field16", new Document("key", "value"));
+
+    final String documentAsJson = document.toJson();
+    // transformDataTypesAllFields should include ALL fields without any filtering
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypesAllFields(documentAsJson);
+
+    assertNotNull(transformed);
+    // Verify all fields are present (unlike transformDataTypes with filtered fields)
+    assertEquals(true, transformed.get("field1").asBoolean());
+    assertEquals(1, transformed.get("field2").asInt());
+    assertEquals(2, transformed.get("field3").asInt());
+    assertEquals(3.0, transformed.get("field4").asDouble());
+    assertEquals(4.0, transformed.get("field5").asDouble());
+    assertEquals(expectedTimestamp, transformed.get("field6").asText());
+    assertEquals(expectedTimestamp, transformed.get("field7").asText());
+    assertEquals(Base64.getEncoder().encodeToString("test".getBytes(Charset.defaultCharset())), transformed.get("field8").asText());
+    assertEquals("test2", transformed.get("field9").asText());
+    assertEquals("test3", transformed.get("field10").asText());
+    assertEquals(OBJECT_ID, transformed.get("field11").asText());
+    assertEquals("code", transformed.get("field12").asText());
+    assertEquals("code2", transformed.get("field13").get("code").asText());
+    assertEquals("scope", transformed.get("field13").get("scope").get("scope").asText());
+    assertEquals("pattern", transformed.get("field14").asText());
+    assertTrue(transformed.has("field15"));
+    assertEquals(JsonNodeType.NULL, transformed.get("field15").getNodeType());
+    assertEquals("value", transformed.get("field16").get("key").asText());
+
+    // Verify it does NOT wrap data in a "data" field (unlike schemaless mode)
+    assertFalse(transformed.has(SCHEMALESS_MODE_DATA_FIELD));
+  }
+
+  /**
+   * Tests that transformDataTypesAllFields includes fields that would be filtered out
+   * by transformDataTypes when using a limited schema map.
+   */
+  @Test
+  void testTransformDataTypesAllFieldsIncludesUndiscoveredFields() {
+    final Document document = new Document("discovered_field", new BsonString("value1"))
+        .append("undiscovered_field", new BsonString("value2"))
+        .append("another_undiscovered", new BsonInt32(42));
+
+    final String documentAsJson = document.toJson();
+
+    // With transformDataTypes and limited schema, undiscovered fields would be filtered
+    final ObjectNode filteredTransform = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, toSchemaMap(Set.of("discovered_field")));
+    assertTrue(filteredTransform.has("discovered_field"));
+    assertFalse(filteredTransform.has("undiscovered_field"));
+    assertFalse(filteredTransform.has("another_undiscovered"));
+
+    // With transformDataTypesAllFields, ALL fields should be included
+    final ObjectNode allFieldsTransform = MongoDbCdcEventUtils.transformDataTypesAllFields(documentAsJson);
+    assertTrue(allFieldsTransform.has("discovered_field"));
+    assertTrue(allFieldsTransform.has("undiscovered_field"));
+    assertTrue(allFieldsTransform.has("another_undiscovered"));
+    assertEquals("value1", allFieldsTransform.get("discovered_field").asText());
+    assertEquals("value2", allFieldsTransform.get("undiscovered_field").asText());
+    assertEquals(42, allFieldsTransform.get("another_undiscovered").asInt());
+  }
+
 }
