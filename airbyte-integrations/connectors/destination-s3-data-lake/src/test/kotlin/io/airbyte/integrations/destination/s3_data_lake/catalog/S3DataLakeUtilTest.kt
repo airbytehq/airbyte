@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3_data_lake.catalog
 
 import io.airbyte.cdk.load.command.Append
@@ -67,12 +71,7 @@ internal class S3DataLakeUtilTest {
                     finalSchema = mapOf(),
                 ),
             importType = Append,
-            tableNames = TableNames(
-                finalTableName = TableName(
-                    "namespace",
-                    "test"
-                )
-            ),
+            tableNames = TableNames(finalTableName = TableName("namespace", "test")),
         )
 
     @BeforeEach
@@ -107,27 +106,17 @@ internal class S3DataLakeUtilTest {
                     TableProperties.DEFAULT_FILE_FORMAT,
                     FileFormat.PARQUET.name.lowercase()
                 )
-            } returns
-                this
+            } returns this
             every { withSortOrder(any()) } returns this
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
             every {
-                buildTable(
-                    tableIdGenerator.toTableIdentifier(streamDescriptor),
-                    any()
-                )
+                buildTable(tableIdGenerator.toTableIdentifier(streamDescriptor), any())
             } returns tableBuilder
             every { createNamespace(any()) } returns Unit
             every { namespaceExists(any()) } returns false
-            every {
-                tableExists(
-                    tableIdGenerator.toTableIdentifier(
-                        streamDescriptor
-                    )
-                )
-            } returns
+            every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
                 false
         }
         s3DataLakeUtil.createNamespaceWithGlueHandling(streamDescriptor, catalog)
@@ -157,26 +146,16 @@ internal class S3DataLakeUtilTest {
                     TableProperties.DEFAULT_FILE_FORMAT,
                     FileFormat.PARQUET.name.lowercase()
                 )
-            } returns
-                this
+            } returns this
             every { withSortOrder(any()) } returns this
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
             every {
-                buildTable(
-                    tableIdGenerator.toTableIdentifier(streamDescriptor),
-                    any()
-                )
+                buildTable(tableIdGenerator.toTableIdentifier(streamDescriptor), any())
             } returns tableBuilder
             every { namespaceExists(any()) } returns true
-            every {
-                tableExists(
-                    tableIdGenerator.toTableIdentifier(
-                        streamDescriptor
-                    )
-                )
-            } returns
+            every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
                 false
         }
         s3DataLakeUtil.createNamespaceWithGlueHandling(streamDescriptor, catalog)
@@ -200,22 +179,10 @@ internal class S3DataLakeUtilTest {
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val catalog: NessieCatalog = mockk {
-            every {
-                loadTable(
-                    tableIdGenerator.toTableIdentifier(
-                        streamDescriptor
-                    )
-                )
-            } returns
+            every { loadTable(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
                 mockk()
             every { namespaceExists(any()) } returns true
-            every {
-                tableExists(
-                    tableIdGenerator.toTableIdentifier(
-                        streamDescriptor
-                    )
-                )
-            } returns true
+            every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns true
         }
         s3DataLakeUtil.createNamespaceWithGlueHandling(streamDescriptor, catalog)
         val table =
@@ -231,11 +198,7 @@ internal class S3DataLakeUtilTest {
             )
         }
         verify(exactly = 1) {
-            catalog.loadTable(
-                tableIdGenerator.toTableIdentifier(
-                    streamDescriptor
-                )
-            )
+            catalog.loadTable(tableIdGenerator.toTableIdentifier(streamDescriptor))
         }
     }
 
@@ -298,14 +261,8 @@ internal class S3DataLakeUtilTest {
                 stream = airbyteStream
             )
         Assertions.assertNotNull(icebergRecord)
-        Assertions.assertEquals(
-            RecordWrapper::class.java,
-            icebergRecord.javaClass
-        )
-        Assertions.assertEquals(
-            Operation.INSERT,
-            (icebergRecord as RecordWrapper).operation
-        )
+        Assertions.assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
+        Assertions.assertEquals(Operation.INSERT, (icebergRecord as RecordWrapper).operation)
     }
 
     @Test
@@ -319,10 +276,7 @@ internal class S3DataLakeUtilTest {
                             "id" to FieldType(IntegerType, nullable = true),
                             "name" to FieldType(StringType, nullable = true),
                             AIRBYTE_CDC_DELETE_COLUMN to
-                                FieldType(
-                                    TimestampTypeWithTimezone,
-                                    nullable = true
-                                ),
+                                FieldType(TimestampTypeWithTimezone, nullable = true),
                         )
                     ),
                 generationId = 1,
@@ -379,24 +333,15 @@ internal class S3DataLakeUtilTest {
                 stream = airbyteStream
             )
         Assertions.assertNotNull(icebergRecord)
-        Assertions.assertEquals(
-            RecordWrapper::class.java,
-            icebergRecord.javaClass
-        )
-        Assertions.assertEquals(
-            Operation.DELETE,
-            (icebergRecord as RecordWrapper).operation
-        )
+        Assertions.assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
+        Assertions.assertEquals(Operation.DELETE, (icebergRecord as RecordWrapper).operation)
     }
 
     @Test
     fun testConvertAirbyteRecordToIcebergRecordUpdate() {
         val airbyteStream =
             DestinationStream(
-                importType = Dedupe(
-                    primaryKey = listOf(listOf("id")),
-                    cursor = listOf("id")
-                ),
+                importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("id")),
                 schema =
                     ObjectType(
                         linkedMapOf(
@@ -451,14 +396,8 @@ internal class S3DataLakeUtilTest {
                 stream = airbyteStream
             )
         Assertions.assertNotNull(icebergRecord)
-        Assertions.assertEquals(
-            RecordWrapper::class.java,
-            icebergRecord.javaClass
-        )
-        Assertions.assertEquals(
-            Operation.UPDATE,
-            (icebergRecord as RecordWrapper).operation
-        )
+        Assertions.assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
+        Assertions.assertEquals(Operation.UPDATE, (icebergRecord as RecordWrapper).operation)
     }
 
     @Test
@@ -486,11 +425,7 @@ internal class S3DataLakeUtilTest {
             IcebergCatalogConfiguration(
                 warehouseLocation,
                 "main",
-                NessieCatalogConfiguration(
-                    nessieServerUri,
-                    nessieAccessToken,
-                    databaseName
-                ),
+                NessieCatalogConfiguration(nessieServerUri, nessieAccessToken, databaseName),
             )
         val configuration =
             S3DataLakeConfiguration(
@@ -503,10 +438,7 @@ internal class S3DataLakeUtilTest {
             CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE,
             catalogProperties[CatalogUtil.ICEBERG_CATALOG_TYPE]
         )
-        Assertions.assertEquals(
-            nessieServerUri,
-            catalogProperties[CatalogProperties.URI]
-        )
+        Assertions.assertEquals(nessieServerUri, catalogProperties[CatalogProperties.URI])
         Assertions.assertEquals(
             warehouseLocation,
             catalogProperties[CatalogProperties.WAREHOUSE_LOCATION]
@@ -516,36 +448,19 @@ internal class S3DataLakeUtilTest {
             catalogProperties[CatalogProperties.FILE_IO_IMPL]
         )
         Assertions.assertEquals("main", catalogProperties["nessie.ref"])
-        Assertions.assertEquals(
-            awsAccessKey,
-            catalogProperties["s3.access-key-id"]
-        )
-        Assertions.assertEquals(
-            awsSecretAccessKey,
-            catalogProperties["s3.secret-access-key"]
-        )
+        Assertions.assertEquals(awsAccessKey, catalogProperties["s3.access-key-id"])
+        Assertions.assertEquals(awsSecretAccessKey, catalogProperties["s3.secret-access-key"])
         Assertions.assertEquals(s3Endpoint, catalogProperties["s3.endpoint"])
-        Assertions.assertEquals(
-            "true",
-            catalogProperties["s3.path-style-access"]
-        )
-        Assertions.assertEquals(
-            "BEARER",
-            catalogProperties["nessie.authentication.type"]
-        )
-        Assertions.assertEquals(
-            nessieAccessToken,
-            catalogProperties["nessie.authentication.token"]
-        )
+        Assertions.assertEquals("true", catalogProperties["s3.path-style-access"])
+        Assertions.assertEquals("BEARER", catalogProperties["nessie.authentication.type"])
+        Assertions.assertEquals(nessieAccessToken, catalogProperties["nessie.authentication.token"])
     }
 
     @Test
     fun `assertGenerationIdSuffixIsOfValidFormat accepts valid format`() {
         val validGenerationId = "ab-generation-id-123-e"
         assertDoesNotThrow {
-            icebergUtil.assertGenerationIdSuffixIsOfValidFormat(
-                validGenerationId
-            )
+            icebergUtil.assertGenerationIdSuffixIsOfValidFormat(validGenerationId)
         }
     }
 
@@ -554,9 +469,7 @@ internal class S3DataLakeUtilTest {
         val invalidGenerationId = "invalid-generation-id-123"
         val exception =
             assertThrows<IcebergUtil.InvalidFormatException> {
-                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(
-                    invalidGenerationId
-                )
+                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
             }
         Assertions.assertEquals(
             "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
@@ -569,9 +482,7 @@ internal class S3DataLakeUtilTest {
         val invalidGenerationId = "ab-generation-id-"
         val exception =
             assertThrows<IcebergUtil.InvalidFormatException> {
-                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(
-                    invalidGenerationId
-                )
+                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
             }
         Assertions.assertEquals(
             "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
@@ -607,10 +518,7 @@ internal class S3DataLakeUtilTest {
         val primaryKeys = listOf("id")
         val stream =
             DestinationStream(
-                importType = Dedupe(
-                    primaryKey = listOf(primaryKeys),
-                    cursor = primaryKeys
-                ),
+                importType = Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys),
                 schema =
                     ObjectType(
                         linkedMapOf(
@@ -628,10 +536,7 @@ internal class S3DataLakeUtilTest {
                 tableSchema = emptyTableSchema,
             )
         val schema = icebergUtil.toIcebergSchema(stream = stream)
-        Assertions.assertEquals(
-            primaryKeys.toSet(),
-            schema.identifierFieldNames()
-        )
+        Assertions.assertEquals(primaryKeys.toSet(), schema.identifierFieldNames())
         Assertions.assertEquals(6, schema.columns().size)
         Assertions.assertNotNull(schema.findField("id"))
         Assertions.assertNotNull(schema.findField("name"))
@@ -666,9 +571,7 @@ internal class S3DataLakeUtilTest {
                     catalogConfiguration =
                         GlueCatalogConfiguration(
                             glueId = "123456789012",
-                            awsArnRoleConfiguration = AWSArnRoleConfiguration(
-                                roleArn = roleArn
-                            ),
+                            awsArnRoleConfiguration = AWSArnRoleConfiguration(roleArn = roleArn),
                             databaseName = "test_db"
                         )
                 ),
@@ -690,14 +593,8 @@ internal class S3DataLakeUtilTest {
             "s3://test/",
             catalogProperties[CatalogProperties.WAREHOUSE_LOCATION]
         )
-        Assertions.assertEquals(
-            "access-key",
-            catalogProperties["s3.access-key-id"]
-        )
-        Assertions.assertEquals(
-            "secret-access-key",
-            catalogProperties["s3.secret-access-key"]
-        )
+        Assertions.assertEquals("access-key", catalogProperties["s3.access-key-id"])
+        Assertions.assertEquals("secret-access-key", catalogProperties["s3.secret-access-key"])
         Assertions.assertEquals(
             "aws-creds-static-creds",
             catalogProperties["client.credentials-provider.aws-creds-mode"]
@@ -727,14 +624,8 @@ internal class S3DataLakeUtilTest {
             "s3://test/",
             catalogProperties[CatalogProperties.WAREHOUSE_LOCATION]
         )
-        Assertions.assertEquals(
-            "access-key",
-            catalogProperties["s3.access-key-id"]
-        )
-        Assertions.assertEquals(
-            "secret-access-key",
-            catalogProperties["s3.secret-access-key"]
-        )
+        Assertions.assertEquals("access-key", catalogProperties["s3.access-key-id"])
+        Assertions.assertEquals("secret-access-key", catalogProperties["s3.secret-access-key"])
         Assertions.assertEquals(
             "aws-creds-static-creds",
             catalogProperties["client.credentials-provider.aws-creds-mode"]
@@ -763,10 +654,7 @@ internal class S3DataLakeUtilTest {
                 tableSchema = emptyTableSchema,
             )
         val schema = icebergUtil.toIcebergSchema(stream = stream)
-        Assertions.assertEquals(
-            emptySet<String>(),
-            schema.identifierFieldNames()
-        )
+        Assertions.assertEquals(emptySet<String>(), schema.identifierFieldNames())
         Assertions.assertEquals(6, schema.columns().size)
         Assertions.assertNotNull(schema.findField("id"))
         Assertions.assertNotNull(schema.findField("name"))
