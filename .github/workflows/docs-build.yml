@@ -8,6 +8,7 @@
 #   (not content), letting the build tools handle incremental invalidation
 # - uv: Cached via setup-uv's built-in cache
 # - PRs restore the same cache as master, enabling true incremental builds
+# Note: Caching does not work on forks (GitHub Actions security restriction)
 name: Docs
 on:
   push:
