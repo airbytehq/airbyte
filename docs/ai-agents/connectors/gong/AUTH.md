@@ -10,12 +10,17 @@ In open source mode, you provide API credentials directly to the connector.
 
 #### OAuth
 
+`credentials` fields you need:
+
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `access_token` | `str` | No | Your Gong OAuth2 Access Token. |
 | `refresh_token` | `str` | Yes | Your Gong OAuth2 Refresh Token. Note: Gong uses single-use refresh tokens. |
 | `client_id` | `str` | Yes | Your Gong OAuth App Client ID. |
 | `client_secret` | `str` | Yes | Your Gong OAuth App Client Secret. |
+
+Example request:
 
 ```python
 from airbyte_agent_gong import GongConnector
@@ -33,10 +38,14 @@ connector = GongConnector(
 
 #### Token
 
+`credentials` fields you need:
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `access_key` | `str` | Yes | Your Gong API Access Key |
 | `access_key_secret` | `str` | Yes | Your Gong API Access Key Secret |
+
+Example request:
 
 ```python
 from airbyte_agent_gong import GongConnector
@@ -55,13 +64,24 @@ connector = GongConnector(
 In hosted mode, you first create a connector via the Airbyte API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 #### OAuth
+Create a connector with OAuth credentials.
 
-Create a connector with OAuth credentials:
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `access_token` | `str` | No | Your Gong OAuth2 Access Token. |
+| `refresh_token` | `str` | Yes | Your Gong OAuth2 Refresh Token. Note: Gong uses single-use refresh tokens. |
+| `client_id` | `str` | Yes | Your Gong OAuth App Client ID. |
+| `client_secret` | `str` | Yes | Your Gong OAuth App Client Secret. |
+
+Example request:
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
-  -H 'Authorization: Bearer <SCOPED_TOKEN>' \
-  -H 'Content-Type: application/json' \
+curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
+  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+  -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
     "connector_type": "Gong",
@@ -76,16 +96,27 @@ curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
 ```
 
 #### Token
+Create a connector with Token credentials.
 
-Create a connector with Token credentials:
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `access_key` | `str` | Yes | Your Gong API Access Key |
+| `access_key_secret` | `str` | Yes | Your Gong API Access Key Secret |
+
+Example request:
+
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
-  -H 'Authorization: Bearer <SCOPED_TOKEN>' \
-  -H 'Content-Type: application/json' \
+curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
+  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+  -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
     "connector_type": "Gong",
+    "name": "My Gong Connector",
     "credentials": {
       "access_key": "<Your Gong API Access Key>",
       "access_key_secret": "<Your Gong API Access Key Secret>"
@@ -103,7 +134,7 @@ After creating the connector, execute operations using either the Python SDK or 
 from airbyte_agent_gong import GongConnector
 
 connector = GongConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
