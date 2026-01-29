@@ -2,10 +2,12 @@
 # It is redundant with the Vercel Preview deployment, but is runs unprivileged and
 # can be used on forks to verify the documentation build without deploying it.
 #
-# Caching Strategy:
-# - On master pushes: Build and save caches for pnpm store, Rspack, and Docusaurus
-# - On PRs: Restore caches from master branch (fallback) for faster builds
-# - This provides a Vercel-like experience where PRs benefit from production cache
+# Caching Strategy (Vercel-like):
+# - pnpm dependencies: Cached via setup-node's built-in pnpm cache
+# - JS build caches (Rspack/Docusaurus): Keyed by lockfile + config files only
+#   (not content), letting the build tools handle incremental invalidation
+# - uv: Cached via setup-uv's built-in cache
+# - PRs restore the same cache as master, enabling true incremental builds
 name: Docs
 on:
   push:
@@ -81,53 +83,33 @@ jobs:
         with:
           version: 10.12.1
 
-      - name: Setup Node.js
+      - name: Setup Node.js (with pnpm cache)
         if: steps.check-skip.outputs.skip-build != 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: "docusaurus/.nvmrc"
+          cache: pnpm
+          cache-dependency-path: "docusaurus/pnpm-lock.yaml"
 
-      - name: Get pnpm store directory
-        if: steps.check-skip.outputs.skip-build != 'true'
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-
-      - name: Restore pnpm store cache
+      - name: Restore JS build caches (Docusaurus/Rspack)
         if: steps.check-skip.outputs.skip-build != 'true'
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: docs-pnpm-${{ runner.os }}-${{ hashFiles('docusaurus/pnpm-lock.yaml') }}
+          path: |
+            docusaurus/node_modules/.cache
+            docusaurus/.docusaurus
+          # Key is NOT branch-specific; this enables cold PRs to reuse master's cache
+          # Rspack/Docusaurus handle content-based invalidation internally
+          key: docs-js-cache-${{ runner.os }}-${{ hashFiles('docusaurus/pnpm-lock.yaml') }}-${{ hashFiles('docusaurus/docusaurus.config.*', 'docusaurus/sidebars.*', 'docusaurus/package.json') }}
           restore-keys: |
-            docs-pnpm-${{ runner.os }}-
+            docs-js-cache-${{ runner.os }}-${{ hashFiles('docusaurus/pnpm-lock.yaml') }}-
+            docs-js-cache-${{ runner.os }}-
 
-      - name: Restore Rspack cache
-        if: steps.check-skip.outputs.skip-build != 'true'
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-        with:
-          path: docusaurus/node_modules/.cache/rspack
-          key: docs-rspack-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('docs/**', 'docusaurus/**') }}
-          restore-keys: |
-            docs-rspack-${{ runner.os }}-${{ github.ref_name }}-
-            docs-rspack-${{ runner.os }}-master-
-            docs-rspack-${{ runner.os }}-
-
-      - name: Restore Docusaurus cache
-        if: steps.check-skip.outputs.skip-build != 'true'
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-        with:
-          path: docusaurus/.docusaurus
-          key: docs-docusaurus-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('docs/**', 'docusaurus/**') }}
-          restore-keys: |
-            docs-docusaurus-${{ runner.os }}-${{ github.ref_name }}-
-            docs-docusaurus-${{ runner.os }}-master-
-            docs-docusaurus-${{ runner.os }}-
-
-      - name: Install uv
+      - name: Install uv (with cache)
         if: steps.check-skip.outputs.skip-build != 'true'
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: true
 
       - name: Install Poe
         if: steps.check-skip.outputs.skip-build != 'true'
