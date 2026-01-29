@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.pipeline
 
-import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import io.mockk.coEvery
 import io.mockk.coVerifySequence

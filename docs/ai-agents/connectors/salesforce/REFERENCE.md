@@ -70,14 +70,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LI
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -356,14 +359,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMI
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -632,14 +638,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100"
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -924,14 +933,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -1200,14 +1212,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 1
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Subject` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Subject` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -1472,14 +1487,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime > TODAY LIMIT 5
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Subject` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Subject` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -1639,14 +1657,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50"
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -1806,15 +1827,18 @@ Example: "SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100"
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `CaseNumber` | `string` |  |
+| `Subject` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].CaseNumber` | `string` |  |
-| `records[].Subject` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -1975,14 +1999,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Title` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Title` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -2143,19 +2170,22 @@ Example: "SELECT Id, Title, FileExtension, ContentSize FROM ContentVersion WHERE
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Title` | `string` |  |
+| `FileExtension` | `string` |  |
+| `ContentSize` | `integer` |  |
+| `ContentDocumentId` | `string` |  |
+| `VersionNumber` | `string` |  |
+| `IsLatest` | `boolean` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Title` | `string` |  |
-| `records[].FileExtension` | `string` |  |
-| `records[].ContentSize` | `integer` |  |
-| `records[].ContentDocumentId` | `string` |  |
-| `records[].VersionNumber` | `string` |  |
-| `records[].IsLatest` | `boolean` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -2311,17 +2341,20 @@ Example: "SELECT Id, Name, ContentType, BodyLength, ParentId FROM Attachment WHE
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `ContentType` | `string` |  |
+| `BodyLength` | `integer` |  |
+| `ParentId` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].ContentType` | `string` |  |
-| `records[].BodyLength` | `integer` |  |
-| `records[].ParentId` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -2473,16 +2506,14 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-#### Records
+
+
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-
 
 </details>
-
 

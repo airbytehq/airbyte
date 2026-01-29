@@ -86,7 +86,7 @@ This example assumes you've already authenticated your connector with Airbyte. S
 from airbyte_agent_zendesk-chat import ZendeskChatConnector
 
 connector = ZendeskChatConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
@@ -97,13 +97,11 @@ async def zendesk-chat_execute(entity: str, action: str, params: dict | None = N
     return await connector.execute(entity, action, params or {})
 ```
 
-## Replication Configuration
-
-This connector supports replication configuration for MULTI mode sources. See the [full reference documentation](./REFERENCE.md#replication-configuration) for details on available options like `start_date`.
-
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
@@ -121,14 +119,16 @@ This connector supports the following entities and actions.
 | Triggers | [List](./REFERENCE.md#triggers-list) |
 
 
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
+### Authentication and configuration
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see the [Zendesk-Chat API reference](https://developer.zendesk.com/api-reference/live-chat/chat-api/introduction/).
+### Zendesk-Chat API docs
+
+See the official [Zendesk-Chat API reference](https://developer.zendesk.com/api-reference/live-chat/chat-api/introduction/).
 
 ## Version information
 
-- **Package version:** 0.1.11
-- **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
+- **Package version:** 0.1.23
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** 43200eed5845ee089ef5b9afc0199a8af3966169
