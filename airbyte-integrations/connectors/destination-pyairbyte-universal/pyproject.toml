@@ -1,0 +1,22 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "destination-pyairbyte-universal"
+version = "0.1.0"
+description = "Universal destination using PyAirbyte caches as backends"
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "ELv2"
+readme = "README.md"
+packages = [{include = "destination_pyairbyte_universal"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+airbyte = ">=0.20.0"
+
+[tool.poetry.scripts]
+destination-pyairbyte-universal = "destination_pyairbyte_universal.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
