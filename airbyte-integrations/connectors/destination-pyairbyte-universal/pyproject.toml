@@ -13,7 +13,6 @@ packages = [{include = "destination_pyairbyte_universal"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-airbyte-cdk = ">=6.0.0"
 airbyte = ">=0.20.0"
 
 [tool.poetry.scripts]
