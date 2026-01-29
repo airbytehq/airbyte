@@ -493,8 +493,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: groups
           http_method: GET
-          request_parameters:
-            includes_description: "true"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
