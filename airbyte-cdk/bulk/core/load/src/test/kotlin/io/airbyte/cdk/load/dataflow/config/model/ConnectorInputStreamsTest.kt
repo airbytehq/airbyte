@@ -1,13 +1,9 @@
-/*
- * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
- */
-
-package io.airbyte.cdk.load.dataflow.config
+package io.airbyte.cdk.load.dataflow.config.model
 
 import io.mockk.mockk
 import io.mockk.verify
-import java.io.InputStream
 import org.junit.jupiter.api.Test
+import java.io.InputStream
 
 class ConnectorInputStreamsTest {
     @Test
