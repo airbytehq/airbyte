@@ -13,7 +13,7 @@ spec:
         type: "string"
         title: "API Key"
         description: >-
-          Iterable API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/iterable\">docs</a> 
+          Iterable API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/iterable\">docs</a>
           for more information on how to obtain this key.
         airbyte_secret: true
         order: 0
@@ -21,12 +21,28 @@ spec:
         type: "string"
         title: "Start Date"
         description: >-
-          The date from which you'd like to replicate data for Iterable, in the format YYYY-MM-DDT00:00:00Z. 
+          The date from which you'd like to replicate data for Iterable, in the format YYYY-MM-DDT00:00:00Z.
           All data generated after this date will be replicated.
         examples: ["2021-04-01T00:00:00Z"]
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 1
         format: "date-time"
+      incremental_sync_step:
+        type: "string"
+        title: "Incremental Sync Step"
+        description: >-
+          The date range step size for incremental syncs. This determines how many days of data are requested
+          in each API call. Smaller values (e.g., 7 days) result in smaller responses and are less
+          likely to timeout, but require more API calls. Larger values (e.g., 90 days) are more
+          efficient but may timeout with large datasets.
+        enum:
+          - P7D
+          - P14D
+          - P30D
+          - P60D
+          - P90D
+        default: "P30D"
+        order: 2
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -290,15 +306,23 @@ streams:
         request_parameters:
           stream: "True"
           dataTypeName: user
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+              base: 5
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_iterable.components.FaultTolerantJsonlExtractor
           field_path: []
       partition_router: []
     primary_key: []
     incremental_sync:
-      step: P90D
+      step: "{{ config['incremental_sync_step'] if config.get('incremental_sync_step') else 'P30D' }}"
       type: DatetimeBasedCursor
       cursor_field: profileUpdatedAt
       end_datetime:
