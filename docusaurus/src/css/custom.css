@@ -443,3 +443,22 @@ li.api-method.patch .menu__link::before {
   content: "patch";
   background-color: var(--openapi-code-orange);
 }
+
+/* Mermaid diagram fixes for light mode readability */
+html:not([data-theme="dark"]) .mermaid .actor,
+html:not([data-theme="dark"]) .mermaid .messageText,
+html:not([data-theme="dark"]) .mermaid .loopText,
+html:not([data-theme="dark"]) .mermaid .noteText,
+html:not([data-theme="dark"]) .mermaid .labelText {
+  fill: var(--ifm-font-color-base) !important;
+}
+
+html:not([data-theme="dark"]) .mermaid .messageLine0,
+html:not([data-theme="dark"]) .mermaid .messageLine1 {
+  stroke: var(--ifm-font-color-base) !important;
+}
+
+html:not([data-theme="dark"]) .mermaid .messageText {
+  fill: var(--ifm-font-color-base) !important;
+  stroke: none !important;
+}
