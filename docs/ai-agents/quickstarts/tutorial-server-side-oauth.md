@@ -1,5 +1,8 @@
 # Implement your own OAuth flow
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 If you provide an environment where your users can create connectors, they need to supply their credentials so their agents can access their data. Airbyte provides a standard [Embedded widget](../embedded/widget) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding and UX. In this case, implement your own OAuth flow.
 
 This tutorial walks you through implementing a server-side OAuth flow for your users. By the end, you'll be able to initiate OAuth consent, handle the callback, and create connectors using the obtained credentials.
@@ -36,25 +39,25 @@ Before implementing an OAuth flow, ensure you have:
 
 1. **Airbyte Cloud credentials**: Your `client_id` and `client_secret` from the Airbyte Cloud dashboard under **Settings > Applications**.
 
-2. **An operator bearer token**: See [Authentication](../embedded/api/authentication.md) for how to obtain one.
+2. **An bearer token**: See [Authentication](../embedded/api/authentication.md) for how to obtain one.
 
 3. **A scoped token**: Required for workspace-level operations. Generate one using your operator token.
 
-4. **A redirect URL**: A URL in your application that will receive the OAuth callback with the `secret_id`.
+4. **A redirect URL**: A URL in your app that receives the OAuth callback with the `secret_id`.
 
 ## Part 1 (Optional): Configure OAuth overrides
 
-By default, Airbyte uses its own OAuth application credentials for each connector. If you want to use your own OAuth application (for custom branding on the consent screen or to avoid rate limits), configure OAuth credential overrides.
+By default, Airbyte uses its own OAuth app credentials for each connector. To use your own OAuth app, configure OAuth credential overrides.
 
 ### Endpoint
 
-```
+```text
 PUT https://api.airbyte.ai/api/v1/oauth/credentials
 ```
 
 ### Authentication
 
-Requires **Operator Bearer Token**
+Requires a bearer token.
 
 ### Request body
 
@@ -62,13 +65,13 @@ Requires **Operator Bearer Token**
 |-------|------|----------|-------------|
 | `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`. |
 | `connector_definition_id` | UUID | Yes* | Actor definition ID for the connector. |
-| `configuration` | object | Yes | Your OAuth application credentials (client_id, client_secret, etc.). |
+| `configuration` | object | Yes | Your OAuth app credentials (client_id, client_secret, etc.). |
 
-*Provide exactly one of `connector_type` or `connector_definition_id`.
+You must provide `connector_type` or `connector_definition_id`, but it doesn't matter which one.
 
-### Request example
+### Example
 
-```bash
+```bash title="Request"
 curl -X PUT https://api.airbyte.ai/api/v1/oauth/credentials \
   -H 'Authorization: Bearer <operator_token>' \
   -H 'Content-Type: application/json' \
@@ -81,9 +84,7 @@ curl -X PUT https://api.airbyte.ai/api/v1/oauth/credentials \
   }'
 ```
 
-### Response example
-
-```json
+```json title="Response"
 {
   "id": "a1b2c3d4-e5f6-7890-ab12-cd34ef567890",
   "scope_type": "organization",
@@ -103,29 +104,29 @@ When your user wants to connect a third-party service, initiate the OAuth flow t
 
 ### Endpoint
 
-```
+```text
 POST https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate
 ```
 
 ### Authentication
 
-Requires **Operator Bearer Token** or **Scoped Token**
+Requires **Operator Bearer Token** or **Scoped Token**.
 
 ### Request body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `external_user_id` | string | Yes | Your user's identifier. Maps to a workspace name in Airbyte. |
-| `redirect_url` | string | Yes | URL where the user will be redirected after OAuth consent. Airbyte appends `?secret_id=<value>` to this URL. |
+| `redirect_url` | string | Yes | URL where Airbyte redirects the user after OAuth consent. Airbyte appends `?secret_id=<value>` to this URL. |
 | `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`, `Intercom`. |
 | `definition_id` | UUID | Yes* | Actor definition ID for the connector. |
 | `oauth_input_configuration` | object | No | Additional OAuth parameters required by some connectors. |
 
-*Provide exactly one of `connector_type` or `definition_id`.
+You must provide `connector_type` or `definition_id`, but it doesn't matter which one.
 
-### Request example
+### Example
 
-```bash
+```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate \
   -H 'Authorization: Bearer <operator_token>' \
   -H 'Content-Type: application/json' \
@@ -136,30 +137,20 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiat
   }'
 ```
 
-### Response
-
-```json
+```json title="Response"
 {
   "consent_url": "https://app.hubspot.com/oauth/authorize?client_id=...&redirect_uri=...&scope=..."
 }
 ```
 
-### Response fields
+In your app, redirect your user to the `consent_url` from the response. This takes them to the third-party service's authorization page where they grant access to their account.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `consent_url` | string | The URL to redirect your user to for OAuth authorization. |
-
-### What to do with the response
-
-Redirect your user to the `consent_url`. This takes them to the third-party service's authorization page where they grant access to their account.
-
-```javascript
-// Example: Redirect user to consent URL
+```javascript title="your-app.js"
+// Request a consent URL
 const response = await fetch('https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${operatorToken}`,
+    'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
@@ -177,22 +168,22 @@ window.location.href = consent_url;
 
 ## Part 3: Create a connector
 
-After the user authorizes access, they are redirected to your `redirect_url` with a `secret_id` query parameter. Use this `secret_id` to create a connector.
+After the user authorizes access, the third-party authorization flow redirects them to your `redirect_url` with a `secret_id` query parameter. Use this `secret_id` to create a connector.
+
+Some connectors require additional configuration options. See the documentation for [your connector](../connectors/) to learn more.
 
 ### Handle the OAuth callback
 
-When the user is redirected back to your application, extract the `secret_id` from the URL:
+When the third party redirects your user back to your app, extract the `secret_id` from the URL.
 
-```
+```text
 https://yourapp.com/oauth/callback?secret_id=abc123def456
 ```
 
-```javascript
+```javascript title="your-app.js"
 // Example: Extract secret_id from callback URL
 const urlParams = new URLSearchParams(window.location.search);
-const secretId = urlParams.get('secret_id');
-
-// Store this securely - you'll need it to create the connector
+const secretId = urlParams.get('secret_id'); // Store this securely - you need it to create the connector
 ```
 
 ### Create the connector
@@ -201,13 +192,13 @@ Use the `secret_id` to create a connector without providing raw credentials.
 
 ### Endpoint
 
-```
+```text
 POST https://api.airbyte.ai/api/v1/integrations/connectors
 ```
 
 ### Authentication
 
-Requires **Operator Bearer Token** or **Scoped Token**
+Requires **Operator Bearer Token** or **Scoped Token**.
 
 ### Request body
 
@@ -219,17 +210,14 @@ Requires **Operator Bearer Token** or **Scoped Token**
 | `source_template_id` | UUID | Yes* | Source template ID. Required when multiple templates exist for the connector. |
 | `name` | string | No | Display name for the connector. Auto-generated if not provided. |
 | `server_side_oauth_secret_id` | string | Yes** | The `secret_id` from the OAuth callback. |
-| `credentials` | object | Yes** | Authentication credentials. Not required when using `server_side_oauth_secret_id`. |
 | `replication_config` | object | No | Connector-specific configuration like `start_date`, `lookback_window`, etc. |
 | `environment` | object | No | Additional environment configuration for the connector. |
 
-*Provide exactly one of `connector_type`, `definition_id`, or `source_template_id`.
+You must provide either `connector_type`, `definition_id`, or `source_template_id`, but it doesn't matter which.
 
-**Provide either `server_side_oauth_secret_id` (for OAuth) or `credentials` (for API key/token auth).
+### Example
 
-### Request example (with OAuth secret)
-
-```bash
+```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
   -H 'Authorization: Bearer <operator_token>' \
   -H 'Content-Type: application/json' \
@@ -241,9 +229,7 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
   }'
 ```
 
-### Response example
-
-```json
+```json title="Response"
 {
   "id": "f1e2d3c4-b5a6-7890-fe12-dc34ba567890",
   "name": "My HubSpot Connection",
@@ -258,32 +244,43 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
 }
 ```
 
-### Response fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | The unique identifier for the created connector. Save this for executing operations. |
-| `name` | string | Display name of the connector. |
-| `source_template` | object | Information about the source template used. |
-| `replication_config` | object | The connector's configuration settings. |
-| `created_at` | string | ISO 8601 timestamp of creation. |
-| `updated_at` | string | ISO 8601 timestamp of last update. |
-
 ## Part 4: Execute operations
 
-Once you've created a connector, you can execute operations against the third-party API.
+Once you create your connector, you can use the connector in hosted mode.
 
-### Endpoint
+<Tabs>
+<TabItem value="python" label="Python" default>
+
+Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the connector ID:
+
+```python
+from airbyte_agent_github import GithubConnector
+
+connector = GithubConnector(
+    external_user_id="<your_external_user_id>",
+    airbyte_client_id="<your_client_id>",
+    airbyte_client_secret="<your_client_secret>",
+)
+
+# Execute connector operations
+@agent.tool_plain # assumes you're using Pydantic AI
+@GithubConnector.tool_utils
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+The SDK handles the token exchange automatically. You don't need to manage tokens manually.
+
+</TabItem>
+<TabItem value="api" label="API">
 
 ```
 POST https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute
 ```
 
-### Authentication
+Requires a **Scoped Token**.
 
-Requires **Scoped Token**
-
-### Request body
+Airbyte requires these fields in the request body.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -291,9 +288,9 @@ Requires **Scoped Token**
 | `action` | string | Yes | The action to perform (for example, `list`, `get`, `create`). |
 | `params` | object | No | Parameters for the operation. |
 
-### Request example
+Here is an example of the request.
 
-```bash
+```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/connectors/sources/f1e2d3c4-b5a6-7890-fe12-dc34ba567890/execute \
   -H 'Authorization: Bearer <scoped_token>' \
   -H 'Content-Type: application/json' \
@@ -308,7 +305,7 @@ curl -X POST https://api.airbyte.ai/api/v1/connectors/sources/f1e2d3c4-b5a6-7890
 
 ### Response example
 
-```json
+```json title="Response"
 {
   "result": [
     {
@@ -326,11 +323,14 @@ curl -X POST https://api.airbyte.ai/api/v1/connectors/sources/f1e2d3c4-b5a6-7890
 }
 ```
 
+</TabItem>
+</Tabs>
+
 ## Complete example
 
 Here's a complete Node.js example implementing the server-side OAuth flow:
 
-```javascript
+```javascript title="your-app.js"
 const express = require('express');
 const app = express();
 
@@ -410,42 +410,11 @@ app.post('/api/execute', async (req, res) => {
 app.listen(3000);
 ```
 
-## Connectors requiring additional OAuth configuration
-
-Some connectors require additional parameters in the `oauth_input_configuration` field when initiating OAuth. Check the connector's documentation for specific requirements.
-
-### Example: Slack
-
-Slack requires no additional configuration:
-
-```json
-{
-  "external_user_id": "user_12345",
-  "connector_type": "slack",
-  "redirect_url": "https://yourapp.com/oauth/callback"
-}
-```
-
-### Example: Connectors with replication config
-
-Some connectors need additional configuration when creating the source:
-
-```json
-{
-  "external_user_id": "user_12345",
-  "connector_type": "intercom",
-  "server_side_oauth_secret_id": "abc123def456",
-  "replication_config": {
-    "start_date": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
 ## Troubleshooting
 
 ### "Workspace not found" error
 
-Ensure the `external_user_id` you provide in the initiate step matches exactly what you use when creating the connector. The workspace is created automatically on first use.
+Ensure the `external_user_id` you provide in the initiate step matches exactly what you use when creating the connector. Airbyte creates the workspace automatically on first use.
 
 ### OAuth consent URL returns an error
 
@@ -461,5 +430,5 @@ Ensure the `external_user_id` you provide in the initiate step matches exactly w
 ### Connector creation succeeds but operations fail
 
 - Verify the user completed the OAuth consent flow and granted all required permissions.
-- Check that the connector's required `replication_config` fields are provided.
+- Check that you properly provided all of that connector's required fields.
 - Some connectors require specific scopes. Review the connector's documentation.
