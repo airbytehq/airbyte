@@ -75,7 +75,9 @@ The Facebook Pages source connector supports the following [sync modes](https://
 - [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights)
 - [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights)
 
-### Page stream limitations
+## Limitations & Troubleshooting
+
+### Product catalogs field not available
 
 Starting from version 2.0.4, the `product_catalogs` field is no longer synced in the Page stream and will always be `null`. This is because the Facebook Graph API only returns product catalogs that are owned directly by the Page, not catalogs owned by a Business. Since most product catalogs are now created as Business-owned catalogs (Page-owned catalogs are a legacy feature), and this connector uses Page access tokens, the `product_catalogs` field would not return meaningful data for most users.
 
