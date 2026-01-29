@@ -136,9 +136,10 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private MongoCursor<Document> buildNewQueryIterator() {
     Bson filter = buildFilter();
-    // Only use projection (field filtering) when both schema is enforced AND fail_sync_on_schema_mismatch is enabled.
-    // This decouples schema detection from schema enforcement, allowing users to get rich downstream schemas
-    // without introducing sync fragility from undiscovered fields.
+    // Only use projection (field filtering) when both schema is enforced AND
+    // fail_sync_on_schema_mismatch is enabled. This decouples schema detection from schema
+    // enforcement, allowing users to get rich downstream schemas without introducing sync fragility
+    // from undiscovered fields.
     final boolean shouldUseProjection = isEnforceSchema && failSyncOnSchemaMismatch;
     return shouldUseProjection ? collection.find()
         .filter(filter)

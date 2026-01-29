@@ -146,9 +146,10 @@ public class MongoDbCdcEventUtils {
   }
 
   /**
-   * Transforms the Debezium event data including ALL fields from the document, without filtering
-   * to the discovered schema. This is used when schema_enforced=true but fail_sync_on_schema_mismatch=false,
-   * allowing users to get rich downstream schemas without sync fragility from undiscovered fields.
+   * Transforms the Debezium event data including ALL fields from the document, without filtering to
+   * the discovered schema. This is used when schema_enforced=true but
+   * fail_sync_on_schema_mismatch=false, allowing users to get rich downstream schemas without sync
+   * fragility from undiscovered fields.
    *
    * @param json The Debezium event data as JSON.
    * @return The transformed Debezium event data as JSON with all fields included.
@@ -196,8 +197,8 @@ public class MongoDbCdcEventUtils {
   }
 
   /**
-   * Formats a MongoDB document including ALL fields, without wrapping in a data field.
-   * This is used when schema_enforced=true but fail_sync_on_schema_mismatch=false.
+   * Formats a MongoDB document including ALL fields, without wrapping in a data field. This is used
+   * when schema_enforced=true but fail_sync_on_schema_mismatch=false.
    */
   private static void formatDocumentAllFields(final Document document, final ObjectNode objectNode) {
     final BsonDocument bsonDocument = toBsonDocument(document);
@@ -439,8 +440,8 @@ public class MongoDbCdcEventUtils {
   }
 
   /**
-   * Parses source-mongodbv2 configuration json for the value of fail_sync_on_schema_mismatch.
-   * This controls whether to filter fields during sync based on the discovered schema.
+   * Parses source-mongodbv2 configuration json for the value of fail_sync_on_schema_mismatch. This
+   * controls whether to filter fields during sync based on the discovered schema.
    *
    * @param config config json
    * @return false unless fail_sync_on_schema_mismatch is explicitly configured to true
