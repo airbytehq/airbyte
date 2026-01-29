@@ -6,8 +6,8 @@ import org.gradle.api.tasks.options.Option
 
 // This extension does a lot of heavy lifting, because the property values (core/toolkits)
 // aren't yet set when the plugin's `apply` method is called.
-// In particular: setCore() also adds the base+core CDK dependencies (and computes the correct micronaut ksp dependency)
-// setToolkits() also adds the toolkit dependencies.
+// In particular: setCore() adds the core (extract/load) CDK dependency, which transitively brings in base
+// (and computes the correct micronaut ksp dependency). setToolkits() also adds the toolkit dependencies.
 class AirbyteBulkConnectorExtension {
 
     String core // 'extract' or 'load'
@@ -70,33 +70,44 @@ class AirbyteBulkConnectorExtension {
         List<String> fromJar = []
         if (cdk == "local") {
             fromSource = [
-                    project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-base"),
                     project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-$core"),
             ]
         } else {
             fromJar = [
-                    "io.airbyte.bulk-cdk:bulk-cdk-core-base:$cdk",
                     "io.airbyte.bulk-cdk:bulk-cdk-core-$core:$cdk",
             ]
         }
 
         String micronautVersion = null
         // Use a temporary configuration to find the Micronaut version
-        // in the transitive dependencies of the Bulk CDK base.
+        // in the transitive dependencies of the Bulk CDK core module (which includes base transitively).
         def tempConfiguration = project.configurations.detachedConfiguration()
-        def baseDependency = (cdk == "local")
+        def coreDependency = (cdk == "local")
                 ? project.dependencies.create(fromSource.first)
                 : project.dependencies.create(fromJar.first)
-        tempConfiguration.dependencies.add(baseDependency)
-        tempConfiguration.resolvedConfiguration.firstLevelModuleDependencies.each {resolvedDependency ->
-            resolvedDependency.children.each { transitiveDependency ->
-                if (micronautVersion == null &&
-                        transitiveDependency.moduleGroup == TARGET_GROUP &&
-                        transitiveDependency.moduleName == TARGET_MODULE) {
-                    micronautVersion = transitiveDependency.moduleVersion
+        tempConfiguration.dependencies.add(coreDependency)
+
+        // Recursively search all transitive dependencies for Micronaut
+        def findMicronautVersion
+        findMicronautVersion = { resolvedDep ->
+            if (resolvedDep.moduleGroup == TARGET_GROUP && resolvedDep.moduleName == TARGET_MODULE) {
+                return resolvedDep.moduleVersion
+            }
+            for (child in resolvedDep.children) {
+                def version = findMicronautVersion(child)
+                if (version != null) {
+                    return version
                 }
             }
+            return null
         }
+
+        tempConfiguration.resolvedConfiguration.firstLevelModuleDependencies.each { resolvedDependency ->
+            if (micronautVersion == null) {
+                micronautVersion = findMicronautVersion(resolvedDependency)
+            }
+        }
+
         if (micronautVersion == null) {
             throw new IllegalArgumentException(
                     "Micronaut version number not found; $TARGET_GROUP:$TARGET_MODULE is not a transitive dependency."

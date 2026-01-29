@@ -7,6 +7,11 @@ on:
       - master
     paths:
       - "airbyte-cdk/bulk/**"
+      # Exclude paths handled by individual publish workflows
+      - "!airbyte-cdk/bulk/core/base/**"
+      - "!airbyte-cdk/bulk/core/load/**"
+      - "!airbyte-cdk/bulk/toolkits/load-*/**"
+      - "!airbyte-cdk/bulk/toolkits/legacy-task-load*/**"
   workflow_dispatch:
     inputs:
       build-number:
