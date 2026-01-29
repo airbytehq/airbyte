@@ -3,7 +3,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-If you provide an environment where your users can create connectors, they need to supply their credentials so their agents can access their data. Airbyte provides a standard [Embedded widget](../embedded/widget) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding and UX. In this case, implement your own OAuth flow.
+If you provide an environment where your users can create connectors, they need to supply their credentials so agents can access their data. Airbyte provides a standard [Embedded widget](../embedded/widget) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding and UX. In this case, you can implement your own OAuth flow.
 
 This tutorial walks you through implementing a server-side OAuth flow for your users. By the end, you'll be able to initiate OAuth consent, handle the callback, and create connectors using the obtained credentials.
 
@@ -20,7 +20,7 @@ The server-side OAuth flow involves four main steps:
 sequenceDiagram
     participant App as Your App
     participant Airbyte as Airbyte
-    participant ThirdParty as Third-Party (e.g., HubSpot)
+    participant ThirdParty as Third-Party
 
     App->>Airbyte: POST /connectors/oauth/initiate
     Airbyte-->>App: consent_url
@@ -45,7 +45,7 @@ Before implementing an OAuth flow, ensure you have:
 
 4. **A redirect URL**: A URL in your app that receives the OAuth callback with the `secret_id`.
 
-## Part 1 (Optional): Configure OAuth overrides
+## Part 1: Configure OAuth overrides
 
 By default, Airbyte uses its own OAuth app credentials for each connector. To use your own OAuth app, configure OAuth credential overrides.
 
@@ -110,7 +110,7 @@ POST https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate
 
 ### Authentication
 
-Requires **Operator Bearer Token** or **Scoped Token**.
+Requires a bearer token or scoped token.
 
 ### Request body
 
@@ -122,7 +122,7 @@ Requires **Operator Bearer Token** or **Scoped Token**.
 | `definition_id` | UUID | Yes* | Actor definition ID for the connector. |
 | `oauth_input_configuration` | object | No | Additional OAuth parameters required by some connectors. |
 
-You must provide `connector_type` or `definition_id`, but it doesn't matter which one.
+You must provide `connector_type` or `definition_id`, but it doesn't matter which.
 
 ### Example
 
@@ -198,7 +198,7 @@ POST https://api.airbyte.ai/api/v1/integrations/connectors
 
 ### Authentication
 
-Requires **Operator Bearer Token** or **Scoped Token**.
+Requires a bearer token or scoped token.
 
 ### Request body
 
@@ -251,7 +251,7 @@ Once you create your connector, you can use the connector in hosted mode.
 <Tabs>
 <TabItem value="python" label="Python" default>
 
-Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the connector ID:
+Instead of providing API credentials directly, provide your Airbyte Cloud credentials.
 
 ```python
 from airbyte_agent_github import GithubConnector
@@ -278,7 +278,7 @@ The SDK handles the token exchange automatically. You don't need to manage token
 POST https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute
 ```
 
-Requires a **Scoped Token**.
+Requires a scoped token.
 
 Airbyte requires these fields in the request body.
 
@@ -412,22 +412,22 @@ app.listen(3000);
 
 ## Troubleshooting
 
-### "Workspace not found" error
+**"Workspace not found" error:**
 
-Ensure the `external_user_id` you provide in the initiate step matches exactly what you use when creating the connector. Airbyte creates the workspace automatically on first use.
+- Ensure the `external_user_id` you provide in the initiate step matches exactly what you use when creating the connector. Airbyte creates the workspace automatically on first use.
 
-### OAuth consent URL returns an error
+**OAuth consent URL returns an error:**
 
 - Verify your OAuth credentials are configured correctly (Part 1).
 - Check that the connector supports OAuth authentication.
 - Ensure your redirect URL is properly URL-encoded if it contains special characters.
 
-### "Invalid secret_id" when creating connector
+**"Invalid secret_id" when creating connector:**
 
 - The `secret_id` may have expired. OAuth secrets are short-lived. Initiate a new OAuth flow.
 - Ensure you're using the exact `secret_id` from the callback URL without modification.
 
-### Connector creation succeeds but operations fail
+**Connector creation succeeds but operations fail:**
 
 - Verify the user completed the OAuth consent flow and granted all required permissions.
 - Check that you properly provided all of that connector's required fields.
