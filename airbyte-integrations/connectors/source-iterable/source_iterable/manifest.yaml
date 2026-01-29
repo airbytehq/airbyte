@@ -29,7 +29,7 @@ spec:
         format: "date-time"
       incremental_sync_step:
         type: "string"
-        title: "Incremental Sync Step"
+        title: "Incremental Sync Step (Default: 30 days)"
         description: >-
           The date range step size for incremental syncs. This determines how many days of data are requested
           in each API call. Smaller values (e.g., 7 days) result in smaller responses and are less
