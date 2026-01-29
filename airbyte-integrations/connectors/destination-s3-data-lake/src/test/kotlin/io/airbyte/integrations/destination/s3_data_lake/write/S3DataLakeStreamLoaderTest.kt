@@ -1,8 +1,4 @@
-/*
- * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
- */
-
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.integrations.destination.s3_data_lake.write
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
@@ -11,8 +7,6 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
-import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
-import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
@@ -20,10 +14,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
@@ -36,27 +27,27 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketConfiguration
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketRegion
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
-import io.airbyte.integrations.destination.s3_data_lake.write.S3DataLakeStreamLoader
-import io.airbyte.integrations.destination.s3_data_lake.write.S3DataLakeStreamState
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
-import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.io.CloseableIterable
-import org.apache.iceberg.types.Type.PrimitiveType
+import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 internal class S3DataLakeStreamLoaderTest {
     @MockK(relaxed = true)
@@ -71,7 +62,12 @@ internal class S3DataLakeStreamLoaderTest {
                     finalSchema = mapOf(),
                 ),
             importType = Append,
-            tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+            tableNames = TableNames(
+                finalTableName = TableName(
+                    "namespace",
+                    "test"
+                )
+            ),
         )
 
     @BeforeEach
@@ -104,14 +100,29 @@ internal class S3DataLakeStreamLoaderTest {
             Schema(
                 Types.NestedField.of(1, true, "id", Types.LongType.get()),
                 Types.NestedField.of(2, true, "name", Types.StringType.get()),
-                Types.NestedField.of(3, false, COLUMN_NAME_AB_RAW_ID, Types.StringType.get()),
-                Types.NestedField.of(4, false, COLUMN_NAME_AB_EXTRACTED_AT, Types.LongType.get()),
+                Types.NestedField.of(
+                    3,
+                    false,
+                    Meta.Companion.COLUMN_NAME_AB_RAW_ID,
+                    Types.StringType.get()
+                ),
+                Types.NestedField.of(
+                    4,
+                    false,
+                    Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT,
+                    Types.LongType.get()
+                ),
                 Types.NestedField.of(
                     5,
                     false,
-                    COLUMN_NAME_AB_META,
+                    Meta.Companion.COLUMN_NAME_AB_META,
                     Types.StructType.of(
-                        Types.NestedField.of(6, false, "sync_id", Types.LongType.get()),
+                        Types.NestedField.of(
+                            6,
+                            false,
+                            "sync_id",
+                            Types.LongType.get()
+                        ),
                         Types.NestedField.of(
                             7,
                             false,
@@ -119,7 +130,12 @@ internal class S3DataLakeStreamLoaderTest {
                             Types.ListType.ofRequired(
                                 8,
                                 Types.StructType.of(
-                                    Types.NestedField.of(9, false, "field", Types.StringType.get()),
+                                    Types.NestedField.of(
+                                        9,
+                                        false,
+                                        "field",
+                                        Types.StringType.get()
+                                    ),
                                     Types.NestedField.of(
                                         10,
                                         false,
@@ -137,7 +153,12 @@ internal class S3DataLakeStreamLoaderTest {
                         ),
                     ),
                 ),
-                Types.NestedField.of(12, false, COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
+                Types.NestedField.of(
+                    12,
+                    false,
+                    Meta.Companion.COLUMN_NAME_AB_GENERATION_ID,
+                    Types.LongType.get()
+                ),
             )
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
@@ -153,7 +174,11 @@ internal class S3DataLakeStreamLoaderTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
+                NessieCatalogConfiguration(
+                    "http://localhost:8080/api/v1",
+                    "access-token",
+                    ""
+                )
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -172,7 +197,8 @@ internal class S3DataLakeStreamLoaderTest {
             every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
-                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true)
+                        .toIcebergSchema(emptyList())
                 }
         }
         val streamLoader =
@@ -189,7 +215,7 @@ internal class S3DataLakeStreamLoaderTest {
                 mainBranchName = "main",
                 streamStateStore = streamStateStore,
             )
-        assertNotNull(streamLoader)
+        Assertions.assertNotNull(streamLoader)
     }
 
     @Test
@@ -230,7 +256,11 @@ internal class S3DataLakeStreamLoaderTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
+                NessieCatalogConfiguration(
+                    "http://localhost:8080/api/v1",
+                    "access-token",
+                    ""
+                )
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -244,14 +274,14 @@ internal class S3DataLakeStreamLoaderTest {
         every {
             updateSchema.updateColumn(
                 any<String>(),
-                any<PrimitiveType>(),
+                any<Type.PrimitiveType>(),
             )
         } returns updateSchema
         every {
             updateSchema.addColumn(
                 any<String>(),
                 any<String>(),
-                any<PrimitiveType>(),
+                any<Type.PrimitiveType>(),
             )
         } returns updateSchema
         every { updateSchema.setIdentifierFields(any<Collection<String>>()) } returns updateSchema
@@ -261,7 +291,8 @@ internal class S3DataLakeStreamLoaderTest {
         every { table.manageSnapshots().createBranch(any()).commit() } throws
             IllegalArgumentException("branch already exists")
         every {
-            table.manageSnapshots().replaceBranch("main", DEFAULT_STAGING_BRANCH).commit()
+            table.manageSnapshots()
+                .replaceBranch("main", DEFAULT_STAGING_BRANCH).commit()
         } just runs
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
@@ -273,7 +304,8 @@ internal class S3DataLakeStreamLoaderTest {
             every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
-                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true)
+                        .toIcebergSchema(emptyList())
                 }
             every { constructGenerationIdSuffix(any<DestinationStream>()) } returns ""
         }
@@ -294,18 +326,37 @@ internal class S3DataLakeStreamLoaderTest {
         runBlocking { streamLoader.start() }
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
-        verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }
+        verify(exactly = 0) {
+            updateSchema.updateColumn(
+                any(),
+                any<Type.PrimitiveType>()
+            )
+        }
         verify(exactly = 0) { updateSchema.makeColumnOptional(any()) }
         verify(exactly = 0) { updateSchema.requireColumn(any()) }
         verify(exactly = 0) { updateSchema.setIdentifierFields(any<Collection<String>>()) }
-        verify { updateSchema.addColumn(null, "_airbyte_raw_id", Types.StringType.get()) }
+        verify {
+            updateSchema.addColumn(
+                null,
+                "_airbyte_raw_id",
+                Types.StringType.get()
+            )
+        }
         verify { updateSchema.addColumn(null, "id", Types.LongType.get()) }
         verify { updateSchema.addColumn(null, "_airbyte_meta", any()) }
-        verify { updateSchema.addColumn(null, "_airbyte_generation_id", Types.LongType.get()) }
+        verify {
+            updateSchema.addColumn(
+                null,
+                "_airbyte_generation_id",
+                Types.LongType.get()
+            )
+        }
         verify { updateSchema.addColumn(null, "id", Types.LongType.get()) }
         verify(exactly = 0) { updateSchema.commit() }
 
-        runBlocking { streamLoader.close(hadNonzeroRecords = true, streamFailure = null) }
+        runBlocking {
+            streamLoader.teardown(true)
+        }
         verify { updateSchema.commit() }
     }
 
@@ -314,7 +365,10 @@ internal class S3DataLakeStreamLoaderTest {
         val primaryKeys = listOf("id")
         val stream =
             DestinationStream(
-                importType = Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys),
+                importType = Dedupe(
+                    primaryKey = listOf(primaryKeys),
+                    cursor = primaryKeys
+                ),
                 schema =
                     ObjectType(
                         linkedMapOf(
@@ -335,12 +389,14 @@ internal class S3DataLakeStreamLoaderTest {
             listOf(
                 Types.NestedField.of(1, false, "id", Types.LongType.get()),
                 Types.NestedField.of(2, true, "name", Types.StringType.get()),
-                Types.NestedField.of(3, false, COLUMN_NAME_AB_RAW_ID, Types.StringType.get()),
-                Types.NestedField.of(4, false, COLUMN_NAME_AB_EXTRACTED_AT, Types.LongType.get()),
+                Types.NestedField.of(3, false,
+                    Meta.Companion.COLUMN_NAME_AB_RAW_ID, Types.StringType.get()),
+                Types.NestedField.of(4, false,
+                    Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT, Types.LongType.get()),
                 Types.NestedField.of(
                     5,
                     false,
-                    COLUMN_NAME_AB_META,
+                    Meta.Companion.COLUMN_NAME_AB_META,
                     Types.StructType.of(
                         Types.NestedField.of(6, false, "sync_id", Types.LongType.get()),
                         Types.NestedField.of(
@@ -368,7 +424,8 @@ internal class S3DataLakeStreamLoaderTest {
                         ),
                     ),
                 ),
-                Types.NestedField.of(12, false, COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
+                Types.NestedField.of(12, false,
+                    Meta.Companion.COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
             )
         val icebergSchema = Schema(columns, emptySet())
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
@@ -384,7 +441,11 @@ internal class S3DataLakeStreamLoaderTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
+                NessieCatalogConfiguration(
+                    "http://localhost:8080/api/v1",
+                    "access-token",
+                    ""
+                )
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -398,14 +459,14 @@ internal class S3DataLakeStreamLoaderTest {
         every {
             updateSchema.updateColumn(
                 any<String>(),
-                any<PrimitiveType>(),
+                any<Type.PrimitiveType>(),
             )
         } returns updateSchema
         every {
             updateSchema.addColumn(
                 any<String>(),
                 any<String>(),
-                any<PrimitiveType>(),
+                any<Type.PrimitiveType>(),
             )
         } returns updateSchema
         every { updateSchema.requireColumn("id") } returns updateSchema
@@ -415,7 +476,8 @@ internal class S3DataLakeStreamLoaderTest {
         every { table.refresh() } just runs
         every { table.manageSnapshots().createBranch(any()).commit() } just runs
         every {
-            table.manageSnapshots().replaceBranch("main", DEFAULT_STAGING_BRANCH).commit()
+            table.manageSnapshots()
+                .replaceBranch("main", DEFAULT_STAGING_BRANCH).commit()
         } just runs
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
@@ -427,7 +489,8 @@ internal class S3DataLakeStreamLoaderTest {
             every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
-                    stream.schema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
+                    stream.schema.withAirbyteMeta(true)
+                        .toIcebergSchema(listOf(primaryKeys))
                 }
             every { constructGenerationIdSuffix(any<DestinationStream>()) } returns ""
         }
@@ -448,16 +511,27 @@ internal class S3DataLakeStreamLoaderTest {
         runBlocking { streamLoader.start() }
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
-        verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }
+        verify(exactly = 0) {
+            updateSchema.updateColumn(
+                any(),
+                any<Type.PrimitiveType>()
+            )
+        }
         verify(exactly = 0) { updateSchema.makeColumnOptional(any()) }
         verify(exactly = 0) {
-            updateSchema.addColumn(any<String>(), any<String>(), any<PrimitiveType>())
+            updateSchema.addColumn(
+                any<String>(),
+                any<String>(),
+                any<Type.PrimitiveType>()
+            )
         }
         verify(exactly = 1) { updateSchema.requireColumn("id") }
         verify(exactly = 1) { updateSchema.setIdentifierFields(primaryKeys) }
         verify(exactly = 0) { updateSchema.commit() }
 
-        runBlocking { streamLoader.close(hadNonzeroRecords = true, streamFailure = null) }
+        runBlocking {
+            streamLoader.teardown(true)
+        }
         verify { updateSchema.commit() }
     }
 
@@ -487,7 +561,8 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { toIcebergSchema(any()) } answers
                 {
-                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true)
+                        .toIcebergSchema(emptyList())
                 }
         }
         val streamLoader =
