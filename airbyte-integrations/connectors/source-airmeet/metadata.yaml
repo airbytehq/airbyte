@@ -1,0 +1,43 @@
+data:
+  allowedHosts:
+    hosts:
+      - api-gateway.airmeet.com  # Correct API host
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false  # Set to true when ready for Cloud
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-airmeet
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python:3.1.0  # Python base image, not declarative
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 81ca39dc-4534-4dd2-b848-b47c4f1fb063  # Unique UUID
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-airmeet
+  githubIssueLabel: source-airmeet
+  icon: icon.svg
+  license: MIT
+  name: Airmeet
+  releaseDate: 2024-11-11
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/airmeet
+  tags:
+    - language:python  # Python connector, not manifest-only
+    - cdk:python      # Using Python CDK
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: secrets/config.json
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  ab_internal:
+    sl: 100
+    ql: 100
+metadataSpecVersion: "1.0"
