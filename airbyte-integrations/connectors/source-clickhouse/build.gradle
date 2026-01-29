@@ -19,4 +19,5 @@ dependencies {
     implementation 'com.clickhouse:clickhouse-jdbc:0.9.5:all'
 
     testImplementation 'org.testcontainers:clickhouse:1.19.4'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }
