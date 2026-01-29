@@ -213,7 +213,6 @@ definitions:
               'live_videos',
               'photos',
               'posts',
-              'product_catalogs',
               'published_posts',
               'tabs', 
               'tagged',
