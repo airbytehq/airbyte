@@ -10,8 +10,8 @@ The server-side OAuth flow involves four main steps:
 
 1. **Initiate OAuth**: Your backend calls Airbyte's API to get a consent URL for the connector.
 2. **User consent**: You redirect your user to the consent URL where they authorize access to their account.
-3. **Handle callback**: After authorization, the user is redirected back to your application with a `secret_id`.
-4. **Create connector**: You use the `secret_id` to create a connector without handling raw credentials.
+3. **Handle callback**: After authorization, Airbyte redirects your user back to your app with a `secret_id`.
+4. **Create connector**: You use that `secret_id` to create a connector without handling raw credentials.
 
 ```
 Your App                         Airbyte                          Third-Party (e.g., HubSpot)
@@ -37,7 +37,7 @@ Your App                         Airbyte                          Third-Party (e
 
 ## Prerequisites
 
-Before implementing server-side OAuth, ensure you have:
+Before implementing an OAuth flow, ensure you have:
 
 1. **Airbyte Cloud credentials**: Your `client_id` and `client_secret` from the Airbyte Cloud dashboard under **Settings > Applications**.
 
