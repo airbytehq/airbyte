@@ -100,7 +100,13 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         """
 
         def refresh():
-            client = boto3.client("sts")
+            if self.config.aws_access_key_id and self.config.aws_secret_access_key:
+                boto_session = boto3.Session(
+                    aws_access_key_id=self.config.aws_access_key_id, aws_secret_access_key=self.config.aws_secret_access_key
+                )
+            else:
+                boto_session = boto3.setup_default_session()
+            client = boto_session.client("sts")
             if AWS_EXTERNAL_ID:
                 role = client.assume_role(
                     RoleArn=self.config.role_arn,
