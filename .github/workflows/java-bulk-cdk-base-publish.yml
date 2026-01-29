@@ -2,11 +2,6 @@
 
 name: Publish Bulk CDK Base
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - "airbyte-cdk/bulk/core/base/**"
   workflow_dispatch:
 
 concurrency:
