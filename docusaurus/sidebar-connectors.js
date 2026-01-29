@@ -158,104 +158,12 @@ function groupConnectorsBySupportLevel(connectors, keyPrefix = "") {
   return categories;
 }
 
-const sourcePostgres = {
-  type: "category",
-  label: "Postgres",
-  key: "sources-postgres-category",
-  link: {
-    type: "doc",
-    id: "sources/postgres",
-  },
-  items: [
-    {
-      type: "doc",
-      label: "Cloud SQL for Postgres",
-      id: "sources/postgres/cloud-sql-postgres",
-      key: "sources-postgres-cloud-sql",
-    },
-    {
-      type: "doc",
-      label: "Troubleshooting",
-      id: "sources/postgres/postgres-troubleshooting",
-      key: "sources-postgres-troubleshooting",
-    },
-  ],
-};
-
-const sourceMongoDB = {
-  type: "category",
-  label: "Mongo DB",
-  key: "sources-mongodb-v2-category",
-  link: {
-    type: "doc",
-    id: "sources/mongodb-v2",
-  },
-  items: [
-    {
-      type: "doc",
-      label: "Migration Guide",
-      id: "sources/mongodb-v2-migrations",
-      key: "sources-mongodb-v2-migrations",
-    },
-    {
-      type: "doc",
-      label: "Troubleshooting",
-      id: "sources/mongodb-v2/mongodb-v2-troubleshooting",
-      key: "sources-mongodb-v2-troubleshooting",
-    },
-  ],
-};
-
-const sourceMysql = {
-  type: "category",
-  label: "MySQL",
-  key: "sources-mysql-category",
-  link: {
-    type: "doc",
-    id: "sources/mysql",
-  },
-  items: [
-    {
-      type: "doc",
-      label: "Troubleshooting",
-      id: "sources/mysql/mysql-troubleshooting",
-      key: "sources-mysql-troubleshooting",
-    },
-  ],
-};
-
-const sourceMssql = {
-  type: "category",
-  label: "MS SQL Server (MSSQL)",
-  key: "sources-mssql-category",
-  link: {
-    type: "doc",
-    id: "sources/mssql",
-  },
-  items: [
-    {
-      type: "doc",
-      label: "Troubleshooting",
-      id: "sources/mssql/mssql-troubleshooting",
-      key: "sources-mssql-troubleshooting",
-    },
-  ],
-};
 function getSourceConnectors(registry) {
   const sources = getFilenamesInDir("sources/", SOURCES_DOCS, [
     "readme",
-    "postgres",
-    "mongodb-v2",
-    "mssql",
-    "mysql",
   ]);
 
-  const specialSources = [
-    sourcePostgres,
-    sourceMongoDB,
-    sourceMysql,
-    sourceMssql,
-  ];
+  const specialSources = [];
   const enterpriseSources = getFilenamesInDir(
     "enterprise-connectors/",
     ENTERPRISE_CONNECTORS_DOCS,
@@ -280,82 +188,9 @@ function getSourceConnectors(registry) {
   return [...sourcesWithSupportLevel, ...enterpriseSourcesWithSupportLevel];
 }
 
-const destinationS3 = {
-  type: "category",
-  label: "S3",
-  key: "destinations-s3-category",
-  link: {
-    type: "doc",
-    id: "destinations/s3",
-  },
-  items: [
-    {
-      type: "doc",
-      label: "Migration Guide",
-      id: "destinations/s3-migrations",
-      key: "destinations-s3-migrations",
-    },
-    {
-      type: "doc",
-      label: "Troubleshooting",
-      id: "destinations/s3/s3-troubleshooting",
-      key: "destinations-s3-troubleshooting",
-    },
-  ],
-};
-
-const destinationPostgres = {
-  type: "category",
-  label: "Postgres",
-  key: "destinations-postgres-category",
-  link: {
-    type: "doc",
-    id: "destinations/postgres",
-  },
-  items: [
-    {
-      type: "doc",
-      label: "Migration Guide",
-      id: "destinations/postgres-migrations",
-      key: "destinations-postgres-migrations",
-    },
-    {
-      type: "doc",
-      label: "Troubleshooting",
-      id: "destinations/postgres/postgres-troubleshooting",
-      key: "destinations-postgres-troubleshooting",
-    },
-  ],
-};
-
-// Mssql destination is on the connector registry as mssql-v2, so we need to manually create the sidebar item
-const destinationMsSql = {
-  type: "category",
-  label: "MS SQL Server (MSSQL)",
-  key: "destinations-mssql-category",
-  link: {
-    type: "doc",
-    id: "destinations/mssql",
-  },
-  customProps: {
-    supportLevel: "certified",
-  },
-  items: [
-    {
-      type: "doc",
-      label: "Migration Guide",
-      id: "destinations/mssql-migrations",
-      key: "destinations-mssql-migrations",
-    },
-  ],
-};
-
 function getDestinationConnectors(registry) {
-  const specialDestinationConnectors = [destinationS3, destinationPostgres];
+  const specialDestinationConnectors = [];
   const destinations = getFilenamesInDir("destinations/", DESTINATIONS_DOCS, [
-    "s3",
-    "postgres",
-    "mssql",
     "readme",
   ]);
   const destinationsWithSupportLevel = addSupportLevelToConnectors(
@@ -386,7 +221,6 @@ function getDestinationConnectors(registry) {
   return [
     ...destinationsWithSupportLevel,
     ...enterpriseDestinationsWithSupportLevel,
-    destinationMsSql,
   ];
 }
 
