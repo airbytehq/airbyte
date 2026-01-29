@@ -21,5 +21,12 @@ class DefaultConfigBeanFactory {
         )
 
     /** Provides default configuration for Dispatchers used by DestinationLifecycle. */
-    @Singleton @Secondary fun defaultLifecycleParallelismConfig() = LifecycleParallelismConfig()
+    @Singleton
+    @Secondary
+    fun defaultLifecycleParallelismConfig() =
+        LifecycleParallelismConfig(
+            streamInitParallelism = 10,
+            streamFinalizeParallelism = 10,
+            finalFlushParallelism = 10
+        )
 }

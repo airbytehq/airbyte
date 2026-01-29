@@ -8,5 +8,5 @@ package io.airbyte.cdk.load.dataflow.config.model
  * Config object for JSON conversion options. May or may not overlap with configuration for .proto.
  */
 data class JsonConverterConfig(
-    val extractedAtAsTimestampWithTimezone: Boolean,
+    val extractedAtAsTimestampWithTimezone: Boolean = true,
 )
