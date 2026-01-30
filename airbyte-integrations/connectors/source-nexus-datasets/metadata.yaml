@@ -36,4 +36,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-NEXUS-DATASETS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
