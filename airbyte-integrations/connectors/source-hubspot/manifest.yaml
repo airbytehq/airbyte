@@ -28,8 +28,7 @@ definitions:
       Private App Credentials: "#/definitions/api_token_auth"
 
   base_requester:
-    type: CustomRequester
-    class_name: source_declarative_manifest.components.HubspotHttpRequester
+    type: HttpRequester
     url_base: "https://api.hubapi.com"
     authenticator:
       $ref: "#/definitions/authenticator"
@@ -62,7 +61,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
@@ -268,8 +267,7 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: CustomRequester
-                  class_name: source_declarative_manifest.components.HubspotHttpRequester
+                  type: HttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -359,8 +357,7 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: CustomRequester
-                  class_name: source_declarative_manifest.components.HubspotHttpRequester
+                  type: HttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -482,8 +479,7 @@ definitions:
               retriever:
                 type: SimpleRetriever
                 requester:
-                  type: CustomRequester
-                  class_name: source_declarative_manifest.components.HubspotHttpRequester
+                  type: HttpRequester
                   url_base: https://api.hubapi.com
                   authenticator:
                     $ref: "#/definitions/authenticator"
@@ -2025,7 +2021,7 @@ dynamic_streams:
                 error_message: >-
                   HubSpot server error (5xx). Retrying with exponential backoff...
               - type: HttpResponseFilter
-                action: RETRY
+                action: REFRESH_TOKEN_THEN_RETRY
                 http_codes:
                   - 401
                 error_message: >-
