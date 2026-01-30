@@ -375,7 +375,8 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.43-rc.1 | 2026-01-29 | [72443](https://github.com/airbytehq/airbyte/pull/72443)   | Update to dataflow.                                                                                                             |
+| 0.3.43      | 2026-01-29 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Release on dataflow.                                                                                                            |
+| 0.3.43-rc.1 | 2026-01-28 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Update to dataflow.                                                                                                             |
 | 0.3.42  | 2026-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Implement support for scope and OAuth server URI attributes for Polaris catalog                                                 |
 | 0.3.41  | 2025-11-07 | [69232](https://github.com/airbytehq/airbyte/pull/69232) | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns                                                        |
 | 0.3.40  | 2025-11-05 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61.                                                                                                     |
