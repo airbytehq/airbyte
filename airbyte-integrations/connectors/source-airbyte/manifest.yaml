@@ -164,8 +164,7 @@ definitions:
         type: HttpRequester
         url_base: >-
           {{ 'https://' + config['host'] + '/api/public/v1/applications/' if
-          config['host'] else 'https://api.airbyte.com/v1/applications/'
-          }}/token
+          config['host'] else 'https://api.airbyte.com/v1/applications/' }}token
         authenticator:
           type: NoAuth
         http_method: POST
@@ -226,21 +225,21 @@ metadata:
     Workspaces: true
   testedStreams:
     Jobs:
-      streamHash: df5ce9442057e4b2a4dcc6cb96803cb2f5bb31ad
+      streamHash: 7e84160b3df3bb752738a2ed29d11439cdf5402d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Connections:
-      streamHash: 1f404b16ac1233d8c0afafd39bf4dff1bb7c92a9
+      streamHash: 982d02927c911874d36968a0321ef04b06e82aff
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Workspaces:
-      streamHash: ee087cd44413889095e61d2901d5cc01dd8e5b95
+      streamHash: 192cc4c936f32b4185620fb1b0af3beec7e08f26
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -320,6 +319,52 @@ schemas:
                   type:
                     - array
                     - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      mapperConfiguration:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          algorithm:
+                            type:
+                              - string
+                              - "null"
+                          fieldNameSuffix:
+                            type:
+                              - string
+                              - "null"
+                          method:
+                            type:
+                              - string
+                              - "null"
+                          newFieldName:
+                            type:
+                              - string
+                              - "null"
+                          originalFieldName:
+                            type:
+                              - string
+                              - "null"
+                          publicKey:
+                            type:
+                              - string
+                              - "null"
+                          targetField:
+                            type:
+                              - string
+                              - "null"
                 name:
                   type:
                     - string
@@ -340,6 +385,19 @@ schemas:
                   type:
                     - array
                     - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      fieldPath:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
                 syncMode:
                   type:
                     - string
@@ -407,6 +465,27 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            color:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            tagId:
+              type:
+                - string
+                - "null"
+            workspaceId:
+              type:
+                - string
+                - "null"
       workspaceId:
         type:
           - string
@@ -454,6 +533,10 @@ schemas:
                     type:
                       - boolean
                       - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
           connectionUpdateActionRequired:
             type:
               - object
@@ -477,6 +560,10 @@ schemas:
                     type:
                       - boolean
                       - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
           failure:
             type:
               - object
@@ -499,6 +586,10 @@ schemas:
                   enabled:
                     type:
                       - boolean
+                      - "null"
+                  url:
+                    type:
+                      - string
                       - "null"
           success:
             type:
@@ -546,6 +637,10 @@ schemas:
                     type:
                       - boolean
                       - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
           syncDisabledWarning:
             type:
               - object
@@ -568,6 +663,10 @@ schemas:
                   enabled:
                     type:
                       - boolean
+                      - "null"
+                  url:
+                    type:
+                      - string
                       - "null"
       workspaceId:
         type: string
