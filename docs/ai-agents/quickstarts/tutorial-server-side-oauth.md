@@ -63,11 +63,8 @@ Requires a bearer token.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`. |
-| `connector_definition_id` | UUID | Yes* | Actor definition ID for the connector. |
+| `connector_type` | string | Yes | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`. |
 | `configuration` | object | Yes | Your OAuth app credentials (client_id, client_secret, etc.). |
-
-You must provide `connector_type` or `connector_definition_id`, but it doesn't matter which one.
 
 ### Example
 
@@ -117,12 +114,9 @@ Requires a bearer token or scoped token.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `external_user_id` | string | Yes | Your user's identifier. Maps to a workspace name in Airbyte. |
-| `redirect_url` | string | Yes | URL where Airbyte redirects the user after OAuth consent. Airbyte appends `?secret_id=<value>` to this URL. |
 | `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`, `Intercom`. |
-| `definition_id` | UUID | Yes* | Actor definition ID for the connector. |
+| `redirect_url` | string | Yes | URL where Airbyte redirects the user after OAuth consent. Airbyte appends `?secret_id=<value>` to this URL. |
 | `oauth_input_configuration` | object | No | Additional OAuth parameters required by some connectors. |
-
-You must provide `connector_type` or `definition_id`, but it doesn't matter which.
 
 ### Example
 
@@ -206,14 +200,8 @@ Requires a bearer token or scoped token.
 |-------|------|----------|-------------|
 | `external_user_id` | string | Yes | Your user's identifier. Must match the value used in the initiate step. |
 | `connector_type` | string | Yes* | Connector name (case-insensitive). |
-| `definition_id` | UUID | Yes* | Actor definition ID for the connector. |
-| `source_template_id` | UUID | Yes* | Source template ID. Required when multiple templates exist for the connector. |
 | `name` | string | No | Display name for the connector. Auto-generated if not provided. |
 | `server_side_oauth_secret_id` | string | Yes** | The `secret_id` from the OAuth callback. |
-| `replication_config` | object | No | Connector-specific configuration like `start_date`, `lookback_window`, etc. |
-| `environment` | object | No | Additional environment configuration for the connector. |
-
-You must provide either `connector_type`, `definition_id`, or `source_template_id`, but it doesn't matter which.
 
 ### Example
 
