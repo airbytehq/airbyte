@@ -31,7 +31,7 @@ data:
   releaseStage: alpha
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   supportLevel: community
   supportsRefreshes: true
   supportsFileTransfer: true
