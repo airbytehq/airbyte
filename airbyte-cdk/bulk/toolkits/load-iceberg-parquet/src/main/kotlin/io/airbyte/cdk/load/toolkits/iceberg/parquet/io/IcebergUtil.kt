@@ -30,6 +30,7 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.LinkedHashMap
 import javax.inject.Singleton
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
@@ -169,12 +170,14 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     }
 
     fun toIcebergSchema(stream: DestinationStream): Schema {
+        val importType = stream.tableSchema.importType
         val primaryKeys =
-            when (stream.importType) {
-                is Dedupe -> (stream.importType as Dedupe).primaryKey
+            when (importType) {
+                is Dedupe -> importType.primaryKey
                 else -> emptyList()
             }
-        return stream.schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
+        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {
