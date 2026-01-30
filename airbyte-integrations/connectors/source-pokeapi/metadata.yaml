@@ -5,10 +5,8 @@ data:
   registryOverrides:
     oss:
       enabled: true
-      dockerImageTag: "0.3.47"
     cloud:
       enabled: true
-      dockerImageTag: "0.3.47"
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: true
@@ -24,7 +22,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
-  dockerImageTag: 0.4.0-rc.1
+  dockerImageTag: 0.3.48-rc.1
   dockerRepository: airbyte/source-pokeapi
   githubIssueLabel: source-pokeapi
   icon: pokeapi.svg
