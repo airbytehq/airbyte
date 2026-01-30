@@ -48,7 +48,7 @@ The connector supports three authentication methods:
    - **Subdomain**: Your Zendesk subdomain (the part before `.zendesk.com` in your account URL)
    - **Authentication**: Select API Token and enter your email address and API token
    - **Start Date**: The date from which you want to start syncing data (format: `YYYY-MM-DDT00:00:00Z`)
-5. Click **Set up source**
+5. Click **Set up source**.
 
 <!-- /env:oss -->
 
