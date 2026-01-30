@@ -86,13 +86,11 @@ abstract class IcebergWriteTest(
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Append,
-                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
-                syncId,
+                syncId = syncId,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
+                tableSchema = makeTableSchema(ObjectType(schema), Append),
             )
 
         val firstStream =
@@ -156,17 +154,17 @@ abstract class IcebergWriteTest(
      */
     @Test
     open fun testDedupNullPk() {
+        val dedupImportType = Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
+        val dedupSchema = ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true)))
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
-                ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 12,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
+                tableSchema = makeTableSchema(dedupSchema, dedupImportType),
             )
         val failure = expectFailure {
             runSync(
