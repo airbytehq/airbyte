@@ -28,13 +28,37 @@ public class ClickHouseSourceOperations extends AbstractJdbcCompatibleSourceOper
   public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
+    final int columnType = resultSet.getMetaData().getColumnType(colIndex);
 
+    // Handle ClickHouse-specific temporal types
     if (columnTypeName.startsWith("datetime64") || columnTypeName.equals("datetime")) {
       putTimestamp(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equals("date") || columnTypeName.equals("date32")) {
       putDate(json, columnName, resultSet, colIndex);
     } else {
-      super.copyToJsonField(resultSet, colIndex, json);
+      // Handle standard JDBC types
+      final JDBCType jdbcType;
+      try {
+        jdbcType = JDBCType.valueOf(columnType);
+      } catch (final IllegalArgumentException e) {
+        putString(json, columnName, resultSet, colIndex);
+        return;
+      }
+
+      switch (jdbcType) {
+        case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
+        case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
+        case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
+        case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
+        case FLOAT, REAL -> putFloat(json, columnName, resultSet, colIndex);
+        case DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
+        case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+        case DATE -> putDate(json, columnName, resultSet, colIndex);
+        case TIME, TIME_WITH_TIMEZONE -> putTime(json, columnName, resultSet, colIndex);
+        case TIMESTAMP, TIMESTAMP_WITH_TIMEZONE -> putTimestamp(json, columnName, resultSet, colIndex);
+        case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
+        default -> putString(json, columnName, resultSet, colIndex);
+      }
     }
   }
 
