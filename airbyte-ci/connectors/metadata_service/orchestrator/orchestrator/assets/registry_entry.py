@@ -11,7 +11,6 @@ from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
 import pandas as pd
-import semver
 import sentry_sdk
 from dagster import AutoMaterializePolicy, DynamicPartitionsDefinition, MetadataValue, OpExecutionContext, Output, asset
 from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
@@ -128,6 +127,10 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
     Returns:
         dict: The metadata data field with the overrides applied.
     """
+    _rc_version = metadata_data.get("dockerImageTag", "")
+    is_release_candidate = "-rc" in _rc_version
+    is_release_candidate_enabled = metadata_data.get("releases", {}).get("rolloutConfiguration", {}).get("enableProgressiveRollout", False)
+
     override_registry = metadata_data["registryOverrides"][override_registry_key]
     del override_registry["enabled"]
 
@@ -135,6 +138,8 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
     override_registry = {k: v for k, v in override_registry.items() if v is not None}
 
     metadata_data.update(override_registry)
+    if is_release_candidate and is_release_candidate_enabled:
+        metadata_data["dockerImageTag"] = _rc_version
 
     return metadata_data
 
