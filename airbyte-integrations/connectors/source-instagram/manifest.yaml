@@ -73,7 +73,8 @@ definitions:
                 record['media_type'], "media_product_type":
                 record['media_product_type'], "business_account_id":
                 stream_partition.account.business_account_id, "page_id":
-                stream_partition.account.page_id} }}
+                stream_partition.account.page_id, "timestamp":
+                record['timestamp']} }}
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -191,6 +192,13 @@ definitions:
               path:
                 - business_account_id
               value: "{{ stream_partition.media_insights_info.business_account_id }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - timestamp
+              value: "{{ stream_partition.media_insights_info.timestamp }}"
               value_type: string
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.InstagramClearUrlTransformation
@@ -1064,6 +1072,13 @@ schemas:
         type:
           - "null"
           - integer
+      timestamp:
+        description: The timestamp when the media was posted.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
   Users:
