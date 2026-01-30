@@ -2,10 +2,6 @@
 
 This page contains the setup guide and reference information for the Zendesk Talk source connector.
 
-:::info Breaking change in version 2.0.0
-Version 2.0.0 introduces OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens. See the [migration guide](./zendesk-talk-migrations.md) for details.
-:::
-
 ## Prerequisites
 
 - Zendesk API Token or Zendesk OAuth Client
