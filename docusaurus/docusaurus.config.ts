@@ -153,10 +153,7 @@ const config: Config = {
           }
         },
         remarkPlugins: [
-          plugins.docsHeaderDecoration,
-          plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
-          plugins.docMetaTags,
           plugins.addButtonToTitle,
         ],
       },
@@ -180,9 +177,6 @@ const config: Config = {
           return replaceApiReferenceCategory(sidebarItems, sonarApiItems);
         },
         remarkPlugins: [
-          plugins.docsHeaderDecoration,
-          plugins.enterpriseDocsHeaderInformation,
-          plugins.docMetaTags,
           plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],
         ],
@@ -198,10 +192,7 @@ const config: Config = {
         sidebarPath: "./sidebar-release_notes.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
-          plugins.docsHeaderDecoration,
-          plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
-          plugins.docMetaTags,
           plugins.addButtonToTitle,
         ],
       },
@@ -238,7 +229,6 @@ const config: Config = {
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           plugins.productInformation,
-          plugins.docMetaTags,
           plugins.addButtonToTitle,
         ],
       },
@@ -253,10 +243,7 @@ const config: Config = {
         sidebarPath: "./sidebar-community.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
-          plugins.docsHeaderDecoration,
-          plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
-          plugins.docMetaTags,
           plugins.addButtonToTitle,
         ],
       },
