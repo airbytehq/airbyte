@@ -4,7 +4,7 @@
 
 [MotherDuck](https://motherduck.com) is a serverless cloud data warehouse built on [DuckDB](https://duckdb.org/). This destination writes data to the MotherDuck cloud service, or to a local DuckDB file on the host running Airbyte.
 
-When writing to local DuckDB files, data is written to `/tmp/airbyte_local` by default. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
+When writing to local DuckDB files (self-managed deployments only; not available on Airbyte Cloud), data is written to `/tmp/airbyte_local` by default. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
 
 ## Destinations V2
 
