@@ -46,7 +46,7 @@ The docstring is the tool's description, which helps the LLM understand when to 
 
 ### Auto-generated descriptions
 
-For comprehensive tool coverage, use the `@Connector.describe` decorator. This decorator reads the connector's metadata and automatically generates a detailed docstring that includes all available entities, actions, parameters, and response structures.
+For comprehensive tool coverage, use the `@Connector.tool_utils` decorator. This decorator reads the connector's metadata and automatically generates a detailed docstring that includes all available entities, actions, parameters, and response structures.
 
 ```python title="agent.py"
 from pydantic_ai import Agent
@@ -56,7 +56,7 @@ agent = Agent("openai:gpt-4o")
 connector = GithubConnector(auth_config=...)
 
 @agent.tool_plain
-@GithubConnector.describe
+@GithubConnector.tool_utils
 async def github_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
@@ -65,18 +65,18 @@ The decorator automatically expands the docstring to include all available entit
 
 #### Decorator order matters
 
-When using the `describe` decorator with agent frameworks like Pydantic AI or FastMCP, **decorator order matters**. The `@Connector.describe` decorator must be the **inner** decorator (closest to the function definition) because frameworks capture docstrings at decoration time.
+When using the `tool_utils` decorator with agent frameworks like Pydantic AI or FastMCP, **decorator order matters**. The `@Connector.tool_utils` decorator must be the **inner** decorator (closest to the function definition) because frameworks capture docstrings at decoration time.
 
 Correct ordering:
 
 ```python title="agent.py"
 @agent.tool_plain        # Outer: framework decorator captures __doc__
-@GithubConnector.describe  # Inner: sets __doc__ before framework sees it
+@GithubConnector.tool_utils  # Inner: sets __doc__ before framework sees it
 async def github_execute(entity: str, action: str, params: dict | None = None):
     ...
 ```
 
-If you reverse the order, the framework captures the original docstring before `describe` has a chance to expand it, and the agent won't see the auto-generated documentation.
+If you reverse the order, the framework captures the original docstring before `tool_utils` has a chance to expand it, and the agent won't see the auto-generated documentation.
 
 #### Custom docstrings
 
@@ -88,7 +88,7 @@ Only provide custom docstrings if you need to, and in limited quantities. Doing 
 
 ```python title="agent.py"
 @agent.tool_plain
-@GithubConnector.describe
+@GithubConnector.tool_utils
 async def github_execute(entity: str, action: str, params: dict | None = None):
     """Execute GitHub operations.
     
@@ -101,7 +101,7 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 ## Introspection
 
-Beyond the `describe` decorator, connectors provide programmatic introspection methods for runtime discovery.
+Beyond the `tool_utils` decorator, connectors provide programmatic introspection methods for runtime discovery.
 
 ### list_entities()
 
@@ -132,7 +132,7 @@ These examples show you how you can implement Airbyte connectors as tools.
 
 ### Pydantic AI with auto-generated descriptions
 
-This example uses the `describe` decorator to maximize your agent's use of Stripe with minimal code and maintenance.
+This example uses the `tool_utils` decorator to maximize your agent's use of Stripe with minimal code and maintenance.
 
 ```python title="agent.py"
 from pydantic_ai import Agent
@@ -149,7 +149,7 @@ agent = Agent(
 )
 
 @agent.tool_plain
-@StripeConnector.describe
+@StripeConnector.tool_utils
 async def stripe_execute(entity: str, action: str, params: dict | None = None):
     """Execute operations on Stripe."""
     return await connector.execute(entity, action, params or {})
@@ -173,13 +173,13 @@ agent = Agent(
 )
 
 @agent.tool_plain
-@GithubConnector.describe
+@GithubConnector.tool_utils
 async def github_execute(entity: str, action: str, params: dict | None = None):
     """Execute operations on GitHub."""
     return await github.execute(entity, action, params or {})
 
 @agent.tool_plain
-@HubspotConnector.describe
+@HubspotConnector.tool_utils
 async def hubspot_execute(entity: str, action: str, params: dict | None = None):
     """Execute operations on HubSpot."""
     return await hubspot.execute(entity, action, params or {})
