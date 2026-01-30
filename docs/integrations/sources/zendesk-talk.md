@@ -18,7 +18,7 @@ The connector supports three authentication methods:
 
 **OAuth2.0 (recommended for Airbyte Cloud):** This method uses rotating refresh tokens for enhanced security. See the [Zendesk OAuth documentation](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/) for details on how OAuth grant-type tokens work.
 
-**OAuth2.0 (Legacy):** This method uses static access tokens that do not expire. Zendesk is deprecating non-expiring OAuth access tokens by September 30, 2025, so we recommend migrating to the new OAuth2.0 flow.
+**OAuth2.0 (Legacy):** This method uses static access tokens that do not expire. Zendesk requires all customers to adopt the refresh token flow by April 30, 2026, so we recommend migrating to the new OAuth2.0 flow.
 
 <!-- env:cloud -->
 
@@ -33,7 +33,7 @@ The connector supports three authentication methods:
    - **Subdomain**: Your Zendesk subdomain (the part before `.zendesk.com` in your account URL)
    - **Authentication**: Select OAuth2.0 and complete the authorization flow
    - **Start Date**: The date from which you want to start syncing data (format: `YYYY-MM-DDT00:00:00Z`)
-5. Click **Set up source**
+5. Click **Set up source**.
 
 <!-- /env:cloud -->
 
@@ -48,7 +48,7 @@ The connector supports three authentication methods:
    - **Subdomain**: Your Zendesk subdomain (the part before `.zendesk.com` in your account URL)
    - **Authentication**: Select API Token and enter your email address and API token
    - **Start Date**: The date from which you want to start syncing data (format: `YYYY-MM-DDT00:00:00Z`)
-5. Click **Set up source**
+5. Click **Set up source**.
 
 <!-- /env:oss -->
 
