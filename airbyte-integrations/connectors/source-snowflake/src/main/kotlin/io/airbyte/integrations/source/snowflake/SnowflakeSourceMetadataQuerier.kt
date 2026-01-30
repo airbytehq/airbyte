@@ -194,7 +194,9 @@ class SnowflakeSourceMetadataQuerier(
                     }
                 }
             } catch (e: SQLException) {
-                log.warn { "Column metadata query failed for privilege check (this may be expected for views using session variables): ${e.message}" }
+                log.warn {
+                    "Column metadata query failed for privilege check (this may be expected for views using session variables): ${e.message}"
+                }
                 return null
             }
         }
