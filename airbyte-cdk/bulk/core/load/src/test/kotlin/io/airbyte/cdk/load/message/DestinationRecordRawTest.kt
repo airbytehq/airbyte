@@ -283,9 +283,6 @@ class DestinationRecordRawTest {
 
     @Test
     fun `test handling empty fields in schema`() {
-        // Create an empty schema
-        val emptySchema = ObjectType(linkedMapOf())
-
         val streamWithEmptySchema =
             DestinationStream(
                 unmappedNamespace = "test_namespace",
