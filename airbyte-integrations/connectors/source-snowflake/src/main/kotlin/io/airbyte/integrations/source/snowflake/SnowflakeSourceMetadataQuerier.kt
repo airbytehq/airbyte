@@ -233,9 +233,11 @@ class SnowflakeSourceMetadataQuerier(
 
             log.info { "Querying table names for Snowflake source." }
             // Try both original and uppercase versions of database names (namespaces)
-            val namespacesToTry = base.config.namespaces + base.config.namespaces.map { it.uppercase() }
+            val namespacesToTry =
+                base.config.namespaces + base.config.namespaces.map { it.uppercase() }
             // Try both original and uppercase versions of schema for case-insensitive matching
-            val schemasToTry = if (schema != null) listOf(schema, schema.uppercase()).distinct() else listOf(null)
+            val schemasToTry =
+                if (schema != null) listOf(schema, schema.uppercase()).distinct() else listOf(null)
             for (namespace in namespacesToTry) {
                 for (schemaToTry in schemasToTry) {
                     // Query all schemas in the current database
