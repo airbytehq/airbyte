@@ -163,12 +163,12 @@ class TestIncrementalTwilioStream:
                     "states": [
                         {
                             "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Recordings.json"},
-                            "cursor": {"date_created": "2021-11-13 00:00:00Z"},
+                            "cursor": {"date_created": "2022-10-13 00:00:00Z"},
                         }
                     ]
                 },
                 [
-                    ("2021-11-13 00:00:00Z", "2022-11-12 23:59:59Z"),
+                    ("2022-10-13 00:00:00Z", "2022-11-12 23:59:59Z"),
                     ("2022-11-13 00:00:00Z", "2022-11-16 12:03:11Z"),
                 ],
             ),
