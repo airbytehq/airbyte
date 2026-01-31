@@ -2247,7 +2247,234 @@ definitions:
       schema:
         $ref: "#/definitions/schemas/pixel_events_statistics"
 
+  gmv_max_campaigns_stream:
+    type: DeclarativeStream
+    name: gmv_max_campaigns
+    $parameters:
+      path: "gmv_max/campaign/get/"
+    primary_key:
+      - campaign_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/gmv_max_campaigns"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          filtering: '{"gmv_max_promotion_types": ["PRODUCT_GMV_MAX"]}'
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+
+  gmv_max_campaign_reports_daily_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+      request_parameters:
+        store_ids: '["{{ stream_partition.store_id }}"]'
+        dimensions: '["campaign_id", "stat_time_day"]'
+        metrics: '["cost", "net_cost", "orders", "cost_per_order", "gross_revenue", "roi", "campaign_name", "operation_status", "bid_type"]'
+        start_date: "{{ stream_interval['start_time'] }}"
+        end_date: "{{ stream_interval['end_time'] }}"
+        filtering: '{"gmv_max_promotion_types": ["PRODUCT_GMV_MAX"]}'
+      authenticator:
+        $ref: "#/definitions/authenticator"
+      request_body_json: {}
+    record_selector:
+      $ref: "#/definitions/record_selector"
+    paginator:
+      $ref: "#/definitions/paginator_page_increment"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 1000
+        start_from_page: 1
+    partition_router:
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: advertiser_id
+            request_option:
+              type: RequestOption
+              field_name: advertiser_id
+              inject_into: request_parameter
+            partition_field: advertiser_id
+            stream:
+              $ref: "#/definitions/advertisers_stream"
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: store_id
+            partition_field: store_id
+            stream:
+              $ref: "#/definitions/gmv_max_campaigns_stream"
+
+  gmv_max_campaign_reports_daily_stream:
+    type: DeclarativeStream
+    name: gmv_max_campaign_reports_daily
+    $parameters:
+      path: "gmv_max/report/get/"
+    primary_key:
+      - campaign_id
+      - stat_time_day
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/gmv_max_campaign_reports"
+    retriever:
+      $ref: "#/definitions/gmv_max_campaign_reports_daily_retriever"
+    incremental_sync:
+      $ref: "#/definitions/report_daily_incremental_sync"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["campaign_id"]
+            value: "{{ record.dimensions.campaign_id }}"
+      - type: CustomTransformation
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
+
   schemas:
+    gmv_max_campaigns:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        campaign_id:
+          description: The unique identifier for the GMV Max campaign.
+          type:
+            - "null"
+            - integer
+        campaign_name:
+          description: The name of the GMV Max campaign.
+          type:
+            - "null"
+            - string
+        advertiser_id:
+          description: The unique identifier for the advertiser.
+          type:
+            - "null"
+            - integer
+        campaign_type:
+          description: The type of the GMV Max campaign.
+          type:
+            - "null"
+            - string
+        status:
+          description: The status of the GMV Max campaign.
+          type:
+            - "null"
+            - string
+        budget:
+          description: The budget allocated for the campaign.
+          type:
+            - "null"
+            - string
+        budget_mode:
+          description: The budget mode (daily or total).
+          type:
+            - "null"
+            - string
+        roi_target:
+          description: The target ROI for the campaign.
+          type:
+            - "null"
+            - string
+        shop_id:
+          description: The TikTok Shop ID associated with the campaign.
+          type:
+            - "null"
+            - string
+        store_id:
+          description: The TikTok Shop Store ID associated with the campaign. Used for GMV Max reporting.
+          type:
+            - "null"
+            - string
+        create_time:
+          description: The time when the campaign was created.
+          type:
+            - "null"
+            - string
+          format: date-time
+        modify_time:
+          description: The time when the campaign was last modified.
+          type:
+            - "null"
+            - string
+          format: date-time
+    gmv_max_campaign_reports:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        stat_time_day:
+          description: The date for which the statistical data is recorded.
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        campaign_id:
+          description: The unique identifier for the GMV Max campaign.
+          type:
+            - "null"
+            - integer
+        metrics:
+          description: The metrics data for the GMV Max campaign report.
+          type:
+            - "null"
+            - object
+          properties:
+            cost:
+              description: Total cost/spend for the campaign.
+              type:
+                - "null"
+                - string
+            net_cost:
+              description: Net cost after deductions.
+              type:
+                - "null"
+                - string
+            orders:
+              description: Number of orders generated.
+              type:
+                - "null"
+                - string
+            cost_per_order:
+              description: Average cost per order.
+              type:
+                - "null"
+                - string
+            gross_revenue:
+              description: Total gross revenue generated.
+              type:
+                - "null"
+                - string
+            roi:
+              description: Return on investment.
+              type:
+                - "null"
+                - string
+            campaign_name:
+              description: Name of the campaign.
+              type:
+                - "null"
+                - string
+            operation_status:
+              description: Current operation status of the campaign.
+              type:
+                - "null"
+                - string
+            bid_type:
+              description: The bid type used for the campaign.
+              type:
+                - "null"
+                - string
     advertiser_ids:
       $schema: http://json-schema.org/draft-07/schema#
       additionalProperties: true
@@ -5756,6 +5983,8 @@ streams:
     - $ref: "#/definitions/pixels"
     - $ref: "#/definitions/pixel_instant_page_events"
     - $ref: "#/definitions/pixel_events_statistics"
+    - $ref: "#/definitions/gmv_max_campaigns_stream"
+    - $ref: "#/definitions/gmv_max_campaign_reports_daily_stream"
 
 spec:
   type: Spec
