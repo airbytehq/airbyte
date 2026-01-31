@@ -374,6 +374,10 @@
       "description": "User's email address.",
       "type": ["null", "string"]
     },
+    "phone": {
+      "description": "User's phone number.",
+      "type": ["null", "string"]
+    },
     "thirdMostRecentOrderCards": {
       "description": "Details of the third most recent order cards related to the user",
       "type": ["null", "array"],
