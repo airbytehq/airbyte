@@ -8,6 +8,19 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 
 /**
+ * ANSI reserved keywords that Snowflake rejects as column names even when quoted. These must be
+ * prefixed with an underscore to be used as column names. See:
+ * https://docs.snowflake.com/en/sql-reference/reserved-keywords
+ */
+private val SNOWFLAKE_RESERVED_COLUMN_NAMES =
+    setOf(
+        "CURRENT_DATE",
+        "CURRENT_TIME",
+        "CURRENT_TIMESTAMP",
+        "CURRENT_USER",
+    )
+
+/**
  * Transforms a string to be compatible with Snowflake table and column names.
  *
  * @return The transformed string suitable for Snowflake identifiers.
@@ -30,5 +43,14 @@ fun String.toSnowflakeCompatibleName(): String {
     // Escape double quotes
     identifier = escapeJsonIdentifier(identifier)
 
-    return identifier.uppercase()
+    // Convert to uppercase before checking reserved keywords
+    identifier = identifier.uppercase()
+
+    // Prefix ANSI reserved keywords with underscore
+    // These keywords are rejected by Snowflake even when quoted
+    if (identifier in SNOWFLAKE_RESERVED_COLUMN_NAMES) {
+        identifier = "_$identifier"
+    }
+
+    return identifier
 }
