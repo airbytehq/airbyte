@@ -25,7 +25,7 @@ If you're using Cursor or VS Code, you can connect with one click through the As
 
 ### Claude
 
-For Claude Desktop or Claude Code, run the following command:
+If you're using Claude Desktop or Claude Code, run the following command in your system terminal (e.g., Terminal on macOS, Command Prompt/PowerShell on Windows, or your preferred shell on Linux):
 
 ```bash
 claude mcp add --transport http airbyte-docs https://airbyte.mcp.kapa.ai
@@ -38,6 +38,17 @@ The Airbyte knowledge MCP works with any MCP-compatible tool, including Windsurf
 ## Authentication
 
 When connecting for the first time, you'll be prompted to sign in with any Google account. This authentication is used only to enforce rate limits and prevent abuse of the server. Airbyte does not access your email, name, or other personal data.
+
+### Manually triggering authentication
+
+For [Claude](###Claude): If you need to authenticate (or re-authenticate) with the Airbyte Knowledge MCP server, you can manually trigger the authentication flow from within Claude Code CLI.
+
+1. In your Claude Code session, type `/mcp list`
+2. Select **airbyte-docs** from the list of available MCP servers
+3. This will initiate the Google authentication flow in your browser
+4. Once authenticated, you'll see a confirmation message: "Authentication successful. Connected to airbyte-docs."
+
+This is useful if you dismissed the initial authentication prompt, your authentication has expired, or you want to verify your connection status.
 
 ## Rate limits
 
