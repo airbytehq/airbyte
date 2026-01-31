@@ -6,36 +6,32 @@ from __future__ import annotations
 import abc
 import contextlib
 import enum
+import json
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, cast, final
 
-import pandas as pd
 import sqlalchemy
 import ulid
-from airbyte import exceptions as exc
-from airbyte._util.name_normalizers import LowerCaseNormalizer
-from airbyte.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
-from airbyte.progress import progress
-from airbyte.strategies import WriteStrategy
-from airbyte.types import SQLTypeConverter
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from pandas import Index
-from pydantic import BaseModel
+from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
+from airbyte_cdk.sql.types import SQLTypeConverter
+from pydantic.v1 import BaseModel
 from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
 from sqlalchemy.sql.elements import TextClause
 
 from destination_pgvector.common.destinations.record_processor import RecordProcessorBase
+from destination_pgvector.common.sql.write_strategy import WriteStrategy
 from destination_pgvector.common.state.state_writers import StdOutStateWriter
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-    from airbyte._batch_handles import BatchHandle
-    from airbyte._processors.file.base import FileWriterBase
-    from airbyte.secrets.base import SecretString
     from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage
+    from airbyte_cdk.sql.secrets import SecretString
     from sqlalchemy.engine import Connection, Engine
     from sqlalchemy.engine.cursor import CursorResult
     from sqlalchemy.engine.reflection import Inspector
@@ -43,7 +39,9 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.type_api import TypeEngine
 
     from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
+    from destination_pgvector.common.destinations.record_processor import BatchHandle
     from destination_pgvector.common.state.state_writers import StateWriterBase
+    from destination_pgvector.jsonl_writer import JsonlWriter as FileWriterBase
 
 
 class RecordDedupeMode(enum.Enum):
@@ -508,8 +506,6 @@ class SqlProcessorBase(RecordProcessorBase):
             finally:
                 self._drop_temp_table(temp_table_name, if_exists=True)
 
-        progress.log_stream_finalized(stream_name)
-
         # Return the batch handles as measure of work completed.
         return batches_to_finalize
 
@@ -536,10 +532,8 @@ class SqlProcessorBase(RecordProcessorBase):
         ].copy()
         self._pending_state_messages[stream_name].clear()
 
-        progress.log_batches_finalizing(stream_name, len(batches_to_finalize))
         yield batches_to_finalize
         self._finalize_state_messages(state_messages_to_finalize)
-        progress.log_batches_finalized(stream_name, len(batches_to_finalize))
 
         for batch_handle in batches_to_finalize:
             batch_handle.finalized = True
@@ -589,39 +583,58 @@ class SqlProcessorBase(RecordProcessorBase):
         to improve performance.
         """
         temp_table_name = self._create_table_for_loading(stream_name, batch_id)
+        
+        if not self._table_exists(temp_table_name):
+            raise exc.PyAirbyteInternalError(
+                message="Table does not exist after creation.",
+                context={
+                    "temp_table_name": temp_table_name,
+                },
+            )
+        
+        sql_column_definitions: dict[str, TypeEngine] = self._get_sql_column_definitions(
+            stream_name
+        )
+        
+        # Normalize column names to match what we expect
+        normalized_columns = {
+            self.normalizer.normalize(col): col 
+            for col in sql_column_definitions.keys()
+        }
+        
         for file_path in files:
-            dataframe = pd.read_json(file_path, lines=True)
-
-            sql_column_definitions: dict[str, TypeEngine] = self._get_sql_column_definitions(
-                stream_name
-            )
-
-            # Remove fields that are not in the schema
-            for col_name in dataframe.columns:
-                if col_name not in sql_column_definitions:
-                    dataframe = dataframe.drop(columns=col_name)
-
-            # Pandas will auto-create the table if it doesn't exist, which we don't want.
-            if not self._table_exists(temp_table_name):
-                raise exc.PyAirbyteInternalError(
-                    message="Table does not exist after creation.",
-                    context={
-                        "temp_table_name": temp_table_name,
-                    },
-                )
-
-            # Normalize all column names to lower case.
-            dataframe.columns = Index([self.normalizer.normalize(col) for col in dataframe.columns])
-
-            # Write the data to the table.
-            dataframe.to_sql(
-                temp_table_name,
-                self.get_sql_alchemy_url(),
-                schema=self.sql_config.schema_name,
-                if_exists="append",
-                index=False,
-                dtype=sql_column_definitions,
-            )
+            with open(file_path, "r") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    
+                    record = json.loads(line)
+                    
+                    normalized_record = {}
+                    for col_name, value in record.items():
+                        normalized_col = self.normalizer.normalize(col_name)
+                        if normalized_col in normalized_columns:
+                            if isinstance(value, (dict, list)):
+                                normalized_record[normalized_col] = json.dumps(value)
+                            else:
+                                normalized_record[normalized_col] = value
+                    
+                    if not normalized_record:
+                        continue
+                    
+                    # Build INSERT statement
+                    columns = list(normalized_record.keys())
+                    placeholders = [f":{col}" for col in columns]
+                    
+                    insert_sql = text(
+                        f"INSERT INTO {self._fully_qualified(temp_table_name)} "
+                        f"({', '.join(columns)}) "
+                        f"VALUES ({', '.join(placeholders)})"
+                    )
+                    
+                    with self.get_sql_connection() as conn:
+                        conn.execute(insert_sql, normalized_record)
+        
         return temp_table_name
 
     def _add_column_to_table(
