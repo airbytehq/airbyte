@@ -3029,6 +3029,16 @@ schemas:
           - "null"
           - string
         format: date
+      segments.geo_target_city:
+        description: The resource name of the geo target constant for the city
+        type:
+          - "null"
+          - string
+      segments.geo_target_region:
+        description: The resource name of the geo target constant for the region
+        type:
+          - "null"
+          - string
     additionalProperties: true
 
   keyword_view:
