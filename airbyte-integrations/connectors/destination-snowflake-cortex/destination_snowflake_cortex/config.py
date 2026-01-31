@@ -3,11 +3,17 @@
 #
 
 
+from typing import Literal, Union
+
 from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
 from pydantic import BaseModel, Field
 
 
 class PasswordBasedAuthorizationModel(BaseModel):
+    auth_type: Literal["password"] = Field(
+        default="password",
+        const=True,
+    )
     password: str = Field(
         ...,
         title="Password",
@@ -18,7 +24,30 @@ class PasswordBasedAuthorizationModel(BaseModel):
     )
 
     class Config:
-        title = "Credentials"
+        title = "Username and Password"
+
+
+class KeyPairAuthorizationModel(BaseModel):
+    auth_type: Literal["key_pair"] = Field(
+        default="key_pair",
+        const=True,
+    )
+    private_key: str = Field(
+        ...,
+        title="Private Key",
+        airbyte_secret=True,
+        description="RSA Private key to use for key pair authentication. Enter the private key as a string.",
+        multiline=True,
+    )
+    private_key_passphrase: str | None = Field(
+        default=None,
+        title="Private Key Passphrase",
+        airbyte_secret=True,
+        description="Passphrase for private key if the key is encrypted. Leave empty if the key is not encrypted.",
+    )
+
+    class Config:
+        title = "Key Pair Authentication"
 
 
 # to-do - https://github.com/airbytehq/airbyte/issues/38007 - add Snowflake supported models to embedding options
@@ -66,7 +95,25 @@ class SnowflakeCortexIndexingModel(BaseModel):
         examples=["AIRBYTE_USER"],
     )
 
-    credentials: PasswordBasedAuthorizationModel
+    credentials: Union[PasswordBasedAuthorizationModel, KeyPairAuthorizationModel] = Field(
+        ...,
+        title="Authorization Method",
+        description="Choose the authorization method for the Snowflake connection",
+        discriminator="auth_type",
+        type="object",
+        oneOf=[
+            {
+                "title": "Username and Password",
+                "required": ["password"],
+                "properties": {"auth_type": {"type": "string", "const": "password"}},
+            },
+            {
+                "title": "Key Pair Authentication",
+                "required": ["private_key"],
+                "properties": {"auth_type": {"type": "string", "const": "key_pair"}},
+            },
+        ],
+    )
 
     class Config:
         title = "Snowflake Connection"
