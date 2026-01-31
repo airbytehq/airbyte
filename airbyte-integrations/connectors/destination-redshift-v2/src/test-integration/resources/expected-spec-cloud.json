@@ -1,0 +1,271 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/redshift-v2",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Redshift V 2 Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "host" : {
+        "type" : "string",
+        "description" : "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
+        "title" : "Host",
+        "group" : "connection",
+        "order" : 0
+      },
+      "port" : {
+        "type" : "integer",
+        "description" : "Port of the database.",
+        "title" : "Port",
+        "group" : "connection",
+        "order" : 1,
+        "minimum" : 0,
+        "maximum" : 65536,
+        "default" : 5439,
+        "examples" : [ "5439" ]
+      },
+      "username" : {
+        "type" : "string",
+        "description" : "Username to use to access the database.",
+        "title" : "Username",
+        "group" : "connection",
+        "order" : 2
+      },
+      "password" : {
+        "type" : "string",
+        "description" : "Password associated with the username.",
+        "title" : "Password",
+        "group" : "connection",
+        "order" : 3,
+        "airbyte_secret" : true
+      },
+      "database" : {
+        "type" : "string",
+        "description" : "Name of the database.",
+        "title" : "Database",
+        "group" : "connection",
+        "order" : 4
+      },
+      "schema" : {
+        "type" : "string",
+        "description" : "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
+        "title" : "Default Schema",
+        "group" : "connection",
+        "order" : 5,
+        "examples" : [ "public" ],
+        "default" : "public"
+      },
+      "jdbc_url_params" : {
+        "type" : "string",
+        "description" : "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title" : "JDBC URL Params",
+        "group" : "connection",
+        "order" : 6
+      },
+      "uploading_method" : {
+        "oneOf" : [ {
+          "title" : "AWS S3 Staging",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability.",
+          "properties" : {
+            "method" : {
+              "type" : "string",
+              "enum" : [ "S3 Staging" ],
+              "default" : "S3 Staging"
+            },
+            "s3_bucket_name" : {
+              "type" : "string",
+              "description" : "The name of the staging S3 bucket.",
+              "title" : "S3 Bucket Name",
+              "order" : 0,
+              "examples" : [ "airbyte.staging" ]
+            },
+            "s3_bucket_path" : {
+              "type" : "string",
+              "description" : "The directory under the S3 bucket where data will be written. If not provided, then defaults to the root directory.",
+              "title" : "S3 Bucket Path",
+              "order" : 1,
+              "examples" : [ "data_sync/test" ]
+            },
+            "s3_bucket_region" : {
+              "type" : "string",
+              "description" : "The region of the S3 staging bucket.",
+              "title" : "S3 Bucket Region",
+              "order" : 2,
+              "default" : "",
+              "enum" : [ "", "af-south-1", "ap-east-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3", "ap-south-1", "ap-south-2", "ap-southeast-1", "ap-southeast-2", "ap-southeast-3", "ap-southeast-4", "ca-central-1", "ca-west-1", "cn-north-1", "cn-northwest-1", "eu-central-1", "eu-central-2", "eu-north-1", "eu-south-1", "eu-south-2", "eu-west-1", "eu-west-2", "eu-west-3", "il-central-1", "me-central-1", "me-south-1", "sa-east-1", "us-east-1", "us-east-2", "us-gov-east-1", "us-gov-west-1", "us-west-1", "us-west-2" ]
+            },
+            "access_key_id" : {
+              "type" : "string",
+              "description" : "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
+              "title" : "S3 Access Key Id",
+              "order" : 3,
+              "airbyte_secret" : true
+            },
+            "secret_access_key" : {
+              "type" : "string",
+              "description" : "The corresponding secret to the above access key id.",
+              "title" : "S3 Secret Access Key",
+              "order" : 4,
+              "airbyte_secret" : true
+            },
+            "file_name_pattern" : {
+              "type" : "string",
+              "description" : "The pattern allows you to set the file-name format for the S3 staging file(s)",
+              "title" : "S3 Filename pattern",
+              "order" : 5,
+              "examples" : [ "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}" ]
+            },
+            "purge_staging_data" : {
+              "type" : "boolean",
+              "description" : "Whether to delete the staging files from S3 after completing the sync.",
+              "title" : "Purge Staging Files and Tables",
+              "order" : 6,
+              "default" : true
+            }
+          },
+          "required" : [ "method", "s3_bucket_name", "s3_bucket_region", "access_key_id", "secret_access_key" ]
+        } ],
+        "description" : "The way data will be uploaded to Redshift.",
+        "title" : "Uploading Method",
+        "group" : "connection",
+        "order" : 7,
+        "display_type" : "radio",
+        "type" : "object"
+      },
+      "drop_cascade" : {
+        "type" : "boolean",
+        "description" : "Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.",
+        "title" : "Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)",
+        "group" : "tables",
+        "order" : 2,
+        "default" : false
+      },
+      "raw_data_schema" : {
+        "type" : "string",
+        "description" : "The schema to use for internal Airbyte tables (default: airbyte_internal).",
+        "title" : "Internal Tables Schema",
+        "group" : "tables",
+        "order" : 3,
+        "default" : "airbyte_internal"
+      },
+      "tunnel_method" : {
+        "oneOf" : [ {
+          "title" : "No Tunnel",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "No ssh tunnel needed to connect to database",
+          "properties" : {
+            "tunnel_method" : {
+              "type" : "string",
+              "enum" : [ "NO_TUNNEL" ],
+              "default" : "NO_TUNNEL"
+            }
+          },
+          "required" : [ "tunnel_method" ]
+        }, {
+          "title" : "SSH Key Authentication",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Connect through a jump server tunnel host using username and ssh key",
+          "properties" : {
+            "tunnel_method" : {
+              "type" : "string",
+              "enum" : [ "SSH_KEY_AUTH" ],
+              "default" : "SSH_KEY_AUTH"
+            },
+            "tunnel_host" : {
+              "type" : "string",
+              "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
+              "title" : "SSH Tunnel Jump Server Host",
+              "order" : 1
+            },
+            "tunnel_port" : {
+              "type" : "integer",
+              "default" : 22,
+              "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
+              "title" : "SSH Connection Port",
+              "order" : 2,
+              "minimum" : 0,
+              "maximum" : 65536
+            },
+            "tunnel_user" : {
+              "type" : "string",
+              "description" : "OS-level username for logging into the jump server host",
+              "title" : "SSH Login Username",
+              "order" : 3
+            },
+            "ssh_key" : {
+              "type" : "string",
+              "description" : "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+              "title" : "SSH Private Key",
+              "order" : 4,
+              "multiline" : true,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "ssh_key" ]
+        }, {
+          "title" : "Password Authentication",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Connect through a jump server tunnel host using username and password authentication",
+          "properties" : {
+            "tunnel_method" : {
+              "type" : "string",
+              "enum" : [ "SSH_PASSWORD_AUTH" ],
+              "default" : "SSH_PASSWORD_AUTH"
+            },
+            "tunnel_host" : {
+              "type" : "string",
+              "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
+              "title" : "SSH Tunnel Jump Server Host",
+              "order" : 1
+            },
+            "tunnel_port" : {
+              "type" : "integer",
+              "default" : 22,
+              "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
+              "title" : "SSH Connection Port",
+              "order" : 2,
+              "minimum" : 0,
+              "maximum" : 65536
+            },
+            "tunnel_user" : {
+              "type" : "string",
+              "description" : "OS-level username for logging into the jump server host",
+              "title" : "SSH Login Username",
+              "order" : 3
+            },
+            "tunnel_user_password" : {
+              "type" : "string",
+              "description" : "OS-level password for logging into the jump server host",
+              "title" : "Password",
+              "order" : 4,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "tunnel_user_password" ]
+        } ],
+        "description" : "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+        "title" : "SSH Tunnel Method",
+        "group" : "connection",
+        "order" : 8,
+        "type" : "object"
+      }
+    },
+    "required" : [ "host", "port", "username", "password", "database", "schema" ],
+    "groups" : [ {
+      "id" : "connection",
+      "title" : "Connection"
+    }, {
+      "id" : "tables",
+      "title" : "Tables"
+    } ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}
