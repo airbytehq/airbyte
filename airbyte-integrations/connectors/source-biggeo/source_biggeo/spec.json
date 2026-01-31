@@ -1,0 +1,31 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/biggeo",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Source BigGeo",
+    "type": "object",
+    "required": ["api_key"],
+    "additionalProperties": false,
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "description": "API Key for authenticating with BigGeo",
+        "airbyte_secret": true,
+        "order": 0
+      },
+      "data_source_name": {
+        "type": "string",
+        "description": "Name of the data source to retrieve from BigGeo.",
+        "order": 1
+      },
+      "chunk_size": {
+        "type": "integer",
+        "description": "Number of records to fetch per chunk during pagination. Larger values may improve throughput but increase memory usage. Default is 1000.",
+        "default": 1000,
+        "minimum": 1,
+        "maximum": 10000,
+        "order": 2
+      }
+    }
+  }
+}
