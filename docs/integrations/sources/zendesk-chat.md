@@ -53,7 +53,7 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 - [Accounts](https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account)
 - [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents) \(Incremental\)
 - [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export) \(Incremental\)
-- [Chats](https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats)
+- [Chats](https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats) \(Incremental\)
 - [Shortcuts](https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts)
 - [Triggers](https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers)
 - [Bans](https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans) \(Incremental\)
@@ -83,7 +83,7 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3.0 | 2026-01-17 | [71829](https://github.com/airbytehq/airbyte/pull/71829) | Add OAuth2.0 support for Airbyte Cloud |
+| 1.3.0 | 2026-01-28 | [71829](https://github.com/airbytehq/airbyte/pull/71829) | Add OAuth2.0 support for Airbyte Cloud |
 | 1.2.31 | 2026-01-20 | [72091](https://github.com/airbytehq/airbyte/pull/72091) | Update dependencies |
 | 1.2.30 | 2026-01-14 | [71701](https://github.com/airbytehq/airbyte/pull/71701) | Update dependencies |
 | 1.2.29 | 2025-12-18 | [70681](https://github.com/airbytehq/airbyte/pull/70681) | Update dependencies |
