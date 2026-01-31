@@ -88,6 +88,10 @@ class CustomOauth2PrivateKeyAuthenticator(DeclarativeAuthenticator):
         scope = self.config["credentials"]["scope"]
         now = int(time.time())
 
+        # Normalize escaped newlines in the private key to actual newlines
+        if "\\n" in private_key:
+            private_key = private_key.replace("\\n", "\n")
+
         jwt_payload = {
             "iss": client_id,
             "sub": client_id,
