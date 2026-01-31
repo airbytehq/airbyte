@@ -22,3 +22,8 @@ class TestAirbyteStandardTests(standard_tests.SourceTestSuiteBase):
     If no `connector` class or `create_connector()` method is declared, the
     python module name and class name will be inferred from parent directories.
     """
+
+
+def test_intentional_failure_for_ai_pr_review_demo():
+    """This test intentionally fails to demonstrate the AI PR Review Gate 1 (CI/Tests) failure."""
+    assert False, "This test intentionally fails for AI PR Review demo purposes"
