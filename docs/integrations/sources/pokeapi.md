@@ -2,7 +2,7 @@
 
 ## Tutorials
 
-The PokéAPI is primarly used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
+The PokéAPI is primarily used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
 
 - [Airbyte Quickstart: An Introduction to Deploying and Syncing](/platform/using-airbyte/getting-started/oss-quickstart)
 - [Using Connector Builder and the low-code CDK](/platform/connector-development/connector-builder-ui/overview)
@@ -22,15 +22,15 @@ This source uses the fully open [PokéAPI](https://pokeapi.co/docs/v2#info) to s
 
 ## Output Schema
 
-Currently, only one output stream is available from this source, which is the Pokémon output stream. This schema is defined [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-pokeapi/source_pokeapi/schemas/pokemon.json).
+Currently, only one output stream is available from this source, which is the Pokémon output stream. The schema is defined inline in the connector's [manifest.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-pokeapi/manifest.yaml) file.
 
-## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
+## Rate Limiting and Performance Considerations
 
 According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), please make sure to cache resources retrieved from the PokéAPI wherever possible. That said, the PokéAPI does not perform rate limiting.
 
 ## Data Type Mapping
 
-The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally (`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`), so no type conversions happen as part of this source.
 
 ## Changelog
 
