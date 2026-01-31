@@ -27,7 +27,7 @@ from .utils import config, read_output
 
 logger = logging.getLogger("airbyte")
 
-_FIELDS = ["id", "instagram_business_account"]
+_FIELDS = ["id", "instagram_business_account{id,username}"]
 
 _STREAM_NAME = "Api"
 

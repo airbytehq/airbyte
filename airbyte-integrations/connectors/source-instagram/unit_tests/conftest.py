@@ -56,7 +56,7 @@ def find_stream(stream_name, config, state=None):
 
 GRAPH_URL = "https://graph.facebook.com/v23.0"
 
-account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account"
+account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account%7Bid%2Cusername%7D"
 
 
 @fixture(name="config")

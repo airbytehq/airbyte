@@ -13,7 +13,7 @@ ACCOUNT_ID = "111111111111111"
 
 PAGE_ID = "111111111111111"
 BUSINESS_ACCOUNT_ID = "222222222222222"
-ACCOUNTS_FIELDS = ["id", "instagram_business_account"]
+ACCOUNTS_FIELDS = ["id", "instagram_business_account{id,username}"]
 START_DATE = "2022-09-01T00:00:00Z"
 
 
