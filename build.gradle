@@ -203,7 +203,7 @@ allprojects {
 
     dependencies {
         // JUnit dependencies.
-        def vAssertJ = "3.25.3"
+        def vAssertJ = "3.27.6"
         def vJUnit = "5.10.2"
         def vJUnitJupiter = "5.11.0"
 
