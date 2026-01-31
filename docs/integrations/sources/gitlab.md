@@ -112,6 +112,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.19 | 2026-01-27 | [71398](https://github.com/airbytehq/airbyte/pull/71398) | Update dependencies |
 | 4.4.18 | 2025-12-18 | [70698](https://github.com/airbytehq/airbyte/pull/70698) | Update dependencies |
 | 4.4.17 | 2025-12-11 | [70839](https://github.com/airbytehq/airbyte/pull/70839) | Change check stream from projects to groups to fix timeout for large GitLab organizations |
 | 4.4.16 | 2025-11-25 | [69875](https://github.com/airbytehq/airbyte/pull/69875) | Update dependencies |
