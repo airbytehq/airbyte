@@ -54,9 +54,18 @@ class GroupStreamsPartitionRouter(SubstreamPartitionRouter):
 @dataclass
 class ProjectStreamsPartitionRouter(SubstreamPartitionRouter):
     def stream_slices(self) -> Iterable[StreamSlice]:
-        parent_stream = self.parent_stream_configs[0].stream
         projects_list = self.config.get("projects_list", [])
+        groups_list = self.config.get("groups_list", [])
 
+        # Short-circuit: if projects are specified but no groups, use projects directly
+        # This avoids enumerating all accessible groups which can be very slow and cause timeouts
+        if projects_list and not groups_list:
+            for project_id in projects_list:
+                yield StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
+            return
+
+        # Original behavior: derive projects from groups
+        parent_stream = self.parent_stream_configs[0].stream
         group_project_ids = []
         for partition in parent_stream.generate_partitions():
             for record in partition.read():
@@ -64,7 +73,7 @@ class ProjectStreamsPartitionRouter(SubstreamPartitionRouter):
 
         if group_project_ids:
             for project_id in group_project_ids:
-                if not projects_list or projects_list and project_id in projects_list:
+                if not projects_list or project_id in projects_list:
                     yield StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
         else:
             for project_id in projects_list:
