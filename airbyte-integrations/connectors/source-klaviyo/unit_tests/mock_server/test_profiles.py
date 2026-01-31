@@ -52,7 +52,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -185,7 +185,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -240,7 +240,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -301,7 +301,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -359,7 +359,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -433,7 +433,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -475,7 +475,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -514,7 +514,7 @@ class TestProfilesStream(TestCase):
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
                     "page[size]": "100",
                 }
             )
@@ -535,16 +535,16 @@ class TestProfilesStream(TestCase):
     @HttpMocker()
     def test_predictive_analytics_disabled(self, http_mocker: HttpMocker):
         """
-        Test that predictive_analytics field is not requested when disabled.
+        Test that predictive_analytics field is not requested when disabled, but subscriptions is still included.
 
         The manifest configures:
         request_parameters:
           additional-fields[profile]: >-
-            {{ 'predictive_analytics' if not config['disable_fetching_predictive_analytics'] else '' }}
+            {{ 'subscriptions,predictive_analytics' if not config['disable_fetching_predictive_analytics'] else 'subscriptions' }}
 
         Given: Config with disable_fetching_predictive_analytics=True
         When: Running a sync
-        Then: The additional-fields parameter should be empty
+        Then: The additional-fields parameter should only contain 'subscriptions'
         """
         config = (
             ConfigBuilder()
@@ -554,14 +554,14 @@ class TestProfilesStream(TestCase):
             .build()
         )
 
-        # When predictive_analytics is disabled, additional-fields[profile] should be empty string
+        # When predictive_analytics is disabled, additional-fields[profile] should only contain 'subscriptions'
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
                     "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
-                    "additional-fields[profile]": "",
+                    "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
                 }
             )
