@@ -59,3 +59,4 @@ data:
       url: https://learn.microsoft.com/en-us/sql/relational-databases/security/choose-an-authentication-mode
       type: authentication_guide
 metadataSpecVersion: "1.0"
+# dummy-change (revert-me)
