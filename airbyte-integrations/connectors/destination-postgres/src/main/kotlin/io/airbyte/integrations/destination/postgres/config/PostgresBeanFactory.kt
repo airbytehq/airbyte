@@ -141,7 +141,13 @@ class PostgresBeanFactory {
                 password = postgresConfiguration.password ?: ""
                 schema = postgresConfiguration.schema
 
-                // Apply custom JDBC URL parameters first (if provided)
+                // Disable server-side prepared statements to support connection poolers
+                // (PgBouncer, Supabase Supavisor) in transaction mode.
+                // See: https://github.com/airbytehq/airbyte/pull/26873
+                addDataSourceProperty("prepareThreshold", "0")
+
+                // Apply custom JDBC URL parameters (if provided)
+                // These are applied AFTER prepareThreshold so users can override if needed
                 postgresConfiguration.jdbcUrlParams?.let { params ->
                     JdbcUtils.parseJdbcParameters(params).forEach { (key, value) ->
                         addDataSourceProperty(key, value)
