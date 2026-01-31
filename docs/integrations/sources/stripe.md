@@ -64,7 +64,13 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
    If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
 
-10. Click **Set up source** and wait for the tests to complete.
+10. (Optional) For **Subscription Status Filter**, you can filter which subscriptions are synced. By default, all subscriptions are synced (including canceled). You can choose to sync only `canceled` or `ended` subscriptions to reduce data volume. See the [Stripe Subscriptions API](https://docs.stripe.com/api/subscriptions/list) for details.
+
+11. (Optional) For **Expand Charge Refunds**, you can disable this to exclude full refund objects from the charges stream, reducing response payload sizes. When disabled, only refund IDs are included. This setting only affects full refresh syncs. See the [Stripe Charges API](https://docs.stripe.com/api/charges/list) for details.
+
+12. (Optional) For **Expand Invoice Details**, you can disable this to exclude full discount and tax rate objects from the invoices stream, reducing response payload sizes. When disabled, only IDs are included. This setting only affects full refresh syncs. See the [Stripe Invoices API](https://docs.stripe.com/api/invoices/list) for details.
+
+13. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -158,6 +164,10 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
 
+#### Performance optimization settings
+
+The **Expand Charge Refunds** and **Expand Invoice Details** configuration options only affect **full refresh** syncs, which use the direct List APIs. **Incremental** syncs use the [Events API](https://docs.stripe.com/api/events/list) which returns full objects without expand parameters, so these settings have no effect on incremental sync performance.
+
 ### Troubleshooting
 
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
@@ -246,6 +256,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.16.0 | 2026-01-28 | [72393](https://github.com/airbytehq/airbyte/pull/72393) | feat(source-stripe): Add optional config parameters for performance optimization |
 | 5.15.17 | 2026-01-27 | [72363](https://github.com/airbytehq/airbyte/pull/72363) | fix(source-stripe): Add date filtering for checkout_sessions full refresh |
 | 5.15.16 | 2026-01-20 | [72106](https://github.com/airbytehq/airbyte/pull/72106) | Update dependencies |
 | 5.15.15 | 2026-01-14 | [71614](https://github.com/airbytehq/airbyte/pull/71614) | Update dependencies |
