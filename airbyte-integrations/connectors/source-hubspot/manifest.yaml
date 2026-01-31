@@ -1,4 +1,4 @@
-version: 6.51.0
+version: 6.52.0-rc.1
 
 type: DeclarativeSource
 
@@ -1119,6 +1119,49 @@ definitions:
       schema:
         $ref: "#/schemas/contact_lists"
 
+  list_memberships_stream:
+    $ref: "#/definitions/stream_base"
+    name: list_memberships
+    primary_key:
+      - recordId
+      - listId
+    $parameters:
+      name: list_memberships
+      required_scopes: crm.lists.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/lists/{{ stream_partition['list_id'] }}/memberships"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/contact_lists_stream"
+            parent_key: "listId"
+            partition_field: "list_id"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 250
+          cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["listId"]
+            value: "{{ stream_partition['list_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/list_memberships"
+
   deal_pipelines_stream:
     $ref: "#/definitions/stream_base"
     name: deal_pipelines
@@ -1850,6 +1893,7 @@ streams:
   - "#/definitions/companies_stream"
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contact_lists_stream"
+  - "#/definitions/list_memberships_stream"
   - "#/definitions/contacts_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
@@ -2360,6 +2404,30 @@ schemas:
           - "null"
           - string
       updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  list_memberships:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      recordId:
+        description: The ID of the contact record that is a member of the list.
+        type:
+          - "null"
+          - string
+      listId:
+        description: The ID of the list this membership belongs to.
+        type:
+          - "null"
+          - string
+      membershipTimestamp:
+        description: The timestamp when the record was added to the list.
         type:
           - "null"
           - string
