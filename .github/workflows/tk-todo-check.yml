@@ -1,4 +1,4 @@
-name: TK-TODO Check
+name: TK-TODO Check  # IGNORE:TK
 
 on:
   push:
@@ -10,11 +10,11 @@ permissions:
   contents: read
 
 jobs:
-  tk-todo-check:
+  tk-todo-check:  # IGNORE:TK
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Check for TK-TODO markers
+      - name: Check for TK-TODO markers  # IGNORE:TK
         uses: aaronsteers/tk-todo-check-action@v1.0.0
