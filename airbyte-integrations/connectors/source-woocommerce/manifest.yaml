@@ -1,4 +1,4 @@
-version: 5.11.1
+version: 5.11.2
 
 type: DeclarativeSource
 
@@ -24,6 +24,7 @@ definitions:
             order: asc
             orderby: id
             dates_are_gmt: "true"
+            role: "{{config['customer_role']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -988,6 +989,7 @@ spec:
       - api_secret
       - shop
       - start_date
+      - customer_role
     properties:
       api_key:
         type: string
@@ -1017,6 +1019,12 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
           - "2021-01-01"
+      customer_role:
+        type: string
+        description: "Limit result set to resources with a specific role. Options: all, administrator, editor, author, contributor, subscriber, customer and shop_manager. Default is customer."
+        order: 3
+        title: Customer Role
+        examples: "customer"
     additionalProperties: true
 
 metadata:

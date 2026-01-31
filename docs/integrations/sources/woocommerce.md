@@ -122,6 +122,7 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.29 | 2026-01-20 | [71304](https://github.com/airbytehq/airbyte/pull/71304) | Add customer_role parameter to Customers stream |
 | 0.5.28 | 2026-01-20 | [72054](https://github.com/airbytehq/airbyte/pull/72054) | Update dependencies |
 | 0.5.27 | 2026-01-14 | [71438](https://github.com/airbytehq/airbyte/pull/71438) | Update dependencies |
 | 0.5.26 | 2025-12-19 | [70708](https://github.com/airbytehq/airbyte/pull/70708) | Update dependencies |
