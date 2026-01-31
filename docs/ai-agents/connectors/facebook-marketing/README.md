@@ -50,8 +50,10 @@ from airbyte_agent_facebook_marketing.models import FacebookMarketingAuthConfig
 
 connector = FacebookMarketingConnector(
     auth_config=FacebookMarketingAuthConfig(
-        access_token="<Facebook Marketing API access token>",
-        account_id="<Facebook Ad Account ID (without the act_ prefix)>"
+        access_token="<Facebook OAuth2 Access Token>",
+        client_id="<Facebook App Client ID>",
+        client_secret="<Facebook App Client Secret>",
+        account_id="<Facebook Ad Account ID (without act_ prefix)>"
     )
 )
 
@@ -110,7 +112,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.2
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.1.5
+- **Connector version:** 1.0.3
+- **Generated with Connector SDK commit SHA:** b184da3e22ef8521d2eeebf3c96a0fe8da2424f5
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)
