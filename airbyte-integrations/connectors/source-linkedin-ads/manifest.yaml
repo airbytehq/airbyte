@@ -23,7 +23,7 @@ definitions:
           request_parameters:
             q: search
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
           error_handlers:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
@@ -73,7 +73,7 @@ definitions:
             count: "500"
             accounts: "urn:li:sponsoredAccount:{{ stream_slice.get('account_id') }}"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
           error_handlers:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
@@ -138,7 +138,7 @@ definitions:
             q: search
             search: "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -210,7 +210,7 @@ definitions:
             q: search
             search: "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -278,7 +278,7 @@ definitions:
           request_parameters:
             q: criteria
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-RestLi-Method: FINDER
           error_handlers:
             type: CompositeErrorHandler
@@ -369,7 +369,7 @@ definitions:
             account: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
             count: "500"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -432,7 +432,7 @@ definitions:
             q: owner
             count: "500"
           request_headers:
-            LinkedIn-Version: "202502"
+            LinkedIn-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -484,7 +484,7 @@ definitions:
             q: owner
             count: "500"
           request_headers:
-            LinkedIn-Version: "202502"
+            LinkedIn-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -547,7 +547,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -626,7 +626,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -705,7 +705,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -784,7 +784,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -863,7 +863,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -942,7 +942,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1021,7 +1021,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1100,7 +1100,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1179,7 +1179,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1258,7 +1258,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1337,7 +1337,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1417,7 +1417,7 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202502"
+            Linkedin-Version: "202511"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
