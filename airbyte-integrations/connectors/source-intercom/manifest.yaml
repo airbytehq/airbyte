@@ -3686,3 +3686,44 @@ schemas:
           - integer
           - "null"
         description: The last time the ticket was updated as a UTC Unix timestamp.
+
+# Intercom API Rate Limiting Configuration
+# According to Intercom documentation (https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting):
+# - Private apps: 10,000 API calls per minute per app, 25,000 per workspace
+# - Public apps: 10,000 API calls per minute per app, 25,000 per workspace
+# - Rate limits are distributed into 10-second windows (~1,666 requests per 10 seconds)
+# - Headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+#
+# The connector already has custom rate limiting via ErrorHandlerWithRateLimiter in components.py,
+# which dynamically adjusts backoff based on rate limit headers. This HTTPAPIBudget configuration
+# provides an additional layer of proactive rate limiting to prevent hitting 429 errors.
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # Default policy for all Intercom API endpoints
+    # Using conservative limits to stay well under the 10,000/minute cap
+    # Burst: 100 calls per second (conservative, actual limit is ~166/second)
+    # Steady: 8,000 calls per minute (80% of 10,000 limit for safety margin)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT1S
+        - limit: 8000
+          interval: PT1M
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
+# Concurrency Configuration
+# Based on the rate limits and the connector's stream structure:
+# - Most streams use simple pagination without date-based slicing
+# - The companies stream uses scroll-based pagination (single-threaded)
+# - conversation_parts is a substream of conversations
+# - A default concurrency of 10 provides good parallelism while staying within rate limits
+# - Max concurrency of 25 allows for higher throughput when rate limits permit
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
+  max_concurrency: 25
