@@ -378,9 +378,8 @@ nav a.navbar__link--active {
   margin-bottom: 0;
 }
 
-/* Force no margin on the bottom when inside a flex container */
 header h1 {
-  margin-bottom: 0;
+  margin-bottom: 1rem;
 }
 
 article span.theme-doc-version-badge {
