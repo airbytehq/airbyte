@@ -330,6 +330,49 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/answeredScorecards"
+    callTranscripts:
+      type: DeclarativeStream
+      name: callTranscripts
+      primary_key:
+        - callId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calls/transcript
+          http_method: POST
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+          request_body_json:
+            filter:
+              fromDateTime: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - callTranscripts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.records.cursor }}"
+            stop_condition: "{{ 'records' not in response }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/callTranscripts"
   base_requester:
     type: HttpRequester
     url_base: https://api.gong.io/v2/
@@ -370,6 +413,7 @@ streams:
   - $ref: "#/definitions/streams/extensiveCalls"
   - $ref: "#/definitions/streams/scorecards"
   - $ref: "#/definitions/streams/answeredScorecards"
+  - $ref: "#/definitions/streams/callTranscripts"
 
 spec:
   type: Spec
@@ -562,6 +606,7 @@ metadata:
     extensiveCalls: false
     scorecards: false
     answeredScorecards: false
+    callTranscripts: false
   yamlComponents:
     streams:
       users:
@@ -575,6 +620,8 @@ metadata:
       scorecards:
         - errorHandler
       answeredScorecards:
+        - errorHandler
+      callTranscripts:
         - errorHandler
   testedStreams:
     users:
@@ -1568,3 +1615,58 @@ schemas:
           - string
         description: Type indicating the visibility permissions for the answered
           scorecard.
+  callTranscripts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      callId:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the call associated with the transcript.
+      transcript:
+        type:
+          - "null"
+          - array
+        description: Array of transcript segments for the call.
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            speakerId:
+              type:
+                - "null"
+                - string
+              description: Unique identifier for the speaker in this segment.
+            topic:
+              type:
+                - "null"
+                - string
+              description: Topic being discussed in this segment.
+            sentences:
+              type:
+                - "null"
+                - array
+              description: Array of sentences in this transcript segment.
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  start:
+                    type:
+                      - "null"
+                      - integer
+                    description: Start time of the sentence in milliseconds.
+                  end:
+                    type:
+                      - "null"
+                      - integer
+                    description: End time of the sentence in milliseconds.
+                  text:
+                    type:
+                      - "null"
+                      - string
+                    description: The transcribed text of the sentence.
