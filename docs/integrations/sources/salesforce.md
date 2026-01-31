@@ -248,7 +248,8 @@ If you set the `Force Use Bulk API` option to `true`, the connector will ignore 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
+| 2.8.0       | 2025-10-23 | [68616](https://github.com/airbytehq/airbyte/pull/68616) | Update dependencies |
+| 2.7.16      | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
 | 2.7.16-rc.1 | 2025-10-27 | [66136](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning|
 | 2.7.15      | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records|
 | 2.7.14      | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
