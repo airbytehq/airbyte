@@ -156,6 +156,10 @@ definitions:
       page_size: 100
     page_token_option:
       type: RequestPath
+    page_size_option:
+      type: RequestOption
+      field_name: "per_page"
+      inject_into: request_parameter
 
   end_of_stream_paginator:
     type: DefaultPaginator
@@ -163,8 +167,13 @@ definitions:
       type: CursorPagination
       cursor_value: '{{ response.get("next_page", {}) }}'
       stop_condition: '{{ response.get("end_of_stream") }}'
+      page_size: 100
     page_token_option:
       type: RequestPath
+    page_size_option:
+      type: RequestOption
+      field_name: "per_page"
+      inject_into: request_parameter
 
   # Full-refresh streams
   account_attributes_stream:
