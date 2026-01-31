@@ -233,6 +233,10 @@ class DebeziumRecordIterator<T>(
                 continue
             }
             val changeEventWithMetadata = ChangeEventWithMetadata(event)
+            // #72476: Also filter unhandled event types (like op:m) in shutdown cleanup loop
+            if (!isEventTypeHandled(changeEventWithMetadata)) {
+                continue
+            }
             hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent
             return changeEventWithMetadata
         }
