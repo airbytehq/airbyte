@@ -13983,6 +13983,131 @@
         }
       }
     },
+    "/api/v1/organizations/{organization_id}/event-history/stats": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "Get Event History Stats",
+        "description": "Get aggregated statistics for event history.\n\nReturns counts of successful and failed requests for both entity cache (search) and direct API calls.",
+        "operationId": "get_organizations_organization_id_event_history_stats",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "external_user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "External User ID to filter the stats on",
+              "title": "External User Id"
+            },
+            "description": "External User ID to filter the stats on"
+          },
+          {
+            "name": "connector_definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Connector Definition ID to filter the stats on",
+              "title": "Connector Definition Id"
+            },
+            "description": "Connector Definition ID to filter the stats on"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventHistoryStatsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/sonar/apis": {
       "get": {
         "tags": ["Sonar - APIs"],
@@ -19206,6 +19331,19 @@
         "type": "object",
         "required": ["data"],
         "title": "EventHistoryListResponse"
+      },
+      "EventHistoryStatsResponse": {
+        "properties": {
+          "entity_cache_successful": {
+            "type": "integer",
+            "title": "Entity Cache Successful",
+            "description": "Count of successful entity cache requests"
+          }
+        },
+        "type": "object",
+        "required": ["entity_cache_successful"],
+        "title": "EventHistoryStatsResponse",
+        "description": "Statistics for event history."
       },
       "ExecutionMetadata": {
         "properties": {
