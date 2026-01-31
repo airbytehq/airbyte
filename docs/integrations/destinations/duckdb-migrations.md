@@ -1,5 +1,7 @@
 # DuckDB Migration Guide
 
+For information about which DuckDB versions are currently supported by MotherDuck and when versions reach end of life, see the [MotherDuck Version Lifecycle Schedules](https://motherduck.com/docs/troubleshooting/version-lifecycle-schedules/).
+
 ## Upgrading to 0.5.0
 
 This version updates the DuckDB libraries from `v0.10.3` to `v1.2.1`. Note that DuckDB `1.2.1` is backwards compatible with databases created using versions 0.10.x or higher of DuckDB. If your databases were created using an older version, you may need to manually upgrade your database file.
