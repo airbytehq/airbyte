@@ -480,7 +480,7 @@ def test_users_groups_detailed_stream(config, mock_users_response, users_groups_
 def test_workflows_stream(config, workflows_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/workflow/search?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/workflows/search?maxResults=50",
         json=workflows_response,
     )
 
