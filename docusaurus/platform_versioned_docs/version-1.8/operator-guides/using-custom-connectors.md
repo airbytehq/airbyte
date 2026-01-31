@@ -17,7 +17,7 @@ This page walks through the process to upload a **Docker-based custom connector*
 
 - You followed our other guides and tutorials about [connector development](/platform/connector-development/connector-builder-ui/overview)
 - You finished your connector development and have it running locally on an Airbyte development instance.
-- You want to deploy this connector to a production Airbyte instance running on a VM with docker-compose or on a Kubernetes cluster.
+- You want to deploy this connector to a production Airbyte instance running on a Kubernetes cluster.
 
 If you prefer video tutorials, we recorded a demo on how to upload [connectors images to a GCP Artifact Registry](https://www.youtube.com/watch?v=4YF20PODv30&ab_channel=Airbyte).
 
@@ -40,47 +40,248 @@ To push and pull images to your private Docker registry, you need to authenticat
 
 See the [Airbyte Protocol Docker Interface](../understanding-airbyte/airbyte-protocol-docker.md) page for specific Docker image requirements, such as required environment variables.
 
-### For Docker-compose Airbyte deployments
+## Cloud Provider Managed Registries
 
-#### On GCP - Artifact Registry:
+### AWS EKS + Amazon ECR
 
-GCP offers the `gcloud` credential helper to log in to your Artifact registry.
-Please run the command detailed [here](https://cloud.google.com/artifact-registry/docs/docker/quickstart#auth) to authenticate your local environment/CI environment to your Artifact registry.
-Run the same authentication flow on your Compute Engine instance.
-If you do not want to use `gcloud`, GCP offers other authentication methods detailed [here](https://cloud.google.com/artifact-registry/docs/docker/authentication).
+**Option 1: IAM Roles for Service Accounts (IRSA) - Recommended**
 
-#### On AWS - Amazon ECR:
+1. Create an IAM role with ECR permissions:
 
-You can authenticate to an ECR private registry using the `aws` CLI:
-`aws ecr get-login-password --region region | docker login --username AWS --password-stdin aws_account_id.dkr.ecr.region.amazonaws.com`
-You can find details about this command and other available authentication methods [here](https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html).
-You will have to authenticate your local/CI environment (where you build your image) **and** your EC2 instance where your Airbyte instance is running.
 
-#### On Azure - Container Registry:
+```bash
+aws iam create-role --role-name AirbyteECRRole --assume-role-policy-document '{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {"Federated": "arn:aws:iam::ACCOUNT:oidc-provider/oidc.eks.REGION.amazonaws.com/id/CLUSTER_ID"},
+    "Action": "sts:AssumeRoleWithWebIdentity",
+    "Condition": {
+      "StringEquals": {
+        "oidc.eks.REGION.amazonaws.com/id/CLUSTER_ID:sub": "system:serviceaccount:airbyte:airbyte-worker",
+        "oidc.eks.REGION.amazonaws.com/id/CLUSTER_ID:aud": "sts.amazonaws.com"
+      }
+    }
+  }]
+}'
 
-You can authenticate to an Azure Container Registry using the `az` CLI:
-`az acr login --name <registry-name>`
-You can find details about this command [here](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-portal#:~:text=Azure%20Container%20Registry%20is%20a,container%20images%20and%20related%20artifacts.&text=Then,%20use%20Docker%20commands%20to,the%20image%20from%20your%20registry.)
-You will have to authenticate both your local/CI environment/ environment (where your image is built) **and** your Azure Virtual Machine instance where the Airbyte instance is running.
+aws iam attach-role-policy --role-name AirbyteECRRole --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+```
 
-#### On DockerHub - Repositories:
+2. Annotate the Airbyte worker service account:
 
-You can use Docker Desktop to authenticate your local machine to your DockerHub registry by signing in on the desktop application using your DockerID.
-You need to use a [service account](https://docs.docker.com/docker-hub/service-accounts/) to authenticate your Airbyte instance to your DockerHub registry.
 
-#### Self hosted - Open source Docker Registry:
+```bash
+kubectl annotate serviceaccount airbyte-worker -n airbyte eks.amazonaws.com/role-arn=arn:aws:iam::ACCOUNT:role/AirbyteECRRole
+```
 
-It would be best to set up auth on your Docker registry to make it private. Available authentication options for an open-source Docker registry are listed [here](https://docs.docker.com/registry/configuration/#auth).
-To authenticate your local/CI environment and Airbyte instance you can use the [`docker login`](https://docs.docker.com/engine/reference/commandline/login/) command.
+**Option 2: Node Instance Profile**
 
-### For Kubernetes Airbyte deployments
+Attach the `AmazonEC2ContainerRegistryReadOnly` policy to your EKS node group's instance profile. This provides cluster-wide access but is less secure than IRSA.
 
-You can use the previous section's authentication flow to authenticate your local/CI to your private Docker registry.
-If you provisioned your Kubernetes cluster using AWS EKS, GCP GKE, or Azure AKS: it is very likely that you already allowed your cluster to pull images from the respective container registry service of your cloud provider.
-If you want Airbyte to pull images from another private Docker registry, you will have to do the following:
+**Cross-Account Registry Access:**
 
-1. Create a `Secret` in Kubernetes that will host your authentication credentials. [This Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) explains how to proceed.
-2. Set the `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` environment variable on the `airbyte-worker` pod. The value must be **the name of your previously created Kubernetes Secret**.
+For accessing ECR repositories in different AWS accounts, add cross-account permissions to your ECR repository policy and ensure the IAM role has appropriate permissions.
+
+### GCP GKE + Artifact Registry
+
+**Option 1: Workload Identity - Recommended**
+
+1. Create a Google Service Account:
+
+
+```bash
+gcloud iam service-accounts create airbyte-registry-reader \
+    --description="Airbyte custom connector registry access" \
+    --display-name="Airbyte Registry Reader"
+```
+
+2. Grant Artifact Registry Reader permissions:
+
+
+```bash
+gcloud projects add-iam-policy-binding PROJECT_ID \
+    --member="serviceAccount:airbyte-registry-reader@PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/artifactregistry.reader"
+```
+
+3. Enable Workload Identity binding:
+
+
+```bash
+gcloud iam service-accounts add-iam-policy-binding \
+    --role roles/iam.workloadIdentityUser \
+    --member "serviceAccount:PROJECT_ID.svc.id.goog[airbyte/airbyte-worker]" \
+    airbyte-registry-reader@PROJECT_ID.iam.gserviceaccount.com
+```
+
+4. Annotate the Kubernetes service account:
+
+
+```bash
+kubectl annotate serviceaccount airbyte-worker -n airbyte \
+    iam.gke.io/gcp-service-account=airbyte-registry-reader@PROJECT_ID.iam.gserviceaccount.com
+```
+
+**Cross-Project Registry Access:**
+
+Grant the service account `roles/artifactregistry.reader` permission on the target project containing your custom connector images.
+
+### Azure AKS + Container Registry
+
+**Option 1: Managed Identity - Recommended**
+
+1. Create a managed identity:
+
+
+```bash
+az identity create --name airbyte-acr-identity --resource-group myResourceGroup
+```
+
+2. Get the identity's client ID and assign ACR pull permissions:
+
+
+```bash
+IDENTITY_CLIENT_ID=$(az identity show --name airbyte-acr-identity --resource-group myResourceGroup --query clientId -o tsv)
+ACR_RESOURCE_ID=$(az acr show --name myregistry --query id -o tsv)
+
+az role assignment create --assignee $IDENTITY_CLIENT_ID --role acrpull --scope $ACR_RESOURCE_ID
+```
+
+3. Configure the AKS cluster to use the managed identity:
+
+
+```bash
+az aks update --name myAKSCluster --resource-group myResourceGroup --assign-identity $IDENTITY_RESOURCE_ID
+```
+
+**Cross-Subscription Registry Access:**
+
+Grant the managed identity `AcrPull` permissions on ACR instances in other subscriptions using the full resource ID scope.
+
+## Third-Party and Self-Hosted Registries
+
+### Using ImagePullSecrets
+
+**Create Docker Registry Secret:**
+
+```bash
+kubectl create secret docker-registry custom-registry-secret \
+  --docker-server=your-registry.com \
+  --docker-username=your-username \
+  --docker-password=your-password \
+  --docker-email=your-email@example.com \
+  --namespace=airbyte
+```
+
+**Configure Airbyte to Use the Secret:**
+
+Set the environment variable on the airbyte-worker deployment:
+
+
+```bash
+kubectl set env deployment/airbyte-worker -n airbyte JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET=custom-registry-secret
+```
+
+**Helm Configuration:**
+
+If using Helm to deploy Airbyte, configure the image pull secret in your values.yaml:
+
+
+```yaml
+worker:
+  env:
+    JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET: custom-registry-secret
+```
+
+### Multiple Registry Support
+
+For environments with multiple private registries, create separate secrets for each registry:
+
+```bash
+kubectl create secret docker-registry registry1-secret --docker-server=registry1.com ...
+kubectl create secret docker-registry registry2-secret --docker-server=registry2.com ...
+```
+
+Configure multiple secrets by setting them on the service account:
+
+
+```bash
+kubectl patch serviceaccount airbyte-worker -n airbyte -p '{"imagePullSecrets": [{"name": "registry1-secret"}, {"name": "registry2-secret"}]}'
+```
+
+## RBAC and Security Configuration
+
+**Service Account Permissions:**
+
+Ensure the airbyte-worker service account has the necessary permissions:
+
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: airbyte
+  name: airbyte-worker-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "secrets"]
+  verbs: ["get", "list", "create", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "create", "delete", "watch"]
+```
+
+**Pod Security Context:**
+
+Configure appropriate security contexts for connector jobs:
+
+
+```yaml
+worker:
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+      - ALL
+```
+
+## Validation and Testing
+
+**Test Registry Access:**
+
+1. Verify the secret is created correctly:
+
+
+```bash
+kubectl get secret custom-registry-secret -n airbyte -o yaml
+```
+
+2. Test image pull with a temporary pod:
+
+
+```bash
+kubectl run test-pull --image=your-registry.com/your-custom-connector:latest --restart=Never --rm -i --tty --image-pull-policy=Always
+```
+
+3. Check airbyte-worker logs for authentication issues:
+
+
+```bash
+kubectl logs deployment/airbyte-worker -n airbyte | grep -i "pull\|auth\|secret"
+```
+
+**Troubleshooting Common Issues:**
+
+- **ImagePullBackOff**: Check secret name matches `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` value
+- **Authentication failures**: Verify registry credentials and secret format
+- **Network issues**: Ensure cluster can reach registry endpoints (check network policies)
+- **Permission errors**: Verify service account has necessary RBAC permissions
 
 ## 3. Push your connector image to your private Docker registry
 
@@ -97,7 +298,7 @@ At this step, you should have:
 - A private Docker registry hosting your custom connector image.
 - Authenticated your Airbyte instance to your private Docker registry.
 
-You can pull your connector image from your private registry to validate the previous steps. On your Airbyte instance: run `docker pull <image-name>:<tag>` if you are using our `docker-compose` deployment, or start a pod that is using the connector image.
+You can pull your connector image from your private registry to validate the previous steps. Test the image pull by creating a temporary pod that uses your connector image.
 
 1. Click on `Settings` in the left-hand sidebar. Navigate to `Sources` or `Destinations` depending on your connector. Click on `Add a new Docker connector`.
 
