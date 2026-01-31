@@ -250,6 +250,11 @@ definitions:
       - https://www.googleapis.com/auth/youtube.force-ssl
     refresh_token: '{{ config["credentials"]["refresh_token"] }}'
     refresh_request_body: {}
+    refresh_token_error_status_codes:
+      - 400
+    refresh_token_error_key: error
+    refresh_token_error_values:
+      - invalid_grant
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/youtube/v3/
