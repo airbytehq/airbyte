@@ -58,6 +58,12 @@ jobs:
             echo skip-build=false | tee -a $GITHUB_OUTPUT
           fi
 
+      - name: Set Up Node.js
+        if: steps.check-skip.outputs.skip-build != 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '20'
+
       - name: Set Up pnpm
         if: steps.check-skip.outputs.skip-build != 'true'
         # pnpm is used to manage the dependencies of the documentation build.
