@@ -66,11 +66,23 @@ echo "Evergreen docs copied successfully to version $LATEST_VERSION"
 
 [tasks.get-modified-connectors]
 help = """List Airbyte connectors modified. This considers all committed, staged, unstaged, and untracked files."""
-shell = '''
-./poe-tasks/get-modified-connectors.sh ${java_filter}
-'''
+script = "poe_tasks.connector_matrix:get_modified_connectors"
 args = [
-  { name = "java_filter", positional = true, multiple = true, help = "Optional. To filter Java connectors, pass either 'java-only' or 'no-java'" },
+  { name = "java", options = ["--java"], type = "boolean", help = "Filter to only Java connectors" },
+  { name = "no_java", options = ["--no-java"], type = "boolean", help = "Filter to exclude Java connectors" },
+  { name = "json", options = ["--json"], type = "boolean", help = "Output in GitHub Actions matrix JSON format" },
+  { name = "prev_commit", options = ["--prev-commit"], type = "boolean", help = "Compare with previous commit instead of master" },
+  { name = "local_cdk", options = ["--local-cdk"], type = "boolean", help = "Include connectors using local CDK" },
+  { name = "files_list", options = ["--files-list"], help = "CSV string of file paths (overrides git detection)" },
+]
+
+[tasks.generate-connector-matrix]
+help = """Generate enhanced GitHub Actions matrix with language detection and runner assignment"""
+script = "poe_tasks.connector_matrix:generate_enhanced_matrix"
+args = [
+  { name = "repo", positional = true, required = true, help = "Repository name (e.g., airbytehq/airbyte)" },
+  { name = "local_cdk", options = ["--local-cdk"], type = "boolean", help = "Include connectors using local CDK" },
+  { name = "files_list", options = ["--files-list"], help = "CSV string of file paths (overrides git detection)" },
 ]
 
 [tasks.connector]
