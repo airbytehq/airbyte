@@ -25,6 +25,10 @@ on:
         description: "Git ref (branch or SHA) to build connectors from. Used by pre-release workflow to build from PR branches."
         required: false
         type: string
+      prerelease-tag:
+        description: "Pre-computed prerelease tag (e.g., '1.2.3-preview.abcdef1'). Required for pre-release builds. Computed by airbyte-ops-mcp CLI."
+        required: false
+        type: string
     outputs:
       docker-image-tag:
         description: "Docker image tag used when publishing. For single-connector callers only; multi-connector callers should not rely on this output."
@@ -242,6 +246,7 @@ jobs:
         with:
           connector-name: ${{ matrix.connector }}
           release-type: ${{ needs.publish_options.outputs.release-type }}
+          tag-override: ${{ inputs.prerelease-tag }}
           dry-run: "false"
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -331,8 +336,13 @@ jobs:
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
           CONNECTOR_VERSION=$(poe -qq get-version)
           if [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
-            hash=$(git rev-parse --short=7 HEAD)
-            echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
+            # Use pre-computed prerelease tag if provided (single source of truth)
+            if [[ -n "${{ inputs.prerelease-tag }}" ]]; then
+              echo "docker-image-tag=${{ inputs.prerelease-tag }}" | tee -a $GITHUB_OUTPUT
+            else
+              echo "::error::Pre-release build requires prerelease-tag input. Use airbyte-ops-mcp CLI to compute the tag."
+              exit 1
+            fi
             echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
           else
             echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
