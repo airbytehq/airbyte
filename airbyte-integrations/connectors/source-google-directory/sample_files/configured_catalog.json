@@ -264,6 +264,12 @@
             },
             "type": {
               "type": "string"
+            },
+            "group_id": {
+              "type": "string"
+            },
+            "group_email": {
+              "type": "string"
             }
           },
           "type": "object",
