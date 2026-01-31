@@ -1435,6 +1435,22 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+                - object
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field:
+                  - lines
+                  - data
+                remain_original_record: true
+            record_filter:
+              condition: "{{ 'original_record' in record }}"
+            transform_before_filtering: true
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -1443,25 +1459,29 @@ definitions:
           - type: AddFields
             fields:
               - path:
-                  - data
-                  - object
                   - is_deleted
                 value: "{{ True }}"
-            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+            condition: "{{ record.get('original_record', {}).get('type', '').endswith('.deleted') }}"
           - type: AddFields
             fields:
               - path:
-                  - data
-                  - object
                   - invoice_updated
-                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value: "{{ record.get('original_record', {}).get('updated', record.get('original_record', {}).get('created', now_utc().timestamp())) | int }}"
                 value_type: integer
-            condition: "{{ record.get('data', {}).get('object', False) }}"
-          - type: DpathFlattenFields
-            field_path:
-              - data
-              - object
-            replace_record: true
+          - type: AddFields
+            fields:
+              - path:
+                  - invoice_id
+                value: "{{ record.get('original_record', {}).get('id', '') }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - invoice_created
+                value: "{{ record.get('original_record', {}).get('created', 0) | int }}"
+                value_type: integer
+          - type: RemoveFields
+            field_pointers:
+              - - original_record
 
     application_fees_refunds:
       type: StateDelegatingStream
