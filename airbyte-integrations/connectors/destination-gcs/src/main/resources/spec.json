@@ -71,12 +71,36 @@
       },
       "credential": {
         "title": "Authentication",
-        "description": "An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
+        "description": "Choose how to authenticate to Google Cloud Storage. Service Account authentication is recommended for server-to-server communication. HMAC keys are available for S3-compatible API access.",
         "type": "object",
         "order": 0,
         "oneOf": [
           {
+            "title": "Service Account Key",
+            "description": "Use a Google Cloud Service Account JSON key for authentication. This is the recommended authentication method for server-to-server communication.",
+            "required": ["credential_type", "service_account"],
+            "properties": {
+              "credential_type": {
+                "type": "string",
+                "enum": ["SERVICE_ACCOUNT"],
+                "default": "SERVICE_ACCOUNT"
+              },
+              "service_account": {
+                "type": "string",
+                "description": "Enter your Google Cloud <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\">service account key</a> in JSON format.",
+                "title": "Service Account JSON Key",
+                "airbyte_secret": true,
+                "order": 0,
+                "examples": [
+                  "{\"type\": \"service_account\", \"project_id\": \"my-project\", ...}"
+                ],
+                "multiline": true
+              }
+            }
+          },
+          {
             "title": "HMAC Key",
+            "description": "Use HMAC keys for S3-compatible API access. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
             "required": [
               "credential_type",
               "hmac_key_access_id",

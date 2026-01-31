@@ -5,6 +5,7 @@ package io.airbyte.cdk.integrations.destination.gcs
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.fasterxml.jackson.databind.JsonNode
+import com.google.cloud.storage.StorageException
 import io.airbyte.cdk.integrations.BaseConnector
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility.emitConfigErrorTrace
@@ -13,6 +14,7 @@ import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMes
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
+import io.airbyte.cdk.integrations.destination.s3.BlobStorageOperations
 import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.testMultipartUpload
 import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.testSingleUpload
 import io.airbyte.cdk.integrations.destination.s3.S3ConsumerFactory
@@ -33,19 +35,14 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
         try {
             val destinationConfig: GcsDestinationConfig =
                 GcsDestinationConfig.Companion.getGcsDestinationConfig(config)
-            val s3Client = destinationConfig.getS3Client()
 
-            // Test single upload (for small files) permissions
-            testSingleUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath!!)
-
-            // Test multipart upload with stream transfer manager
-            testMultipartUpload(
-                s3Client,
-                destinationConfig.bucketName,
-                destinationConfig.bucketPath!!
-            )
-
-            return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
+            if (destinationConfig.isUsingNativeClient()) {
+                // Service Account authentication - use native GCS client
+                return checkWithNativeClient(destinationConfig)
+            } else {
+                // HMAC key authentication - use S3-compatible client
+                return checkWithS3Client(destinationConfig)
+            }
         } catch (e: AmazonS3Exception) {
             LOGGER.error(e) { "Exception attempting to access the Gcs bucket" }
             val message = getErrorMessage(e.errorCode, 0, e.message, e)
@@ -53,6 +50,15 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(message)
+        } catch (e: StorageException) {
+            LOGGER.error(e) { "Exception attempting to access the Gcs bucket with native client" }
+            emitConfigErrorTrace(e, e.message)
+            return AirbyteConnectionStatus()
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(
+                    "Could not connect to the Gcs bucket with the provided configuration. \n" +
+                        e.message
+                )
         } catch (e: Exception) {
             LOGGER.error(e) {
                 "Exception attempting to access the Gcs bucket: {}. Please make sure you account has all of these roles: $EXPECTED_ROLES"
@@ -67,16 +73,73 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
         }
     }
 
+    private fun checkWithS3Client(
+        destinationConfig: GcsDestinationConfig
+    ): AirbyteConnectionStatus {
+        val s3Client = destinationConfig.getS3Client()
+
+        // Test single upload (for small files) permissions
+        testSingleUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath!!)
+
+        // Test multipart upload with stream transfer manager
+        testMultipartUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath!!)
+
+        return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
+    }
+
+    private fun checkWithNativeClient(
+        destinationConfig: GcsDestinationConfig
+    ): AirbyteConnectionStatus {
+        val storage = destinationConfig.getNativeGcsClient()
+        val bucketName = destinationConfig.bucketName
+        val bucketPath = destinationConfig.bucketPath ?: ""
+
+        // Test bucket access by listing objects
+        val testPrefix = if (bucketPath.isNotEmpty()) "$bucketPath/" else ""
+        storage.list(
+            bucketName,
+            com.google.cloud.storage.Storage.BlobListOption.prefix(testPrefix),
+            com.google.cloud.storage.Storage.BlobListOption.pageSize(1)
+        )
+
+        // Test write permission by creating and deleting a test object
+        val testObjectName = "${testPrefix}_airbyte_connection_test_${System.currentTimeMillis()}"
+        val blobId = com.google.cloud.storage.BlobId.of(bucketName, testObjectName)
+        val blobInfo = com.google.cloud.storage.BlobInfo.newBuilder(blobId).build()
+        storage.create(blobInfo, "test".toByteArray())
+        storage.delete(blobId)
+
+        LOGGER.info {
+            "Successfully verified GCS bucket access with Service Account authentication"
+        }
+        return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
+    }
+
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
         val gcsConfig: GcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
+
+        val storageOperations: BlobStorageOperations =
+            if (gcsConfig.isUsingNativeClient()) {
+                // Service Account authentication - use native GCS storage operations
+                GcsNativeStorageOperations(
+                    nameTransformer,
+                    gcsConfig.getNativeGcsClient(),
+                    gcsConfig.bucketName!!,
+                    gcsConfig.bucketPath ?: ""
+                )
+            } else {
+                // HMAC key authentication - use S3-compatible storage operations
+                GcsStorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig)
+            }
+
         return S3ConsumerFactory()
             .create(
                 outputRecordCollector,
-                GcsStorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig),
+                storageOperations,
                 getCreateFunction(
                     gcsConfig,
                     Function<String, BufferStorage> { fileExtension: String ->
