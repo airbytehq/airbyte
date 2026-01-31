@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "url": {
+      "description": "URL to access more details about the deployment status.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier for the deployment status.",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "Node identifier for the deployment status.",
+      "type": ["null", "string"]
+    },
+    "state": {
+      "description": "The state of the deployment status (e.g., success, failure, error, pending, in_progress, queued).",
+      "type": ["null", "string"]
+    },
+    "creator": {
+      "description": "Details about the user who created the deployment status.",
+      "$ref": "user.json"
+    },
+    "description": {
+      "description": "Description provided for the deployment status.",
+      "type": ["null", "string"]
+    },
+    "environment": {
+      "description": "The deployment environment (e.g., staging, production).",
+      "type": ["null", "string"]
+    },
+    "environment_url": {
+      "description": "URL to the deployed environment.",
+      "type": ["null", "string"]
+    },
+    "log_url": {
+      "description": "URL to the deployment logs.",
+      "type": ["null", "string"]
+    },
+    "target_url": {
+      "description": "Deprecated. Use log_url instead.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The timestamp when the deployment status was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The timestamp when the deployment status was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "deployment_url": {
+      "description": "URL to the deployment this status belongs to.",
+      "type": ["null", "string"]
+    },
+    "repository_url": {
+      "description": "URL of the repository where the deployment originated.",
+      "type": ["null", "string"]
+    },
+    "performed_via_github_app": {
+      "description": "Details about the GitHub App that performed the deployment.",
+      "type": ["null", "object"],
+      "properties": {},
+      "additionalProperties": true
+    },
+    "repository": {
+      "description": "The repository where the deployment originated.",
+      "type": "string"
+    },
+    "deployment_id": {
+      "description": "The ID of the parent deployment.",
+      "type": ["null", "integer"]
+    }
+  }
+}
