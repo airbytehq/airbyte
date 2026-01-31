@@ -265,63 +265,6 @@ streams:
             - results
       partition_router: []
     primary_key: []
-  - name: users
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: JsonlDecoder
-      paginator:
-        type: NoPagination
-      requester:
-        path: export/data.json
-        type: HttpRequester
-        url_base: https://api.iterable.com/api/
-        http_method: GET
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_key'] }}"
-          inject_into:
-            type: RequestOption
-            field_name: Api-Key
-            inject_into: header
-        request_headers: {}
-        request_body_json: {}
-        request_parameters:
-          stream: "True"
-          dataTypeName: user
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      partition_router: []
-    primary_key: []
-    incremental_sync:
-      step: P90D
-      type: DatetimeBasedCursor
-      cursor_field: profileUpdatedAt
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['end_date'] if config['end_date'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%d %H:%M:%S"
-      end_time_option:
-        type: RequestOption
-        field_name: endDateTime
-        inject_into: request_parameter
-      start_time_option:
-        type: RequestOption
-        field_name: startDateTime
-        inject_into: request_parameter
-      cursor_granularity: PT1S
-      cursor_datetime_formats:
-        - "%Y-%m-%d %H:%M:%S %z"
-        - "%Y-%m-%dT%H:%M:%S%z"
   - name: events
     primary_key: []
     retriever:
@@ -442,7 +385,6 @@ streams:
 version: 0.65.0
 metadata:
   autoImportSchema:
-    users: false
     lists: false
     channels: false
     metadata: false
