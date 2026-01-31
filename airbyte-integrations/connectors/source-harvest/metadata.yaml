@@ -2,6 +2,7 @@ data:
   ab_internal:
     ql: 200
     sl: 200
+  # Test progressive rollout with automated strategy (do not merge)
   allowedHosts:
     hosts:
       - api.harvestapp.com
