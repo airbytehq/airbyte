@@ -10,8 +10,16 @@
     "properties": {
       "project_id": {
         "type": "string",
-        "description": "The GCP project ID for the project containing the target BigQuery dataset.",
+        "description": "The GCP project ID for the project containing the target BigQuery dataset. Required for authentication and billing. When syncing from multiple projects, also configure the project_ids field.",
         "title": "Project ID"
+      },
+      "project_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Optional list of GCP project IDs to pull data from. If set, the connector will read from all listed projects. When this field is present, the project_id field is used as the default/billing project for authentication.",
+        "title": "Project IDs"
       },
       "dataset_id": {
         "type": "string",
