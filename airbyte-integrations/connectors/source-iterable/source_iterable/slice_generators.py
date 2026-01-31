@@ -107,9 +107,10 @@ class AdjustableSliceGenerator(SliceGenerator):
     """
 
     REQUEST_PER_MINUTE_LIMIT = 4
-    INITIAL_RANGE_DAYS: int = 30
+    INITIAL_RANGE_DAYS: int = 7  # Reduced from 30 for more conservative start with large datasets
     DEFAULT_RANGE_DAYS: int = 90
     MAX_RANGE_DAYS: int = 180
+    MIN_RANGE_DAYS: int = 1  # Minimum 1 day per slice to prevent excessive requests
     RANGE_REDUCE_FACTOR = 2
 
     # This variable play important roles: stores length of previos range before
@@ -145,7 +146,10 @@ class AdjustableSliceGenerator(SliceGenerator):
         RANGE_REDUCE_FACTOR (2 times).
         Returns updated slice to try again.
         """
-        self._current_range = int(max(self._current_range / self.RANGE_REDUCE_FACTOR, self.INITIAL_RANGE_DAYS))
+        self._current_range = max(
+            int(self._current_range / self.RANGE_REDUCE_FACTOR),
+            self.MIN_RANGE_DAYS  # Enforce minimum to prevent excessive requests
+        )
         start_date = self._prev_start_date
         end_date = min(self._end_date, start_date + (pendulum.Duration(days=self._current_range)))
         self._start_date = end_date

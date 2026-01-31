@@ -12,7 +12,19 @@ import pendulum
 import requests
 from pendulum.datetime import DateTime
 from requests import HTTPError
-from requests.exceptions import ChunkedEncodingError
+from requests.exceptions import (
+    ChunkedEncodingError,
+    Timeout,
+    ReadTimeout,
+    ConnectTimeout,
+    ConnectionError,
+)
+
+# JSONDecodeError is available in Python 3.5+, fallback to ValueError for older versions
+try:
+    from json import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -93,8 +105,11 @@ class IterableStream(HttpStream, ABC):
         """
         https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
         https://github.com/airbytehq/oncall/issues/1985#issuecomment-1559276465
+
+        Increased read timeout to 900 seconds (15 minutes) to accommodate
+        very large datasets that may take longer than 5 minutes to stream.
         """
-        return {"timeout": (60, 300)}
+        return {"timeout": (60, 900)}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json() or {}
@@ -215,10 +230,44 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for obj in response.iter_lines():
-            record = json.loads(obj)
-            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
+        """
+        Parse response line by line, handling malformed JSON and datetime parsing errors gracefully.
+        Skips malformed records and logs warnings instead of crashing the sync.
+        """
+        skipped_count = 0
+        for line_num, obj in enumerate(response.iter_lines(decode_unicode=True), start=1):
+            # Skip empty lines (after decoding, obj should be a string)
+            if not obj or not obj.strip():
+                continue
+
+            try:
+                record = json.loads(obj)
+            except (JSONDecodeError, ValueError) as e:
+                skipped_count += 1
+                line_preview = obj[:100] if isinstance(obj, str) else str(obj)[:100]
+                self.logger.warning(
+                    f"Skipping malformed JSON on line {line_num} for stream {self.name}: {str(e)[:200]}. "
+                    f"Line content (first 100 chars): {line_preview}"
+                )
+                continue
+
+            try:
+                record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
+            except (ValueError, KeyError, TypeError) as e:
+                skipped_count += 1
+                cursor_value = record.get(self.cursor_field, 'missing')
+                self.logger.warning(
+                    f"Skipping record on line {line_num} for stream {self.name} due to datetime parsing error: {str(e)}. "
+                    f"Record cursor field value: {cursor_value}"
+                )
+                continue
+
             yield record
+
+        if skipped_count > 0:
+            self.logger.warn(
+                f"Skipped {skipped_count} malformed record(s) for stream {self.name} during parsing"
+            )
 
     def request_kwargs(
         self,
@@ -314,27 +363,74 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         start_time = pendulum.now()
-        for _ in range(self.CHUNKED_ENCODING_ERROR_RETRIES):
+        record_count = 0
+        for retry_attempt in range(self.CHUNKED_ENCODING_ERROR_RETRIES):
             try:
+                slice_days = (stream_slice.end_date - stream_slice.start_date).total_days()
                 self.logger.info(
-                    f"Processing slice of {(stream_slice.end_date - stream_slice.start_date).total_days()} days for stream {self.name}"
+                    f"Processing slice of {slice_days:.1f} days for stream {self.name} "
+                    f"(attempt {retry_attempt + 1}/{self.CHUNKED_ENCODING_ERROR_RETRIES})"
                 )
+                slice_start_time = pendulum.now()
+
                 for record in super().read_records(
                     sync_mode=sync_mode,
                     cursor_field=cursor_field,
                     stream_slice=stream_slice,
                     stream_state=stream_state,
                 ):
+                    record_count += 1
                     now = pendulum.now()
-                    self._adjustable_generator.adjust_range(now - start_time)
+                    # Adjust range based on time taken so far
+                    elapsed = now - start_time
+                    if elapsed.total_seconds() > 0:
+                        self._adjustable_generator.adjust_range(elapsed)
                     yield record
                     start_time = now
+
+                # If no records were processed, adjust range to prevent next slice from using MAX_RANGE_DAYS
+                # If records were processed, range was already adjusted in the loop above
+                if record_count == 0:
+                    elapsed = pendulum.now() - slice_start_time
+                    if elapsed.total_seconds() > 0:
+                        self._adjustable_generator.adjust_range(elapsed)
+                    else:
+                        # Empty slice with no time elapsed - use a small default adjustment
+                        self._adjustable_generator.adjust_range(pendulum.Duration(seconds=1))
+
+                total_elapsed = pendulum.now() - slice_start_time
+                self.logger.info(
+                    f"Completed slice: {record_count} records in {total_elapsed.total_seconds():.1f}s "
+                    f"for stream {self.name}"
+                )
                 break
-            except ChunkedEncodingError:
-                self.logger.warn("ChunkedEncodingError occurred, decrease days range and try again")
+            except (ChunkedEncodingError, Timeout, ReadTimeout, ConnectTimeout, ConnectionError) as e:
+                error_type = type(e).__name__
+                self.logger.warning(
+                    f"{error_type} occurred after processing slice of "
+                    f"{(stream_slice.end_date - stream_slice.start_date).total_days():.1f} days "
+                    f"for stream {self.name}, decreasing range and retrying"
+                )
                 stream_slice = self._adjustable_generator.reduce_range()
+                start_time = pendulum.now()  # Reset timer for retry
+                record_count = 0  # Reset record count for retry
+            except (JSONDecodeError, ValueError, KeyError, TypeError) as e:
+                # JSON parsing or datetime parsing errors - these are handled in parse_response,
+                # but if they somehow propagate here, we should log and continue rather than retry
+                error_type = type(e).__name__
+                self.logger.error(
+                    f"{error_type} occurred during record parsing for stream {self.name}: {str(e)}. "
+                    f"This should have been caught in parse_response. Continuing with next slice."
+                )
+                # Don't retry on parsing errors - they're likely data quality issues, not transient network issues
+                # Break out of retry loop and continue to next slice
+                break
         else:
-            raise Exception(f"ChunkedEncodingError: Reached maximum number of retires: {self.CHUNKED_ENCODING_ERROR_RETRIES}")
+            raise Exception(
+                f"Failed after {self.CHUNKED_ENCODING_ERROR_RETRIES} retries for stream {self.name}. "
+                f"Last slice: {stream_slice.start_date.strftime('%Y-%m-%d')} to "
+                f"{stream_slice.end_date.strftime('%Y-%m-%d')}"
+            )
 
 
 class IterableExportEventsStreamAdjustableRange(IterableExportStreamAdjustableRange, ABC):
@@ -581,9 +677,33 @@ class Templates(IterableExportStreamRanged):
                 yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        records = response_json.get(self.data_field, [])
+        try:
+            response_json = response.json()
+        except (JSONDecodeError, ValueError) as e:
+            self.logger.error(
+                f"Failed to parse JSON response for stream {self.name}: {str(e)}. "
+                f"Response status: {response.status_code}, Response preview: {response.text[:500]}"
+            )
+            return
 
-        for record in records:
-            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
+        records = response_json.get(self.data_field, [])
+        skipped_count = 0
+
+        for record_num, record in enumerate(records, start=1):
+            try:
+                record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
+            except (ValueError, KeyError, TypeError) as e:
+                skipped_count += 1
+                cursor_value = record.get(self.cursor_field, 'missing')
+                self.logger.warning(
+                    f"Skipping record {record_num} for stream {self.name} due to datetime parsing error: {str(e)}. "
+                    f"Record cursor field value: {cursor_value}"
+                )
+                continue
+
             yield record
+
+        if skipped_count > 0:
+            self.logger.warn(
+                f"Skipped {skipped_count} record(s) for stream {self.name} due to datetime parsing errors"
+            )
