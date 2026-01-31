@@ -73,6 +73,9 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
+    - title: Cloud Storage release notes
+      url: https://cloud.google.com/storage/docs/release-notes
+      type: api_release_history
     - title: Google Cloud Storage documentation
       url: https://cloud.google.com/storage/docs
       type: api_reference
