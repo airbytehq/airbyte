@@ -25,6 +25,9 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   supportLevel: community
   tags:
     - language:java
