@@ -276,6 +276,35 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 integrationTestLegacyImplementation project.sourceSets.integrationTest.output
             }
 
+            // Identical to integrationTestJava except excludes tests marked with @Tag("requires-creds")
+            // Future maintainers: copy changes from integrationTestJava and re-apply the excludeTags() difference
+            project.tasks.register('integrationTestJavaNoCreds', Test) {
+                description = 'Runs the integration tests in docker mode, excluding tests that require external credentials.'
+                group = 'verification'
+                testClassesDirs = project.sourceSets.integrationTest.output.classesDirs + project.sourceSets.integrationTestLegacy.output.classesDirs
+                classpath = project.sourceSets.integrationTest.runtimeClasspath + project.sourceSets.integrationTestLegacy.runtimeClasspath
+                useJUnitPlatform {
+                    excludeTags("requires-creds")
+                }
+                // We need a docker image to run this task, so depend on assemble
+                dependsOn project.tasks.assemble
+                environment "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", "docker"
+
+                jvmArgs = project.test.jvmArgs
+                systemProperties = project.test.systemProperties
+                maxParallelForks = project.test.maxParallelForks
+                maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                    showStandardStreams = true
+                }
+
+                // Always re-run integration tests no matter what.
+                outputs.upToDateWhen { false }
+            }
+
             project.tasks.named('build').configure {
                 dependsOn project.tasks.integrationTestJava
             }
