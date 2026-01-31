@@ -229,6 +229,48 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
             dependsOn project.tasks.matching { it.name == 'assemble' }
             onlyIf { withSlowTests }
         }
+        // Identical to integrationTestJava except excludes tests marked with @Tag("requires-creds")
+        // Future maintainers: copy changes from integrationTestJava and re-apply the excludeTags() difference
+        def integrationTestJavaNoCreds = project.tasks.register('integrationTestJavaNoCreds', Test) {
+            testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
+            classpath += project.sourceSets.integrationTestJava.runtimeClasspath
+
+            useJUnitPlatform {
+                excludeTags("requires-creds")
+            }
+            testLogging() {
+                events 'skipped', 'started', 'passed', 'failed'
+                exceptionFormat 'full'
+                showStandardStreams = true
+            }
+
+            jvmArgs = project.test.jvmArgs
+            maxParallelForks = project.test.maxParallelForks
+            maxHeapSize = project.test.maxHeapSize
+            // Reduce parallelization to get tests passing
+            // TODO: Fix the actual issue causing concurrent tests to hang.
+            systemProperties = project.test.systemProperties + [
+                'junit.jupiter.execution.parallel.enabled': 'true',
+                'junit.jupiter.execution.parallel.config.strategy': 'fixed',
+                'junit.jupiter.execution.parallel.config.fixed.parallelism': Math.min((Runtime.runtime.availableProcessors() / 2).toInteger(), 1).toString()
+            ]
+
+            // Tone down the JIT when running the containerized connector to improve overall performance.
+            // The JVM default settings are optimized for long-lived processes in steady-state operation.
+            // Unlike in production, the connector containers in these tests are always short-lived.
+            // It's very much worth injecting a JAVA_OPTS environment variable into the container with
+            // flags which will reduce startup time at the detriment of long-term performance.
+            environment 'JOB_DEFAULT_ENV_JAVA_OPTS', '-XX:TieredStopAtLevel=1'
+
+            // Always re-run integration tests no matter what.
+            outputs.upToDateWhen { false }
+        }
+        integrationTestJavaNoCreds.configure {
+            mustRunAfter project.tasks.named('check')
+            dependsOn project.tasks.matching { it.name == 'assemble' }
+            onlyIf { withSlowTests }
+        }
+
         project.tasks.register('integrationTest').configure {
             dependsOn integrationTestJava
         }
