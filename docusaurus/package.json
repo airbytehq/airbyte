@@ -133,7 +133,7 @@
     "html-loader": "^4.2.0",
     "js-yaml": "^4.1.0",
     "json-schema-faker": "^0.5.8",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "node-fetch": "^3.3.2",
     "nth-check": "2.0.1",
     "postcss-convert-values": "6.0.1",
