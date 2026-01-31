@@ -73,7 +73,8 @@ definitions:
                 record['media_type'], "media_product_type":
                 record['media_product_type'], "business_account_id":
                 stream_partition.account.business_account_id, "page_id":
-                stream_partition.account.page_id} }}
+                stream_partition.account.page_id, "timestamp":
+                record['timestamp']} }}
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -117,16 +118,16 @@ definitions:
             metric: >-
               {% if stream_partition.media_insights_info.media_product_type ==
               "REELS" %}{{
-              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,reach,saved,shares'
+              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,reach,saved,shares,views'
               }}{% elif stream_partition.media_insights_info.media_type ==
               "VIDEO" and
               stream_partition.media_insights_info.media_product_type == "FEED"
-              %}{{  'reach,saved'}}{% elif
+              %}{{  'reach,saved,views'}}{% elif
               stream_partition.media_insights_info.media_type == "VIDEO" %}{{
               'reach,saved,likes,comments,shares,follows,profile_visits'
               }}{%elif stream_partition.media_insights_info.media_type ==
               "CAROUSEL_ALBUM"%}{{ 'reach,saved,shares,follows,profile_visits' }}{% else %}{{
-              'reach,saved,likes,comments,shares,follows,profile_visits' }}{%
+              'reach,saved,likes,comments,shares,follows,profile_visits,views' }}{%
               endif %}
           error_handler:
             type: DefaultErrorHandler
@@ -191,6 +192,13 @@ definitions:
               path:
                 - business_account_id
               value: "{{ stream_partition.media_insights_info.business_account_id }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - timestamp
+              value: "{{ stream_partition.media_insights_info.timestamp }}"
               value_type: string
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.InstagramClearUrlTransformation
@@ -432,7 +440,7 @@ definitions:
           url: "https://graph.facebook.com/v23.0/{{ stream_partition.story_insights_info.story_id }}/insights"
           http_method: GET
           request_parameters:
-            metric: reach,replies,follows,profile_visits,shares,total_interactions
+            metric: reach,replies,follows,profile_visits,shares,total_interactions,views
           error_handler:
             type: DefaultErrorHandler
             max_retries: 5
@@ -1059,6 +1067,18 @@ schemas:
         type:
           - "null"
           - integer
+      views:
+        description: The number of times the media has been viewed. Only available for FEED, STORY, and REELS media product types.
+        type:
+          - "null"
+          - integer
+      timestamp:
+        description: The timestamp when the media was posted.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
   Users:
@@ -1293,6 +1313,11 @@ schemas:
           - integer
       total_interactions:
         description¨: The number of replies and shares of the story.
+        type:
+          - "null"
+          - integer
+      views:
+        description: The number of times the story has been viewed.
         type:
           - "null"
           - integer
