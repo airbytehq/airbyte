@@ -9,16 +9,16 @@ This page documents the authentication and configuration options for the Faceboo
 In open source mode, you provide API credentials directly to the connector.
 
 #### OAuth
-This authentication method isn't available for this connector.
-
-#### Token
 
 `credentials` fields you need:
 
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Facebook Marketing API access token |
-| `account_id` | `str` | Yes | Facebook Ad Account ID (without the act_ prefix) |
+| `access_token` | `str` | No | Facebook OAuth2 Access Token |
+| `client_id` | `str` | Yes | Facebook App Client ID |
+| `client_secret` | `str` | Yes | Facebook App Client Secret |
+| `account_id` | `str` | Yes | Facebook Ad Account ID (without act_ prefix) |
 
 Example request:
 
@@ -28,32 +28,35 @@ from airbyte_agent_facebook-marketing.models import FacebookMarketingAuthConfig
 
 connector = FacebookMarketingConnector(
     auth_config=FacebookMarketingAuthConfig(
-        access_token="<Facebook Marketing API access token>",
-        account_id="<Facebook Ad Account ID (without the act_ prefix)>"
+        access_token="<Facebook OAuth2 Access Token>",
+        client_id="<Facebook App Client ID>",
+        client_secret="<Facebook App Client Secret>",
+        account_id="<Facebook Ad Account ID (without act_ prefix)>"
     )
 )
 ```
+
+#### Token
+This authentication method isn't available for this connector.
 
 ### Hosted execution
 
 In hosted mode, you first create a connector via the Airbyte API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 #### OAuth
-This authentication method isn't available for this connector.
-
-#### Token
-Create a connector with Token credentials.
-
+Create a connector with OAuth credentials.
 
 `credentials` fields you need:
 
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Facebook Marketing API access token |
-| `account_id` | `str` | Yes | Facebook Ad Account ID (without the act_ prefix) |
+| `access_token` | `str` | No | Facebook OAuth2 Access Token |
+| `client_id` | `str` | Yes | Facebook App Client ID |
+| `client_secret` | `str` | Yes | Facebook App Client Secret |
+| `account_id` | `str` | Yes | Facebook Ad Account ID (without act_ prefix) |
 
 Example request:
-
 
 ```bash
 curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
@@ -64,11 +67,16 @@ curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
     "connector_type": "Facebook-Marketing",
     "name": "My Facebook-Marketing Connector",
     "credentials": {
-      "access_token": "<Facebook Marketing API access token>",
-      "account_id": "<Facebook Ad Account ID (without the act_ prefix)>"
+      "access_token": "<Facebook OAuth2 Access Token>",
+      "client_id": "<Facebook App Client ID>",
+      "client_secret": "<Facebook App Client Secret>",
+      "account_id": "<Facebook Ad Account ID (without act_ prefix)>"
     }
   }'
 ```
+
+#### Token
+This authentication method isn't available for this connector.
 
 #### Execution
 
