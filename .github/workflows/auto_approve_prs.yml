@@ -1,0 +1,112 @@
+# Auto Approve PRs Workflow
+#
+# This workflow automatically approves pull requests that have specific auto-merge labels attached.
+# It is intended to eventually replace the existing auto_merge workflow by splitting approval and merge
+# into separate workflows.
+#
+# Labels that trigger auto-approval:
+# - "auto-merge": Standard auto-merge label for PRs that should be automatically approved and merged
+# - "auto-merge/bypass-ci-checks": Auto-merge label that bypasses certain CI checks
+#
+# The workflow runs every 15 minutes and searches for open PRs targeting the master branch with
+# these labels, then approves each matching PR using the octavia-bot GitHub App.
+
+name: Auto Approve PRs
+
+on:
+  # schedule:
+  #   # Every 15 minutes
+  #   - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run in dry-run mode (find PRs but do not approve them)"
+        required: false
+        default: "false"
+        type: boolean
+
+concurrency:
+  group: auto-approve-prs
+  cancel-in-progress: false
+
+jobs:
+  find_prs:
+    name: Find PRs to approve
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find PRs with auto-merge labels
+        id: find-prs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Search for open PRs with auto-merge labels targeting master branch
+          prs=$(gh api search/issues \
+            --method GET \
+            --field q="repo:airbytehq/airbyte is:pr label:auto-merge OR label:auto-merge/bypass-ci-checks base:master state:open" \
+            --jq '.items[] | {number: .number, title: .title}')
+
+          # Convert to JSON array for matrix
+          if [ -n "$prs" ]; then
+            echo "prs<<EOF" >> $GITHUB_OUTPUT
+            echo "$prs" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "prs=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set matrix output
+        id: set-matrix
+        run: |
+          if [ -n "${{ steps.find-prs.outputs.prs }}" ]; then
+            # Build matrix from PR data
+            matrix=$(echo '${{ steps.find-prs.outputs.prs }}' | jq -r 'map({pr_number: .number, pr_title: .title})')
+            echo "matrix={\"include\":$(echo "$matrix")}" >> $GITHUB_OUTPUT
+            echo "has_prs=true" >> $GITHUB_OUTPUT
+            
+            # Debug output for troubleshooting
+            echo "Found PRs to approve: $(echo "$matrix" | jq length)"
+            echo "Generated matrix:" | tee -a $GITHUB_STEP_SUMMARY
+            echo "$matrix" | jq '.' | tee -a $GITHUB_STEP_SUMMARY
+          else
+            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+            echo "has_prs=false" >> $GITHUB_OUTPUT
+            echo "No PRs found to approve" | tee -a $GITHUB_STEP_SUMMARY
+          fi
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_prs: ${{ steps.set-matrix.outputs.has_prs }}
+
+  approve_prs:
+    name: "Approve PR #${{ matrix.pr_number }}"
+    runs-on: ubuntu-latest
+    needs: find_prs
+    if: needs.find_prs.outputs.has_prs == 'true'
+    strategy:
+      max-parallel: 30
+      matrix: ${{ fromJson(needs.find_prs.outputs.matrix) }}
+    steps:
+      - name: Dry-run check
+        if: ${{ inputs.dry_run == true }}
+        run: |
+          echo "🔍 DRY-RUN MODE: Would approve PR #${{ matrix.pr_number }}: ${{ matrix.pr_title }}"
+          echo "In normal mode, this PR would be automatically approved."
+
+      - name: Approve Pull Request #${{ matrix.pr_number }}
+        if: ${{ inputs.dry_run != true }}
+        uses: juliangruber/approve-pull-request-action@v2
+        with:
+          github-token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          repo: airbytehq/airbyte
+          number: ${{ matrix.pr_number }}
+
+      - name: Add approval comment
+        if: ${{ inputs.dry_run != true }}
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          repository: airbytehq/airbyte
+          issue-number: ${{ matrix.pr_number }}
+          body: |
+            ✅ **Auto-approved by maintenance bot**
+
+            This PR has been automatically approved based on its labels. The PR can now be merged when all other requirements are met.
