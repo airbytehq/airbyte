@@ -1,0 +1,125 @@
+version: 6.5.0
+#6.6.0 # Ensure this matches your pyproject.toml and base image
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - "datasets"
+
+definitions:
+  # Base Requester with Authentication
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url'] }}"
+    http_method: GET
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_declarative_manifest.components.NexusCustomAuthenticator # Ensure this Python class exists and is correctly implemented
+      config: "{{ config }}"
+
+streams:
+  - type: DeclarativeStream
+    name: datasets # Name of your data stream
+    $parameters:
+      # Dynamic path construction using config properties
+      path: "{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode={{ config['mode'] }}"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [] # Assuming the records are at the root of the response, adjust if nested
+      requester:
+        $ref: "#/definitions/base_requester" # Reference the shared requester
+      decoder:
+        type: CustomDecoder # Now using CustomDecoder
+        class_name: source_declarative_manifest.components.FlexibleDecoder # Pointing to your new Python class
+        $parameters: # Parameters passed to FlexibleDecoder's __init__
+          # file_type is removed from here as it's inferred from Content-Type header
+          config: "{{ config }}" # Explicitly pass the config object (REQUIRED for 6.36.2 CustomDecoder)
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/datasets" # Reference the schema defined below
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/nexus-datasets # Replace with your connector's documentation URL
+  connection_specification:
+    title: Infor Nexus Datasets Spec
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - base_url
+      - user_id
+      - access_key_id
+      - secret_key
+      - api_key
+      - dataset_path
+      - dataset_name
+      - mode
+    additionalProperties: true
+    properties:
+      base_url:
+        title: "Base URL"
+        type: "string"
+        description: "The base URL of the Infor Nexus datasets API."
+        pattern: "^https?://[\\w.-]+(:\\d+)?(/[\\w.-]+)*/?$"
+        order: 1
+      user_id:
+        title: "User ID"
+        type: "string"
+        description: "The user ID for the Infor Nexus API."
+        order: 5
+      access_key_id:
+        title: "Access Key ID"
+        type: "string"
+        description: "The access key ID for the Infor Nexus API."
+        order: 6
+      secret_key:
+        title: "Secret Key"
+        type: "string"
+        description: "The secret key for HMAC authentication."
+        order: 7
+      api_key:
+        title: "API Key"
+        type: string
+        description: "The Infor Data API Key."
+        order: 8
+      dataset_path:
+        type: string
+        description: "Data Set Path."
+        default: "rest/3.1/analytics/dataset"
+        airbyte_hidden: true # Hide this from UI if it's a fixed internal path
+      dataset_name:
+        title: "Dataset Name"
+        type: string
+        description: "The name of the dataset to export."
+        order: 2
+      dataset_export_prefix:
+        type: string
+        description: "Data Export Prefix."
+        default: "export"
+        airbyte_hidden: true # Hide this from UI if it's a fixed internal path
+      mode:
+        type: string
+        title: Infor Streaming Mode
+        description: "Infor Streaming mode (Full or Incremental)."
+        enum:
+          - Full
+          - Incremental
+        default: Full
+        order: 4
+        additionalProperties: true # Set to false if you want to strictly define CSV options
+schemas:
+  datasets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true # IMPORTANT: Set to false if you only want the 'raw_data' column
+    properties:
+      raw_data: # Define a single property for the entire record as a JSON string
+        type: ["string", "null"]
+        description: "The entire record as a JSON string."
