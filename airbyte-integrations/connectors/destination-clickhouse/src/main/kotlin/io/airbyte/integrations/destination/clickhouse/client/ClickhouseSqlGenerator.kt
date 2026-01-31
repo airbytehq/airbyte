@@ -96,12 +96,52 @@ class ClickhouseSqlGenerator {
             .trimIndent()
             .andLog()
 
+    /**
+     * Overload for copyTable that accepts column names without type information. This is used by
+     * the TableOperationsClient interface implementation. Note: This version does not apply
+     * type-specific coercion.
+     */
     fun copyTable(
         columnNames: Set<String>,
         sourceTableName: TableName,
         targetTableName: TableName,
     ): String {
-        val joinedNames = columnNames.joinToString(",")
+        val joinedNames = columnNames.joinToString(",") { "`$it`" }
+        return copyTableInternal(joinedNames, joinedNames, sourceTableName, targetTableName)
+    }
+
+    /**
+     * Overload for copyTable that accepts column names with type information. This is used during
+     * schema evolution to apply type-specific coercion. For boolean columns, empty strings are
+     * converted to NULL using nullIf.
+     */
+    fun copyTable(
+        columns: Map<String, ColumnType>,
+        sourceTableName: TableName,
+        targetTableName: TableName,
+    ): String {
+        val columnNames = columns.keys.joinToString(",") { "`$it`" }
+        // For boolean columns, use nullIf to convert empty strings to NULL
+        // This handles legacy data that may contain empty strings in boolean columns
+        val selectExpressions =
+            columns
+                .map { (name, type) ->
+                    if (type.type == ClickhouseSqlTypes.BOOL) {
+                        "nullIf(`$name`, '') as `$name`"
+                    } else {
+                        "`$name`"
+                    }
+                }
+                .joinToString(",\n                ")
+        return copyTableInternal(columnNames, selectExpressions, sourceTableName, targetTableName)
+    }
+
+    private fun copyTableInternal(
+        insertColumns: String,
+        selectExpressions: String,
+        sourceTableName: TableName,
+        targetTableName: TableName,
+    ): String {
         // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
         return """
             INSERT INTO `${targetTableName.namespace}`.`${targetTableName.name}`
@@ -110,14 +150,14 @@ class ClickhouseSqlGenerator {
                 $COLUMN_NAME_AB_EXTRACTED_AT,
                 $COLUMN_NAME_AB_META,
                 $COLUMN_NAME_AB_GENERATION_ID,
-                $joinedNames
+                $insertColumns
             )
             SELECT
                 $COLUMN_NAME_AB_RAW_ID,
                 $COLUMN_NAME_AB_EXTRACTED_AT,
                 $COLUMN_NAME_AB_META,
                 $COLUMN_NAME_AB_GENERATION_ID,
-                $joinedNames
+                $selectExpressions
             FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
             """
             .trimIndent()
