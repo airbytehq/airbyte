@@ -88,6 +88,24 @@ In the example above, the connector has three tags. Tags are used for two primar
 
 These are just examples of how tags can be used. As a free-form field, the tags list can be customized as required for each connector. This flexibility allows tags to be a powerful tool for managing and discovering connectors.
 
+## The `externalDocumentationUrls` Section
+
+The `externalDocumentationUrls` field allows you to link to external vendor documentation such as API references, changelogs, authentication guides, and deprecation notices. Each entry requires a `title` and `url`, with an optional `type` to categorize the documentation.
+
+```yaml
+externalDocumentationUrls:
+  - title: MongoDB Authentication
+    url: https://www.mongodb.com/docs/manual/core/authentication/
+    type: authentication_guide
+  - title: MongoDB Release Notes
+    url: https://www.mongodb.com/docs/manual/release-notes/
+    type: api_release_history
+```
+
+The supported `type` values are: `api_deprecations`, `api_reference`, `api_release_history`, `authentication_guide`, `data_model_reference`, `developer_community`, `migration_guide`, `openapi_spec`, `other`, `permissions_scopes`, `rate_limits`, `sql_reference`, and `status_page`.
+
+For the complete and authoritative schema definition, see the [airbyte-connector-models](https://github.com/airbytehq/airbyte-connector-models) repository.
+
 ## The `icon` Field
 
 _⚠️ This property is in the process of being refactored to be a file in the connector folder_
