@@ -33,15 +33,8 @@ const darkCodeTheme = prismThemes.dracula;
 
 const config: Config = {
   future: {
-    experimental_faster: {
-      swcJsLoader: true,
-      swcJsMinimizer: true,
-      swcHtmlMinimizer: true,
-      lightningCssMinimizer: true,
-      mdxCrossCompilerCache: true,
-      rspackBundler: true,
-      rspackPersistentCache: true,
-    },
+    v4: true,
+    experimental_faster: true,
   },
   markdown: {
     mermaid: true,
@@ -128,6 +121,19 @@ const config: Config = {
     ],
   ],
   plugins: [
+    // disables concatenateModules optimization for dev and for prod server builds to improve build times - more info: https://github.com/facebook/docusaurus/discussions/11199
+    function disableExpensiveBundlerOptimizationPlugin() {
+      return {
+        name: "disable-expensive-bundler-optimizations",
+        configureWebpack(_config, isServer) {
+          return {
+            optimization: {
+              concatenateModules: false,
+            },
+          };
+        },
+      };
+    },
     // This plugin controls "platform" docs, which are versioned
     [
       "@docusaurus/plugin-content-docs",
