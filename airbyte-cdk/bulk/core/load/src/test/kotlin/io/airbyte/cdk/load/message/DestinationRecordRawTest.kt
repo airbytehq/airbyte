@@ -42,8 +42,6 @@ class DestinationRecordRawTest {
         DestinationStream(
             unmappedNamespace = "test_namespace",
             unmappedName = "test_stream",
-            Append,
-            recordSchema,
             generationId = 42L,
             minimumGenerationId = 0L,
             syncId = 123L,
@@ -285,15 +283,10 @@ class DestinationRecordRawTest {
 
     @Test
     fun `test handling empty fields in schema`() {
-        // Create an empty schema
-        val emptySchema = ObjectType(linkedMapOf())
-
         val streamWithEmptySchema =
             DestinationStream(
                 unmappedNamespace = "test_namespace",
                 unmappedName = "test_stream",
-                Append,
-                emptySchema,
                 generationId = 42L,
                 minimumGenerationId = 0L,
                 syncId = 123L,
@@ -390,8 +383,6 @@ class DestinationRecordRawTest {
             DestinationStream(
                 unmappedNamespace = "test_namespace",
                 unmappedName = "test_stream",
-                Append,
-                complexSchema,
                 generationId = 42L,
                 minimumGenerationId = 0L,
                 syncId = 123L,

@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -25,13 +24,8 @@ data class DestinationRecordRaw(
     val checkpointId: CheckpointId? = null,
     val airbyteRawId: UUID,
 ) {
-    val schema = stream.schema
-
     val schemaFields: SequencedMap<String, FieldType> =
-        when (schema) {
-            is ObjectType -> schema.properties
-            else -> linkedMapOf()
-        }
+        LinkedHashMap(stream.tableSchema.columnSchema.inputSchema)
 
     /**
      * DEPRECATED: Now that we support multiple formats for speed, this is no longer an

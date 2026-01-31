@@ -265,13 +265,12 @@ class ProtobufRecordConversionTest {
             every { this@mockk.airbyteValueProxyFieldAccessors } returns fieldAccessors
             every { this@mockk.syncId } returns this@ProtobufRecordConversionTest.syncId
             every { this@mockk.generationId } returns this@ProtobufRecordConversionTest.generationId
-            every { this@mockk.schema } returns dummyType
             every { this@mockk.mappedDescriptor } returns DestinationStream.Descriptor("", "dummy")
             every { this@mockk.unmappedDescriptor } returns
                 DestinationStream.Descriptor("", "dummy")
             every { this@mockk.unknownColumnChanges } returns
-                dummyType.computeUnknownColumnChanges()
-            // Add tableSchema mock for column name mapping
+                dummyType.properties.computeUnknownColumnChanges()
+            // Add tableSchema mock for column name mapping and schema
             every { this@mockk.tableSchema } returns
                 mockk {
                     every { getFinalColumnName(any()) } answers
@@ -279,6 +278,8 @@ class ProtobufRecordConversionTest {
                             val columnName = firstArg<String>()
                             "mapped_$columnName"
                         }
+                    every { columnSchema } returns
+                        mockk { every { inputSchema } returns dummyType.properties }
                 }
         }
 
@@ -290,9 +291,7 @@ class ProtobufRecordConversionTest {
                         callOriginal()
                     }
                 every { this@mockk.airbyteRawId } returns uuid
-                every { this@mockk.schema } returns this@ProtobufRecordConversionTest.stream.schema
-                every { this@mockk.schemaFields } returns
-                    (this@ProtobufRecordConversionTest.stream.schema as ObjectType).properties
+                every { this@mockk.schemaFields } returns dummyType.properties
                 every { this@mockk.rawData } returns protoSource!!
                 every { this@mockk.stream } returns this@ProtobufRecordConversionTest.stream
             }
