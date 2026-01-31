@@ -16,15 +16,13 @@ git clone git@github.com:airbytehq/airbyte.git
 cd airbyte
 
 # Make a directory for a new connector and navigate to it
-mkdir airbyte-integrations/connectors/source-exchange-rates-tutorial
-cd airbyte-integrations/connectors/source-exchange-rates-tutorial
+mkdir airbyte-integrations/connectors/source-survey-monkey-demo
+cd airbyte-integrations/connectors/source-survey-monkey-demo
 
 # Initialize a project, follow Poetry prompts, and then add airbyte-cdk as a dependency.
 poetry init
 poetry add airbyte-cdk
 ```
-
-For this walkthrough, we'll refer to our source as `exchange-rates-tutorial`.
 
 ## Add Connector Metadata file
 
