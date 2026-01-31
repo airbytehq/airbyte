@@ -12,16 +12,27 @@ This page contains the setup guide and reference information for the Microsoft O
 
 ## Setup guide
 
+This connector supports two authentication methods. Choose ONE method based on your needs:
+
+| Authentication Method | Supported Search Scopes | Best For |
+|----------------------|------------------------|----------|
+| **OAuth2.0 (Delegated)** | `ACCESSIBLE_DRIVES`, `SHARED_ITEMS`, `ALL` | Interactive setups, accessing shared items |
+| **Service Key Authentication** | `ACCESSIBLE_DRIVES` only | Automated/background syncs, no shared items needed |
+
+### Option A: OAuth2.0 (Delegated) - Supports all search scopes
+
+Use this method if you need to access shared items (`SHARED_ITEMS` or `ALL` scopes). OAuth2.0 uses delegated permissions, which means the connector acts on behalf of a signed-in user.
+
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud
 
-1. Navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Microsoft OneDrive** from the Source type dropdown.
 4. Enter the name for the Microsoft OneDrive connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
-6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' to search in the selected OneDrive drive, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+6. Select **Search Scope**. Valid options are `ACCESSIBLE_DRIVES` to search in the selected OneDrive drive, `SHARED_ITEMS` for shared items the user has access to, and `ALL` to search both. Default value is `ALL`.
 7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 8. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft OneDrive account**. Log in and authorize your Microsoft account.
 9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
@@ -32,13 +43,26 @@ This page contains the setup guide and reference information for the Microsoft O
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
     5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
 11. Click **Set up source**
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### For Airbyte Open Source
 
-### Step 1: Set up OneDrive application
+For Airbyte Open Source, OAuth2.0 authentication requires manual configuration of an Azure application with delegated permissions. If you need the simpler setup flow, consider using Option B (Service Key Authentication) with the `ACCESSIBLE_DRIVES` scope instead.
+
+<!-- /env:oss -->
+
+### Option B: Service Key Authentication - Only supports ACCESSIBLE_DRIVES
+
+Use this method for automated or background syncs where no user interaction is required. Service Key Authentication uses application permissions, which run without a signed-in user context.
+
+:::warning
+Service Key Authentication only supports the `ACCESSIBLE_DRIVES` search scope. If you need to access shared items (`SHARED_ITEMS` or `ALL` scopes), you must use OAuth2.0 authentication (Option A) instead.
+:::
+
+#### Step 1: Set up OneDrive application in Azure
 
 The Microsoft Graph API uses OAuth for authentication. Microsoft Graph exposes granular permissions that control the access that apps have to resources, like users, groups, and mail. When a user signs in to your app they, or, in some cases, an administrator, are given a chance to consent to these permissions. If the user consents, your app is given access to the resources and APIs that it has requested. For apps that don't take a signed-in user, permissions can be pre-consented to by an administrator when the app is installed.
 
@@ -74,17 +98,17 @@ This source requires **Application permissions**. Follow these [instructions](ht
 14. Click **Add permissions**
 15. Click **Grant admin consent**
 
-### Step 2: Set up the Microsoft OneDrive connector in Airbyte
+#### Step 2: Set up the connector in Airbyte
 
-1. Navigate to the Airbyte Open Source dashboard.
+1. Navigate to the Airbyte dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the **Set up** the source page, select **Microsoft OneDrive** from the Source type dropdown.
 4. Enter the name for the Microsoft OneDrive connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
-6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' to search in the selected OneDrive drive, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+6. Select **Search Scope**. You must select `ACCESSIBLE_DRIVES` when using Service Key Authentication. The `SHARED_ITEMS` and `ALL` scopes are not supported with this authentication method.
 7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 8. Switch to **Service Key Authentication**
-9. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
+9. For **User Principal Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
 10. Enter **Tenant ID**, **Client ID** and **Client secret**.
 11. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 12. Add a stream:
@@ -94,8 +118,6 @@ This source requires **Application permissions**. Follow these [instructions](ht
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
     5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
 13. Click **Set up source**
-
-<!-- /env:oss -->
 
 ## Path Patterns
 
@@ -228,7 +250,7 @@ The Document file type format is a special format that allows you to extract tex
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
 
-Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
+Before parsing each document, the connector exports Word Document files to Docx format internally. Excel spreadsheets and Powerpoint presentations are internally exported and parsed by the connector as PDFs.
 
 ## Sync overview
 

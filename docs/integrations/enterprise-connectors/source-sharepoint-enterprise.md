@@ -20,12 +20,21 @@ This page contains the setup guide and reference information for the [SharePoint
 
 ## Setup guide
 
-### Set up SharePoint Enterprise
+This connector supports two authentication methods. Choose ONE method based on your needs:
 
-1. Click Sources and then click + New source.
-2. On the Set up the source page, select SharePoint Enterprise from the Source type dropdown.
+| Authentication Method | Supported Search Scopes | Best For |
+|----------------------|------------------------|----------|
+| **OAuth2.0 (Delegated)** | `ACCESSIBLE_DRIVES`, `SHARED_ITEMS`, `ALL` | Interactive setups, accessing shared items |
+| **Service Key Authentication** | `ACCESSIBLE_DRIVES` only | Automated/background syncs, no shared items needed |
+
+### Option A: OAuth2.0 (Delegated) - Supports all search scopes
+
+Use this method if you need to access shared items (`SHARED_ITEMS` or `ALL` scopes). OAuth2.0 uses delegated permissions, which means the connector acts on behalf of a signed-in user.
+
+1. Click **Sources** and then click **+ New source**.
+2. On the Set up the source page, select **SharePoint Enterprise** from the Source type dropdown.
 3. Enter a name for the SharePoint Enterprise connector.
-4. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+4. Select **Search Scope**. Valid options are `ACCESSIBLE_DRIVES` for all SharePoint drives the user can access, `SHARED_ITEMS` for shared items the user has access to, and `ALL` to search both. Default value is `ALL`.
 5. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
 7. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
@@ -37,8 +46,15 @@ This page contains the setup guide and reference information for the [SharePoint
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
 9. Click **Set up source**
 
+### Option B: Service Key Authentication - Only supports ACCESSIBLE_DRIVES
 
-### Step 1: Set up SharePoint application
+Use this method for automated or background syncs where no user interaction is required. Service Key Authentication uses application permissions, which run without a signed-in user context.
+
+:::warning
+Service Key Authentication only supports the `ACCESSIBLE_DRIVES` search scope. If you need to access shared items (`SHARED_ITEMS` or `ALL` scopes), you must use OAuth2.0 authentication instead.
+:::
+
+#### Step 1: Set up SharePoint application in Azure
 
 The Microsoft Graph API uses OAuth for authentication. Microsoft Graph exposes granular permissions that control the access that apps have to resources, like users, groups, and mail. When a user signs in to your app, they or in some cases an administrator are given a chance to consent to these permissions. If the user consents, your app is given access to the resources and APIs that it has requested. For apps that don't take a signed-in user, permissions can be pre-consented to by an administrator when the app is installed.
 
@@ -78,13 +94,13 @@ This source requires **Application permissions**. Follow these [instructions](ht
 If you plan to use the Replicate Permissions ACL feature, you must also add these permissions: User.Read.All, Group.Read.All, Application.Read.All, and Device.Read.All.
 :::
 
-### Step 2: Set up the Microsoft SharePoint connector in Airbyte
+#### Step 2: Set up the connector in Airbyte
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
 4. Enter the name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+5. Select **Search Scope**. You must select `ACCESSIBLE_DRIVES` when using Service Key Authentication. The `SHARED_ITEMS` and `ALL` scopes are not supported with this authentication method.
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. Switch to **Service Key Authentication**
 8. For **User Principal Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. Special characters such as a period, comma, space, and the at sign (@) are converted to underscores (_).
