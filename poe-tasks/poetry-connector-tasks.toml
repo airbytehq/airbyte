@@ -24,6 +24,9 @@ install-project = "poetry install --all-extras"
 install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
 test-all = ["test-unit-tests", "test-integration-tests"]
 test-integration-tests = ["pytest-integration-tests"]
+
+test-integration-tests-no-creds.cmd = ["pytest-integration-tests-no-creds"]
+test-integration-tests-no-creds.help = "Identical to test-integration-tests except excludes tests marked with @pytest.mark.requires_creds"
 test-unit-tests = ["pytest-unit-tests"]
 test-fast = ["pytest-fast"]
 format-check = ["check-ruff-format"]
@@ -52,6 +55,16 @@ set -eu # Ensure we return non-zero exit code upon failure
 
 if ls integration_tests/test_*.py >/dev/null 2>&1; then
   poetry run pytest --junitxml=build/test-results/pytest-integration-tests-junit.xml integration_tests
+else
+  echo "No 'integration_tests' directory found; skipping integration tests."
+fi
+'''
+
+pytest-integration-tests-no-creds.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if ls integration_tests/test_*.py >/dev/null 2>&1; then
+  poetry run pytest -m 'not requires_creds' --junitxml=build/test-results/pytest-integration-tests-no-creds-junit.xml integration_tests
 else
   echo "No 'integration_tests' directory found; skipping integration tests."
 fi
