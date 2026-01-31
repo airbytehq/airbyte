@@ -101,7 +101,7 @@ class ClickhouseSqlGenerator {
         sourceTableName: TableName,
         targetTableName: TableName,
     ): String {
-        val joinedNames = columnNames.joinToString(",")
+        val joinedNames = columnNames.joinToString(",\n                ")
         // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
         return """
             INSERT INTO `${targetTableName.namespace}`.`${targetTableName.name}`
