@@ -19,11 +19,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
-  dockerImageTag: 0.3.21
+  dockerImageTag: 0.3.22
   dockerRepository: airbyte/source-okta
   githubIssueLabel: source-okta
   icon: icon.svg
-  license: ELv2
+  license: MIT
   name: Okta
   releaseStage: alpha
   supportLevel: community
