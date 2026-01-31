@@ -12371,7 +12371,6 @@ definitions:
           - path:
               - updated
             value: "{{ record.created }}"
-            value_type: string
   issues_stream:
     $ref: "#/definitions/incremental_stream"
     name: issues
