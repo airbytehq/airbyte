@@ -378,13 +378,8 @@ nav a.navbar__link--active {
   margin-bottom: 0;
 }
 
-/* Force no margin on the h1 when inside a flex container, but add margin to the header itself */
 header h1 {
-  margin-bottom: 0;
-}
-
-article > header {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 article span.theme-doc-version-badge {
