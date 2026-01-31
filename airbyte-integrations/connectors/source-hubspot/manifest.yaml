@@ -61,7 +61,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
@@ -347,35 +347,51 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        request_parameters:
-          propertyMode: value_and_history
-          propertiesWithHistory:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path: ["name"]
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  type: HttpRequester
-                  url_base: https://api.hubapi.com
-                  authenticator:
-                    $ref: "#/definitions/authenticator"
-                  path: "/properties/v2/contacts/properties"
-                  http_method: GET
-                  request_headers:
-                    Content-Type: "application/json"
-                  error_handler:
-                    $ref: "#/definitions/base_error_handler"
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
+        http_method: POST
+        fetch_properties_from_endpoint:
+          type: PropertiesFromEndpoint
+          property_field_path: ["name"]
+          retriever:
+            type: SimpleRetriever
+            requester:
+              type: HttpRequester
+              url_base: https://api.hubapi.com
+              authenticator:
+                $ref: "#/definitions/authenticator"
+              path: "/properties/v2/contacts/properties"
+              http_method: GET
+              request_headers:
+                Content-Type: "application/json"
+              error_handler:
+                $ref: "#/definitions/base_error_handler"
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: []
+        request_body_json:
+          propertiesWithHistory: "{{ stream_slice.extra_fields['query_properties'] }}"
+          inputs: >-                                                                                                                                                                                                                                          
+            {% set transformed = [] -%}                                                                                                                                                                                                                       
+              {%- for id in stream_partition['contact_ids'] -%}                                                                                                                                                                                                 
+              {%- set _ = transformed.append({'id': id}) -%}                                                                                                                                                                                                  
+              {%- endfor -%}                                                                                                                                                                                                                                    
+            {{ transformed }}
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 50
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: contact_ids
+              stream:
+                $ref: "#/definitions/contacts_stream"
+                incremental_sync:
+                  $ref: "#/definitions/base_crm_search_incremental_stream/incremental_sync"
+                  allow_catalog_defined_cursor_field: false
+              incremental_dependency: true
       record_selector:
         type: RecordSelector
         extractor:
@@ -419,7 +435,7 @@ definitions:
         cursor_field: timestamp
     $parameters:
       name: contacts_property_history
-      path: /crm/v3/objects/contacts
+      path: /crm/v3/objects/contacts/batch/read
       extractor_field_path: results
       required_scopes: crm.objects.contacts.read
     # The Hubspot V3 API uses camel case. To retain backwards compatibility, we convert fields kebab case from V1
@@ -1258,7 +1274,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: created
       datetime_format: "%ms"
-      step: P30D
+      step: "P{{ config.get('sync_step', 30) }}D"
       cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
@@ -1443,7 +1459,7 @@ definitions:
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      step: P30D
+      step: "P{{ config.get('sync_step', 30) }}D"
       cursor_granularity: PT0.001S
       lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
@@ -1589,7 +1605,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: timestamp
       datetime_format: "%ms"
-      step: P30D
+      step: "P{{ config.get('sync_step', 30) }}D"
       cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
@@ -2021,7 +2037,7 @@ dynamic_streams:
                 error_message: >-
                   HubSpot server error (5xx). Retrying with exponential backoff...
               - type: HttpResponseFilter
-                action: RETRY
+                action: REFRESH_TOKEN_THEN_RETRY
                 http_codes:
                   - 401
                 error_message: >-
@@ -2209,6 +2225,19 @@ spec:
         default: 10
         examples: [ 1, 2, 3 ]
         description: The number of worker threads to use for the sync.
+      sync_step:
+        type: integer
+        title: Sync Step (Days)
+        default: 30
+        minimum: 1
+        examples:
+          - 30
+          - 7
+          - 1
+        description: >-
+          The time window size (step) in days for incremental sync.
+          This controls how the sync partitions time ranges when fetching data.
+          Default is 30 days. Use smaller values like 7 or 1 if you encounter issues with large date ranges.
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:

@@ -38,6 +38,8 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.http_client import HttpClient
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_format, ab_datetime_now, ab_datetime_parse
@@ -292,7 +294,98 @@ class HubspotRenamePropertiesTransformation(RecordTransformation):
         record.update(transformed_record)
 
 
-class EngagementsHttpRequester(HttpRequester):
+class HubspotHttpClient(HttpClient):
+    """
+    Custom HttpClient that refreshes OAuth token when 401 is received.
+
+    When a 401 Unauthorized response is received and the error handler is configured to RETRY,
+    this client will attempt to refresh the OAuth token before the retry occurs. This ensures
+    that the retry uses a fresh token instead of the same expired/invalid token.
+
+    This only applies to OAuth authenticators (which have refresh_access_token method).
+    BearerAuthenticator and other non-OAuth auth types are not affected.
+    """
+
+    def _handle_error_resolution(
+        self,
+        response: Optional[requests.Response],
+        exc: Optional[requests.RequestException],
+        request: requests.PreparedRequest,
+        error_resolution: ErrorResolution,
+        exit_on_rate_limit: Optional[bool] = False,
+    ) -> None:
+        # If 401 and RETRY action, refresh the OAuth token before retry
+        # Only OAuth authenticators have refresh_access_token method
+        # BearerAuthenticator and other non-OAuth auth types will be skipped
+        if (
+            response is not None
+            and response.status_code == 401
+            and error_resolution.response_action == ResponseAction.RETRY
+            and hasattr(self._session, "auth")
+            and hasattr(self._session.auth, "refresh_access_token")
+        ):
+            token, expires_in = self._session.auth.refresh_access_token()
+            self._session.auth.access_token = token
+            self._session.auth.set_token_expiry_date(expires_in)
+            self._logger.info("Refreshed OAuth token due to 401 response")
+
+        # Call parent to continue normal error handling (raise backoff exception, etc.)
+        super()._handle_error_resolution(response, exc, request, error_resolution, exit_on_rate_limit)
+
+
+@dataclass
+class HubspotHttpRequester(HttpRequester):
+    """
+    Custom HttpRequester that uses HubspotHttpClient for OAuth token refresh on 401.
+
+    This requester replaces the standard HttpClient with HubspotHttpClient, which
+    automatically refreshes OAuth tokens when a 401 response is received during retries.
+    """
+
+    # Request options attributes - these are passed by the declarative framework
+    # and need to be explicitly declared so they can be used to create the
+    # InterpolatedRequestOptionsProvider before calling super().__post_init__()
+    request_body_json: Optional[Mapping[str, Any]] = None
+    request_headers: Optional[Mapping[str, str]] = None
+    request_parameters: Optional[Mapping[str, str]] = None
+    request_body_data: Optional[Union[Mapping[str, str], str]] = None
+    query_properties_key: Optional[str] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # Create the request options provider with the request options attributes
+        # BEFORE calling super().__post_init__() so they are properly initialized
+        self.request_options_provider = InterpolatedRequestOptionsProvider(
+            request_body_data=self.request_body_data,
+            request_body_json=self.request_body_json,
+            request_headers=self.request_headers,
+            request_parameters=self.request_parameters,
+            query_properties_key=self.query_properties_key,
+            config=self.config,
+            parameters=parameters or {},
+        )
+        super().__post_init__(parameters)
+
+        # Get backoff strategies from error handler if available
+        if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
+            backoff_strategies = self.error_handler.backoff_strategies
+        else:
+            backoff_strategies = None
+
+        # Replace with custom HttpClient that refreshes OAuth token on 401
+        self._http_client = HubspotHttpClient(
+            name=self.name,
+            logger=self.logger,
+            error_handler=self.error_handler,
+            api_budget=self.api_budget,
+            authenticator=self._authenticator,
+            use_cache=self.use_cache,
+            backoff_strategy=backoff_strategies,
+            disable_retries=self.disable_retries,
+            message_repository=self.message_repository,
+        )
+
+
+class EngagementsHttpRequester(HubspotHttpRequester):
     """
     Engagements stream uses different endpoints:
     - Engagements Recent if start_date/state is less than 30 days and API is able to return all records (<10k), or
