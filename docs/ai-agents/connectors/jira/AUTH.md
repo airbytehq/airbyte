@@ -13,10 +13,14 @@ This authentication method isn't available for this connector.
 
 #### Token
 
+`credentials` fields you need:
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `username` | `str` | Yes | Your Atlassian account email address |
 | `password` | `str` | Yes | Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens |
+
+Example request:
 
 ```python
 from airbyte_agent_jira import JiraConnector
@@ -38,16 +42,27 @@ In hosted mode, you first create a connector via the Airbyte API (providing your
 This authentication method isn't available for this connector.
 
 #### Token
+Create a connector with Token credentials.
 
-Create a connector with Token credentials:
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `username` | `str` | Yes | Your Atlassian account email address |
+| `password` | `str` | Yes | Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens |
+
+Example request:
+
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
-  -H 'Authorization: Bearer <SCOPED_TOKEN>' \
-  -H 'Content-Type: application/json' \
+curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
+  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+  -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
     "connector_type": "Jira",
+    "name": "My Jira Connector",
     "credentials": {
       "username": "<Your Atlassian account email address>",
       "password": "<Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens>"
@@ -65,7 +80,7 @@ After creating the connector, execute operations using either the Python SDK or 
 from airbyte_agent_jira import JiraConnector
 
 connector = JiraConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )

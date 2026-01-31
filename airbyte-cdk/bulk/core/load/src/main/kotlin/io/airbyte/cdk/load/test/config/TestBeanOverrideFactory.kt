@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.test.config
 
-import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
-import io.airbyte.cdk.load.dataflow.config.ConnectorInputStreams
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.ConnectorInputStreams
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires

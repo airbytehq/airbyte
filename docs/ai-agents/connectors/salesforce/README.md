@@ -72,7 +72,7 @@ This example assumes you've already authenticated your connector with Airbyte. S
 from airbyte_agent_salesforce import SalesforceConnector
 
 connector = SalesforceConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
@@ -83,35 +83,39 @@ async def salesforce_execute(entity: str, action: str, params: dict | None = Non
     return await connector.execute(entity, action, params or {})
 ```
 
-
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](./REFERENCE.md#accounts-list), [Get](./REFERENCE.md#accounts-get), [Api_search](./REFERENCE.md#accounts-api_search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Api_search](./REFERENCE.md#contacts-api_search) |
-| Leads | [List](./REFERENCE.md#leads-list), [Get](./REFERENCE.md#leads-get), [Api_search](./REFERENCE.md#leads-api_search) |
-| Opportunities | [List](./REFERENCE.md#opportunities-list), [Get](./REFERENCE.md#opportunities-get), [Api_search](./REFERENCE.md#opportunities-api_search) |
-| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Api_search](./REFERENCE.md#tasks-api_search) |
-| Events | [List](./REFERENCE.md#events-list), [Get](./REFERENCE.md#events-get), [Api_search](./REFERENCE.md#events-api_search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Api_search](./REFERENCE.md#campaigns-api_search) |
-| Cases | [List](./REFERENCE.md#cases-list), [Get](./REFERENCE.md#cases-get), [Api_search](./REFERENCE.md#cases-api_search) |
-| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [Api_search](./REFERENCE.md#notes-api_search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Get](./REFERENCE.md#accounts-get), [API Search](./REFERENCE.md#accounts-api_search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [API Search](./REFERENCE.md#contacts-api_search) |
+| Leads | [List](./REFERENCE.md#leads-list), [Get](./REFERENCE.md#leads-get), [API Search](./REFERENCE.md#leads-api_search) |
+| Opportunities | [List](./REFERENCE.md#opportunities-list), [Get](./REFERENCE.md#opportunities-get), [API Search](./REFERENCE.md#opportunities-api_search) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [API Search](./REFERENCE.md#tasks-api_search) |
+| Events | [List](./REFERENCE.md#events-list), [Get](./REFERENCE.md#events-get), [API Search](./REFERENCE.md#events-api_search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [API Search](./REFERENCE.md#campaigns-api_search) |
+| Cases | [List](./REFERENCE.md#cases-list), [Get](./REFERENCE.md#cases-get), [API Search](./REFERENCE.md#cases-api_search) |
+| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [API Search](./REFERENCE.md#notes-api_search) |
 | Content Versions | [List](./REFERENCE.md#content-versions-list), [Get](./REFERENCE.md#content-versions-get), [Download](./REFERENCE.md#content-versions-download) |
 | Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
 | Query | [List](./REFERENCE.md#query-list) |
 
 
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
+### Authentication and configuration
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see the [Salesforce API reference](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm).
+### Salesforce API docs
+
+See the official [Salesforce API reference](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm).
 
 ## Version information
 
-- **Package version:** 0.1.51
-- **Connector version:** 1.0.5
-- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
+- **Package version:** 0.1.64
+- **Connector version:** 1.0.7
+- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/salesforce/CHANGELOG.md)
