@@ -34,10 +34,33 @@ class GoogleSheets:
     def clean_worksheet(self, stream_name: str):
         """
         Cleans up the existing records inside the worksheet or creates one, if doesn't exist.
+        Actually deletes rows (not just clears them) to prevent accumulation of empty cells
+        that can cause API limit issues over multiple syncs.
         """
         try:
             stream = self.open_worksheet(stream_name)
-            stream.clear()
+            # Get the total number of rows in the worksheet (including empty trailing rows)
+            # Note: stream.rows returns the number of rows with content, but we need to
+            # handle the case where there might be trailing empty rows from previous syncs
+            total_rows = stream.rows
+
+            # If there are more than 1 row, delete all data rows (keeping header row if it exists)
+            # This actually removes the cells, not just clears them, preventing accumulation
+            if total_rows > 1:
+                # Delete all rows from row 2 onwards (keeping the header row)
+                # Using unlink/link pattern similar to remove_duplicates for efficiency
+                stream.unlink()
+                # Delete all rows from row 2 to the end
+                # This removes the actual cells, preventing empty cell accumulation
+                stream.delete_rows(2, total_rows - 1)
+                stream.link()
+            elif total_rows == 1:
+                # If only 1 row exists, clear it (might be header or data)
+                # Headers will be set again when data is written
+                stream.clear()
+            else:
+                # Empty worksheet, nothing to do
+                pass
         except WorksheetNotFound:
             self.spreadsheet.add_worksheet(stream_name)
 
