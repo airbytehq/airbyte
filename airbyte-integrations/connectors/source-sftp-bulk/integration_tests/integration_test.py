@@ -38,6 +38,21 @@ def test_check_invalid_private_key_config(configured_catalog: ConfiguredAirbyteC
     assert exc_info.value.failure_type.value == FailureType.config_error.value
 
 
+def test_check_invalid_private_key_passphrase_config(
+    configured_catalog: ConfiguredAirbyteCatalog, config_private_key_with_passphrase: Mapping[str, Any]
+):
+    invalid_config = config_private_key_with_passphrase | {
+        "credentials": {
+            **config_private_key_with_passphrase["credentials"],
+            "passphrase": "wrong-passphrase",
+        }
+    }
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        SourceSFTPBulk(catalog=configured_catalog, config=invalid_config, state=None).check(logger, invalid_config)
+
+    assert exc_info.value.failure_type.value == FailureType.config_error.value
+
+
 def test_check_invalid_config(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]):
     invalid_config = config | {"credentials": {"auth_type": "password", "password": "wrongpass"}}
     with pytest.raises(AirbyteTracedException) as exc_info:
@@ -47,6 +62,15 @@ def test_check_invalid_config(configured_catalog: ConfiguredAirbyteCatalog, conf
 
 def test_check_valid_config_private_key(configured_catalog: ConfiguredAirbyteCatalog, config_private_key: Mapping[str, Any]):
     outcome = SourceSFTPBulk(catalog=configured_catalog, config=config_private_key, state=None).check(logger, config_private_key)
+    assert outcome.status == Status.SUCCEEDED
+
+
+def test_check_valid_config_private_key_with_passphrase(
+    configured_catalog: ConfiguredAirbyteCatalog, config_private_key_with_passphrase: Mapping[str, Any]
+):
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=config_private_key_with_passphrase, state=None).check(
+        logger, config_private_key_with_passphrase
+    )
     assert outcome.status == Status.SUCCEEDED
 
 

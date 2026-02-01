@@ -9,7 +9,7 @@ import uuid
 import zipfile
 from io import StringIO
 from pathlib import Path
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping, Optional, Tuple
 
 import docker
 import paramiko
@@ -23,14 +23,16 @@ from .utils import get_docker_ip, load_config
 logger = logging.getLogger("airbyte")
 
 PRIVATE_KEY = str()
+PRIVATE_KEY_WITH_PASSPHRASE = str()
+PASSPHRASE = "test-passphrase"
 TMP_FOLDER = "/tmp/test_sftp_source"
 
 
 # HELPERS
-def generate_ssh_keys() -> Tuple[str, str]:
+def generate_ssh_keys(passphrase: Optional[str] = None) -> Tuple[str, str]:
     key = paramiko.RSAKey.generate(2048)
     privateString = StringIO()
-    key.write_private_key(privateString)
+    key.write_private_key(privateString, password=passphrase)
 
     return privateString.getvalue(), "ssh-rsa " + key.get_base64()
 
@@ -78,11 +80,20 @@ def connector_setup_fixture(docker_client) -> None:
     prepare_test_files(TMP_FOLDER)
     os.makedirs(ssh_path)
     private_key, public_key = generate_ssh_keys()
+    private_key_with_passphrase, public_key_with_passphrase = generate_ssh_keys(PASSPHRASE)
+
     global PRIVATE_KEY
+    global PRIVATE_KEY_WITH_PASSPHRASE
     PRIVATE_KEY = private_key
+    PRIVATE_KEY_WITH_PASSPHRASE = private_key_with_passphrase
+
     pub_key_path = ssh_path + "/id_rsa.pub"
+    pub_key_with_passphrase_path = ssh_path + "/id_rsa_passphrase.pub"
     with open(pub_key_path, "w") as f:
-        f.write(public_key)
+        f.write(public_key + "\n")
+    with open(pub_key_with_passphrase_path, "w") as f:
+        f.write(public_key_with_passphrase + "\n")
+
     config = load_config("config_password.json")
     container = docker_client.containers.run(
         "atmoz/sftp",
@@ -92,6 +103,10 @@ def connector_setup_fixture(docker_client) -> None:
         volumes={
             f"{TMP_FOLDER}": {"bind": "/home/foo/files", "mode": "rw"},
             f"{pub_key_path}": {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
+            f"{pub_key_with_passphrase_path}": {
+                "bind": "/home/foo/.ssh/keys/id_rsa_passphrase.pub",
+                "mode": "ro",
+            },
         },
         detach=True,
     )
@@ -149,6 +164,19 @@ def config_fixture_not_mirroring_paths_with_duplicates(docker_client) -> Mapping
 def config_fixture_private_key(docker_client) -> Mapping[str, Any]:
     config = load_config("config_private_key.json") | {
         "credentials": {"auth_type": "private_key", "private_key": PRIVATE_KEY},
+    }
+    config["host"] = get_docker_ip()
+    yield config
+
+
+@pytest.fixture(name="config_private_key_with_passphrase", scope="session")
+def config_fixture_private_key_with_passphrase(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_private_key.json") | {
+        "credentials": {
+            "auth_type": "private_key",
+            "private_key": PRIVATE_KEY_WITH_PASSPHRASE,
+            "passphrase": PASSPHRASE,
+        },
     }
     config["host"] = get_docker_ip()
     yield config

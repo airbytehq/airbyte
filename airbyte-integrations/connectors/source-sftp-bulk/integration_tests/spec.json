@@ -425,6 +425,12 @@
               "description": "The number of resent files which will be used to discover the schema for this stream.",
               "exclusiveMinimum": 0,
               "type": "integer"
+            },
+            "use_first_found_file_for_schema_discovery": {
+              "title": "Use First Found File For Schema Discover",
+              "description": "When enabled, the source will use the first found file for schema discovery. Helps to avoid long discovery step.",
+              "default": false,
+              "type": "boolean"
             }
           },
           "required": ["name", "format"]
@@ -465,9 +471,9 @@
                 "type": "string"
               },
               "preserve_directory_structure": {
-                "default": true,
-                "description": "If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.",
                 "title": "Preserve Sub-Directories in File Paths",
+                "description": "If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.",
+                "default": true,
                 "type": "boolean"
               }
             },
@@ -530,9 +536,16 @@
               "private_key": {
                 "title": "Private key",
                 "description": "The Private key",
-                "airbyte_secret": true,
                 "multiline": true,
                 "order": 4,
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "passphrase": {
+                "title": "Private Key Password",
+                "description": "Password for the encrypted private key, if required",
+                "airbyte_secret": true,
+                "order": 5,
                 "type": "string"
               }
             },
