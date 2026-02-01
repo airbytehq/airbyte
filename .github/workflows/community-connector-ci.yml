@@ -1,0 +1,108 @@
+# .github/workflows/pr-orchestrator.yml
+name: Community Connector CI for Fork PRs
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read # to inspect repo metadata
+  issues: write # to post comments
+  checks: write # to create a check run
+
+jobs:
+  dispatch-connector-tests:
+    # Only run for PRs from forks
+    if: ${{ github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set pending status
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: Connector CI Checks Summary
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sha: ${{ github.event.pull_request.head.sha }}
+          status: in_progress
+          output: |
+            title: 'Connector tests dispatched'
+            summary: '[View test run in contributor's repo](<URL of dispatched workflow>)'
+
+      # 1. Try to mint an App token; if it fails, the App isn't installed
+      - name: Create GitHub App installation token
+        id: create-token
+        uses: actions/create-github-app-token@v2
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          owner: ${{ github.event.pull_request.head.repo.name }}
+          repositories: airbyte
+
+      # 2a. If token minting failed, notify contributor.
+      #     (Subsequent steps will be skipped and we'll rely on the unprivileged test execution.)
+      - name: Ask contributor to install the App
+        if: ${{ steps.create-token.outcome == 'failure' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          skip_unchanged: true
+          header: fork-app-install-status-comment
+          message: |
+            🚧 To run Connector CI on your fork, please install the Connector CI GitHub App in your forked repo and retry.
+
+      # 2b. If token minting succeeded, thank the contributor.
+      - name: Thank contributor for installing the App
+        if: ${{ steps.create-token.outcome == 'success' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          skip_unchanged: true
+          header: fork-app-install-status-comment
+          message: |
+            💙 _Thank you!_ 🙏 You have successfully installed the Airbyte GitHub App in your fork.
+            Tests will now be run in the context of your repo, leveraging your own BYO Connector Credentials.
+
+      # 3. Dispatch Connector Tests in fork
+      - name: Dispatch Connector Tests in fork
+        id: workflow-dispatch
+        if: ${{ steps.create-token.outcome == 'success' }}
+        uses: mathze/workflow-dispatch-action@v1.3.0
+        with:
+          owner: ${{ github.event.pull_request.head.repo.owner.login }}
+          repo: ${{ github.event.pull_request.head.repo.name }}
+          workflow-name: connector-ci-checks.yml
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ steps.create-token.outputs.token }}
+
+      - name: Post "Pending" Check Status to the PR
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: Connector CI Checks Summary
+          token: ${{ github.token }}
+          sha: ${{ github.event.pull_request.head.sha }}
+          status: in_progress
+          details_url: https://github.com/${{ github.event.pull_request.head.repo.full_name }}/actions/runs/${{ steps.workflow-dispatch.outputs.run-id }}
+
+      # Wait for the dispatched workflow to complete
+      # Note: Our App token is only valid for 60 minutes, so workflows
+      #       must complete within that time frame.
+      - name: Wait for Workflow Completion
+        if: ${{ steps.create-token.outcome == 'success' }}
+        uses: mathze/workflow-dispatch-action@v1.1.0
+        with:
+          owner: ${{ github.event.pull_request.head.repo.owner.login }}
+          repo: ${{ github.event.pull_request.head.repo.name }}
+          token: ${{ steps.create-token.outputs.token }}
+          run-id: ${{ steps.workflow-dispatch.outputs.run-id }}
+          wait-timeout: 60 # minutes
+
+      - name: Post Final Status to the PR
+        if: always() && steps.create-token.outcome == 'success'
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: Connector CI Checks Summary
+          token: ${{ github.token }}
+          sha: ${{ github.event.pull_request.head.sha }}
+          status: completed
+          conclusion: ${{ job.status }}
+          details_url: https://github.com/${{ github.event.pull_request.head.repo.full_name }}/actions/runs/${{ steps.workflow-dispatch.outputs.run-id }}
