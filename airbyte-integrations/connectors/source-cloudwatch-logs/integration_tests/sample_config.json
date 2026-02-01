@@ -1,0 +1,10 @@
+{
+  "region_name": "eu-central-1",
+  "custom_log_reports": [
+    {
+      "name": "my_custom_logs",
+      "log_group_name": "my_log_group",
+      "filter_pattern": "?ERROR ?WARN ?INFO ?DEBUG ?TRACE"
+    }
+  ]
+}

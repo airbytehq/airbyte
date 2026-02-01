@@ -1,0 +1,36 @@
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-clouwatch-logs"
+description = "Source connector for AWS Cloudwatch logs"
+authors = [
+    "marie"
+]
+readme = "README.md"
+license = "ELv2"
+documentation = "https://docs.airbyte.com/integrations/sources/cloudwatch-logs"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+
+[[tool.poetry.packages]]
+include = "source_cloudwatch_logs"
+
+[tool.poetry.dependencies]
+python = "^3.13,<3.14"
+boto3 = "^1.42.25"
+airbyte-cdk ="^7.6.3"
+
+[tool.poetry.scripts]
+source-cloudwatch-logs = "source_cloudwatch_logs.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+pytest-mock = "^3.14.0"
+black = "^25.1.0"
+flake8 = "^7.0.0"
+pyflakes = "^3.2.0"
+mypy = "^1.17.0"
+coverage = "^7.9.2"
