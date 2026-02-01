@@ -9006,6 +9006,53 @@ streams:
             type:
               - "null"
               - string
+          risk_data:
+            oneOf:
+              - type: "null"
+              - type: object
+                properties:
+                  decision:
+                    type:
+                      - "null"
+                      - string
+                  decision_reasons:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type: string
+                  device_data_captured:
+                    type:
+                      - "null"
+                      - boolean
+                  fraud_service_provider:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  liability_shift:
+                    oneOf:
+                      - type: "null"
+                      - type: object
+                        properties:
+                          conditions:
+                            type:
+                              - "null"
+                              - array
+                            items:
+                              type: string
+                          responsible_party:
+                            type:
+                              - "null"
+                              - string
+
+                  transaction_risk_score:
+                    type:
+                      - "null"
+                      - string
           samsung_pay_card_details:
             oneOf:
               - type: "null"
