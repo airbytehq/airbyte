@@ -25,6 +25,7 @@ import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
+import io.airbyte.cdk.jdbc.JsonStringFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
@@ -195,7 +196,7 @@ class MySqlSourceOperations :
             MysqlType.LONGTEXT,
             MysqlType.ENUM,
             MysqlType.SET -> StringFieldType
-            MysqlType.JSON -> StringFieldType // TODO: replace this with JsonStringFieldType
+            MysqlType.JSON -> JsonStringFieldType
             MysqlType.TINYBLOB,
             MysqlType.BLOB,
             MysqlType.MEDIUMBLOB,
