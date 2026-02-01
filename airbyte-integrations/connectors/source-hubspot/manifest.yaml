@@ -1447,6 +1447,49 @@ definitions:
       cursor_granularity: PT0.001S
       lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
+  base_crm_search_full_refresh_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
+        http_method: POST
+        request_body_json:
+          limit: 100
+          sorts:
+            - propertyName: hs_object_id
+              direction: ASCENDING
+          properties:
+            - hs_object_id
+          after: "{{ next_page_token['next_page_token'].get('after', 0) if next_page_token else 0 }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_declarative_manifest.components.HubspotCRMSearchPaginationStrategyForBatchedStream
+          page_size: 100
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+
+  base_batched_stream:
+    $ref: "#/definitions/base_crm_search_full_refresh_stream"
+    retriever:
+      $ref: "#/definitions/base_crm_search_full_refresh_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/base_crm_search_full_refresh_stream/retriever/record_selector"
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_declarative_manifest.components.BatchingRecordFilter
+          batch_size: 1000
+          id_field: id
+
   companies_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
@@ -1845,6 +1888,39 @@ definitions:
           $ref: "#/schemas/tickets"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  # Association Streams Base Definition
+  base_association_stream:
+    type: DeclarativeStream
+    primary_key:
+      - from_id
+      - to_id
+      - association_type_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v4/associations/{{ parameters['from_object'] }}/{{ parameters['to_object'] }}/batch/read"
+        http_method: POST
+        request_body_json:
+          inputs: "{{ stream_partition['record_ids'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.HubspotAssociationStreamExtractor
+          from_object: "{{ parameters['from_object'] }}"
+          to_object: "{{ parameters['to_object'] }}"
+      paginator:
+        type: NoPagination
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/base_association"
+    $parameters:
+      name: ""
+      from_object: ""
+      to_object: ""
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_stream"
@@ -2093,6 +2169,54 @@ dynamic_streams:
             - $parameters
             - schema_properties
           value: "{{ components_values.properties }}"
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/base_association_stream"
+      name: stream_name, # e.g. associations_tickets_companies, will be set by components resolver
+      $parameters:
+        from_object: from_object_name # e.g. tickets, will be set by components resolver
+        to_object: to_object_name # e.g. companies, will be set by components resolver
+      retriever:
+        $ref: "#/definitions/base_association_stream/retriever"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream:
+                $ref: "#/definitions/base_batched_stream"
+                $parameters:
+                  entity: from_object_name # e.g. tickets, will be set by components resolver
+                name: stream_name # e.g. tickets_batched, will be set by components resolver
+              parent_key: record_ids
+              partition_field: record_ids
+    components_resolver:
+      type: ConfigComponentsResolver
+# association_streams: [{stream_name: opt"association_blabla_to_blabla", from_object: req"tickets", to_object: req"companies"}]
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - association_streams
+      components_mapping:
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "name" ]
+          value: "{{ components_values['stream_name'] if components_values.get('stream_name') else 'associations_' + components_values['from_object'] + '_' + components_values['to_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "$parameters", "from_object"]
+          value: "{{ components_values['from_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "$parameters", "to_object"]
+          value: "{{ components_values['to_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "parent_stream_configs", "0", "$parameters", "entity"]
+          value: "{{ components_values['from_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "parent_stream_configs", '0', "name"]
+          value: "{{ components_values['from_object'] + '_batched' }}"
+
 
 spec:
   type: Spec
@@ -2209,6 +2333,89 @@ spec:
         default: 10
         examples: [ 1, 2, 3 ]
         description: The number of worker threads to use for the sync.
+      association_streams:
+        type: array
+        title: Association Between Objects Streams
+        items:
+          type: object
+          description: Association Between Objects Streams. Associations represent the relationships between objects and activities in the HubSpot CRM.
+          required:
+            - from_object
+            - to_object
+          properties:
+            from_object:
+              title: From Object
+              description: The name of the object associating.
+              type: string
+              enum:
+                - appointments # crm.objects.appointments.read scope is needed
+                - calls
+                - carts # crm.objects.carts.read
+                - communications
+                - companies
+                - contacts
+                - courses # crm.objects.courses.read
+                - deals
+                - discounts
+                - emails
+                - feedback_submissions
+                - fees
+                - goals
+                - invoices # crm.objects.invoices.read
+                - leads
+                - line_items
+                - listings # crm.objects.listings.read
+                - meetings
+                - notes
+                - orders # crm.objects.orders.read
+                - payments # crm.objects.commercepayments.read
+                - postal_mail
+                - projects # crm.objects.projects.read
+                - quotes # crm.objects.quotes.read
+                - services # crm.objects.services.read
+                - subscriptions # crm.objects.subscriptions.read
+                - tasks
+                - taxes
+                - tickets
+            to_object:
+              title: TO Object
+              description: The name of the object associating the record to.
+              type: string
+              enum:
+                - appointments
+                - calls
+                - carts
+                - communications
+                - companies
+                - contacts
+                - courses
+                - deals
+                - discounts
+                - emails
+                - feedback_submissions
+                - fees
+                - goals
+                - invoices
+                - leads
+                - line_items
+                - listings
+                - meetings
+                - notes
+                - orders
+                - payments
+                - postal_mail
+                - projects
+                - quotes
+                - services
+                - subscriptions
+                - tasks
+                - taxes
+                - tickets
+            stream_name:
+              type: string
+              title: Stream Name
+              description: The name to use for the Association Between Objects Stream. If not provided, default name associations_<from_object>_<to_object> will be used.
+
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -2279,6 +2486,33 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  base_association:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      from_id:
+        description: Source object ID
+        type: string
+      to_id:
+        description: Target object ID
+        type: string
+      association_type_id:
+        description: Numeric association type identifier
+        type:
+          - "null"
+          - integer
+      category:
+        description: Association category (HUBSPOT_DEFINED or USER_DEFINED)
+        type:
+          - "null"
+          - string
+      label:
+        description: Association label (null for unlabeled associations)
+        type:
+          - "null"
+          - string
+
   contact_lists:
     $schema: http://json-schema.org/draft-07/schema#
     type:
