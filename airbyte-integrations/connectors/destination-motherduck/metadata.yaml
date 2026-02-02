@@ -17,7 +17,7 @@ data:
       enabled: true
   releaseStage: alpha
   releases:
-    breakingChanges: []
+    breakingChanges: {}
   remoteRegistries:
     pypi:
       enabled: false
