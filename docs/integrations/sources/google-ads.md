@@ -291,6 +291,10 @@ Follow Google's guidance on [Selectability between segments and metrics](https:/
 :::info
 For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also subsequently refresh your source schema to pull in any changes.
 :::
+
+:::note
+Custom queries that use `click_view` as the resource are subject to the same limitations as the built-in `click_view` stream: data can only be retrieved for the past 90 days, and syncs are performed one day at a time.
+:::
 </FieldAnchor>
 
 <HideInUI>
@@ -335,7 +339,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.4-rc.1  | 2025-11-26 | [70228](https://github.com/airbytehq/airbyte/pull/70228) | Fix custom queries with tab characters and click_view custom queries                                                                                                   |
+| 4.1.4 | 2026-01-29 | [72453](https://github.com/airbytehq/airbyte/pull/72453) | Promoting release candidate 4.1.4-rc.1 to a main version. |
+| 4.1.4-rc.1  | 2025-12-17 | [70228](https://github.com/airbytehq/airbyte/pull/70228) | Fix custom queries with tab characters and click_view custom queries                                                                                                   |
 | 4.1.3       | 2025-11-25 | [69844](https://github.com/airbytehq/airbyte/pull/69844) | Fix custom queries regular expression to be case-insensitive                                                                                                           |
 | 4.1.2       | 2025-11-24 | [69837](https://github.com/airbytehq/airbyte/pull/69837) | Fix schema loader for custom queries                                                                                                                                   |
 | 4.1.1       | 2025-11-24 | [69802](https://github.com/airbytehq/airbyte/pull/69802) | Fix custom query regex conditions                                                                                                                                      |
