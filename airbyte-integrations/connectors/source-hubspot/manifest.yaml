@@ -388,9 +388,6 @@ definitions:
               partition_field: contact_ids
               stream:
                 $ref: "#/definitions/contacts_stream"
-                incremental_sync:
-                  $ref: "#/definitions/base_crm_search_incremental_stream/incremental_sync"
-                  allow_catalog_defined_cursor_field: false
               incremental_dependency: true
       record_selector:
         type: RecordSelector
