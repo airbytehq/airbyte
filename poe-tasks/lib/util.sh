@@ -54,13 +54,13 @@ get_only_connector() {
   echo "${connectors[@]:0:1}"
 }
 
-# Generate the prerelease image tag (e.g. `1.2.3-dev.abcde12345`).
+# Generate the prerelease image tag (e.g. `1.2.3-preview.abcde12`).
 generate_dev_tag() {
   local base="$1"
-  # force a 10-char short hash to match existing airbyte-ci behaviour.
+  # Use 7-char short hash to match the new prerelease format.
   local hash
-  hash=$(git rev-parse --short=10 HEAD)
-  echo "${base}-dev.${hash}"
+  hash=$(git rev-parse --short=7 HEAD)
+  echo "${base}-preview.${hash}"
 }
 
 # Authenticate to gcloud using the contents of a variable.

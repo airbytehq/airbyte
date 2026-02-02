@@ -12,10 +12,12 @@ import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import jakarta.inject.Singleton
 import java.math.BigDecimal
@@ -62,10 +64,13 @@ fun isVarcharValid(s: String): Boolean {
 }
 
 @Singleton
-class SnowflakeValueCoercer : ValueCoercer {
+class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         value.abValue =
-            if (value.type is UnionType) {
+            if (
+                !config.legacyRawTablesOnly &&
+                    (value.type is UnionType || value.type is UnknownType)
+            ) {
                 StringValue(value.abValue.serializeToString())
             } else {
                 value.abValue

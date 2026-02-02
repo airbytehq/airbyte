@@ -1,0 +1,70 @@
+name: Sync Agent Connector Docs
+
+on:
+  schedule:
+    - cron: "0 */2 * * *" # Every 2 hours
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  sync-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout airbyte repo
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Checkout airbyte-agent-connectors
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          repository: airbytehq/airbyte-agent-connectors
+          path: agent-connectors-source
+
+      - name: Sync connector docs
+        run: |
+          DEST_DIR="docs/ai-agents/connectors"
+          mkdir -p "$DEST_DIR"
+
+          for connector_dir in agent-connectors-source/connectors/*/; do
+            connector=$(basename "$connector_dir")
+
+            # Only delete/recreate the specific connector subdirectory
+            # This leaves any files directly in $DEST_DIR untouched
+            rm -rf "$DEST_DIR/$connector"
+            mkdir -p "$DEST_DIR/$connector"
+
+            # Copy all markdown files for this connector
+            for md_file in "$connector_dir"/*.md; do
+              if [ -f "$md_file" ]; then
+                cp "$md_file" "$DEST_DIR/$connector/"
+              fi
+            done
+          done
+
+          echo "Synced $(ls -d $DEST_DIR/*/ 2>/dev/null | wc -l) connectors"
+
+      - name: Cleanup temporary checkout
+        run: rm -rf agent-connectors-source
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Create PR if changes
+        uses: peter-evans/create-pull-request@0979079bc20c05bbbb590a56c21c4e2b1d1f1bbe # v6
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          commit-message: "docs: sync agent connector docs from airbyte-agent-connectors repo"
+          branch: auto-sync-ai-connector-docs
+          delete-branch: true
+          title: "docs: sync agent connector docs from airbyte-agent-connectors repo"
+          body: |
+            Automated sync of agent connector docs from airbyte-agent-connectors.
+
+            This PR was automatically created by the sync-agent-connector-docs workflow.
+          labels: |
+            documentation
+            auto-merge

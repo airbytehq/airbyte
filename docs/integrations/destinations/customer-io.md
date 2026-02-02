@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Customer.io
 
 ## Overview
 
-The Customer.io destination connector allows you to sync data to Customer.io, a customer data management platform. This connector supports [data activation](/platform/next/move-data/elt-data-activation).
+The Customer.io destination connector allows you to sync data to Customer.io, a customer data management platform. This connector supports [data activation](/platform/move-data/elt-data-activation).
 
 ## Prerequisites
 
@@ -68,7 +68,7 @@ Here are the destination objects and their respective operations that are curren
 
 In order to configure this connector, you need to generate your Track API Key and obtain your Site ID from Customer.io (Workspace Settings → API and webhook credentials → Create Track API Key). Once this is done, provide both the Site ID and API Key in the connector's configuration and you are good to go.
 
-**Object Storage for Rejected Records**: This connector supports data activation and can optionally store [rejected records](/platform/next/move-data/rejected-records) in object storage (such as S3). Configure object storage in the connector settings to capture records that couldn't be synced to Customer.io due to schema validation issues or other errors.
+**Object Storage for Rejected Records**: This connector supports data activation and can optionally store [rejected records](/platform/move-data/rejected-records) in object storage (such as S3). Configure object storage in the connector settings to capture records that couldn't be synced to Customer.io due to schema validation issues or other errors.
 
 ## Changelog
 

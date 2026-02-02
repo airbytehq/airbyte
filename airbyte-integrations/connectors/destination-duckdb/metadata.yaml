@@ -75,4 +75,7 @@ data:
     - title: SQL reference
       url: https://duckdb.org/docs/sql/introduction
       type: sql_reference
+    - title: MotherDuck Version Lifecycle Schedules
+      url: https://motherduck.com/docs/troubleshooting/version-lifecycle-schedules/
+      type: api_deprecations
 metadataSpecVersion: "1.0"

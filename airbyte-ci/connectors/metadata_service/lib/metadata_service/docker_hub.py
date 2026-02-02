@@ -28,8 +28,8 @@ def get_docker_hub_auth_token() -> str:
 
 
 def get_docker_hub_headers() -> Dict | None:
-    if "DOCKER_HUB_USERNAME" not in os.environ or "DOCKER_HUB_PASSWORD" not in os.environ:
-        # If the Docker Hub credentials are not provided, we can only anonymously call the Docker Hub API.
+    if not os.environ.get("DOCKER_HUB_USERNAME") or not os.environ.get("DOCKER_HUB_PASSWORD"):
+        # If the Docker Hub credentials are not provided (or are empty), we can only anonymously call the Docker Hub API.
         # This will only work for public images and lead to a lower rate limit.
         return {}
     else:

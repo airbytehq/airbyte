@@ -48,6 +48,7 @@ ETL
 ELT
 [Dd]ata activation
 ID
+[Aa]gent(ic)?
 
 # Common acronyms and initialisms that don't need definitions
 

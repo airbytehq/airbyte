@@ -46,7 +46,7 @@ class TestVersionIncrementCheck:
         assert result.status == CheckStatus.FAILED
         assert (
             result.message
-            == f"The dockerImageTag in {consts.METADATA_FILE_NAME} was not incremented. Master version is 1.0.0, current version is 1.0.0. Ignore this message if you do not intend to re-release the connector."
+            == f"The dockerImageTag in {consts.METADATA_FILE_NAME} was not incremented. Master version is 1.0.0, current version is 1.0.0. Ignore this message if you do not intend to re-release the connector. Maintainers can use the `/bump-version` PR slash command. AI agents can use the `bump_version_in_repo` tool from the `airbyte-ops-mcp` MCP server."
         )
 
     def test_validate_failure_decrement(self, mock_connector, mocker):
@@ -56,7 +56,7 @@ class TestVersionIncrementCheck:
         assert result.status == CheckStatus.FAILED
         assert (
             result.message
-            == f"The dockerImageTag in {consts.METADATA_FILE_NAME} appears to be lower than the version on the default branch. Master version is 1.1.0, current version is 1.0.0. Update your PR branch from the default branch to get the latest connector version."
+            == f"The dockerImageTag in {consts.METADATA_FILE_NAME} appears to be lower than the version on the default branch. Master version is 1.1.0, current version is 1.0.0. Update your PR branch from the default branch to get the latest connector version. Maintainers can use the `/bump-version` PR slash command. AI agents can use the `bump_version_in_repo` tool from the `airbyte-ops-mcp` MCP server."
         )
 
     def test_validate_success_rc_increment(self, mock_connector, mocker):

@@ -16,7 +16,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
+import io.airbyte.integrations.destination.clickhouse.schema.toClickHouseCompatibleName
 import java.math.RoundingMode
 import java.time.LocalTime
 import java.time.ZoneOffset

@@ -3487,7 +3487,7 @@ spec:
         type: integer
         title: Number of concurrent workers
         minimum: 2
-        maximum: 10
+        maximum: 20
         default: 10
         examples:
           - 2
@@ -3547,7 +3547,7 @@ spec:
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
-  max_concurrency: 10
+  max_concurrency: 20
 
 schemas:
   attribution_report_performance_adgroup:

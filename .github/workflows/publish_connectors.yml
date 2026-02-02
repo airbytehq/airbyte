@@ -21,6 +21,14 @@ on:
         required: false
         default: false
         type: boolean
+      gitref:
+        description: "Git ref (branch or SHA) to build connectors from. Used by pre-release workflow to build from PR branches."
+        required: false
+        type: string
+    outputs:
+      docker-image-tag:
+        description: "Docker image tag used when publishing. For single-connector callers only; multi-connector callers should not rely on this output."
+        value: ${{ jobs.publish_connector_registry_entries.outputs.docker-image-tag }}
   workflow_dispatch:
     inputs:
       connectors:
@@ -48,6 +56,7 @@ jobs:
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: List connectors to publish [manual]
@@ -105,6 +114,7 @@ jobs:
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
@@ -250,11 +260,14 @@ jobs:
       max-parallel: 5
       # Allow all jobs to run, even if one fails
       fail-fast: false
+    outputs:
+      docker-image-tag: ${{ steps.connector-metadata.outputs.docker-image-tag }}
     steps:
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
@@ -292,8 +305,8 @@ jobs:
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
           CONNECTOR_VERSION=$(poe -qq get-version)
           if [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
-            hash=$(git rev-parse --short=10 HEAD)
-            echo "docker-image-tag=${CONNECTOR_VERSION}-dev.${hash}" | tee -a $GITHUB_OUTPUT
+            hash=$(git rev-parse --short=7 HEAD)
+            echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
             echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
           else
             echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
@@ -349,6 +362,7 @@ jobs:
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
@@ -381,6 +395,7 @@ jobs:
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Notify PagerDuty
         id: pager-duty

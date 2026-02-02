@@ -96,15 +96,15 @@
 
 ## Milestone Summary
 
-| Guide | Phases | What Works | Lines | Time | Prerequisites |
-|-------|--------|------------|-------|------|---------------|
-| **1-getting-started.md** | Setup 1-2 | --spec | ~626 | 4h | None |
-| **2-database-setup.md** | Database 1-2 | --check | ~1180 | 6h | Guide 1 |
-| **3-write-infrastructure.md** | Infrastructure 1-2 | DI ready | ~600 | 4h | Guide 2 |
-| **4-write-operations.md** | Write 1-4 | --write (append, overwrite) | ~780 | 8h | Guide 3 |
-| **5-advanced-features.md** | Advanced 1-4 | All features | ~900 | 12h | Guide 4 |
-| **6-testing.md** | Testing 1 | All tests pass | ~730 | 2h | Guide 5 |
-| **7-troubleshooting.md** | Reference | Debug help | ~280 | As needed | Any |
+| Guide | Phases | What Works | Tests | Prerequisites |
+|-------|--------|------------|-------|---------------|
+| **1-getting-started.md** | Setup 1-2 | --spec | SpecTest | None |
+| **2-database-setup.md** | Database 1-2 | --check | TableOperationsSuite, CheckTest | Guide 1 |
+| **3-write-infrastructure.md** | Infrastructure 1-3 | DI ready | WriteInitTest | Guide 2 |
+| **4-write-operations.md** | Write 1-4 | --write (append, overwrite) | ConnectorWiringSuite | Guide 3 |
+| **5-advanced-features.md** | Advanced 1-3 | All features | TableSchemaEvolutionSuite | Guide 4 |
+| **6-testing.md** | Testing 1 | All tests pass | BasicFunctionalityIntegrationTest | Guide 5 |
+| **7-troubleshooting.md** | Reference | Debug help | - | Any |
 
 ---
 
@@ -122,6 +122,7 @@
 - ✅ `--check` operation validates configuration
 
 ### After Guide 3 (Write Infrastructure)
+- ✅ TableSchemaMapper (unified schema transformation)
 - ✅ Name generators (table, column, temp table)
 - ✅ TableCatalog DI setup
 - ✅ Write operation entry point
@@ -166,6 +167,7 @@
 - Component vs integration tests
 
 ### Guide 3: Write Infrastructure
+- TableSchemaMapper (unified schema transformation)
 - Name generators and column mapping
 - StreamStateStore pattern
 - Test contexts (component vs integration vs basic functionality)
