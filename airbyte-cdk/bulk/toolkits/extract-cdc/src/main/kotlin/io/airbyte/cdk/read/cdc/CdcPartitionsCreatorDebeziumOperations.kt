@@ -9,6 +9,25 @@ import io.airbyte.cdk.read.Stream
 
 interface CdcPartitionsCreatorDebeziumOperations<T : PartiallyOrdered<T>> {
 
+    companion object {
+        @Volatile private var hasRunStartup = false
+        @Synchronized
+        fun shouldRunStartup(): Boolean {
+            if (!hasRunStartup) {
+                hasRunStartup = true
+                return true
+            }
+            return false
+        }
+    }
+
+    /** Run optional startup hook if it hasn't already been run */
+    fun runStartup(offset: DebeziumOffset) {
+        if (shouldRunStartup()) {
+            startup(offset)
+        }
+    }
+
     /** Optional startup hook. */
     fun startup(offset: DebeziumOffset) {}
 

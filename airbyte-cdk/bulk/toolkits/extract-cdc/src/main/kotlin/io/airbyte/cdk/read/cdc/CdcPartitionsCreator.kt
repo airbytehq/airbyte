@@ -106,7 +106,7 @@ class CdcPartitionsCreator<T : PartiallyOrdered<T>>(
             }
         }
         // Optional startup hook
-        creatorOps.startup(startingOffset)
+        creatorOps.runStartup(startingOffset)
         // Build and return PartitionReader instance, if applicable.
         val partitionReader =
             CdcPartitionReader(
