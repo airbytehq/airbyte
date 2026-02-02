@@ -1871,7 +1871,7 @@ spec:
       slice_range:
         type: integer
         title: Data request time increment in days
-        default: 365
+        default: 30
         minimum: 1
         examples: [1, 3, 10, 30, 180, 360]
         description: >-
