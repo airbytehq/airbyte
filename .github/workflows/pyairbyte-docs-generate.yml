@@ -96,8 +96,9 @@ jobs:
           # Add Docusaurus-compatible frontmatter to generated markdown files
           # Use unique id and title based on file path to avoid translation key conflicts
           # See: https://github.com/facebook/docusaurus/discussions/11458
+          # Skip README.md to preserve its existing title ("PyAirbyte API Reference")
           base_dir="docs/developers/pyairbyte/reference"
-          for file in $(find "$base_dir" -name "*.md"); do
+          for file in $(find "$base_dir" -name "*.md" ! -name "README.md"); do
             # Generate unique id from relative path (e.g., airbyte/mcp/cloud_ops)
             rel_path="${file#$base_dir/}"
             module_path="${rel_path%.md}"
@@ -116,7 +117,7 @@ jobs:
             } > "${file}.tmp"
             mv "${file}.tmp" "$file"
           done
-          echo "Added Docusaurus frontmatter to all generated files"
+          echo "Added Docusaurus frontmatter to all generated files (excluding README.md)"
 
       - name: Sanitize for MDX Compatibility
         run: |

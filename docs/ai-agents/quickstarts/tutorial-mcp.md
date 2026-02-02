@@ -1,12 +1,12 @@
 ---
-sidebar_label: "Connector MCP tutorial"
+sidebar_label: "Open source Connector MCP"
 sidebar_position: 2
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Agent connector tutorial: Connector MCP
+# Agent connector tutorial: Open source Connector MCP
 
 In this tutorial, you'll install and run Airbyte's connector MCP server locally, connect the MCP server to Claude Code or your preferred agent, and learn to use natural language to explore your data. This tutorial uses Stripe, but if you don't have a Stripe account, you can use one of Airbyte's other agent connectors.
 

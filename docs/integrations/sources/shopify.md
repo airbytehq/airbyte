@@ -141,6 +141,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2024-04/resources/transactions)
 - [Blogs](https://shopify.dev/api/admin-rest/2024-04/resources/blog)
 - [Collects](https://shopify.dev/api/admin-rest/2024-04/resources/collect#top)
+- [Collection Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection#field-Collection.fields.products) - All products associated with each collection, including smart collection matches
 - [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Collection)
 - [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/deliveryProfiles)
 - [Custom Collections](https://shopify.dev/api/admin-rest/2024-04/resources/customcollection#top)
@@ -249,6 +250,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.0 | 2026-01-20 | [72209](https://github.com/airbytehq/airbyte/pull/72209) | Add `CollectionProducts` stream for all product-collection associations |
 | 3.1.2 | 2026-01-15 | [71188](https://github.com/airbytehq/airbyte/pull/71188) | Handle CDK exceptions in connection check |
 | 3.1.1 | 2026-01-06 | [71035](https://github.com/airbytehq/airbyte/pull/71035) | Fix IndexError in countries stream when profile_location_groups is empty |
 | 3.1.0 | 2026-01-05 | [71005](https://github.com/airbytehq/airbyte/pull/71005) | Add `deleted_products` stream using GraphQL Events API |

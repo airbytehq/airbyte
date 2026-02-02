@@ -55,7 +55,7 @@ data:
               - "tags"
       5.0.0:
         message: "This version adds OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens."
-        upgradeDeadline: "2026-01-31"
+        upgradeDeadline: "2026-01-30"
   suggestedStreams:
     streams:
       - brands

@@ -100,6 +100,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.17.4 | 2026-01-22 | [72260](https://github.com/airbytehq/airbyte/pull/72260) | Update CDK version from 7.0.1 to 7.6.5 |
 | 0.17.3 | 2025-11-06 | [68680](https://github.com/airbytehq/airbyte/pull/68680) | Handle 404 errors gracefully for date ranges with no data |
 | 0.17.2 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
 | 0.17.1 | 2025-09-15 | [66090](https://github.com/airbytehq/airbyte/pull/66090) | Update to CDK v7 |
