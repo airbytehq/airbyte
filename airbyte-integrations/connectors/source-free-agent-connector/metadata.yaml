@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-free-agent-connector
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.1@sha256:b433ec72f88e69bd836f3c7c815c21bfeeeb32501aeabf586bc421875289e5e2
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
   connectorSubtype: api
   connectorType: source
   definitionId: e3b1e503-2777-460c-80ef-5d6b41367858
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-free-agent-connector
   githubIssueLabel: source-free-agent-connector
   icon: icon.svg

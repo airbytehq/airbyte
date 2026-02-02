@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.config
@@ -10,12 +10,9 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils
-import io.airbyte.cdk.load.check.CheckOperationV2
-import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
@@ -28,7 +25,6 @@ import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
 import io.airbyte.integrations.destination.postgres.spec.SslModeVerifyCa
 import io.airbyte.integrations.destination.postgres.spec.SslModeVerifyFull
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -212,14 +208,6 @@ class PostgresBeanFactory {
             }
         }
     }
-
-    @Primary
-    @Singleton
-    @Requires(property = Operation.PROPERTY, value = "check")
-    fun checkOperation(
-        destinationChecker: DestinationCheckerV2,
-        outputConsumer: OutputConsumer,
-    ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
     fun aggregatePublishingConfig(): AggregatePublishingConfig {

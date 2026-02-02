@@ -1070,7 +1070,7 @@ definitions:
               {%- set _start_date = config.get("start_date") -%}
               {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
               {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1152,7 +1152,7 @@ definitions:
               {%- set _start_date = config.get("start_date") -%}
               {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
               {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1234,7 +1234,7 @@ definitions:
               {%- set _start_date = config.get("start_date") -%}
               {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
               {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1315,7 +1315,7 @@ definitions:
               {%- set _start_date = config.get("start_date") -%}
               {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
               {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -3186,8 +3186,8 @@ definitions:
       datetime: >-
         {%- set today = today_utc() - duration('P1D') -%}
         {%- set user_start_date = config.get('start_date', today.strftime('%Y-%m-%d')) -%}
-        {%- set ninety_days_ago = today - duration('P90D') -%}
-        "{{ max(user_start_date, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+        {%- set sixty_days_ago = today - duration('P60D') -%}
+        "{{ max(user_start_date, sixty_days_ago.strftime('%Y-%m-%d')) }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"

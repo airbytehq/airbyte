@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.message
@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
@@ -25,7 +26,6 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -38,8 +38,6 @@ import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteProbeMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
-import io.mockk.mockk
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -49,15 +47,13 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class DestinationMessageTest {
     private val uuidGenerator = UUIDGenerator()
 
     private fun factory(
-        isFileTransferEnabled: Boolean,
-        requireCheckpointKey: Boolean = false,
+        dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
         namespaceMapper: NamespaceMapper = NamespaceMapper()
     ) =
         DestinationMessageFactory(
@@ -93,9 +89,8 @@ internal class DestinationMessageTest {
                     )
                 )
             ),
-            isFileTransferEnabled,
-            requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey,
-            namespaceMapper,
+            dataChannelMedium = dataChannelMedium,
+            namespaceMapper = namespaceMapper,
             uuidGenerator = uuidGenerator,
         )
 
@@ -119,24 +114,7 @@ internal class DestinationMessageTest {
 
     @Test
     fun testThrowOnIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(isFileTransferEnabled = false), incompleteStatusMessage)
-            }
-        assertTrue(
-            e.message!!.startsWith(
-                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
-            ),
-            "Exception message was wrong: ${e.message}",
-        )
-    }
-
-    @Test
-    fun testThrowOnFileIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(isFileTransferEnabled = true), incompleteStatusMessage)
-            }
+        val e = assertThrows<ConfigErrorException> { convert(factory(), incompleteStatusMessage) }
         assertTrue(
             e.message!!.startsWith(
                 "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
@@ -148,15 +126,8 @@ internal class DestinationMessageTest {
     @ParameterizedTest
     @MethodSource("roundTrippableMessages")
     fun testRoundTripRecord(message: AirbyteMessage) {
-        val roundTripped = convert(factory(false), message).asProtocolMessage()
+        val roundTripped = convert(factory(), message).asProtocolMessage()
         assertEquals(message, roundTripped)
-    }
-
-    @ParameterizedTest
-    @MethodSource("roundTrippableFileMessages")
-    fun testRoundTripFile(message: AirbyteMessage) {
-        val roundTripped = convert(factory(true), message).asProtocolMessage()
-        Assertions.assertEquals(message, roundTripped)
     }
 
     // Checkpoint messages aren't round-trippable.
@@ -179,7 +150,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty("id", 1234)
                 )
 
-        val parsedMessage = convert(factory(false), inputMessage) as StreamCheckpoint
+        val parsedMessage = convert(factory(), inputMessage) as StreamCheckpoint
 
         assertEquals(
             // we represent the state message ID as a long, but jackson sees that 1234 can be Int,
@@ -219,7 +190,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty("id", 1234)
                 )
 
-        val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
+        val parsedMessage = convert(factory(), inputMessage) as GlobalCheckpoint
 
         assertEquals(
             inputMessage
@@ -251,7 +222,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
                 )
 
-        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val parsedMessage = convert(factory, inputMessage) as StreamCheckpoint
 
         assertNotNull(parsedMessage.checkpointKey)
@@ -293,7 +264,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
                 )
 
-        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val parsedMessage = convert(factory, inputMessage) as GlobalCheckpoint
 
         assertNotNull(parsedMessage.checkpointKey)
@@ -328,7 +299,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
                 )
 
-        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
 
         Assertions.assertThrows(IllegalStateException::class.java) {
             convert(factory, inputMessage)
@@ -359,7 +330,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
                 )
 
-        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
 
         Assertions.assertThrows(IllegalStateException::class.java) {
             convert(factory, inputMessage)
@@ -437,49 +408,6 @@ internal class DestinationMessageTest {
                         ),
                 )
                 .map { Arguments.of(it) }
-
-        @JvmStatic
-        fun roundTrippableFileMessages(): List<Arguments> {
-            val file =
-                mapOf(
-                    "file_url" to "file://foo/bar",
-                    "file_relative_path" to "foo/bar",
-                    "source_file_url" to "file://source/foo/bar",
-                    "modified" to 123L,
-                    "bytes" to 9001L,
-                )
-
-            return listOf(
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.RECORD)
-                        .withRecord(
-                            AirbyteRecordMessage()
-                                .withStream("name")
-                                .withNamespace("namespace")
-                                .withEmittedAt(1234)
-                                .withAdditionalProperty("file", file)
-                        ),
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.TRACE)
-                        .withTrace(
-                            AirbyteTraceMessage()
-                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                                .withEmittedAt(1234.0)
-                                .withStreamStatus(
-                                    AirbyteStreamStatusTraceMessage()
-                                        // Intentionally no "reasons" here - destinations never
-                                        // inspect that
-                                        // field, so it's not round-trippable
-                                        .withStreamDescriptor(descriptor.asProtocolObject())
-                                        .withStatus(
-                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                                .COMPLETE
-                                        )
-                                )
-                        ),
-                )
-                .map { Arguments.of(it) }
-        }
     }
 
     @Test
@@ -496,85 +424,12 @@ internal class DestinationMessageTest {
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
                 )
 
-        assertDoesNotThrow { convert(factory(false), inputMessage) as StreamCheckpoint }
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-        "/files/test/1.pdf, /assets/test/1.pdf, 30",
-        "/files/test/index.html, /html/test/1.html, 12580",
-        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999"
-    )
-    fun `a file reference can be parsed from a protocol message`(
-        stagingFileUrl: String,
-        sourceFileRelativePath: String,
-        fileSizeBytes: Long,
-    ) {
-        val proto = AirbyteRecordMessageFileReference()
-        proto.stagingFileUrl = stagingFileUrl
-        proto.sourceFileRelativePath = sourceFileRelativePath
-        proto.fileSizeBytes = fileSizeBytes
-
-        val internal = FileReference.fromProtocol(proto)
-        assertEquals(stagingFileUrl, internal.stagingFileUrl)
-        assertEquals(sourceFileRelativePath, internal.sourceFileRelativePath)
-        assertEquals(fileSizeBytes, internal.fileSizeBytes)
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-        "/files/test/1.pdf, /assets/test/1.pdf, 30",
-        "/files/test/index.html, /html/test/1.html, 12580",
-        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999"
-    )
-    fun `a destination record raw is initialized with a file reference if present on the protocol msg`(
-        stagingFileUrl: String,
-        sourceFileRelativePath: String,
-        fileSizeBytes: Long,
-    ) {
-        val fileRefProto = AirbyteRecordMessageFileReference()
-        fileRefProto.stagingFileUrl = stagingFileUrl
-        fileRefProto.sourceFileRelativePath = sourceFileRelativePath
-        fileRefProto.fileSizeBytes = fileSizeBytes
-
-        val msg =
-            AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(AirbyteRecordMessage().withFileReference(fileRefProto))
-
-        val internalRecord =
-            DestinationRecordRaw(
-                stream = mockk(relaxed = true),
-                rawData = DestinationRecordJsonSource(msg),
-                serializedSizeBytes = "serialized".length.toLong(),
-                airbyteRawId = uuidGenerator.v7(),
-            )
-
-        assertEquals(stagingFileUrl, internalRecord.fileReference!!.stagingFileUrl)
-        assertEquals(sourceFileRelativePath, internalRecord.fileReference!!.sourceFileRelativePath)
-        assertEquals(fileSizeBytes, internalRecord.fileReference!!.fileSizeBytes)
-    }
-
-    @Test
-    fun `a destination record raw is initialized with a null reference if not present on protocol msg`() {
-        val msg =
-            AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(AirbyteRecordMessage().withFileReference(null))
-        val internalRecord =
-            DestinationRecordRaw(
-                stream = mockk(relaxed = true),
-                rawData = DestinationRecordJsonSource(msg),
-                serializedSizeBytes = "serialized".length.toLong(),
-                airbyteRawId = uuidGenerator.v7(),
-            )
-
-        assertNull(internalRecord.fileReference)
+        assertDoesNotThrow { convert(factory(), inputMessage) as StreamCheckpoint }
     }
 
     @Test
     fun `message factory throws if required checkpoint key missing from state`() {
-        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val inputMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
@@ -596,7 +451,7 @@ internal class DestinationMessageTest {
 
     @Test
     fun `message factory throws if required checkpoint id missing from record`() {
-        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val inputMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
@@ -672,8 +527,7 @@ internal class DestinationMessageTest {
         val factory =
             DestinationMessageFactory(
                 catalog = catalog,
-                fileTransferEnabled = false,
-                requireCheckpointIdOnRecordAndKeyOnState = true,
+                dataChannelMedium = DataChannelMedium.SOCKET,
                 namespaceMapper = NamespaceMapper(),
                 uuidGenerator = uuidGenerator,
             )
@@ -725,7 +579,7 @@ internal class DestinationMessageTest {
 
     @Test
     fun `message factory creates control message from protobuf-wrapped airbyte message`() {
-        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val inputStateMessage =
             AirbyteMessageProtobuf.newBuilder()
                 .setAirbyteProtocolMessage(
@@ -759,7 +613,7 @@ internal class DestinationMessageTest {
 
     @Test
     fun `message factory creates heartbeat from protobuf heartbeat`() {
-        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val heartbeatMessage =
             AirbyteMessageProtobuf.newBuilder()
                 .setProbe(AirbyteProbeMessageProtobuf.newBuilder().build())
@@ -796,7 +650,7 @@ internal class DestinationMessageTest {
                         .withAdditionalProperty("id", 1234)
                 )
 
-        val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
+        val parsedMessage = convert(factory(), inputMessage) as GlobalCheckpoint
 
         assertEquals(
             inputMessage

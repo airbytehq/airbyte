@@ -57,7 +57,8 @@ This directory contains the manifest-only connector for source-zoho-desk
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.40 | 2025-12-16 | [70798](https://github.com/airbytehq/airbyte/pull/70798) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71385](https://github.com/airbytehq/airbyte/pull/71385) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70798](https://github.com/airbytehq/airbyte/pull/70798) | Update dependencies |
 | 0.0.39 | 2025-11-25 | [70150](https://github.com/airbytehq/airbyte/pull/70150) | Update dependencies |
 | 0.0.38 | 2025-11-18 | [69430](https://github.com/airbytehq/airbyte/pull/69430) | Update dependencies |
 | 0.0.37 | 2025-10-29 | [68986](https://github.com/airbytehq/airbyte/pull/68986) | Update dependencies |
@@ -68,9 +69,9 @@ This directory contains the manifest-only connector for source-zoho-desk
 | 0.0.32 | 2025-09-24 | [66464](https://github.com/airbytehq/airbyte/pull/66464) | Update dependencies |
 | 0.0.31 | 2025-09-09 | [65657](https://github.com/airbytehq/airbyte/pull/65657) | Update dependencies |
 | 0.0.30 | 2025-08-24 | [65441](https://github.com/airbytehq/airbyte/pull/65441) | Update dependencies |
-| 0.0.29 | 2025-08-09 | [64807](https://github.com/airbytehq/airbyte/pull/64807) | Update dependencies |
+| 0.0.29 | 2025-08-10 | [64807](https://github.com/airbytehq/airbyte/pull/64807) | Update dependencies |
 | 0.0.28 | 2025-08-02 | [64311](https://github.com/airbytehq/airbyte/pull/64311) | Update dependencies |
-| 0.0.27 | 2025-07-26 | [64083](https://github.com/airbytehq/airbyte/pull/64083) | Update dependencies |
+| 0.0.27 | 2025-07-27 | [64083](https://github.com/airbytehq/airbyte/pull/64083) | Update dependencies |
 | 0.0.26 | 2025-07-19 | [63633](https://github.com/airbytehq/airbyte/pull/63633) | Update dependencies |
 | 0.0.25 | 2025-07-12 | [63199](https://github.com/airbytehq/airbyte/pull/63199) | Update dependencies |
 | 0.0.24 | 2025-07-05 | [62672](https://github.com/airbytehq/airbyte/pull/62672) | Update dependencies |

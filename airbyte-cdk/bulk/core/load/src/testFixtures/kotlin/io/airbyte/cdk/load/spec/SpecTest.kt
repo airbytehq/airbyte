@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.spec
@@ -14,6 +14,7 @@ import com.deblock.jsondiff.viewer.OnlyErrorDiffViewer
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.EnvVarConstants.AIRBYTE_EDITION
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.test.util.CharacterizationTest.testResourcesPath
 import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
@@ -22,7 +23,6 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToPrettyPrintedString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.file.Files
-import java.nio.file.Path
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -47,8 +47,6 @@ abstract class SpecTest(
         recordMangler = NoopExpectedRecordMapper,
         micronautProperties = micronautProperties,
     ) {
-    private val testResourcesPath = Path.of("src/test-integration/resources")
-
     @Test
     fun testSpecOss() {
         testSpec(

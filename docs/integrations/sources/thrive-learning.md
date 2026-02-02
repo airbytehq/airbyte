@@ -23,7 +23,9 @@ A Connector for Thrive Learning
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.20 | 2025-12-16 | [70735](https://github.com/airbytehq/airbyte/pull/70735) | Update dependencies |
+| 0.0.22 | 2026-01-20 | [72018](https://github.com/airbytehq/airbyte/pull/72018) | Update dependencies |
+| 0.0.21 | 2026-01-14 | [71424](https://github.com/airbytehq/airbyte/pull/71424) | Update dependencies |
+| 0.0.20 | 2025-12-18 | [70735](https://github.com/airbytehq/airbyte/pull/70735) | Update dependencies |
 | 0.0.19 | 2025-11-25 | [69852](https://github.com/airbytehq/airbyte/pull/69852) | Update dependencies |
 | 0.0.18 | 2025-11-18 | [69662](https://github.com/airbytehq/airbyte/pull/69662) | Update dependencies |
 | 0.0.17 | 2025-10-29 | [69038](https://github.com/airbytehq/airbyte/pull/69038) | Update dependencies |

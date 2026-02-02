@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.component.config
@@ -22,6 +22,8 @@ import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertB
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.sql.Timestamp
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
@@ -88,15 +90,51 @@ class SnowflakeTestTableOperationsClient(
                                 val columnType = metaData.getColumnTypeName(i)
                                 when (columnType) {
                                     "TIMESTAMPTZ" -> {
-                                        val value =
-                                            resultSet.getTimestamp(i)
-                                                as SnowflakeTimestampWithTimezone?
-                                        if (value != null) {
-                                            val formattedTimestamp =
-                                                DateTimeFormatter.ISO_DATE_TIME.format(
-                                                    value.toZonedDateTime().toOffsetDateTime()
-                                                )
-                                            row[columnName] = formattedTimestamp
+                                        resultSet.getTimestamp(i)?.let {
+                                            val odt =
+                                                when (it) {
+                                                    // Most timestamps are returned as
+                                                    // SnowflakeTimestampWithTimezone,
+                                                    // which has a toZonedDateTime function
+                                                    is SnowflakeTimestampWithTimezone ->
+                                                        it.toZonedDateTime().toOffsetDateTime()
+                                                    // Some timestamps are returned as
+                                                    // java.sql.Timestamp,
+                                                    // so we just assume UTC.
+                                                    is Timestamp ->
+                                                        it.toLocalDateTime()
+                                                            .atOffset(ZoneOffset.UTC)
+                                                }
+                                            row[columnName] =
+                                                DateTimeFormatter.ISO_DATE_TIME.format(odt)
+                                        }
+                                    }
+                                    "TIMESTAMPNTZ" -> {
+                                        resultSet.getTimestamp(i)?.let {
+                                            row[columnName] = it.toLocalDateTime()
+                                        }
+                                    }
+                                    "TIME" -> {
+                                        // resultSet.getObject (and .getTime) returns a
+                                        // java.sql.Time object, which only stores milliseconds
+                                        // precision.
+                                        // Snowflake supports up to nanoseconds precision, so we
+                                        // need retrieve the object as a timestamp, and convert that
+                                        // back to LocalTime.
+                                        resultSet.getTimestamp(i)?.let {
+                                            row[columnName] =
+                                                it.toLocalDateTime().toLocalTime().toString()
+                                        }
+                                    }
+                                    "DATE" -> {
+                                        // resultSet.getObject returns a java.sql.Date object,
+                                        // but its underlying `cdate` value is offset by someone's
+                                        // local timezone (unclear whether that's our snowflake user
+                                        // timezone, or the TZ of the computer running the test),
+                                        // and that breaks equality comparison.
+                                        // So just convert to String.
+                                        resultSet.getDate(i)?.let {
+                                            row[columnName] = it.toString()
                                         }
                                     }
                                     "VARIANT",
@@ -117,6 +155,15 @@ class SnowflakeTestTableOperationsClient(
                                             row[columnName] = actualValue
                                         }
                                     }
+                                    // We need to return as bigdecimal instead of double, so use
+                                    // getBigDecimal instead of getObject.
+                                    // Snowflake returns values that aren't actually representable
+                                    // as a Java double. E.g.
+                                    // 1.7976931348623157e308 (Double.MAX_VALUE)
+                                    // 1.79769313486232e308 (actual Snowflake value)
+                                    // Note that the snowflake value is rounded _upward_, and
+                                    // therefore exceeds Double.MAX_VALUE.
+                                    "DOUBLE" -> row[columnName] = resultSet.getBigDecimal(i)
                                     else -> {
                                         val value = resultSet.getObject(i)
                                         if (value != null) {

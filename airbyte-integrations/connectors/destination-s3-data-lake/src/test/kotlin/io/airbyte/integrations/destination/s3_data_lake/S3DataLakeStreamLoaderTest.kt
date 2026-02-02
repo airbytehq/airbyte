@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_data_lake
@@ -24,6 +24,10 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
@@ -54,6 +58,18 @@ internal class S3DataLakeStreamLoaderTest {
     @MockK(relaxed = true)
     private lateinit var streamStateStore: StreamStateStore<S3DataLakeStreamState>
 
+    private val emptyTableSchema =
+        StreamTableSchema(
+            columnSchema =
+                ColumnSchema(
+                    inputSchema = mapOf(),
+                    inputToFinalColumnNames = mapOf(),
+                    finalSchema = mapOf(),
+                ),
+            importType = Append,
+            tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+        )
+
     @BeforeEach
     fun setup() {
         every { streamStateStore.put(any(), any()) } returns Unit
@@ -78,6 +94,7 @@ internal class S3DataLakeStreamLoaderTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
             )
         val icebergSchema =
             Schema(
@@ -190,6 +207,7 @@ internal class S3DataLakeStreamLoaderTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
             )
         val icebergSchema =
             Schema(
@@ -307,6 +325,7 @@ internal class S3DataLakeStreamLoaderTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
             )
         val columns =
             listOf(
@@ -457,6 +476,7 @@ internal class S3DataLakeStreamLoaderTest {
                 unmappedName = "name",
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema = emptyTableSchema,
             )
         val icebergConfiguration: S3DataLakeConfiguration = mockk()
         val s3DataLakeUtil: S3DataLakeUtil = mockk()

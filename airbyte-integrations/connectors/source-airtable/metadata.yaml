@@ -7,11 +7,11 @@ data:
       - api.airtable.com
       - airtable.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
-  dockerImageTag: 4.6.16-rc.1
+  dockerImageTag: 4.6.19
   dockerRepository: airbyte/source-airtable
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   externalDocumentationUrls:
@@ -53,7 +53,7 @@ data:
         message: This release introduces changes to columns with formula to parse values directly from `array` to `string` or `number` (where it is possible). Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2023-10-23"
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   supportLevel: certified
   tags:
     - language:manifest-only

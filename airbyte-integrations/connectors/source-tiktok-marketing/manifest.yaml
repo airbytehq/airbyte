@@ -2201,11 +2201,20 @@ definitions:
         path: pixel/event/stats/
         http_method: GET
         request_parameters:
-          pixel_ids: "{{ [stream_partition['pixel_id']] }}"
-          date_range: >-
-            {"start_date":{{
-            day_delta(29, format='%Y-%m-%d') }},"end_date":{{ format_datetime(now_utc(),
-            '%Y-%m-%d') }}}
+          pixel_ids: "{{ [stream_partition['pixel_id']] | string}}"
+          date_range: "{{ {'start_date': day_delta(-29, format='%Y-%m-%d'), 'end_date': format_datetime(now_utc(), '%Y-%m-%d')} | string }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - predicate: "{{ response.get('code') == 40100 }}"
+              action: RATE_LIMITED
+              error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 40001 and 'Adv has no permission to operate on the Pixel' in response['message'] }}"
+              action: IGNORE
+              error_message: "{{ response['message'] }}"
+            - predicate: "{{ response.get('code') != 0 }}"
+              action: FAIL
+              error_message: "{{ response['message'] }}"
       record_selector:
         type: RecordSelector
         extractor:

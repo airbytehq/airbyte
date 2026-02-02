@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.config
@@ -52,4 +52,9 @@ class DispatcherBeanFactory {
     @Named("streamFinalizeDispatcher")
     @Singleton
     fun streamFinalizeDispatcher() = Dispatchers.Default.limitedParallelism(10)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Named("finalFlushDispatcher")
+    @Singleton
+    fun finalFlushDispatcher() = Dispatchers.Default.limitedParallelism(10)
 }
