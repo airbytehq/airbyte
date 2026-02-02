@@ -45,9 +45,18 @@ Before implementing an OAuth flow, ensure you have:
 
 4. **A redirect URL**: A URL in your app that receives the OAuth callback with the `secret_id`.
 
-## Part 1: Configure OAuth overrides
+## Part 1: Configure OAuth overrides (optional)
 
-By default, Airbyte uses its own OAuth app credentials for each connector. To use your own OAuth app, configure OAuth credential overrides.
+By default, Airbyte uses its own OAuth app credentials for each connector. If you skip this step, the OAuth consent screen will show "Airbyte" as the requesting application.
+
+You only need to configure OAuth overrides if you want to:
+
+- **Custom branding**: Show your company's name and logo on the OAuth consent screen instead of "Airbyte"
+- **Custom scopes**: Request different OAuth permissions than Airbyte's default app
+- **Compliance requirements**: Use your own OAuth credentials for audit or security purposes
+- **Rate limits**: Avoid shared rate limits on Airbyte's OAuth app for high-volume usage
+
+If none of these apply, skip to [Part 2](#part-2-initiate-the-oauth-flow).
 
 ### Endpoint
 
