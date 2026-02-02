@@ -30,6 +30,7 @@ import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.cdk.util.containsIgnoreCase
 import io.airbyte.cdk.util.findIgnoreCase
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
+import io.airbyte.integrations.destination.bigquery.spec.PartitioningGranularity
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
@@ -472,29 +473,57 @@ class BigqueryTableSchemaEvolutionClient(
             existingTable: StandardTableDefinition,
             streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
         ): Boolean {
-            val expectedPartitionField =
+            val (expectedPartitionField, expectedPartitionType) =
                 resolvePartitioningField(stream, columnNameMapping, streamConfigProvider)
             return existingTable.timePartitioning != null &&
                 existingTable.timePartitioning!!
                     .field
                     .equals(expectedPartitionField, ignoreCase = true) &&
-                TimePartitioning.Type.DAY == existingTable.timePartitioning!!.type
+                expectedPartitionType == existingTable.timePartitioning!!.type
         }
 
         private fun resolvePartitioningField(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping,
             streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
-        ): String {
+        ): Pair<String, TimePartitioning.Type> {
             val requestedField = streamConfigProvider.getPartitioningField(stream.unmappedDescriptor)
-            if (requestedField == "_airbyte_extracted_at") {
-                return requestedField
+            val granularity = streamConfigProvider.getPartitioningGranularity(stream.unmappedDescriptor)
+            val expectedPartitionType =
+                when (granularity) {
+                    PartitioningGranularity.DAY -> TimePartitioning.Type.DAY
+                    PartitioningGranularity.MONTH -> TimePartitioning.Type.MONTH
+                    PartitioningGranularity.YEAR -> TimePartitioning.Type.YEAR
+                }
+
+            val (mappedField, fieldType) =
+                if (requestedField == "_airbyte_extracted_at") {
+                    "_airbyte_extracted_at" to StandardSQLTypeName.TIMESTAMP
+                } else {
+                    val mappedName =
+                        columnNameMapping[requestedField]
+                            ?: throw ConfigErrorException(
+                                "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' does not exist in the schema"
+                            )
+                    val schemaField =
+                        stream.schema.asColumns()[requestedField]
+                            ?: throw ConfigErrorException(
+                                "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' does not exist in the schema"
+                            )
+                    mappedName to BigqueryDirectLoadSqlGenerator.toDialectType(schemaField.type)
+                }
+
+            if (
+                fieldType != StandardSQLTypeName.DATE &&
+                    fieldType != StandardSQLTypeName.TIMESTAMP &&
+                    fieldType != StandardSQLTypeName.DATETIME
+            ) {
+                throw ConfigErrorException(
+                    "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' must be DATE, TIMESTAMP, or DATETIME"
+                )
             }
 
-            return columnNameMapping[requestedField]
-                ?: throw ConfigErrorException(
-                    "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' does not exist in the schema"
-                )
+            return mappedField to expectedPartitionType
         }
     }
 

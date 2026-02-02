@@ -68,7 +68,7 @@ class BigqueryDirectLoadSqlGenerator(
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
 
-        val partitioningField = streamConfigProvider.getPartitioningField(stream.unmappedDescriptor)
+        val partitioningExpression = resolvePartitioningExpression(stream, columnNameMapping)
         val finalTableId = tableName.toPrettyString(QUOTE)
         
         // bigquery has a CREATE OR REPLACE TABLE statement, but we can't use it
@@ -92,7 +92,7 @@ class BigqueryDirectLoadSqlGenerator(
                   _airbyte_generation_id INTEGER,
                   $columnDeclarations
                 )
-                PARTITION BY (DATE_TRUNC(`$partitioningField`, DAY))
+                PARTITION BY ($partitioningExpression)
                 CLUSTER BY $clusterConfig;
                 """.trimIndent()
             )
@@ -396,5 +396,41 @@ class BigqueryDirectLoadSqlGenerator(
 
         // Default behavior: use PK-based clustering
         return clusteringColumns(stream, columnNameMapping)
+    }
+
+    private fun resolvePartitioningExpression(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+    ): String {
+        val requestedField = streamConfigProvider.getPartitioningField(stream.unmappedDescriptor)
+        val granularity = streamConfigProvider.getPartitioningGranularity(stream.unmappedDescriptor)
+
+        val (sqlField, fieldType) =
+            if (requestedField == "_airbyte_extracted_at") {
+                "_airbyte_extracted_at" to StandardSQLTypeName.TIMESTAMP
+            } else {
+                val mappedName =
+                    columnNameMapping[requestedField]
+                        ?: throw ConfigErrorException(
+                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' does not exist in the schema"
+                        )
+                val schemaField =
+                    stream.schema.asColumns()[requestedField]
+                        ?: throw ConfigErrorException(
+                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' does not exist in the schema"
+                        )
+                mappedName to toDialectType(schemaField.type)
+            }
+
+        val granularityLiteral = granularity.name
+        return when (fieldType) {
+            StandardSQLTypeName.DATE -> "DATE_TRUNC(`$sqlField`, $granularityLiteral)"
+            StandardSQLTypeName.TIMESTAMP -> "TIMESTAMP_TRUNC(`$sqlField`, $granularityLiteral)"
+            StandardSQLTypeName.DATETIME -> "DATETIME_TRUNC(`$sqlField`, $granularityLiteral)"
+            else ->
+                throw ConfigErrorException(
+                    "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' must be DATE, TIMESTAMP, or DATETIME for $granularityLiteral partitioning"
+                )
+        }
     }
 }

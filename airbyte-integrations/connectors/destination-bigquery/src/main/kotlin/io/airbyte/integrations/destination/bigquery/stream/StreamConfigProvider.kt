@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery.stream
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.StreamLevelConfig
+import io.airbyte.integrations.destination.bigquery.spec.PartitioningGranularity
 import jakarta.inject.Singleton
 
 /**
@@ -52,6 +53,16 @@ class StreamConfigProvider(
         return getStreamConfig(descriptor)?.partitioningField
             ?: config.defaultPartitioningField
             ?: "_airbyte_extracted_at"
+    }
+
+    /**
+     * Get the effective partitioning granularity for a stream.
+     * Priority: stream config > default config > DAY
+     */
+    fun getPartitioningGranularity(descriptor: DestinationStream.Descriptor): PartitioningGranularity {
+        return getStreamConfig(descriptor)?.partitioningGranularity
+            ?: config.defaultPartitioningGranularity
+            ?: PartitioningGranularity.DAY
     }
     
     /**
