@@ -84,7 +84,8 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
-8. Click **Set up source** and wait for the tests to complete.
+8. (Optional) For **Page Size (ticket_comments)**, enter the number of records to fetch per API request for the ticket_comments stream. The default is 100, with a maximum of 1000. Lower values may help prevent timeouts when syncing large datasets.
+9. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 <HideInUI>
