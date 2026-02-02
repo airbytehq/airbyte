@@ -257,35 +257,48 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        request_parameters:
-          propertyMode: value_and_history
-          propertiesWithHistory:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path: ["name"]
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  type: HttpRequester
-                  url_base: https://api.hubapi.com
-                  authenticator:
-                    $ref: "#/definitions/authenticator"
-                  path: /properties/v2/companies/properties
-                  http_method: GET
-                  request_headers:
-                    Content-Type: "application/json"
-                  error_handler:
-                    $ref: "#/definitions/base_error_handler"
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
+        http_method: POST
+        fetch_properties_from_endpoint:
+          type: PropertiesFromEndpoint
+          property_field_path: ["name"]
+          retriever:
+            type: SimpleRetriever
+            requester:
+              type: HttpRequester
+              url_base: https://api.hubapi.com
+              authenticator:
+                $ref: "#/definitions/authenticator"
+              path: "/properties/v2/companies/properties"
+              http_method: GET
+              request_headers:
+                Content-Type: "application/json"
+              error_handler:
+                $ref: "#/definitions/base_error_handler"
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: []
+        request_body_json:
+          propertiesWithHistory: "{{ stream_slice.extra_fields['query_properties'] }}"
+          inputs: >-
+            {% set transformed = [] -%}
+              {%- for id in stream_partition['company_ids'] -%}
+              {%- set _ = transformed.append({'id': id}) -%}
+              {%- endfor -%}
+            {{ transformed }}
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 50
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_ids
+              stream:
+                $ref: "#/definitions/companies_stream"
+              incremental_dependency: true
       record_selector:
         type: RecordSelector
         extractor:
@@ -329,7 +342,7 @@ definitions:
         cursor_field: timestamp
     $parameters:
       name: companies_property_history
-      path: /crm/v3/objects/companies
+      path: /crm/v3/objects/companies/batch/read
       extractor_field_path: results
       required_scopes: crm.objects.companies.read
     schema_loader:
