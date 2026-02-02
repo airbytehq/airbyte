@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-    - '*'
+      - "*"
   registryOverrides:
     oss:
       enabled: true
@@ -15,6 +15,9 @@ data:
       enabled: false
       packageName: airbyte-source-pokeapi
   connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
     baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
   connectorSubtype: api
   connectorType: source
@@ -25,27 +28,27 @@ data:
   icon: pokeapi.svg
   license: ELv2
   name: PokeAPI
-  releaseDate: '2020-05-14'
+  releaseDate: "2020-05-14"
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
   tags:
-  - cdk:low-code
-  - language:manifest-only
+    - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: pokeapi_config_dev_null
-      id: 5a290dcf-b2cf-4768-ac2d-a1aaca90c186
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-POKEAPI__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: pokeapi_config_dev_null
+          id: 5a290dcf-b2cf-4768-ac2d-a1aaca90c186
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-POKEAPI__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-  - title: "Pok\xE9API documentation"
-    url: https://pokeapi.co/docs/v2
-    type: api_reference
-metadataSpecVersion: '1.0'
+    - title: PokéAPI documentation
+      url: https://pokeapi.co/docs/v2
+      type: api_reference
+metadataSpecVersion: "1.0"
