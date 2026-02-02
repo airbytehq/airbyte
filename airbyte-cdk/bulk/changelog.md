@@ -1,3 +1,7 @@
+## Version 0.2.5
+
+Fix legacy-task-loader base dependency: `implementation` -> `api` for transitive resolution.
+
 # Bulk CDK
 
 The Bulk CDK is Airbyte's Kotlin-based CDK for developing connectors optimized for speed using protobuf encoding for data transfer. It uses Micronaut for dependency injection.
