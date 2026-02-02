@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
-import io.airbyte.cdk.load.util.setOnce
 import java.io.File
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -44,7 +43,7 @@ object RestTestContainers {
 
     /** Start the test containers, or skip if they're already started. */
     fun start() {
-        if (startRestContainerRunOnce.setOnce()) {
+        if (startRestContainerRunOnce.compareAndSet(false, true)) {
             testcontainers.start()
         }
         // If it's already started, do nothing; the containers remain up.

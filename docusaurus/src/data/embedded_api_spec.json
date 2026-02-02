@@ -1537,7 +1537,7 @@
     "/api/v1/connectors/sources/{source_id}/entities": {
       "get": {
         "summary": "Get Source Entities",
-        "description": "Get entity metadata for a source, merging cache schema with motherduck metadata.\n\nReturns entities from x-airbyte-cache merged with actual tables from motherduck.\n- If entity exists in both: prefer cache schema (has descriptions)\n- If entity exists only in motherduck: include it (undocumented entities)\n- If no x-airbyte-cache: show all motherduck entities\n\nImplementation details (x-airbyte-name fields) are excluded from the response.\n\nArgs:\n    source_id: The UUID of the source\n\nReturns:\n    EntitiesResponse containing merged entity metadata\n\nRaises:\n    HTTPException: 404 if source not found",
+        "description": "Get entity metadata for a source, merging cache schema with motherduck metadata.\n\nReturns entities from x-airbyte-cache merged with actual tables from motherduck.\n- If entity exists in both: prefer cache schema (has descriptions)\n- If entity exists only in motherduck: include it (undocumented entities)\n- If no x-airbyte-cache: show all motherduck entities\n- If cache not ready: still returns entities from config with cache_status indicating sync in progress\n\nImplementation details (x-airbyte-name fields) are excluded from the response.\n\nArgs:\n    source_id: The UUID of the source\n\nReturns:\n    EntitiesResponse containing merged entity metadata and cache status\n\nRaises:\n    HTTPException: 404 if source not found",
         "operationId": "get_connectors_sources_source_id_entities",
         "security": [
           {
@@ -1625,8 +1625,9 @@
     "/api/v1/connectors/sources/{source_id}/execute": {
       "post": {
         "summary": "Execute Via Source",
-        "description": "Execute a connector operation using an Airbyte Platform source ID.\n\nThis endpoint provides an alternative execution path that uses Platform's\nexisting source configurations instead of Sonar-managed connector instances.\n\nActions:\n    - SEARCH: Uses the cache via SearchClient. Requires query field, entity is stream name.\n    - Other actions (list, get, create, download, api_search): Execute via connector SDK.\n\nArgs:\n    source_id: Airbyte Platform source ID (UUID)\n    request: Operation details (entity, action, params/query)\n    controller: Injected SourceExecuteController\n\nReturns:\n    ConnectorExecuteResponse for all actions (wraps search results for SEARCH action)",
-        "operationId": "create_connectors_sources_source_id_execute",
+        "description": "Execute a connector operation using an Airbyte Platform source ID.\n\nThis endpoint provides an alternative execution path that uses Platform's\nexisting source configurations instead of Sonar-managed connector instances.\n\nActions:\n    - SEARCH: Uses the cache via SearchClient. Requires query field, entity is stream name.\n    - Other actions (list, get, create, download, api_search): Execute via connector SDK.\n\nArgs:\n    source_id: Airbyte Platform source ID (UUID)\n    request: Operation details (entity, action, params/query)\n    controller: Injected ConnectorExecuteController\n\nReturns:\n    ConnectorExecuteResponse for all actions (wraps search results for SEARCH action)",
+        "operationId": "deprecated_create_connectors_sources_source_id_execute",
+        "deprecated": true,
         "security": [
           {
             "HTTPBearer": []
@@ -1811,7 +1812,7 @@
       "post": {
         "tags": ["Embedded"],
         "summary": "Create Connector Source",
-        "description": "Create a new connector source using replication_config.",
+        "description": "Create a new connector using replication_config.",
         "operationId": "create_embedded_connectors",
         "security": [
           {
@@ -1898,7 +1899,7 @@
       "get": {
         "tags": ["Embedded"],
         "summary": "List Connector Sources",
-        "description": "List all connector sources for a workspace.",
+        "description": "List all connectors for a workspace.",
         "operationId": "list_embedded_connectors",
         "security": [
           {
@@ -1989,7 +1990,7 @@
       "post": {
         "tags": ["Embedded"],
         "summary": "Run Check Config Connector Source",
-        "description": "Check connector source configuration before creation.",
+        "description": "Check connector configuration before creation.",
         "operationId": "create_embedded_connectors_check",
         "security": [
           {
@@ -2078,7 +2079,7 @@
       "get": {
         "tags": ["Embedded"],
         "summary": "Status Check Config Connector Source",
-        "description": "Get the status of a connector source configuration check.",
+        "description": "Get the status of a connector configuration check.",
         "operationId": "get_embedded_connectors_check_id_status",
         "security": [
           {
@@ -2167,7 +2168,7 @@
       "get": {
         "tags": ["Embedded"],
         "summary": "Get Connector Source",
-        "description": "Get a connector source by ID.",
+        "description": "Get a connector by ID.",
         "operationId": "get_embedded_connectors_id",
         "security": [
           {
@@ -2254,7 +2255,7 @@
       "put": {
         "tags": ["Embedded"],
         "summary": "Update Connector Source",
-        "description": "Update a connector source.",
+        "description": "Update a connector.",
         "operationId": "update_embedded_connectors_id",
         "security": [
           {
@@ -2351,7 +2352,7 @@
       "delete": {
         "tags": ["Embedded"],
         "summary": "Delete Connector Source",
-        "description": "Delete a connector source.",
+        "description": "Delete a connector.",
         "operationId": "delete_embedded_connectors_id",
         "security": [
           {
@@ -2440,7 +2441,7 @@
       "post": {
         "tags": ["Embedded"],
         "summary": "Run Check Config Connector Source Update",
-        "description": "Check connector source configuration before update.",
+        "description": "Check connector configuration before update.",
         "operationId": "create_embedded_connectors_id_check",
         "security": [
           {
@@ -4006,7 +4007,7 @@
       "post": {
         "tags": ["Connectors"],
         "summary": "Create Connector Source",
-        "description": "**Requires an Access Token as the bearer token.**\n\nCreate an end user's configured source, config should be validated before.",
+        "description": "**Requires an Access Token as the bearer token.**\n\nCreate an end user's configured connector, config should be validated before.",
         "operationId": "create_integrations_connectors",
         "security": [
           {
@@ -4093,7 +4094,7 @@
       "get": {
         "tags": ["Connectors"],
         "summary": "List Connector Sources",
-        "description": "**Requires an Access Token as the bearer token.**\n\nList end user's configured sources.",
+        "description": "**Requires an Access Token as the bearer token.**\n\nList end user's configured connectors.",
         "operationId": "list_integrations_connectors",
         "security": [
           {
@@ -4184,7 +4185,7 @@
       "post": {
         "tags": ["Connectors"],
         "summary": "Run Check Config Connector Source",
-        "description": "**Requires an Access Token as the bearer token.**\n\nCreate a source configuration check.",
+        "description": "**Requires an Access Token as the bearer token.**\n\nCreate a connector configuration check.",
         "operationId": "create_integrations_connectors_check",
         "security": [
           {
@@ -4273,7 +4274,7 @@
       "get": {
         "tags": ["Connectors"],
         "summary": "Status Check Config Connector Source",
-        "description": "**Requires an Access Token as the bearer token.**\n\nGet a source configuration check status.",
+        "description": "**Requires an Access Token as the bearer token.**\n\nGet a connector configuration check status.",
         "operationId": "get_integrations_connectors_check_id_status",
         "security": [
           {
@@ -4358,11 +4359,189 @@
         }
       }
     },
+    "/api/v1/integrations/connectors/oauth/initiate": {
+      "post": {
+        "tags": ["Connectors", "Connectors OAuth"],
+        "summary": "Initiate Oauth",
+        "description": "Initiate OAuth flow for a connector. Returns a consent URL that the user should be redirected to.",
+        "operationId": "create_integrations_connectors_oauth_initiate",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateOAuthRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitiateOAuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/connectors/oauth/oauth/initiate": {
+      "post": {
+        "tags": ["Connectors OAuth"],
+        "summary": "Initiate Oauth",
+        "description": "Initiate OAuth flow for a connector. Returns a consent URL that the user should be redirected to.",
+        "operationId": "create_integrations_connectors_oauth_oauth_initiate",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateOAuthRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitiateOAuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/integrations/connectors/{id}": {
       "get": {
         "tags": ["Connectors"],
         "summary": "Get Connector Source",
-        "description": "**Requires an Access Token as the bearer token.**\n\nGet an end user's configured source.",
+        "description": "**Requires an Access Token as the bearer token.**\n\nGet an end user's configured connector.",
         "operationId": "get_integrations_connectors_id",
         "security": [
           {
@@ -4449,7 +4628,7 @@
       "put": {
         "tags": ["Connectors"],
         "summary": "Update Connector Source",
-        "description": "**Requires an Access Token as the bearer token.**\n\nUpdate an end user's configured source, config should be validated before.",
+        "description": "**Requires an Access Token as the bearer token.**\n\nUpdate an end user's configured connector, config should be validated before.",
         "operationId": "update_integrations_connectors_id",
         "security": [
           {
@@ -4546,7 +4725,7 @@
       "delete": {
         "tags": ["Connectors"],
         "summary": "Delete Connector Source",
-        "description": "**Requires an Access Token as the bearer token.**\n\nDelete an end user's configured source.",
+        "description": "**Requires an Access Token as the bearer token.**\n\nDelete an end user's configured connector.",
         "operationId": "delete_integrations_connectors_id",
         "security": [
           {
@@ -4683,6 +4862,104 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ConnectorSourceCheckConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/connectors/{id}/execute": {
+      "post": {
+        "tags": ["Connectors"],
+        "summary": "Execute Connector Source",
+        "description": "Execute a connector operation using an Airbyte Platform connector ID.",
+        "operationId": "create_integrations_connectors_id_execute",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectorExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorExecuteResponse"
                 }
               }
             }
@@ -13355,6 +13632,200 @@
         }
       }
     },
+    "/api/v1/organizations/{organization_id}/credentials": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "List Credentials",
+        "description": "List credentials for an organization with usage metrics.",
+        "operationId": "list_organizations_organization_id_credentials",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum number of credentials to return",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of credentials to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of credentials to skip for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of credentials to skip for pagination"
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Workspace ID (customer) filter",
+              "title": "Workspace Id"
+            },
+            "description": "Workspace ID (customer) filter"
+          },
+          {
+            "name": "connector_definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Connector definition ID filter",
+              "title": "Connector Definition Id"
+            },
+            "description": "Connector definition ID filter"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search credentials by connector or workspace name",
+              "title": "Search"
+            },
+            "description": "Search credentials by connector or workspace name"
+          },
+          {
+            "name": "sort_field",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/CredentialsSortField",
+              "description": "Sort field",
+              "default": "last_accessed"
+            },
+            "description": "Sort field"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/SortDirection",
+              "description": "Sort direction",
+              "default": "desc"
+            },
+            "description": "Sort direction"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialsListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/organizations/{organization_id}/event-history": {
       "get": {
         "tags": ["Organizations"],
@@ -16481,6 +16952,17 @@
             "type": "string",
             "title": "Name"
           },
+          "dockerRepository": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dockerrepository"
+          },
           "iconUrl": {
             "anyOf": [
               {
@@ -16548,6 +17030,17 @@
           "name": {
             "type": "string",
             "title": "Name"
+          },
+          "dockerRepository": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dockerrepository"
           },
           "iconUrl": {
             "anyOf": [
@@ -16800,6 +17293,19 @@
             "title": "Definition Id",
             "description": "Actor definition ID for the connector."
           },
+          "source_template_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Template Id",
+            "description": "Source template ID. Optional when only one template exists for the connector type. Required when multiple templates exist for the same connector type."
+          },
           "replication_config": {
             "anyOf": [
               {
@@ -16811,7 +17317,7 @@
               }
             ],
             "title": "Replication Config",
-            "description": "The configuration for the replication connector. For REPLICATION mode, this is the full config. For MULTI/DIRECT mode, this can contain replication-specific settings like start_date, lookback_window, etc. that will be merged with credentials and environment. At least one of replication_config or credentials must be provided."
+            "description": "The configuration for the replication connector. For REPLICATION mode, this is the full config. For MULTI/DIRECT mode, this can contain replication-specific settings like start_date, lookback_window, etc. that will be merged with credentials and environment. At least one of replication_config, credentials, or server_side_oauth_secret_id must be provided."
           },
           "credentials": {
             "anyOf": [
@@ -16824,7 +17330,7 @@
               }
             ],
             "title": "Credentials",
-            "description": "Authentication configuration for the source. Required for DIRECT/MULTI mode sources. At least one of replication_config or credentials must be provided."
+            "description": "Authentication configuration for the source. Required for DIRECT/MULTI mode sources. At least one of replication_config, credentials, or server_side_oauth_secret_id must be provided."
           },
           "environment": {
             "anyOf": [
@@ -16838,6 +17344,18 @@
             ],
             "title": "Environment",
             "description": "User-provided configuration for the source. Used for DIRECT/MULTI mode sources (can be empty dict)."
+          },
+          "server_side_oauth_secret_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Server Side Oauth Secret Id",
+            "description": "OAuth secret ID obtained from the initiateOAuth redirect callback. When provided, credentials are not required as OAuth handles authentication."
           },
           "selected_connection_template_tags": {
             "items": {
@@ -16864,6 +17382,37 @@
             "type": "string",
             "format": "uuid",
             "title": "Id"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CheckStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "failure_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FailureReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -16993,6 +17542,19 @@
             "title": "Definition Id",
             "description": "Actor definition ID for the connector."
           },
+          "source_template_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Template Id",
+            "description": "Source template ID. Optional when only one template exists for the connector type. Required when multiple templates exist for the same connector type."
+          },
           "replication_config": {
             "anyOf": [
               {
@@ -17004,7 +17566,7 @@
               }
             ],
             "title": "Replication Config",
-            "description": "The configuration for the replication connector. For REPLICATION mode, this is the full config. For MULTI/DIRECT mode, this can contain replication-specific settings like start_date, lookback_window, etc. that will be merged with credentials and environment. At least one of replication_config or credentials must be provided."
+            "description": "The configuration for the replication connector. For REPLICATION mode, this is the full config. For MULTI/DIRECT mode, this can contain replication-specific settings like start_date, lookback_window, etc. that will be merged with credentials and environment. At least one of replication_config, credentials, or server_side_oauth_secret_id must be provided."
           },
           "credentials": {
             "anyOf": [
@@ -17017,7 +17579,7 @@
               }
             ],
             "title": "Credentials",
-            "description": "Authentication configuration for the source. Required for DIRECT/MULTI mode sources. At least one of replication_config or credentials must be provided."
+            "description": "Authentication configuration for the source. Required for DIRECT/MULTI mode sources. At least one of replication_config, credentials, or server_side_oauth_secret_id must be provided."
           },
           "environment": {
             "anyOf": [
@@ -17031,6 +17593,18 @@
             ],
             "title": "Environment",
             "description": "User-provided configuration for the source. Used for DIRECT/MULTI mode sources (can be empty dict)."
+          },
+          "server_side_oauth_secret_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Server Side Oauth Secret Id",
+            "description": "OAuth secret ID obtained from the initiateOAuth redirect callback. When provided, credentials are not required as OAuth handles authentication."
           },
           "selected_connection_template_tags": {
             "items": {
@@ -17049,7 +17623,7 @@
         "type": "object",
         "required": ["external_user_id"],
         "title": "ConnectorSourceCreateRequest",
-        "description": "Request model for creating a connector source.\n\nUses `replication_config` instead of `source_config` for clearer semantics.\nFor REPLICATION mode: pass the full config in `replication_config`\nFor MULTI/DIRECT mode: pass `credentials` + `environment` + optional `replication_config` overrides"
+        "description": "Request model for creating a connector source.\n\nUses `replication_config` instead of `source_config` for clearer semantics.\nFor REPLICATION mode: pass the full config in `replication_config`\nFor MULTI/DIRECT mode: pass `credentials` + `environment` + optional `replication_config` overrides\nFor OAuth: pass `secret_id` from OAuth callback instead of credentials"
       },
       "ConnectorSourceCreateResponse": {
         "properties": {
@@ -17665,6 +18239,111 @@
           "created_at"
         ],
         "title": "CoralSourceUpdateResponse"
+      },
+      "CredentialsListItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Connector source ID"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id",
+            "description": "Workspace ID (customer)"
+          },
+          "workspace_name": {
+            "type": "string",
+            "title": "Workspace Name",
+            "description": "Workspace name (customer)"
+          },
+          "connector_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connector Definition Id",
+            "description": "Connector definition ID"
+          },
+          "connector_name": {
+            "type": "string",
+            "title": "Connector Name",
+            "description": "Connector name"
+          },
+          "last_accessed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Accessed At",
+            "description": "Most recent access timestamp within retention window"
+          },
+          "direct_queries_30d": {
+            "type": "integer",
+            "title": "Direct Queries 30D",
+            "description": "Direct queries executed in the last 30 days"
+          },
+          "replications_30d": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replications 30D",
+            "description": "Replications executed in the last 30 days (not yet available)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "workspace_name",
+          "connector_definition_id",
+          "connector_name",
+          "last_accessed_at",
+          "direct_queries_30d",
+          "replications_30d"
+        ],
+        "title": "CredentialsListItem"
+      },
+      "CredentialsListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CredentialsListItem"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "List of credentials"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total matching credentials"
+          }
+        },
+        "type": "object",
+        "required": ["data", "total"],
+        "title": "CredentialsListResponse"
+      },
+      "CredentialsSortField": {
+        "type": "string",
+        "enum": [
+          "name",
+          "customer",
+          "last_accessed",
+          "direct_queries_30d",
+          "replications_30d"
+        ],
+        "title": "CredentialsSortField"
       },
       "CronExpressionDescribeRequest": {
         "properties": {
@@ -18330,7 +19009,7 @@
         "type": "object",
         "required": ["entities"],
         "title": "EntitiesResponse",
-        "description": "Response containing all entity metadata."
+        "description": "Response containing all entity metadata.\n\nAttributes:\n    entities: List of available entities with their field metadata and sync status"
       },
       "EntityFieldMetadata": {
         "properties": {
@@ -18381,12 +19060,33 @@
             },
             "type": "array",
             "title": "Fields"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EntityStatus",
+            "default": "syncing"
+          },
+          "last_sync": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sync"
           }
         },
         "type": "object",
         "required": ["entity", "fields"],
         "title": "EntityMetadata",
-        "description": "Metadata for a single entity (x-airbyte-name excluded)."
+        "description": "Metadata for a single entity (x-airbyte-name excluded).\n\nAttributes:\n    entity: The user-facing name of the entity\n    fields: List of fields available for this entity\n    status: Cache status for this entity (ready or syncing)\n    last_sync: Timestamp of last successful sync (null if not yet synced)"
+      },
+      "EntityStatus": {
+        "type": "string",
+        "enum": ["ready", "syncing"],
+        "title": "EntityStatus",
+        "description": "Status of a single entity's cache."
       },
       "EqCondition": {
         "properties": {
@@ -19245,6 +19945,75 @@
         "title": "InCondition",
         "description": "In list: true if field value is in list (equivalent to or [eq, eq...])."
       },
+      "InitiateOAuthRequest": {
+        "properties": {
+          "external_user_id": {
+            "type": "string",
+            "title": "External User Id",
+            "description": "External user identifier (maps to workspace name)."
+          },
+          "redirect_url": {
+            "type": "string",
+            "title": "Redirect Url",
+            "description": "URL to receive the secret_id callback after OAuth completion."
+          },
+          "connector_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Type",
+            "description": "Connector name (case-insensitive exact match, e.g., 'Hubspot', 'hubspot', 'HUBSPOT')."
+          },
+          "definition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Definition Id",
+            "description": "Actor definition ID for the connector."
+          },
+          "oauth_input_configuration": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oauth Input Configuration",
+            "description": "Optional OAuth input configuration required by some connectors."
+          }
+        },
+        "type": "object",
+        "required": ["external_user_id", "redirect_url"],
+        "title": "InitiateOAuthRequest",
+        "description": "Request model for initiating OAuth flow.\n\nUses the same connector identification pattern as create/check endpoints:\nexactly one of connector_type or definition_id must be provided."
+      },
+      "InitiateOAuthResponse": {
+        "properties": {
+          "consent_url": {
+            "type": "string",
+            "title": "Consent Url",
+            "description": "The URL to redirect the user to for OAuth consent."
+          }
+        },
+        "type": "object",
+        "required": ["consent_url"],
+        "title": "InitiateOAuthResponse",
+        "description": "Response model for initiating OAuth flow."
+      },
       "Invoice": {
         "properties": {
           "id": {
@@ -19624,9 +20393,29 @@
       "OAuthCredentialsRequest": {
         "properties": {
           "connector_definition_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Connector Definition Id"
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Definition Id",
+            "description": "Actor definition ID for the connector."
+          },
+          "connector_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Type",
+            "description": "Connector name (case-insensitive exact match, e.g., 'Hubspot', 'hubspot', 'HUBSPOT')."
           },
           "configuration": {
             "additionalProperties": true,
@@ -19636,9 +20425,9 @@
         },
         "additionalProperties": false,
         "type": "object",
-        "required": ["connector_definition_id", "configuration"],
+        "required": ["configuration"],
         "title": "OAuthCredentialsRequest",
-        "description": "Request body for creating/updating OAuth credentials.\n\nNote: connector_type is NOT in the request - it's resolved on the backend\nby looking up the connector definition. This prevents mismatches.\n\nFor operator endpoint: scope_type and scope_id are determined from the token.\nFor admin endpoint: scope_type is always 'global' and scope_id is NULL."
+        "description": "Request body for creating/updating OAuth credentials.\n\nUses the same connector identification pattern as other endpoints:\nexactly one of connector_type or connector_definition_id must be provided.\n\nFor operator endpoint: scope_type and scope_id are determined from the token.\nFor admin endpoint: scope_type is always 'global' and scope_id is NULL."
       },
       "OAuthCredentialsResponse": {
         "properties": {
@@ -21443,6 +22232,11 @@
         "type": "object",
         "title": "SonarStream"
       },
+      "SortDirection": {
+        "type": "string",
+        "enum": ["asc", "desc"],
+        "title": "SortDirection"
+      },
       "SourceCheckConfigRequest": {
         "properties": {
           "name": {
@@ -21486,6 +22280,19 @@
             ],
             "title": "Definition Id",
             "description": "Actor definition ID for the connector."
+          },
+          "source_template_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Template Id",
+            "description": "Source template ID. Optional when only one template exists for the connector type. Required when multiple templates exist for the same connector type."
           },
           "source_config": {
             "anyOf": [
@@ -21681,6 +22488,19 @@
             ],
             "title": "Definition Id",
             "description": "Actor definition ID for the connector."
+          },
+          "source_template_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Template Id",
+            "description": "Source template ID. Optional when only one template exists for the connector type. Required when multiple templates exist for the same connector type."
           },
           "source_config": {
             "anyOf": [
@@ -24962,7 +25782,11 @@
     },
     {
       "name": "Connectors",
-      "description": "Operator endpoints to manage connector sources with replication_config support."
+      "description": "Operator endpoints to manage connectors with replication_config support."
+    },
+    {
+      "name": "Connectors OAuth",
+      "description": "Initiate OAuth flows for connector sources."
     },
     {
       "name": "Destinations Definitions",

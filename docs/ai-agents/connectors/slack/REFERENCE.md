@@ -1287,39 +1287,3 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-
-
-## Replication Configuration
-
-Settings for data replication from Slack
-
-These settings control how data is replicated from the source. Pass them via the `replication_config` parameter when creating a source.
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `start_date` | `str (date-time)` | Yes | UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. |
-| `lookback_window` | `int` | Yes | Number of days to look back when syncing data (0-365). |
-| `join_channels` | `bool` | Yes | Whether to automatically join public channels to sync messages. |
-
-### Example
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/integrations/connectors' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "external_user_id": "{your_external_user_id}",
-  "connector_type": "slack",
-  "credentials": {
-    ...
-  },
-  "replication_config": {
-    "start_date": "<UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.>",
-    "lookback_window": "<Number of days to look back when syncing data (0-365).>",
-    "join_channels": "<Whether to automatically join public channels to sync messages.>"
-  },
-  "name": "My Slack Connector"
-}'
-```
