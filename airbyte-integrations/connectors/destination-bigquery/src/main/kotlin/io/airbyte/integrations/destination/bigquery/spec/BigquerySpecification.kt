@@ -112,16 +112,22 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
     val defaultPartitioningField: String? = null
 
+    @get:JsonSchemaTitle("Default Partitioning Granularity")
+    @get:JsonPropertyDescription("Default partitioning granularity: DAY, MONTH, or YEAR. Defaults to DAY.")
+    @get:JsonProperty("default_partitioning_granularity")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
+    val defaultPartitioningGranularity: PartitioningGranularity? = null
+
     @get:JsonSchemaTitle("Default Clustering Field")
     @get:JsonPropertyDescription("Default field to use for clustering (e.g. _airbyte_extracted_at)")
     @get:JsonProperty("default_clustering_field")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 12}""")
     val defaultClusteringField: String? = null
 
     @get:JsonSchemaTitle("Default Table Suffix")
     @get:JsonPropertyDescription("Default suffix to append to table names")
     @get:JsonProperty("default_table_suffix")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 12}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 13}""")
     val defaultTableSuffix: String? = null
 
     @get:JsonSchemaTitle("Stream Configuration")
@@ -129,7 +135,7 @@ class BigquerySpecification : ConfigurationSpecification() {
         """Per-stream configuration overrides.""",
     )
     @get:JsonProperty("streams")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 13}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 14}""")
     val streams: List<SingleStreamConfiguration>? = null
 }
 
@@ -145,6 +151,12 @@ data class SingleStreamConfiguration(
     @get:JsonSchemaTitle("Partitioning Field")
     @JsonProperty("partitioning_field")
     val partitioningField: String? = null,
+
+    @get:JsonSchemaTitle("Partitioning Granularity")
+    @get:JsonPropertyDescription(
+        "Partitioning granularity for the partitioning field. Allowed values: DAY, MONTH, YEAR. Defaults to DAY.")
+    @JsonProperty("partitioning_granularity")
+    val partitioningGranularity: PartitioningGranularity? = null,
 
     @get:JsonSchemaTitle("Clustering Field")
     @JsonProperty("clustering_field")
@@ -264,6 +276,12 @@ enum class TransformationPriority(@get:JsonValue val transformationPriority: Str
 enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),
     SOFT_DELETE("Soft delete"),
+}
+
+enum class PartitioningGranularity(@get:JsonValue val granularity: String) {
+    DAY("DAY"),
+    MONTH("MONTH"),
+    YEAR("YEAR"),
 }
 
 @Singleton
