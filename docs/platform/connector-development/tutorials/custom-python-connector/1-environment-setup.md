@@ -41,7 +41,7 @@ poetry add airbyte-cdk
 
 Now update the `pyproject.toml` to add the script entry point and package configuration. Replace the contents with:
 
-```toml
+```toml title="pyproject.toml"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
@@ -81,7 +81,7 @@ mkdir -p integration_tests
 
 Create `source_survey_monkey_demo/__init__.py`:
 
-```python
+```python title="source_survey_monkey_demo/__init__.py"
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
@@ -95,7 +95,7 @@ __all__ = ["SourceSurveyMonkeyDemo"]
 
 Create `source_survey_monkey_demo/source.py` with a basic template:
 
-```python
+```python title="source_survey_monkey_demo/source.py"
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
@@ -118,7 +118,7 @@ class SourceSurveyMonkeyDemo(AbstractSource):
 
 Create `source_survey_monkey_demo/run.py`:
 
-```python
+```python title="source_survey_monkey_demo/run.py"
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 Create `main.py` in the connector root directory:
 
-```python
+```python title="main.py"
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
 Create `source_survey_monkey_demo/spec.yaml`:
 
-```yaml
+```yaml title="source_survey_monkey_demo/spec.yaml"
 documentationUrl: https://docs.airbyte.com/integrations/sources/survey-monkey
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
@@ -178,7 +178,7 @@ connectionSpecification:
 
 Create `source_survey_monkey_demo/schemas/surveys.json`:
 
-```json
+```json title="source_survey_monkey_demo/schemas/surveys.json"
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
@@ -192,7 +192,7 @@ Create `source_survey_monkey_demo/schemas/surveys.json`:
 
 Create `secrets/config.json` with your Survey Monkey API access token:
 
-```json
+```json title="secrets/config.json"
 {
   "access_token": "YOUR_ACCESS_TOKEN_HERE"
 }
@@ -206,7 +206,7 @@ The `secrets/` directory is excluded from Git by default. Never commit your API 
 
 Create `integration_tests/configured_catalog.json`:
 
-```json
+```json title="integration_tests/configured_catalog.json"
 {
   "streams": [
     {
