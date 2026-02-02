@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.component
@@ -12,7 +12,10 @@ import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.write.DestinationWriter
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
@@ -164,8 +167,8 @@ interface ConnectorWiringSuite {
             val count = client.countTable(tableName)
             assertEquals(1L, count, "Should have exactly 1 record after write. Got $count records.")
 
-            // 6. Close loader
-            loader.close(hadNonzeroRecords = true, streamFailure = null)
+            // 6. Teardown loader
+            loader.teardown(completedSuccessfully = true)
         } finally {
             // Cleanup
             client.dropTable(tableName)
@@ -199,6 +202,17 @@ interface ConnectorWiringSuite {
             minimumGenerationId = 0,
             syncId = 42,
             namespaceMapper = NamespaceMapper(), // Default identity mapper
+            tableSchema =
+                StreamTableSchema(
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                ),
         )
     }
 

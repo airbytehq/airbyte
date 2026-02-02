@@ -170,6 +170,18 @@
     },
     {
       "stream": {
+        "name": "deleted_products",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["deleted_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["deleted_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "metafield_products",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],

@@ -1,0 +1,45 @@
+{
+  "estimates": [
+    {
+      "id": 1439814,
+      "client_id": 5735776,
+      "number": "1001",
+      "purchase_order": "PO-123",
+      "amount": 9630.0,
+      "tax": 5.0,
+      "tax_amount": 450.0,
+      "tax2": 2.0,
+      "tax2_amount": 180.0,
+      "discount": 10.0,
+      "discount_amount": 1000.0,
+      "subject": "Online Store - Phase 1",
+      "notes": "Thank you for your business",
+      "currency": "USD",
+      "state": "draft",
+      "issue_date": "2024-01-15",
+      "sent_at": null,
+      "created_at": "2024-01-15T10:00:00Z",
+      "updated_at": "2024-01-15T10:00:00Z",
+      "accepted_at": null,
+      "declined_at": null,
+      "client": {
+        "id": 5735776,
+        "name": "ABC Corp"
+      },
+      "creator": {
+        "id": 1782884,
+        "name": "John Doe"
+      }
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {
+    "first": "https://api.harvestapp.com/v2/estimates?page=1&per_page=50",
+    "last": "https://api.harvestapp.com/v2/estimates?page=1&per_page=50",
+    "previous": null,
+    "next": null
+  }
+}

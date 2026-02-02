@@ -122,6 +122,9 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.28 | 2026-01-20 | [72054](https://github.com/airbytehq/airbyte/pull/72054) | Update dependencies |
+| 0.5.27 | 2026-01-14 | [71438](https://github.com/airbytehq/airbyte/pull/71438) | Update dependencies |
+| 0.5.26 | 2025-12-19 | [70708](https://github.com/airbytehq/airbyte/pull/70708) | Update dependencies |
 | 0.5.25 | 2025-11-25 | [70138](https://github.com/airbytehq/airbyte/pull/70138) | Update dependencies |
 | 0.5.24 | 2025-11-18 | [69676](https://github.com/airbytehq/airbyte/pull/69676) | Update dependencies |
 | 0.5.23 | 2025-11-13 | [69282](https://github.com/airbytehq/airbyte/pull/69282) | Add client side incremental sync support for customers stream |
@@ -130,12 +133,12 @@ maximum number of seconds between API calls.
 | 0.5.20 | 2025-10-21 | [68393](https://github.com/airbytehq/airbyte/pull/68393) | Update dependencies |
 | 0.5.19 | 2025-10-14 | [67941](https://github.com/airbytehq/airbyte/pull/67941) | Update dependencies |
 | 0.5.18 | 2025-10-07 | [67328](https://github.com/airbytehq/airbyte/pull/67328) | Update dependencies |
-| 0.5.17 | 2025-09-30 | [66455](https://github.com/airbytehq/airbyte/pull/66455) | Update dependencies |
+| 0.5.17 | 2025-10-01 | [66455](https://github.com/airbytehq/airbyte/pull/66455) | Update dependencies |
 | 0.5.16 | 2025-09-09 | [65708](https://github.com/airbytehq/airbyte/pull/65708) | Update dependencies |
 | 0.5.15 | 2025-08-24 | [65450](https://github.com/airbytehq/airbyte/pull/65450) | Update dependencies |
-| 0.5.14 | 2025-08-09 | [64822](https://github.com/airbytehq/airbyte/pull/64822) | Update dependencies |
+| 0.5.14 | 2025-08-10 | [64822](https://github.com/airbytehq/airbyte/pull/64822) | Update dependencies |
 | 0.5.13 | 2025-08-02 | [64347](https://github.com/airbytehq/airbyte/pull/64347) | Update dependencies |
-| 0.5.12 | 2025-07-26 | [64087](https://github.com/airbytehq/airbyte/pull/64087) | Update dependencies |
+| 0.5.12 | 2025-07-27 | [64087](https://github.com/airbytehq/airbyte/pull/64087) | Update dependencies |
 | 0.5.11 | 2025-07-19 | [63629](https://github.com/airbytehq/airbyte/pull/63629) | Update dependencies |
 | 0.5.10 | 2025-07-12 | [63207](https://github.com/airbytehq/airbyte/pull/63207) | Update dependencies |
 | 0.5.9 | 2025-07-05 | [62689](https://github.com/airbytehq/airbyte/pull/62689) | Update dependencies |

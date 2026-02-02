@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.input
@@ -63,7 +63,6 @@ class DataFlowPipelineInputFlowTest {
         every { stream.airbyteValueProxyFieldAccessors } returns emptyArray()
         every { stream.unmappedDescriptor } returns desc
         val message = mockk<DestinationRecordSource>()
-        every { message.fileReference } returns null
         val serializedBytes = 151251L
         val destinationRecord =
             DestinationRecord(
@@ -110,8 +109,6 @@ class DataFlowPipelineInputFlowTest {
         val stream = mockk<DestinationStream>()
         every { stream.schema } returns mockk()
         every { stream.airbyteValueProxyFieldAccessors } returns emptyArray()
-        val message = mockk<DestinationRecordSource>()
-        every { message.fileReference } returns null
         val streamComplete =
             DestinationRecordStreamComplete(
                 stream,

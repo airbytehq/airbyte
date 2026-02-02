@@ -11,7 +11,7 @@ The Airbyte API enables you to programmatically interact with Airbyte: create so
 
 Access to the API is controlled through application keys. Applications keys are tied to individual users and their respective permissions.
 
-# Prerequisites
+## Prerequisites
 
 <Tabs groupId="cloud-hosted">
   <TabItem value="cloud" label="Cloud">
@@ -23,7 +23,7 @@ Access to the API is controlled through application keys. Applications keys are 
   </TabItem>
 </Tabs>
 
-## Step 1: Create an Application
+### Step 1: Create an Application
 
 While logged into the Airbyte UI, go to Settings -> Account -> Applications. Click the button "Create an application".
 
@@ -37,7 +37,7 @@ A `client_id` and `client_secret` will be automatically generated. The `client_s
 
 ![Get Application Client and Secret](./assets/applications-client-secret.png)
 
-## Step 2: Obtain an Access Token
+### Step 2: Obtain an Access Token
 
 Once the `client_secret` is exposed, you can use the button in the UI to get an access token to do a quick test.
 
@@ -85,7 +85,7 @@ The API response should provide an `access_token`, which is a Bearer Token valid
 Access tokens are short-lived (3 minutes) so we recommend fetching a new token before each request. The Terraform Provider/SDKs properly handle this for you if you initialize the Provider/SDK with the Client Credentials grant type using your Application's `client_id` and `client_secret`.
 :::
 
-## Step 3: Operate Airbyte via API
+### Step 3: Operate Airbyte via API
 
 You may now make requests to any endpoint documented in our [Airbyte API Reference](https://reference.airbyte.com). For example, you may use the [List workspaces endpoint](https://reference.airbyte.com/reference/listworkspaces) to verify the list of workspaces in your organization. Ensure to include your `access_token` as a `Bearer Token` in your request.:
 
