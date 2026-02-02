@@ -22,6 +22,7 @@ data class BigqueryConfiguration(
     val defaultPartitioningField: String?,
     val defaultClusteringField: String?,
     val defaultTableSuffix: String?,
+    val defaultPartitioningGranularity: PartitioningGranularity?,
     val streamConfigMap: Map<String, StreamLevelConfig>,
 ) : DestinationConfiguration() {
     override val numOpenStreamWorkers = 3
@@ -32,6 +33,7 @@ data class BigqueryConfiguration(
 
 data class StreamLevelConfig(
     val partitioningField: String? = null,
+    val partitioningGranularity: PartitioningGranularity? = null,
     val clusteringField: String? = null,
     val tableSuffix: String? = null,
     val dataset: String? = null,
@@ -80,9 +82,11 @@ class BigqueryConfigurationFactory :
             defaultPartitioningField = pojo.defaultPartitioningField,
             defaultClusteringField = pojo.defaultClusteringField,
             defaultTableSuffix = pojo.defaultTableSuffix,
+            defaultPartitioningGranularity = pojo.defaultPartitioningGranularity,
             streamConfigMap = pojo.streams?.associate {
                 it.name to StreamLevelConfig(
                     partitioningField = it.partitioningField,
+                    partitioningGranularity = it.partitioningGranularity,
                     clusteringField = it.clusteringField,
                     tableSuffix = it.tableSuffix,
                     dataset = it.dataset
