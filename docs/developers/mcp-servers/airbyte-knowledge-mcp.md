@@ -41,7 +41,7 @@ When connecting for the first time, you'll be prompted to sign in with any Googl
 
 ### Manually triggering authentication
 
-For [Claude](###Claude): If you need to authenticate (or re-authenticate) with the Airbyte Knowledge MCP server, you can manually trigger the authentication flow from within Claude Code CLI.
+For [Claude](#Claude): If you need to authenticate (or re-authenticate) with the Airbyte Knowledge MCP server, you can manually trigger the authentication flow from within Claude Code CLI.
 
 1. In your Claude Code session, type `/mcp list`
 2. Select **airbyte-docs** from the list of available MCP servers
