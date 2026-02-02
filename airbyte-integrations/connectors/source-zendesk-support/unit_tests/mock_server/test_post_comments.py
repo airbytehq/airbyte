@@ -87,10 +87,7 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
 
         # Mock child endpoint for post 1
         http_mocker.get(
-            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post1["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post1["id"]).with_any_query_params().build(),
             PostCommentsResponseBuilder.posts_comments_response()
             .with_record(PostCommentsRecordBuilder.posts_comments_record().with_id(2001))
             .build(),
@@ -98,10 +95,7 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
 
         # Mock child endpoint for post 2
         http_mocker.get(
-            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post2["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post2["id"]).with_any_query_params().build(),
             PostCommentsResponseBuilder.posts_comments_response()
             .with_record(PostCommentsRecordBuilder.posts_comments_record().with_id(2002))
             .build(),
