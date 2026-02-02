@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.write
@@ -51,6 +51,10 @@ import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
 import io.airbyte.cdk.load.message.StreamCheckpoint
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
@@ -70,7 +74,6 @@ import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -302,7 +305,6 @@ abstract class BasicFunctionalityIntegrationTest(
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
     val unionBehavior: UnionBehavior,
     val coercesLegacyUnions: Boolean = false,
-    val supportFileTransfer: Boolean,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -343,7 +345,6 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
-    val useDataFlowPipeline: Boolean = false,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -357,7 +358,6 @@ abstract class BasicFunctionalityIntegrationTest(
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
     ) {
-
     // Update config with any replacements.  This may be necessary when using testcontainers.
     val updatedConfig = configUpdater.update(configContents)
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
@@ -380,6 +380,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val messages =
             runSync(
@@ -492,6 +493,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val messages =
             runSync(
@@ -668,6 +670,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream2 =
             DestinationStream(
@@ -679,6 +682,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream3 =
             DestinationStream(
@@ -690,6 +694,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val messages =
             runSync(
@@ -1025,6 +1030,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream2 =
             DestinationStream(
@@ -1036,6 +1042,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream3 =
             DestinationStream(
@@ -1047,6 +1054,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val messages =
             runSync(
@@ -1528,7 +1536,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val messages =
             runSync(
@@ -1587,11 +1596,9 @@ abstract class BasicFunctionalityIntegrationTest(
                             totalRecords = 1L,
                             totalBytes = expectedBytes,
                             additionalStats =
-                                if (useDataFlowPipeline)
-                                    StateAdditionalStatsStore.ObservabilityMetrics.entries
-                                        .associate { it.metricName to 0.0 }
-                                        .toMutableMap()
-                                else mutableMapOf(),
+                                StateAdditionalStatsStore.ObservabilityMetrics.entries
+                                    .associate { it.metricName to 0.0 }
+                                    .toMutableMap(),
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -1638,93 +1645,6 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
-    @Test
-    open fun testBasicWriteFile() {
-        assumeTrue(supportFileTransfer)
-        val stream =
-            DestinationStream(
-                randomizedNamespace,
-                "test_stream_file",
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 42,
-                isFileBased = true,
-                includeFiles = true,
-                namespaceMapper = namespaceMapperForMedium()
-            )
-
-        val sourcePath = "path/to/file"
-        // these must match the values hard-coded in DockerizedDestination
-        val stagingDir = "tmp"
-        val fileName = "test_file"
-        val fileContents = "123"
-
-        val fileReference =
-            AirbyteRecordMessageFileReference()
-                .withSourceFileRelativePath(sourcePath)
-                .withStagingFileUrl("/$stagingDir/$fileName")
-                .withFileSizeBytes(1234L)
-
-        val input =
-            InputRecord(
-                stream = stream,
-                data = """{"id": 5678}""",
-                emittedAtMs = 1234,
-                changes = mutableListOf(),
-                fileReference = fileReference,
-                checkpointId = checkpointKeyForMedium()?.checkpointId
-            )
-
-        val messages =
-            runSync(
-                updatedConfig,
-                stream,
-                listOf(
-                    input,
-                    InputStreamCheckpoint(
-                        unmappedName = stream.unmappedName,
-                        unmappedNamespace = stream.unmappedNamespace,
-                        blob = """{"foo": "bar"}""",
-                        sourceRecordCount = 1,
-                        checkpointKey = checkpointKeyForMedium(),
-                    )
-                ),
-                useFileTransfer = true,
-            )
-
-        val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
-        assertAll({
-            assertEquals(
-                1,
-                stateMessages.size,
-                "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
-            )
-            assertEquals(
-                StreamCheckpoint(
-                        unmappedName = stream.unmappedName,
-                        unmappedNamespace = stream.unmappedNamespace,
-                        blob = """{"foo": "bar"}""",
-                        sourceRecordCount = 1,
-                        destinationRecordCount = 1,
-                        checkpointKey = checkpointKeyForMedium(),
-                        // Files doesn't need these, but they get added anyway
-                        totalRecords = 1,
-                        totalBytes = 267L
-                    )
-                    .asProtocolMessage()
-                    .serializeToString(),
-                stateMessages.first().serializeToString()
-            )
-        })
-
-        val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
-        val fileContent = dataDumper.dumpFile(config, stream)
-
-        assertEquals(fileContents, fileContent[sourcePath])
-    }
-
     /**
      * Runs a sync, kills it before finishing, then asserts second sync finishes moving the data to
      * the final table.
@@ -1744,7 +1664,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     generationId = 0,
                     minimumGenerationId = 0,
                     syncId = 42,
-                    namespaceMapper = namespaceMapperForMedium()
+                    namespaceMapper = namespaceMapperForMedium(),
+                    tableSchema = emptyTableSchema,
                 )
             val stateMessage =
                 runSyncUntilStateAckAndExpectFailure(
@@ -1831,7 +1752,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
@@ -1936,7 +1858,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         // Catalog with some weird schemas.
         // Every stream has an int `id`, and maybe some string fields.
@@ -2066,7 +1989,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         runSync(
             updatedConfig,
@@ -2120,7 +2044,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId,
                 minimumGenerationId,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream =
             makeStream(
@@ -2252,7 +2177,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId,
                 minimumGenerationId,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream =
             makeStream(
@@ -2366,7 +2292,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 41,
                 minimumGenerationId = 0,
                 syncId = 41,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
@@ -2538,7 +2465,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 42,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
@@ -2663,7 +2591,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 41,
                 minimumGenerationId = 0,
                 syncId = 41,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
@@ -2847,7 +2776,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream = makeStream(syncId = 42)
         runSync(
@@ -2917,7 +2847,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream =
             makeStream(
@@ -2997,6 +2928,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 0,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
 
         val stream1 =
@@ -3075,7 +3007,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = generationId,
                 minimumGenerationId = minimumGenerationId,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream =
             makeStream(
@@ -3199,7 +3132,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = syncId,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val sync1Stream = makeStream(syncId = 42)
         fun makeRecord(data: String, extractedAt: Long) =
@@ -3407,7 +3341,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         runSync(
             updatedConfig,
@@ -3479,7 +3414,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val stream1 = makeStream("cursor1")
         fun makeRecord(stream: DestinationStream, cursorName: String, emittedAtMs: Long) =
@@ -3552,6 +3488,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         fun makeRecord(stream: DestinationStream, secondPk: String, emittedAtMs: Long) =
             InputRecord(
@@ -3631,7 +3568,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     generationId = 42,
                     minimumGenerationId = 42,
                     syncId = 42,
-                    namespaceMapper = namespaceMapperForMedium()
+                    namespaceMapper = namespaceMapperForMedium(),
+                    tableSchema = emptyTableSchema,
                 )
             }
         val messages =
@@ -3689,7 +3627,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         fun makeRecord(data: String) =
             InputRecord(
@@ -4167,7 +4106,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         fun makeRecord(data: String) =
             InputRecord(
@@ -4334,7 +4274,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         runSync(
             updatedConfig,
@@ -4504,7 +4445,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
 
         fun runSync() =
@@ -4690,7 +4632,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         runSync(
             updatedConfig,
@@ -4924,6 +4867,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 12,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         runSync(
             updatedConfig,
@@ -4985,7 +4929,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         runSync(
             updatedConfig,
@@ -5055,7 +5000,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         assertDoesNotThrow { runSync(updatedConfig, stream, messages = emptyList()) }
         dumpAndDiffRecords(
@@ -5079,7 +5025,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId,
                 minimumGenerationId,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium()
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val firstStream = makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42)
         runSync(
@@ -5118,6 +5065,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 1,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         assertDoesNotThrow {
             runSync(
@@ -5195,6 +5143,20 @@ abstract class BasicFunctionalityIntegrationTest(
                 nullable = true,
             )
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
+
+        // This will get blown away in the tests as the DestinationStream's we are mocking just get
+        // converted to the protocol which has no concept of destination schemas
+        val emptyTableSchema: StreamTableSchema =
+            StreamTableSchema(
+                columnSchema =
+                    ColumnSchema(
+                        inputSchema = mapOf(),
+                        inputToFinalColumnNames = mapOf(),
+                        finalSchema = mapOf(),
+                    ),
+                importType = Append,
+                tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+            )
     }
 
     fun checkpointKeyForMedium(index: Int = 1, partitionId: String = "1"): CheckpointKey? {
@@ -5217,27 +5179,27 @@ abstract class BasicFunctionalityIntegrationTest(
                 when (dataChannelFormat) {
                     DataChannelFormat.JSONL -> bytesForSocketJsonl
                     DataChannelFormat.PROTOBUF -> bytesForSocketProtobuf
-                    DataChannelFormat.FLATBUFFERS -> TODO()
                 }
         }
     }
 
-    private fun expectedAdditionalStats(): AdditionalStats? =
-        if (useDataFlowPipeline) {
-            val expectedAdditionalStats = AdditionalStats()
-            StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
-                expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
-            }
-            expectedAdditionalStats
-        } else null
-
-    protected fun namespaceMapperForMedium(): NamespaceMapper {
-        return when (dataChannelMedium) {
-            DataChannelMedium.STDIO ->
-                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
-            // TODO: Return something more dynamic? Based on the test?
-            DataChannelMedium.SOCKET ->
-                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
+    private fun expectedAdditionalStats(): AdditionalStats {
+        val expectedAdditionalStats = AdditionalStats()
+        StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
+            expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
         }
+        return expectedAdditionalStats
+    }
+
+    fun namespaceMapperForMedium(): NamespaceMapper = dataChannelMedium.namespaceMapper()
+}
+
+fun DataChannelMedium.namespaceMapper(): NamespaceMapper {
+    return when (this) {
+        DataChannelMedium.STDIO ->
+            NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
+        // TODO: Return something more dynamic? Based on the test?
+        DataChannelMedium.SOCKET ->
+            NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
     }
 }

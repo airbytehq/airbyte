@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 # Develop Your Web App
 
 The sample onboarding app is a full-stack React application with support for both local and production (Vercel) deployment architectures:

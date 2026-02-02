@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data
@@ -91,9 +91,24 @@ class AirbyteValueProxyTest {
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            includeFiles = false,
             schema = ALL_TYPES_SCHEMA,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                    tableNames =
+                        io.airbyte.cdk.load.schema.model.TableNames(
+                            finalTableName =
+                                io.airbyte.cdk.load.schema.model.TableName("namespace", "name")
+                        ),
+                    columnSchema =
+                        io.airbyte.cdk.load.schema.model.ColumnSchema(
+                            inputSchema = ALL_TYPES_SCHEMA.properties,
+                            inputToFinalColumnNames =
+                                ALL_TYPES_SCHEMA.properties.keys.associateWith { it },
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
 
     private fun ifNull(value: JsonNode?): JsonNode? {

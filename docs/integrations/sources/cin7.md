@@ -39,6 +39,9 @@ Create an application and note down the Account Id and the API key, you will nee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.27 | 2026-01-20 | [72135](https://github.com/airbytehq/airbyte/pull/72135) | Update dependencies |
+| 0.3.26 | 2026-01-14 | [71728](https://github.com/airbytehq/airbyte/pull/71728) | Update dependencies |
+| 0.3.25 | 2025-12-18 | [70623](https://github.com/airbytehq/airbyte/pull/70623) | Update dependencies |
 | 0.3.24 | 2025-11-25 | [69943](https://github.com/airbytehq/airbyte/pull/69943) | Update dependencies |
 | 0.3.23 | 2025-11-18 | [69623](https://github.com/airbytehq/airbyte/pull/69623) | Update dependencies |
 | 0.3.22 | 2025-10-29 | [68862](https://github.com/airbytehq/airbyte/pull/68862) | Update dependencies |
@@ -49,8 +52,8 @@ Create an application and note down the Account Id and the API key, you will nee
 | 0.3.17 | 2025-09-09 | [65767](https://github.com/airbytehq/airbyte/pull/65767) | Update dependencies |
 | 0.3.16 | 2025-08-22 | [PR_NUMBER] | Add RequiredBy field and enhance datetime support |
 | 0.3.15 | 2025-08-23 | [65248](https://github.com/airbytehq/airbyte/pull/65248) | Update dependencies |
-| 0.3.14 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
-| 0.3.13 | 2025-08-08 | [64118](https://github.com/airbytehq/airbyte/pull/64118) | Fix product_availability primary key to support multi-location inventory tracking by using composite key [ID, Location] instead of just [ID] |
+| 0.3.14 | 2025-08-15 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.3.13 | 2025-08-14 | [64118](https://github.com/airbytehq/airbyte/pull/64118) | Fix product_availability primary key to support multi-location inventory tracking by using composite key [ID, Location] instead of just [ID] |
 | 0.3.12 | 2025-08-09 | [64712](https://github.com/airbytehq/airbyte/pull/64712) | Update dependencies |
 | 0.3.11 | 2025-08-02 | [64396](https://github.com/airbytehq/airbyte/pull/64396) | Update dependencies |
 | 0.3.10 | 2025-07-26 | [64046](https://github.com/airbytehq/airbyte/pull/64046) | Update dependencies |

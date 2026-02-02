@@ -309,6 +309,10 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.18 | 2026-01-20 | [71904](https://github.com/airbytehq/airbyte/pull/71904) | Update dependencies |
+| 0.12.17 | 2026-01-14 | [71703](https://github.com/airbytehq/airbyte/pull/71703) | Update dependencies |
+| 0.12.16 | 2025-12-18 | [70510](https://github.com/airbytehq/airbyte/pull/70510) | Update dependencies |
+| 0.12.15 | 2025-12-03 | [69848](https://github.com/airbytehq/airbyte/pull/69848) | Add optional flag to read columns with empty headers |
 | 0.12.14 | 2025-11-25 | [70029](https://github.com/airbytehq/airbyte/pull/70029) | Update dependencies |
 | 0.12.13 | 2025-11-18 | [69396](https://github.com/airbytehq/airbyte/pull/69396) | Update dependencies |
 | 0.12.12 | 2025-10-29 | [68759](https://github.com/airbytehq/airbyte/pull/68759) | Update dependencies |
@@ -317,7 +321,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 | 0.12.9 | 2025-10-14 | [67876](https://github.com/airbytehq/airbyte/pull/67876) | Update dependencies |
 | 0.12.8 | 2025-10-07 | [67395](https://github.com/airbytehq/airbyte/pull/67395) | Update dependencies |
 | 0.12.7 | 2025-09-30 | [65383](https://github.com/airbytehq/airbyte/pull/65383) | Update dependencies |
-| 0.12.6 | 2025-09-10 | [66012](https://github.com/airbytehq/airbyte/pull/66012) | Update to CDK v7 |
+| 0.12.6 | 2025-09-16 | [66012](https://github.com/airbytehq/airbyte/pull/66012) | Update to CDK v7 |
 | 0.12.5 | 2025-08-09 | [64633](https://github.com/airbytehq/airbyte/pull/64633) | Update dependencies |
 | 0.12.4 | 2025-08-02 | [64179](https://github.com/airbytehq/airbyte/pull/64179) | Update dependencies |
 | 0.12.3 | 2025-07-26 | [63822](https://github.com/airbytehq/airbyte/pull/63822) | Update dependencies |

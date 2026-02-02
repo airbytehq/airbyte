@@ -1,0 +1,18 @@
+{
+  "list": [
+    {
+      "payment_source": {
+        "id": "pm_001",
+        "customer_id": "cust_001",
+        "type": "card",
+        "status": "valid",
+        "gateway": "stripe",
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "payment_source",
+        "cf_payment_preference": "Primary",
+        "cf_verification_status": "Verified"
+      }
+    }
+  ]
+}

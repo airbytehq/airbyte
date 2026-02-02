@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 # Template Tags
 
 ## Overview

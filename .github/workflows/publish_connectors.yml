@@ -21,6 +21,14 @@ on:
         required: false
         default: false
         type: boolean
+      gitref:
+        description: "Git ref (branch or SHA) to build connectors from. Used by pre-release workflow to build from PR branches."
+        required: false
+        type: string
+    outputs:
+      docker-image-tag:
+        description: "Docker image tag used when publishing. For single-connector callers only; multi-connector callers should not rely on this output."
+        value: ${{ jobs.publish_connector_registry_entries.outputs.docker-image-tag }}
   workflow_dispatch:
     inputs:
       connectors:
@@ -48,6 +56,7 @@ jobs:
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: List connectors to publish [manual]
@@ -101,10 +110,21 @@ jobs:
       # Allow all jobs to run, even if one fails
       fail-fast: false
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
+          repositories: ${{ github.event.repository.name }}
+          app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
+
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
@@ -143,6 +163,9 @@ jobs:
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          # We pass a token with dedicated GH rate limit
+          github-token: ${{ steps.get-app-token.outputs.token }}
 
       - name: Install Poe
         run: |
@@ -250,11 +273,24 @@ jobs:
       max-parallel: 5
       # Allow all jobs to run, even if one fails
       fail-fast: false
+    outputs:
+      docker-image-tag: ${{ steps.connector-metadata.outputs.docker-image-tag }}
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
+          repositories: ${{ github.event.repository.name }}
+          app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
+
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
@@ -277,6 +313,9 @@ jobs:
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          # We pass a token with dedicated GH rate limit
+          github-token: ${{ steps.get-app-token.outputs.token }}
 
       - name: Install Poe
         run: |
@@ -292,8 +331,8 @@ jobs:
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
           CONNECTOR_VERSION=$(poe -qq get-version)
           if [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
-            hash=$(git rev-parse --short=10 HEAD)
-            echo "docker-image-tag=${CONNECTOR_VERSION}-dev.${hash}" | tee -a $GITHUB_OUTPUT
+            hash=$(git rev-parse --short=7 HEAD)
+            echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
             echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
           else
             echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
@@ -345,17 +384,28 @@ jobs:
       - publish_connector_registry_entries
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
+          repositories: ${{ github.event.repository.name }}
+          app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
+
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user
         env:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
-          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_API_TOKEN: ${{ steps.get-app-token.outputs.token }}
       - name: Send publish failures to connector-publish-failures channel
         id: slack
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
@@ -381,6 +431,7 @@ jobs:
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
+          ref: ${{ inputs.gitref || '' }}
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Notify PagerDuty
         id: pager-duty

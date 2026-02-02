@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": 429,
+    "message": "Search Analytics QPS quota exceeded",
+    "errors": [
+      {
+        "message": "Search Analytics QPS quota exceeded",
+        "domain": "usageLimits",
+        "reason": "rateLimitExceeded"
+      }
+    ],
+    "status": "RESOURCE_EXHAUSTED"
+  }
+}
