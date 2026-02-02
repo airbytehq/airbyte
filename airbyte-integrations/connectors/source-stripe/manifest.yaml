@@ -1883,7 +1883,7 @@ spec:
         type: integer
         title: Number of concurrent workers
         minimum: 1
-        maximum: 20
+        maximum: 100
         default: 10
         examples: [1, 2, 3]
         description: >-
@@ -1904,7 +1904,7 @@ spec:
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
-  max_concurrency: 20
+  max_concurrency: 100
 
 api_budget:
   type: HTTPAPIBudget
