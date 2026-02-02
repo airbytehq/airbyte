@@ -199,7 +199,7 @@ Create `secrets/config.json` with your Survey Monkey API access token:
 ```
 
 :::caution
-The `secrets/` directory is excluded from Git by default. Never commit your API credentials to version control.
+The Airbyte repository's `.gitignore` excludes the `secrets/` directory by default. Never commit your API credentials to version control.
 :::
 
 ### Create the configured catalog
