@@ -44,6 +44,10 @@ class AdCreatives(FBMarketingStream):
     """
 
     entity_prefix = "adcreative"
+    # These fields are excluded by default because they cause "Please reduce the amount of data" errors
+    # due to their deeply nested structure exceeding Facebook API limits.
+    # See: https://github.com/airbytehq/airbyte/issues/38025
+    fields_exceptions = ["asset_feed_spec", "object_story_spec", "template_url_spec"]
 
     def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
         super().__init__(**kwargs)
