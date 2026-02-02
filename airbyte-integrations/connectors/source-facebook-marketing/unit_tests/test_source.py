@@ -203,3 +203,105 @@ def test_check_config(config_gen, requests_mock, fb_marketing):
 
     assert command_check(fb_marketing, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
     assert command_check(fb_marketing, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
+
+
+class TestResolveAccountIds:
+    """Tests for the _resolve_account_ids method to ensure backward compatibility."""
+
+    def test_resolve_account_ids_with_config_provided(self, fb_marketing, mocker):
+        """When account_ids are provided in config, they should be used as-is (backward compatible)."""
+        api_mock = mocker.Mock()
+        config_account_ids = ["123456789", "987654321"]
+
+        result = fb_marketing._resolve_account_ids(api_mock, config_account_ids)
+
+        assert result == config_account_ids
+        api_mock.get_all_ad_accounts.assert_not_called()
+
+    def test_resolve_account_ids_without_config_fetches_from_api(self, fb_marketing, mocker):
+        """When account_ids are not provided, fetch all accessible accounts from API."""
+        api_mock = mocker.Mock()
+        api_mock.get_all_ad_accounts.return_value = ["111111111", "222222222"]
+
+        result = fb_marketing._resolve_account_ids(api_mock, [])
+
+        assert result == ["111111111", "222222222"]
+        api_mock.get_all_ad_accounts.assert_called_once()
+
+    def test_resolve_account_ids_empty_api_response_raises_error(self, fb_marketing, mocker):
+        """When no accounts are found from API, raise an error."""
+        api_mock = mocker.Mock()
+        api_mock.get_all_ad_accounts.return_value = []
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            fb_marketing._resolve_account_ids(api_mock, [])
+
+        assert "No ad accounts found" in str(exc_info.value.message)
+
+
+def test_check_connection_without_account_ids(requests_mock, fb_marketing, logger_mock):
+    """Test that check_connection works when account_ids is not provided (fetches from API)."""
+    config = {
+        "access_token": "ACCESS_TOKEN",
+        "credentials": {
+            "auth_type": "Service",
+            "access_token": "ACCESS_TOKEN",
+        },
+        "start_date": "2019-10-10T00:00:00Z",
+        "end_date": "2020-10-10T00:00:00Z",
+    }
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users",
+        json={"data": []},
+    )
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/adaccounts",
+        json={
+            "data": [{"account_id": "123", "id": "act_123"}],
+            "paging": {"cursors": {"before": "abc", "after": "xyz"}},
+        },
+    )
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",
+        json={"account": 123},
+    )
+
+    ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+    assert ok
+    assert not error_msg
+
+
+def test_streams_without_account_ids(requests_mock, fb_marketing, mocker):
+    """Test that streams() works when account_ids is not provided (fetches from API)."""
+    config = {
+        "access_token": "ACCESS_TOKEN",
+        "credentials": {
+            "auth_type": "Service",
+            "access_token": "ACCESS_TOKEN",
+        },
+        "start_date": "2019-10-10T00:00:00Z",
+        "end_date": "2020-10-10T00:00:00Z",
+    }
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users",
+        json={"data": []},
+    )
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/adaccounts",
+        json={
+            "data": [{"account_id": "456", "id": "act_456"}],
+            "paging": {"cursors": {"before": "abc", "after": "xyz"}},
+        },
+    )
+
+    streams = fb_marketing.streams(config)
+
+    assert len(streams) == 30
+    # Verify that the resolved account_ids are used in streams
+    assert streams[0]._account_ids == ["456"]

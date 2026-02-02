@@ -181,18 +181,19 @@ class ConnectorConfig(BaseConfig):
         title = "Source Facebook Marketing"
         use_enum_values = True
 
-    account_ids: Set[constr(regex="^[0-9]+$")] = Field(
+    account_ids: Optional[Set[constr(regex="^[0-9]+$")]] = Field(
         title="Ad Account ID(s)",
         order=0,
+        default=None,
         description=(
             "The Facebook Ad account ID(s) to pull data from. "
             "The Ad account ID number is in the account dropdown menu or in your browser's address "
             'bar of your <a href="https://adsmanager.facebook.com/adsmanager/">Meta Ads Manager</a>. '
-            'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
+            'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information. '
+            "If not specified, all ad accounts accessible by the authenticated user will be used."
         ),
         pattern_descriptor="The Ad Account ID must be a number.",
         examples=["111111111111111"],
-        min_items=1,
     )
 
     access_token: Optional[str] = Field(

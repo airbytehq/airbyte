@@ -86,9 +86,27 @@ class SourceFacebookMarketing(AbstractSource):
         if config.end_date:
             config.end_date = AirbyteDateTime.from_datetime(config.end_date)
 
-        config.account_ids = list(config.account_ids)
+        config.account_ids = list(config.account_ids) if config.account_ids else []
 
         return config
+
+    def _resolve_account_ids(self, api: API, config_account_ids: List[str]) -> List[str]:
+        """Resolve account IDs from config or fetch all accessible accounts if not provided.
+
+        If account_ids are provided in the config, use those (backward compatible behavior).
+        If account_ids is empty or not provided, fetch all accessible ad accounts from the API.
+        """
+        if config_account_ids:
+            return config_account_ids
+        logger.info("No account_ids provided in config, fetching all accessible ad accounts...")
+        account_ids = api.get_all_ad_accounts()
+        logger.info(f"Found {len(account_ids)} accessible ad account(s): {account_ids}")
+        if not account_ids:
+            raise AirbyteTracedException(
+                message="No ad accounts found. Please ensure your access token has access to at least one ad account, or specify account_ids in the configuration.",
+                failure_type=FailureType.config_error,
+            )
+        return account_ids
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -110,13 +128,16 @@ class SourceFacebookMarketing(AbstractSource):
             else:
                 api = API(access_token=config.access_token, page_size=config.page_size)
 
-            for account_id in config.account_ids:
+            account_ids = self._resolve_account_ids(api, config.account_ids)
+
+            for account_id in account_ids:
                 # Get Ad Account to check creds
                 logger.info(f"Attempting to retrieve information for account with ID: {account_id}")
                 ad_account = api.get_account(account_id=account_id)
                 logger.info(f"Successfully retrieved account information for account: {ad_account}")
 
                 # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
+                config.account_ids = account_ids
                 for stream in self.get_custom_insights_streams(api, config):
                     stream.check_breakdowns(account_id=account_id)
 
@@ -147,12 +168,15 @@ class SourceFacebookMarketing(AbstractSource):
         else:
             api = API(access_token=config.access_token, page_size=config.page_size)
 
+        account_ids = self._resolve_account_ids(api, config.account_ids)
+        config.account_ids = account_ids
+
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or (ab_datetime_now() - timedelta(days=365 * 2))
 
         insights_args = dict(
             api=api,
-            account_ids=config.account_ids,
+            account_ids=account_ids,
             start_date=report_start_date,
             end_date=config.end_date,
             insights_lookback_window=config.insights_lookback_window,
