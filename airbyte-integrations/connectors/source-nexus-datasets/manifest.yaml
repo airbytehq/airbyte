@@ -87,11 +87,6 @@ spec:
         type: string
         description: "The Infor Data API Key."
         order: 8
-      dataset_path:
-        type: string
-        description: "Data Set Path."
-        default: "rest/3.1/analytics/dataset"
-        airbyte_hidden: true # Hide this from UI if it's a fixed internal path
       dataset_name:
         title: "Dataset Name"
         type: string
