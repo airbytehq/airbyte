@@ -6,9 +6,7 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
@@ -47,16 +45,10 @@ internal class IcebergTableCleanerTest {
             tableNames = TableNames(finalTableName = TableName("namespace", "test")),
         )
 
-    private fun mockStream(
-        importType: ImportType = Append,
-        generationId: Long = 1,
-        minimumGenerationId: Long = 0
-    ) =
+    private fun mockStream(generationId: Long = 1, minimumGenerationId: Long = 0) =
         DestinationStream(
             unmappedNamespace = "testing",
             unmappedName = "test",
-            importType = importType,
-            schema = ObjectTypeWithoutSchema,
             generationId = generationId,
             minimumGenerationId = minimumGenerationId,
             syncId = 1,
