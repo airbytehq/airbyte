@@ -1488,12 +1488,6 @@ definitions:
           type: DpathExtractor
           field_path:
             - results
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path: ["{{ parameters['cursor_filter_property_field'] }}"]
-            value: "{{ record.get('properties', {}).get(parameters['cursor_filter_property_field']) }}"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
       cursor_field: hs_lastmodifieddate
@@ -2245,6 +2239,15 @@ dynamic_streams:
           create_or_update: true
           field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "incremental_sync", "cursor_field"]
           value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate' }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "transformations"]
+          value:
+            - type: AddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["{{ 'lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate' }}"]
+                  value: "{{ record.get('properties', {}).get('lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate') }}"
 
 
 spec:
