@@ -108,6 +108,12 @@ approaches CDC.
 - Read more on CDC limitations in the
   [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).
 
+#### Schema history missing error
+
+If you encounter an error message stating "Schema history missing with existing offset. Previous snapshot was incomplete, please refresh the connection," this indicates that the connector's internal schema history was lost or corrupted while CDC offset data still exists. This can happen if an initial snapshot was interrupted or if there was a state corruption issue.
+
+To resolve this error, perform a full refresh of the affected connection. This resets the CDC state and allows the connector to rebuild the schema history from scratch.
+
 ### Setting up CDC for MSSQL
 
 #### 1. Enable CDC on database and tables
@@ -454,7 +460,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.3.3       | 2025-01-16 | [71821](https://github.com/airbytehq/airbyte/pull/71821)  | Require a manual refresh when schema history is missing, bump CDK version.                                                                      |
+| 4.3.3       | 2026-02-03 | [71821](https://github.com/airbytehq/airbyte/pull/71821)                                                          | Require a manual refresh when schema history is missing, bump CDK version.                                                                      |
 | 4.3.2       | 2025-12-11 | [70836](https://github.com/airbytehq/airbyte/pull/70836)                                                          | Add Azure SQL Database compatibility for SQL Server Agent check                                                                                 |
 | 4.3.1       | 2025-12-09 | [70823](https://github.com/airbytehq/airbyte/pull/70823)                                                          | Bump up connector version number to release the connector                                                                                       |
 | 4.3.0-rc.10 | 2025-12-05 | [70306](https://github.com/airbytehq/airbyte/pull/70306)                                                          | Update CDK version to include fix for Debezium closing record race condition                                                                    |
