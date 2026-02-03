@@ -27,6 +27,9 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   releaseStage: alpha
   supportLevel: community
   tags:
