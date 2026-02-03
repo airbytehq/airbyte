@@ -26,8 +26,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -157,118 +161,71 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   /**
-   * Integration tests to validate that ClickHouse large integer types are correctly mapped. These
-   * types return as JDBCType.OTHER from the driver and are mapped to NUMERIC by
-   * ClickHouseSourceOperations. Each type is tested in a separate table for clarity.
+   * Test case record for parameterized large integer type mapping tests. Each test case defines a
+   * ClickHouse type and a list of test values to verify correct mapping.
    */
+  record LargeIntegerTestCase(String typeName, List<String> testValues) {}
 
-  @Test
-  public void testUInt64TypeMapping() throws Exception {
-    final String tableName = "uint64_type_test";
-    testdb.with("CREATE TABLE %s (id UInt32, value UInt64) ENGINE = MergeTree() ORDER BY id", tableName);
-
-    // Test cases: input value -> expected output
-    final String zero = "0";
-    final String maxSigned = "9223372036854775807"; // Max signed Int64
-    final String overflowSigned = "9223372036854775808"; // Max signed Int64 + 1
-    final String maxUnsigned = "18446744073709551615"; // Max UInt64
-
-    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s), (3, %s), (4, %s)",
-        tableName, zero, maxSigned, overflowSigned, maxUnsigned);
-
-    final List<JsonNode> records = readTable(tableName);
-    assertEquals(4, records.size());
-
-    assertValueEquals(records, 1, "value", zero);
-    assertValueEquals(records, 2, "value", maxSigned);
-    assertValueEquals(records, 3, "value", overflowSigned);
-    assertValueEquals(records, 4, "value", maxUnsigned);
+  /**
+   * Provides test cases for large integer type mapping. These types return as JDBCType.OTHER from the
+   * driver and are mapped to NUMERIC by ClickHouseSourceOperations.
+   */
+  static Stream<Arguments> largeIntegerTypeTestCases() {
+    return Stream.of(
+        Arguments.of(new LargeIntegerTestCase("UInt64", List.of(
+            "0", // zero
+            "9223372036854775807", // max signed Int64
+            "9223372036854775808", // max signed Int64 + 1 (overflow)
+            "18446744073709551615" // max UInt64
+        ))),
+        Arguments.of(new LargeIntegerTestCase("Int128", List.of(
+            "0", // zero
+            "12345678901234567890", // positive
+            "-12345678901234567890", // negative
+            "170141183460469231731687303715884105727", // max Int128
+            "-170141183460469231731687303715884105728" // min Int128
+        ))),
+        Arguments.of(new LargeIntegerTestCase("Int256", List.of(
+            "0", // zero
+            "12345678901234567890123456789012345678901234567890", // positive
+            "-12345678901234567890123456789012345678901234567890" // negative
+        ))),
+        Arguments.of(new LargeIntegerTestCase("UInt128", List.of(
+            "0", // zero
+            "12345678901234567890", // typical
+            "340282366920938463463374607431768211455" // max UInt128
+        ))),
+        Arguments.of(new LargeIntegerTestCase("UInt256", List.of(
+            "0", // zero
+            "12345678901234567890123456789012345678901234567890" // typical
+        ))));
   }
 
-  @Test
-  public void testInt128TypeMapping() throws Exception {
-    final String tableName = "int128_type_test";
-    testdb.with("CREATE TABLE %s (id UInt32, value Int128) ENGINE = MergeTree() ORDER BY id", tableName);
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("largeIntegerTypeTestCases")
+  public void testLargeIntegerTypeMapping(final LargeIntegerTestCase testCase) throws Exception {
+    final String tableName = testCase.typeName().toLowerCase() + "_type_test";
+    testdb.with("CREATE TABLE %s (id UInt32, value %s) ENGINE = MergeTree() ORDER BY id",
+        tableName, testCase.typeName());
 
-    // Test cases: input value -> expected output
-    final String zero = "0";
-    final String positive = "12345678901234567890";
-    final String negative = "-12345678901234567890";
-    final String maxInt128 = "170141183460469231731687303715884105727";
-    final String minInt128 = "-170141183460469231731687303715884105728";
-
-    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s), (3, %s), (4, %s), (5, %s)",
-        tableName, zero, positive, negative, maxInt128, minInt128);
-
-    final List<JsonNode> records = readTable(tableName);
-    assertEquals(5, records.size());
-
-    assertValueEquals(records, 1, "value", zero);
-    assertValueEquals(records, 2, "value", positive);
-    assertValueEquals(records, 3, "value", negative);
-    assertValueEquals(records, 4, "value", maxInt128);
-    assertValueEquals(records, 5, "value", minInt128);
-  }
-
-  @Test
-  public void testInt256TypeMapping() throws Exception {
-    final String tableName = "int256_type_test";
-    testdb.with("CREATE TABLE %s (id UInt32, value Int256) ENGINE = MergeTree() ORDER BY id", tableName);
-
-    // Test cases: input value -> expected output
-    final String zero = "0";
-    final String positive = "12345678901234567890123456789012345678901234567890";
-    final String negative = "-12345678901234567890123456789012345678901234567890";
-
-    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s), (3, %s)",
-        tableName, zero, positive, negative);
+    // Build INSERT statement with all test values
+    final List<String> testValues = testCase.testValues();
+    final StringBuilder insertValues = new StringBuilder();
+    for (int i = 0; i < testValues.size(); i++) {
+      if (i > 0) {
+        insertValues.append(", ");
+      }
+      insertValues.append("(").append(i + 1).append(", ").append(testValues.get(i)).append(")");
+    }
+    testdb.with("INSERT INTO %s VALUES " + insertValues, tableName);
 
     final List<JsonNode> records = readTable(tableName);
-    assertEquals(3, records.size());
+    assertEquals(testValues.size(), records.size());
 
-    assertValueEquals(records, 1, "value", zero);
-    assertValueEquals(records, 2, "value", positive);
-    assertValueEquals(records, 3, "value", negative);
-  }
-
-  @Test
-  public void testUInt128TypeMapping() throws Exception {
-    final String tableName = "uint128_type_test";
-    testdb.with("CREATE TABLE %s (id UInt32, value UInt128) ENGINE = MergeTree() ORDER BY id", tableName);
-
-    // Test cases: input value -> expected output
-    final String zero = "0";
-    final String typical = "12345678901234567890";
-    final String maxUInt128 = "340282366920938463463374607431768211455";
-
-    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s), (3, %s)",
-        tableName, zero, typical, maxUInt128);
-
-    final List<JsonNode> records = readTable(tableName);
-    assertEquals(3, records.size());
-
-    assertValueEquals(records, 1, "value", zero);
-    assertValueEquals(records, 2, "value", typical);
-    assertValueEquals(records, 3, "value", maxUInt128);
-  }
-
-  @Test
-  public void testUInt256TypeMapping() throws Exception {
-    final String tableName = "uint256_type_test";
-    testdb.with("CREATE TABLE %s (id UInt32, value UInt256) ENGINE = MergeTree() ORDER BY id", tableName);
-
-    // Test cases: input value -> expected output
-    final String zero = "0";
-    final String typical = "12345678901234567890123456789012345678901234567890";
-
-    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s)",
-        tableName, zero, typical);
-
-    final List<JsonNode> records = readTable(tableName);
-    assertEquals(2, records.size());
-
-    assertValueEquals(records, 1, "value", zero);
-    assertValueEquals(records, 2, "value", typical);
+    // Verify each value
+    for (int i = 0; i < testValues.size(); i++) {
+      assertValueEquals(records, i + 1, "value", testValues.get(i));
+    }
   }
 
   private List<JsonNode> readTable(final String tableName) throws Exception {
