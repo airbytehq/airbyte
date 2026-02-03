@@ -24,7 +24,7 @@ streams:
     name: datasets # Name of your data stream
     $parameters:
       # Dynamic path construction using config properties
-      path: "{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode={{ config['mode'] }}"
+      path: "rest/3.1/analytics/dataset/{{ config['dataset_name'] }}/export?mode={{ config.get('mode', 'Full') }}"
     retriever:
       type: SimpleRetriever
       record_selector:
@@ -58,9 +58,7 @@ spec:
       - access_key_id
       - secret_key
       - api_key
-      - dataset_path
       - dataset_name
-      - mode
     additionalProperties: true
     properties:
       base_url:
@@ -99,15 +97,10 @@ spec:
         type: string
         description: "The name of the dataset to export."
         order: 2
-      dataset_export_prefix:
-        type: string
-        description: "Data Export Prefix."
-        default: "export"
-        airbyte_hidden: true # Hide this from UI if it's a fixed internal path
       mode:
         type: string
         title: Infor Streaming Mode
-        description: "Infor Streaming mode (Full or Incremental)."
+        description: "Infor Streaming mode (Full or Incremental). https://developer.infornexus.com/api/version-3.1-api-methods"
         enum:
           - Full
           - Incremental
@@ -120,6 +113,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true # IMPORTANT: Set to false if you only want the 'raw_data' column
     properties:
-      raw_data: # Define a single property for the entire record as a JSON string
+      raw_data:
+        type: ["object", "null"]
+        additionalProperties: true
+        description: "Record payload as JSON object."
+      raw_data_string:
         type: ["string", "null"]
-        description: "The entire record as a JSON string."
+        description: "Record payload as JSON string (optional)."

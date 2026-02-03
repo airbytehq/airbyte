@@ -1,226 +1,214 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
-import argparse
-import collections
-import csv
 import hashlib
 import hmac
-import io
 import json
 import logging
-import string
-import sys
-import time
-import urllib
 from base64 import b64encode
 from collections import OrderedDict
 from dataclasses import InitVar, dataclass
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Iterable, Mapping, Union
+from typing import Any, Iterable, Mapping
 from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
-import pandas as pd
-
-# import pyarrow.parquet as pq
 import requests
 
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
 
 
-HMAC = "HMAC_1"
+DATASET_PATH = "rest/3.1/analytics/dataset"
+EXPORT_PREFIX = "export"
+DEFAULT_MODE = "Full"
+DEFAULT_HTTP_METHOD = "GET"
 
 
 @dataclass
 class NexusCustomAuthenticator(DeclarativeAuthenticator):
     config: Config
 
-    def __init__(self, config: Mapping[str, Any], *kwargs):
+    def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.config = config
         self.kwargs = kwargs
         self.logger = logging.getLogger("airbyte")
-        self.logger.setLevel(logging.DEBUG)
 
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(handler)
+        # constants (removed from client config)
+        self.dataset_path = DATASET_PATH
+        self.export_prefix = EXPORT_PREFIX
 
-        user_detail_stream_attr = self.config.get("datasets_stream", {})
-        path = user_detail_stream_attr.get("parameters", {})
-        self.dataset_path = self.config.get("dataset_path", "")
+        # user/config-driven values
         self.dataset_name = self.config.get("dataset_name", "")
-        self.export_prefix = self.config.get("dataset_export_prefix", "")
-        self.mode = self.config.get("mode", "")
+        self.mode = self.config.get("mode", DEFAULT_MODE)
         self.input_url = self.config.get("base_url", "")
-        self.userId = self.config.get("user_id", "")
-        self.secretAccessKey = self.config.get("secret_key", "")
-        self.dataKey = self.config.get("api_key", "")
-        self.method = self.config.get("http_method", "GET").upper()
-        self.accessKeyId = self.config.get("access_key_id", "")
-        self.contentType = None  # Only set if payload exists
+
+        # auth and request properties (snake_case)
+        self.user_id = self.config.get("user_id", "")
+        self.secret_access_key = self.config.get("secret_key", "")
+        self.api_key = self.config.get("api_key", "")
+        self.access_key_id = self.config.get("access_key_id", "")
+        self.method = self.config.get("http_method", DEFAULT_HTTP_METHOD).upper()
+
+        # optional payload support (kept as-is; only used if you later add payload signing)
+        self.content_type = None
         self.payload = self.config.get("payload", "")
-        self.fileContent = None  # Add file content here if required
-        self.pathInfo = ""
+        self.file_content = None
+
+        # computed during signing
+        self.path_info = ""
         self.querystring = ""
         self.dapi_date = ""
 
-    def parseUrl(self):
+    def parse_url(self) -> None:
+        """
+        Build the final request URL parts used in the signing base.
+        Important: path + query must match what the requester sends.
+        """
         relative_path = "/".join([self.dataset_path, self.dataset_name, self.export_prefix])
         full_url = urljoin(self.input_url, relative_path)
-        parsedUrl = urlparse(full_url)
+        parsed_url = urlparse(full_url)
 
-        # Optional: Add your query parameters here
+        # Add required query params
         query_params = {"mode": self.mode}
 
-        # If existing query parameters exist, merge them
-        existing_params = parse_qs(parsedUrl.query)
+        # Merge with existing query params, if any
+        existing_params = parse_qs(parsed_url.query)
         existing_params.update(query_params)
 
-        # Convert the query parameters to a string
         new_query = urlencode(existing_params, doseq=True)
+        final_url = urlunparse(parsed_url._replace(query=new_query))
 
-        # Build the final URL with the updated query string
-        final_url = urlunparse(parsedUrl._replace(query=new_query))
-
-        # Parse final_url to extract components like path
         parsed_final_url = urlparse(final_url)
-        self.pathInfo = parsed_final_url.path
+        self.path_info = parsed_final_url.path
         self.querystring = parsed_final_url.query
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        self.parseUrl()
-        signature = self.createAuthorizationHeader()
+        self.parse_url()
+        signature = self.create_authorization_header()
 
-        custom_header_1 = self.dapi_date
-        custom_header_2 = self.config.get("api_key", "")
-        return {"Authorization": signature, "x-dapi-date": custom_header_1, "x-nexus-api-key": custom_header_2}
+        return {
+            "Authorization": signature,
+            "x-dapi-date": self.dapi_date,
+            "x-nexus-api-key": self.api_key,
+        }
 
-    def createAuthorizationHeader(self) -> str:
-        signature = self.computeSignature()
-        return f"HMAC_1 {self.accessKeyId}:{signature.decode()}:{self.userId}"
+    def create_authorization_header(self) -> str:
+        signature = self.compute_signature()
+        return f"HMAC_1 {self.access_key_id}:{signature.decode()}:{self.user_id}"
 
-    def computeSignature(self) -> bytes:
-        self.setDate()
-        signingBase = self.createSigningBase()
-        return self.sign(signingBase)
+    def compute_signature(self) -> bytes:
+        self.set_date()
+        signing_base = self.create_signing_base()
+        return self.sign(signing_base)
 
-    def createSigningBase(self) -> bytes:
+    def create_signing_base(self) -> bytes:
+        path_info = self.path_info
         if self.querystring:
-            self.pathInfo += f"?{self.querystring}"
-        # self.logger.debug("signingBase pathInfo: %s", self.pathInfo)
-        ##To create signing base, all should be in lowercase
+            path_info = f"{path_info}?{self.querystring}"
+
+        # Per your original logic: lowercase everything
         components = OrderedDict(
             {
                 "date": self.dapi_date.lower(),
-                "method": self.method.lower(),  ## Think about this
-                "pathInfo": self.pathInfo.lower(),  # Use dynamic path
+                "method": self.method.lower(),
+                "pathInfo": path_info.lower(),
                 "payload": self.payload.lower() if self.payload else "",
-                "content-type": self.contentType.lower() if self.payload and self.contentType else "",
+                "content-type": self.content_type.lower() if self.payload and self.content_type else "",
             }
         )
 
-        if self.fileContent:
-            components["file_content"] = self.fileContent.decode("utf-8")
+        if self.file_content:
+            components["file_content"] = self.file_content.decode("utf-8")
 
-        signingBase = "".join(components.values())
-        return signingBase.encode("utf-8")
+        signing_base = "".join(components.values())
+        return signing_base.encode("utf-8")
 
-    def setDate(self):
+    def set_date(self) -> None:
         self.dapi_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
-    def sign(self, signingBase: bytes) -> bytes:
-        secret = self.secretAccessKey.encode("utf-8")
-        hash = hmac.new(secret, signingBase, hashlib.sha256)
-        return b64encode(hash.digest())
+    def sign(self, signing_base: bytes) -> bytes:
+        secret = self.secret_access_key.encode("utf-8")
+        digest = hmac.new(secret, signing_base, hashlib.sha256).digest()
+        return b64encode(digest)
 
 
-@dataclass  # Use the dataclass decorator
+@dataclass
 class FlexibleDecoder(Decoder):
     """
-    A custom decoder that dynamically selects the appropriate underlying decoder
-    (JSONL, CSV, or Parquet) based on the 'Content-Type' header of the HTTP response.
-    CSV parsing options are hardcoded within this class.
-    This version assumes files are NOT gzipped.
+    Decoder that parses JSONL-like responses based on Content-Type.
+
+    NOTE: This class currently yields `raw_data` as a JSON string.
+    If you switch schema to `raw_data` as an object (recommended), change the yield to:
+        yield {"raw_data": processed_record, "raw_data_string": json.dumps(processed_record)}
+    and update manifest schema accordingly.
     """
 
-    parameters: InitVar[Mapping[str, Any]] = None  # Capture any other parameters from manifest
+    parameters: InitVar[Mapping[str, Any]] = None
 
-    # CSV parsing options are hardcoded as class attributes or set in __post_init__
-    _csv_delimiter: str = ","
-    _csv_quote_char: str = '"'
-    _csv_encoding: str = "utf-8"
-    _csv_skip_rows_before_header: int = 0
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.logger = logging.getLogger("airbyte")
-        self.logger.setLevel(logging.DEBUG)
-
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(handler)
-        pass
 
     def _convert_all_to_strings(self, obj: Any) -> Any:
         """
         Recursively converts all non-None values in a dictionary or list to strings.
-        This handles Decimal, datetime.date, datetime.datetime, and other types.
+        Handles Decimal, datetime.date, datetime.datetime, and other types.
         """
         if obj is None:
             return None
-        elif isinstance(obj, (Decimal, datetime, date)):
-            return str(obj)  # Convert Decimal, datetime, date to string
-        elif isinstance(obj, dict):
+        if isinstance(obj, (Decimal, datetime, date)):
+            return str(obj)
+        if isinstance(obj, dict):
             return {k: self._convert_all_to_strings(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
+        if isinstance(obj, list):
             return [self._convert_all_to_strings(elem) for elem in obj]
-        # For other primitive types (int, float, bool, string already), convert to string
-        # This ensures consistency, even if it means converting a string to a string.
-        # This is the safest approach for dynamic schemaless sources to Parquet.
         return str(obj)
 
     def decode(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
-        """
-        Decodes the raw response body from the requests.Response object based on its Content-Type header.
-        Args:
-            response (requests.Response): The HTTP response object from the request.
-        Returns:
-            Iterable[Mapping[str, Any]]: An iterable of decoded records (dictionaries).
-        """
-        # For 304 and 202 during data sync, raise error with specific message
+        # For 304 and 202 or not equal to 200 during data sync, raise/log with specific message
         if response.status_code == 304:
-            self.logger.error("Data set is not ready, check the source")
-            raise ValueError("Data set is not ready, check the source")
-            return
-        elif response.status_code == 202:
-            self.logger.error("Dataset is not Ready - Try again later")
-        elif response.status_code not in (200, 304, 202):
-            # Log but don't fail on other unexpected status codes - allow graceful handling
-            self.logger.error(f"Unexpected status code: {response.status_code}")
-            return
+            self.logger.error("Dataset is not ready, please contact infor member services")
+            raise AirbyteTracedException(
+                message="Dataset is not ready, please contact infor member services", failure_type=FailureType.config_error
+            )
+        if response.status_code == 202:
+            self.logger.error("Dataset is not ready - try again later")
+            raise AirbyteTracedException(message="Dataset is not ready, try again later", failure_type=FailureType.config_error)
+        if response.status_code != 200:
+            self.logger.error("Unexpected status code: %s", response.status_code)
+            raise AirbyteTracedException(
+                message=f"Unexpected status code: {response.status_code} please contact infor member services",
+                failure_type=FailureType.config_error,
+            )
 
         content_type = response.headers.get("Content-Type", "").lower()
-        content_bytes = response.content
 
-        if (
-            "application/json" in content_type
-            or "application/x-jsonlines" in content_type
-            or "application/x-jsonl+json" in content_type
-            or "application/jsonl" in content_type
-        ):
-            for line in content_bytes.decode("utf-8").splitlines():
-                if line.strip():
-                    try:
-                        record_dict = json.loads(line)
-                        # Convert all values within the record to strings
-                        processed_record = self._convert_all_to_strings(record_dict)
-                        # Yield the entire processed record as a JSON string under a single key
-                        yield {"raw_data": json.dumps(processed_record)}
-                    except json.JSONDecodeError as e:
-                        logging.warning(f"Skipping malformed JSONL line: {line.strip()} - Error: {e}")
-        else:
-            self.logger.error(f"Unsupported or unrecognized Content-Type: {content_type}. Cannot decode response.")
+        is_jsonl = any(
+            ct in content_type
+            for ct in (
+                "application/json",
+                "application/x-jsonlines",
+                "application/x-jsonl+json",
+                "application/jsonl",
+            )
+        )
+
+        if not is_jsonl:
+            self.logger.error("Unsupported or unrecognized Content-Type: %s. Cannot decode response.", content_type)
             raise ValueError(f"Unsupported or unrecognized Content-Type: {content_type}")
+
+        for line in response.content.decode("utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                record_dict = json.loads(line)
+            except json.JSONDecodeError as exc:
+                self.logger.warning("Skipping malformed JSONL line: %s - Error: %s", line.strip(), exc)
+                continue
+
+            processed_record = self._convert_all_to_strings(record_dict)
+            yield {
+                "raw_data": processed_record,
+                "raw_data_string": json.dumps(processed_record),
+            }
