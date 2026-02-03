@@ -37,4 +37,8 @@ data:
   tags:
     - language:python
     - cdk:python
+  externalDocumentationUrls:
+    - title: Outbrain Amplify API
+      url: https://www.outbrain.com/amplify/api/
+      type: api_reference
 metadataSpecVersion: "1.0"

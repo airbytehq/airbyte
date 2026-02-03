@@ -1,0 +1,100 @@
+[
+  {
+    "id": 727,
+    "parent_id": 0,
+    "status": "processing",
+    "currency": "USD",
+    "version": "5.6.0",
+    "prices_include_tax": false,
+    "date_created": "2024-03-15T10:30:00",
+    "date_modified": "2024-03-15T14:45:00",
+    "date_created_gmt": "2024-03-15T10:30:00",
+    "date_modified_gmt": "2024-03-15T14:45:00",
+    "discount_total": "0.00",
+    "discount_tax": "0.00",
+    "shipping_total": "10.00",
+    "shipping_tax": "0.00",
+    "cart_tax": "0.00",
+    "total": "59.99",
+    "total_tax": "0.00",
+    "customer_id": 1,
+    "order_key": "wc_order_abc123",
+    "billing": {
+      "first_name": "John",
+      "last_name": "Doe",
+      "company": "",
+      "address_1": "123 Main St",
+      "address_2": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "postcode": "94102",
+      "country": "US",
+      "email": "john.doe@example.com",
+      "phone": "555-1234"
+    },
+    "shipping": {
+      "first_name": "John",
+      "last_name": "Doe",
+      "company": "",
+      "address_1": "123 Main St",
+      "address_2": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "postcode": "94102",
+      "country": "US"
+    },
+    "payment_method": "stripe",
+    "payment_method_title": "Credit Card (Stripe)",
+    "transaction_id": "txn_123456",
+    "customer_ip_address": "192.168.1.1",
+    "customer_user_agent": "Mozilla/5.0",
+    "created_via": "checkout",
+    "customer_note": "",
+    "date_completed": null,
+    "date_paid": "2024-03-15T10:31:00",
+    "cart_hash": "abc123hash",
+    "number": "727",
+    "meta_data": [],
+    "line_items": [
+      {
+        "id": 1,
+        "name": "Test Product",
+        "product_id": 99,
+        "variation_id": 0,
+        "quantity": 1,
+        "tax_class": "",
+        "subtotal": "49.99",
+        "subtotal_tax": "0.00",
+        "total": "49.99",
+        "total_tax": "0.00",
+        "taxes": [],
+        "meta_data": [],
+        "sku": "TEST-001",
+        "price": 49.99
+      }
+    ],
+    "tax_lines": [],
+    "shipping_lines": [
+      {
+        "id": 1,
+        "method_title": "Flat Rate",
+        "method_id": "flat_rate",
+        "total": "10.00",
+        "total_tax": "0.00",
+        "taxes": [],
+        "meta_data": []
+      }
+    ],
+    "fee_lines": [],
+    "coupon_lines": [],
+    "refunds": [],
+    "_links": {
+      "self": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/orders/727" }
+      ],
+      "collection": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/orders" }
+      ]
+    }
+  }
+]

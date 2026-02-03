@@ -25,4 +25,11 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: Chroma documentation
+      url: https://docs.trychroma.com/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.trychroma.com/deployment/auth
+      type: authentication_guide
 metadataSpecVersion: "1.0"

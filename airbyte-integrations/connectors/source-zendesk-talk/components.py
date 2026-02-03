@@ -6,6 +6,7 @@ from typing import Any, List, Mapping
 import requests
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.types import Record
@@ -40,8 +41,9 @@ class ZendeskTalkAuthenticator(DeclarativeAuthenticator):
     legacy_basic_auth: BasicHttpAuthenticator
     basic_auth: BasicHttpAuthenticator
     oauth: BearerAuthenticator
+    oauth_refresh: DeclarativeSingleUseRefreshTokenOauth2Authenticator
 
-    def __new__(cls, legacy_basic_auth, basic_auth, oauth, config, *args, **kwargs):
+    def __new__(cls, legacy_basic_auth, basic_auth, oauth, oauth_refresh, config, *args, **kwargs):
         credentials = config.get("credentials", {})
         if config.get("access_token", {}) and config.get("email", {}):
             return legacy_basic_auth
@@ -49,5 +51,7 @@ class ZendeskTalkAuthenticator(DeclarativeAuthenticator):
             return basic_auth
         elif credentials["auth_type"] == "oauth2.0":
             return oauth
+        elif credentials["auth_type"] == "oauth2_refresh":
+            return oauth_refresh
         else:
             raise Exception(f"Missing valid authenticator for auth_type: {credentials['auth_type']}")

@@ -13,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-uptick
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
@@ -33,14 +33,19 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 54c75c42-df4a-4f3e-a5f3-d50cf80f1649
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.5.0
   dockerRepository: airbyte/source-uptick
   githubIssueLabel: source-uptick
   icon: icon.svg
   license: ELv2
   name: Uptick
-  releaseDate: 2025-10-17
-  releaseStage: alpha
+  releaseDate: 2026-01-13
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      0.4.0:
+        message: "Breaking changes: The assets stream no longer includes floorplan_location_id. The tasksessions stream has removed hours (use duration_hours instead), sell_hours, appointment_attendance, is_suspicious_started, and is_suspicious_finished fields. See migration guide for details."
+        upgradeDeadline: "2025-12-23"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/uptick
   tags:
@@ -49,3 +54,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Uptick API documentation
+      url: https://developer.uptick.com/
+      type: api_reference

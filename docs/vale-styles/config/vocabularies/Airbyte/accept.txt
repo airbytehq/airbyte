@@ -39,6 +39,7 @@ Vale
 OpenTelemetry
 Datadog
 [Dd]eduplication
+[Dd]eduped
 Python
 MarkDownLint
 markdownlint-cli2
@@ -47,6 +48,7 @@ ETL
 ELT
 [Dd]ata activation
 ID
+[Aa]gent(ic)?
 
 # Common acronyms and initialisms that don't need definitions
 
@@ -76,6 +78,7 @@ S3 Data Lake
 PostgreSQL
 Postgres
 NetSuite
+ClickHouse
 
 # Companies, products, and jargon
 
@@ -97,7 +100,7 @@ MinIO
 [Nn]amespaces
 [Ii]nitialisms
 \bCPU(?:s)?\b
-hostname
+\bhostname(?:s)?\b
 
 # API and technical terms
 

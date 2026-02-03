@@ -115,7 +115,6 @@ class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
         display_type="radio",
         group="advanced",
         default="use_records_transfer",
-        airbyte_hidden=True,
     )
 
     @classmethod

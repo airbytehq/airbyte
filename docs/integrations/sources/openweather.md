@@ -38,12 +38,17 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.44 | 2026-01-20 | [72182](https://github.com/airbytehq/airbyte/pull/72182) | Update dependencies |
+| 0.3.43 | 2026-01-14 | [71667](https://github.com/airbytehq/airbyte/pull/71667) | Update dependencies |
+| 0.3.42 | 2025-12-18 | [70515](https://github.com/airbytehq/airbyte/pull/70515) | Update dependencies |
+| 0.3.41 | 2025-11-25 | [70133](https://github.com/airbytehq/airbyte/pull/70133) | Update dependencies |
+| 0.3.40 | 2025-11-18 | [69663](https://github.com/airbytehq/airbyte/pull/69663) | Update dependencies |
 | 0.3.39 | 2025-10-29 | [69012](https://github.com/airbytehq/airbyte/pull/69012) | Update dependencies |
 | 0.3.38 | 2025-10-21 | [68324](https://github.com/airbytehq/airbyte/pull/68324) | Update dependencies |
 | 0.3.37 | 2025-10-14 | [67768](https://github.com/airbytehq/airbyte/pull/67768) | Update dependencies |
 | 0.3.36 | 2025-10-07 | [67344](https://github.com/airbytehq/airbyte/pull/67344) | Update dependencies |
 | 0.3.35 | 2025-09-30 | [66382](https://github.com/airbytehq/airbyte/pull/66382) | Update dependencies |
-| 0.3.34 | 2025-09-09 | [65797](https://github.com/airbytehq/airbyte/pull/65797) | Update dependencies |
+| 0.3.34 | 2025-09-10 | [65797](https://github.com/airbytehq/airbyte/pull/65797) | Update dependencies |
 | 0.3.33 | 2025-08-23 | [65216](https://github.com/airbytehq/airbyte/pull/65216) | Update dependencies |
 | 0.3.32 | 2025-08-09 | [64671](https://github.com/airbytehq/airbyte/pull/64671) | Update dependencies |
 | 0.3.31 | 2025-08-02 | [64189](https://github.com/airbytehq/airbyte/pull/64189) | Update dependencies |

@@ -41,4 +41,11 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  externalDocumentationUrls:
+    - title: Table Storage REST API
+      url: https://learn.microsoft.com/en-us/rest/api/storageservices/table-service-rest-api
+      type: api_reference
+    - title: Authentication
+      url: https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-requests-to-azure-storage
+      type: authentication_guide
 metadataSpecVersion: "1.0"

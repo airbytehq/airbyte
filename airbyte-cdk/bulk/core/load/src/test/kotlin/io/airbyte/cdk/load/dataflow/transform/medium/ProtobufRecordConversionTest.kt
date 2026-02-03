@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.transform.medium
@@ -38,7 +38,6 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
-import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
@@ -83,7 +82,6 @@ class ProtobufRecordConversionTest {
     private val generationId = 314L
 
     private lateinit var stream: DestinationStream
-    private lateinit var columnNameMapper: ColumnNameMapper
     private lateinit var valueCoercer: ValueCoercer
     private lateinit var validationResultHandler: ValidationResultHandler
     private var protoSource: DestinationRecordProtobufSource? = null
@@ -93,15 +91,7 @@ class ProtobufRecordConversionTest {
 
     @BeforeEach
     fun setUp() {
-        columnNameMapper =
-            object : ColumnNameMapper {
-                override fun getMappedColumnName(
-                    stream: DestinationStream,
-                    columnName: String
-                ): String {
-                    return "mapped_$columnName"
-                }
-            }
+        // NOTE: Column name mapping is now handled by the stream's tableSchema
 
         valueCoercer =
             object : ValueCoercer {
@@ -275,12 +265,22 @@ class ProtobufRecordConversionTest {
             every { this@mockk.airbyteValueProxyFieldAccessors } returns fieldAccessors
             every { this@mockk.syncId } returns this@ProtobufRecordConversionTest.syncId
             every { this@mockk.generationId } returns this@ProtobufRecordConversionTest.generationId
-            every { this@mockk.schema } returns dummyType
             every { this@mockk.mappedDescriptor } returns DestinationStream.Descriptor("", "dummy")
             every { this@mockk.unmappedDescriptor } returns
                 DestinationStream.Descriptor("", "dummy")
             every { this@mockk.unknownColumnChanges } returns
-                dummyType.computeUnknownColumnChanges()
+                dummyType.properties.computeUnknownColumnChanges()
+            // Add tableSchema mock for column name mapping and schema
+            every { this@mockk.tableSchema } returns
+                mockk {
+                    every { getFinalColumnName(any()) } answers
+                        {
+                            val columnName = firstArg<String>()
+                            "mapped_$columnName"
+                        }
+                    every { columnSchema } returns
+                        mockk { every { inputSchema } returns dummyType.properties }
+                }
         }
 
         record =
@@ -291,14 +291,12 @@ class ProtobufRecordConversionTest {
                         callOriginal()
                     }
                 every { this@mockk.airbyteRawId } returns uuid
-                every { this@mockk.schema } returns this@ProtobufRecordConversionTest.stream.schema
-                every { this@mockk.schemaFields } returns
-                    (this@ProtobufRecordConversionTest.stream.schema as ObjectType).properties
+                every { this@mockk.schemaFields } returns dummyType.properties
                 every { this@mockk.rawData } returns protoSource!!
                 every { this@mockk.stream } returns this@ProtobufRecordConversionTest.stream
             }
 
-        converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        converter = ProtobufConverter(valueCoercer, validationResultHandler)
     }
 
     @AfterEach fun tearDown() = unmockkAll()

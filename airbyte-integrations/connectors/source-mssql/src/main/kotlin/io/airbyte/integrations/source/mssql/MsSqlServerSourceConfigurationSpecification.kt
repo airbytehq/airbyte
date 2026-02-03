@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql
@@ -67,9 +67,11 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
 
     @JsonProperty("schemas")
     @JsonSchemaTitle("Schemas")
-    @JsonPropertyDescription("The list of schemas to sync from. Defaults to user. Case sensitive.")
-    @JsonSchemaInject(json = """{"order":3, "default":["dbo"], "minItems":0, "uniqueItems":true}""")
-    var schemas: Array<String>? = arrayOf("dbo")
+    @JsonPropertyDescription(
+        "The list of schemas to sync from. If not specified, all schemas will be discovered. Case sensitive."
+    )
+    @JsonSchemaInject(json = """{"order":3, "minItems":0, "uniqueItems":true}""")
+    var schemas: Array<String>? = null
 
     @JsonProperty("username")
     @JsonSchemaTitle("Username")
@@ -162,7 +164,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonSchemaTitle("Concurrency")
     @JsonSchemaInject(json = """{"order":12}""")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
-    var concurrency: Int? = 1
+    var concurrency: Int? = null
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")

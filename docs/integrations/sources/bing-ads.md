@@ -324,10 +324,10 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 | 2.23.7 | 2025-10-14 | [68008](https://github.com/airbytehq/airbyte/pull/68008) | Update dependencies |
 | 2.23.6 | 2025-10-07 | [67170](https://github.com/airbytehq/airbyte/pull/67170) | Update dependencies |
 | 2.23.5 | 2025-09-30 | [66038](https://github.com/airbytehq/airbyte/pull/66038) | Update dependencies |
-| 2.23.4 | 2025-09-15 | [66234](https://github.com/airbytehq/airbyte/pull/66234) | Promoting release candidate 2.23.4-rc.1 to a main version. |
+| 2.23.4 | 2025-09-16 | [66234](https://github.com/airbytehq/airbyte/pull/66234) | Promoting release candidate 2.23.4-rc.1 to a main version. |
 | 2.23.4-rc.1 | 2025-09-10 | [65894](https://github.com/airbytehq/airbyte/pull/65894) | Fix Custom Report Names - Add Option to Disable camel_case_to_snake_case |
-| 2.23.3 | 2025-09-08 | [65995](https://github.com/airbytehq/airbyte/pull/65995) | Update to CDK v7 |
-| 2.23.2 | 2025-08-15 | [64952](https://github.com/airbytehq/airbyte/pull/64952) | Always decompress bulk download response |
+| 2.23.3 | 2025-09-10 | [65995](https://github.com/airbytehq/airbyte/pull/65995) | Update to CDK v7 |
+| 2.23.2 | 2025-08-16 | [64952](https://github.com/airbytehq/airbyte/pull/64952) | Always decompress bulk download response |
 | 2.23.1 | 2025-07-26 | [60669](https://github.com/airbytehq/airbyte/pull/60669) | Update dependencies |
 | 2.23.0 | 2025-07-09 | [62872](https://github.com/airbytehq/airbyte/pull/62872) | Promoting release candidate 2.23.0-rc.1 to a main version. |
 | 2.23.0-rc.1 | 2025-07-07 | [62520](https://github.com/airbytehq/airbyte/pull/62520)                                                                         | Migrate Source Bing Ads to manifest-only                                                                                                                               |

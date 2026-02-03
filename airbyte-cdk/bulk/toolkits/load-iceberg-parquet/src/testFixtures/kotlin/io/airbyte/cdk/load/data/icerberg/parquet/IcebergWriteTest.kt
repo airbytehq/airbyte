@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data.icerberg.parquet
@@ -53,13 +53,12 @@ abstract class IcebergWriteTest(
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(
                 integerCanBeLarge = false,
                 // we stringify objects, so nested floats stay exact
-                nestedFloatLosesPrecision = false
+                nestedFloatLosesPrecision = false,
             ),
         unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
         nullEqualsUnset = true,
@@ -87,17 +86,17 @@ abstract class IcebergWriteTest(
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Append,
-                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
-                syncId,
-                namespaceMapper = NamespaceMapper()
+                syncId = syncId,
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = makeTableSchema(ObjectType(schema), Append),
             )
+
         val firstStream =
             makeStream(
                 syncId = 42,
-                linkedMapOf("id" to intType, "to_drop" to stringType, "same" to intType)
+                linkedMapOf("id" to intType, "to_drop" to stringType, "same" to intType),
             )
         runSync(
             updatedConfig,
@@ -107,13 +106,13 @@ abstract class IcebergWriteTest(
                     firstStream,
                     """{"id": 42, "to_drop": "val1", "same": 42}""",
                     emittedAtMs = 1234L,
-                )
-            )
+                ),
+            ),
         )
         val finalStream =
             makeStream(
                 syncId = 43,
-                linkedMapOf("id" to intType, "same" to intType, "to_add" to stringType)
+                linkedMapOf("id" to intType, "same" to intType, "to_add" to stringType),
             )
         runSync(
             updatedConfig,
@@ -123,8 +122,8 @@ abstract class IcebergWriteTest(
                     finalStream,
                     """{"id": 42, "same": "43", "to_add": "val3"}""",
                     emittedAtMs = 1234,
-                )
-            )
+                ),
+            ),
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -140,7 +139,7 @@ abstract class IcebergWriteTest(
                     generationId = 0,
                     data = mapOf("id" to 42, "same" to 43, "to_add" to "val3"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
-                )
+                ),
             ),
             finalStream,
             primaryKey = listOf(listOf("id")),
@@ -155,16 +154,17 @@ abstract class IcebergWriteTest(
      */
     @Test
     open fun testDedupNullPk() {
+        val dedupImportType = Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
+        val dedupSchema = ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true)))
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
-                ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 12,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = makeTableSchema(dedupSchema, dedupImportType),
             )
         val failure = expectFailure {
             runSync(
@@ -175,8 +175,8 @@ abstract class IcebergWriteTest(
                         stream,
                         """{"id": null}""",
                         emittedAtMs = 1234L,
-                    )
-                )
+                    ),
+                ),
             )
         }
         assertContains(

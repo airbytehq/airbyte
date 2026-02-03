@@ -28,13 +28,18 @@ API Reference: https://app.ninjarmm.com/apidocs/?links.active=core
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2026-01-20 | [71951](https://github.com/airbytehq/airbyte/pull/71951) | Update dependencies |
+| 0.0.27 | 2026-01-14 | [71596](https://github.com/airbytehq/airbyte/pull/71596) | Update dependencies |
+| 0.0.26 | 2025-12-18 | [70537](https://github.com/airbytehq/airbyte/pull/70537) | Update dependencies |
+| 0.0.25 | 2025-11-25 | [69851](https://github.com/airbytehq/airbyte/pull/69851) | Update dependencies |
+| 0.0.24 | 2025-11-18 | [69404](https://github.com/airbytehq/airbyte/pull/69404) | Update dependencies |
 | 0.0.23 | 2025-10-29 | [68696](https://github.com/airbytehq/airbyte/pull/68696) | Update dependencies |
 | 0.0.22 | 2025-10-21 | [68401](https://github.com/airbytehq/airbyte/pull/68401) | Update dependencies |
 | 0.0.21 | 2025-10-14 | [67752](https://github.com/airbytehq/airbyte/pull/67752) | Update dependencies |
 | 0.0.20 | 2025-10-07 | [67414](https://github.com/airbytehq/airbyte/pull/67414) | Update dependencies |
 | 0.0.19 | 2025-09-30 | [66925](https://github.com/airbytehq/airbyte/pull/66925) | Update dependencies |
-| 0.0.18 | 2025-09-23 | [66610](https://github.com/airbytehq/airbyte/pull/66610) | Update dependencies |
-| 0.0.17 | 2025-09-09 | [65807](https://github.com/airbytehq/airbyte/pull/65807) | Update dependencies |
+| 0.0.18 | 2025-09-24 | [66610](https://github.com/airbytehq/airbyte/pull/66610) | Update dependencies |
+| 0.0.17 | 2025-09-10 | [65807](https://github.com/airbytehq/airbyte/pull/65807) | Update dependencies |
 | 0.0.16 | 2025-08-23 | [65176](https://github.com/airbytehq/airbyte/pull/65176) | Update dependencies |
 | 0.0.15 | 2025-08-09 | [64686](https://github.com/airbytehq/airbyte/pull/64686) | Update dependencies |
 | 0.0.14 | 2025-08-02 | [64230](https://github.com/airbytehq/airbyte/pull/64230) | Update dependencies |

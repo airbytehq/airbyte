@@ -47,4 +47,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SpaceX API documentation
+      url: https://github.com/r-spacex/SpaceX-API/tree/master/docs
+      type: api_reference
 metadataSpecVersion: "1.0"

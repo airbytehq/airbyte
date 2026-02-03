@@ -1,0 +1,210 @@
+name: Publish Connectors Pre-release
+# This workflow publishes a pre-release connector build from a PR branch.
+# It can be triggered via the /publish-connectors-prerelease slash command from PR comments,
+# or via the MCP tool `publish_connector_to_airbyte_registry`.
+#
+# Pre-release versions are tagged with the format: {version}-preview.{7-char-git-sha}
+# These versions are NOT eligible for semver auto-advancement but ARE available
+# for version pinning via the scoped_configuration API.
+#
+# Usage:
+#   /publish-connectors-prerelease                    # Auto-detects single modified connector
+#   /publish-connectors-prerelease connector=source-github  # Explicit connector name
+#
+# If no connector is specified, the workflow auto-detects modified connectors.
+# It will fail if 0 or 2+ connectors are modified (only single-connector publishing is supported).
+
+on:
+  workflow_dispatch:
+    inputs:
+      # Global static-arg inputs for slash commands
+      repo:
+        description: "The repository name"
+        required: false
+        default: "airbytehq/airbyte"
+        type: string
+      gitref:
+        description: "The git reference (branch or tag). NOTE: This input is ignored; the workflow always uses refs/pull/{pr}/head from the PR number."
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+        type: number
+      pr:
+        description: "The pull request number (required)"
+        required: true
+        type: number
+      connector:
+        description: "Single connector name to publish (e.g., destination-pinecone). If not provided, auto-detects from PR changes (fails if 0 or 2+ connectors modified)."
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pr || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  init:
+    name: Initialize Pre-release Publish
+    runs-on: ubuntu-24.04
+    outputs:
+      run-url: ${{ steps.job-vars.outputs.run-url }}
+      pr-number: ${{ steps.job-vars.outputs.pr-number }}
+      comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
+      short-sha: ${{ steps.get-sha.outputs.short-sha }}
+      connector-name: ${{ steps.resolve-connector.outputs.connector-name }}
+      connector-version: ${{ steps.connector-version.outputs.connector-version }}
+    steps:
+      - name: Checkout to get commit SHA
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.repository }}
+          ref: refs/pull/${{ inputs.pr }}/head
+          fetch-depth: 0
+
+      - name: Get short SHA
+        id: get-sha
+        run: |
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
+          echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Get job variables
+        id: job-vars
+        run: |
+          echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+          echo "pr-number=${{ inputs.pr }}" >> $GITHUB_OUTPUT
+
+      - name: Resolve connector name
+        id: resolve-connector
+        run: |
+          set -euo pipefail
+          if [[ -n "${{ inputs.connector }}" ]]; then
+            echo "Connector explicitly provided: ${{ inputs.connector }}"
+            echo "connector-name=${{ inputs.connector }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "No connector provided, detecting modified connectors..."
+          MODIFIED_JSON=$(./poe-tasks/get-modified-connectors.sh --json)
+          echo "Modified connectors JSON: $MODIFIED_JSON"
+
+          CONNECTORS=$(echo "$MODIFIED_JSON" | jq -r '.connector | map(select(. != "")) | .[]')
+          CONNECTOR_COUNT=$(echo "$MODIFIED_JSON" | jq -r '.connector | map(select(. != "")) | length')
+
+          echo "Found $CONNECTOR_COUNT modified connector(s)"
+
+          if [[ "$CONNECTOR_COUNT" -eq 0 ]]; then
+            echo "::error::No modified connectors found in this PR. Please specify a connector name explicitly."
+            exit 1
+          elif [[ "$CONNECTOR_COUNT" -gt 1 ]]; then
+            echo "::error::Multiple modified connectors found: $CONNECTORS. This workflow only supports publishing one connector at a time. Please specify a connector name explicitly."
+            exit 1
+          fi
+
+          CONNECTOR_NAME=$(echo "$CONNECTORS" | head -n1)
+          echo "Auto-detected single modified connector: $CONNECTOR_NAME"
+          echo "connector-name=$CONNECTOR_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Determine connector version
+        id: connector-version
+        run: |
+          set -euo pipefail
+          CONNECTOR_NAME="${{ steps.resolve-connector.outputs.connector-name }}"
+          CONNECTOR_DIR="airbyte-integrations/connectors/$CONNECTOR_NAME"
+          VERSION=""
+          if [[ -f "$CONNECTOR_DIR/manifest.yaml" ]]; then
+            VERSION=$(grep -E '^\s*version:' "$CONNECTOR_DIR/manifest.yaml" | head -n1 | awk '{print $2}' | tr -d '"')
+          fi
+          if [[ -z "$VERSION" ]] && [[ -f "$CONNECTOR_DIR/metadata.yaml" ]]; then
+            VERSION=$(grep -E '^\s*dockerImageTag:' "$CONNECTOR_DIR/metadata.yaml" | head -n1 | awk '{print $2}' | tr -d '"')
+          fi
+          echo "connector-version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Append start comment
+        id: append-start-comment
+        if: inputs.comment-id != '' || inputs.pr != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ steps.job-vars.outputs.pr-number }}
+          reactions: "+1"
+          body: |
+            > **Pre-release Connector Publish Started**
+            >
+            > Publishing pre-release build for connector `${{ steps.resolve-connector.outputs.connector-name }}`.
+            > PR: [#${{ inputs.pr }}](https://github.com/${{ inputs.repo || github.repository }}/pull/${{ inputs.pr }})
+            >
+            > Pre-release versions will be tagged as `{version}-preview.${{ steps.get-sha.outputs.short-sha }}`
+            > and are available for version pinning via the scoped_configuration API.
+            >
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+  publish:
+    name: Publish Pre-release
+    needs: [init]
+    uses: ./.github/workflows/publish_connectors.yml
+    with:
+      connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
+      release-type: pre-release
+      gitref: refs/pull/${{ inputs.pr }}/head
+    secrets: inherit
+
+  post-completion:
+    name: Post Completion Status
+    needs: [init, publish]
+    runs-on: ubuntu-24.04
+    if: always() && (inputs.comment-id != '' || inputs.pr != '')
+    steps:
+      - name: Determine publish status
+        id: status
+        run: |
+          if [[ "${{ needs.publish.result }}" == "success" ]]; then
+            echo "status_emoji=:white_check_mark:" >> $GITHUB_OUTPUT
+            echo "status_text=SUCCESS" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.publish.result }}" == "failure" ]]; then
+            echo "status_emoji=:x:" >> $GITHUB_OUTPUT
+            echo "status_text=FAILED" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.publish.result }}" == "cancelled" ]]; then
+            echo "status_emoji=:warning:" >> $GITHUB_OUTPUT
+            echo "status_text=CANCELLED" >> $GITHUB_OUTPUT
+          else
+            echo "status_emoji=:grey_question:" >> $GITHUB_OUTPUT
+            echo "status_text=UNKNOWN" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Prepare message variables
+        id: message-vars
+        run: |
+          CONNECTOR_NAME="${{ needs.init.outputs.connector-name }}"
+          # Use the actual docker-image-tag from the publish workflow output
+          DOCKER_TAG="${{ needs.publish.outputs.docker-image-tag }}"
+
+          if [[ -z "$DOCKER_TAG" ]]; then
+            echo "::error::docker-image-tag output is missing from publish workflow. This is unexpected."
+            exit 1
+          fi
+
+          echo "connector_name=$CONNECTOR_NAME" >> $GITHUB_OUTPUT
+          echo "docker_image=airbyte/$CONNECTOR_NAME" >> $GITHUB_OUTPUT
+          echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "dockerhub_url=https://hub.docker.com/layers/airbyte/$CONNECTOR_NAME/$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "oss_registry_url=https://connectors.airbyte.com/files/metadata/airbyte/$CONNECTOR_NAME/$DOCKER_TAG/oss.json" >> $GITHUB_OUTPUT
+          echo "cloud_registry_url=https://connectors.airbyte.com/files/metadata/airbyte/$CONNECTOR_NAME/$DOCKER_TAG/cloud.json" >> $GITHUB_OUTPUT
+
+      - name: Append completion comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ needs.init.outputs.comment-id }}
+          issue-number: ${{ needs.init.outputs.pr-number }}
+          body: |
+            > **Pre-release Publish: ${{ steps.status.outputs.status_text }}** ${{ steps.status.outputs.status_emoji }}
+            >
+            > **Docker image (pre-release):**
+            > `${{ steps.message-vars.outputs.docker_image }}:${{ steps.message-vars.outputs.docker_tag }}`
+            >
+            > **Docker Hub:** ${{ steps.message-vars.outputs.dockerhub_url }}
+            >
+            > **Registry JSON:**
+            > - [OSS Registry](${{ steps.message-vars.outputs.oss_registry_url }})
+            > - [Cloud Registry](${{ steps.message-vars.outputs.cloud_registry_url }})

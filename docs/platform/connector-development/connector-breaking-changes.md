@@ -1,13 +1,16 @@
 # Managing Breaking Changes in Connectors
 
-Whenever possible, changes to connectors should be implemented in a non-breaking way. This allows users to upgrade to the latest version of a connector without additional action required on their part. Assume that _every_ breaking changes creates friction for users and should be avoided except when absolutely necessary.
+Whenever possible, changes to connectors should be implemented in a non-breaking way. This allows users to upgrade to the latest version of a connector without additional action required on their part. Assume that _every_ breaking change creates friction for users and should be avoided except when absolutely necessary.
 
 When it is not possible to make changes in a non-breaking manner, additional **breaking change requirements** include:
 
-1. A **Major Version** increase. (Or minor in the case of a pre-1.0.0 connector in accordance with Semantic Versioning rules)
+1. A **Major Version** increase (or minor in the case of a pre-1.0.0 connector in accordance with Semantic Versioning rules)
 2. A [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) in the `releases` section of the `metadata.yaml` file
 3. A migration guide which details steps that users should take to resolve the change
-4. An Airbyte Engineer to complete the [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) (internal link) before merging the PR.
+4. CI will enforce that breaking changes have an entry in the associated `{connector-name}-migrations.md` file.
+5. Breaking changes require approval from the `@airbytehq/breaking-change-reviewers` GitHub team, which is automatically requested for review on migration guide changes (see [CODEOWNERS](https://github.com/airbytehq/airbyte/blob/master/CODEOWNERS)). PRs with breaking changes must also be labeled with `breaking-change`.
+6. PR titles for breaking changes must include a "!" to signify the PR contains breaking changes (e.g., `Source Example: fix!: schema change`).
+7. An Airbyte Engineer to complete the [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) (internal link) before merging the PR.
 
 ## Types of Breaking Changes
 
@@ -17,9 +20,19 @@ A breaking change is any change that requires users to take action before they c
 - **Schema Change** - The type of property previously present within a record has changed
 - **Stream or Property Removal** - Data that was previously being synced is no longer going to be synced.
 - **Destination Format / Normalization Change** - The way the destination writes the final data or how normalization cleans that data is changing in a way that requires a full-refresh.
-- **State Changes** - The format of the source’s state has changed, and the full dataset will need to be re-synced
-- **Full Downstream Rewrite** - Very rarely, a change is so sigificant that it requires a full rewrite of downstream SQL transformations or BI dashboards. In these cases, consider forking the connector as a "Gen 2" version instead of making a breaking change that would fully break users' downstream pipelines.
-  - Example: Migration from legacy JSON-only "raw" tables to normalized typed columns in a destination tables. These historic changes were so significant that they would break all downstream SQL transformations and BI dashboards. A "gen-2" approach in these cases gives users the ability to run both "Gen 1" and "Gen 2" in parallel, migrating only after they have had a chance to adapt their code to the new data models.
+- **State Changes** - The format of the source's state has changed, and the full dataset will need to be re-synced
+- **Non-Reversible Upgrades** - Connector upgrades which cannot be safely rolled back should be considered a subset of breaking changes and must be similarly flagged and approved.
+- **Full Downstream Rewrite** - Very rarely, a change is so significant that it requires a full rewrite of downstream SQL transformations or BI dashboards. In these cases, consider forking the connector as a "Gen 2" version instead of making a breaking change that would fully break users' downstream pipelines. See [Major Rewrites and Gen 2 Connectors](#major-rewrites-and-gen-2-connectors) below.
+
+### What is NOT a Breaking Change
+
+The addition of new config options, new streams, or new stream properties should generally not be considered a breaking change. However, there is one important edge case to consider:
+
+**High-Volume Streams**: Adding a new high-volume stream (one that produces 2x or more the volume of other streams) can break existing pipelines by overwhelming destination capacity or significantly increasing sync times. When adding high-volume streams to existing connectors:
+
+1. Default the new stream to _not_ be included in the `suggestedStreams` metadata.
+2. If the connector does not yet have a `suggestedStreams` set, add one that excludes the new high-volume stream.
+3. Document the stream's volume characteristics in the connector documentation.
 
 ### Avoiding Breaking Changes with Migrations
 
@@ -47,7 +60,24 @@ When in doubt, treat type changes as breaking unless you can verify that all dow
 
 Some legitimate breaking changes may not impact all users of the connector. For example, a change to the schema of a specific stream only impacts users who are syncing that stream.
 
-The breaking change metadata allows you to specify narrowed scopes, and specifically _which streams_ are specifically affected by a breaking change. See the [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) documentation for supported scopes. If a user is not using the affected streams and therefor are not affected by a breaking change, they will not see any in-app messaging or emails about the change.
+The breaking change metadata allows you to specify narrowed scopes, and specifically _which streams_ are affected by a breaking change. If a user is not using the affected streams and therefore are not affected by a breaking change, they will not see any in-app messaging or emails about the change.
+
+To scope a breaking change to specific streams, add the `scopedImpact` property to your `metadata.yaml` entry:
+
+```yaml
+releases:
+  breakingChanges:
+    2.0.0:
+      message: "This version changes the cursor for the `users` stream. After upgrading, please reset the stream."
+      upgradeDeadline: "2024-03-01"
+      scopedImpact:
+        - scopeType: stream
+          impactedScopes: ["users"]
+```
+
+In this example, only users syncing the `users` stream are affected. Users syncing other streams can safely ignore this breaking change.
+
+For the full schema and additional scope types, see the [`scopedImpact` documentation](/platform/connector-development/connector-metadata-file#scopedimpact).
 
 ## Migration Guide Documentation Requirements
 
@@ -135,10 +165,35 @@ The `upgradeDeadline` field specifies the date by which users should upgrade (fo
 
 - **Automated notifications:** The platform automatically emails users when a breaking change is released and sends reminders as the deadline approaches.
 
+## Major Rewrites and Gen 2 Connectors
+
+Significant breaking changes such as those required by a lift-and-shift or full connector rewrite should use a "-gen2" suffix and establish a new canonical connector ID. This approach provides several benefits:
+
+1. **Incremental Adoption**: Users can adopt the new connector without it requiring full parity with the original.
+2. **Side-by-Side Testing**: Users can run both the original and Gen 2 connectors in parallel.
+3. **Extended Migration Window**: Users have the option to use one or both connectors for an extended period of time.
+4. **Self-Service Migration**: Users can safely test the old and new versions without direct support from the Airbyte team.
+
+This pattern is particularly appropriate when:
+
+- The connector is being completely rewritten with a new architecture.
+- Schema changes are so significant they would break all downstream SQL transformations and BI dashboards.
+- The migration path is complex enough that users need extended time to adapt their pipelines.
+
+Example: Migration from legacy JSON-only "raw" tables to normalized typed columns in destination tables. These historic changes were so significant that they would break all downstream SQL transformations and BI dashboards. A "gen-2" approach in these cases gives users the ability to run both "Gen 1" and "Gen 2" in parallel, migrating only after they have had a chance to adapt their code to the new data models.
+
+## Future Considerations
+
+The following improvements to breaking change management are under consideration for future implementation:
+
+- **AI-Assisted Review**: A new AI review process for any connectors which are marked as breaking, to help identify potential issues and ensure proper documentation.
+- **Static Analysis**: A new CI workflow which performs static analysis to confirm that connector changes are marked as breaking if they include any breaking changes.
+- **Regression Testing**: Automated regression testing to detect unintended breaking changes before they are merged.
+
 ## Related Topics
 
 - [Semantic Versioning for Connectors](/community/contributing-to-airbyte/resources/pull-requests-handbook#semantic-versioning-for-connectors) - Guidelines for determining Major/Minor/Patch version changes
 - [Connector Metadata File](https://docs.airbyte.com/connector-development/connector-metadata-file/) - Technical reference for `breakingChanges` metadata format
-- [Pull Request Title Convention](/community/contributing-to-airbyte/resources/pull-requests-handbook#pull-request-title-convention) - How to format PR titles (use 🚨 emoji for breaking changes)
+- [Pull Request Title Convention](/community/contributing-to-airbyte/resources/pull-requests-handbook#pull-request-title-convention) - How to format PR titles (use "!" for breaking changes)
 - [QA Checks](/community/contributing-to-airbyte/resources/qa-checks) - Automated quality checks including breaking change requirements
 - [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) - Internal process for Airbyte Engineers (requires access)
