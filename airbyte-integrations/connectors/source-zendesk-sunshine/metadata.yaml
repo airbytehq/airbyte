@@ -6,7 +6,7 @@ data:
     hosts:
       - ${subdomain}.zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.7.0@sha256:b3703270c2d0f840357a5ee92c95f87a0bd403573d784e5dafac835f7e1663f0
   connectorSubtype: api
   connectorType: source
   definitionId: 325e0640-e7b3-4e24-b823-3361008f603f
