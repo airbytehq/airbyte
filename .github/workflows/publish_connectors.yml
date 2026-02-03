@@ -30,6 +30,11 @@ on:
         description: "Git ref (branch or SHA) to build connectors from. Used by pre-release workflow to build from PR branches."
         required: false
         type: string
+      dry-run:
+        description: "Dry run mode: run all logic but skip actual uploads (Docker, GCS, registry). Useful for testing workflow changes."
+        required: false
+        default: false
+        type: boolean
     outputs:
       docker-image-tag:
         description: "Docker image tag used when publishing. For single-connector callers only; multi-connector callers should not rely on this output."
@@ -56,6 +61,11 @@ on:
           - rc
       publish-java-tars:
         description: "Whether to publish Java connector tar files."
+        required: false
+        default: false
+        type: boolean
+      dry-run:
+        description: "Dry run mode: run all logic but skip actual uploads (Docker, GCS, registry). Useful for testing workflow changes."
         required: false
         default: false
         type: boolean
@@ -121,6 +131,8 @@ jobs:
       with-semver-suffix: ${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}
       # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
       publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
+      # dry-run mode skips all uploads but runs all logic
+      dry-run: ${{ inputs.dry-run || 'false' }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -220,16 +232,20 @@ jobs:
 
       - name: Publish to Python Registry
         id: publish-python-registry
-        if: steps.connector-metadata.outputs.connector-language == 'python'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: |
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
+      - name: "[DRY-RUN] Skip Publish to Python Registry"
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
+        run: echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
+
       - name: Upload Python Dependencies to GCS
         id: upload-python-dependencies-master
-        if: steps.connector-metadata.outputs.connector-language == 'python'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -239,22 +255,38 @@ jobs:
             --bucket prod-airbyte-cloud-connector-metadata-service \
             --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
 
+      - name: "[DRY-RUN] Skip Upload Python Dependencies to GCS"
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
+        run: echo "DRY-RUN: Skipping Python Dependencies upload for ${{ matrix.connector }}"
+
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
-        if: steps.connector-metadata.outputs.connector-language == 'java'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: |
           ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }} --publish
 
+      - name: "[DRY-RUN] Build JVM connectors images (no publish)"
+        id: build-JVM-connectors-images-dry-run
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run == 'true'
+        shell: bash
+        run: |
+          echo "DRY-RUN: Building JVM connector without publishing..."
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
+
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
+
+      - name: "[DRY-RUN] Skip Publish JVM connectors tar file"
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run == 'true'
+        run: echo "DRY-RUN: Skipping JVM connector tar file upload for ${{ matrix.connector }}"
 
       - name: Build and publish Python and Manifest-Only connectors images
         id: build-and-publish-python-manifest-only-connectors-images
@@ -263,18 +295,23 @@ jobs:
         with:
           connector-name: ${{ matrix.connector }}
           with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
-          dry-run: "false"
+          dry-run: ${{ needs.publish_options.outputs.dry-run }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Upload connector metadata
         id: upload-connector-metadata
+        if: needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+
+      - name: "[DRY-RUN] Skip Upload connector metadata"
+        if: needs.publish_options.outputs.dry-run == 'true'
+        run: echo "DRY-RUN: Skipping connector metadata upload for ${{ matrix.connector }}"
 
   # The connector registries are generated from the spec cache,
   # and in some cases, there are cross-connector dependencies.
@@ -385,6 +422,7 @@ jobs:
 
       - name: Generate OSS Registry Entry
         id: generate-oss-registry-entry
+        if: needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: |
           echo "Generating OSS registry entry for ${{ matrix.connector }}"
@@ -399,8 +437,13 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
+      - name: "[DRY-RUN] Skip Generate OSS Registry Entry"
+        if: needs.publish_options.outputs.dry-run == 'true'
+        run: echo "DRY-RUN: Skipping OSS registry entry generation for ${{ matrix.connector }}"
+
       - name: Generate Cloud Registry Entry
         id: generate-cloud-registry-entry
+        if: needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: |
           echo "Generating Cloud registry entry for ${{ matrix.connector }}"
@@ -415,9 +458,14 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
+      - name: "[DRY-RUN] Skip Generate Cloud Registry Entry"
+        if: needs.publish_options.outputs.dry-run == 'true'
+        run: echo "DRY-RUN: Skipping Cloud registry entry generation for ${{ matrix.connector }}"
+
   generate_connector_registry:
     name: Generate connector registry
-    needs: [publish_connector_registry_entries]
+    needs: [publish_options, publish_connector_registry_entries]
+    if: needs.publish_options.outputs.dry-run != 'true'
     uses: ./.github/workflows/generate-connector-registries.yml
     secrets: inherit
 
