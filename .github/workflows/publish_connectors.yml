@@ -241,7 +241,8 @@ jobs:
 
       - name: "[DRY-RUN] Skip Publish to Python Registry"
         if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
-        run: echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
+        run: |
+          echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
 
       - name: Upload Python Dependencies to GCS
         id: upload-python-dependencies-master
@@ -257,7 +258,8 @@ jobs:
 
       - name: "[DRY-RUN] Skip Upload Python Dependencies to GCS"
         if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
-        run: echo "DRY-RUN: Skipping Python Dependencies upload for ${{ matrix.connector }}"
+        run: |
+          echo "DRY-RUN: Skipping Python Dependencies upload for ${{ matrix.connector }}"
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
@@ -286,7 +288,8 @@ jobs:
 
       - name: "[DRY-RUN] Skip Publish JVM connectors tar file"
         if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run == 'true'
-        run: echo "DRY-RUN: Skipping JVM connector tar file upload for ${{ matrix.connector }}"
+        run: |
+          echo "DRY-RUN: Skipping JVM connector tar file upload for ${{ matrix.connector }}"
 
       - name: Build and publish Python and Manifest-Only connectors images
         id: build-and-publish-python-manifest-only-connectors-images
@@ -311,7 +314,8 @@ jobs:
 
       - name: "[DRY-RUN] Skip Upload connector metadata"
         if: needs.publish_options.outputs.dry-run == 'true'
-        run: echo "DRY-RUN: Skipping connector metadata upload for ${{ matrix.connector }}"
+        run: |
+          echo "DRY-RUN: Skipping connector metadata upload for ${{ matrix.connector }}"
 
   # The connector registries are generated from the spec cache,
   # and in some cases, there are cross-connector dependencies.
@@ -439,7 +443,8 @@ jobs:
 
       - name: "[DRY-RUN] Skip Generate OSS Registry Entry"
         if: needs.publish_options.outputs.dry-run == 'true'
-        run: echo "DRY-RUN: Skipping OSS registry entry generation for ${{ matrix.connector }}"
+        run: |
+          echo "DRY-RUN: Skipping OSS registry entry generation for ${{ matrix.connector }}"
 
       - name: Generate Cloud Registry Entry
         id: generate-cloud-registry-entry
@@ -460,7 +465,8 @@ jobs:
 
       - name: "[DRY-RUN] Skip Generate Cloud Registry Entry"
         if: needs.publish_options.outputs.dry-run == 'true'
-        run: echo "DRY-RUN: Skipping Cloud registry entry generation for ${{ matrix.connector }}"
+        run: |
+          echo "DRY-RUN: Skipping Cloud registry entry generation for ${{ matrix.connector }}"
 
   generate_connector_registry:
     name: Generate connector registry
