@@ -60,7 +60,7 @@ class S3DataLakeBeanFactory {
     @Singleton
     @Requires(notEnv = [Environment.TEST])
     fun dataFlowSocketConfig(catalog: DestinationCatalog): DataFlowSocketConfig {
-        val hasDedupStreams = catalog.streams.any { it.importType is Dedupe }
+        val hasDedupStreams = catalog.streams.any { it.tableSchema.importType is Dedupe }
         return if (hasDedupStreams) {
             log.info { "Dedup streams detected, limiting to 1 socket for data consistency" }
             object : DataFlowSocketConfig {
