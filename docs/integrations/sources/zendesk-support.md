@@ -15,16 +15,17 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 ## Set up Zendesk Support
 
-The Zendesk Support source connector supports two authentication methods:
+The Zendesk Support source connector supports the following authentication methods:
 
-- OAuth 2.0
-- API token
+- OAuth 2.0 with Refresh Token (recommended for Airbyte Cloud)
+- API Token (recommended for Airbyte Open Source)
+- OAuth 2.0 Legacy (for existing OAuth connections)
 
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
-We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector).
+We highly recommend using OAuth 2.0 with Refresh Token to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector). This method uses rotating refresh tokens for improved security.
 
 <!-- /env:cloud -->
 
@@ -76,7 +77,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
 <!-- env:cloud -->
 
-- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
+- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth2.0 with Refresh Token** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account. This method uses rotating refresh tokens, which means each token refresh returns a new refresh token and invalidates the previous one.
   <!-- /env:cloud -->
   <!-- env:oss -->
 - **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
@@ -84,7 +85,9 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
-8. Click **Set up source** and wait for the tests to complete.
+8. (Optional) For **Number of concurrent workers**, enter a value between 1 and 40 (default is 3). This controls how many parallel requests the connector makes to the Zendesk API. Higher values can improve sync performance but may increase the risk of hitting [Zendesk API rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/#zendesk-support-plan-limits). Adjust this based on your Zendesk Support plan tier.
+9. (Optional) For **Page Size (ticket_comments)**, enter a value between 1 and 1000 (default is 100). This controls the number of records fetched per API request for the ticket_comments stream. Lower values may help prevent timeouts when syncing large datasets.
+10. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 <HideInUI>
