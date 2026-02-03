@@ -83,13 +83,11 @@ class GlueWriteTest :
             DestinationStream(
                 unmappedNamespace = randomizedNamespace + namespaceSuffix,
                 unmappedName = name,
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
+                tableSchema = makeTableSchema(ObjectType(linkedMapOf("id" to intType)), Append),
             )
         // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
         // So these two streams will collide.
@@ -116,26 +114,26 @@ class GlueWriteTest :
      */
     @Test
     fun testNestedArrayCoercion() {
+        val nestedArraySchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to intType,
+                    "array" to
+                        FieldType(
+                            ArrayType(FieldType(NumberType, nullable = true)),
+                            nullable = true,
+                        ),
+                ),
+            )
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Append,
-                ObjectType(
-                    linkedMapOf(
-                        "id" to intType,
-                        "array" to
-                            FieldType(
-                                ArrayType(FieldType(NumberType, nullable = true)),
-                                nullable = true,
-                            ),
-                    ),
-                ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
+                tableSchema = makeTableSchema(nestedArraySchema, Append),
             )
 
         runSync(
