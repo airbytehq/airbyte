@@ -12,18 +12,14 @@ on:
         description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
         default: "--name=source-pokeapi"
         type: string
-      ephemeral-version-bump:
+      with-semver-suffix:
         description: |
-          Ephemeral version suffix to apply (not committed back to the repo):
+          Semver suffix to apply ephemerally (not committed back to the repo):
           - default: Resolves to 'none' on push to master, 'preview' on manual trigger
           - none: Use exact version from metadata.yaml (for production releases)
           - preview: Append '-preview.{sha}' suffix (for development builds)
           - rc: Append '-rc1' suffix (for release candidates)
         default: default
-        type: string
-      release-type:
-        description: "[DEPRECATED: Use ephemeral-version-bump instead] Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
-        default: ""
         type: string
       publish-java-tars:
         description: "Whether to publish Java connector tar files."
@@ -44,9 +40,9 @@ on:
         description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
         default: "--name=source-pokeapi"
         type: string
-      ephemeral-version-bump:
+      with-semver-suffix:
         description: |
-          Ephemeral version suffix to apply (not committed back to the repo):
+          Semver suffix to apply ephemerally (not committed back to the repo):
           - default: Resolves to 'none' on push to master, 'preview' on manual trigger
           - none: Use exact version from metadata.yaml (for production releases)
           - preview: Append '-preview.{sha}' suffix (for development builds)
@@ -87,41 +83,29 @@ jobs:
         shell: bash
         # When merging to master, we run on connectors that have changed since the previous commit.
         run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
-      - name: Resolve ephemeral version bump
-        id: resolve-ephemeral-version-bump
+      - name: Resolve semver suffix
+        id: resolve-semver-suffix
         shell: bash
         run: |
-          # Determine the ephemeral version bump mode.
-          # Priority: ephemeral-version-bump input > legacy release-type input > defaults
-          
-          EPHEMERAL_BUMP="${{ inputs.ephemeral-version-bump }}"
-          LEGACY_RELEASE_TYPE="${{ inputs.release-type }}"
-          
-          # Handle legacy release-type input for backward compatibility
-          if [[ -n "$LEGACY_RELEASE_TYPE" && "$EPHEMERAL_BUMP" == "default" ]]; then
-            echo "::warning::The 'release-type' input is deprecated. Please use 'ephemeral-version-bump' instead."
-            if [[ "$LEGACY_RELEASE_TYPE" == "pre-release" ]]; then
-              EPHEMERAL_BUMP="preview"
-            elif [[ "$LEGACY_RELEASE_TYPE" == "main-release" ]]; then
-              EPHEMERAL_BUMP="none"
-            fi
-          fi
-          
+          # Determine the semver suffix mode.
+          # Priority: with-semver-suffix input > defaults
+          SEMVER_SUFFIX="${{ inputs.with-semver-suffix }}"
+
           # Resolve 'default' based on trigger type
-          if [[ "$EPHEMERAL_BUMP" == "default" ]]; then
+          if [[ "$SEMVER_SUFFIX" == "default" ]]; then
             if [[ "${{ github.event_name }}" == "push" ]]; then
               # On merge to master, use exact version (no suffix)
-              EPHEMERAL_BUMP="none"
+              SEMVER_SUFFIX="none"
             else
               # On manual trigger, use preview suffix
-              EPHEMERAL_BUMP="preview"
+              SEMVER_SUFFIX="preview"
             fi
           fi
-          
-          echo "ephemeral-version-bump=$EPHEMERAL_BUMP" | tee -a $GITHUB_OUTPUT
-          
+
+          echo "with-semver-suffix=$SEMVER_SUFFIX" | tee -a $GITHUB_OUTPUT
+
           # Also output legacy release-type for backward compatibility with downstream scripts
-          if [[ "$EPHEMERAL_BUMP" == "none" ]]; then
+          if [[ "$SEMVER_SUFFIX" == "none" ]]; then
             echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
           else
             echo "release-type=pre-release" | tee -a $GITHUB_OUTPUT
@@ -141,8 +125,8 @@ jobs:
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
-      ephemeral-version-bump: ${{ steps.resolve-ephemeral-version-bump.outputs.ephemeral-version-bump }}
-      release-type: ${{ steps.resolve-ephemeral-version-bump.outputs.release-type }}
+      with-semver-suffix: ${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}
+      release-type: ${{ steps.resolve-semver-suffix.outputs.release-type }}
       # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
       publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
   publish_connectors:
@@ -368,12 +352,16 @@ jobs:
           uv tool install poethepoet
 
       - name: Enable progressive rollout for RC builds
-        if: needs.publish_options.outputs.ephemeral-version-bump == 'rc'
+        if: needs.publish_options.outputs.with-semver-suffix == 'rc'
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           echo "Enabling progressive rollout for RC build..."
+          echo "=== enableProgressiveRollout BEFORE update ==="
+          grep -n "enableProgressiveRollout" metadata.yaml || echo "(not found)"
           # Ephemerally enable progressive rollout in metadata.yaml (not committed back)
           yq -i '.data.releases.rolloutConfiguration.enableProgressiveRollout = true' metadata.yaml
+          echo "=== enableProgressiveRollout AFTER update ==="
+          grep -n "enableProgressiveRollout" metadata.yaml
           echo "Progressive rollout enabled in metadata.yaml"
 
       - name: Get connector metadata
@@ -384,10 +372,10 @@ jobs:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
           CONNECTOR_VERSION=$(poe -qq get-version)
-          EPHEMERAL_BUMP="${{ needs.publish_options.outputs.ephemeral-version-bump }}"
-          
-          # Generate docker image tag based on ephemeral version bump mode
-          case "$EPHEMERAL_BUMP" in
+          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+
+          # Generate docker image tag based on semver suffix mode
+          case "$SEMVER_SUFFIX" in
             preview)
               hash=$(git rev-parse --short=7 HEAD)
               echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
