@@ -76,7 +76,7 @@ fi
 # Check if this is a Java connector
 if ! grep -qE 'language:\s*java' "$meta"; then
   echo "ℹ️  Skipping ${connector} — this script only supports JVM connectors for now."
-  continue
+  exit 0
 fi
 
 base_tag=$(yq -r '.data.dockerImageTag' "$meta")

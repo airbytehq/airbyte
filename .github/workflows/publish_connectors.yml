@@ -99,7 +99,8 @@ jobs:
         run: |
           # Determine the semver suffix mode.
           # Priority: with-semver-suffix input > defaults
-          SEMVER_SUFFIX="${{ inputs.with-semver-suffix }}"
+          # Note: On push events, inputs.* is undefined (empty string), so we treat empty as 'default'
+          SEMVER_SUFFIX="${{ inputs.with-semver-suffix || 'default' }}"
 
           # Resolve 'default' based on trigger type
           if [[ "$SEMVER_SUFFIX" == "default" ]]; then
