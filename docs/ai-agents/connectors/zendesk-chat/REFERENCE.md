@@ -1467,35 +1467,3 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-
-
-## Replication Configuration
-
-Settings for data replication from Zendesk Chat
-
-These settings control how data is replicated from the source. Pass them via the `replication_config` parameter when creating a source.
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `start_date` | `str (date-time)` | Yes | The date from which to start replicating data, in the format YYYY-MM-DDT00:00:00Z. |
-
-### Example
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/integrations/connectors' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "external_user_id": "{your_external_user_id}",
-  "connector_type": "zendesk-chat",
-  "credentials": {
-    ...
-  },
-  "replication_config": {
-    "start_date": "<The date from which to start replicating data, in the format YYYY-MM-DDT00:00:00Z.>"
-  },
-  "name": "My Zendesk-Chat Connector"
-}'
-```

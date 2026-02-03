@@ -54,8 +54,7 @@ from airbyte_agent_mailchimp.models import MailchimpAuthConfig
 
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
-        api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>",
-        data_center="<The data center for your Mailchimp account. This is the suffix of your API key (e.g., 'us6' if your API key ends with '-us6').>"
+        api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
     )
 )
 
@@ -75,7 +74,7 @@ This example assumes you've already authenticated your connector with Airbyte. S
 from airbyte_agent_mailchimp import MailchimpConnector
 
 connector = MailchimpConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
@@ -86,10 +85,11 @@ async def mailchimp_execute(entity: str, action: str, params: dict | None = None
     return await connector.execute(entity, action, params or {})
 ```
 
-
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
@@ -107,14 +107,17 @@ This connector supports the following entities and actions.
 | Unsubscribes | [List](./REFERENCE.md#unsubscribes-list) |
 
 
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
+### Authentication and configuration
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see the [Mailchimp API reference](https://mailchimp.com/developer/marketing/api/).
+### Mailchimp API docs
+
+See the official [Mailchimp API reference](https://mailchimp.com/developer/marketing/api/).
 
 ## Version information
 
-- **Package version:** 0.1.16
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
+- **Package version:** 0.1.30
+- **Connector version:** 1.0.4
+- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/mailchimp/CHANGELOG.md)

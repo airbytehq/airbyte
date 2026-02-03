@@ -10,10 +10,15 @@ In open source mode, you provide API credentials directly to the connector.
 
 #### OAuth
 
+`credentials` fields you need:
+
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `access_token` | `str` | Yes | OAuth 2.0 access token |
 | `refresh_token` | `str` | No | OAuth 2.0 refresh token (optional) |
+
+Example request:
 
 ```python
 from airbyte_agent_zendesk-support import ZendeskSupportConnector
@@ -29,10 +34,14 @@ connector = ZendeskSupportConnector(
 
 #### Token
 
+`credentials` fields you need:
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `email` | `str` | Yes | Your Zendesk account email address |
 | `api_token` | `str` | Yes | Your Zendesk API token from Admin Center |
+
+Example request:
 
 ```python
 from airbyte_agent_zendesk-support import ZendeskSupportConnector
@@ -51,13 +60,22 @@ connector = ZendeskSupportConnector(
 In hosted mode, you first create a connector via the Airbyte API (providing your OAuth or Token credentials), then execute operations using either the Python SDK or API. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 #### OAuth
+Create a connector with OAuth credentials.
 
-Create a connector with OAuth credentials:
+`credentials` fields you need:
+
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `access_token` | `str` | Yes | OAuth 2.0 access token |
+| `refresh_token` | `str` | No | OAuth 2.0 refresh token (optional) |
+
+Example request:
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
-  -H 'Authorization: Bearer <SCOPED_TOKEN>' \
-  -H 'Content-Type: application/json' \
+curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
+  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+  -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
     "connector_type": "Zendesk-Support",
@@ -70,16 +88,27 @@ curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
 ```
 
 #### Token
+Create a connector with Token credentials.
 
-Create a connector with Token credentials:
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `email` | `str` | Yes | Your Zendesk account email address |
+| `api_token` | `str` | Yes | Your Zendesk API token from Admin Center |
+
+Example request:
+
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
-  -H 'Authorization: Bearer <SCOPED_TOKEN>' \
-  -H 'Content-Type: application/json' \
+curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
+  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+  -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
     "connector_type": "Zendesk-Support",
+    "name": "My Zendesk-Support Connector",
     "credentials": {
       "email": "<Your Zendesk account email address>",
       "api_token": "<Your Zendesk API token from Admin Center>"
@@ -97,7 +126,7 @@ After creating the connector, execute operations using either the Python SDK or 
 from airbyte_agent_zendesk-support import ZendeskSupportConnector
 
 connector = ZendeskSupportConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
