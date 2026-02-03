@@ -1447,7 +1447,7 @@ definitions:
       cursor_granularity: PT0.001S
       lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
-  base_crm_search_full_refresh_stream:
+  base_crm_search_incremental_parent_stream:
     primary_key:
       - id
     $ref: "#/definitions/stream_base"
@@ -1462,9 +1462,19 @@ definitions:
           sorts:
             - propertyName: hs_object_id
               direction: ASCENDING
+          filters:
+            - propertyName: "{{ parameters['cursor_filter_property_field'] }}"
+              operator: GTE
+              value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+            - propertyName: "{{ parameters['cursor_filter_property_field'] }}"
+              operator: LTE
+              value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+            - propertyName: hs_object_id
+              operator: GTE
+              value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
           properties:
             - hs_object_id
-          after: "{{ next_page_token['next_page_token'].get('after', 0) if next_page_token else 0 }}"
+          after: "{{ next_page_token['next_page_token']['after'] }}"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -1477,6 +1487,12 @@ definitions:
           type: DpathExtractor
           field_path:
             - results
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      cursor_field: hs_lastmodifieddate
+      step: P30D
+      cursor_granularity: PT0.001S
+      lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
   companies_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -2178,12 +2194,14 @@ dynamic_streams:
             type: SubstreamPartitionRouter
             parent_stream_configs:
               - stream:
-                  $ref: "#/definitions/base_crm_search_full_refresh_stream"
+                  $ref: "#/definitions/base_crm_search_incremental_parent_stream"
                   $parameters:
                     entity: from_object_name # e.g. tickets, will be set by components resolver
+                    cursor_filter_property_field: hs_lastmodifieddate # default, will be overridden for contacts
                   name: stream_name # e.g. tickets, will be set by components resolver
                 parent_key: id
                 partition_field: id
+                incremental_dependency: true
     components_resolver:
       type: ConfigComponentsResolver
 # association_streams: [{stream_name: opt"association_blabla_to_blabla", from_object: req"tickets", to_object: req"companies"}]
@@ -2212,6 +2230,14 @@ dynamic_streams:
           create_or_update: true
           field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", '0', "name"]
           value: "{{ components_values['from_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "$parameters", "cursor_filter_property_field"]
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate' }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "incremental_sync", "cursor_field"]
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate' }}"
 
 
 spec:
