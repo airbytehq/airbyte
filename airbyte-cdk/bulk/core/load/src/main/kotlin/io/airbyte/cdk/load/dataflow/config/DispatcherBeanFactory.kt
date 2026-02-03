@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.dataflow.config
 
+import io.airbyte.cdk.load.dataflow.config.model.ConnectorInputStreams
+import io.airbyte.cdk.load.dataflow.config.model.LifecycleParallelismConfig
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -16,7 +18,9 @@ import kotlinx.coroutines.asCoroutineDispatcher
 
 /** The dispatchers (think views of thread pools) and static scopes we use for dataflow. */
 @Factory
-class DispatcherBeanFactory {
+class DispatcherBeanFactory(
+    private val lifeCycleConfig: LifecycleParallelismConfig,
+) {
     @Named("pipelineRunnerDispatcher")
     @Singleton
     fun pipelineRunnerDispatcher() = Dispatchers.Default
@@ -46,15 +50,18 @@ class DispatcherBeanFactory {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Named("streamInitDispatcher")
     @Singleton
-    fun streamInitDispatcher() = Dispatchers.Default.limitedParallelism(10)
+    fun streamInitDispatcher() =
+        Dispatchers.Default.limitedParallelism(lifeCycleConfig.streamInitParallelism)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Named("streamFinalizeDispatcher")
     @Singleton
-    fun streamFinalizeDispatcher() = Dispatchers.Default.limitedParallelism(10)
+    fun streamFinalizeDispatcher() =
+        Dispatchers.Default.limitedParallelism(lifeCycleConfig.streamFinalizeParallelism)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Named("finalFlushDispatcher")
     @Singleton
-    fun finalFlushDispatcher() = Dispatchers.Default.limitedParallelism(10)
+    fun finalFlushDispatcher() =
+        Dispatchers.Default.limitedParallelism(lifeCycleConfig.finalFlushParallelism)
 }

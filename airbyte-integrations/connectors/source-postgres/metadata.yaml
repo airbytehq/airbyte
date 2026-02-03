@@ -20,8 +20,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 3.7.0
     oss:
       enabled: true
+      dockerImageTag: 3.7.0
   releaseStage: generally_available
   supportLevel: certified
   tags:
@@ -69,6 +71,9 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   externalDocumentationUrls:
     - title: PostgreSQL documentation
       url: https://www.postgresql.org/docs/

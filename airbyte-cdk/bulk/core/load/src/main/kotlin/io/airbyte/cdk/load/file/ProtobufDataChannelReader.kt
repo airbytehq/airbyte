@@ -15,11 +15,11 @@ import kotlin.NoSuchElementException
 class ProtobufDataChannelReader(
     private val factory: DestinationMessageFactory,
     private val bufferSize: Int = 16 * 1024,
-) : DataChannelReader {
+) {
 
     private val parser = AirbyteMessageProtobuf.parser()
 
-    override fun read(inputStream: InputStream): Sequence<DestinationMessage> =
+    fun read(inputStream: InputStream): Sequence<DestinationMessage> =
         object : Sequence<DestinationMessage> {
             override fun iterator(): Iterator<DestinationMessage> =
                 object : Iterator<DestinationMessage> {

@@ -31,10 +31,13 @@ jobs:
             rm -rf "$DEST_DIR/$connector"
             mkdir -p "$DEST_DIR/$connector"
 
-            # Copy all markdown files for this connector
+            # Copy all markdown files for this connector, except CHANGELOG.md
             for md_file in "$connector_dir"/*.md; do
               if [ -f "$md_file" ]; then
-                cp "$md_file" "$DEST_DIR/$connector/"
+                filename=$(basename "$md_file")
+                if [ "$filename" != "CHANGELOG.md" ]; then
+                  cp "$md_file" "$DEST_DIR/$connector/"
+                fi
               fi
             done
           done
