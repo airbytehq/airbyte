@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.config.NamespaceMappingConfig
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.message.InputMessageOther
 import io.airbyte.cdk.load.message.InputRecord
@@ -33,6 +34,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.LinkedHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
@@ -138,8 +140,9 @@ abstract class IntegrationTest(
         allowUnexpectedRecord: Boolean = false,
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
+        val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
         val expectedRecords: List<OutputRecord> =
-            canonicalExpectedRecords.map { recordMangler.mapRecord(it, stream.schema) }
+            canonicalExpectedRecords.map { recordMangler.mapRecord(it, schema) }
         val descriptor = recordMangler.mapStreamDescriptor(stream.mappedDescriptor)
 
         RecordDiffer(
