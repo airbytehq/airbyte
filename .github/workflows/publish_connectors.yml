@@ -103,13 +103,6 @@ jobs:
           fi
 
           echo "with-semver-suffix=$SEMVER_SUFFIX" | tee -a $GITHUB_OUTPUT
-
-          # Also output legacy release-type for backward compatibility with downstream scripts
-          if [[ "$SEMVER_SUFFIX" == "none" ]]; then
-            echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
-          else
-            echo "release-type=pre-release" | tee -a $GITHUB_OUTPUT
-          fi
       - name: Resolve publish-java-tars
         id: resolve-publish-java-tars
         shell: bash
@@ -126,7 +119,6 @@ jobs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
       with-semver-suffix: ${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}
-      release-type: ${{ steps.resolve-semver-suffix.outputs.release-type }}
       # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
       publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
   publish_connectors:
@@ -231,7 +223,7 @@ jobs:
         if: steps.connector-metadata.outputs.connector-language == 'python'
         shell: bash
         run: |
-          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
+          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
@@ -245,20 +237,20 @@ jobs:
           ./poe-tasks/upload-python-dependencies.sh \
             --name ${{ matrix.connector }} \
             --bucket prod-airbyte-cloud-connector-metadata-service \
-            --release-type ${{ needs.publish_options.outputs.release-type }}
+            --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
         if: steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: |
-          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }} --publish
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }} --publish
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
         if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true'
         shell: bash
-        run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
+        run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
@@ -270,7 +262,7 @@ jobs:
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
-          release-type: ${{ needs.publish_options.outputs.release-type }}
+          with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
           dry-run: "false"
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -278,7 +270,7 @@ jobs:
       - name: Upload connector metadata
         id: upload-connector-metadata
         shell: bash
-        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
+        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
