@@ -14509,6 +14509,30 @@ streams:
                 type:
                 - 'null'
                 - string
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "start_time"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "2020-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "from"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "to"
+      inject_into: "request_parameter"
+    cursor_granularity: "P1D"
+    step: "P1M"
   type: DeclarativeStream
   name: "recordings"
   primary_key: "uuid"
