@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NumberType
@@ -47,7 +49,10 @@ abstract class S3DataLakeWriteTest(
         (io.airbyte.cdk.command.ConfigurationSpecification) -> org.apache.iceberg.catalog.Catalog,
     cleaner: DestinationCleaner = io.airbyte.cdk.load.test.util.NoopDestinationCleaner,
     micronautProperties: Map<Property, String> = emptyMap(),
-) :
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.SOCKET,
+
+    ) :
     IcebergWriteTest(
         configContents,
         S3DataLakeSpecification::class.java,
@@ -56,6 +61,8 @@ abstract class S3DataLakeWriteTest(
         tableIdGenerator,
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
         micronautProperties = micronautProperties,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
     )
 
 class GlueWriteTest :
@@ -367,3 +374,40 @@ class PolarisWriteTest :
         }
     }
 }
+
+//class SnowflakeInsertProtoAcceptanceTest :
+//    SnowflakeAcceptanceTest(
+//        configPath = CONFIG_PATH,
+//        dataDumper =
+//            SnowflakeDataDumper { spec ->
+//                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+//            },
+//        recordMapper = SnowflakeExpectedRecordMapper,
+//        nameMapper = SnowflakeNameMapper(),
+//        dataChannelFormat = DataChannelFormat.PROTOBUF,
+//        dataChannelMedium = DataChannelMedium.SOCKET,
+//        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+//        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+//    ) {
+//    @Test
+//    override fun testBasicWrite() {
+//        super.testBasicWrite()
+//    }
+//}
+
+class GlueWriteTestProtoSocket :
+    S3DataLakeWriteTest(
+        configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
+        tableIdGenerator = GlueTableIdGenerator(null),
+        getCatalog = { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+            )
+        },
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        cleaner = S3DataLakeCleaner,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
+    )

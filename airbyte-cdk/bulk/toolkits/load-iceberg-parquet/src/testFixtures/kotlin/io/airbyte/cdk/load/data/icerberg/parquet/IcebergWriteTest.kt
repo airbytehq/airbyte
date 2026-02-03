@@ -10,6 +10,8 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
@@ -37,6 +39,8 @@ abstract class IcebergWriteTest(
     tableIdGenerator: TableIdGenerator,
     additionalMicronautEnvs: List<String> = emptyList(),
     micronautProperties: Map<Property, String> = emptyMap(),
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents,
@@ -63,6 +67,8 @@ abstract class IcebergWriteTest(
         unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
         nullEqualsUnset = true,
         configUpdater = IcebergConfigUpdater,
+        dataChannelFormat = dataChannelFormat,
+        dataChannelMedium = dataChannelMedium,
     ) {
     /**
      * This test differs from the base test in two critical aspects:
