@@ -3,17 +3,21 @@
 #
 
 import base64
+import logging
+import re
 import time
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass, field
 from http import HTTPStatus
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from requests import HTTPError
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import StreamSlice
 
 
 # https://developers.zoom.us/docs/internal-apps/s2s-oauth/#successful-response
@@ -85,3 +89,213 @@ class ServerToServerOauthAuthenticator(NoAuth):
             return rest.json().get("access_token")
         except Exception as e:
             raise Exception(f"Error while generating access token: {e}") from e
+
+
+def parse_vtt_content(vtt_content: str) -> List[MutableMapping[str, Any]]:
+    """
+    Parse WebVTT content into structured records.
+
+    VTT Format Example:
+        WEBVTT
+
+        1
+        00:00:05.000 --> 00:00:08.500
+        Ryan Waskewich: Hello, this is a test recording.
+
+        2
+        00:00:09.000 --> 00:00:12.000
+        For the Airbyte connector transcript feature.
+
+    Returns a list of records with sequence, start, end, speaker, and text fields.
+    """
+    records = []
+
+    # Split by double newlines to get cue blocks
+    # Handle both \r\n and \n line endings
+    vtt_content = vtt_content.replace("\r\n", "\n")
+
+    # Remove WEBVTT header and any metadata
+    lines = vtt_content.strip().split("\n")
+    if lines and lines[0].startswith("WEBVTT"):
+        lines = lines[1:]
+
+    # Join back and split by empty lines to get cue blocks
+    content = "\n".join(lines)
+    cue_blocks = re.split(r"\n\n+", content.strip())
+
+    sequence = 0
+    for block in cue_blocks:
+        block = block.strip()
+        if not block:
+            continue
+
+        block_lines = block.split("\n")
+
+        # Find the timestamp line (contains "-->")
+        timestamp_line_idx = None
+        for i, line in enumerate(block_lines):
+            if "-->" in line:
+                timestamp_line_idx = i
+                break
+
+        if timestamp_line_idx is None:
+            continue
+
+        # Parse timestamp line
+        timestamp_line = block_lines[timestamp_line_idx]
+        timestamp_match = re.match(
+            r"(\d{2}:\d{2}:\d{2}[.,]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[.,]\d{3})",
+            timestamp_line,
+        )
+
+        if not timestamp_match:
+            continue
+
+        sequence += 1
+        start_time = timestamp_match.group(1).replace(",", ".")
+        end_time = timestamp_match.group(2).replace(",", ".")
+
+        # Get text lines (everything after timestamp)
+        text_lines = block_lines[timestamp_line_idx + 1 :]
+        text = " ".join(line.strip() for line in text_lines if line.strip())
+
+        # Try to extract speaker from text (format: "Speaker Name: text")
+        speaker = None
+        speaker_match = re.match(r"^([^:]+):\s*(.+)$", text)
+        if speaker_match:
+            potential_speaker = speaker_match.group(1).strip()
+            # Only treat as speaker if it looks like a name (not too long, no special chars)
+            if len(potential_speaker) < 50 and not re.search(r"[<>\[\]]", potential_speaker):
+                speaker = potential_speaker
+                text = speaker_match.group(2).strip()
+
+        records.append(
+            {
+                "sequence_number": sequence,
+                "timestamp_start": start_time,
+                "timestamp_end": end_time,
+                "speaker": speaker,
+                "text": text,
+            }
+        )
+
+    return records
+
+
+@dataclass
+class TranscriptContentExtractor(RecordExtractor):
+    """
+    Custom record extractor that fetches and parses VTT transcript content.
+
+    This extractor:
+    1. Gets the recording data from the API response
+    2. Filters for recording_files with file_type == "TRANSCRIPT"
+    3. Fetches the VTT content from the download_url
+    4. Parses the VTT into structured transcript records
+    5. Yields enriched records with meeting metadata
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._parameters = parameters
+        self._logger = logging.getLogger("airbyte.TranscriptContentExtractor")
+        self._authenticator: Optional[ServerToServerOauthAuthenticator] = None
+
+    def _get_authenticator(self) -> ServerToServerOauthAuthenticator:
+        """Get or create the authenticator instance."""
+        if self._authenticator is None:
+            self._authenticator = ServerToServerOauthAuthenticator(
+                config=self.config,
+                account_id=self.config.get("account_id", ""),
+                client_id=self.config.get("client_id", ""),
+                client_secret=self.config.get("client_secret", ""),
+                authorization_endpoint=self.config.get("authorization_endpoint", "https://zoom.us/oauth/token"),
+                parameters={},
+            )
+        return self._authenticator
+
+    def _fetch_transcript_content(self, download_url: str) -> Optional[str]:
+        """Fetch VTT content from the download URL with authentication."""
+        try:
+            auth = self._get_authenticator()
+            # Ensure we have a valid token
+            if auth.token is None or ((time.time() - auth._generate_token_time) > BEARER_TOKEN_EXPIRES_IN):
+                auth._access_token = auth.generate_access_token()
+                auth._generate_token_time = time.time()
+
+            headers = {"Authorization": f"Bearer {auth.token}"}
+            response = requests.get(download_url, headers=headers, timeout=60)
+            response.raise_for_status()
+            return response.text
+        except Exception as e:
+            self._logger.warning(f"Failed to fetch transcript from {download_url}: {e}")
+            return None
+
+    def extract_records(
+        self,
+        response: requests.Response,
+        stream_slice: Optional[StreamSlice] = None,
+        **kwargs: Any,
+    ) -> Iterable[MutableMapping[str, Any]]:
+        """
+        Extract transcript records from the recordings API response.
+
+        For each recording in the response, this method:
+        1. Filters for transcript files in recording_files
+        2. Fetches and parses the VTT content
+        3. Yields structured transcript records
+        """
+        try:
+            response_json = response.json()
+        except Exception:
+            return
+
+        # Get recordings from the response (they're in the "meetings" array)
+        recordings = response_json.get("meetings", [])
+
+        for recording in recordings:
+            # Get recording metadata
+            meeting_id = recording.get("id") or recording.get("uuid", "")
+            meeting_topic = recording.get("topic", "")
+            meeting_uuid = recording.get("uuid", "")
+            host_id = recording.get("host_id", "")
+            start_time = recording.get("start_time", "")
+
+            # Get recording files
+            recording_files = recording.get("recording_files", [])
+
+            for recording_file in recording_files:
+                file_type = recording_file.get("file_type", "")
+                recording_type = recording_file.get("recording_type", "")
+
+                # Filter for transcript files only
+                if file_type != "TRANSCRIPT" and recording_type != "audio_transcript":
+                    continue
+
+                download_url = recording_file.get("download_url")
+                if not download_url:
+                    continue
+
+                recording_id = recording_file.get("id", "")
+
+                # Fetch and parse the VTT content
+                vtt_content = self._fetch_transcript_content(download_url)
+                if not vtt_content:
+                    continue
+
+                transcript_records = parse_vtt_content(vtt_content)
+
+                # Yield enriched records
+                for record in transcript_records:
+                    enriched_record = {
+                        "meeting_id": str(meeting_id),
+                        "meeting_uuid": meeting_uuid,
+                        "meeting_topic": meeting_topic,
+                        "host_id": host_id,
+                        "meeting_start_time": start_time,
+                        "recording_id": recording_id,
+                        **record,
+                    }
+                    yield enriched_record
