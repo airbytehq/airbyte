@@ -192,15 +192,8 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
 
     final List<String> testValues = List.of(min, "0", max, typical);
 
-    final StringBuilder insertValues = new StringBuilder();
-    for (int i = 0; i < testValues.size(); i++) {
-      if (i > 0) {
-        insertValues.append(", ");
-      }
-      insertValues.append("(").append(i + 1).append(", ").append(testValues.get(i)).append(")");
-    }
-    insertValues.append(", (").append(testValues.size() + 1).append(", NULL)");
-    testdb.with("INSERT INTO %s VALUES " + insertValues, tableName);
+    testdb.with("INSERT INTO %s VALUES (1, %s), (2, 0), (3, %s), (4, %s), (5, NULL)",
+        tableName, min, max, typical);
 
     final Map<Integer, JsonNode> recordsById = readTableAsMap(tableName);
     assertEquals(testValues.size() + 1, recordsById.size());
