@@ -1884,7 +1884,7 @@ spec:
         title: Number of concurrent workers
         minimum: 2
         maximum: 100
-        default: 10
+        default: 25
         examples: [1, 2, 3]
         description: >-
           The number of worker thread to use for the sync.
@@ -1903,7 +1903,7 @@ spec:
 # Each worker handles a different time slice, preventing overlap.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ config.get('num_workers', 25) }}"
   max_concurrency: 100
 
 api_budget:
