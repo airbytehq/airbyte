@@ -19,6 +19,12 @@ definitions:
         - action: FAIL
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
+        - action: FAIL
+          error_message_contains: does not have permission
+          error_message: The access token does not have the required permissions to access one or more requested fields. Please ensure you have the necessary permissions (pages_read_engagement, pages_read_user_content) or use a Page access token with admin-level access.
+        - action: FAIL
+          error_message_contains: Bad request
+          error_message: Bad request error from Facebook API. This may be due to insufficient permissions for the requested fields. Please verify your access token has the required permissions.
         - http_codes: [400]
           action: RETRY
     authenticator:
@@ -70,12 +76,16 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
+          # Note: Fields requiring elevated permissions (admin access, lead gen, messaging, ads)
+          # have been removed to support users with basic OAuth permissions.
+          # Removed fields: ad_campaign, is_webhooks_subscribed, leadgen_tos_*, messenger_ads_*,
+          # page_token, promotion_eligible, promotion_ineligible_reason, unread_message_count,
+          # unread_notif_count, unseen_message_count
           fields: |
             {{ 
               ','.join([
               'id',
               'about',
-              'ad_campaign',
               'affiliation',
               'app_id',
               'artists_we_like',
@@ -136,17 +146,10 @@ definitions:
               'is_permanently_closed',
               'is_published',
               'is_unclaimed',
-              'is_webhooks_subscribed',
-              'leadgen_tos_acceptance_time',
-              'leadgen_tos_accepted',
-              'leadgen_tos_accepting_user',
               'link',
               'location',
               'members',
               'merchant_review_status',
-              'messenger_ads_default_icebreakers',
-              'messenger_ads_default_quick_replies',
-              'messenger_ads_quick_replies_type',
               'mission',
               'mpg',
               'name',
@@ -155,7 +158,6 @@ definitions:
               'new_like_count',
               'offer_eligible',
               'overall_star_rating',
-              'page_token',
               'parking',
               'payment_options',
               'personal_info',
@@ -170,8 +172,6 @@ definitions:
               'privacy_info_url',
               'produced_by',
               'products',
-              'promotion_eligible',
-              'promotion_ineligible_reason',
               'public_transit',
               'rating_count',
               'record_label',
@@ -191,9 +191,6 @@ definitions:
               'supports_donate_button_in_live_video',
               'talking_about_count',
               'temporary_status',
-              'unread_message_count',
-              'unread_notif_count',
-              'unseen_message_count',
               'username',
               'verification_status',
               'voip_info',
@@ -201,24 +198,6 @@ definitions:
               'were_here_count',
               'whatsapp_number',
               'written_by',
-              'albums',
-              'call_to_actions',
-              'canvas_elements',
-              'events',
-              'feed',
-              'global_brand_children',
-              'image_copyrights',
-              'indexed_videos',
-              'likes',
-              'live_videos',
-              'photos',
-              'posts',
-              'published_posts',
-              'tabs', 
-              'tagged',
-              'rtb_dynamic_posts',
-              'video_lists',
-              'videos',
               ]) 
             }}
 
