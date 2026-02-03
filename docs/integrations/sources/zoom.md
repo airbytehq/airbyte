@@ -29,6 +29,7 @@ Currently this source supports the following output streams/endpoints from Zoom:
 - [Report Meeting Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingparticipants)
 - [Report Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinardetails)
 - [Report Webinar Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinarparticipants)
+- [Recordings](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Cloud recordings including video, audio, and transcript files
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -71,6 +72,7 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.3.0 | 2026-02-03 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings stream with transcript support |
 | 1.2.40 | 2026-01-14 | [71380](https://github.com/airbytehq/airbyte/pull/71380) | Update dependencies |
 | 1.2.39 | 2025-12-18 | [70796](https://github.com/airbytehq/airbyte/pull/70796) | Update dependencies |
 | 1.2.38 | 2025-11-25 | [70145](https://github.com/airbytehq/airbyte/pull/70145) | Update dependencies |
