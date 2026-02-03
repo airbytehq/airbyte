@@ -157,45 +157,131 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   /**
-   * Integration test to validate that ClickHouse large integer types (UInt64, Int128, Int256,
-   * UInt128, UInt256) are correctly mapped and can be read with proper values. These types return as
-   * JDBCType.OTHER from the driver and are mapped to NUMERIC by ClickHouseSourceOperations.
+   * Integration tests to validate that ClickHouse large integer types are correctly mapped.
+   * These types return as JDBCType.OTHER from the driver and are mapped to NUMERIC by
+   * ClickHouseSourceOperations. Each type is tested in a separate table for clarity.
    */
+
   @Test
-  public void testLargeIntegerTypeMapping() throws Exception {
-    // Create a table with all large integer types that return as JDBCType.OTHER
-    final String tableName = "large_integer_types_test";
-    testdb.with("CREATE TABLE %s ("
-        + "id UInt32, "
-        + "uint64_col UInt64, "
-        + "int128_col Int128, "
-        + "int256_col Int256, "
-        + "uint128_col UInt128, "
-        + "uint256_col UInt256"
-        + ") ENGINE = MergeTree() ORDER BY id", tableName);
+  public void testUInt64TypeMapping() throws Exception {
+    final String tableName = "uint64_type_test";
+    testdb.with("CREATE TABLE %s (id UInt32, value UInt64) ENGINE = MergeTree() ORDER BY id", tableName);
 
-    // Insert test values including edge cases (max values, typical values, zero)
-    // UInt64 max: 18446744073709551615
-    // Int128/Int256/UInt128/UInt256 can hold much larger values
-    testdb.with("INSERT INTO %s VALUES "
-        + "(1, 18446744073709551615, 170141183460469231731687303715884105727, 0, 0, 0), "
-        + "(2, 0, -170141183460469231731687303715884105728, 12345678901234567890, 340282366920938463463374607431768211455, 0), "
-        + "(3, 9223372036854775808, 0, 0, 0, 115792089237316195423570985008687907853269984665640564039457584007913129639935)",
-        tableName);
+    // Test cases: input value -> expected output
+    final String zero = "0";
+    final String maxSigned = "9223372036854775807";  // Max signed Int64
+    final String overflowSigned = "9223372036854775808";  // Max signed Int64 + 1
+    final String maxUnsigned = "18446744073709551615";  // Max UInt64
 
-    // Discover the catalog and verify the table is found
+    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s), (3, %s), (4, %s)",
+        tableName, zero, maxSigned, overflowSigned, maxUnsigned);
+
+    final List<JsonNode> records = readTable(tableName);
+    assertEquals(4, records.size());
+
+    assertValueEquals(records, 1, "value", zero);
+    assertValueEquals(records, 2, "value", maxSigned);
+    assertValueEquals(records, 3, "value", overflowSigned);
+    assertValueEquals(records, 4, "value", maxUnsigned);
+  }
+
+  @Test
+  public void testInt128TypeMapping() throws Exception {
+    final String tableName = "int128_type_test";
+    testdb.with("CREATE TABLE %s (id UInt32, value Int128) ENGINE = MergeTree() ORDER BY id", tableName);
+
+    // Test cases: input value -> expected output
+    final String zero = "0";
+    final String positive = "12345678901234567890";
+    final String negative = "-12345678901234567890";
+    final String maxInt128 = "170141183460469231731687303715884105727";
+    final String minInt128 = "-170141183460469231731687303715884105728";
+
+    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s), (3, %s), (4, %s), (5, %s)",
+        tableName, zero, positive, negative, maxInt128, minInt128);
+
+    final List<JsonNode> records = readTable(tableName);
+    assertEquals(5, records.size());
+
+    assertValueEquals(records, 1, "value", zero);
+    assertValueEquals(records, 2, "value", positive);
+    assertValueEquals(records, 3, "value", negative);
+    assertValueEquals(records, 4, "value", maxInt128);
+    assertValueEquals(records, 5, "value", minInt128);
+  }
+
+  @Test
+  public void testInt256TypeMapping() throws Exception {
+    final String tableName = "int256_type_test";
+    testdb.with("CREATE TABLE %s (id UInt32, value Int256) ENGINE = MergeTree() ORDER BY id", tableName);
+
+    // Test cases: input value -> expected output
+    final String zero = "0";
+    final String positive = "12345678901234567890123456789012345678901234567890";
+    final String negative = "-12345678901234567890123456789012345678901234567890";
+
+    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s), (3, %s)",
+        tableName, zero, positive, negative);
+
+    final List<JsonNode> records = readTable(tableName);
+    assertEquals(3, records.size());
+
+    assertValueEquals(records, 1, "value", zero);
+    assertValueEquals(records, 2, "value", positive);
+    assertValueEquals(records, 3, "value", negative);
+  }
+
+  @Test
+  public void testUInt128TypeMapping() throws Exception {
+    final String tableName = "uint128_type_test";
+    testdb.with("CREATE TABLE %s (id UInt32, value UInt128) ENGINE = MergeTree() ORDER BY id", tableName);
+
+    // Test cases: input value -> expected output
+    final String zero = "0";
+    final String typical = "12345678901234567890";
+    final String maxUInt128 = "340282366920938463463374607431768211455";
+
+    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s), (3, %s)",
+        tableName, zero, typical, maxUInt128);
+
+    final List<JsonNode> records = readTable(tableName);
+    assertEquals(3, records.size());
+
+    assertValueEquals(records, 1, "value", zero);
+    assertValueEquals(records, 2, "value", typical);
+    assertValueEquals(records, 3, "value", maxUInt128);
+  }
+
+  @Test
+  public void testUInt256TypeMapping() throws Exception {
+    final String tableName = "uint256_type_test";
+    testdb.with("CREATE TABLE %s (id UInt32, value UInt256) ENGINE = MergeTree() ORDER BY id", tableName);
+
+    // Test cases: input value -> expected output
+    final String zero = "0";
+    final String typical = "12345678901234567890123456789012345678901234567890";
+
+    testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s)",
+        tableName, zero, typical);
+
+    final List<JsonNode> records = readTable(tableName);
+    assertEquals(2, records.size());
+
+    assertValueEquals(records, 1, "value", zero);
+    assertValueEquals(records, 2, "value", typical);
+  }
+
+  private List<JsonNode> readTable(final String tableName) throws Exception {
     final AirbyteCatalog catalog = source().discover(config());
     final AirbyteStream stream = catalog.getStreams().stream()
         .filter(s -> s.getName().equals(tableName))
         .findFirst()
         .orElseThrow(() -> new AssertionError("Table " + tableName + " not found in catalog"));
 
-    // Configure catalog for full refresh read
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         new AirbyteCatalog().withStreams(List.of(stream)));
     configuredCatalog.getStreams().get(0).setSyncMode(SyncMode.FULL_REFRESH);
 
-    // Read all records
     final List<AirbyteMessage> messages = new ArrayList<>();
     try (var iterator = source().read(config(), configuredCatalog, null)) {
       while (iterator.hasNext()) {
@@ -203,34 +289,24 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
       }
     }
 
-    // Filter to just record messages
-    final List<JsonNode> records = messages.stream()
+    return messages.stream()
         .filter(m -> m.getType() == AirbyteMessage.Type.RECORD)
         .map(m -> m.getRecord().getData())
         .collect(Collectors.toList());
+  }
 
-    // Verify we got all 3 rows
-    assertEquals(3, records.size(), "Expected 3 records from large_integer_types_test table");
-
-    // Verify the values are correctly read (they should be represented as numbers/strings)
-    // The exact representation depends on how the CDK handles NUMERIC types
-    for (JsonNode record : records) {
-      assertNotNull(record.get("uint64_col"), "uint64_col should not be null");
-      assertNotNull(record.get("int128_col"), "int128_col should not be null");
-      assertNotNull(record.get("int256_col"), "int256_col should not be null");
-      assertNotNull(record.get("uint128_col"), "uint128_col should not be null");
-      assertNotNull(record.get("uint256_col"), "uint256_col should not be null");
-    }
-
-    // Verify specific values for the first row (UInt64 max value)
-    final JsonNode row1 = records.stream()
-        .filter(r -> r.get("id").asInt() == 1)
+  private void assertValueEquals(final List<JsonNode> records, final int id,
+                                  final String column, final String expected) {
+    final JsonNode record = records.stream()
+        .filter(r -> r.get("id").asInt() == id)
         .findFirst()
-        .orElseThrow();
-    // UInt64 max value should be readable
-    final BigInteger uint64Max = new BigInteger("18446744073709551615");
-    final BigInteger actualUint64 = new BigInteger(row1.get("uint64_col").asText());
-    assertEquals(uint64Max, actualUint64, "UInt64 max value should be correctly read");
+        .orElseThrow(() -> new AssertionError("Record with id " + id + " not found"));
+
+    assertNotNull(record.get(column), column + " should not be null for id " + id);
+    final BigInteger expectedValue = new BigInteger(expected);
+    final BigInteger actualValue = new BigInteger(record.get(column).asText());
+    assertEquals(expectedValue, actualValue,
+        String.format("For id=%d, %s: expected %s but got %s", id, column, expected, actualValue));
   }
 
 }
