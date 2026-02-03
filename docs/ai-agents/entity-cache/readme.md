@@ -50,7 +50,7 @@ Once the entity cache is enabled and populated, you can query it programmaticall
 
 ### Search endpoint
 
-```
+```http
 POST /api/v1/integrations/connectors/{connector_id}/search/{stream_name}
 ```
 
@@ -84,7 +84,7 @@ The request body contains the following fields.
 
 The search API supports a rich set of filter operators for building queries.
 
-**Comparison operators**
+#### Comparison operators
 
 | Operator | Description | Example |
 |----------|-------------|---------|
@@ -96,7 +96,7 @@ The search API supports a rich set of filter operators for building queries.
 | `lte` | Less than or equal | `{"lte": {"age": 65}}` |
 | `in` | Value in list | `{"in": {"status": ["open", "pending"]}}` |
 
-**Text search operators**
+#### Text search operators
 
 | Operator | Description | Example |
 |----------|-------------|---------|
@@ -104,7 +104,7 @@ The search API supports a rich set of filter operators for building queries.
 | `fuzzy` | Ordered word match (case-insensitive) | `{"fuzzy": {"description": "quarterly report"}}` |
 | `keyword` | Any word present (case-insensitive) | `{"keyword": {"notes": "urgent priority"}}` |
 
-**Logical operators**
+#### Logical operators
 
 | Operator | Description | Example |
 |----------|-------------|---------|
@@ -112,7 +112,7 @@ The search API supports a rich set of filter operators for building queries.
 | `or` | Any condition must match | `{"or": [{"eq": {"type": "lead"}}, {"eq": {"type": "contact"}}]}` |
 | `not` | Negates a condition | `{"not": {"eq": {"status": "archived"}}}` |
 
-**Nested data operators**
+#### Nested data operators
 
 | Operator | Description | Example |
 |----------|-------------|---------|
@@ -120,7 +120,7 @@ The search API supports a rich set of filter operators for building queries.
 | `any` | Match any element in an array | `{"any": {"tags": {"eq": {"name": "premium"}}}}` |
 | `contains` | Check if value exists in array | `{"contains": {"labels": "important"}}` |
 
-**Dot notation shorthand**
+#### Dot notation shorthand
 
 You can use dot notation as a shorthand for nested field access. The API automatically expands dot notation to the equivalent `has` structure.
 
@@ -166,17 +166,17 @@ The response contains the following fields.
 
 Before querying, you can discover what data is available in the cache.
 
-**List available streams**
+#### List available streams
 
-```
+```http
 GET /api/v1/integrations/connectors/{connector_id}/streams
 ```
 
 Returns metadata about all cached streams for a source.
 
-**Get field metadata for a stream**
+#### Get field metadata for a stream
 
-```
+```http
 GET /api/v1/integrations/connectors/{connector_id}/streams/{stream_name}/fields
 ```
 
