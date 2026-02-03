@@ -1890,8 +1890,7 @@ definitions:
         path: "/crm/v4/associations/{{ parameters['from_object'] }}/{{ parameters['to_object'] }}/batch/read"
         http_method: POST
         request_body_json:
-          inputs:
-            - id: "{{ stream_partition['id'] }}"
+          inputs: "{{ [{'id': id} for id in stream_partition['id']] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -2168,15 +2167,18 @@ dynamic_streams:
       retriever:
         $ref: "#/definitions/base_association_stream/retriever"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - stream:
-                $ref: "#/definitions/base_crm_search_full_refresh_stream"
-                $parameters:
-                  entity: from_object_name # e.g. tickets, will be set by components resolver
-                name: stream_name # e.g. tickets, will be set by components resolver
-              parent_key: id
-              partition_field: id
+          type: GroupingPartitionRouter
+          group_size: 1000
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - stream:
+                  $ref: "#/definitions/base_crm_search_full_refresh_stream"
+                  $parameters:
+                    entity: from_object_name # e.g. tickets, will be set by components resolver
+                  name: stream_name # e.g. tickets, will be set by components resolver
+                parent_key: id
+                partition_field: id
     components_resolver:
       type: ConfigComponentsResolver
 # association_streams: [{stream_name: opt"association_blabla_to_blabla", from_object: req"tickets", to_object: req"companies"}]
@@ -2199,11 +2201,11 @@ dynamic_streams:
           value: "{{ components_values['to_object'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "retriever", "partition_router", "parent_stream_configs", "0", "$parameters", "entity"]
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "$parameters", "entity"]
           value: "{{ components_values['from_object'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "retriever", "partition_router", "parent_stream_configs", '0', "name"]
+          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", '0', "name"]
           value: "{{ components_values['from_object'] }}"
 
 
