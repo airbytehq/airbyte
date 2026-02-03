@@ -205,7 +205,7 @@ The HubSpot source connector supports the following streams:
 
 ### Notes on the `property_history` streams
 
-`Property_history` streams can be synced using an `Incremental` sync mode, which uses a cursor timestamp to determine which records have been updated since the previous sync. Within these streams, some fields types (ex. `CALCULATED` type) will always have a cursor timstamp that mirrors the time of the latest sync. This results in each sync including many more records than were necessarily changed since the previous sync.
+`Property_history` streams can be synced using an `Incremental` sync mode, which uses a cursor timestamp to determine which records have been updated since the previous sync. Within these streams, some fields types (ex. `CALCULATED` type) will always have a cursor timestamp that mirrors the time of the latest sync. This results in each sync including many more records than were necessarily changed since the previous sync.
 
 ### Notes on the `engagements` stream
 
@@ -228,7 +228,7 @@ Because of this, the `engagements` stream can be slow to sync if it hasn't synce
 
 ### Notes on the `Forms` and `Form Submissions` stream
 
-This stream only syncs marketing forms. If you need other forms types, sync `Contacts Form Submissions`.
+This stream only syncs marketing forms.
 
 ### Notes on the `Custom CRM` Objects
 
@@ -341,13 +341,14 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.0-rc.1  | 2025-11-24 | [69782](https://github.com/airbytehq/airbyte/pull/69782)     | Allow for user defined cursor field key in the configured catalog for incremental streams                                                                                                                                    |
-| 6.0.15 | 2025-11-25 | [70053](https://github.com/airbytehq/airbyte/pull/70053) | Update dependencies |
-| 6.0.14 | 2025-11-24 | [69803](https://github.com/airbytehq/airbyte/pull/69803) | Add missing fields in Marketing Emails stream for Avro/Parquet conversions |
-| 6.0.13 | 2025-11-19 | [69749](https://github.com/airbytehq/airbyte/pull/69749) | Fix retrieving associations for CRMSearch streams |
-| 6.0.12 | 2025-11-19 | [69203](https://github.com/airbytehq/airbyte/pull/69203) | Add lookback window |
-| 6.0.11 | 2025-11-18 | [69381](https://github.com/airbytehq/airbyte/pull/69381) | Update dependencies |
-| 6.0.10 | 2025-11-03 | [69145](https://github.com/airbytehq/airbyte/pull/69145) | Promoting release candidate 6.0.10-rc.1 to a main version. |
+| 6.1.0-rc.2  | 2026-02-03 | [72799](https://github.com/airbytehq/airbyte/pull/72799)     | Bump the CDK version which fixed a bug where streams without incremental showed a cursor                                                                                                                                     |
+| 6.1.0-rc.1  | 2025-11-24 | [69782](https://github.com/airbytehq/airbyte/pull/69782) | Allow for user defined cursor field key in the configured catalog for incremental streams                                                                                                                                    |
+| 6.0.15      | 2025-11-25 | [70053](https://github.com/airbytehq/airbyte/pull/70053) | Update dependencies                                                                                                                                                                                                          |
+| 6.0.14      | 2025-11-24 | [69803](https://github.com/airbytehq/airbyte/pull/69803) | Add missing fields in Marketing Emails stream for Avro/Parquet conversions                                                                                                                                                   |
+| 6.0.13      | 2025-11-19 | [69749](https://github.com/airbytehq/airbyte/pull/69749) | Fix retrieving associations for CRMSearch streams                                                                                                                                                                            |
+| 6.0.12      | 2025-11-19 | [69203](https://github.com/airbytehq/airbyte/pull/69203) | Add lookback window                                                                                                                                                                                                          |
+| 6.0.11      | 2025-11-18 | [69381](https://github.com/airbytehq/airbyte/pull/69381) | Update dependencies                                                                                                                                                                                                          |
+| 6.0.10      | 2025-11-03 | [69145](https://github.com/airbytehq/airbyte/pull/69145) | Promoting release candidate 6.0.10-rc.1 to a main version.                                                                                                                                                                   |
 | 6.0.10-rc.1 | 2025-10-30 | [68610](https://github.com/airbytehq/airbyte/pull/68610) | Add APIBudget                                                                                                                                                                                                                |
 | 6.0.9       | 2025-10-29 | [69077](https://github.com/airbytehq/airbyte/pull/69077) | Promoting release candidate 6.0.9-rc.1 to a main version.                                                                                                                                                                    |
 | 6.0.9-rc.1  | 2025-10-27 | [68665](https://github.com/airbytehq/airbyte/pull/68665) | Improve performance following CDK release 7.4.1                                                                                                                                                                              |
@@ -458,7 +459,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 | 4.2.4       | 2024-06-10 | [38800](https://github.com/airbytehq/airbyte/pull/38800) | Retry hubspot _parse_and_handle_errors on JSON decode errors                                                                                                                                                                 |
 | 4.2.3       | 2024-06-06 | [39314](https://github.com/airbytehq/airbyte/pull/39314) | Added missing schema types for the `Workflows` stream schema                                                                                                                                                                 |
 | 4.2.2       | 2024-06-04 | [38981](https://github.com/airbytehq/airbyte/pull/38981) | [autopull] Upgrade base image to v1.2.1                                                                                                                                                                                      |
-| 4.2.1       | 2024-05-30 | [38024](https://github.com/airbytehq/airbyte/pull/38024) | etry when attempting to get scopes                                                                                                                                                                                           |
+| 4.2.1       | 2024-05-30 | [38024](https://github.com/airbytehq/airbyte/pull/38024) | Retry when attempting to get scopes                                                                                                                                                                                          |
 | 4.2.0       | 2024-05-24 | [38049](https://github.com/airbytehq/airbyte/pull/38049) | Add resumable full refresh support to `contacts_form_submissions` and `contacts_merged_audit` streams                                                                                                                        |
 | 4.1.5       | 2024-05-17 | [38243](https://github.com/airbytehq/airbyte/pull/38243) | Replace AirbyteLogger with logging.Logger                                                                                                                                                                                    |
 | 4.1.4       | 2024-05-16 | [38286](https://github.com/airbytehq/airbyte/pull/38286) | Added default schema normalization for the  `Tickets` stream, to ensure the data types                                                                                                                                       |
