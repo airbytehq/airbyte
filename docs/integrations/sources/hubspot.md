@@ -205,7 +205,7 @@ The HubSpot source connector supports the following streams:
 
 ### Notes on the `property_history` streams
 
-`Property_history` streams can be synced using an `Incremental` sync mode, which uses a cursor timestamp to determine which records have been updated since the previous sync. Within these streams, some fields types (ex. `CALCULATED` type) will always have a cursor timstamp that mirrors the time of the latest sync. This results in each sync including many more records than were necessarily changed since the previous sync.
+`Property_history` streams can be synced using an `Incremental` sync mode, which uses a cursor timestamp to determine which records have been updated since the previous sync. Within these streams, some fields types (ex. `CALCULATED` type) will always have a cursor timestamp that mirrors the time of the latest sync. This results in each sync including many more records than were necessarily changed since the previous sync.
 
 ### Notes on the `engagements` stream
 
@@ -228,7 +228,7 @@ Because of this, the `engagements` stream can be slow to sync if it hasn't synce
 
 ### Notes on the `Forms` and `Form Submissions` stream
 
-This stream only syncs marketing forms. If you need other forms types, sync `Contacts Form Submissions`.
+This stream only syncs marketing forms.
 
 ### Notes on the `Custom CRM` Objects
 
@@ -459,7 +459,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 | 4.2.4       | 2024-06-10 | [38800](https://github.com/airbytehq/airbyte/pull/38800) | Retry hubspot _parse_and_handle_errors on JSON decode errors                                                                                                                                                                 |
 | 4.2.3       | 2024-06-06 | [39314](https://github.com/airbytehq/airbyte/pull/39314) | Added missing schema types for the `Workflows` stream schema                                                                                                                                                                 |
 | 4.2.2       | 2024-06-04 | [38981](https://github.com/airbytehq/airbyte/pull/38981) | [autopull] Upgrade base image to v1.2.1                                                                                                                                                                                      |
-| 4.2.1       | 2024-05-30 | [38024](https://github.com/airbytehq/airbyte/pull/38024) | etry when attempting to get scopes                                                                                                                                                                                           |
+| 4.2.1       | 2024-05-30 | [38024](https://github.com/airbytehq/airbyte/pull/38024) | Retry when attempting to get scopes                                                                                                                                                                                          |
 | 4.2.0       | 2024-05-24 | [38049](https://github.com/airbytehq/airbyte/pull/38049) | Add resumable full refresh support to `contacts_form_submissions` and `contacts_merged_audit` streams                                                                                                                        |
 | 4.1.5       | 2024-05-17 | [38243](https://github.com/airbytehq/airbyte/pull/38243) | Replace AirbyteLogger with logging.Logger                                                                                                                                                                                    |
 | 4.1.4       | 2024-05-16 | [38286](https://github.com/airbytehq/airbyte/pull/38286) | Added default schema normalization for the  `Tickets` stream, to ensure the data types                                                                                                                                       |
