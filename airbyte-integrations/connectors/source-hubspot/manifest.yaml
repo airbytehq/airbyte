@@ -2203,10 +2203,6 @@ dynamic_streams:
   - type: DynamicDeclarativeStream
     stream_template:
       $ref: "#/definitions/base_association_stream"
-      name: stream_name, # e.g. associations_tickets_companies, will be set by components resolver
-      $parameters:
-        from_object: from_object_name # e.g. tickets, will be set by components resolver
-        to_object: to_object_name # e.g. companies, will be set by components resolver
     components_resolver:
       type: ConfigComponentsResolver
 # association_streams: [{stream_name: opt"association_blabla_to_blabla", from_object: req"tickets", to_object: req"companies"}]
