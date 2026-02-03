@@ -124,6 +124,6 @@ Please refer https://developer.infornexus.com/api/authentication-choices/hmac fo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2025-09-30 |  | Nexus datasets connector first version |
+| 0.1.0 | 2025-09-30 | [72789](https://github.com/airbytehq/airbyte/pull/72789) | Nexus datasets connector first version |
 
 </details>
