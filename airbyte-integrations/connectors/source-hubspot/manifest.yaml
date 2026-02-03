@@ -1474,6 +1474,7 @@ definitions:
               value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
           properties:
             - hs_object_id
+            - "{{ parameters['cursor_filter_property_field'] }}"
           after: "{{ next_page_token['next_page_token']['after'] }}"
       paginator:
         type: DefaultPaginator
