@@ -162,43 +162,35 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   /**
-   * Test case record for parameterized large integer type mapping tests. Each test case defines a
-   * ClickHouse type with min, max, and typical values. The test will automatically also verify null
-   * and zero for each type.
-   */
-  record LargeIntegerTestCase(String typeName, String min, String max, String typical) {}
-
-  /**
    * Provides test cases for large integer type mapping. These types return as JDBCType.OTHER from the
    * driver and are mapped to NUMERIC by ClickHouseSourceOperations.
    */
   static Stream<Arguments> largeIntegerTypeTestCases() {
     return Stream.of(
-        Arguments.of(new LargeIntegerTestCase("UInt64",
-            "0", "18446744073709551615", "9223372036854775808")),
-        Arguments.of(new LargeIntegerTestCase("Int128",
-            "-170141183460469231731687303715884105728", "170141183460469231731687303715884105727",
-            "12345678901234567890")),
-        Arguments.of(new LargeIntegerTestCase("Int256",
-            "-57896044618658097711785492504343953926634992332820282019728792003956564819968",
+        Arguments.of("UInt64", "0", "18446744073709551615", "9223372036854775808"),
+        Arguments.of("Int128", "-170141183460469231731687303715884105728",
+            "170141183460469231731687303715884105727", "12345678901234567890"),
+        Arguments.of("Int256", "-57896044618658097711785492504343953926634992332820282019728792003956564819968",
             "57896044618658097711785492504343953926634992332820282019728792003956564819967",
-            "12345678901234567890123456789012345678901234567890")),
-        Arguments.of(new LargeIntegerTestCase("UInt128",
-            "0", "340282366920938463463374607431768211455", "12345678901234567890")),
-        Arguments.of(new LargeIntegerTestCase("UInt256",
-            "0", "115792089237316195423570985008687907853269984665640564039457584007913129639935",
-            "12345678901234567890123456789012345678901234567890")));
+            "12345678901234567890123456789012345678901234567890"),
+        Arguments.of("UInt128", "0", "340282366920938463463374607431768211455", "12345678901234567890"),
+        Arguments.of("UInt256", "0",
+            "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+            "12345678901234567890123456789012345678901234567890"));
   }
 
-  @ParameterizedTest(name = "{0}")
+  @ParameterizedTest(name = "largeIntegerSupportTest_{0}")
   @MethodSource("largeIntegerTypeTestCases")
-  public void testLargeIntegerTypeMapping(final LargeIntegerTestCase testCase) throws Exception {
-    final String tableName = testCase.typeName().toLowerCase() + "_type_test";
+  public void testLargeIntegerTypeMapping(final String typeName,
+                                          final String min,
+                                          final String max,
+                                          final String typical)
+      throws Exception {
+    final String tableName = typeName.toLowerCase() + "_type_test";
     testdb.with("CREATE TABLE %s (id UInt32, value Nullable(%s)) ENGINE = MergeTree() ORDER BY id",
-        tableName, testCase.typeName());
+        tableName, typeName);
 
-    final List<String> testValues = List.of(
-        testCase.min(), "0", testCase.max(), testCase.typical());
+    final List<String> testValues = List.of(min, "0", max, typical);
 
     final StringBuilder insertValues = new StringBuilder();
     for (int i = 0; i < testValues.size(); i++) {
