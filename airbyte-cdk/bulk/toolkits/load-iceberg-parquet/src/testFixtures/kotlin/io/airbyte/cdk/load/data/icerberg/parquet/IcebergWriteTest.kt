@@ -64,7 +64,10 @@ abstract class IcebergWriteTest(
                 // we stringify objects, so nested floats stay exact
                 nestedFloatLosesPrecision = false,
             ),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        // Protobuf can't encode unknown/schemaless types, so they get nulled
+        unknownTypesBehavior =
+            if (dataChannelFormat == DataChannelFormat.PROTOBUF) UnknownTypesBehavior.NULL
+            else UnknownTypesBehavior.SERIALIZE,
         nullEqualsUnset = true,
         configUpdater = IcebergConfigUpdater,
         dataChannelFormat = dataChannelFormat,
@@ -149,7 +152,7 @@ abstract class IcebergWriteTest(
             ),
             finalStream,
             primaryKey = listOf(listOf("id")),
-            cursor = listOf("same"),
+            cursor = null,
         )
     }
 

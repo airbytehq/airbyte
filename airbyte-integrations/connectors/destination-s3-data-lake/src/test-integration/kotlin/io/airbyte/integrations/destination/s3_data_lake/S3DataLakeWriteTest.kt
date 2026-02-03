@@ -49,10 +49,9 @@ abstract class S3DataLakeWriteTest(
         (io.airbyte.cdk.command.ConfigurationSpecification) -> org.apache.iceberg.catalog.Catalog,
     cleaner: DestinationCleaner = io.airbyte.cdk.load.test.util.NoopDestinationCleaner,
     micronautProperties: Map<Property, String> = emptyMap(),
-    dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF,
-    dataChannelMedium: DataChannelMedium = DataChannelMedium.SOCKET,
-
-    ) :
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+) :
     IcebergWriteTest(
         configContents,
         S3DataLakeSpecification::class.java,
@@ -61,8 +60,8 @@ abstract class S3DataLakeWriteTest(
         tableIdGenerator,
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
         micronautProperties = micronautProperties,
-        dataChannelFormat = DataChannelFormat.PROTOBUF,
-        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = dataChannelFormat,
+        dataChannelMedium = dataChannelMedium,
     )
 
 class GlueWriteTest :
@@ -375,7 +374,7 @@ class PolarisWriteTest :
     }
 }
 
-//class SnowflakeInsertProtoAcceptanceTest :
+// class SnowflakeInsertProtoAcceptanceTest :
 //    SnowflakeAcceptanceTest(
 //        configPath = CONFIG_PATH,
 //        dataDumper =
@@ -393,7 +392,7 @@ class PolarisWriteTest :
 //    override fun testBasicWrite() {
 //        super.testBasicWrite()
 //    }
-//}
+// }
 
 class GlueWriteTestProtoSocket :
     S3DataLakeWriteTest(
