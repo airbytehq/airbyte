@@ -2,9 +2,9 @@
 
 ## Sync overview
 
-The Zendesk Chat source supports Full Refresh and Incremental syncs.
+The Zendesk Sunshine source supports Full Refresh and Incremental syncs.
 
-This source can sync data for the [Zendesk Sunshine API](https://developer.zendesk.com/documentation/custom-data/custom-objects/custom-objects-handbook/).
+This source syncs data from the [Zendesk Sunshine API](https://developer.zendesk.com/documentation/custom-data/custom-objects/custom-objects-handbook/), which provides access to custom objects and relationships in your Zendesk account.
 
 ### Output schema
 
@@ -47,19 +47,46 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 ### Requirements
 
-- Zendesk Sunshine API Token
-
-OR
-
-- Zendesk Sunshine oauth2.0 application (client_id, client_secret, access_token)
+- A Zendesk account with Custom Objects enabled
+- Your Zendesk subdomain (the part before `.zendesk.com` in your Zendesk URL)
+- One of the following authentication methods:
+  - **OAuth2.0** (recommended for Airbyte Cloud): Client ID, Client Secret, and authorization through Airbyte's OAuth flow
+  - **API Token** (recommended for Airbyte Open Source): Your Zendesk email address and an API token
+  - **OAuth2.0 (Legacy)**: A manually generated OAuth access token
 
 ### Setup guide
 
-Please follow this [guide](https://developer.zendesk.com/documentation/custom-data/custom-objects/getting-started-with-custom-objects/#enabling-custom-objects)
+#### Step 1: Enable Custom Objects
 
-Generate an API Token or oauth2.0 Access token as described in [here](https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication)
+Before using this connector, ensure Custom Objects are enabled in your Zendesk account. Follow Zendesk's [guide to enabling Custom Objects](https://developer.zendesk.com/documentation/custom-data/custom-objects/getting-started-with-custom-objects/#enabling-custom-objects).
 
-We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+#### Step 2: Choose an authentication method
+
+This connector supports three authentication methods:
+
+##### OAuth2.0 (recommended for Airbyte Cloud)
+
+This is the recommended method for Airbyte Cloud users. When you set up the connector in Airbyte Cloud, you'll be redirected to Zendesk to authorize the connection. This method uses refresh tokens to automatically maintain access without requiring you to manually regenerate tokens.
+
+Zendesk uses rotating refresh tokens, meaning each time the connector refreshes its access token, it receives a new refresh token and the previous one is invalidated. The connector handles this automatically.
+
+##### API Token (recommended for Airbyte Open Source)
+
+To use API token authentication:
+
+1. In Zendesk, go to **Admin Center** > **Apps and integrations** > **APIs** > **Zendesk API**.
+2. Enable token access if it isn't already enabled.
+3. Click **Add API token**, give it a description, and click **Save**.
+4. Copy the token value (it's only shown once).
+5. In Airbyte, enter your Zendesk email address and the API token.
+
+For more information, see Zendesk's [API token documentation](https://developer.zendesk.com/api-reference/ticketing/introduction/#api-token).
+
+##### OAuth2.0 (Legacy)
+
+This method uses a manually generated OAuth access token. It's provided for backward compatibility with existing connections. For new connections, use the OAuth2.0 method instead, which handles token refresh automatically.
+
+To generate a legacy access token, follow Zendesk's [OAuth documentation](https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/).
 
 ## Changelog
 
@@ -68,7 +95,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.4.0 | 2026-01-22 | [71856](https://github.com/airbytehq/airbyte/pull/71856) | Add OAuth2.0 with refresh token support; Upgrade CDK version to 7.8.1 |
+| 0.4.0 | 2026-02-03 | [71856](https://github.com/airbytehq/airbyte/pull/71856) | Add OAuth2.0 with refresh token support; Upgrade CDK version to 7.8.1 |
 | 0.3.41 | 2026-01-20 | [72044](https://github.com/airbytehq/airbyte/pull/72044) | Update dependencies |
 | 0.3.40 | 2026-01-14 | [71709](https://github.com/airbytehq/airbyte/pull/71709) | Update dependencies |
 | 0.3.39 | 2025-12-18 | [70704](https://github.com/airbytehq/airbyte/pull/70704) | Update dependencies |
