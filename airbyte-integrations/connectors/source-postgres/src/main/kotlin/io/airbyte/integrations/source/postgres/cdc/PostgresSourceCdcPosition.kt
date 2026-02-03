@@ -8,6 +8,8 @@ import io.airbyte.cdk.read.cdc.PartiallyOrdered
 import io.debezium.connector.postgresql.connection.Lsn
 
 data class PostgresSourceCdcPosition(
+    // See this article for an explanation of the difference between lsn and lsn_commit:
+    // https://www.morling.dev/blog/postgres-replication-slots-confirmed-flush-lsn-vs-restart-lsn/
     val lsn: Lsn?, // For decorating records with _ab_cdc_lsn.
     val lsnCommit: Lsn?, // For determining when target LSN is reached.
 ) : PartiallyOrdered<PostgresSourceCdcPosition> {
