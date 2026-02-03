@@ -64,13 +64,13 @@ Before using this connector, ensure Custom Objects are enabled in your Zendesk a
 
 This connector supports three authentication methods:
 
-**OAuth2.0 (recommended for Airbyte Cloud)**
+##### OAuth2.0 (recommended for Airbyte Cloud)
 
-This is the recommended method for Airbyte Cloud users. When you set up the connector in Airbyte Cloud, you'll be redirected to Zendesk to authorize the connection. This method uses refresh tokens to automatically maintain access without requiring you to manually regenerate tokens.
+This is the recommended method for Airbyte Cloud users.When you set up the connector in Airbyte Cloud, you'll be redirected to Zendesk to authorize the connection. This method uses refresh tokens to automatically maintain access without requiring you to manually regenerate tokens.
 
 Zendesk uses rotating refresh tokens, meaning each time the connector refreshes its access token, it receives a new refresh token and the previous one is invalidated. The connector handles this automatically.
 
-**API Token (recommended for Airbyte Open Source)**
+##### API Token (recommended for Airbyte Open Source)
 
 To use API token authentication:
 
@@ -82,9 +82,9 @@ To use API token authentication:
 
 For more information, see Zendesk's [API token documentation](https://developer.zendesk.com/api-reference/ticketing/introduction/#api-token).
 
-**OAuth2.0 (Legacy)**
+##### OAuth2.0 (Legacy)
 
-This method uses a manually generated OAuth access token. It's provided for backward compatibility with existing connections. For new connections, use the OAuth2.0 method instead, which handles token refresh automatically.
+This method uses a manually generated OAuth access token.It's provided for backward compatibility with existing connections. For new connections, use the OAuth2.0 method instead, which handles token refresh automatically.
 
 To generate a legacy access token, follow Zendesk's [OAuth documentation](https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/).
 
