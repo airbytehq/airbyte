@@ -1493,7 +1493,7 @@ definitions:
         fields:
           - type: AddedFieldDefinition
             path: ["hs_lastmodifieddate"]
-            value: "{{ record.get('properties', {}).get('hs_lastmodifieddate') }}"
+            value: "{{ record.get('properties', {}).get(parameters['cursor_filter_property_field']) }}"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
       cursor_field: hs_lastmodifieddate
@@ -2249,10 +2249,6 @@ dynamic_streams:
           create_or_update: true
           field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "transformations", "0", "fields", "0", "path", "0"]
           value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate' }}"
-        - type: ComponentMappingDefinition
-          create_or_update: true
-          field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "transformations", "0", "fields", "0", "value"]
-          value: "{{ record.get('properties', {}).get('lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate') }}"
 
 
 spec:
