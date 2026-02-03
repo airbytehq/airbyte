@@ -12,9 +12,18 @@ on:
         description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
         default: "--name=source-pokeapi"
         type: string
+      ephemeral-version-bump:
+        description: |
+          Ephemeral version suffix to apply (not committed back to the repo):
+          - default: Resolves to 'none' on push to master, 'preview' on manual trigger
+          - none: Use exact version from metadata.yaml (for production releases)
+          - preview: Append '-preview.{sha}' suffix (for development builds)
+          - rc: Append '-rc1' suffix (for release candidates)
+        default: default
+        type: string
       release-type:
-        description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
-        default: pre-release
+        description: "[DEPRECATED: Use ephemeral-version-bump instead] Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
+        default: ""
         type: string
       publish-java-tars:
         description: "Whether to publish Java connector tar files."
@@ -35,13 +44,20 @@ on:
         description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
         default: "--name=source-pokeapi"
         type: string
-      release-type:
-        description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
-        default: pre-release
+      ephemeral-version-bump:
+        description: |
+          Ephemeral version suffix to apply (not committed back to the repo):
+          - default: Resolves to 'none' on push to master, 'preview' on manual trigger
+          - none: Use exact version from metadata.yaml (for production releases)
+          - preview: Append '-preview.{sha}' suffix (for development builds)
+          - rc: Append '-rc1' suffix (for release candidates)
+        default: default
         type: choice
         options:
-          - pre-release
-          - main-release
+          - default
+          - none
+          - preview
+          - rc
       publish-java-tars:
         description: "Whether to publish Java connector tar files."
         required: false
@@ -71,16 +87,44 @@ jobs:
         shell: bash
         # When merging to master, we run on connectors that have changed since the previous commit.
         run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
-      - name: Resolve release type
-        id: resolve-release-type
+      - name: Resolve ephemeral version bump
+        id: resolve-ephemeral-version-bump
         shell: bash
         run: |
-          # If workflow is triggered on merge to master, do a main release.
-          # If workflow is triggered manually, use the input release type.
-          if [[ "${{ github.event_name }}" == "push" ]]; then
+          # Determine the ephemeral version bump mode.
+          # Priority: ephemeral-version-bump input > legacy release-type input > defaults
+          
+          EPHEMERAL_BUMP="${{ inputs.ephemeral-version-bump }}"
+          LEGACY_RELEASE_TYPE="${{ inputs.release-type }}"
+          
+          # Handle legacy release-type input for backward compatibility
+          if [[ -n "$LEGACY_RELEASE_TYPE" && "$EPHEMERAL_BUMP" == "default" ]]; then
+            echo "::warning::The 'release-type' input is deprecated. Please use 'ephemeral-version-bump' instead."
+            if [[ "$LEGACY_RELEASE_TYPE" == "pre-release" ]]; then
+              EPHEMERAL_BUMP="preview"
+            elif [[ "$LEGACY_RELEASE_TYPE" == "main-release" ]]; then
+              EPHEMERAL_BUMP="none"
+            fi
+          fi
+          
+          # Resolve 'default' based on trigger type
+          if [[ "$EPHEMERAL_BUMP" == "default" ]]; then
+            if [[ "${{ github.event_name }}" == "push" ]]; then
+              # On merge to master, use exact version (no suffix)
+              EPHEMERAL_BUMP="none"
+            else
+              # On manual trigger, use preview suffix
+              EPHEMERAL_BUMP="preview"
+            fi
+          fi
+          
+          echo "ephemeral-version-bump=$EPHEMERAL_BUMP" | tee -a $GITHUB_OUTPUT
+          
+          # Also output legacy release-type for backward compatibility with downstream scripts
+          if [[ "$EPHEMERAL_BUMP" == "none" ]]; then
             echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
           else
-            echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
+            echo "release-type=pre-release" | tee -a $GITHUB_OUTPUT
           fi
       - name: Resolve publish-java-tars
         id: resolve-publish-java-tars
@@ -97,7 +141,8 @@ jobs:
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
-      release-type: ${{ steps.resolve-release-type.outputs.release-type }}
+      ephemeral-version-bump: ${{ steps.resolve-ephemeral-version-bump.outputs.ephemeral-version-bump }}
+      release-type: ${{ steps.resolve-ephemeral-version-bump.outputs.release-type }}
       # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
       publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
   publish_connectors:
@@ -322,6 +367,15 @@ jobs:
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
 
+      - name: Enable progressive rollout for RC builds
+        if: needs.publish_options.outputs.ephemeral-version-bump == 'rc'
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          echo "Enabling progressive rollout for RC build..."
+          # Ephemerally enable progressive rollout in metadata.yaml (not committed back)
+          yq -i '.data.releases.rolloutConfiguration.enableProgressiveRollout = true' metadata.yaml
+          echo "Progressive rollout enabled in metadata.yaml"
+
       - name: Get connector metadata
         id: connector-metadata
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -330,14 +384,24 @@ jobs:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
           CONNECTOR_VERSION=$(poe -qq get-version)
-          if [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
-            hash=$(git rev-parse --short=7 HEAD)
-            echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
-            echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
-          else
-            echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
-            echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
-          fi
+          EPHEMERAL_BUMP="${{ needs.publish_options.outputs.ephemeral-version-bump }}"
+          
+          # Generate docker image tag based on ephemeral version bump mode
+          case "$EPHEMERAL_BUMP" in
+            preview)
+              hash=$(git rev-parse --short=7 HEAD)
+              echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
+              ;;
+            rc)
+              echo "docker-image-tag=${CONNECTOR_VERSION}-rc1" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
+              ;;
+            none|*)
+              echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
+              ;;
+          esac
 
       - name: Generate OSS Registry Entry
         id: generate-oss-registry-entry
