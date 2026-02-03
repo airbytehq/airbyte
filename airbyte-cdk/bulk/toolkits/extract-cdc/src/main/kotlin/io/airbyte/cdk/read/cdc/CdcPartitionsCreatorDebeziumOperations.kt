@@ -6,18 +6,15 @@ package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
+import java.util.concurrent.atomic.AtomicBoolean
 
 interface CdcPartitionsCreatorDebeziumOperations<T : PartiallyOrdered<T>> {
 
     companion object {
-        @Volatile private var hasRunStartup = false
-        @Synchronized
+        private val hasRunStartup = AtomicBoolean(false)
+
         fun shouldRunStartup(): Boolean {
-            if (!hasRunStartup) {
-                hasRunStartup = true
-                return true
-            }
-            return false
+            return hasRunStartup.compareAndSet(false, true)
         }
     }
 
