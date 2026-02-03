@@ -157,8 +157,8 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   /**
-   * Integration tests to validate that ClickHouse large integer types are correctly mapped.
-   * These types return as JDBCType.OTHER from the driver and are mapped to NUMERIC by
+   * Integration tests to validate that ClickHouse large integer types are correctly mapped. These
+   * types return as JDBCType.OTHER from the driver and are mapped to NUMERIC by
    * ClickHouseSourceOperations. Each type is tested in a separate table for clarity.
    */
 
@@ -169,9 +169,9 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
 
     // Test cases: input value -> expected output
     final String zero = "0";
-    final String maxSigned = "9223372036854775807";  // Max signed Int64
-    final String overflowSigned = "9223372036854775808";  // Max signed Int64 + 1
-    final String maxUnsigned = "18446744073709551615";  // Max UInt64
+    final String maxSigned = "9223372036854775807"; // Max signed Int64
+    final String overflowSigned = "9223372036854775808"; // Max signed Int64 + 1
+    final String maxUnsigned = "18446744073709551615"; // Max UInt64
 
     testdb.with("INSERT INTO %s VALUES (1, %s), (2, %s), (3, %s), (4, %s)",
         tableName, zero, maxSigned, overflowSigned, maxUnsigned);
@@ -295,8 +295,10 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
         .collect(Collectors.toList());
   }
 
-  private void assertValueEquals(final List<JsonNode> records, final int id,
-                                  final String column, final String expected) {
+  private void assertValueEquals(final List<JsonNode> records,
+                                 final int id,
+                                 final String column,
+                                 final String expected) {
     final JsonNode record = records.stream()
         .filter(r -> r.get("id").asInt() == id)
         .findFirst()
