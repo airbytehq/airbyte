@@ -1890,7 +1890,12 @@ definitions:
         path: "/crm/v4/associations/{{ parameters['from_object'] }}/{{ parameters['to_object'] }}/batch/read"
         http_method: POST
         request_body_json:
-          inputs: "{{ [{'id': id} for id in stream_partition['id']] }}"
+          inputs: >-
+            {% set transformed = [] -%}
+            {%- for id in stream_partition['id'] -%}
+            {%- set _ = transformed.append({'id': id}) -%}
+            {%- endfor -%}
+            {{ transformed }}
       record_selector:
         type: RecordSelector
         extractor:
