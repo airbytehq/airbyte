@@ -261,37 +261,48 @@ class BigqueryDirectLoadNativeTableOperations(
                 .joinToString(",")
 
         // Check which Airbyte meta columns exist in the original table
-        val hasRawId = columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_RAW_ID, ignoreCase = true) }
-        val hasExtractedAt = columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_EXTRACTED_AT, ignoreCase = true) }
+        val hasRawId =
+            columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_RAW_ID, ignoreCase = true) }
+        val hasExtractedAt =
+            columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_EXTRACTED_AT, ignoreCase = true) }
         val hasMeta = columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_META, ignoreCase = true) }
-        val hasGenerationId = columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_GENERATION_ID, ignoreCase = true) }
+        val hasGenerationId =
+            columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_GENERATION_ID, ignoreCase = true) }
 
         // Build meta column lists - use existing values if available, otherwise generate defaults
-        val metaColumnList = listOf(
-            Meta.COLUMN_NAME_AB_RAW_ID,
-            Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-            Meta.COLUMN_NAME_AB_META,
-            Meta.COLUMN_NAME_AB_GENERATION_ID,
-        ).joinToString(",") { "`$it`" }
+        val metaColumnList =
+            listOf(
+                    Meta.COLUMN_NAME_AB_RAW_ID,
+                    Meta.COLUMN_NAME_AB_EXTRACTED_AT,
+                    Meta.COLUMN_NAME_AB_META,
+                    Meta.COLUMN_NAME_AB_GENERATION_ID,
+                )
+                .joinToString(",") { "`$it`" }
 
-        val metaValueList = listOf(
-            if (hasRawId) "`${Meta.COLUMN_NAME_AB_RAW_ID}`" else "GENERATE_UUID()",
-            if (hasExtractedAt) "`${Meta.COLUMN_NAME_AB_EXTRACTED_AT}`" else "CURRENT_TIMESTAMP()",
-            if (hasMeta) "`${Meta.COLUMN_NAME_AB_META}`" else "JSON'{\"sync_id\": 0, \"changes\": []}'",
-            if (hasGenerationId) "`${Meta.COLUMN_NAME_AB_GENERATION_ID}`" else "0",
-        ).joinToString(",")
+        val metaValueList =
+            listOf(
+                    if (hasRawId) "`${Meta.COLUMN_NAME_AB_RAW_ID}`" else "GENERATE_UUID()",
+                    if (hasExtractedAt) "`${Meta.COLUMN_NAME_AB_EXTRACTED_AT}`"
+                    else "CURRENT_TIMESTAMP()",
+                    if (hasMeta) "`${Meta.COLUMN_NAME_AB_META}`"
+                    else "JSON'{\"sync_id\": 0, \"changes\": []}'",
+                    if (hasGenerationId) "`${Meta.COLUMN_NAME_AB_GENERATION_ID}`" else "0",
+                )
+                .joinToString(",")
 
         // Combine user columns and meta columns
-        val fullColumnList = if (userColumnList.isNotEmpty()) {
-            "$metaColumnList,$userColumnList"
-        } else {
-            metaColumnList
-        }
-        val fullValueList = if (userValueList.isNotEmpty()) {
-            "$metaValueList,$userValueList"
-        } else {
-            metaValueList
-        }
+        val fullColumnList =
+            if (userColumnList.isNotEmpty()) {
+                "$metaColumnList,$userColumnList"
+            } else {
+                metaColumnList
+            }
+        val fullValueList =
+            if (userValueList.isNotEmpty()) {
+                "$metaValueList,$userValueList"
+            } else {
+                metaValueList
+            }
 
         // note: we don't care about columnsToDrop (because they don't exist in the tempTable)
         // and we don't care about columnsToAdd (because they'll just default to null)
