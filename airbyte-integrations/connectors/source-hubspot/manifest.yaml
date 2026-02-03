@@ -2240,15 +2240,15 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "$parameters", "cursor_filter_property_field"]
-          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate' }}"
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "incremental_sync", "cursor_field"]
-          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate' }}"
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "transformations", "0", "fields", "0", "path", "0"]
-          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contact' else 'hs_lastmodifieddate' }}"
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
 
 
 spec:
