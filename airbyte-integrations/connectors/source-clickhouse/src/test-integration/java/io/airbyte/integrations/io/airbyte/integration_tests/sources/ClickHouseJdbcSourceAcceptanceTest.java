@@ -25,6 +25,7 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -173,78 +174,52 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
    */
   static Stream<Arguments> largeIntegerTypeTestCases() {
     return Stream.of(
-        // UInt64: unsigned 64-bit, min=0 (tested as zero), max=2^64-1
         Arguments.of(new LargeIntegerTestCase("UInt64",
-            null, // min is 0, covered by zero test
-            "18446744073709551615", // max UInt64
-            "9223372036854775808")), // typical: max signed Int64 + 1
-        // Int128: signed 128-bit
+            "0", "18446744073709551615", "9223372036854775808")),
         Arguments.of(new LargeIntegerTestCase("Int128",
-            "-170141183460469231731687303715884105728", // min Int128
-            "170141183460469231731687303715884105727", // max Int128
-            "12345678901234567890")), // typical
-        // Int256: signed 256-bit
+            "-170141183460469231731687303715884105728", "170141183460469231731687303715884105727",
+            "12345678901234567890")),
         Arguments.of(new LargeIntegerTestCase("Int256",
-            "-57896044618658097711785492504343953926634992332820282019728792003956564819968", // min
-            "57896044618658097711785492504343953926634992332820282019728792003956564819967", // max
-            "12345678901234567890123456789012345678901234567890")), // typical
-        // UInt128: unsigned 128-bit, min=0 (tested as zero)
+            "-57896044618658097711785492504343953926634992332820282019728792003956564819968",
+            "57896044618658097711785492504343953926634992332820282019728792003956564819967",
+            "12345678901234567890123456789012345678901234567890")),
         Arguments.of(new LargeIntegerTestCase("UInt128",
-            null, // min is 0, covered by zero test
-            "340282366920938463463374607431768211455", // max UInt128
-            "12345678901234567890")), // typical
-        // UInt256: unsigned 256-bit, min=0 (tested as zero)
+            "0", "340282366920938463463374607431768211455", "12345678901234567890")),
         Arguments.of(new LargeIntegerTestCase("UInt256",
-            null, // min is 0, covered by zero test
-            "115792089237316195423570985008687907853269984665640564039457584007913129639935", // max
-            "12345678901234567890123456789012345678901234567890"))); // typical
+            "0", "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+            "12345678901234567890123456789012345678901234567890")));
   }
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("largeIntegerTypeTestCases")
   public void testLargeIntegerTypeMapping(final LargeIntegerTestCase testCase) throws Exception {
     final String tableName = testCase.typeName().toLowerCase() + "_type_test";
-    // Use Nullable type to test null values
     testdb.with("CREATE TABLE %s (id UInt32, value Nullable(%s)) ENGINE = MergeTree() ORDER BY id",
         tableName, testCase.typeName());
 
-    // Build test values: null, zero, min (if not null), max, typical
-    final List<String> testValues = new ArrayList<>();
-    testValues.add(null); // null value
-    testValues.add("0"); // zero
-    if (testCase.min() != null) {
-      testValues.add(testCase.min());
-    }
-    testValues.add(testCase.max());
-    testValues.add(testCase.typical());
+    final List<String> testValues = List.of(
+        testCase.min(), "0", testCase.max(), testCase.typical());
 
-    // Build INSERT statement
     final StringBuilder insertValues = new StringBuilder();
     for (int i = 0; i < testValues.size(); i++) {
       if (i > 0) {
         insertValues.append(", ");
       }
-      final String value = testValues.get(i);
-      insertValues.append("(").append(i + 1).append(", ")
-          .append(value == null ? "NULL" : value).append(")");
+      insertValues.append("(").append(i + 1).append(", ").append(testValues.get(i)).append(")");
     }
+    insertValues.append(", (").append(testValues.size() + 1).append(", NULL)");
     testdb.with("INSERT INTO %s VALUES " + insertValues, tableName);
 
-    final List<JsonNode> records = readTable(tableName);
-    assertEquals(testValues.size(), records.size());
+    final Map<Integer, JsonNode> recordsById = readTableAsMap(tableName);
+    assertEquals(testValues.size() + 1, recordsById.size());
 
-    // Verify each value
     for (int i = 0; i < testValues.size(); i++) {
-      final String expected = testValues.get(i);
-      if (expected == null) {
-        assertNullValue(records, i + 1, "value");
-      } else {
-        assertValueEquals(records, i + 1, "value", expected);
-      }
+      assertValueEquals(recordsById, i + 1, "value", testValues.get(i));
     }
+    assertNullValue(recordsById, testValues.size() + 1, "value");
   }
 
-  private List<JsonNode> readTable(final String tableName) throws Exception {
+  private Map<Integer, JsonNode> readTableAsMap(final String tableName) throws Exception {
     final AirbyteCatalog catalog = source().discover(config());
     final AirbyteStream stream = catalog.getStreams().stream()
         .filter(s -> s.getName().equals(tableName))
@@ -265,18 +240,15 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     return messages.stream()
         .filter(m -> m.getType() == AirbyteMessage.Type.RECORD)
         .map(m -> m.getRecord().getData())
-        .collect(Collectors.toList());
+        .collect(Collectors.toMap(r -> r.get("id").asInt(), r -> r));
   }
 
-  private void assertValueEquals(final List<JsonNode> records,
+  private void assertValueEquals(final Map<Integer, JsonNode> recordsById,
                                  final int id,
                                  final String column,
                                  final String expected) {
-    final JsonNode record = records.stream()
-        .filter(r -> r.get("id").asInt() == id)
-        .findFirst()
-        .orElseThrow(() -> new AssertionError("Record with id " + id + " not found"));
-
+    final JsonNode record = recordsById.get(id);
+    assertNotNull(record, "Record with id " + id + " not found");
     assertNotNull(record.get(column), column + " should not be null for id " + id);
     final BigInteger expectedValue = new BigInteger(expected);
     final BigInteger actualValue = new BigInteger(record.get(column).asText());
@@ -284,14 +256,12 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
         String.format("For id=%d, %s: expected %s but got %s", id, column, expected, actualValue));
   }
 
-  private void assertNullValue(final List<JsonNode> records, final int id, final String column) {
-    final JsonNode record = records.stream()
-        .filter(r -> r.get("id").asInt() == id)
-        .findFirst()
-        .orElseThrow(() -> new AssertionError("Record with id " + id + " not found"));
-
+  private void assertNullValue(final Map<Integer, JsonNode> recordsById,
+                               final int id,
+                               final String column) {
+    final JsonNode record = recordsById.get(id);
+    assertNotNull(record, "Record with id " + id + " not found");
     final JsonNode value = record.get(column);
-    // Field can be either missing (Java null) or present with null value (JsonNode.isNull())
     assertTrue(value == null || value.isNull(),
         String.format("For id=%d, %s: expected null but got %s", id, column, value));
   }
