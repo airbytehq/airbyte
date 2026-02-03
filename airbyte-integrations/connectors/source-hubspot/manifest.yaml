@@ -1928,6 +1928,21 @@ definitions:
           to_object: "{{ parameters['to_object'] }}"
       paginator:
         type: NoPagination
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1000
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream:
+                $ref: "#/definitions/base_crm_search_incremental_parent_stream"
+                $parameters:
+                  entity: from_object_name # e.g. tickets, will be set by components resolver
+                  cursor_filter_property_field: hs_lastmodifieddate # default, will be overridden for contacts
+                name: stream_name # e.g. tickets, will be set by components resolver
+              parent_key: id
+              partition_field: id
+              incremental_dependency: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2192,23 +2207,6 @@ dynamic_streams:
       $parameters:
         from_object: from_object_name # e.g. tickets, will be set by components resolver
         to_object: to_object_name # e.g. companies, will be set by components resolver
-      retriever:
-        $ref: "#/definitions/base_association_stream/retriever"
-        partition_router:
-          type: GroupingPartitionRouter
-          group_size: 1000
-          underlying_partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - stream:
-                  $ref: "#/definitions/base_crm_search_incremental_parent_stream"
-                  $parameters:
-                    entity: from_object_name # e.g. tickets, will be set by components resolver
-                    cursor_filter_property_field: hs_lastmodifieddate # default, will be overridden for contacts
-                  name: stream_name # e.g. tickets, will be set by components resolver
-                parent_key: id
-                partition_field: id
-                incremental_dependency: true
     components_resolver:
       type: ConfigComponentsResolver
 # association_streams: [{stream_name: opt"association_blabla_to_blabla", from_object: req"tickets", to_object: req"companies"}]
