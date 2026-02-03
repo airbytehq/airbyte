@@ -1488,6 +1488,12 @@ definitions:
           type: DpathExtractor
           field_path:
             - results
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["{{ parameters['cursor_filter_property_field'] }}"]
+            value: "{{ record.get('properties', {}).get(parameters['cursor_filter_property_field']) }}"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
       cursor_field: hs_lastmodifieddate
