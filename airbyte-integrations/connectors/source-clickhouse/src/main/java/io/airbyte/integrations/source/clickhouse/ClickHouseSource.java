@@ -98,8 +98,8 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   }
 
   /**
-   * When running in cloud deployment mode, remove the SSL option from the spec to enforce SSL.
-   * This replaces the need for a separate strict-encrypt connector.
+   * When running in cloud deployment mode, remove the SSL option from the spec to enforce SSL. This
+   * replaces the need for a separate strict-encrypt connector.
    */
   @Override
   public ConnectorSpecification spec() throws Exception {
