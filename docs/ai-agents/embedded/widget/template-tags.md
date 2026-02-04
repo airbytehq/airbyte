@@ -49,7 +49,7 @@ curl -X DELETE "https://api.airbyte.ai/api/v1/integrations/templates/connections
 
 To programmatically remove a tag from a source template, you'll need to make the following request:
 
-```bash 
+```bash
 curl -X DELETE "https://api.airbyte.ai/api/v1/integrations/templates/sources/{id}/tags/{tag_name}" \
   -H "Authorization: Bearer <ACCESS_TOKEN>"
 ```
