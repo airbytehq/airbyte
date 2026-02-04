@@ -20,7 +20,8 @@ definitions:
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
         - http_codes: [400]
-          action: RETRY
+          action: FAIL
+          error_message: "Bad request: {{ response.get('error', {}).get('message', response) }}"
     authenticator:
       type: CustomAuthenticator
       class_name: source_facebook_pages.components.AuthenticatorFacebookPageAccessToken
