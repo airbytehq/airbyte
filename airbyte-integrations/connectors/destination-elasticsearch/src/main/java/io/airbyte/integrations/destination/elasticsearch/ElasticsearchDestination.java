@@ -13,10 +13,7 @@ import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
-import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -38,18 +35,15 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestination.class);
   private final ObjectMapper mapper = new ObjectMapper();
-  private final FeatureFlags featureFlags;
 
-  public ElasticsearchDestination() {
-    this(new EnvVariableFeatureFlags());
-  }
-
-  ElasticsearchDestination(final FeatureFlags featureFlags) {
-    this.featureFlags = featureFlags;
-  }
-
+  /**
+   * Checks if running in cloud deployment mode by reading the DEPLOYMENT_MODE environment variable.
+   * TODO: When upgrading to a newer CDK version that includes FeatureFlags.deploymentMode(),
+   * refactor to use: AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode())
+   */
   private boolean cloudDeploymentMode() {
-    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+    String deploymentMode = System.getenv("DEPLOYMENT_MODE");
+    return "CLOUD".equalsIgnoreCase(deploymentMode);
   }
 
   public static void main(String[] args) throws Exception {
