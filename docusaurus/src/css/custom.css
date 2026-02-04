@@ -375,7 +375,7 @@ nav a.navbar__link--active {
 }
 
 .header-with-button h1 {
-  margin-bottom: 0;
+  margin-bottom: 1rem;
 }
 
 header h1 {

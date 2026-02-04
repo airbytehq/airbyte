@@ -44,11 +44,50 @@ If agentic data isn't what you're looking for and you need complex data aggregat
 
 ### The problem with AI agents
 
+The promise of AI agents to scale productivity, accelerate insights, and democratize access to information is nearly without measure. However, most organizations aren't able to realize this promise.
+
+- Large language models can reason, but rely on stale public training data that limits their effectiveness.
+
+- Improving context with real business data is difficult. RAG pipelines are indirect solutions, and building them is hard. Entire teams of data engineers are necessary to plan pipelines, refine data, and transform it into something usable.
+
+- Even if high-quality data is available, agents still need to take action. Search alone isn't enough. They need write operations to produce results. This means even more development of integrations with common business platforms, managing credentials, and more.
+
+For many organizations, the means making a choice: massive upfront investment _or_ agents that are ill-equipped to do the work you wish they could. Sometimes, it's both.
+
 ### How Airbyte solve that problem
+
+Airbyte's Agent Engine solves this problem with three components.
+
+- Storage and management of credentials.
+
+- Open-source, type-safe connectors designed for AI agents
+
+- Out of the box entity caching to power low-latency search operations.
 
 ## Who Agent Engine is for
 
+- B2B2B
+
+- Anyone building an AI agent
+
+- Explorers looking to try new things
+
 ## Tools and MCP servers
+
+Tools are external capabilities an AI agent can invoke.
+
+### Why you need tools
+
+Tools allow agents to perceive, decide, and act beyond their training data. Think of Airbyte's agent connectors as collections of tools that fulfill this purpose.
+
+Large language models, by default, lack real-time knowledge, are stateless, and can't act on and verify facts. This places limits on their capabilities. Tools expand the capabilities of an LLM. Tools are callable functions, services, and interfaces that an AI agent can use to:
+
+- Retrieve information it doesn't have
+- Perform computations or transformations
+- Interact with external systems
+- Trigger side-effects, like sending emails, updating databases, and triggering workflows
+
+### MCP servers
 
 ### Entities and actions
 
