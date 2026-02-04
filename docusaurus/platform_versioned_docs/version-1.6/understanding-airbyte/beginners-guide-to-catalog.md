@@ -18,7 +18,7 @@ This article will illustrate how to use `AirbyteCatalog` via a series of example
 
 In order to understand in depth how to configure incremental data replication, head over to the [incremental replication docs](/platform/using-airbyte/core-concepts/sync-modes/incremental-append).
 
-## Database Example
+## Database Example {#database-example}
 
 Let's jump into an example using a relational database. We will assume we have a database with the following schema:
 
@@ -87,7 +87,7 @@ We would represent this data in a catalog as follows:
 }
 ```
 
-The catalog is structured as a list of `AirbyteStream`. In the case of a database a "stream" is analogous to a table. \(For APIs the mapping can be a more creative; we will discuss it later in [API Examples](beginners-guide-to-catalog.md#API-Examples)\)
+The catalog is structured as a list of `AirbyteStream`. In the case of a database a "stream" is analogous to a table. \(For APIs the mapping can be a more creative; we will discuss it later in [API Examples](beginners-guide-to-catalog.md#api-examples)\)
 
 Let's walk through what each field in a stream means.
 
@@ -143,13 +143,13 @@ Let's walk through each field in the `ConfiguredAirbyteStream`:
 
 When thinking about `AirbyteCatalog` and `ConfiguredAirbyteCatalog`, remember that the `AirbyteCatalog` describes _what_ data is present in the source \(and metadata around what replication configuration it can support\). It is output by the `discover` method of source. It should be treated as an immutable object; if you are ever manually editing a catalog outside of a source, you've gone off the rails. The `ConfiguredAirbyteCatalog` is a mutable configuration object that specifies, for each `AirbyteStream`, _how_ \(and if\) it should be replicated. The `ConfiguredAirbyteCatalog` does this by wrapping each `AirbyteStream` in an `AirbyteCatalog` inside a `ConfiguredAirbyteStream`.
 
-## API Examples
+## API Examples {#api-examples}
 
 The `AirbyteCatalog` offers the flexibility in how to model the data for an API. In the next two examples, we will model data from the same API--a stock ticker--in two different ways. In the first, the source will return a single stream called `ticker`, and in the second, the source with return a stream for each stock symbol it is configured to retrieve data for. Each stream's name will be a stock symbol.
 
 ### Static Streams Example
 
-Let's imagine we want to create a basic Stock Ticker source. The goal of this source is to take in a single stock symbol and return a single stream. We will call the stream `ticker` and will contain the closing price of the stock. We will assume that you already have a rough understanding of the `AirbyteCatalog` and the `ConfiguredAirbyteCatalog` from the [previous database example](beginners-guide-to-catalog.md#Database-Example).
+Let's imagine we want to create a basic Stock Ticker source. The goal of this source is to take in a single stock symbol and return a single stream. We will call the stream `ticker` and will contain the closing price of the stock. We will assume that you already have a rough understanding of the `AirbyteCatalog` and the `ConfiguredAirbyteCatalog` from the [previous database example](beginners-guide-to-catalog.md#database-example).
 
 #### AirbyteCatalog
 
@@ -184,11 +184,11 @@ Here is what the `AirbyteCatalog` might look like.
 }
 ```
 
-This catalog looks pretty similar to the `AirbyteCatalog` that we created for the [Database Example](beginners-guide-to-catalog.md#Database-Example). For the data we've picked here, you can think about `ticker` as a table and then each field it returns in a record as a column, so it makes sense that these look pretty similar.
+This catalog looks pretty similar to the `AirbyteCatalog` that we created for the [Database Example](beginners-guide-to-catalog.md#database-example). For the data we've picked here, you can think about `ticker` as a table and then each field it returns in a record as a column, so it makes sense that these look pretty similar.
 
 #### ConfiguredAirbyteCatalog
 
-The `ConfiguredAirbyteCatalog` follows the same rules as we described in the [Database Example](beginners-guide-to-catalog.md#Database-Example). It just wraps the `AirbyteCatalog` described above.
+The `ConfiguredAirbyteCatalog` follows the same rules as we described in the [Database Example](beginners-guide-to-catalog.md#database-example). It just wraps the `AirbyteCatalog` described above.
 
 ### Dynamic Streams Example
 

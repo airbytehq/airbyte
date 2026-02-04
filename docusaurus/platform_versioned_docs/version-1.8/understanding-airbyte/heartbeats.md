@@ -10,7 +10,7 @@ a certain time frame, Airbyte triggers a heartbeat error and automatically resta
 Heartbeats are a final catch-all mechanism. Errors are expected to be transient and should automatically resolve. If they do not, it is likely a sign of a more serious issue.
 In these cases, Airbyte takes the more conservative approach. Airbyte restarts the job to avoid a seemingly endless job, and highlight to users the existence of a potential issue.
 
-## Known Heartbeat Error Causes
+## Known Heartbeat Error Causes {#known-causes}
 
 Possible reasons for a heartbeat error:
 
