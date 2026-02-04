@@ -54,8 +54,7 @@ from airbyte_agent_shopify.models import ShopifyAuthConfig
 
 connector = ShopifyConnector(
     auth_config=ShopifyAuthConfig(
-        api_key="<Your Shopify Admin API access token>",
-        shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
+        api_key="<Your Shopify Admin API access token>"
     )
 )
 
@@ -75,7 +74,7 @@ This example assumes you've already authenticated your connector with Airbyte. S
 from airbyte_agent_shopify import ShopifyConnector
 
 connector = ShopifyConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
@@ -86,10 +85,11 @@ async def shopify_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
@@ -127,14 +127,17 @@ This connector supports the following entities and actions.
 | Fulfillment Orders | [List](./REFERENCE.md#fulfillment-orders-list), [Get](./REFERENCE.md#fulfillment-orders-get) |
 
 
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
+### Authentication and configuration
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see the [Shopify API reference](https://shopify.dev/docs/api/admin-rest).
+### Shopify API docs
+
+See the official [Shopify API reference](https://shopify.dev/docs/api/admin-rest).
 
 ## Version information
 
-- **Package version:** 0.1.9
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
+- **Package version:** 0.1.31
+- **Connector version:** 0.1.5
+- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/shopify/CHANGELOG.md)

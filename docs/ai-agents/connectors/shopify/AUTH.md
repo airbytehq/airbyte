@@ -13,10 +13,13 @@ This authentication method isn't available for this connector.
 
 #### Token
 
+`credentials` fields you need:
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `api_key` | `str` | Yes | Your Shopify Admin API access token |
-| `shop` | `str` | Yes | Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com) |
+
+Example request:
 
 ```python
 from airbyte_agent_shopify import ShopifyConnector
@@ -24,8 +27,7 @@ from airbyte_agent_shopify.models import ShopifyAuthConfig
 
 connector = ShopifyConnector(
     auth_config=ShopifyAuthConfig(
-        api_key="<Your Shopify Admin API access token>",
-        shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
+        api_key="<Your Shopify Admin API access token>"
     )
 )
 ```
@@ -37,20 +39,32 @@ In hosted mode, you first create a connector via the Airbyte API (providing your
 #### OAuth
 This authentication method isn't available for this connector.
 
-#### Token
+#### Bring your own OAuth flow
+This authentication method isn't available for this connector.
 
-Create a connector with Token credentials:
+#### Token
+Create a connector with Token credentials.
+
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `api_key` | `str` | Yes | Your Shopify Admin API access token |
+
+Example request:
+
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/v1/integrations/connectors' \
-  -H 'Authorization: Bearer <SCOPED_TOKEN>' \
-  -H 'Content-Type: application/json' \
+curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
+  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+  -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
     "connector_type": "Shopify",
+    "name": "My Shopify Connector",
     "credentials": {
-      "api_key": "<Your Shopify Admin API access token>",
-      "shop": "<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
+      "api_key": "<Your Shopify Admin API access token>"
     }
   }'
 ```
@@ -65,7 +79,7 @@ After creating the connector, execute operations using either the Python SDK or 
 from airbyte_agent_shopify import ShopifyConnector
 
 connector = ShopifyConnector(
-    external_user_id="<your-scoped-token>",
+    external_user_id="<your_external_user_id>",
     airbyte_client_id="<your-client-id>",
     airbyte_client_secret="<your-client-secret>"
 )
