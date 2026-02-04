@@ -39,7 +39,7 @@ Before implementing an OAuth flow, ensure you have:
 
 1. **Airbyte Cloud credentials**: Your `client_id` and `client_secret` from the Airbyte Cloud dashboard under **Settings > Applications**.
 
-2. **An bearer token**: See [Authentication](../embedded/api/authentication.md) for how to obtain one.
+2. **An bearer token**: See [Authentication](../embedded/api/authentication) for how to obtain one.
 
 3. **A scoped token**: Required for workspace-level operations. Generate one using your operator token.
 
