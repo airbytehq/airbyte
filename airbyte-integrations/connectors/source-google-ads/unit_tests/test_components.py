@@ -482,3 +482,96 @@ class TestGoogleAdsStreamingDecoder:
             results = [row for batch in outputs for row in batch["results"]]
             assert results == base[0]["results"]
             mock_stream.assert_called_once()
+
+    def test_error_response_with_error_key_is_yielded_immediately(self):
+        """
+        When the API returns an error response (containing 'error' key),
+        the decoder should yield it immediately without attempting to parse as streaming data.
+        This prevents hangs on 403 errors.
+
+        Note: Uses default decoder config since error responses are always small
+        and go through the fast path (under max_direct_decode_bytes threshold).
+        """
+        decoder = GoogleAdsStreamingDecoder()
+        error_response = {
+            "error": {
+                "code": 403,
+                "message": "The caller does not have permission",
+                "status": "PERMISSION_DENIED",
+                "details": [
+                    {
+                        "@type": "type.googleapis.com/google.ads.googleads.v18.errors.GoogleAdsFailure",
+                        "errors": [{"errorCode": {"authorizationError": "CUSTOMER_NOT_ENABLED"}}],
+                    }
+                ],
+            }
+        }
+        raw = json.dumps(error_response).encode("utf-8")
+        resp = self._FakeResponse(chunks=[raw])
+
+        outputs = list(decoder.decode(resp))
+        assert len(outputs) == 1
+        assert outputs[0] == error_response
+
+    def test_error_response_in_list_is_yielded_immediately(self):
+        """
+        When the API returns an error response wrapped in a list,
+        the decoder should yield it immediately.
+
+        Note: Uses default decoder config since error responses are always small
+        and go through the fast path (under max_direct_decode_bytes threshold).
+        """
+        decoder = GoogleAdsStreamingDecoder()
+        error_response = [
+            {
+                "error": {
+                    "code": 403,
+                    "message": "User does not have access to this customer account.",
+                    "status": "PERMISSION_DENIED",
+                }
+            }
+        ]
+        raw = json.dumps(error_response).encode("utf-8")
+        resp = self._FakeResponse(chunks=[raw])
+
+        outputs = list(decoder.decode(resp))
+        assert len(outputs) == 1
+        assert outputs[0] == error_response[0]
+
+    def test_normal_response_with_results_still_works(self, decoder):
+        """
+        Normal responses with 'results' array should still be processed correctly.
+        This ensures the error detection doesn't break normal operation.
+        """
+        msg = [
+            {
+                "results": [
+                    {"campaign": {"id": "1", "name": "Campaign A"}},
+                    {"campaign": {"id": "2", "name": "Campaign B"}},
+                ],
+                "fieldMask": "campaign.id,campaign.name",
+            }
+        ]
+        raw = json.dumps(msg).encode("utf-8")
+        resp = self._FakeResponse(chunks=[raw])
+
+        out = self._decode_all(decoder, resp)
+        assert out == {"results": msg[0]["results"]}
+
+
+@pytest.mark.parametrize(
+    "data,expected",
+    [
+        pytest.param({"error": {"code": 403}}, True, id="dict_with_error_key"),
+        pytest.param({"error": {"code": 500, "message": "Internal error"}}, True, id="dict_with_detailed_error"),
+        pytest.param({"results": [{"id": 1}]}, False, id="dict_with_results_key"),
+        pytest.param({"fieldMask": "campaign.id"}, False, id="dict_without_error_or_results"),
+        pytest.param([{"error": {"code": 403}}], True, id="list_with_error_in_first_item"),
+        pytest.param([{"results": []}], False, id="list_with_results_in_first_item"),
+        pytest.param([], False, id="empty_list"),
+        pytest.param({}, False, id="empty_dict"),
+    ],
+)
+def test_is_error_response(data, expected):
+    """Test the _is_error_response static method correctly identifies error responses."""
+    assert GoogleAdsStreamingDecoder._is_error_response(data) == expected
