@@ -24,7 +24,10 @@ import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
@@ -52,13 +55,23 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestination.class);
 
   private final MongodbNameTransformer namingResolver;
+  private final FeatureFlags featureFlags;
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MongodbDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MongodbDestination() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  MongodbDestination(final FeatureFlags featureFlags) {
     namingResolver = new MongodbNameTransformer();
+    this.featureFlags = featureFlags;
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
   /**
@@ -69,7 +82,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
   @Override
   public ConnectorSpecification spec() throws Exception {
     final ConnectorSpecification spec = Jsons.clone(super.spec());
-    if (getIsCloudDeployment()) {
+    if (cloudDeploymentMode()) {
       // Remove TLS property for standalone instance to disable possibility to switch off TLS connection
       ((ObjectNode) spec.getConnectionSpecification().get("properties").get("instance_type").get("oneOf").get(0).get("properties")).remove("tls");
     }
@@ -87,7 +100,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       // In cloud deployment mode, enforce TLS for standalone instances
-      if (getIsCloudDeployment() && config.has(MongoUtils.INSTANCE_TYPE)) {
+      if (cloudDeploymentMode() && config.has(MongoUtils.INSTANCE_TYPE)) {
         final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
         final var instance = MongoUtils.MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
         if (instance.equals(MongoUtils.MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
