@@ -13,10 +13,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
-import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -53,28 +50,27 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   public static final String ENCRYPTION_METHOD_KEY = "encryption_method";
 
-    public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
 
-    private final FeatureFlags featureFlags;
+  enum Protocol {
+    TCP,
+    TCPS
+  }
 
-    enum Protocol {
-      TCP,
-      TCPS
-    }
+  public OracleDestination() {
+    super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));
+    System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
+  }
 
-    public OracleDestination() {
-      this(new EnvVariableFeatureFlags());
-    }
-
-    OracleDestination(final FeatureFlags featureFlags) {
-      super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));
-      System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
-      this.featureFlags = featureFlags;
-    }
-
-    private boolean cloudDeploymentMode() {
-      return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
-    }
+  /**
+   * Checks if running in cloud deployment mode by reading the DEPLOYMENT_MODE environment variable.
+   * TODO: When upgrading to a newer CDK version that includes FeatureFlags.deploymentMode(),
+   * refactor to use: AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode())
+   */
+  private boolean cloudDeploymentMode() {
+    String deploymentMode = System.getenv("DEPLOYMENT_MODE");
+    return "CLOUD".equalsIgnoreCase(deploymentMode);
+  }
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new OracleDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
