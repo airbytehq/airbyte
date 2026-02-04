@@ -25,6 +25,8 @@ Airbyte connector for Miro can be used to extract data related to board content,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-01-20 | [72023](https://github.com/airbytehq/airbyte/pull/72023) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71529](https://github.com/airbytehq/airbyte/pull/71529) | Update dependencies |
 | 0.0.43 | 2025-12-18 | [70774](https://github.com/airbytehq/airbyte/pull/70774) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [70096](https://github.com/airbytehq/airbyte/pull/70096) | Update dependencies |
 | 0.0.41 | 2025-11-18 | [69529](https://github.com/airbytehq/airbyte/pull/69529) | Update dependencies |

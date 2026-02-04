@@ -43,7 +43,6 @@ class PostgresRawAcceptanceTest :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
         stringifyUnionObjects = true,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = false,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
@@ -58,7 +57,6 @@ class PostgresRawAcceptanceTest :
         nullEqualsUnset = false,
         configUpdater = PostgresConfigUpdater(),
         recordMangler = PostgresExpectedRawRecordMapper,
-        useDataFlowPipeline = true,
     ) {
     companion object {
         @JvmStatic

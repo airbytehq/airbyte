@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Uploads the metadata (+SBOM+spec cache) to GCS.
-# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery --release-type <pre-release|main-release>
+# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery --with-semver-suffix <none|preview|rc>
 # You must have three environment variables set (GCS_CREDENTIALS, METADATA_SERVICE_GCS_CREDENTIALS, SPEC_CACHE_GCS_CREDENTIALS),
 # each containing a JSON-formatted GCP service account key.
 # SPEC_CACHE_GCS_CREDENTIALS needs write access to `gs://$spec_cache_bucket/specs`.
@@ -50,11 +50,21 @@ if test -z "$base_tag" || test "$base_tag" = "null"; then
   echo "Error: dockerImageTag missing in ${meta}" >&2
   exit 1
 fi
-if test "$publish_mode" = "main-release"; then
-  docker_tag="$base_tag"
-else
-  docker_tag=$(generate_dev_tag "$base_tag")
-fi
+case "$semver_suffix" in
+  none)
+    docker_tag="$base_tag"
+    ;;
+  preview)
+    docker_tag=$(generate_dev_tag "$base_tag")
+    ;;
+  rc)
+    docker_tag=$(generate_rc_tag "$base_tag")
+    ;;
+  *)
+    echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
+    exit 1
+    ;;
+esac
 
 full_docker_image="$docker_repository:$docker_tag"
 
@@ -108,7 +118,7 @@ gsutil cp "$sbom_extension" "gs://$metadata_bucket/sbom/$docker_repository/$dock
 # Upload the metadata
 # `metadata_service upload` skips the upload if the metadata already exists in GCS.
 echo '--- UPLOADING METADATA ---'
-if test "$publish_mode" = "main-release"; then
+if test "$semver_suffix" = "none"; then
   metadata_upload_prerelease_flag=''
 else
   # yes, it's --prerelease and not --pre-release

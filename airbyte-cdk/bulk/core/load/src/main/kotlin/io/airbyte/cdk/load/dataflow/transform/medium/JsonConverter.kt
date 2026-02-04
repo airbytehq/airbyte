@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.transform.medium
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.dataflow.config.model.JsonConverterConfig
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import jakarta.inject.Singleton
@@ -13,11 +14,13 @@ import jakarta.inject.Singleton
 class JsonConverter(
     private val coercer: ValueCoercer,
     private val validationResultHandler: ValidationResultHandler,
+    private val converterConfig: JsonConverterConfig,
 ) : MediumConverter {
     override fun convert(input: ConversionInput): Map<String, AirbyteValue> {
         val enriched =
             input.msg.asEnrichedDestinationRecordAirbyteValue(
-                extractedAtAsTimestampWithTimezone = true
+                extractedAtAsTimestampWithTimezone =
+                    converterConfig.extractedAtAsTimestampWithTimezone,
             )
 
         val munged = HashMap<String, AirbyteValue>()

@@ -38,41 +38,55 @@ uv pip install airbyte-agent-gong
 
 ## Usage
 
-This connector supports multiple authentication methods:
+Connectors can run in open source or hosted mode.
 
-### OAuth 2.0 Authentication
+### Open source
 
-```python
-from airbyte_agent_gong import GongConnector
-from airbyte_agent_gong.models import GongOauth20AuthenticationAuthConfig
-
-connector = GongConnector(
-  auth_config=GongOauth20AuthenticationAuthConfig(
-    access_token="..."
-  )
-)
-result = await connector.users.list()
-```
-
-### Access Key Authentication
+In open source mode, you provide API credentials directly to the connector.
 
 ```python
 from airbyte_agent_gong import GongConnector
 from airbyte_agent_gong.models import GongAccessKeyAuthenticationAuthConfig
 
 connector = GongConnector(
-  auth_config=GongAccessKeyAuthenticationAuthConfig(
-    access_key="...",
-    access_key_secret="..."
-  )
+    auth_config=GongAccessKeyAuthenticationAuthConfig(
+        access_key="<Your Gong API Access Key>",
+        access_key_secret="<Your Gong API Access Key Secret>"
+    )
 )
-result = await connector.users.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GongConnector.tool_utils
+async def gong_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_gong import GongConnector
+
+connector = GongConnector(
+    external_user_id="<your_external_user_id>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GongConnector.tool_utils
+async def gong_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
@@ -94,12 +108,17 @@ This connector supports the following entities and actions.
 | Stats Activity Scorecards | [List](./REFERENCE.md#stats-activity-scorecards-list) |
 
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Authentication and configuration
 
-For the service's official API docs, see the [Gong API reference](https://gong.app.gong.io/settings/api/documentation).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+
+### Gong API docs
+
+See the official [Gong API reference](https://gong.app.gong.io/settings/api/documentation).
 
 ## Version information
 
-- **Package version:** 0.19.36
-- **Connector version:** 0.1.7
-- **Generated with Connector SDK commit SHA:** 81dd03fc744b262e5095cb0f7337b41d8b2b93e7
+- **Package version:** 0.19.87
+- **Connector version:** 0.1.16
+- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/gong/CHANGELOG.md)

@@ -9,7 +9,6 @@ INTERNAL_POETRY_PACKAGES = [
     "airbyte-ci/connectors/pipelines",
     "airbyte-ci/connectors/connectors_insights",
     "airbyte-ci/connectors/connector_ops",
-    "airbyte-ci/connectors/connectors_qa",
     "airbyte-ci/connectors/ci_credentials",
     "airbyte-ci/connectors/erd",
     "airbyte-ci/connectors/live-tests",

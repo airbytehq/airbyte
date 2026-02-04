@@ -54,6 +54,8 @@ Download all your data from FreeAgent, a friendly and easy to use cloud based ac
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.7 | 2026-01-20 | [71932](https://github.com/airbytehq/airbyte/pull/71932) | Update dependencies |
+| 0.1.6 | 2026-01-14 | [71640](https://github.com/airbytehq/airbyte/pull/71640) | Update dependencies |
 | 0.1.5 | 2025-12-18 | [70538](https://github.com/airbytehq/airbyte/pull/70538) | Update dependencies |
 | 0.1.4 | 2025-11-25 | [69969](https://github.com/airbytehq/airbyte/pull/69969) | Update dependencies |
 | 0.1.3 | 2025-11-18 | [69467](https://github.com/airbytehq/airbyte/pull/69467) | Update dependencies |

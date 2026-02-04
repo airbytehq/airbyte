@@ -47,18 +47,10 @@ class TestEventsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
+        # Using with_any_query_params() to handle dynamic date range filter
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "fields[event]": "event_properties,timestamp,uuid,datetime",
-                    "fields[metric]": "name,created,updated,integration",
-                    "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -179,18 +171,10 @@ class TestEventsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
+        # Using with_any_query_params() to handle dynamic date range filter
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "fields[event]": "event_properties,timestamp,uuid,datetime",
-                    "fields[metric]": "name,created,updated,integration",
-                    "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -240,18 +224,10 @@ class TestEventsStream(TestCase):
         # (events stream uses step: P7D windowing)
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"datetime": "2024-05-31T00:00:00+0000"}).build()
 
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
+        # Using with_any_query_params() to handle dynamic date range filter
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "fields[event]": "event_properties,timestamp,uuid,datetime",
-                    "fields[metric]": "name,created,updated,integration",
-                    "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -302,18 +278,10 @@ class TestEventsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
+        # Using with_any_query_params() to handle dynamic date range filter
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "fields[event]": "event_properties,timestamp,uuid,datetime",
-                    "fields[metric]": "name,created,updated,integration",
-                    "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -358,18 +326,10 @@ class TestEventsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
+        # Using with_any_query_params() to handle dynamic date range filter
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "fields[event]": "event_properties,timestamp,uuid,datetime",
-                    "fields[metric]": "name,created,updated,integration",
-                    "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -428,18 +388,10 @@ class TestEventsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
+        # Using with_any_query_params() to handle dynamic date range filter
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint("invalid_key")
-            .with_query_params(
-                {
-                    "fields[event]": "event_properties,timestamp,uuid,datetime",
-                    "fields[metric]": "name,created,updated,integration",
-                    "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint("invalid_key").with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -471,18 +423,10 @@ class TestEventsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
+        # Using with_any_query_params() to handle dynamic date range filter
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "fields[event]": "event_properties,timestamp,uuid,datetime",
-                    "fields[metric]": "name,created,updated,integration",
-                    "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
                 status_code=403,
@@ -511,18 +455,10 @@ class TestEventsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Note: With chunking enabled (step: P7D), the filter now includes both start and end time bounds
+        # Using with_any_query_params() to handle dynamic date range filter
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "fields[event]": "event_properties,timestamp,uuid,datetime",
-                    "fields[metric]": "name,created,updated,integration",
-                    "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/events", "next": None}}),
                 status_code=200,

@@ -225,7 +225,9 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.7 | 2026-01-13 | [71342](https://github.com/airbytehq/airbyte/pull/71342) | fix(source-github): Handle GitHub API 10,000 result limit for releases stream |
+| 2.1.9 | 2026-02-04 | [71342](https://github.com/airbytehq/airbyte/pull/71342) | Handle GitHub API 10,000 result limit for releases stream |
+| 2.1.8 | 2026-01-20 | [71986](https://github.com/airbytehq/airbyte/pull/71986) | Update dependencies |
+| 2.1.7 | 2026-01-14 | [71400](https://github.com/airbytehq/airbyte/pull/71400) | Update dependencies |
 | 2.1.6 | 2025-12-18 | [70729](https://github.com/airbytehq/airbyte/pull/70729) | Update dependencies |
 | 2.1.5 | 2025-12-02 | [70286](https://github.com/airbytehq/airbyte/pull/70286) | Update dependencies |
 | 2.1.4 | 2025-11-25 | [69887](https://github.com/airbytehq/airbyte/pull/69887) | Update dependencies |
