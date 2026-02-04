@@ -23,7 +23,6 @@ data:
   name: ClickHouse
   registryOverrides:
     cloud:
-      dockerRepository: airbyte/source-clickhouse-strict-encrypt
       enabled: true
     oss:
       enabled: true

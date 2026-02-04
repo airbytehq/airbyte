@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -17,6 +18,7 @@ import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.CommonField;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -80,6 +82,19 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
    */
   public ClickHouseSource() {
     super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, new ClickHouseSourceOperations());
+  }
+
+  /**
+   * When running in cloud deployment mode, remove the SSL option from the spec to enforce SSL.
+   * This replaces the need for a separate strict-encrypt connector.
+   */
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    final ConnectorSpecification spec = Jsons.clone(super.spec());
+    if (getIsCloudDeployment()) {
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    }
+    return spec;
   }
 
   @Override
