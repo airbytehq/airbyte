@@ -8,7 +8,7 @@ from source_facebook_pages.source import SourceFacebookPages
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 
 
-@pytest.mark.parametrize("error_code", (400, 429, 500))
+@pytest.mark.parametrize("error_code", (429, 500))
 def test_retries(mocker, requests_mock, error_code):
     mocker.patch("time.sleep")
     requests_mock.get("https://graph.facebook.com/1?fields=access_token&access_token=token", json={"access_token": "access"})
@@ -18,6 +18,19 @@ def test_retries(mocker, requests_mock, error_code):
     for slice_ in stream.stream_slices(sync_mode="full_refresh"):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=slice_))
     assert requests_mock.call_count >= 3
+
+
+def test_400_fails_with_error_message(requests_mock):
+    """Test that 400 errors fail immediately with the actual error message from the response."""
+    requests_mock.get("https://graph.facebook.com/1?fields=access_token&access_token=token", json={"access_token": "access"})
+    requests_mock.get("https://graph.facebook.com/v24.0/1", status_code=400, json={"error": {"message": "Some API error"}})
+    source = SourceFacebookPages()
+    stream = source.streams({"page_id": 1, "access_token": "token"})[0]
+    with pytest.raises(MessageRepresentationAirbyteTracedErrors) as err:
+        for slice_ in stream.stream_slices(sync_mode="full_refresh"):
+            list(stream.read_records(sync_mode="full_refresh", stream_slice=slice_))
+
+    assert "Bad request: Some API error" in str(err.value)
 
 
 @pytest.mark.parametrize(
