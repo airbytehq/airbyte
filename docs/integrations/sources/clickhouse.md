@@ -4,7 +4,7 @@
 
 The ClickHouse source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Clickhouse source connector is built on top of the source-jdbc code base and is configured to rely on JDBC v0.3.1 standard drivers provided by ClickHouse [here](https://github.com/ClickHouse/clickhouse-jdbc) as described in ClickHouse documentation [here](https://clickhouse.tech/docs/en/interfaces/jdbc/).
+This ClickHouse source connector is built on top of the source-jdbc code base and uses the [ClickHouse JDBC driver](https://github.com/ClickHouse/clickhouse-jdbc). For more information, see the [ClickHouse JDBC documentation](https://clickhouse.com/docs/integrations/language-clients/java/jdbc).
 
 #### Resulting schema
 
@@ -80,19 +80,20 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                   |
 |:--------|:-----------|:------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 0.2.6   | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714)    | Revert JDBC driver upgrade                                                                                |
-| 0.2.5   | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66482)    | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0                                                |
-| 0.2.4   | 2025-07-10 | [62912](https://github.com/airbytehq/airbyte/pull/62912)    | Convert to new gradle build flow                                                                          |
-| 0.2.3   | 2024-12-18 | [49901](https://github.com/airbytehq/airbyte/pull/49901)    | Use a base image: airbyte/java-connector-base:1.0.0                                                       |
-| 0.2.2   | 2024-02-13 | [35235](https://github.com/airbytehq/airbyte/pull/35235)    | Adopt CDK 0.20.4                                                                                          |
-| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453)    | bump CDK version                                                                                          |
-| 0.1.17  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760)    | Removed redundant date-time datatypes formatting                                                          |
-| 0.1.16  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455)    | For network isolation, source connector accepts a list of hosts it is allowed to connect to               |
-| 0.1.15  | 2022-12-14 | [20346](https://github.com/airbytehq/airbyte/pull/20346)    | Consolidate date/time values mapping for JDBC sources                                                     |
-| 0.1.14  | 2022-09-27 | [17031](https://github.com/airbytehq/airbyte/pull/17031)    | Added custom jdbc url parameters field                                                                    |
-| 0.1.13  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238)    | Emit state messages more frequently                                                                       |
-| 0.1.12  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356)    | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
-| 0.1.10  | 2022-04-12 | [11514](https://github.com/airbytehq/airbyte/pull/11514)    | Bump mina-sshd from 2.7.0 to 2.8.0                                                                        |
+| 0.3.0-rc.1 | 2026-02-03 | [72395](https://github.com/airbytehq/airbyte/pull/72395) | Upgrade ClickHouse JDBC driver to 0.9.5 with custom type mapping |
+| 0.2.6 | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714) | Revert JDBC driver upgrade |
+| 0.2.5 | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66482) | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0 |
+| 0.2.4 | 2025-07-10 | [62912](https://github.com/airbytehq/airbyte/pull/62912) | Convert to new gradle build flow |
+| 0.2.3 | 2024-12-18 | [49901](https://github.com/airbytehq/airbyte/pull/49901) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.2.2 | 2024-02-13 | [35235](https://github.com/airbytehq/airbyte/pull/35235) | Adopt CDK 0.20.4 |
+| 0.2.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
+| 0.1.17 | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting |
+| 0.1.16 | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
+| 0.1.15 | 2022-12-14 | [20346](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources |
+| 0.1.14 | 2022-09-27 | [17031](https://github.com/airbytehq/airbyte/pull/17031) | Added custom jdbc url parameters field |
+| 0.1.13 | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
+| 0.1.12 | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
+| 0.1.10 | 2022-04-12 | [11514](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0 |
 | 0.1.9   | 2022-02-09 | [\#10214](https://github.com/airbytehq/airbyte/pull/10214)  | Fix exception in case `password` field is not provided                                                    |
 | 0.1.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)    | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                              |
 | 0.1.7   | 2021-12-24 | [\#8958](https://github.com/airbytehq/airbyte/pull/8958)    | Add support for JdbcType.ARRAY                                                                            |
