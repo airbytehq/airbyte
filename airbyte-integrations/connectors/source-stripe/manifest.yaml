@@ -1872,7 +1872,7 @@ spec:
         type: integer
         title: Data request time increment in days
         default: 30
-        minimum: 2
+        minimum: 1
         examples: [1, 3, 10, 30, 180, 360]
         description: >-
           The time increment used by the connector when requesting data from the Stripe API. The bigger the value is,
@@ -1898,7 +1898,18 @@ spec:
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
           API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25
           calls per second for test/sandbox tokens and 100 for production tokens.
-
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrate num_workers from 1 to 2 as the new minimum value
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["num_workers"]
+                value: "2"
+            condition: "{{ config.get('num_workers', 25) == 1 }}"
 # Concurrency level controls how many partition slices are processed in parallel.
 # Each worker handles a different time slice, preventing overlap.
 concurrency_level:
@@ -1923,6 +1934,7 @@ api_budget:
       rates:
         # Use call_rate_limit from config if provided, otherwise default to 25 (test/sandbox) or 100 (live)
         # Per Stripe docs: Live mode = 100 ops/sec, Sandbox = 25 ops/sec
+        # Sandbox secret keys begin with 'sk_test_', this is how we check which limit to use if live or sandbox account.
         - limit: "{{ config.get('call_rate_limit', 25 if 'sk_test_' in config['client_secret'] else 100) }}"
           interval: PT1S
       matchers: []
