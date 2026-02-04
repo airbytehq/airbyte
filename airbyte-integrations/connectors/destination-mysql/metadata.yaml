@@ -31,7 +31,6 @@ data:
   name: MySQL
   registryOverrides:
     cloud:
-      dockerRepository: airbyte/destination-mysql-strict-encrypt
       enabled: true
     oss:
       enabled: true
