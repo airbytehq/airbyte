@@ -112,7 +112,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.14
-- **Connector version:** 1.0.12
-- **Generated with Connector SDK commit SHA:** f1d25ecbd08e72d78a36953c131f27a655ecb1b2
+- **Package version:** 0.1.15
+- **Connector version:** 1.0.13
+- **Generated with Connector SDK commit SHA:** 9d088ae971839a1bcc590342a987fe496083aa2e
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)

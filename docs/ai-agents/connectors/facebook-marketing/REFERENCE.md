@@ -1131,6 +1131,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `date_preset` | `"today" \| "yesterday" \| "this_month" \| "last_month" \| "this_quarter" \| "maximum" \| "last_3d" \| "last_7d" \| "last_14d" \| "last_28d" \| "last_30d" \| "last_90d" \| "last_week_mon_sun" \| "last_week_sun_sat" \| "last_quarter" \| "last_year" \| "this_week_mon_today" \| "this_week_sun_today" \| "this_year"` | No | Predefined date range |
 | `time_range` | `string` | No | Time range as JSON object with since and until dates (YYYY-MM-DD) |
 | `level` | `"ad" \| "adset" \| "campaign" \| "account"` | No | Level of aggregation |
+| `time_increment` | `string` | No | Number of days (1-90) to aggregate data over, or 'monthly' for monthly aggregation, or 'all_days' for daily breakdown. Use time_increment=1 to get daily insights data. |
 | `limit` | `integer` | No | Maximum number of results to return |
 | `after` | `string` | No | Cursor for pagination |
 
