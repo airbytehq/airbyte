@@ -76,6 +76,90 @@ class AdCreatives(FBMarketingStream):
         return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
 
 
+class AdCreativesFromAds(FBMarketingIncrementalStream):
+    """Alternative stream to fetch ad creatives through the ads endpoint.
+
+    This stream fetches creatives by requesting expanded creative fields from the ads endpoint
+    instead of directly querying the adcreatives endpoint. This approach can help avoid the
+    "Please reduce the amount of data you're asking for" error that occurs with large accounts.
+
+    doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup
+    related issue: https://github.com/airbytehq/oncall/issues/11128
+    """
+
+    entity_prefix = "ad"
+    cursor_field = "updated_time"
+    status_field = "effective_status"
+    valid_statuses = [status.value for status in ValidAdStatuses]
+
+    def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self._fetch_thumbnail_images = fetch_thumbnail_images
+        self._seen_creative_ids: Set[str] = set()
+
+    @property
+    def name(self) -> str:
+        return "ad_creatives_from_ads"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Use the same schema as ad_creatives stream"""
+        return super().get_json_schema()
+
+    def _get_creative_fields(self) -> List[str]:
+        """Get the list of creative fields to request, excluding computed fields"""
+        json_schema = self.get_json_schema()
+        creative_fields = list(json_schema.get("properties", {}).keys())
+        return [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id")]
+
+    def _build_creative_field_expansion(self) -> str:
+        """Build the field expansion string for creative fields.
+
+        Returns a string like 'creative{id,name,body,...}' for use in the API request.
+        """
+        creative_fields = self._get_creative_fields()
+        return "creative{" + ",".join(creative_fields) + "}"
+
+    def fields(self, **kwargs) -> List[str]:
+        """Return fields to request from the ads endpoint including expanded creative fields"""
+        if self._fields:
+            return self._fields
+
+        self._fields = ["id", "updated_time", self._build_creative_field_expansion()]
+        return self._fields
+
+    def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
+        return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Read ads and extract creative data, deduplicating by creative ID"""
+        self._seen_creative_ids = set()
+
+        for ad_record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            creative_data = ad_record.get("creative")
+            if not creative_data:
+                continue
+
+            creative_id = creative_data.get("id")
+            if not creative_id or creative_id in self._seen_creative_ids:
+                continue
+
+            self._seen_creative_ids.add(creative_id)
+
+            if self._fetch_thumbnail_images:
+                thumbnail_url = creative_data.get("thumbnail_url")
+                if thumbnail_url:
+                    creative_data["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
+
+            self.add_account_id(creative_data, stream_slice["account_id"])
+            yield creative_data
+
+
 class CustomConversions(FBMarketingStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-conversion"""
 
