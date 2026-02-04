@@ -222,7 +222,19 @@ class PostgresSourceDebeziumOperations(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
         stream: Stream
-    ): DeserializedRecord {
+    ): DeserializedRecord? {
+
+        when (value.operation) {
+            // Supported:
+            "c", // create
+            "u", // update
+            "d", // delete
+            "r", // read (snapshot)
+            "t" -> Unit // truncate
+            // Others: unsupported
+            else -> return null
+        }
+
         val before: JsonNode = value.before
         val after: JsonNode = value.after
         val source: JsonNode = value.source
