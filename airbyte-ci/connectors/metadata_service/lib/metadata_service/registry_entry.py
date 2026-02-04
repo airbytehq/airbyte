@@ -532,7 +532,9 @@ def generate_and_persist_registry_entry(
 
             # Use the RC-specific registry entry model for release_candidate paths
             is_rc_entry = "/release_candidate/" in registry_entry_blob_path
-            current_registry_entry_model = rc_registry_entry_model if (is_rc_entry and rc_registry_entry_model is not None) else registry_entry_model
+            current_registry_entry_model = (
+                rc_registry_entry_model if (is_rc_entry and rc_registry_entry_model is not None) else registry_entry_model
+            )
 
             try:
                 logger.info(
