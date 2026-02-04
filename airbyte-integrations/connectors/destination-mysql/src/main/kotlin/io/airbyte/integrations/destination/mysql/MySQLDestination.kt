@@ -13,6 +13,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.IntegrationRunner
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
 import io.airbyte.cdk.integrations.destination.PropertyNameSimplifyingDataTransformer
@@ -22,6 +23,8 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinat
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
+import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.map.MoreMaps
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
@@ -33,9 +36,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Minimu
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlDestinationHandler
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlSqlGenerator
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlV1V2Migrator
-import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner
-import io.airbyte.commons.features.EnvVariableFeatureFlags
-import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 import java.sql.SQLSyntaxErrorException
@@ -43,9 +43,7 @@ import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class MySQLDestination(
-    private val featureFlags: FeatureFlags = EnvVariableFeatureFlags()
-) :
+class MySQLDestination(private val featureFlags: FeatureFlags = EnvVariableFeatureFlags()) :
     AbstractJdbcDestination<MinimumDestinationState>(
         DRIVER_CLASS,
         MySQLNameTransformer(),
