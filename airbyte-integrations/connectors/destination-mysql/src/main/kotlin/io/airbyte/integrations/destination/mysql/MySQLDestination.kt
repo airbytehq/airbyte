@@ -54,7 +54,10 @@ class MySQLDestination(private val featureFlags: FeatureFlags = EnvVariableFeatu
         get() = JdbcUtils.DATABASE_KEY
 
     private fun cloudDeploymentMode(): Boolean {
-        return AdaptiveSourceRunner.CLOUD_MODE.equals(featureFlags.deploymentMode(), ignoreCase = true)
+        return AdaptiveSourceRunner.CLOUD_MODE.equals(
+            featureFlags.deploymentMode(),
+            ignoreCase = true
+        )
     }
 
     /**
