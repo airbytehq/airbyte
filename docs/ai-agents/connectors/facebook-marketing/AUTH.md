@@ -23,10 +23,10 @@ Example request:
 
 ```python
 from airbyte_agent_facebook-marketing import FacebookMarketingConnector
-from airbyte_agent_facebook-marketing.models import FacebookMarketingAuthConfig
+from airbyte_agent_facebook-marketing.models import FacebookMarketingOauth20AuthenticationAuthConfig
 
 connector = FacebookMarketingConnector(
-    auth_config=FacebookMarketingAuthConfig(
+    auth_config=FacebookMarketingOauth20AuthenticationAuthConfig(
         access_token="<Facebook OAuth2 Access Token>",
         client_id="<Facebook App Client ID>",
         client_secret="<Facebook App Client Secret>"
@@ -35,7 +35,25 @@ connector = FacebookMarketingConnector(
 ```
 
 #### Token
-This authentication method isn't available for this connector.
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `account_key` | `str` | Yes | Facebook long-lived access token for Service Account authentication |
+
+Example request:
+
+```python
+from airbyte_agent_facebook-marketing import FacebookMarketingConnector
+from airbyte_agent_facebook-marketing.models import FacebookMarketingServiceAccountKeyAuthenticationAuthConfig
+
+connector = FacebookMarketingConnector(
+    auth_config=FacebookMarketingServiceAccountKeyAuthenticationAuthConfig(
+        account_key="<Facebook long-lived access token for Service Account authentication>"
+    )
+)
+```
 
 ### Hosted execution
 
@@ -138,7 +156,40 @@ curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
 ```
 
 #### Token
-This authentication method isn't available for this connector.
+Create a connector with Token credentials.
+
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `account_key` | `str` | Yes | Facebook long-lived access token for Service Account authentication |
+
+`replication_config` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `account_ids` | `str` | Yes | The Facebook Ad account ID(s) to pull data from. The Ad account ID number is in the account dropdown menu or in your browser's address bar of your Meta Ads Manager. |
+
+Example request:
+
+
+```bash
+curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
+  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Facebook-Marketing",
+    "name": "My Facebook-Marketing Connector",
+    "credentials": {
+      "account_key": "<Facebook long-lived access token for Service Account authentication>"
+    },
+    "replication_config": {
+      "account_ids": "<The Facebook Ad account ID(s) to pull data from. The Ad account ID number is in the account dropdown menu or in your browser's address bar of your Meta Ads Manager.>"
+    }
+  }'
+```
 
 #### Execution
 
