@@ -14143,6 +14143,579 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_webinar_participants"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      path: "/users/{{ stream_partition.parent_id }}/recordings"
+      type: HttpRequester
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.next_page_token }}"
+        stop_condition: "{{ response.next_page_token == '' }}"
+        page_size: 30
+      page_size_option:
+        field_name: "page_size"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "next_page_token"
+        inject_into: "request_parameter"
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "meetings"
+      type: RecordSelector
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            requester:
+              url_base: "https://api.zoom.us/v2"
+              http_method: "GET"
+              authenticator:
+                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                client_id: "{{ config['client_id'] }}"
+                account_id: "{{ config['account_id'] }}"
+                client_secret: "{{ config['client_secret'] }}"
+                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+                grant_type: "account_credentials"
+                type: CustomAuthenticator
+              type: HttpRequester
+              path: "/users"
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response.next_page_token }}"
+                stop_condition: "{{ response.next_page_token == '' }}"
+                page_size: 30
+              page_size_option:
+                field_name: "page_size"
+                inject_into: "request_parameter"
+                type: RequestOption
+              page_token_option:
+                type: RequestOption
+                field_name: "next_page_token"
+                inject_into: "request_parameter"
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "users"
+              type: RecordSelector
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              properties:
+                user_created_at:
+                  type:
+                  - 'null'
+                  - string
+                created_at:
+                  type:
+                  - 'null'
+                  - string
+                custom_attributes:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    properties:
+                      key:
+                        type:
+                        - 'null'
+                        - string
+                      name:
+                        type:
+                        - 'null'
+                        - string
+                      value:
+                        type:
+                        - 'null'
+                        - string
+                dept:
+                  type:
+                  - 'null'
+                  - string
+                email:
+                  type:
+                  - 'null'
+                  - string
+                employee_unique_id:
+                  type:
+                  - 'null'
+                  - string
+                first_name:
+                  type:
+                  - 'null'
+                  - string
+                group_ids:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type:
+                    - 'null'
+                    - string
+                id:
+                  type:
+                  - 'null'
+                  - string
+                im_group_ids:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type:
+                    - 'null'
+                    - string
+                language:
+                  type:
+                  - 'null'
+                  - string
+                last_client_version:
+                  type:
+                  - 'null'
+                  - string
+                last_login_time:
+                  type:
+                  - 'null'
+                  - string
+                last_name:
+                  type:
+                  - 'null'
+                  - string
+                phone_number:
+                  type:
+                  - 'null'
+                  - string
+                plan_united_type:
+                  type:
+                  - 'null'
+                  - string
+                pmi:
+                  type:
+                  - 'null'
+                  - number
+                role_id:
+                  type:
+                  - 'null'
+                  - string
+                status:
+                  type:
+                  - 'null'
+                  - string
+                timezone:
+                  type:
+                  - 'null'
+                  - string
+                type:
+                  type:
+                  - 'null'
+                  - number
+                verified:
+                  type:
+                  - 'null'
+                  - number
+                display_name:
+                  type:
+                  - 'null'
+                  - string
+          type: DeclarativeStream
+          name: "users"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "parent_id"
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        account_id:
+          type:
+          - 'null'
+          - string
+        duration:
+          type:
+          - 'null'
+          - integer
+        host_id:
+          type:
+          - 'null'
+          - string
+        id:
+          type:
+          - 'null'
+          - integer
+        recording_count:
+          type:
+          - 'null'
+          - integer
+        start_time:
+          type:
+          - 'null'
+          - string
+        topic:
+          type:
+          - 'null'
+          - string
+        total_size:
+          type:
+          - 'null'
+          - integer
+        type:
+          type:
+          - 'null'
+          - integer
+        uuid:
+          type:
+          - 'null'
+          - string
+        recording_play_passcode:
+          type:
+          - 'null'
+          - string
+        auto_delete:
+          type:
+          - 'null'
+          - boolean
+        auto_delete_date:
+          type:
+          - 'null'
+          - string
+        recording_files:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              deleted_time:
+                type:
+                - 'null'
+                - string
+              download_url:
+                type:
+                - 'null'
+                - string
+              file_path:
+                type:
+                - 'null'
+                - string
+              file_size:
+                type:
+                - 'null'
+                - number
+              file_type:
+                type:
+                - 'null'
+                - string
+              file_extension:
+                type:
+                - 'null'
+                - string
+              id:
+                type:
+                - 'null'
+                - string
+              meeting_id:
+                type:
+                - 'null'
+                - string
+              play_url:
+                type:
+                - 'null'
+                - string
+              recording_end:
+                type:
+                - 'null'
+                - string
+              recording_start:
+                type:
+                - 'null'
+                - string
+              recording_type:
+                type:
+                - 'null'
+                - string
+              status:
+                type:
+                - 'null'
+                - string
+        participant_audio_files:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            properties:
+              download_url:
+                type:
+                - 'null'
+                - string
+              file_name:
+                type:
+                - 'null'
+                - string
+              file_path:
+                type:
+                - 'null'
+                - string
+              file_size:
+                type:
+                - 'null'
+                - number
+              file_type:
+                type:
+                - 'null'
+                - string
+              id:
+                type:
+                - 'null'
+                - string
+              play_url:
+                type:
+                - 'null'
+                - string
+              recording_end:
+                type:
+                - 'null'
+                - string
+              recording_start:
+                type:
+                - 'null'
+                - string
+              status:
+                type:
+                - 'null'
+                - string
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "start_time"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "2020-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "from"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "to"
+      inject_into: "request_parameter"
+    cursor_granularity: "P1D"
+    step: "P1M"
+  type: DeclarativeStream
+  name: "recordings"
+  primary_key: "uuid"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      path: "/users/{{ stream_partition.parent_id }}/recordings"
+      type: HttpRequester
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.next_page_token }}"
+        stop_condition: "{{ response.next_page_token == '' }}"
+        page_size: 30
+      page_size_option:
+        field_name: "page_size"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "next_page_token"
+        inject_into: "request_parameter"
+    record_selector:
+      extractor:
+        class_name: source_declarative_manifest.components.TranscriptContentExtractor
+        type: CustomRecordExtractor
+      type: RecordSelector
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            requester:
+              url_base: "https://api.zoom.us/v2"
+              http_method: "GET"
+              authenticator:
+                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                client_id: "{{ config['client_id'] }}"
+                account_id: "{{ config['account_id'] }}"
+                client_secret: "{{ config['client_secret'] }}"
+                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+                grant_type: "account_credentials"
+                type: CustomAuthenticator
+              type: HttpRequester
+              path: "/users"
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response.next_page_token }}"
+                stop_condition: "{{ response.next_page_token == '' }}"
+                page_size: 30
+              page_size_option:
+                field_name: "page_size"
+                inject_into: "request_parameter"
+                type: RequestOption
+              page_token_option:
+                type: RequestOption
+                field_name: "next_page_token"
+                inject_into: "request_parameter"
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "users"
+              type: RecordSelector
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+          type: DeclarativeStream
+          name: "users"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "parent_id"
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        meeting_id:
+          type:
+          - 'null'
+          - string
+          description: "The unique identifier of the meeting"
+        meeting_uuid:
+          type:
+          - 'null'
+          - string
+          description: "The UUID of the meeting"
+        meeting_topic:
+          type:
+          - 'null'
+          - string
+          description: "The topic/title of the meeting"
+        host_id:
+          type:
+          - 'null'
+          - string
+          description: "The user ID of the meeting host"
+        meeting_start_time:
+          type:
+          - 'null'
+          - string
+          description: "The start time of the meeting"
+        recording_id:
+          type:
+          - 'null'
+          - string
+          description: "The unique identifier of the recording file"
+        sequence_number:
+          type:
+          - 'null'
+          - integer
+          description: "The sequence number of this transcript segment"
+        timestamp_start:
+          type:
+          - 'null'
+          - string
+          description: "Start timestamp of the transcript segment (HH:MM:SS.mmm)"
+        timestamp_end:
+          type:
+          - 'null'
+          - string
+          description: "End timestamp of the transcript segment (HH:MM:SS.mmm)"
+        speaker:
+          type:
+          - 'null'
+          - string
+          description: "The name of the speaker (if identified in the transcript)"
+        text:
+          type:
+          - 'null'
+          - string
+          description: "The transcribed text content"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "meeting_start_time"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "2020-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "from"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "to"
+      inject_into: "request_parameter"
+    cursor_granularity: "P1D"
+    step: "P1M"
+  type: DeclarativeStream
+  name: "recording_transcript_content"
+  primary_key:
+  - "recording_id"
+  - "sequence_number"
 check:
   stream_names:
   - "users"
