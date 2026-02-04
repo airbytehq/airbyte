@@ -64,8 +64,8 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
 
   /**
    * Checks if running in cloud deployment mode by reading the DEPLOYMENT_MODE environment variable.
-   * TODO: When upgrading to a newer CDK version that includes FeatureFlags.deploymentMode(),
-   * refactor to use: AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode())
+   * TODO: When upgrading to a newer CDK version that includes FeatureFlags.deploymentMode(), refactor
+   * to use: AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode())
    */
   private boolean cloudDeploymentMode() {
     String deploymentMode = System.getenv("DEPLOYMENT_MODE");
@@ -96,7 +96,7 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
   public AirbyteMessageConsumer getConsumer(
       final JsonNode config,
       final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final JsonNode effectiveConfig;
         if (cloudDeploymentMode()) {
           final JsonNode cloneConfig = Jsons.clone(config);
