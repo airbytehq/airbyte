@@ -1885,7 +1885,7 @@ spec:
         minimum: 2
         maximum: 100
         default: 25
-        examples: [1, 2, 3]
+        examples: [ 2, 3, 4]
         description: >-
           The number of worker thread to use for the sync.
           The performance upper boundary depends on call_rate_limit setting and type of account.
