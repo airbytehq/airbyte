@@ -230,8 +230,9 @@ class PostgresSourceDebeziumOperations(
             "u", // update
             "d", // delete
             "r", // read (snapshot)
-            "t" -> Unit // truncate
-            // Others: unsupported
+            "t" // truncate
+            -> Unit
+            // others: Unsupported
             else -> return null
         }
 
