@@ -10,16 +10,16 @@ Ads Manager data for analytics and reporting purposes.
 The Facebook-Marketing connector is optimized to handle prompts like these.
 
 - List all active campaigns in my ad account
-- Show me the ad sets with the highest daily budget
-- What ads are currently running in campaign \{campaign_name\}?
-- Show me the performance insights for the last 7 days
-- Which campaigns have the most spend this month?
+- What ads are currently running in a recent campaign?
 - List all ad creatives in my account
 - What is the status of my campaigns?
-- Show me ads with the highest click-through rate
 - List all custom conversion events in my account
 - Show me all ad images in my account
 - What videos are available in my ad account?
+- Show me the ad sets with the highest daily budget
+- Show me the performance insights for the last 7 days
+- Which campaigns have the most spend this month?
+- Show me ads with the highest click-through rate
 
 ## Unsupported questions
 
@@ -46,12 +46,11 @@ In open source mode, you provide API credentials directly to the connector.
 
 ```python
 from airbyte_agent_facebook-marketing import FacebookMarketingConnector
-from airbyte_agent_facebook_marketing.models import FacebookMarketingAuthConfig
+from airbyte_agent_facebook_marketing.models import FacebookMarketingServiceAccountKeyAuthenticationAuthConfig
 
 connector = FacebookMarketingConnector(
-    auth_config=FacebookMarketingAuthConfig(
-        access_token="<Facebook Marketing API access token>",
-        account_id="<Facebook Ad Account ID (without the act_ prefix)>"
+    auth_config=FacebookMarketingServiceAccountKeyAuthenticationAuthConfig(
+        account_key="<Facebook long-lived access token for Service Account authentication>"
     )
 )
 
@@ -90,11 +89,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
+| Current User | [Get](./REFERENCE.md#current-user-get) |
+| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list) |
 | Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get) |
 | Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Get](./REFERENCE.md#ad-sets-get) |
 | Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get) |
 | Ad Creatives | [List](./REFERENCE.md#ad-creatives-list) |
 | Ads Insights | [List](./REFERENCE.md#ads-insights-list) |
+| Ad Account | [Get](./REFERENCE.md#ad-account-get) |
 | Custom Conversions | [List](./REFERENCE.md#custom-conversions-list) |
 | Images | [List](./REFERENCE.md#images-list) |
 | Videos | [List](./REFERENCE.md#videos-list) |
@@ -110,7 +112,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.2
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.1.16
+- **Connector version:** 1.0.14
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)
