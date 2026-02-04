@@ -1603,97 +1603,98 @@ class InventoryLevel(ShopifyBulkQuery):
 
 class FulfillmentOrder(ShopifyBulkQuery):
     """
-    Output example to BULK query `fulfillmentOrders` from `orders` with `filter query` by `updated_at`, sorted by `UPDATED_AT`:
+    Output example to BULK query `fulfillmentOrders` directly with `filter query` by `updated_at`, sorted by `UPDATED_AT`:
+
+    Note: This query fetches fulfillment orders directly from the `fulfillmentOrders` endpoint instead of
+    through the `orders` endpoint. This is necessary because Shopify's BULK API has limitations with nested
+    connections that can cause some fulfillment orders to be missing when queried through orders.
+    See: https://github.com/airbytehq/oncall/issues/10991
+
         {
-            orders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT){
+            fulfillmentOrders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT, includeClosed: true){
                 edges {
                     node {
                         __typename
                         id
-                        fulfillmentOrders {
+                        channelId
+                        order {
+                            id
+                        }
+                        assignedLocation {
+                            location {
+                                locationId: id
+                            }
+                            address1
+                            address2
+                            city
+                            countryCode
+                            name
+                            phone
+                            province
+                            zip
+                        }
+                        destination {
+                            id
+                            address1
+                            address2
+                            city
+                            company
+                            countryCode
+                            email
+                            firstName
+                            lastName
+                            phone
+                            province
+                            zip
+                        }
+                        deliveryMethod {
+                            id
+                            methodType
+                            minDeliveryDateTime
+                            maxDeliveryDateTime
+                        }
+                        fulfillAt
+                        fulfillBy
+                        internationalDuties {
+                            incoterm
+                        }
+                        fulfillmentHolds {
+                            reason
+                            reasonNotes
+                        }
+                        lineItems {
                             edges {
                                 node {
                                     __typename
                                     id
-                                    channelId
-                                    assignedLocation {
-                                        location {
-                                            locationId: id
-                                        }
-                                        address1
-                                        address2
-                                        city
-                                        countryCode
-                                        name
-                                        phone
-                                        province
-                                        zip
-                                    }
-                                    destination {
-                                        id
-                                        address1
-                                        address2
-                                        city
-                                        company
-                                        countryCode
-                                        email
-                                        firstName
-                                        lastName
-                                        phone
-                                        province
-                                        zip
-                                    }
-                                    deliveryMethod {
-                                        id
-                                        methodType
-                                        minDeliveryDateTime
-                                        maxDeliveryDateTime
-                                    }
-                                    fulfillAt
-                                    fulfillBy
-                                    internationalDuties {
-                                        incoterm
-                                    }
-                                    fulfillmentHolds {
-                                        reason
-                                        reasonNotes
-                                    }
-                                    lineItems {
-                                        edges {
-                                            node {
-                                                __typename
-                                                id
-                                                inventoryItemId
-                                                lineItem {
-                                                    lineItemId: id
-                                                    fulfillableQuantity
-                                                    quantity: currentQuantity
-                                                    variant {
-                                                        variantId: id
-                                                    }
-                                                }
-                                            }
+                                    inventoryItemId
+                                    lineItem {
+                                        lineItemId: id
+                                        fulfillableQuantity
+                                        quantity: currentQuantity
+                                        variant {
+                                            variantId: id
                                         }
                                     }
-                                    createdAt
-                                    updatedAt
-                                    requestStatus
-                                    status
-                                    supportedActions {
-                                        action
-                                        externalUrl
-                                    }
-                                    merchantRequests {
-                                        edges {
-                                            node {
-                                                __typename
-                                                id
-                                                message
-                                                kind
-                                                requestOptions
-                                            }
-                                        }
-                                    }
+                                }
+                            }
+                        }
+                        createdAt
+                        updatedAt
+                        requestStatus
+                        status
+                        supportedActions {
+                            action
+                            externalUrl
+                        }
+                        merchantRequests {
+                            edges {
+                                node {
+                                    __typename
+                                    id
+                                    message
+                                    kind
+                                    requestOptions
                                 }
                             }
                         }
@@ -1703,7 +1704,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
         }
     """
 
-    query_name = "orders"
+    query_name = "fulfillmentOrders"
     sort_key = "UPDATED_AT"
 
     assigned_location_fields: List[Field] = [
@@ -1763,7 +1764,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
         "requestOptions",
     ]
 
-    fulfillment_order_fields: List[Field] = [
+    query_nodes: List[Field] = [
         "__typename",
         "id",
         "fulfillAt",
@@ -1773,6 +1774,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
         "requestStatus",
         "status",
         "channelId",
+        Field(name="order", fields=["id"]),
         Field(name="assignedLocation", fields=assigned_location_fields),
         Field(name="destination", fields=destination_fields),
         Field(name="deliveryMethod", fields=delivery_method_fields),
@@ -1781,12 +1783,6 @@ class FulfillmentOrder(ShopifyBulkQuery):
         Field(name="lineItems", fields=[Field(name="edges", fields=[Field(name="node", fields=line_items_fields)])]),
         Field(name="supportedActions", fields=["action", "externalUrl"]),
         Field(name="merchantRequests", fields=[Field(name="edges", fields=[Field(name="node", fields=merchant_requests_fields)])]),
-    ]
-
-    query_nodes: List[Field] = [
-        "__typename",
-        "id",
-        Field(name="fulfillmentOrders", fields=[Field(name="edges", fields=[Field(name="node", fields=fulfillment_order_fields)])]),
     ]
 
     record_composition = {
@@ -1798,10 +1794,17 @@ class FulfillmentOrder(ShopifyBulkQuery):
         ],
     }
 
+    def query(self, filter_query: Optional[str] = None) -> Query:
+        return self.build(self.query_name, self.query_nodes, filter_query, additional_query_args={"includeClosed": "true"})
+
     def process_fulfillment_order(self, record: MutableMapping[str, Any], shop_id: int) -> MutableMapping[str, Any]:
         # addings
         record["shop_id"] = shop_id
-        record["order_id"] = record.get(BULK_PARENT_KEY)
+        # extract order_id from the nested `order` field (since we now query fulfillmentOrders directly)
+        order_data = record.get("order", {})
+        record["order_id"] = order_data.get("id") if order_data else None
+        # remove the order field after extracting the id
+        record.pop("order", None)
         # unnest nested locationId to the `assignedLocation`
         location_id = record.get("assignedLocation", {}).get("location", {}).get("locationId")
         record["assignedLocation"]["locationId"] = location_id
@@ -1810,7 +1813,6 @@ class FulfillmentOrder(ShopifyBulkQuery):
         record["line_items"] = []
         record["merchant_requests"] = []
         # cleaning
-        record.pop(BULK_PARENT_KEY)
         record.get("assignedLocation").pop("location", None)
         # resolve ids from `str` to `int`
         # location id
