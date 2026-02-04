@@ -4,9 +4,9 @@ import { themes as prismThemes } from "prism-react-renderer";
 import type { Options as ClassicPresetOptions } from "@docusaurus/preset-classic";
 import { PluginOptions as LLmPluginOptions } from "@signalwire/docusaurus-plugin-llms-txt";
 import {
-  loadSonarApiSidebar,
+  loadAgentEngineApiSidebar,
   replaceApiReferenceCategory,
-} from "./src/scripts/embedded-api/sidebar-generator";
+} from "./src/scripts/agent-engine-api/sidebar-generator";
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -22,11 +22,11 @@ const getRemarkPlugins = () => ({
 
 const plugins = getRemarkPlugins();
 
-// Import constants for embedded API sidebar generation
+// Import constants for Agent Engine API sidebar generation
 const {
   SPEC_CACHE_PATH,
   API_SIDEBAR_PATH,
-} = require("./src/scripts/embedded-api/constants");
+} = require("./src/scripts/agent-engine-api/constants");
 
 const lightCodeTheme = prismThemes.github;
 const darkCodeTheme = prismThemes.dracula;
@@ -173,11 +173,11 @@ const config: Config = {
         async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
           const sidebarItems = await defaultSidebarItemsGenerator(args);
 
-          // Load and filter the Sonar API sidebar based on allowed tags
-          const sonarApiItems = loadSonarApiSidebar();
+          // Load and filter the Agent Engine API sidebar based on allowed tags
+          const agentEngineApiItems = loadAgentEngineApiSidebar();
 
           // Replace the "api-reference" category with the filtered API items
-          return replaceApiReferenceCategory(sidebarItems, sonarApiItems);
+          return replaceApiReferenceCategory(sidebarItems, agentEngineApiItems);
         },
         remarkPlugins: [
           plugins.docsHeaderDecoration,
@@ -264,12 +264,12 @@ const config: Config = {
     [
       "docusaurus-plugin-openapi-docs",
       {
-        id: "embedded-api",
+        id: "agent-engine-api",
         docsPluginId: "ai-agents",
         config: {
-          embedded: {
-            specPath: "src/data/embedded_api_spec.json",
-            outputDir: "../docs/ai-agents/embedded/api-reference",
+          "agent-engine": {
+            specPath: "src/data/agent_engine_api_spec.json",
+            outputDir: "../docs/ai-agents/api/api-reference",
             sidebarOptions: {
               groupPathsBy: "tag",
               categoryLinkSource: "tag",
