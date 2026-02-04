@@ -69,7 +69,6 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     this.featureFlags = featureFlags;
   }
 
-  @Override
   public FeatureFlags getFeatureFlags() {
     return featureFlags;
   }
