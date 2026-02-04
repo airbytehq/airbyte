@@ -4,7 +4,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 3986776d-2319-4de9-8af8-db14c0996e72
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/destination-oracle
   githubIssueLabel: destination-oracle
   icon: oracle.svg
