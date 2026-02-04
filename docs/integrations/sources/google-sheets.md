@@ -74,10 +74,10 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 <!-- /env:oss -->
 
-### Set up the Google Sheets connector in Airbyte
+### Set up the Google Sheets connector in Airbyte {#set-up-the-google-sheets-source-connector-in-airbyte}
 
 <!-- env:cloud -->
-#### For Airbyte Cloud: 
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.

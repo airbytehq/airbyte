@@ -163,7 +163,7 @@ Rather than starting over it will continue its full refresh read from a last kno
 
 ### Schema Enforcement {#schema-enforcement}
 
-By default, the MongoDB V2 source connector enforces a schema.This means that while setting up a connector it will sample a configurable number of documents and will create a set of fields to sync. From that set of fields, an admin can then deselect specific fields from the Replication screen to filter them out from the sync.
+By default, the MongoDB V2 source connector enforces a schema. This means that while setting up a connector it will sample a configurable number of documents and will create a set of fields to sync. From that set of fields, an admin can then deselect specific fields from the Replication screen to filter them out from the sync.
 
 When the schema enforced option is disabled, MongoDB collections are read in schema-less mode which doesn't assume documents share the same structure.
 This allows for greater flexibility in reading data that is unstructured or vary a lot in between documents in a single collection.

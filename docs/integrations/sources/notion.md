@@ -59,7 +59,7 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 4. You need to use your integration's authorization URL to set the necessary page permissions and send a request to obtain your Access Token. A thorough explanation of the necessary steps is provided in the [official Notion documentation](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up). Once you have your Client ID, Client Secret and Access Token, you are ready to proceed to the next step.
 <!-- /env:oss -->
 
-### Step 3: Set up the Notion connector in Airbyte
+### Step 3: Set up the Notion connector in Airbyte {#step-2-set-up-the-notion-connector-in-airbyte}
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **New source**.

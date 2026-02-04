@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Apple Ads s
 
 ## Setup guide
 
-### Step 1: Set up Apple Ads
+### Step 1: Set up Apple Ads {#step-1-set-up-apple-search-ads}
 
 1. With an administrator account, [create an API user role](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) from the Apple Ads UI.
 2. Then [implement OAuth for your API user](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) in order to the required Client Secret and Client Id.
