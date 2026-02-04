@@ -5,13 +5,18 @@
 package io.airbyte.integrations.destination.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
@@ -29,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.SQLDialect;
@@ -58,6 +64,41 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new OracleDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
+
+  /**
+   * When running in cloud deployment mode, remove the encryption option from the spec to enforce
+   * encryption. This replaces the need for a separate strict-encrypt connector.
+   */
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    final ConnectorSpecification spec = Jsons.clone(super.spec());
+    if (getIsCloudDeployment()) {
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("encryption");
+    }
+    return spec;
+  }
+
+  /**
+   * When running in cloud deployment mode, force encryption settings regardless of user config.
+   */
+  @Override
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
+    final JsonNode effectiveConfig;
+    if (getIsCloudDeployment()) {
+      final JsonNode cloneConfig = Jsons.clone(config);
+      ((ObjectNode) cloneConfig).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+          .put("encryption_method", "client_nne")
+          .put("encryption_algorithm", "AES256")
+          .build()));
+      effectiveConfig = cloneConfig;
+    } else {
+      effectiveConfig = config;
+    }
+    return super.getConsumer(effectiveConfig, catalog, outputRecordCollector);
   }
 
   @Override

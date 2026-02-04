@@ -12,7 +12,6 @@ data:
   name: Oracle
   registryOverrides:
     cloud:
-      dockerRepository: airbyte/destination-oracle-strict-encrypt
       enabled: true
     oss:
       enabled: true
