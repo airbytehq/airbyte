@@ -8,6 +8,7 @@ import static com.mongodb.client.model.Projections.excludeId;
 import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
@@ -24,9 +25,12 @@ import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -57,6 +61,20 @@ public class MongodbDestination extends BaseConnector implements Destination {
     namingResolver = new MongodbNameTransformer();
   }
 
+  /**
+   * When running in cloud deployment mode, remove the TLS option from the spec for standalone instances
+   * to enforce TLS connections. This replaces the need for a separate strict-encrypt connector.
+   */
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    final ConnectorSpecification spec = Jsons.clone(super.spec());
+    if (getIsCloudDeployment()) {
+      // Remove TLS property for standalone instance to disable possibility to switch off TLS connection
+      ((ObjectNode) spec.getConnectionSpecification().get("properties").get("instance_type").get("oneOf").get(0).get("properties")).remove("tls");
+    }
+    return spec;
+  }
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = sshWrappedDestination();
     LOGGER.info("starting destination: {}", MongodbDestination.class);
@@ -67,6 +85,15 @@ public class MongodbDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
+      // In cloud deployment mode, enforce TLS for standalone instances
+      if (getIsCloudDeployment() && config.has(MongoUtils.INSTANCE_TYPE)) {
+        final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
+        final var instance = MongoUtils.MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
+        if (instance.equals(MongoUtils.MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
+          throw new ConfigErrorException("TLS connection must be used to read from MongoDB.");
+        }
+      }
+
       final MongoDatabase database = getDatabase(config);
       final var databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
       final Set<String> databaseNames = getDatabaseNames(database);

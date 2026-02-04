@@ -12,7 +12,6 @@ data:
   name: MongoDB
   registryOverrides:
     cloud:
-      dockerRepository: airbyte/destination-mongodb-strict-encrypt
       enabled: true
     oss:
       enabled: true
