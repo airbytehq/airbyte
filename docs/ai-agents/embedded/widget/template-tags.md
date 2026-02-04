@@ -18,9 +18,8 @@ You can create a tag on your source or connection templates either programmatica
 To programmatically create a tag for a connection template, you'll need to make the following request.
 
 ``` bash
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/templates/connections/{id}/tag" \
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/templates/connections/{id}/tags" \
   -H "Authorization: Bearer <ACCESS_TOKEN>" \
-  -H "X-Organization-Id: <ORGANIZATION_ID>" \
   -H "Content-Type: application/json" \
   -d '{"tag": "your-tag-name"}'
 ```
@@ -28,9 +27,8 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/templates/connections/{
 To programmatically create a tag for a source template, you'll need to make the following request.
 
 ```bash
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/templates/sources/{id}/tag" \
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/templates/sources/{id}/tags" \
   -H "Authorization: Bearer <ACCESS_TOKEN>" \
-  -H "X-Organization-Id: <ORGANIZATION_ID>" \
   -H "Content-Type: application/json" \
   -d '{"tag": "your-tag-name"}'
 ```
@@ -40,22 +38,20 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/templates/sources/{id}/
 When you embed the Airbyte widget in your front-end, you generate a widget token. This token is passed to the widget and controls which source and connection templates are available, based on the tag specifications.
 The widget token is created with parameters like ‎`selected_source_template_tags` and ‎`selected_connection_template_tags_mode`, which define what the end user can see and select in your web application.
 
-Additionally, you can untag connnection and source templates via the same UI presented above or programmatically.
+Additionally, you can untag connection and source templates via the same UI presented above or programmatically.
 
 To programmatically remove a tag from a connection template, you'll need to make the following request:
 
 ```bash
-curl -X DELETE "https://api.airbyte.ai/api/v1/integrations/templates/sources/{id}/tag/{tag_name}" \
-  -H "Authorization: Bearer <ACCESS_TOKEN>" \
-  -H "X-Organization-Id: <ORGANIZATION_UUID>"
+curl -X DELETE "https://api.airbyte.ai/api/v1/integrations/templates/connections/{id}/tags/{tag_name}" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
 ```
 
 To programmatically remove a tag from a source template, you'll need to make the following request:
 
 ```bash 
-curl -X DELETE "https://api.airbyte.ai/api/v1/integrations/templates/connections/{id}/tag/{tag_name}" \
-  -H "Authorization: Bearer <ACCESS_TOKEN>" \
-  -H "X-Organization-Id: <ORGANIZATION_UUID>"
+curl -X DELETE "https://api.airbyte.ai/api/v1/integrations/templates/sources/{id}/tags/{tag_name}" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
 ```
 
 If you have any questions on enabling and registering these tags, please reach out to the team.

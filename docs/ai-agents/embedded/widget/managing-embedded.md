@@ -10,7 +10,7 @@ Airbyte Embedded is built upon the Airbyte Platform. As the owner of your embedd
 
 Source connectors can be configured to appear in the Embedded widget by creating a configuration template [via the source_template endpoint](https://api.airbyte.ai/api/v1/docs#tag/Template-Sources/operation/create_integrations_templates_sources).
 
-The following example demonstrates how to use the API to create a new configuration template for the Faker connector, with a required “*count*” field.  To obtain the `source_connector_definition_id`, you can access this via the [Airbyte Connector Registry](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html).
+The following example demonstrates how to use the API to create a new configuration template for the Faker connector, with a required "*count*" field.  To obtain the `actor_definition_id`, you can access this via the [Airbyte Connector Registry](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html).
 
 ```bash
 curl --request POST \

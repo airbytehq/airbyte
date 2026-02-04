@@ -232,7 +232,8 @@ curl https://api.airbyte.ai/api/v1/embedded/scoped-token/info \
 ```json
 {
   "organization_id": "12345678-1234-1234-1234-123456789012",
-  "workspace ID": "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+  "workspace_id": "a1b2c3d4-e5f6-7890-ab12-cd34ef567890",
+  "external_user_id": "customer_workspace_123"
 }
 
 ```
