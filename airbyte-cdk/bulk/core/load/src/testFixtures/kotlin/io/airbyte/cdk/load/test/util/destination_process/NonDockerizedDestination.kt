@@ -158,11 +158,18 @@ class NonDockerizedDestination(
         }
     }
 
-    override suspend fun sendMessage(message: InputMessage, broadcast: Boolean) {
+    override suspend fun sendMessage(
+        message: InputMessage,
+        broadcast: Boolean,
+        useSingleSocket: Boolean
+    ) {
         writeLock.withLock {
             val channelsToSendTo =
                 if (broadcast) {
                     destinationDataChannels
+                } else if (useSingleSocket) {
+                    // Use only the first socket to preserve message ordering
+                    arrayOf(destinationDataChannels[0])
                 } else {
                     arrayOf(destinationDataChannels[onChannel.rotate(destinationDataChannels.size)])
                 }
