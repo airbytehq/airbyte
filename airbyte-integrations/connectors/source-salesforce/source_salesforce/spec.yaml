@@ -17,6 +17,17 @@ connectionSpecification:
       type: boolean
       default: false
       order: 1
+    instance_url:
+      title: Instance URL
+      description: >-
+        (Optional) Enter your Salesforce instance URL if you use a custom domain (e.g., https://mycompany.my.salesforce.com).
+        Leave blank to use the default login.salesforce.com (or test.salesforce.com for sandbox).
+        This is required if your organization restricts OAuth token exchange to your custom domain.
+      type: string
+      examples:
+        - "https://mycompany.my.salesforce.com"
+        - "https://mycompany.sandbox.my.salesforce.com"
+      order: 0
     auth_type:
       type: string
       const: Client

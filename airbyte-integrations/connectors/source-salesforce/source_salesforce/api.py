@@ -252,6 +252,7 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
+        instance_url: str = None,
         **kwargs: Any,
     ) -> None:
         self.refresh_token = refresh_token
@@ -260,6 +261,7 @@ class Salesforce:
         self.client_secret = client_secret
         self.access_token = None
         self.instance_url = ""
+        self._custom_instance_url = instance_url.rstrip("/") if instance_url else None
         self.session = requests.Session()
         # Change the connection pool size. Default value is not enough for parallel tasks
         adapter = request_adapters.HTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
@@ -269,6 +271,8 @@ class Salesforce:
         self.is_sandbox = is_sandbox in [True, "true"]
         if self.is_sandbox:
             self.logger.info("using SANDBOX of Salesforce")
+        if self._custom_instance_url:
+            self.logger.info(f"using custom instance URL: {self._custom_instance_url}")
         self.start_date = start_date
 
     def _get_standard_headers(self) -> Mapping[str, str]:
@@ -323,7 +327,10 @@ class Salesforce:
         return resp
 
     def login(self):
-        login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
+        if self._custom_instance_url:
+            login_url = f"{self._custom_instance_url}/services/oauth2/token"
+        else:
+            login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
         login_body = {
             "grant_type": "refresh_token",
             "client_id": self.client_id,
