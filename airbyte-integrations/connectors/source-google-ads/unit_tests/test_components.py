@@ -538,6 +538,46 @@ class TestGoogleAdsStreamingDecoder:
         assert len(outputs) == 1
         assert outputs[0] == error_response[0]
 
+    def test_error_response_causes_early_return_stops_processing(self):
+        """
+        Regression test: When an error response is detected, the decoder should
+        return early and NOT continue processing subsequent items in the response.
+
+        This test would FAIL without the fix because:
+        - Without the fix: `yield from parsed_data` yields ALL items (2 outputs)
+        - With the fix: `yield first_item; return` yields only the error (1 output)
+
+        This simulates a malformed response where an error is followed by data,
+        ensuring the decoder stops at the error rather than continuing.
+        """
+        decoder = GoogleAdsStreamingDecoder()
+        response_with_error_and_data = [
+            {
+                "error": {
+                    "code": 403,
+                    "message": "The caller does not have permission",
+                    "status": "PERMISSION_DENIED",
+                }
+            },
+            {
+                "results": [
+                    {"campaign": {"id": "1", "name": "Should not be processed"}},
+                ],
+                "fieldMask": "campaign.id,campaign.name",
+            },
+        ]
+        raw = json.dumps(response_with_error_and_data).encode("utf-8")
+        resp = self._FakeResponse(chunks=[raw])
+
+        outputs = list(decoder.decode(resp))
+
+        assert len(outputs) == 1, (
+            f"Expected 1 output (error only), got {len(outputs)}. "
+            "Without the fix, the decoder would yield both items instead of stopping at the error."
+        )
+        assert "error" in outputs[0], "First output should be the error response"
+        assert outputs[0]["error"]["code"] == 403
+
     def test_normal_response_with_results_still_works(self, decoder):
         """
         Normal responses with 'results' array should still be processed correctly.
