@@ -27,7 +27,7 @@ class PostgresSourceMetadataQuerier(
     override fun extraChecks() {
         base.extraChecks()
         if (postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration) {
-            base.conn.use { conn ->
+            base.conn.use {
                 if (dbNumWraparound(base.conn) > 0) {
                     throw ConfigErrorException(xminWraparoundError)
                 }
