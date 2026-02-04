@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # Entity cache
 
 Some APIs have search endpoints, but many don't. This makes search operations resource-intensive. Imagine prompts like these:
