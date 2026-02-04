@@ -8,14 +8,207 @@ The Facebook-Marketing connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
+| Current User | [Get](#current-user-get) |
+| Ad Accounts | [List](#ad-accounts-list), [Search](#ad-accounts-search) |
 | Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
 | Ad Sets | [List](#ad-sets-list), [Get](#ad-sets-get), [Search](#ad-sets-search) |
 | Ads | [List](#ads-list), [Get](#ads-get), [Search](#ads-search) |
 | Ad Creatives | [List](#ad-creatives-list), [Search](#ad-creatives-search) |
 | Ads Insights | [List](#ads-insights-list), [Search](#ads-insights-search) |
+| Ad Account | [Get](#ad-account-get), [Search](#ad-account-search) |
 | Custom Conversions | [List](#custom-conversions-list), [Search](#custom-conversions-search) |
 | Images | [List](#images-list), [Search](#images-search) |
 | Videos | [List](#videos-list), [Search](#videos-search) |
+
+## Current User
+
+### Current User Get
+
+Returns information about the current user associated with the access token
+
+#### Python SDK
+
+```python
+await facebook_marketing.current_user.get()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "current_user",
+    "action": "get"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `fields` | `string` | No | Comma-separated list of fields to return |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+
+
+</details>
+
+## Ad Accounts
+
+### Ad Accounts List
+
+Returns a list of ad accounts associated with the current user
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_accounts.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_accounts",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `fields` | `string` | No | Comma-separated list of fields to return |
+| `limit` | `integer` | No | Maximum number of results to return |
+| `after` | `string` | No | Cursor for pagination |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `account_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `account_status` | `integer \| null` |  |
+| `age` | `number \| null` |  |
+| `amount_spent` | `string \| null` |  |
+| `balance` | `string \| null` |  |
+| `business` | `object \| any` |  |
+| `business_name` | `string \| null` |  |
+| `created_time` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `disable_reason` | `integer \| null` |  |
+| `spend_cap` | `string \| null` |  |
+| `timezone_id` | `integer \| null` |  |
+| `timezone_name` | `string \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `after` | `string \| null` |  |
+
+</details>
+
+### Ad Accounts Search
+
+Search and filter ad accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_accounts.search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_accounts",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Ad account ID |
+| `account_id` | `string` | Ad account ID (numeric) |
+| `name` | `string` | Ad account name |
+| `balance` | `string` | Current balance of the ad account |
+| `currency` | `string` | Currency used by the ad account |
+| `account_status` | `integer` | Account status |
+| `amount_spent` | `string` | Total amount spent |
+| `business_name` | `string` | Business name |
+| `created_time` | `string` | Account creation time |
+| `spend_cap` | `string` | Spend cap |
+| `timezone_name` | `string` | Timezone name |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.id` | `string` | Ad account ID |
+| `hits[].data.account_id` | `string` | Ad account ID (numeric) |
+| `hits[].data.name` | `string` | Ad account name |
+| `hits[].data.balance` | `string` | Current balance of the ad account |
+| `hits[].data.currency` | `string` | Currency used by the ad account |
+| `hits[].data.account_status` | `integer` | Account status |
+| `hits[].data.amount_spent` | `string` | Total amount spent |
+| `hits[].data.business_name` | `string` | Business name |
+| `hits[].data.created_time` | `string` | Account creation time |
+| `hits[].data.spend_cap` | `string` | Spend cap |
+| `hits[].data.timezone_name` | `string` | Timezone name |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
 
 ## Campaigns
 
@@ -966,6 +1159,28 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `ctr` | `number \| null` |  |
 | `date_start` | `string \| null` |  |
 | `date_stop` | `string \| null` |  |
+| `actions` | `array \| null` |  |
+| `actions[].action_type` | `string \| null` |  |
+| `actions[].action_destination` | `string \| null` |  |
+| `actions[].action_target_id` | `string \| null` |  |
+| `actions[].value` | `number \| null` |  |
+| `actions[].1d_click` | `number \| null` |  |
+| `actions[].7d_click` | `number \| null` |  |
+| `actions[].28d_click` | `number \| null` |  |
+| `actions[].1d_view` | `number \| null` |  |
+| `actions[].7d_view` | `number \| null` |  |
+| `actions[].28d_view` | `number \| null` |  |
+| `action_values` | `array \| null` |  |
+| `action_values[].action_type` | `string \| null` |  |
+| `action_values[].action_destination` | `string \| null` |  |
+| `action_values[].action_target_id` | `string \| null` |  |
+| `action_values[].value` | `number \| null` |  |
+| `action_values[].1d_click` | `number \| null` |  |
+| `action_values[].7d_click` | `number \| null` |  |
+| `action_values[].28d_click` | `number \| null` |  |
+| `action_values[].1d_view` | `number \| null` |  |
+| `action_values[].7d_view` | `number \| null` |  |
+| `action_values[].28d_view` | `number \| null` |  |
 
 
 #### Meta
@@ -1035,6 +1250,8 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `ctr` | `number` | Click-through rate |
 | `date_start` | `string` | Start date of the reporting period |
 | `date_stop` | `string` | End date of the reporting period |
+| `actions` | `array` | Total number of actions taken |
+| `action_values` | `array` | Action values taken on the ad |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -1062,6 +1279,169 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `hits[].data.ctr` | `number` | Click-through rate |
 | `hits[].data.date_start` | `string` | Start date of the reporting period |
 | `hits[].data.date_stop` | `string` | End date of the reporting period |
+| `hits[].data.actions` | `array` | Total number of actions taken |
+| `hits[].data.action_values` | `array` | Action values taken on the ad |
+| `next_cursor` | `string \| null` | Cursor for next page of results |
+| `took_ms` | `number` | Query execution time in milliseconds |
+
+</details>
+
+## Ad Account
+
+### Ad Account Get
+
+Returns information about the specified ad account including balance and currency
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_account.get(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_account",
+    "action": "get",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+| `fields` | `string` | No | Comma-separated list of fields to return |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `account_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `account_status` | `integer \| null` |  |
+| `age` | `number \| null` |  |
+| `amount_spent` | `string \| null` |  |
+| `balance` | `string \| null` |  |
+| `business` | `object \| any` |  |
+| `business_city` | `string \| null` |  |
+| `business_country_code` | `string \| null` |  |
+| `business_name` | `string \| null` |  |
+| `business_state` | `string \| null` |  |
+| `business_street` | `string \| null` |  |
+| `business_street2` | `string \| null` |  |
+| `business_zip` | `string \| null` |  |
+| `created_time` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `disable_reason` | `integer \| null` |  |
+| `end_advertiser` | `string \| null` |  |
+| `end_advertiser_name` | `string \| null` |  |
+| `funding_source` | `string \| null` |  |
+| `funding_source_details` | `object \| null` |  |
+| `has_migrated_permissions` | `boolean \| null` |  |
+| `is_personal` | `integer \| null` |  |
+| `is_prepay_account` | `boolean \| null` |  |
+| `is_tax_id_required` | `boolean \| null` |  |
+| `min_campaign_group_spend_cap` | `string \| null` |  |
+| `min_daily_budget` | `integer \| null` |  |
+| `owner` | `string \| null` |  |
+| `spend_cap` | `string \| null` |  |
+| `timezone_id` | `integer \| null` |  |
+| `timezone_name` | `string \| null` |  |
+| `timezone_offset_hours_utc` | `number \| null` |  |
+
+
+</details>
+
+### Ad Account Search
+
+Search and filter ad account records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_account.search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_account",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Ad account ID |
+| `account_id` | `string` | Ad account ID (numeric) |
+| `name` | `string` | Ad account name |
+| `balance` | `string` | Current balance of the ad account |
+| `currency` | `string` | Currency used by the ad account |
+| `account_status` | `integer` | Account status |
+| `amount_spent` | `string` | Total amount spent |
+| `business_name` | `string` | Business name |
+| `created_time` | `string` | Account creation time |
+| `spend_cap` | `string` | Spend cap |
+| `timezone_name` | `string` | Timezone name |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hits` | `array` | List of matching records |
+| `hits[].id` | `string` | Record identifier |
+| `hits[].score` | `number` | Relevance score |
+| `hits[].data` | `object` | Record data containing the searchable fields listed above |
+| `hits[].data.id` | `string` | Ad account ID |
+| `hits[].data.account_id` | `string` | Ad account ID (numeric) |
+| `hits[].data.name` | `string` | Ad account name |
+| `hits[].data.balance` | `string` | Current balance of the ad account |
+| `hits[].data.currency` | `string` | Currency used by the ad account |
+| `hits[].data.account_status` | `integer` | Account status |
+| `hits[].data.amount_spent` | `string` | Total amount spent |
+| `hits[].data.business_name` | `string` | Business name |
+| `hits[].data.created_time` | `string` | Account creation time |
+| `hits[].data.spend_cap` | `string` | Spend cap |
+| `hits[].data.timezone_name` | `string` | Timezone name |
 | `next_cursor` | `string \| null` | Cursor for next page of results |
 | `took_ms` | `number` | Query execution time in milliseconds |
 
