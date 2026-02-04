@@ -4,8 +4,8 @@
 package io.airbyte.integrations.destination.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.ImmutableMap
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.db.factory.DataSourceFactory
 import io.airbyte.cdk.db.factory.DatabaseDriver
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
@@ -15,7 +15,6 @@ import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
-import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.airbyte.cdk.integrations.destination.PropertyNameSimplifyingDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
@@ -35,6 +34,7 @@ import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlDestinatio
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlSqlGenerator
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlV1V2Migrator
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import io.airbyte.protocol.models.v0.ConnectorSpecification
 import java.sql.SQLSyntaxErrorException
 import java.util.*
 import org.slf4j.Logger
@@ -51,8 +51,8 @@ class MySQLDestination :
         get() = JdbcUtils.DATABASE_KEY
 
     /**
-     * When running in cloud deployment mode, remove the SSL option from the spec
-     * to enforce SSL connections. This replaces the need for a separate strict-encrypt connector.
+     * When running in cloud deployment mode, remove the SSL option from the spec to enforce SSL
+     * connections. This replaces the need for a separate strict-encrypt connector.
      */
     override fun spec(): ConnectorSpecification {
         val spec: ConnectorSpecification = Jsons.clone(super.spec())
