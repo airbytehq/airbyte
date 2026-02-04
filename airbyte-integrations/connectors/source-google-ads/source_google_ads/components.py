@@ -928,7 +928,13 @@ class GoogleAdsStreamingDecoder(Decoder):
     def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
         data, complete = self._buffer_up_to_limit(response)
         if complete:
-            yield from self.parser.parse(io.BytesIO(data))
+            parsed_data = list(self.parser.parse(io.BytesIO(data)))
+            if parsed_data:
+                first_item = parsed_data[0]
+                if self._is_error_response(first_item):
+                    yield first_item
+                    return
+            yield from parsed_data
             return
 
         records_batch: List[Dict[str, Any]] = []
@@ -940,6 +946,15 @@ class GoogleAdsStreamingDecoder(Decoder):
 
         if records_batch:
             yield {"results": records_batch}
+
+    @staticmethod
+    def _is_error_response(data: MutableMapping[str, Any]) -> bool:
+        """Check if the response is an error response from Google Ads API.
+
+        Error responses typically contain an 'error' key with error details,
+        rather than a 'results' array with data records.
+        """
+        return "error" in data or (isinstance(data, list) and len(data) > 0 and "error" in data[0])
 
     def _buffer_up_to_limit(self, response: requests.Response) -> Tuple[Union[bytes, Iterable[bytes]], bool]:
         buf = bytearray()
