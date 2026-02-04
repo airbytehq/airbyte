@@ -12,9 +12,14 @@ on:
         description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
         default: "--name=source-pokeapi"
         type: string
-      release-type:
-        description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
-        default: pre-release
+      with-semver-suffix:
+        description: |
+          Semver suffix to apply ephemerally (not committed back to the repo):
+          - default: Resolves to 'none' on push to master, 'preview' on manual trigger
+          - none: Use exact version from metadata.yaml (for production releases)
+          - preview: Append '-preview.{sha}' suffix (for development builds)
+          - rc: Append '-rc1' suffix (for release candidates)
+        default: default
         type: string
       publish-java-tars:
         description: "Whether to publish Java connector tar files."
@@ -25,6 +30,11 @@ on:
         description: "Git ref (branch or SHA) to build connectors from. Used by pre-release workflow to build from PR branches."
         required: false
         type: string
+      dry-run:
+        description: "Dry run mode: run all logic but skip actual uploads (Docker, GCS, registry). Useful for testing workflow changes."
+        required: false
+        default: false
+        type: boolean
     outputs:
       docker-image-tag:
         description: "Docker image tag used when publishing. For single-connector callers only; multi-connector callers should not rely on this output."
@@ -35,15 +45,27 @@ on:
         description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
         default: "--name=source-pokeapi"
         type: string
-      release-type:
-        description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
-        default: pre-release
+      with-semver-suffix:
+        description: |
+          Semver suffix to apply ephemerally (not committed back to the repo):
+          - default: Resolves to 'none' on push to master, 'preview' on manual trigger
+          - none: Use exact version from metadata.yaml (for production releases)
+          - preview: Append '-preview.{sha}' suffix (for development builds)
+          - rc: Append '-rc1' suffix (for release candidates)
+        default: default
         type: choice
         options:
-          - pre-release
-          - main-release
+          - default
+          - none
+          - preview
+          - rc
       publish-java-tars:
         description: "Whether to publish Java connector tar files."
+        required: false
+        default: false
+        type: boolean
+      dry-run:
+        description: "Dry run mode: run all logic but skip actual uploads (Docker, GCS, registry). Useful for testing workflow changes."
         required: false
         default: false
         type: boolean
@@ -71,17 +93,27 @@ jobs:
         shell: bash
         # When merging to master, we run on connectors that have changed since the previous commit.
         run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
-      - name: Resolve release type
-        id: resolve-release-type
+      - name: Resolve semver suffix
+        id: resolve-semver-suffix
         shell: bash
         run: |
-          # If workflow is triggered on merge to master, do a main release.
-          # If workflow is triggered manually, use the input release type.
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
-          else
-            echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
+          # Determine the semver suffix mode.
+          # Priority: with-semver-suffix input > defaults
+          # Note: On push events, inputs.* is undefined (empty string), so we treat empty as 'default'
+          SEMVER_SUFFIX="${{ inputs.with-semver-suffix || 'default' }}"
+
+          # Resolve 'default' based on trigger type
+          if [[ "$SEMVER_SUFFIX" == "default" ]]; then
+            if [[ "${{ github.event_name }}" == "push" ]]; then
+              # On merge to master, use exact version (no suffix)
+              SEMVER_SUFFIX="none"
+            else
+              # On manual trigger, use preview suffix
+              SEMVER_SUFFIX="preview"
+            fi
           fi
+
+          echo "with-semver-suffix=$SEMVER_SUFFIX" | tee -a $GITHUB_OUTPUT
       - name: Resolve publish-java-tars
         id: resolve-publish-java-tars
         shell: bash
@@ -97,9 +129,11 @@ jobs:
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
-      release-type: ${{ steps.resolve-release-type.outputs.release-type }}
+      with-semver-suffix: ${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}
       # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
       publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
+      # dry-run mode skips all uploads but runs all logic
+      dry-run: ${{ inputs.dry-run || 'false' }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -199,16 +233,21 @@ jobs:
 
       - name: Publish to Python Registry
         id: publish-python-registry
-        if: steps.connector-metadata.outputs.connector-language == 'python'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: |
-          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
+          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
+      - name: "[DRY-RUN] Skip Publish to Python Registry"
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
+        run: |
+          echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
+
       - name: Upload Python Dependencies to GCS
         id: upload-python-dependencies-master
-        if: steps.connector-metadata.outputs.connector-language == 'python'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -216,24 +255,42 @@ jobs:
           ./poe-tasks/upload-python-dependencies.sh \
             --name ${{ matrix.connector }} \
             --bucket prod-airbyte-cloud-connector-metadata-service \
-            --release-type ${{ needs.publish_options.outputs.release-type }}
+            --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
+
+      - name: "[DRY-RUN] Skip Upload Python Dependencies to GCS"
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
+        run: |
+          echo "DRY-RUN: Skipping Python Dependencies upload for ${{ matrix.connector }}"
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
-        if: steps.connector-metadata.outputs.connector-language == 'java'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: |
-          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }} --publish
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }} --publish
+
+      - name: "[DRY-RUN] Build JVM connectors images (no publish)"
+        id: build-JVM-connectors-images-dry-run
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run == 'true'
+        shell: bash
+        run: |
+          echo "DRY-RUN: Building JVM connector without publishing..."
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
-        run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
+        run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
+
+      - name: "[DRY-RUN] Skip Publish JVM connectors tar file"
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run == 'true'
+        run: |
+          echo "DRY-RUN: Skipping JVM connector tar file upload for ${{ matrix.connector }}"
 
       - name: Build and publish Python and Manifest-Only connectors images
         id: build-and-publish-python-manifest-only-connectors-images
@@ -241,19 +298,25 @@ jobs:
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
-          release-type: ${{ needs.publish_options.outputs.release-type }}
-          dry-run: "false"
+          with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
+          dry-run: ${{ needs.publish_options.outputs.dry-run }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Upload connector metadata
         id: upload-connector-metadata
+        if: needs.publish_options.outputs.dry-run != 'true'
         shell: bash
-        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
+        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+
+      - name: "[DRY-RUN] Skip Upload connector metadata"
+        if: needs.publish_options.outputs.dry-run == 'true'
+        run: |
+          echo "DRY-RUN: Skipping connector metadata upload for ${{ matrix.connector }}"
 
   # The connector registries are generated from the spec cache,
   # and in some cases, there are cross-connector dependencies.
@@ -322,6 +385,19 @@ jobs:
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
 
+      - name: Enable progressive rollout for RC builds
+        if: needs.publish_options.outputs.with-semver-suffix == 'rc'
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          echo "Enabling progressive rollout for RC build..."
+          echo "=== enableProgressiveRollout BEFORE update ==="
+          grep -n "enableProgressiveRollout" metadata.yaml || echo "(not found)"
+          # Ephemerally enable progressive rollout in metadata.yaml (not committed back)
+          yq -i '.data.releases.rolloutConfiguration.enableProgressiveRollout = true' metadata.yaml
+          echo "=== enableProgressiveRollout AFTER update ==="
+          grep -n "enableProgressiveRollout" metadata.yaml
+          echo "Progressive rollout enabled in metadata.yaml"
+
       - name: Get connector metadata
         id: connector-metadata
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -330,17 +406,28 @@ jobs:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
           CONNECTOR_VERSION=$(poe -qq get-version)
-          if [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
-            hash=$(git rev-parse --short=7 HEAD)
-            echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
-            echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
-          else
-            echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
-            echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
-          fi
+          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+
+          # Generate docker image tag based on semver suffix mode
+          case "$SEMVER_SUFFIX" in
+            preview)
+              hash=$(git rev-parse --short=7 HEAD)
+              echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
+              ;;
+            rc)
+              echo "docker-image-tag=${CONNECTOR_VERSION}-rc1" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
+              ;;
+            none|*)
+              echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
+              ;;
+          esac
 
       - name: Generate OSS Registry Entry
         id: generate-oss-registry-entry
+        if: needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: |
           echo "Generating OSS registry entry for ${{ matrix.connector }}"
@@ -355,8 +442,14 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
+      - name: "[DRY-RUN] Skip Generate OSS Registry Entry"
+        if: needs.publish_options.outputs.dry-run == 'true'
+        run: |
+          echo "DRY-RUN: Skipping OSS registry entry generation for ${{ matrix.connector }}"
+
       - name: Generate Cloud Registry Entry
         id: generate-cloud-registry-entry
+        if: needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: |
           echo "Generating Cloud registry entry for ${{ matrix.connector }}"
@@ -371,9 +464,15 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
+      - name: "[DRY-RUN] Skip Generate Cloud Registry Entry"
+        if: needs.publish_options.outputs.dry-run == 'true'
+        run: |
+          echo "DRY-RUN: Skipping Cloud registry entry generation for ${{ matrix.connector }}"
+
   generate_connector_registry:
     name: Generate connector registry
-    needs: [publish_connector_registry_entries]
+    needs: [publish_options, publish_connector_registry_entries]
+    if: needs.publish_options.outputs.dry-run != 'true'
     uses: ./.github/workflows/generate-connector-registries.yml
     secrets: inherit
 

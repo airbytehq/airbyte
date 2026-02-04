@@ -358,6 +358,14 @@ class MsSqlServerDebeziumOperations(
                         .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
                 DebeziumSchemaHistory(schemaHistoryList)
             }
+        // If the schema history is empty or null, we want to abort the sync
+        // and run a recovery snapshot.
+        if (schemaHistory == null || schemaHistory.wrapped.isEmpty()) {
+            return AbortDebeziumWarmStartState(
+                "Schema history missing with existing offset. " +
+                    "Previous snapshot was incomplete, please refresh the connection."
+            )
+        }
 
         // Store the loaded offset for heartbeat sanitization comparison
         lastLoadedOffset = offset
