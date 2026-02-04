@@ -5,6 +5,7 @@ package io.airbyte.integrations.destination.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.ImmutableMap
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.factory.DataSourceFactory
 import io.airbyte.cdk.db.factory.DatabaseDriver
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
@@ -14,6 +15,7 @@ import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
+import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.airbyte.cdk.integrations.destination.PropertyNameSimplifyingDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
@@ -47,6 +49,18 @@ class MySQLDestination :
     Destination {
     override val configSchemaKey: String
         get() = JdbcUtils.DATABASE_KEY
+
+    /**
+     * When running in cloud deployment mode, remove the SSL option from the spec
+     * to enforce SSL connections. This replaces the need for a separate strict-encrypt connector.
+     */
+    override fun spec(): ConnectorSpecification {
+        val spec: ConnectorSpecification = Jsons.clone(super.spec())
+        if (isCloudDeployment) {
+            (spec.connectionSpecification["properties"] as ObjectNode).remove(JdbcUtils.SSL_KEY)
+        }
+        return spec
+    }
 
     override fun check(config: JsonNode): AirbyteConnectionStatus {
         val dataSource = getDataSource(config)
@@ -104,7 +118,8 @@ class MySQLDestination :
     }
 
     public override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
-        return if (JdbcUtils.useSsl(config)) {
+        // In cloud deployment mode, always use SSL regardless of config
+        return if (isCloudDeployment || JdbcUtils.useSsl(config)) {
             DEFAULT_SSL_JDBC_PARAMETERS
         } else {
             DEFAULT_JDBC_PARAMETERS
