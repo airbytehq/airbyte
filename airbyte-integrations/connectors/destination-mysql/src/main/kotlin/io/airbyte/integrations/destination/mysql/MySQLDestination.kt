@@ -33,6 +33,9 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Minimu
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlDestinationHandler
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlSqlGenerator
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlV1V2Migrator
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner
+import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 import java.sql.SQLSyntaxErrorException
@@ -40,7 +43,9 @@ import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class MySQLDestination :
+class MySQLDestination(
+    private val featureFlags: FeatureFlags = EnvVariableFeatureFlags()
+) :
     AbstractJdbcDestination<MinimumDestinationState>(
         DRIVER_CLASS,
         MySQLNameTransformer(),
@@ -50,13 +55,17 @@ class MySQLDestination :
     override val configSchemaKey: String
         get() = JdbcUtils.DATABASE_KEY
 
+    private fun cloudDeploymentMode(): Boolean {
+        return AdaptiveSourceRunner.CLOUD_MODE.equals(featureFlags.deploymentMode(), ignoreCase = true)
+    }
+
     /**
      * When running in cloud deployment mode, remove the SSL option from the spec to enforce SSL
      * connections. This replaces the need for a separate strict-encrypt connector.
      */
     override fun spec(): ConnectorSpecification {
         val spec: ConnectorSpecification = Jsons.clone(super.spec())
-        if (isCloudDeployment) {
+        if (cloudDeploymentMode()) {
             (spec.connectionSpecification["properties"] as ObjectNode).remove(JdbcUtils.SSL_KEY)
         }
         return spec
@@ -119,7 +128,7 @@ class MySQLDestination :
 
     public override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
         // In cloud deployment mode, always use SSL regardless of config
-        return if (isCloudDeployment || JdbcUtils.useSsl(config)) {
+        return if (cloudDeploymentMode() || JdbcUtils.useSsl(config)) {
             DEFAULT_SSL_JDBC_PARAMETERS
         } else {
             DEFAULT_JDBC_PARAMETERS
