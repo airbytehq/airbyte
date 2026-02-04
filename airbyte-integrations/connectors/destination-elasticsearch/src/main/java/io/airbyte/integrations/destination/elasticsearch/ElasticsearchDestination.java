@@ -13,7 +13,10 @@ import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -35,6 +38,19 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestination.class);
   private final ObjectMapper mapper = new ObjectMapper();
+  private final FeatureFlags featureFlags;
+
+  public ElasticsearchDestination() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  ElasticsearchDestination(final FeatureFlags featureFlags) {
+    this.featureFlags = featureFlags;
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+  }
 
   public static void main(String[] args) throws Exception {
     final var destination = sshWrappedDestination();
@@ -56,7 +72,7 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
   @Override
   public ConnectorSpecification spec() throws Exception {
     final ConnectorSpecification spec = Jsons.clone(super.spec());
-    if (getIsCloudDeployment()) {
+    if (cloudDeploymentMode()) {
       ArrayNode authMethod =
           (ArrayNode)
               spec.getConnectionSpecification()
@@ -81,7 +97,7 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     }
 
     // In cloud deployment mode, require HTTPS for secure connections
-    if (getIsCloudDeployment()
+    if (cloudDeploymentMode()
         && new URL(configObject.getEndpoint()).getProtocol().equals(HTTP)) {
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
