@@ -93,7 +93,6 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
     this.featureFlags = featureFlags;
   }
 
-  @Override
   public FeatureFlags getFeatureFlags() {
     return featureFlags;
   }
