@@ -38,8 +38,8 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
   /**
    * Checks if running in cloud deployment mode by reading the DEPLOYMENT_MODE environment variable.
-   * TODO: When upgrading to a newer CDK version that includes FeatureFlags.deploymentMode(),
-   * refactor to use: AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode())
+   * TODO: When upgrading to a newer CDK version that includes FeatureFlags.deploymentMode(), refactor
+   * to use: AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode())
    */
   private boolean cloudDeploymentMode() {
     String deploymentMode = System.getenv("DEPLOYMENT_MODE");
