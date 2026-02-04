@@ -30,12 +30,12 @@ import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,8 +62,9 @@ public class MongodbDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * When running in cloud deployment mode, remove the TLS option from the spec for standalone instances
-   * to enforce TLS connections. This replaces the need for a separate strict-encrypt connector.
+   * When running in cloud deployment mode, remove the TLS option from the spec for standalone
+   * instances to enforce TLS connections. This replaces the need for a separate strict-encrypt
+   * connector.
    */
   @Override
   public ConnectorSpecification spec() throws Exception {
