@@ -1236,6 +1236,39 @@
         }
       }
     },
+    "live_videos": {
+      "type": ["object", "null"],
+      "properties": {
+        "data": {
+          "type": ["array", "null"],
+          "items": {
+            "$ref": "livevideo.json"
+          }
+        },
+        "paging": {
+          "type": ["object", "null"],
+          "properties": {
+            "previous": {
+              "type": ["string", "null"]
+            },
+            "next": {
+              "type": ["string", "null"]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": ["string", "null"]
+                },
+                "after": {
+                  "type": ["string", "null"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "locations": {
       "type": ["object", "null"],
       "properties": {

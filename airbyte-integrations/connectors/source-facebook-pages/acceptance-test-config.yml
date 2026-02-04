@@ -41,6 +41,8 @@ acceptance_tests:
               bypass_reason: "Data is not permanent"
             - name: "indexed_videos/paging/cursors"
               bypass_reason: "Data is not permanent"
+            - name: "live_videos/paging/cursors"
+              bypass_reason: "Data is not permanent"
             - name: "photos/paging/cursors"
               bypass_reason: "Data is not permanent"
             - name: "posts/paging/next"
