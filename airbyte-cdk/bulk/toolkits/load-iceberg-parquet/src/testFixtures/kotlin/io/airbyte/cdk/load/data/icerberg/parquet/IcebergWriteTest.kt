@@ -41,8 +41,7 @@ abstract class IcebergWriteTest(
     micronautProperties: Map<Property, String> = emptyMap(),
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
-) :
-    BasicFunctionalityIntegrationTest(
+) : BasicFunctionalityIntegrationTest(
         configContents,
         configSpecClass,
         IcebergDataDumper(tableIdGenerator, getCatalog),
@@ -66,8 +65,11 @@ abstract class IcebergWriteTest(
             ),
         // Protobuf can't encode unknown/schemaless types, so they get nulled
         unknownTypesBehavior =
-            if (dataChannelFormat == DataChannelFormat.PROTOBUF) UnknownTypesBehavior.NULL
-            else UnknownTypesBehavior.SERIALIZE,
+            if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                UnknownTypesBehavior.NULL
+            } else {
+                UnknownTypesBehavior.SERIALIZE
+            },
         nullEqualsUnset = true,
         configUpdater = IcebergConfigUpdater,
         dataChannelFormat = dataChannelFormat,
@@ -91,16 +93,19 @@ abstract class IcebergWriteTest(
     @Test
     override fun testAppendSchemaEvolution() {
         Assumptions.assumeTrue(verifyDataWriting)
-        fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>) =
-            DestinationStream(
-                unmappedNamespace = randomizedNamespace,
-                unmappedName = "test_stream",
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = syncId,
-                namespaceMapper = NamespaceMapper(),
-                tableSchema = makeTableSchema(ObjectType(schema), Append),
-            )
+
+        fun makeStream(
+            syncId: Long,
+            schema: LinkedHashMap<String, FieldType>,
+        ) = DestinationStream(
+            unmappedNamespace = randomizedNamespace,
+            unmappedName = "test_stream",
+            generationId = 0,
+            minimumGenerationId = 0,
+            syncId = syncId,
+            namespaceMapper = NamespaceMapper(),
+            tableSchema = makeTableSchema(ObjectType(schema), Append),
+        )
 
         val firstStream =
             makeStream(
@@ -129,7 +134,7 @@ abstract class IcebergWriteTest(
             listOf(
                 InputRecord(
                     finalStream,
-                    """{"id": 42, "same": "43", "to_add": "val3"}""",
+                    """{"id": 42, "same": 43, "to_add": "val3"}""",
                     emittedAtMs = 1234,
                 ),
             ),
@@ -175,19 +180,20 @@ abstract class IcebergWriteTest(
                 namespaceMapper = NamespaceMapper(),
                 tableSchema = makeTableSchema(dedupSchema, dedupImportType),
             )
-        val failure = expectFailure {
-            runSync(
-                updatedConfig,
-                stream,
-                listOf(
-                    InputRecord(
-                        stream,
-                        """{"id": null}""",
-                        emittedAtMs = 1234L,
+        val failure =
+            expectFailure {
+                runSync(
+                    updatedConfig,
+                    stream,
+                    listOf(
+                        InputRecord(
+                            stream,
+                            """{"id": null}""",
+                            emittedAtMs = 1234L,
+                        ),
                     ),
-                ),
-            )
-        }
+                )
+            }
         assertContains(
             failure.message,
             BaseDeltaTaskWriter.NULL_PK_ERROR_MESSAGE,

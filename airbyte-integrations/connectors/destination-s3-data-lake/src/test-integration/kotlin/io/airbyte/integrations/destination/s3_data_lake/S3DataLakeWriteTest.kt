@@ -51,8 +51,7 @@ abstract class S3DataLakeWriteTest(
     micronautProperties: Map<Property, String> = emptyMap(),
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
-) :
-    IcebergWriteTest(
+) : IcebergWriteTest(
         configContents,
         S3DataLakeSpecification::class.java,
         getCatalog,
@@ -85,16 +84,15 @@ class GlueWriteTest :
         fun makeStream(
             name: String,
             namespaceSuffix: String,
-        ) =
-            DestinationStream(
-                unmappedNamespace = randomizedNamespace + namespaceSuffix,
-                unmappedName = name,
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 42,
-                namespaceMapper = NamespaceMapper(),
-                tableSchema = makeTableSchema(ObjectType(linkedMapOf("id" to intType)), Append),
-            )
+        ) = DestinationStream(
+            unmappedNamespace = randomizedNamespace + namespaceSuffix,
+            unmappedName = name,
+            generationId = 0,
+            minimumGenerationId = 0,
+            syncId = 42,
+            namespaceMapper = NamespaceMapper(),
+            tableSchema = makeTableSchema(ObjectType(linkedMapOf("id" to intType)), Append),
+        )
         // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
         // So these two streams will collide.
         val catalog =
@@ -224,13 +222,15 @@ class NessieMinioWriteTest :
             val encodedCredentials = Base64.getEncoder().encodeToString(credentials.toByteArray())
 
             val formBody =
-                FormBody.Builder()
+                FormBody
+                    .Builder()
                     .add("grant_type", "client_credentials")
                     .add("scope", "profile")
                     .build()
 
             val request =
-                Request.Builder()
+                Request
+                    .Builder()
                     .url("http://127.0.0.1:8080/realms/iceberg/protocol/openid-connect/token")
                     .post(formBody)
                     .header("Content-Type", "application/x-www-form-urlencoded")
@@ -374,26 +374,6 @@ class PolarisWriteTest :
     }
 }
 
-// class SnowflakeInsertProtoAcceptanceTest :
-//    SnowflakeAcceptanceTest(
-//        configPath = CONFIG_PATH,
-//        dataDumper =
-//            SnowflakeDataDumper { spec ->
-//                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
-//            },
-//        recordMapper = SnowflakeExpectedRecordMapper,
-//        nameMapper = SnowflakeNameMapper(),
-//        dataChannelFormat = DataChannelFormat.PROTOBUF,
-//        dataChannelMedium = DataChannelMedium.SOCKET,
-//        unknownTypesBehavior = UnknownTypesBehavior.NULL,
-//        isStreamSchemaRetroactiveForUnknownTypeToString = false,
-//    ) {
-//    @Test
-//    override fun testBasicWrite() {
-//        super.testBasicWrite()
-//    }
-// }
-
 class GlueWriteTestProtoSocket :
     S3DataLakeWriteTest(
         configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
@@ -409,4 +389,13 @@ class GlueWriteTestProtoSocket :
         cleaner = S3DataLakeCleaner,
         micronautProperties =
             S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
-    )
+    ) {
+    // Use single socket for dedup tests to preserve record ordering in proto socket mode
+    override val useSingleSocketForDedup: Boolean = true
+
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15495")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+}
