@@ -54,8 +54,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `title` | `string` |  |
+| `description` | `string \| any` |  |
+| `state` | `object \| any` |  |
+| `priority` | `number \| any` |  |
+| `assignee` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hasNextPage` | `boolean` |  |
+| `endCursor` | `string \| null` |  |
 
 </details>
 
@@ -433,8 +447,23 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `description` | `string \| any` |  |
+| `state` | `string \| any` |  |
+| `startDate` | `string \| any` |  |
+| `targetDate` | `string \| any` |  |
+| `lead` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hasNextPage` | `boolean` |  |
+| `endCursor` | `string \| null` |  |
 
 </details>
 
@@ -662,8 +691,21 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `key` | `string` |  |
+| `description` | `string \| any` |  |
+| `timezone` | `string \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hasNextPage` | `boolean` |  |
+| `endCursor` | `string \| null` |  |
 
 </details>
 
@@ -1324,5 +1366,4 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `took_ms` | `number` | Query execution time in milliseconds |
 
 </details>
-
 

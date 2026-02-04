@@ -6,7 +6,7 @@ import org.gradle.api.tasks.options.Option
 
 // This extension does a lot of heavy lifting, because the property values (core/toolkits)
 // aren't yet set when the plugin's `apply` method is called.
-// In particular: setCore() also adds the base+core CDK dependencies (and computes the correct micronaut ksp dependency)
+// In particular: setCore() also adds the core CDK dependency (and the micronaut ksp dependency)
 // setToolkits() also adds the toolkit dependencies.
 class AirbyteBulkConnectorExtension {
 
@@ -66,52 +66,39 @@ class AirbyteBulkConnectorExtension {
             }
         }
 
-        List<Project> fromSource = []
-        List<String> fromJar = []
-        if (cdk == "local") {
-            fromSource = [
-                    project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-base"),
-                    project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-$core"),
-            ]
-        } else {
-            fromJar = [
-                    "io.airbyte.bulk-cdk:bulk-cdk-core-base:$cdk",
-                    "io.airbyte.bulk-cdk:bulk-cdk-core-$core:$cdk",
-            ]
+        // Core CDK dependency
+        def coreDep = (cdk == "local")
+                ? project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-$core")
+                : "io.airbyte.bulk-cdk:bulk-cdk-core-$core:$cdk"
+
+        // Read micronaut version from gradle.properties (single source of truth)
+        def cdkPropsFile = project.rootProject.file("airbyte-cdk/bulk/gradle.properties")
+        def cdkProps = new Properties()
+        cdkPropsFile.withInputStream { cdkProps.load(it) }
+        def micronautBomVersion = cdkProps.getProperty("micronautVersion")
+        if (micronautBomVersion == null) {
+            throw new IllegalArgumentException("Missing 'micronautVersion' in airbyte-cdk/bulk/gradle.properties")
         }
 
-        String micronautVersion = null
-        // Use a temporary configuration to find the Micronaut version
-        // in the transitive dependencies of the Bulk CDK base.
-        def tempConfiguration = project.configurations.detachedConfiguration()
-        def baseDependency = (cdk == "local")
-                ? project.dependencies.create(fromSource.first)
-                : project.dependencies.create(fromJar.first)
-        tempConfiguration.dependencies.add(baseDependency)
-        tempConfiguration.resolvedConfiguration.firstLevelModuleDependencies.each {resolvedDependency ->
-            resolvedDependency.children.each { transitiveDependency ->
-                if (micronautVersion == null &&
-                        transitiveDependency.moduleGroup == TARGET_GROUP &&
-                        transitiveDependency.moduleName == TARGET_MODULE) {
-                    micronautVersion = transitiveDependency.moduleVersion
-                }
-            }
-        }
-        if (micronautVersion == null) {
-            throw new IllegalArgumentException(
-                    "Micronaut version number not found; $TARGET_GROUP:$TARGET_MODULE is not a transitive dependency."
-            )
-        }
-        final String kspDependency = "io.micronaut:micronaut-inject-kotlin:$micronautVersion"
-
+        // KSP annotation processors don't propagate transitively - they're compile-time tools.
+        // So, each connector using Micronaut annotations needs its own KSP processor declared
+        // such that it runs during that project's compilation.
         project.dependencies {
-            ksp kspDependency
-            kspTestFixtures kspDependency
-            kspTest kspDependency
+            implementation platform("io.micronaut:micronaut-core-bom:$micronautBomVersion")
+            ksp platform("io.micronaut:micronaut-core-bom:$micronautBomVersion")
+            ksp "io.micronaut:micronaut-inject-kotlin"
+            kspTestFixtures platform("io.micronaut:micronaut-core-bom:$micronautBomVersion")
+            kspTestFixtures "io.micronaut:micronaut-inject-kotlin"
+            kspTest platform("io.micronaut:micronaut-core-bom:$micronautBomVersion")
+            kspTest "io.micronaut:micronaut-inject-kotlin"
         }
-        for (dep in fromSource + fromJar) {
-            addDependency(dep)
+
+        // For local development, explicitly add base from source
+        // For published versions, base comes transitively from load/extract's POM
+        if (cdk == "local") {
+            addDependency(project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-base"))
         }
+        addDependency(coreDep)
 
         // If useLegacyTaskLoader was set before core, apply the exclusion now
         if (useLegacyTaskLoader) {
@@ -158,9 +145,6 @@ class AirbyteBulkConnectorExtension {
             }
         }
     }
-
-    static private final String TARGET_GROUP = "io.micronaut"
-    static private final String TARGET_MODULE = "micronaut-runtime"
 }
 
 class AirbyteBulkConnectorPlugin implements Plugin<Project> {

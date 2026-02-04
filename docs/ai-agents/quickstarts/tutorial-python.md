@@ -161,12 +161,12 @@ Add the following code to `agent.py`.
 
 ```python title="agent.py"
 @agent.tool_plain
-@GithubConnector.describe
+@GithubConnector.tool_utils
 async def github_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-The `@GithubConnector.describe` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
+The `@GithubConnector.tool_utils` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
 
 With this single tool, your agent can access all of the connector's capabilities. The agent decides which entity and action to use based on your natural language questions.
 
