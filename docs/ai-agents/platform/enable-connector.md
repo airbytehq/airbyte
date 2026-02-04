@@ -11,76 +11,73 @@ Before your AI agents can interact with external data sources, you need to enabl
 
 ## What enabling a connector does
 
-When you enable a connector in Agent Engine, you're configuring which data sources your application supports. This is separate from authentication, which happens when individual users connect their accounts.
+When you enable a connector in Agent Engine, you're configuring which data sources your app supports. This is separate from authentication, which happens when individual users connect their accounts.
 
-Enabling a connector does the following:
+Enabling a connector does the following.
 
 - Makes the connector available in your organization's connector catalog
 - Allows your end users to authenticate with their own credentials for that data source
-- Configures which modes the connector operates in (Direct mode, Replication mode, or both)
+- Configures which modes the connector operates in: direct, replication, or both
 
 ## Connector modes
 
 Agent Engine connectors can operate in two modes:
 
-**Direct mode** allows AI agents to execute real-time queries against connected data sources. When a user asks a question, the agent calls the third-party API directly to fetch fresh data. This mode is ideal for operational queries, real-time lookups, and actions that need current information.
+- **Direct mode** allows AI agents to execute real-time queries against connected data sources. When a user asks a question, the agent calls the third-party API directly to fetch fresh data. This mode is ideal for operational queries, real-time lookups, and actions that need current information.
 
-**Replication mode** syncs data from connected sources to object storage (such as S3, GCS, or Azure Blob Storage). This mode is useful for analytics, RAG pipelines, and scenarios where you need to process large volumes of historical data.
+- **Replication mode** syncs data from connected sources to object storage like S3, GCS, or Azure Blob Storage. This mode is useful for analytics, RAG pipelines, and scenarios where you need to process large volumes of historical data.
 
 Some connectors support both modes, while others support only one. When enabling a connector, you can choose which modes to activate based on your application's needs.
 
-## Enable a connector in the UI
+## With the UI
 
-To enable a connector through the Agent Engine dashboard:
+### Enable a new connector
 
-1. Navigate to the **Connectors** page in the Agent Engine dashboard.
+Enable a connector through the Agent Engine dashboard.
+
+1. Click **Connectors**.
 
 2. Click **Manage Connectors** (or **Enable Connector** if you haven't enabled any connectors yet).
 
 3. In the slide-out panel, browse or search for the connector you want to enable.
 
-4. Select the modes you want to enable for the connector:
+4. Click the **Existing Connectors** tab and select the modes you want to enable for the connector:
+
    - Check **Direct** to enable real-time agent queries
-   - Check **Replication** to enable data syncing (requires a configured destination)
 
-5. Click the connector card to enable it.
+   - Check **Replication** to enable replicating data to object storage
 
-The connector now appears in your active connectors list. Your end users can authenticate with this connector using the [authentication module](/ai-agents/platform/authenticate/authentication-module) or the API.
+5. Click **Done**.
 
-### Manage existing connectors
+The connector appears in your active connectors list. Your end users can authenticate with this connector and use it in the modes you defined.
 
-To modify or remove connectors you've already enabled:
+![Managing connectors in the user interface](img/managing-connectors.png)
 
-1. Navigate to the **Connectors** page.
+### Update connectors
 
-2. Click **Manage Connectors**.
+To modify or delete connectors you've already enabled, follow these steps.
 
-3. Select the **Existing Connectors** tab.
+1. Click **Connectors** > **Manage Connectors** > **Existing Connectors**.
 
-4. For each connector, you can:
+2. For each connector, you can:
+
    - Toggle Direct mode on or off
-   - Toggle Replication mode on or off (if a destination is configured)
+
+   - Toggle Replication mode on or off, if data replication is enabled
+
    - Remove the connector entirely by clicking the trash icon
 
 At least one mode must remain enabled for each active connector.
 
-## Enable a connector with the API
+## With the API
 
 You can also enable connectors programmatically using the Agent Engine API. This approach is useful for automation, infrastructure-as-code workflows, or when building custom admin interfaces.
 
-### Prerequisites
-
-Before enabling connectors via the API, you need:
-
-1. An Airbyte Cloud account with Agent Engine access
-2. API credentials (Client ID and Client Secret) from your Airbyte Cloud dashboard under **Settings > Applications**
-3. An application token for authentication
-
 ### Get an application token
 
-Request an application token using your Airbyte client credentials:
+Request an application token using your Airbyte client credentials.
 
-```bash
+```bash title="Request"
 curl --location 'https://cloud.airbyte.com/api/v1/applications/token' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -89,13 +86,24 @@ curl --location 'https://cloud.airbyte.com/api/v1/applications/token' \
   }'
 ```
 
-Save the returned token for subsequent API calls.
+Save the returned access token for subsequent API calls.
 
-### Create a source template
+### List enabled connectors
 
-Enabling a connector via the API means creating a source template. Source templates control which connectors appear in your application and how they're configured.
+To see which connectors are enabled for your organization:
 
-```bash
+```bash title="Request"
+curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
+  --header 'Authorization: Bearer <APPLICATION_TOKEN>'
+```
+
+This returns both connectors you've created and standard connectors available to all Agent Engine users.
+
+### Enable the connector
+
+If you don't see the connector you need, enable that connector.
+
+```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
   --header 'Content-Type: application/json' \
@@ -110,22 +118,11 @@ The `actor_definition_id` identifies the specific connector type. You can find c
 
 The `partial_default_config` object lets you pre-configure default values for the connector, so your users don't need to provide them during authentication.
 
-### List available source templates
+### Update a connector
 
-To see which connectors are enabled for your organization:
+To modify an existing connector.
 
-```bash
-curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>'
-```
-
-This returns both templates you've created and standard templates available to all Agent Engine users.
-
-### Update a source template
-
-To modify an existing source template:
-
-```bash
+```bash title="Request"
 curl -X PATCH 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<template_id>' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
   --header 'Content-Type: application/json' \
@@ -136,52 +133,17 @@ curl -X PATCH 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<tem
   }'
 ```
 
-When you update a source template, all existing sources created from it are also updated.
+When you update a connector, all instances of that connector are also updated.
 
-### Delete a source template
+### Delete a connector
 
-To disable a connector by removing its template:
+To delete a connector, follow these steps. Once you do this, this connector is no longer available for people to authenticate with.
 
-```bash
+```bash title="Request"
 curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<template_id>' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>'
 ```
 
-Sources created from a deleted template will no longer appear in the authentication widget.
-
-## Organize connectors with tags
-
-You can use tags to organize and filter your enabled connectors. This is useful when you have different connector sets for different user tiers or use cases.
-
-### Add tags when creating a template
-
-```bash
-curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "organization_id": "<your_organization_id>",
-    "actor_definition_id": "<connector_definition_id>",
-    "partial_default_config": {},
-    "tags": ["crm", "pro-tier"]
-  }'
-```
-
-### Filter templates by tags
-
-```bash
-curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources?tags=crm&tags=sales&tags_mode=any' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>'
-```
-
-Use `tags_mode=any` to match templates with at least one of the specified tags, or `tags_mode=all` to match only templates with all specified tags.
-
-For more information on tag management, see [Template Tags](/ai-agents/embedded/api/tags).
-
 ## Next steps
 
-After enabling connectors, you can:
-
-- Set up the [authentication module](/ai-agents/platform/authenticate/authentication-module) to let users connect their accounts
-- Configure [data replication](/ai-agents/platform/data-replication) to sync data to your storage
-- Enable the [entity cache](/ai-agents/platform/entity-cache) to optimize agent search performance
+After enabling connectors, set up [authentication](authenticate) to let users connect their accounts.
