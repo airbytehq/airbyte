@@ -83,9 +83,9 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
   @Override
   public ConnectorSpecification spec() throws Exception {
     final ConnectorSpecification spec = Jsons.clone(super.spec());
-        if (cloudDeploymentMode()) {
-          ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("encryption");
-        }
+    if (cloudDeploymentMode()) {
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("encryption");
+    }
     return spec;
   }
 
@@ -94,12 +94,12 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
    */
   @Override
   public AirbyteMessageConsumer getConsumer(
-      final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                            final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     final JsonNode effectiveConfig;
-        if (cloudDeploymentMode()) {
-          final JsonNode cloneConfig = Jsons.clone(config);
+    if (cloudDeploymentMode()) {
+      final JsonNode cloneConfig = Jsons.clone(config);
       ((ObjectNode) cloneConfig).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
           .put("encryption_method", "client_nne")
           .put("encryption_algorithm", "AES256")
