@@ -12,7 +12,6 @@ data:
   name: ElasticSearch
   registryOverrides:
     cloud:
-      dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
       enabled: true
     oss:
       enabled: true
