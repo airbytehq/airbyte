@@ -926,20 +926,27 @@ class GoogleAdsStreamingDecoder(Decoder):
         return True
 
     def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
-        data, complete = self._buffer_up_to_limit(response)
-        if complete:
-            yield from self.parser.parse(io.BytesIO(data))
-            return
+        try:
+            data, complete = self._buffer_up_to_limit(response)
+            if complete:
+                yield from self.parser.parse(io.BytesIO(data))
+                return
 
-        records_batch: List[Dict[str, Any]] = []
-        for record in self._parse_records_from_stream(data):
-            records_batch.append(record)
-            if len(records_batch) >= 100:
+            records_batch: List[Dict[str, Any]] = []
+            for record in self._parse_records_from_stream(data):
+                records_batch.append(record)
+                if len(records_batch) >= 100:
+                    yield {"results": records_batch}
+                    records_batch = []
+
+            if records_batch:
                 yield {"results": records_batch}
-                records_batch = []
-
-        if records_batch:
-            yield {"results": records_batch}
+        except requests.exceptions.ChunkedEncodingError as e:
+            raise AirbyteTracedException(
+                message="Response stream was interrupted. This is a transient error, please retry.",
+                internal_message=f"ChunkedEncodingError while streaming response: {e}",
+                failure_type=FailureType.transient_error,
+            ) from e
 
     def _buffer_up_to_limit(self, response: requests.Response) -> Tuple[Union[bytes, Iterable[bytes]], bool]:
         buf = bytearray()
