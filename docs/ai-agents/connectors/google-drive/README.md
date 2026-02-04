@@ -11,21 +11,21 @@ and change tracking for data analysis and integration workflows.
 The Google-Drive connector is optimized to handle prompts like these.
 
 - List all files in my Google Drive
-- Show me files modified in the last week
-- Get details for file abc123
-- Download file abc123 from my Drive
-- Export Google Doc abc123 as PDF
-- Export Google Sheet xyz789 as CSV
-- Get the content of file abc123
+- Show me details for a recent file
+- Download a recent file from my Drive
+- Export a recent Google Doc as PDF
+- Export a recent Google Sheet as CSV
+- Show me the content of a recent file
 - List all shared drives I have access to
-- Get shared drive xyz789
-- Show permissions for file abc123
-- List comments on file abc123
-- Get all replies to comment def456 on file abc123
-- Show revision history for file abc123
-- What changes have been made since my last sync?
+- Show me details for a shared drive I have access to
+- Show permissions for a recent file
+- List comments on a recent file
+- Show replies to a recent comment on a file
+- Show revision history for a recent file
 - Get my Drive storage quota and user info
-- List files in a specific folder
+- List files in a folder I have access to
+- Show me files modified in the last week
+- What changes have been made since my last sync?
 
 ## Unsupported questions
 
@@ -122,7 +122,7 @@ See the official [Google-Drive API reference](https://developers.google.com/work
 
 ## Version information
 
-- **Package version:** 0.1.49
-- **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.50
+- **Connector version:** 0.1.5
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-drive/CHANGELOG.md)

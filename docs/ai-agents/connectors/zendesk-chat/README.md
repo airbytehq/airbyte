@@ -27,14 +27,14 @@ The connector handles this automatically.
 
 The Zendesk-Chat connector is optimized to handle prompts like these.
 
+- List all banned visitors
+- List all departments with their settings
 - Show me all chats from last week
 - List all agents in the support department
 - What are the most used chat shortcuts?
 - Show chat volume by department
-- List all banned visitors
 - What triggers are currently active?
 - Show agent activity timeline for today
-- List all departments with their settings
 
 ## Unsupported questions
 
@@ -129,7 +129,7 @@ See the official [Zendesk-Chat API reference](https://developer.zendesk.com/api-
 
 ## Version information
 
-- **Package version:** 0.1.31
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.32
+- **Connector version:** 0.1.7
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-chat/CHANGELOG.md)

@@ -11,17 +11,17 @@ admins, tags, and segments for customer support analytics and insights.
 The Intercom connector is optimized to handle prompts like these.
 
 - List all contacts in my Intercom workspace
-- Show me conversations from the last week
 - List all companies in Intercom
 - What teams are configured in my workspace?
 - Show me all admins in my Intercom account
 - List all tags used in Intercom
-- Get details for contact \{contact_id\}
 - Show me all customer segments
-- Get company details for \{company_id\}
+- Show me details for a recent contact
+- Show me details for a recent company
+- Show me details for a recent conversation
+- Show me conversations from the last week
 - List conversations assigned to team \{team_id\}
 - Show me open conversations
-- Get conversation details for \{conversation_id\}
 
 ## Unsupported questions
 
@@ -112,7 +112,7 @@ See the official [Intercom API reference](https://developers.intercom.com/docs/r
 
 ## Version information
 
-- **Package version:** 0.1.51
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.52
+- **Connector version:** 0.1.7
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/intercom/CHANGELOG.md)

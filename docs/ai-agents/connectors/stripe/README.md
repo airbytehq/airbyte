@@ -9,6 +9,12 @@ access to customers for payment analytics and customer management.
 
 The Stripe connector is optimized to handle prompts like these.
 
+- List customers created in the last 7 days
+- Show me details for a recent customer
+- List recent charges
+- Show me details for a recent charge
+- List recent invoices
+- List active subscriptions
 - Show me my top 10 customers by total revenue this month
 - List all customers who have spent over $5,000 in the last quarter
 - Analyze payment trends for my Stripe customers
@@ -112,7 +118,7 @@ See the official [Stripe API reference](https://docs.stripe.com/api).
 
 ## Version information
 
-- **Package version:** 0.5.78
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.5.79
+- **Connector version:** 0.1.7
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/stripe/CHANGELOG.md)

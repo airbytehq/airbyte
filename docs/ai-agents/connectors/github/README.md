@@ -13,7 +13,7 @@ The Github connector is optimized to handle prompts like these.
 - Show me all open issues in my repositories this month
 - List the top 5 repositories I've starred recently
 - Analyze the commit trends in my main project over the last quarter
-- Find all pull requests created by \{team_member\} in the past two weeks
+- Find all pull requests created in the past two weeks
 - Search for repositories related to machine learning in my organizations
 - Compare the number of contributors across my different team projects
 - Identify the most active branches in my main repository
@@ -123,7 +123,7 @@ See the official [Github API reference](https://docs.github.com/en/rest).
 
 ## Version information
 
-- **Package version:** 0.18.81
-- **Connector version:** 0.1.9
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.18.82
+- **Connector version:** 0.1.10
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/github/CHANGELOG.md)
