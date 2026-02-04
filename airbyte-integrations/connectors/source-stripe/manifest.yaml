@@ -1914,7 +1914,7 @@ spec:
 # Each worker handles a different time slice, preventing overlap.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 25) }}"
+  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 25) }}"
   max_concurrency: 100
 
 api_budget:
