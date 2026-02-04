@@ -46,12 +46,11 @@ In open source mode, you provide API credentials directly to the connector.
 
 ```python
 from airbyte_agent_facebook-marketing import FacebookMarketingConnector
-from airbyte_agent_facebook_marketing.models import FacebookMarketingAuthConfig
+from airbyte_agent_facebook_marketing.models import FacebookMarketingServiceAccountKeyAuthenticationAuthConfig
 
 connector = FacebookMarketingConnector(
-    auth_config=FacebookMarketingAuthConfig(
-        access_token="<Facebook Marketing API access token>",
-        account_id="<Facebook Ad Account ID (without the act_ prefix)>"
+    auth_config=FacebookMarketingServiceAccountKeyAuthenticationAuthConfig(
+        account_key="<Facebook long-lived access token for Service Account authentication>"
     )
 )
 
@@ -90,11 +89,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
+| Current User | [Get](./REFERENCE.md#current-user-get) |
+| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list) |
 | Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get) |
 | Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Get](./REFERENCE.md#ad-sets-get) |
 | Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get) |
 | Ad Creatives | [List](./REFERENCE.md#ad-creatives-list) |
 | Ads Insights | [List](./REFERENCE.md#ads-insights-list) |
+| Ad Account | [Get](./REFERENCE.md#ad-account-get) |
 | Custom Conversions | [List](./REFERENCE.md#custom-conversions-list) |
 | Images | [List](./REFERENCE.md#images-list) |
 | Videos | [List](./REFERENCE.md#videos-list) |
@@ -110,7 +112,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.2
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.1.15
+- **Connector version:** 1.0.13
+- **Generated with Connector SDK commit SHA:** 9d088ae971839a1bcc590342a987fe496083aa2e
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)

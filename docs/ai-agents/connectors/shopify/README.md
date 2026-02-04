@@ -54,8 +54,7 @@ from airbyte_agent_shopify.models import ShopifyAuthConfig
 
 connector = ShopifyConnector(
     auth_config=ShopifyAuthConfig(
-        api_key="<Your Shopify Admin API access token>",
-        shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
+        api_key="<Your Shopify Admin API access token>"
     )
 )
 
@@ -138,7 +137,7 @@ See the official [Shopify API reference](https://shopify.dev/docs/api/admin-rest
 
 ## Version information
 
-- **Package version:** 0.1.22
-- **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.1.31
+- **Connector version:** 0.1.5
+- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/shopify/CHANGELOG.md)
