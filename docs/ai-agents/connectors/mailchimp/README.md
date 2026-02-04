@@ -10,16 +10,16 @@ for marketing analytics and audience management.
 
 The Mailchimp connector is optimized to handle prompts like these.
 
-- Show me all my email campaigns from the last month
 - List all subscribers in my main mailing list
-- What are the open rates for my recent campaigns?
-- Show me the performance report for campaign \{campaign_id\}
 - List all automation workflows in my account
-- Who unsubscribed from list \{list_id\} this week?
 - Show me all segments for my primary audience
+- List all interest categories for my primary audience
+- Show me email activity for a recent campaign
+- Show me the performance report for a recent campaign
+- Show me all my email campaigns from the last month
+- What are the open rates for my recent campaigns?
+- Who unsubscribed from list \{list_id\} this week?
 - What tags are applied to my subscribers?
-- List all interest categories for list \{list_id\}
-- Show me email activity for campaign \{campaign_id\}
 - How many subscribers do I have in each list?
 - What are my top performing campaigns by click rate?
 
@@ -117,7 +117,7 @@ See the official [Mailchimp API reference](https://mailchimp.com/developer/marke
 
 ## Version information
 
-- **Package version:** 0.1.37
-- **Connector version:** 1.0.5
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.38
+- **Connector version:** 1.0.6
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/mailchimp/CHANGELOG.md)
