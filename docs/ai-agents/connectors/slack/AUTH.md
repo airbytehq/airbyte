@@ -15,8 +15,8 @@ In open source mode, you provide API credentials directly to the connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `client_id` | `str` | Yes | Your Slack App's Client ID |
-| `client_secret` | `str` | Yes | Your Slack App's Client Secret |
+| `client_id` | `str` | No | Your Slack App's Client ID |
+| `client_secret` | `str` | No | Your Slack App's Client Secret |
 | `access_token` | `str` | Yes | OAuth access token (bot token from oauth.v2.access response) |
 
 Example request:
@@ -67,8 +67,8 @@ Create a connector with OAuth credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `client_id` | `str` | Yes | Your Slack App's Client ID |
-| `client_secret` | `str` | Yes | Your Slack App's Client Secret |
+| `client_id` | `str` | No | Your Slack App's Client ID |
+| `client_secret` | `str` | No | Your Slack App's Client Secret |
 | `access_token` | `str` | Yes | OAuth access token (bot token from oauth.v2.access response) |
 
 `replication_config` fields you need:
@@ -94,6 +94,67 @@ curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
       "client_secret": "<Your Slack App's Client Secret>",
       "access_token": "<OAuth access token (bot token from oauth.v2.access response)>"
     },
+    "replication_config": {
+      "start_date": "<UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.>",
+      "lookback_window": "<Number of days to look back when syncing data (0-365).>",
+      "join_channels": "<Whether to automatically join public channels to sync messages.>"
+    }
+  }'
+```
+
+
+
+#### Bring your own OAuth flow
+To implement your own OAuth flow, use Airbyte's server-side OAuth API endpoints. For a complete guide, see [Implement your own OAuth flow](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-server-side-oauth).
+
+**Step 1: Initiate the OAuth flow**
+
+Request a consent URL for your user.
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `external_user_id` | `string` | Yes | Your unique identifier for the end user |
+| `connector_type` | `string` | Yes | The connector type (e.g., "Slack") |
+| `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
+
+Example request:
+
+```bash
+curl -X POST "https://api.airbyte.ai/v1/integrations/connectors/oauth/initiate" \
+  -H "Authorization: Bearer <BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Slack",
+    "redirect_url": "https://yourapp.com/oauth/callback"
+  }'
+```
+
+Redirect your user to the `consent_url` from the response. After they authorize, they'll be redirected back to your app with a `secret_id` query parameter.
+
+**Step 2: Create a connector with the secret ID**
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `external_user_id` | `string` | Yes | Your unique identifier for the end user |
+| `connector_type` | `string` | Yes | The connector type (e.g., "Slack") |
+| `name` | `string` | Yes | A name for this connector instance |
+| `server_side_oauth_secret_id` | `string` | Yes | The secret_id from the OAuth callback |
+| `replication_config.start_date` | `str (date-time)` | Yes | UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. |
+| `replication_config.lookback_window` | `int` | Yes | Number of days to look back when syncing data (0-365). |
+| `replication_config.join_channels` | `bool` | Yes | Whether to automatically join public channels to sync messages. |
+
+Example request:
+
+```bash
+curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
+  -H "Authorization: Bearer <BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Slack",
+    "name": "My Slack Connector",
+    "server_side_oauth_secret_id": "<secret_id_from_callback>",
     "replication_config": {
       "start_date": "<UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.>",
       "lookback_window": "<Number of days to look back when syncing data (0-365).>",
