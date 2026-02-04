@@ -51,7 +51,7 @@ For more information about MongoDB's document size limits, see the [MongoDB docu
 ### Schema Discovery & Enforcement
 
 - Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields. This value is universally applied to all collections discovered in the target database. The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency. By default, 10,000 documents are sampled. This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered. However, the trade-off is time, as a higher value will take the process longer to sample the collection.
-- When Running with Schema Enforced set to `false` there is no attempt to discover any schema. See more in [Schema Enforcement](#Schema-Enforcement).
+- When Running with Schema Enforced set to `false` there is no attempt to discover any schema. See more in [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement).
 
 ### Vendor-Specific Connector Limitations
 
