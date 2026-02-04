@@ -77,7 +77,7 @@ class PostgresSourceDebeziumOperations(
             check(stateNode.size() == 1) { "State value has unexpected format: $opaqueStateValue" }
             val offsetMap: Map<JsonNode, JsonNode> =
                 stateNode
-                    .fields()
+                    .properties()
                     .asSequence()
                     .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
                     .toMap()
