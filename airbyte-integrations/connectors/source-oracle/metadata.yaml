@@ -29,8 +29,6 @@ data:
   name: Oracle DB
   registryOverrides:
     cloud:
-      dockerImageTag: 0.5.7
-      dockerRepository: airbyte/source-oracle-strict-encrypt
       enabled: true
     oss:
       enabled: true
