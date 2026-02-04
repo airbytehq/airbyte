@@ -26,7 +26,6 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
 
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <your_access_token>' \
-  --header 'X-Organization-Id: <your_organization_id>' \
   --data '{
 
     "workspace_name": "your_workspace_name",
@@ -89,11 +88,9 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/sources' \
 
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <scoped_token>' \
-  --header 'X-Organization-Id: <your_organization_id>' \
   --data '{
 
     "name": "your_source_name",
-    "workspace ID": "your_workspace ID",
     "source_template_id": "your_source_template_id",
     "source_config": {
       // your source configuration fields here
@@ -117,11 +114,9 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/sources' \
 
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <scoped_token>' \
-  --header 'X-Organization-Id: <your_organization_id>' \
   --data '{
 
     "name": "your_source_name",
-    "workspace ID": "your_workspace ID",
     "source_template_id": "your_source_template_id",
     "source_config": {},
     "selected_connection_template_tags": ["analytics", "standard-sync"],
@@ -157,7 +152,6 @@ To whitelist specific streams, configure your source template with the `whitelis
 curl --location 'https://api.airbyte.ai/api/v1/embedded/templates/sources' \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <your_access_token>' \
-  --header 'X-Organization-Id: <your_organization_id>' \
   --data '{
     "name": "PostgreSQL Analytics Template",
     "actor_definition_id": "decd338e-5647-4c0b-adf4-da0e75f5a750",
