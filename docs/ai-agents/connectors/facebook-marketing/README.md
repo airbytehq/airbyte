@@ -46,13 +46,11 @@ In open source mode, you provide API credentials directly to the connector.
 
 ```python
 from airbyte_agent_facebook-marketing import FacebookMarketingConnector
-from airbyte_agent_facebook_marketing.models import FacebookMarketingAuthConfig
+from airbyte_agent_facebook_marketing.models import FacebookMarketingServiceAccountKeyAuthenticationAuthConfig
 
 connector = FacebookMarketingConnector(
-    auth_config=FacebookMarketingAuthConfig(
-        access_token="<Facebook OAuth2 Access Token>",
-        client_id="<Facebook App Client ID>",
-        client_secret="<Facebook App Client Secret>"
+    auth_config=FacebookMarketingServiceAccountKeyAuthenticationAuthConfig(
+        account_key="<Facebook long-lived access token for Service Account authentication>"
     )
 )
 
@@ -114,7 +112,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.13
-- **Connector version:** 1.0.11
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.14
+- **Connector version:** 1.0.12
+- **Generated with Connector SDK commit SHA:** f1d25ecbd08e72d78a36953c131f27a655ecb1b2
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)
