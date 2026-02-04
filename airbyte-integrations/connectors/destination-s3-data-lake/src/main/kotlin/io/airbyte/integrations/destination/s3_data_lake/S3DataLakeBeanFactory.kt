@@ -33,7 +33,7 @@ class S3DataLakeBeanFactory {
 
     /** Iceberg has specific timestamp requirements */
     @Singleton
-    fun jsonConvertConfig() =
+    fun mediumConverterConfig() =
         MediumConverterConfig(
             extractedAtAsTimestampWithTimezone = false,
         )

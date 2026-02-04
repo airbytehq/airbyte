@@ -11,8 +11,6 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
-import io.airbyte.cdk.load.config.DataChannelFormat
-import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NumberType
@@ -50,7 +48,8 @@ abstract class S3DataLakeWriteTest(
     cleaner: DestinationCleaner = io.airbyte.cdk.load.test.util.NoopDestinationCleaner,
     micronautProperties: Map<Property, String> = emptyMap(),
     enableSpeed: Boolean = false,
-) : IcebergWriteTest(
+) :
+    IcebergWriteTest(
         configContents,
         S3DataLakeSpecification::class.java,
         getCatalog,
@@ -82,15 +81,16 @@ class GlueWriteTest :
         fun makeStream(
             name: String,
             namespaceSuffix: String,
-        ) = DestinationStream(
-            unmappedNamespace = randomizedNamespace + namespaceSuffix,
-            unmappedName = name,
-            generationId = 0,
-            minimumGenerationId = 0,
-            syncId = 42,
-            namespaceMapper = NamespaceMapper(),
-            tableSchema = makeTableSchema(ObjectType(linkedMapOf("id" to intType)), Append),
-        )
+        ) =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace + namespaceSuffix,
+                unmappedName = name,
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = makeTableSchema(ObjectType(linkedMapOf("id" to intType)), Append),
+            )
         // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
         // So these two streams will collide.
         val catalog =
@@ -220,15 +220,13 @@ class NessieMinioWriteTest :
             val encodedCredentials = Base64.getEncoder().encodeToString(credentials.toByteArray())
 
             val formBody =
-                FormBody
-                    .Builder()
+                FormBody.Builder()
                     .add("grant_type", "client_credentials")
                     .add("scope", "profile")
                     .build()
 
             val request =
-                Request
-                    .Builder()
+                Request.Builder()
                     .url("http://127.0.0.1:8080/realms/iceberg/protocol/openid-connect/token")
                     .post(formBody)
                     .header("Content-Type", "application/x-www-form-urlencoded")
