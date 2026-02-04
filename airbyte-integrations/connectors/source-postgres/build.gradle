@@ -17,7 +17,7 @@ dependencies {
     implementation 'com.azure:azure-identity:1.17.0'
 
     api platform('io.debezium:debezium-bom:3.4.1.Final')
-    // version specified by the debezium bom dependency in the cdc toolkit
+
     implementation 'io.debezium:debezium-connector-postgres'
     // Use Postgres JDBC driver version specified by Debezium
     implementation 'org.postgresql:postgresql'
