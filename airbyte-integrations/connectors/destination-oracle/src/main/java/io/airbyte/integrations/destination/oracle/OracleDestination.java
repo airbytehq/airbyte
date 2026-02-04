@@ -13,7 +13,10 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -50,17 +53,28 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   public static final String ENCRYPTION_METHOD_KEY = "encryption_method";
 
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+    public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
 
-  enum Protocol {
-    TCP,
-    TCPS
-  }
+    private final FeatureFlags featureFlags;
 
-  public OracleDestination() {
-    super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));
-    System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
-  }
+    enum Protocol {
+      TCP,
+      TCPS
+    }
+
+    public OracleDestination() {
+      this(new EnvVariableFeatureFlags());
+    }
+
+    OracleDestination(final FeatureFlags featureFlags) {
+      super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));
+      System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
+      this.featureFlags = featureFlags;
+    }
+
+    private boolean cloudDeploymentMode() {
+      return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+    }
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new OracleDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -73,9 +87,9 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
   @Override
   public ConnectorSpecification spec() throws Exception {
     final ConnectorSpecification spec = Jsons.clone(super.spec());
-    if (getIsCloudDeployment()) {
-      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("encryption");
-    }
+        if (cloudDeploymentMode()) {
+          ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("encryption");
+        }
     return spec;
   }
 
@@ -88,8 +102,8 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
       final ConfiguredAirbyteCatalog catalog,
       final Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
     final JsonNode effectiveConfig;
-    if (getIsCloudDeployment()) {
-      final JsonNode cloneConfig = Jsons.clone(config);
+        if (cloudDeploymentMode()) {
+          final JsonNode cloneConfig = Jsons.clone(config);
       ((ObjectNode) cloneConfig).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
           .put("encryption_method", "client_nne")
           .put("encryption_algorithm", "AES256")
