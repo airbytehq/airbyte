@@ -387,10 +387,10 @@ class TestGoogleAdsStreamingDecoder:
         out = self._decode_all(decoder, resp)
         assert out == {"results": msg[0]["results"]}
 
-    def test_midstream_chunked_encoding_error_propagates(self, decoder):
+    def test_midstream_chunked_encoding_error_raises_transient_error(self, decoder):
         """
-        A network break should surface as ChunkedEncodingError (not swallowed).
-        Some records may already have been yielded before the error.
+        A network break should surface as AirbyteTracedException with transient_error failure type.
+        This allows the platform to automatically retry the job.
         """
         msg = [{"results": [{"i": 1}, {"i": 2}, {"i": 3}, {"i": 4}]}]
         raw = json.dumps(msg).encode("utf-8")
@@ -413,8 +413,10 @@ class TestGoogleAdsStreamingDecoder:
 
         resp = _ErroringResponse(parts=chunks, raise_after_index=2)
 
-        with pytest.raises(ChunkedEncodingError):
+        with pytest.raises(AirbyteTracedException) as exc_info:
             _ = list(decoder.decode(resp))
+        assert exc_info.value.failure_type.value == "transient_error"
+        assert "ChunkedEncodingError" in exc_info.value.internal_message
 
     def test_stream_consumed_error_propagates_immediately(self, decoder):
         @dataclass
