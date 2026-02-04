@@ -1,5 +1,5 @@
 /**
- * This script fetches the embedded API OpenAPI spec and processes it before
+ * This script fetches the Agent Engine API OpenAPI spec and processes it before
  * the build process starts. It ensures the spec is available and validated
  * for both the OpenAPI plugin and sidebar generation.
  */
@@ -7,14 +7,14 @@ const fs = require("fs");
 const https = require("https");
 const path = require("path");
 const { validateOpenAPISpec } = require("./openapi-validator");
-const { SPEC_CACHE_PATH, EMBEDDED_API_SPEC_URL } = require("./constants");
+const { SPEC_CACHE_PATH, AGENT_ENGINE_API_SPEC_URL } = require("./constants");
 
-function fetchEmbeddedApiSpec() {
+function fetchAgentEngineApiSpec() {
   return new Promise((resolve, reject) => {
-    console.log("Fetching embedded API spec...");
+    console.log("Fetching Agent Engine API spec...");
 
     https
-      .get(EMBEDDED_API_SPEC_URL, (response) => {
+      .get(AGENT_ENGINE_API_SPEC_URL, (response) => {
         if (response.statusCode !== 200) {
           reject(new Error(`Failed to fetch spec: ${response.statusCode}`));
           return;
@@ -69,8 +69,8 @@ async function main() {
   
   const previousSpec = loadPreviousSpec();
   try {
-    console.log("🔄 Attempting to fetch latest embedded API spec...");
-    const spec = await fetchEmbeddedApiSpec();
+    console.log("🔄 Attempting to fetch latest Agent Engine API spec...");
+    const spec = await fetchAgentEngineApiSpec();
     
     // Validate using comprehensive OpenAPI schema validator
     const validatedSpec = await validateOpenAPISpec(spec);
@@ -88,7 +88,7 @@ async function main() {
     );
 
     console.log(
-      `✅ Embedded API spec processed and saved to ${SPEC_CACHE_PATH}`,
+      `✅ Agent Engine API spec processed and saved to ${SPEC_CACHE_PATH}`,
     );
     
     if (previousSpec && previousSpec.info?.version !== processedSpec.info?.version) {
@@ -124,9 +124,9 @@ async function main() {
       const fallbackSpec = {
         openapi: "3.1.0",
         info: {
-          title: "Embedded API (Unavailable)",
+          title: "Agent Engine API (Unavailable)",
           version: "0.0.0",
-          description: "The embedded API specification could not be fetched. Please check your network connection and try again."
+          description: "The Agent Engine API specification could not be fetched. Please check your network connection and try again."
         },
         paths: {},
         tags: [],
@@ -146,7 +146,7 @@ async function main() {
         JSON.stringify(fallbackSpec, null, 2),
       );
       
-      console.log("✅ Build will continue with empty embedded API documentation");
+      console.log("✅ Build will continue with empty Agent Engine API documentation");
     }
   }
 }
