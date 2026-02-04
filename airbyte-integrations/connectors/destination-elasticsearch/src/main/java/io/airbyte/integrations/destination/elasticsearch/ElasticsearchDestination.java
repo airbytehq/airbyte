@@ -74,11 +74,10 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     final ConnectorSpecification spec = Jsons.clone(super.spec());
     if (cloudDeploymentMode()) {
       ArrayNode authMethod =
-          (ArrayNode)
-              spec.getConnectionSpecification()
-                  .get("properties")
-                  .get("authenticationMethod")
-                  .get("oneOf");
+          (ArrayNode) spec.getConnectionSpecification()
+              .get("properties")
+              .get("authenticationMethod")
+              .get("oneOf");
       IntStream.range(0, authMethod.size())
           .filter(i -> authMethod.get(i).get("title").asText().equals("None"))
           .findFirst()
