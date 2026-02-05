@@ -15,15 +15,15 @@ In open source mode, you provide API credentials directly to the connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `client_id` | `str` | Yes | The client ID of your Amazon Ads API application |
-| `client_secret` | `str` | Yes | The client secret of your Amazon Ads API application |
+| `client_id` | `str` | No | The client ID of your Amazon Ads API application |
+| `client_secret` | `str` | No | The client secret of your Amazon Ads API application |
 | `refresh_token` | `str` | Yes | The refresh token obtained from the OAuth authorization flow |
 
 Example request:
 
 ```python
-from airbyte_agent_amazon-ads import AmazonAdsConnector
-from airbyte_agent_amazon-ads.models import AmazonAdsAuthConfig
+from airbyte_agent_amazon_ads import AmazonAdsConnector
+from airbyte_agent_amazon_ads.models import AmazonAdsAuthConfig
 
 connector = AmazonAdsConnector(
     auth_config=AmazonAdsAuthConfig(
@@ -49,15 +49,15 @@ Create a connector with OAuth credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `client_id` | `str` | Yes | The client ID of your Amazon Ads API application |
-| `client_secret` | `str` | Yes | The client secret of your Amazon Ads API application |
+| `client_id` | `str` | No | The client ID of your Amazon Ads API application |
+| `client_secret` | `str` | No | The client secret of your Amazon Ads API application |
 | `refresh_token` | `str` | Yes | The refresh token obtained from the OAuth authorization flow |
 
 Example request:
 
 ```bash
-curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
-  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
@@ -71,6 +71,59 @@ curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
   }'
 ```
 
+
+
+#### Bring your own OAuth flow
+To implement your own OAuth flow, use Airbyte's server-side OAuth API endpoints. For a complete guide, see [Implement your own OAuth flow](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-server-side-oauth).
+
+**Step 1: Initiate the OAuth flow**
+
+Request a consent URL for your user.
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `external_user_id` | `string` | Yes | Your unique identifier for the end user |
+| `connector_type` | `string` | Yes | The connector type (e.g., "Amazon-Ads") |
+| `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
+
+Example request:
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Amazon-Ads",
+    "redirect_url": "https://yourapp.com/oauth/callback"
+  }'
+```
+
+Redirect your user to the `consent_url` from the response. After they authorize, they'll be redirected back to your app with a `secret_id` query parameter.
+
+**Step 2: Create a connector with the secret ID**
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `external_user_id` | `string` | Yes | Your unique identifier for the end user |
+| `connector_type` | `string` | Yes | The connector type (e.g., "Amazon-Ads") |
+| `name` | `string` | Yes | A name for this connector instance |
+| `server_side_oauth_secret_id` | `string` | Yes | The secret_id from the OAuth callback |
+
+Example request:
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "external_user_id": "<EXTERNAL_USER_ID>",
+    "connector_type": "Amazon-Ads",
+    "name": "My Amazon-Ads Connector",
+    "server_side_oauth_secret_id": "<secret_id_from_callback>"
+  }'
+```
+
 #### Token
 This authentication method isn't available for this connector.
 
@@ -81,25 +134,27 @@ After creating the connector, execute operations using either the Python SDK or 
 **Python SDK**
 
 ```python
-from airbyte_agent_amazon-ads import AmazonAdsConnector
+from airbyte_agent_amazon_ads import AmazonAdsConnector, AirbyteAuthConfig
 
 connector = AmazonAdsConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @AmazonAdsConnector.tool_utils
-async def amazon-ads_execute(entity: str, action: str, params: dict | None = None):
+async def amazon_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
 **API**
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-  -H 'Authorization: Bearer <SCOPED_TOKEN>' \
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
+  -H 'Authorization: Bearer <YOUR_BEARER_TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{"entity": "<entity>", "action": "<action>", "params": {}}'
 ```

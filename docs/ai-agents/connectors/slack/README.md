@@ -13,25 +13,26 @@ The Slack connector is optimized to handle prompts like these.
 
 - List all users in my Slack workspace
 - Show me all public channels
-- Who are the members of channel \{channel_id\}?
-- Get messages from channel \{channel_id\}
-- Show me the thread replies for message \{ts\} in channel \{channel_id\}
+- List members of a public channel
+- Show me recent messages in a public channel
+- Show me thread replies for a recent message
 - List all channels I have access to
-- Get user details for user \{user_id\}
-- What messages were posted in channel \{channel_id\} last week?
-- Show me the conversation history for channel \{channel_id\}
-- List channel members for the general channel
-- Send a message to channel \{channel_id\} saying 'Hello team!'
+- Show me user details for a workspace member
+- List channel members for a public channel
+- Send a message to a channel saying 'Hello team!'
 - Post a message in the general channel
-- Update the message with timestamp \{ts\} in channel \{channel_id\}
+- Update the most recent message in a channel
 - Create a new public channel called 'project-updates'
 - Create a private channel named 'team-internal'
-- Rename channel \{channel_id\} to 'new-channel-name'
-- Set the topic for channel \{channel_id\} to 'Daily standup notes'
-- Update the purpose of channel \{channel_id\}
-- Add a thumbsup reaction to message \{ts\} in channel \{channel_id\}
-- React with :rocket: to the latest message in channel \{channel_id\}
-- Reply to thread \{ts\} in channel \{channel_id\} with 'Thanks for the update!'
+- Rename a channel to 'new-channel-name'
+- Set the topic for a channel to 'Daily standup notes'
+- Update the purpose of a channel
+- Add a thumbsup reaction to the latest message in a channel
+- React with :rocket: to the latest message in a channel
+- Reply to a recent thread with 'Thanks for the update!'
+- What messages were posted in channel \{channel_id\} last week?
+- Show me the conversation history for channel \{channel_id\}
+- Search for messages mentioning \{keyword\} in channel \{channel_id\}
 
 ## Unsupported questions
 
@@ -83,12 +84,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_slack import SlackConnector
+from airbyte_agent_slack import SlackConnector, AirbyteAuthConfig
 
 connector = SlackConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -125,7 +128,7 @@ See the official [Slack API reference](https://api.slack.com/methods).
 
 ## Version information
 
-- **Package version:** 0.1.36
-- **Connector version:** 0.1.10
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.1.56
+- **Connector version:** 0.1.14
+- **Generated with Connector SDK commit SHA:** cddf6b9fb41e981bb489b71675cc4a9059e55608
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/slack/CHANGELOG.md)

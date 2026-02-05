@@ -12,12 +12,15 @@ The Gong connector is optimized to handle prompts like these.
 
 - List all users in my Gong account
 - Show me calls from last week
-- Get the transcript for call abc123
-- What are the activity stats for our sales team?
+- Get the transcript for a recent call
 - List all workspaces in Gong
 - Show me the scorecard configurations
 - What trackers are set up in my account?
-- Get coaching metrics for manager user123
+- Get coaching metrics for a manager
+- What are the activity stats for our sales team?
+- Find calls mentioning \{keyword\} this month
+- Show me calls for rep \{user_id\} in the last 30 days
+- Which calls had the longest duration last week?
 
 ## Unsupported questions
 
@@ -68,12 +71,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_gong import GongConnector
+from airbyte_agent_gong import GongConnector, AirbyteAuthConfig
 
 connector = GongConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -118,7 +123,7 @@ See the official [Gong API reference](https://gong.app.gong.io/settings/api/docu
 
 ## Version information
 
-- **Package version:** 0.19.78
-- **Connector version:** 0.1.13
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.19.98
+- **Connector version:** 0.1.17
+- **Generated with Connector SDK commit SHA:** cddf6b9fb41e981bb489b71675cc4a9059e55608
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/gong/CHANGELOG.md)
