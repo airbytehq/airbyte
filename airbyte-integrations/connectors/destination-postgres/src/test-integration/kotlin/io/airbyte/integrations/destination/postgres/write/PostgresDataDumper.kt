@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.write
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -13,11 +14,13 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.postgres.config.PostgresBeanFactory
 import io.airbyte.integrations.destination.postgres.schema.PostgresTableSchemaMapper
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import org.postgresql.util.PGobject
+
+// ObjectMapper without USE_BIG_DECIMAL_FOR_FLOATS to avoid precision issues in test comparisons
+private val testObjectMapper: ObjectMapper = ObjectMapper()
 
 class PostgresDataDumper(
     private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
@@ -168,13 +171,15 @@ class PostgresDataDumper(
             is java.sql.Timestamp -> value.toLocalDateTime()
             // JSONB and JSON types
             is PGobject -> {
-                val jsonNode = Jsons.readTree(value.value!!)
+                val jsonNode = testObjectMapper.readTree(value.value!!)
                 // JSONB can contain objects, arrays, or primitives (strings, numbers, booleans,
                 // null)
                 // Try to convert to Map if it's an object, otherwise return the primitive value
                 when {
-                    jsonNode.isObject -> Jsons.convertValue(jsonNode, Map::class.java) as Any
-                    jsonNode.isArray -> Jsons.convertValue(jsonNode, List::class.java) as Any
+                    jsonNode.isObject ->
+                        testObjectMapper.convertValue(jsonNode, Map::class.java) as Any
+                    jsonNode.isArray ->
+                        testObjectMapper.convertValue(jsonNode, List::class.java) as Any
                     jsonNode.isTextual -> jsonNode.asText() ?: ""
                     jsonNode.isNumber ->
                         when {
