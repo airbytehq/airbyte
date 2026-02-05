@@ -12,12 +12,15 @@ The Gong connector is optimized to handle prompts like these.
 
 - List all users in my Gong account
 - Show me calls from last week
-- Get the transcript for call abc123
-- What are the activity stats for our sales team?
+- Get the transcript for a recent call
 - List all workspaces in Gong
 - Show me the scorecard configurations
 - What trackers are set up in my account?
-- Get coaching metrics for manager user123
+- Get coaching metrics for a manager
+- What are the activity stats for our sales team?
+- Find calls mentioning \{keyword\} this month
+- Show me calls for rep \{user_id\} in the last 30 days
+- Which calls had the longest duration last week?
 
 ## Unsupported questions
 
@@ -118,7 +121,7 @@ See the official [Gong API reference](https://gong.app.gong.io/settings/api/docu
 
 ## Version information
 
-- **Package version:** 0.19.87
-- **Connector version:** 0.1.16
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.19.88
+- **Connector version:** 0.1.17
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/gong/CHANGELOG.md)

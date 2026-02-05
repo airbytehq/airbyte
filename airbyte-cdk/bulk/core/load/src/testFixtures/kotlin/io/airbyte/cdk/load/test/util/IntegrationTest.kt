@@ -194,6 +194,7 @@ abstract class IntegrationTest(
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
+        useSingleSocket: Boolean = false,
     ): List<AirbyteMessage> =
         runSync(
             configContents,
@@ -202,6 +203,7 @@ abstract class IntegrationTest(
             streamStatus,
             useFileTransfer = useFileTransfer,
             destinationProcessFactory,
+            useSingleSocket = useSingleSocket,
         )
 
     /**
@@ -239,6 +241,7 @@ abstract class IntegrationTest(
         useFileTransfer: Boolean = false,
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
         namespaceMappingConfig: NamespaceMappingConfig? = null,
+        useSingleSocket: Boolean = false,
     ): List<AirbyteMessage> =
         destinationProcessFactory.runSync(
             configContents,
@@ -251,6 +254,7 @@ abstract class IntegrationTest(
             useFileTransfer,
             namespaceMappingConfig,
             micronautProperties,
+            useSingleSocket,
         )
 
     enum class UncleanSyncEndBehavior {

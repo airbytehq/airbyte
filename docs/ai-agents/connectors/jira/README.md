@@ -6,31 +6,28 @@ Connector for Jira API
 
 The Jira connector is optimized to handle prompts like these.
 
-- Show me all open issues in the \{project_key\} project
+- Show me all open issues in my Jira instance
+- List recent issues created in the last 7 days
+- List all projects in my Jira instance
+- Show me details for the most recently updated issue
+- List all users in my Jira instance
+- Show me comments on the most recent issue
+- Show me worklogs from the last 7 days
+- Assign a recent issue to a teammate
+- Unassign a recent issue
+- Create a new task called 'Sample task' in a project
+- Create a bug with high priority
+- Update the summary of a recent issue to 'Updated summary'
+- Change the priority of a recent issue to high
+- Add a comment to a recent issue saying 'Please investigate'
+- Update my most recent comment
+- Delete a test issue
+- Remove my most recent comment
 - What issues are assigned to \{team_member\} this week?
 - Find all high priority bugs in our current sprint
-- Get the details of issue \{issue_key\}
-- List all issues created in the last 7 days
 - Show me overdue issues across all projects
-- List all projects in my Jira instance
-- Get details of the \{project_key\} project
 - What projects have the most issues?
-- Who are all the users in my Jira instance?
 - Search for users named \{user_name\}
-- Get details of user \{team_member\}
-- Show me all comments on issue \{issue_key\}
-- How much time has been logged on issue \{issue_key\}?
-- List all worklogs for \{issue_key\} this month
-- Assign \{issue_key\} to \{team_member\}
-- Unassign \{issue_key\}
-- Create a new task in the \{project_key\} project called '\{issue_title\}'
-- Create a bug in \{project_key\} with high priority
-- Update the summary of \{issue_key\} to '\{new_summary\}'
-- Change the priority of \{issue_key\} to high
-- Add a comment to \{issue_key\} saying '\{comment_text\}'
-- Update my comment on \{issue_key\}
-- Delete the test issue \{issue_key\}
-- Remove my comment from \{issue_key\}
 
 ## Unsupported questions
 
@@ -118,7 +115,7 @@ See the official [Jira API reference](https://developer.atlassian.com/cloud/jira
 
 ## Version information
 
-- **Package version:** 0.1.72
-- **Connector version:** 1.1.4
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.73
+- **Connector version:** 1.1.5
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/jira/CHANGELOG.md)
