@@ -138,6 +138,7 @@ def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 6
         logger.info(f"PR #{pr.number} is a draft, marking as ready for review before merging")
         mark_pr_as_ready(pr.node_id)
         pr.update()
+        logger.info(f"PR #{pr.number} draft status after marking ready: {pr.draft}")
     for i in range(max_retries):
         try:
             pr.merge(merge_method=MERGE_METHOD)
