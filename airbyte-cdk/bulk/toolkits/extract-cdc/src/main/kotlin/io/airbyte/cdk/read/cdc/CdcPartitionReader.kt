@@ -173,6 +173,12 @@ class CdcPartitionReader<T : Comparable<T>>(
                     duration.seconds > 0
                 }
             }
+                ?: run {
+                    log.info {
+                        "$AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS not configured for watchdog, defaulting to 300 seconds"
+                    }
+                    Duration.ofSeconds(300)
+                }
         if (timeoutDuration != null) {
             watchdogShouldStop = false
             lastEventTime.set(LocalDateTime.now())
