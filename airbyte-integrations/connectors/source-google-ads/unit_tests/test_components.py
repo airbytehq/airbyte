@@ -25,7 +25,7 @@ from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.types import StreamSlice
 
-from .conftest import Obj
+from .conftest import Obj, find_stream
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "source_google_ads" / "manifest.yaml"
 
@@ -739,14 +739,20 @@ _BASE_INCREMENTAL_STREAMS = [s for s in _BASE_INCREMENTAL_STREAMS if s not in {"
 @pytest.mark.parametrize("stream_name", [pytest.param(s, id=s) for s in sorted(_BASE_INCREMENTAL_STREAMS)])
 def test_incremental_stream_query_construction(stream_name, config):
     schemas = _load_manifest()["schemas"]
-    schema_loader = InlineSchemaLoader(schema=schemas, parameters={})
 
-    requester = GoogleAdsHttpRequester(
-        name=stream_name,
-        parameters={},
-        config=config,
-        schema_loader=schema_loader,
-    )
+    # Get the stream from the source and use its requester to build the query
+    stream = find_stream(stream_name, config)
+    spg = getattr(stream, "_stream_partition_generator")
+    retriever = None
+    partition_factory = getattr(spg, "_partition_factory", None)
+    if partition_factory is not None:
+        retriever = getattr(partition_factory, "_retriever", None)
+    if retriever is None:
+        legacy_stream = getattr(spg, "_stream", None)
+        if legacy_stream is not None:
+            retriever = getattr(legacy_stream, "retriever", None)
+    assert retriever is not None
+    requester = getattr(retriever, "requester")
 
     stream_slice = StreamSlice(
         partition={"customer_id": "123", "parent_slice": {"customer_id": "456", "parent_slice": {}}},
@@ -771,14 +777,20 @@ def test_incremental_stream_query_construction(stream_name, config):
 @pytest.mark.parametrize("stream_name", [pytest.param(s, id=s) for s in sorted(_BASE_FULL_STREAMS)])
 def test_full_refresh_stream_query_construction(stream_name, config):
     schemas = _load_manifest()["schemas"]
-    schema_loader = InlineSchemaLoader(schema=schemas, parameters={})
 
-    requester = GoogleAdsHttpRequester(
-        name=stream_name,
-        parameters={},
-        config=config,
-        schema_loader=schema_loader,
-    )
+    # Get the stream from the source and use its requester to build the query
+    stream = find_stream(stream_name, config)
+    spg = getattr(stream, "_stream_partition_generator")
+    retriever = None
+    partition_factory = getattr(spg, "_partition_factory", None)
+    if partition_factory is not None:
+        retriever = getattr(partition_factory, "_retriever", None)
+    if retriever is None:
+        legacy_stream = getattr(spg, "_stream", None)
+        if legacy_stream is not None:
+            retriever = getattr(legacy_stream, "retriever", None)
+    assert retriever is not None
+    requester = getattr(retriever, "requester")
 
     stream_slice = StreamSlice(
         partition={"customer_id": "123", "parent_slice": {"customer_id": "456", "parent_slice": {}}},
