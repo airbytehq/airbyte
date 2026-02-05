@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.postgres.config.PostgresBeanFactory
 import io.airbyte.integrations.destination.postgres.schema.PostgresTableSchemaMapper
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
@@ -167,16 +168,13 @@ class PostgresDataDumper(
             is java.sql.Timestamp -> value.toLocalDateTime()
             // JSONB and JSON types
             is PGobject -> {
-                val jsonNode = io.airbyte.commons.json.Jsons.deserialize(value.value!!)
+                val jsonNode = Jsons.readTree(value.value!!)
                 // JSONB can contain objects, arrays, or primitives (strings, numbers, booleans,
                 // null)
                 // Try to convert to Map if it's an object, otherwise return the primitive value
                 when {
-                    jsonNode.isObject ->
-                        io.airbyte.commons.json.Jsons.convertValue(jsonNode, Map::class.java) as Any
-                    jsonNode.isArray ->
-                        io.airbyte.commons.json.Jsons.convertValue(jsonNode, List::class.java)
-                            as Any
+                    jsonNode.isObject -> Jsons.convertValue(jsonNode, Map::class.java) as Any
+                    jsonNode.isArray -> Jsons.convertValue(jsonNode, List::class.java) as Any
                     jsonNode.isTextual -> jsonNode.asText() ?: ""
                     jsonNode.isNumber ->
                         when {
