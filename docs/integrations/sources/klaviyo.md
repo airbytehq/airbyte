@@ -96,6 +96,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.16.13 | 2026-01-26 | [70452](https://github.com/airbytehq/airbyte/pull/70452) | Add subscriptions to profiles stream additional-fields |
 | 2.16.12 | 2026-01-20 | [72040](https://github.com/airbytehq/airbyte/pull/72040) | Update dependencies |
 | 2.16.11 | 2026-01-19 | [70208](https://github.com/airbytehq/airbyte/pull/70208) | Add chunking to events_detailed stream to fix full refresh stalling and incremental mode returning zero rows |
 | 2.16.10 | 2026-01-14 | [71461](https://github.com/airbytehq/airbyte/pull/71461) | Update dependencies |
