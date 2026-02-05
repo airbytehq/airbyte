@@ -6,28 +6,61 @@ When a user completes authentication through the module, Airbyte stores their cr
 
 ## Prerequisites
 
-Before embedding the authentication module, complete the following setup:
+Before embedding the authentication module, complete the following prerequisites.
 
-1. **Enable at least one connector.** The module displays only the connectors you've enabled. See [Enable a connector](../enable-connector).
+1. [Enable](../enable-connector) at least one connector. The module displays only the connectors you've enabled.
 
-2. **Get your API credentials.** You need your `client_id` and `client_secret` from the Agent Engine under **Authentication Module** > **Installation**. See [Agent Engine authentication](hosted) for details on the token system.
+2. Get your API credentials. Click **Authentication Module** and find your credentials under **Installation**.
 
-3. **(Optional) Create a connection template.** If you want data replication, connection templates define where your users' data lands when they authenticate a source. You can create connection templates in the Agent Engine UI under **Data Replication**, or via the [API](https://api.airbyte.ai/api/v1/docs). If you only need direct connector access (no replication), you can skip this step.
+3. If you need [data replication](../data-replication), create a destination. If you don't need data replication, you can skip this step.
 
-## Agent Engine UI
+## Preview the authentication module widget
 
-The **Authentication Module** page in the Agent Engine dashboard provides everything you need to get started:
+You can see what your authentication widget looks like before implementing it.
 
-- **Installation credentials**: Your `organization_id`, `client_id`, and `client_secret` are displayed under the **Installation** section. Copy these into your application's environment variables.
-- **Widget preview**: Click **Preview your auth module** to see what the authentication widget looks like with your currently enabled connectors. This preview reflects the same connector selection UI your end users will see.
+1. In the Agent Engine, click **Authentication Module**.
 
-You'll use the `client_id` and `client_secret` from this page in your backend to generate tokens. The `organization_id` is included for reference but isn't required in the widget token request.
+2. Enter a sample [customer name](../customers).
 
-## Backend implementation
+3. Click **Preview your auth module**. This is exactly what users from that customer see when adding a connector.
 
-Your backend is responsible for securely generating widget tokens. Never expose your `client_id`, `client_secret`, or operator token in client-side code.
+## Use the demo app
 
-Here's a complete Node.js example:
+The easiest way to see the widget in action is to deploy Airbyte's Embedded demo app
+
+The [demo app](https://github.com/airbytehq/embedded-demoapp) GitHub repository contains complete working examples in three frameworks.
+
+- **Vanilla JS** with Express server
+- **React** with Vite
+- **Next.js**
+
+All examples share a common Express backend that handles token generation. To run them, use these commands.
+
+```bash
+git clone https://github.com/airbytehq/embedded-demoapp.git
+cd embedded-demoapp
+npm install
+
+cd apps/server
+cp .env.example .env
+# Add your credentials to .env
+
+cd ../..
+npm run dev
+```
+
+This starts all apps simultaneously: the server at `http://localhost:3000`, Next.js at `http://localhost:3001`, and React at `http://localhost:3002`.
+
+## Implement it into your app
+
+Since you probably want to overlay the Authentication Module on your own app, you can configure it on your backend and frontend. Here's a complete Node.js example.
+
+### Backend
+
+Your backend is responsible for securely generating widget tokens. Never expose your `client_id`, `client_secret`, or tokens in client-side code.
+
+<details>
+<summary>Backend Node.js example</summary>
 
 ```javascript title="server.js"
 const express = require("express");
@@ -83,15 +116,28 @@ app.post("/api/airbyte/widget-token", async (req, res) => {
 app.listen(3000);
 ```
 
-## Frontend implementation
+</details>
 
-### Using the npm package
+### Frontend
 
-The recommended approach is to install the widget as an npm package:
+Pin your widget version to avoid unexpected changes.
+
+- If you're using a package manager, use a caret range in `package.json` to pin to a minor version. For example, `"@airbyte-embedded/airbyte-embedded-widget": "^0.4.2"`. 
+
+- If you're using a CDN, specify the exact version in the script URL. For example, `<script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget@0.4.2"></script>`.
+
+Below are two example implementations.
+
+<details>
+<summary>Frontend option 1: package manager</summary>
+
+Install the Authentication Module widget using your package manager.
 
 ```bash npm2yarn
 npm install @airbyte-embedded/airbyte-embedded-widget
 ```
+
+Then, import the widget into your frontend.
 
 ```tsx title="ConnectData.tsx"
 import { AirbyteEmbeddedWidget } from "@airbyte-embedded/airbyte-embedded-widget";
@@ -116,11 +162,14 @@ export const ConnectData: React.FC = () => {
 };
 ```
 
-### Using a CDN script
+</details>
 
-Alternatively, load the widget from a CDN. Pin to a specific version to avoid unexpected changes:
+<details>
+<summary>Frontend option 2: CDN script</summary>
 
-```html
+Alternatively, load the widget from jsDelivr.
+
+```html title="your-app.html"
 <script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget@0.4.2"></script>
 <script>
   async function connectData() {
@@ -138,12 +187,7 @@ Alternatively, load the widget from a CDN. Pin to a specific version to avoid un
 <button onclick="connectData()">Connect your data</button>
 ```
 
-### Versioning
-
-Pin your widget version to avoid unexpected changes:
-
-- **npm**: Use a caret range in `package.json` to pin to a minor version: `"@airbyte-embedded/airbyte-embedded-widget": "^0.4.2"`
-- **CDN**: Specify the exact version in the script URL
+</details>
 
 ## Event callbacks
 
@@ -151,7 +195,7 @@ Pass an `onEvent` callback to receive notifications when users complete actions 
 
 ### Success events
 
-```typescript
+```typescript title="Success event"
 {
   type: "end_user_action_result",
   message: "source_created" | "source_updated",
@@ -172,7 +216,7 @@ The `data` field contains the full source object with the following top-level pr
 
 ### Error events
 
-```typescript
+```typescript title="Error event"
 {
   type: "end_user_action_result",
   message: "source_create_error" | "source_update_error",
@@ -180,9 +224,11 @@ The `data` field contains the full source object with the following top-level pr
 }
 ```
 
-Use these events to trigger actions in your app, such as showing a confirmation message, updating your UI, or logging the event.
+### Example event handling
 
-```tsx title="Example: handle events"
+Use these events to trigger actions in your app, like showing a confirmation or error message, updating your UI, or logging the event.
+
+```tsx title="ConnectData.jsx"
 const widget = new AirbyteEmbeddedWidget({
   token,
   onEvent: (event) => {
@@ -201,38 +247,13 @@ const widget = new AirbyteEmbeddedWidget({
 
 ## What happens after authentication
 
-When a user authenticates through the module:
+Once a user authenticates through the Authentication module, the following happens.
 
-1. Airbyte validates the user's credentials against the data source.
-2. Airbyte creates a source in the user's workspace. If a workspace with the given `workspace_name` already exists, Airbyte reuses it.
-3. If you configured connection templates, Airbyte applies them automatically — creating connections between the source and your configured destinations, and syncing data on the schedule you defined.
+- Airbyte creates that connector in that user's workspace. If a workspace with the given `workspace_name` already exists, Airbyte adds the connector to the others in that workspace.
 
-You can then [execute operations](../execute) against the user's connector to query their data in your AI agent.
+- If you configured data replication, Airbyte creates a connection between this connector and your configured destination, then replicates data on the schedule you defined.
 
-## Sample applications
-
-The [embedded-demoapp](https://github.com/airbytehq/embedded-demoapp) repository contains complete working examples in three frameworks:
-
-- **Vanilla JS** with Express server
-- **React** with Vite
-- **Next.js**
-
-All examples share a common Express backend that handles token generation. To run them:
-
-```bash
-git clone https://github.com/airbytehq/embedded-demoapp.git
-cd embedded-demoapp
-npm install
-
-cd apps/server
-cp .env.example .env
-# Add your credentials to .env
-
-cd ../..
-npm run dev
-```
-
-This starts all apps simultaneously: the server at `http://localhost:3000`, Next.js at `http://localhost:3001`, and React at `http://localhost:3002`.
+Your AI agent can now [execute operations](../execute) against the user's connector.
 
 ## Filtering available connectors
 
