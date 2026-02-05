@@ -1,3 +1,0 @@
-airbyte-protocol-models==0.5.0
-airbyte-cdk==0.85.0
-requests==2.31.0

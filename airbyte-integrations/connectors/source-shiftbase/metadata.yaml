@@ -10,15 +10,8 @@ data:
       enabled: true
     cloud:
       enabled: false
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-shiftbase
   connectorBuildOptions:
-    # Please update to the latest version of the connector base image.
-    # https://hub.docker.com/r/airbyte/python-connector-base
-    # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
   connectorSubtype: api
   connectorType: source
   definitionId: 4d338322-bf11-4eeb-93b7-7aae9e92bcf7
@@ -33,6 +26,6 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/shiftbase
   tags:
-    - language:python
-    - cdk:python
+    - language:manifest-only
+    - cdk:low-code
 metadataSpecVersion: "1.0"

@@ -1,0 +1,1609 @@
+version: 6.5.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - departments
+
+definitions:
+  account_partition_router:
+    type: ListPartitionRouter
+    values: "{{ config.accounts }}"
+    cursor_field: account
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.shiftbase.com/api/
+    http_method: GET
+    request_headers:
+      Content-Type: application/json
+      Accept: application/json
+      Authorization: "API {{ stream_partition.account.access_token }}"
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+
+  base_record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  add_account_name_transformation:
+    type: AddFields
+    fields:
+      - path:
+          - account_name
+        value: "{{ stream_partition.account.account_name }}"
+
+  departments_stream:
+    type: DeclarativeStream
+    name: departments
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: departments
+        request_parameters:
+          min_date: "{{ config.start_date }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - "*"
+            - Department
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/account_partition_router"
+    transformations:
+      - $ref: "#/definitions/add_account_name_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          account_id:
+            type:
+              - "null"
+              - string
+          location_id:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - string
+          longitude:
+            type:
+              - "null"
+              - string
+          latitude:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          holiday_group_id:
+            type:
+              - "null"
+              - string
+          order:
+            type:
+              - "null"
+              - string
+          price:
+            type:
+              - "null"
+              - string
+          timesheet_copy_starttime:
+            type:
+              - "null"
+              - string
+          timesheet_copy_endtime:
+            type:
+              - "null"
+              - string
+          timesheet_break_calculation:
+            type:
+              - "null"
+              - string
+          break_rule_type:
+            type:
+              - "null"
+              - string
+          timesheet_surcharges:
+            type:
+              - "null"
+              - boolean
+          meal_registration:
+            type:
+              - "null"
+              - boolean
+          km_registration:
+            type:
+              - "null"
+              - boolean
+          timesheet_copy_schedule:
+            type:
+              - "null"
+              - boolean
+          timesheet_interval:
+            type:
+              - "null"
+              - string
+          break_interval:
+            type:
+              - "null"
+              - string
+          round_clock_in:
+            type:
+              - "null"
+              - string
+          round_clock_out:
+            type:
+              - "null"
+              - string
+          round_clock_break:
+            type:
+              - "null"
+              - string
+          round_break_shift:
+            type:
+              - "null"
+              - string
+          clock_out_after:
+            type:
+              - "null"
+              - string
+          approve_clock:
+            type:
+              - "null"
+              - string
+          allow_clock_in_without_roster:
+            type:
+              - "null"
+              - boolean
+          approve_schedule:
+            type:
+              - "null"
+              - boolean
+          split_clocked_shifts:
+            type:
+              - "null"
+              - string
+          default_clock_shift:
+            type:
+              - "null"
+              - string
+          send_availability_reminder:
+            type:
+              - "null"
+              - boolean
+          reminder_days_before:
+            type:
+              - "null"
+              - string
+          lock_availability_days_before_period:
+            type:
+              - "null"
+              - string
+          required_days_per_week:
+            type:
+              - "null"
+              - string
+          publish_schedules:
+            type:
+              - "null"
+              - string
+          show_open_shifts:
+            type:
+              - "null"
+              - boolean
+          show_required_shifts:
+            type:
+              - "null"
+              - boolean
+          deleted:
+            type:
+              - "null"
+              - boolean
+          deleted_date:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+          updated:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          modified_by:
+            type:
+              - "null"
+              - string
+          account_name:
+            type:
+              - "null"
+              - string
+
+  employees_stream:
+    type: DeclarativeStream
+    name: employees
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.shiftbase.com/api/
+        http_method: GET
+        path: "hr/departments/{{ stream_partition.department_id }}/employeeList"
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+          Authorization: "API {{ stream_slice.extra_fields.access_token }}"
+        request_parameters:
+          min_date: "{{ config.start_date }}"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+            - type: ExponentialBackoffStrategy
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: department_id
+            stream:
+              $ref: "#/definitions/departments_stream"
+            extra_fields:
+              - - account_name
+              - - access_token
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - department_id
+            value: "{{ stream_partition.department_id }}"
+          - path:
+              - account_name
+            value: "{{ stream_slice.extra_fields.account_name }}"
+          - path:
+              - team_id
+            value: "{{ record.teamId }}"
+      - type: RemoveFields
+        field_pointers:
+          - - teamId
+          - - access_token
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          department_id:
+            type:
+              - "null"
+              - string
+          team_id:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          account_name:
+            type:
+              - "null"
+              - string
+
+  employee_time_distribution_stream:
+    type: DeclarativeStream
+    name: employee_time_distribution
+    primary_key:
+      - employeeId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.shiftbase.com/api/
+        http_method: GET
+        path: "employees/{{ stream_partition.employee_id }}/time_distribution"
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+          Authorization: "API {{ stream_slice.extra_fields.access_token }}"
+        request_parameters:
+          year: "{{ stream_slice.start_time[:4] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+            - type: ExponentialBackoffStrategy
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: employee_id
+            stream:
+              $ref: "#/definitions/employees_stream"
+            extra_fields:
+              - - access_token
+              - - account_name
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: _year_partition
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d"
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      step: P1Y
+      cursor_granularity: P1Y
+      is_data_feed: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - account_name
+            value: "{{ stream_slice.extra_fields.account_name }}"
+          - path:
+              - employee_id
+            value: "{{ stream_partition.employee_id }}"
+          - path:
+              - year
+            value: "{{ stream_slice.start_time[:4] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - access_token
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          employeeId:
+            type:
+              - "null"
+              - string
+          workedHours:
+            type:
+              - "null"
+              - number
+          workedHoursPercentage:
+            type:
+              - "null"
+              - integer
+          absences:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                absenceTypeId:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - number
+                valueUnit:
+                  type:
+                    - "null"
+                    - string
+                percentage:
+                  type:
+                    - "null"
+                    - integer
+          account_name:
+            type:
+              - "null"
+              - string
+          employee_id:
+            type:
+              - "null"
+              - string
+          year:
+            type:
+              - "null"
+              - string
+
+  absentees_stream:
+    type: DeclarativeStream
+    name: absentees
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: absentees
+        request_parameters:
+          min_date: "{{ stream_interval.start_time or config.start_date }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - "*"
+            - Absentee
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/account_partition_router"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%d"
+      is_data_feed: true
+    transformations:
+      - $ref: "#/definitions/add_account_name_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          account_id:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          startdate:
+            type:
+              - "null"
+              - string
+          enddate:
+            type:
+              - "null"
+              - string
+          exclude:
+            type:
+              - "null"
+              - boolean
+          roster_action:
+            type:
+              - "null"
+              - string
+          absentee_option_id:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+          updated:
+            type:
+              - "null"
+              - string
+          reviewed:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          hours:
+            type:
+              - "null"
+              - string
+          wait_hours:
+            type:
+              - "null"
+              - string
+          wait_days:
+            type:
+              - "null"
+              - string
+          partial_day:
+            type:
+              - "null"
+              - boolean
+          start_time:
+            type:
+              - "null"
+              - string
+          end_time:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - boolean
+          created_by:
+            type:
+              - "null"
+              - string
+          modified_by:
+            type:
+              - "null"
+              - string
+          reviewed_by:
+            type:
+              - "null"
+              - string
+          hide_days_without_hours:
+            type:
+              - "null"
+              - boolean
+          absence_unit:
+            type:
+              - "null"
+              - string
+          is_public_holiday:
+            type:
+              - "null"
+              - boolean
+          open_ended:
+            type:
+              - "null"
+              - boolean
+          days:
+            type:
+              - "null"
+              - integer
+          hours_per_day:
+            type:
+              - "null"
+              - integer
+          total:
+            type:
+              - "null"
+              - integer
+          percentage:
+            type:
+              - "null"
+              - string
+          surcharge_name:
+            type:
+              - "null"
+              - string
+          surcharge_total:
+            type:
+              - "null"
+              - integer
+          salary:
+            type:
+              - "null"
+              - integer
+          AbsenteeDay:
+            type:
+              - "null"
+              - object
+            additionalProperties:
+              type: object
+              properties:
+                date:
+                  type:
+                    - "null"
+                    - string
+                partial_day:
+                  type:
+                    - "null"
+                    - boolean
+                start_time:
+                  type:
+                    - "null"
+                    - string
+                hours:
+                  type:
+                    - "null"
+                    - string
+                wait_hours:
+                  type:
+                    - "null"
+                    - string
+                wait_hours_balance_id:
+                  type:
+                    - "null"
+                    - string
+                time_off_balance_id:
+                  type:
+                    - "null"
+                    - string
+                salary:
+                  type:
+                    - "null"
+                    - integer
+                coc:
+                  type:
+                    - "null"
+                    - integer
+                department_id:
+                  type:
+                    - "null"
+                    - string
+          account_name:
+            type:
+              - "null"
+              - string
+
+  availabilities_stream:
+    type: DeclarativeStream
+    name: availabilities
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: availabilities
+        request_parameters:
+          min_date: "{{ stream_interval.start_time or config.start_date }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - "*"
+            - Availability
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/account_partition_router"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d"
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      is_data_feed: true
+    transformations:
+      - $ref: "#/definitions/add_account_name_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          all_day:
+            type:
+              - "null"
+              - boolean
+          type:
+            type:
+              - "null"
+              - string
+          starttime:
+            type:
+              - "null"
+              - string
+          endtime:
+            type:
+              - "null"
+              - string
+          reason:
+            type:
+              - "null"
+              - string
+          weekday:
+            type:
+              - "null"
+              - string
+          account_name:
+            type:
+              - "null"
+              - string
+
+  shifts_stream:
+    type: DeclarativeStream
+    name: shifts
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: shifts
+        request_parameters:
+          min_date: "{{ config.start_date }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - "*"
+            - Shift
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/account_partition_router"
+    transformations:
+      - $ref: "#/definitions/add_account_name_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          account_id:
+            type:
+              - "null"
+              - string
+          department_id:
+            type:
+              - "null"
+              - string
+          long_name:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          starttime:
+            type:
+              - "null"
+              - string
+          endtime:
+            type:
+              - "null"
+              - string
+          hide_end_time:
+            type:
+              - "null"
+              - boolean
+          is_task:
+            type:
+              - "null"
+              - boolean
+          break:
+            type:
+              - "null"
+              - string
+              - integer
+          paid_break:
+            type:
+              - "null"
+              - string
+              - integer
+          meals:
+            type:
+              - "null"
+              - string
+              - integer
+          rate_card_id:
+            type:
+              - "null"
+              - string
+          color:
+            type:
+              - "null"
+              - string
+          order:
+            type:
+              - "null"
+              - string
+          custom_fields:
+            type:
+              - "null"
+              - string
+              - object
+          created:
+            type:
+              - "null"
+              - string
+          updated:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - boolean
+          created_by:
+            type:
+              - "null"
+              - string
+          modified_by:
+            type:
+              - "null"
+              - string
+          account_name:
+            type:
+              - "null"
+              - string
+
+  users_stream:
+    type: DeclarativeStream
+    name: users
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: users
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - "*"
+            - User
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/account_partition_router"
+    transformations:
+      - $ref: "#/definitions/add_account_name_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          account_id:
+            type:
+              - "null"
+              - string
+          employee_nr:
+            type:
+              - "null"
+              - string
+          hire_date:
+            type:
+              - "null"
+              - string
+          startdate:
+            type:
+              - "null"
+              - string
+          enddate:
+            type:
+              - "null"
+              - string
+          nr_of_logins:
+            type:
+              - "null"
+              - integer
+          locale:
+            type:
+              - "null"
+              - string
+          last_login:
+            type:
+              - "null"
+              - string
+          order:
+            type:
+              - "null"
+              - integer
+          plus_min_hours:
+            type:
+              - "null"
+              - number
+          anonymized:
+            type:
+              - "null"
+              - boolean
+          invited:
+            type:
+              - "null"
+              - boolean
+          verified:
+            type:
+              - "null"
+              - boolean
+          has_login:
+            type:
+              - "null"
+              - boolean
+          mfa_enabled:
+            type:
+              - "null"
+              - boolean
+          account_name:
+            type:
+              - "null"
+              - string
+
+  employees_report_stream:
+    type: DeclarativeStream
+    name: employees_report
+    primary_key:
+      - userId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: reports/users
+        http_method: POST
+        request_body_json:
+          export: json
+          from: "{{ config.start_date }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/account_partition_router"
+    transformations:
+      - $ref: "#/definitions/add_account_name_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          userId:
+            type:
+              - "null"
+              - string
+          userEmployeeNr:
+            type:
+              - "null"
+              - string
+          endContractLocation:
+            type:
+              - "null"
+              - string
+          endContractDepartment:
+            type:
+              - "null"
+              - string
+          userCurrentStatus:
+            type:
+              - "null"
+              - string
+          userHireDate:
+            type:
+              - "null"
+              - string
+          userStartdate:
+            type:
+              - "null"
+              - string
+          userEnddate:
+            type:
+              - "null"
+              - string
+          endContractFunction:
+            type:
+              - "null"
+              - string
+          endContractContractTypeName:
+            type:
+              - "null"
+              - string
+          endContractContractTypeAbsencePolicyName:
+            type:
+              - "null"
+              - string
+          endContractWage:
+            type:
+              - "null"
+              - number
+          endContractContractHours:
+            type:
+              - "null"
+              - number
+          userLastLogin:
+            type:
+              - "null"
+              - string
+          userNrOfLogins:
+            type:
+              - "null"
+              - integer
+          userMfaEnabled:
+            type:
+              - "null"
+              - boolean
+          account_name:
+            type:
+              - "null"
+              - string
+
+  timesheet_detail_report_stream:
+    type: DeclarativeStream
+    name: timesheet_detail_report
+    primary_key:
+      - timesheetId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: reports/timesheet_detail
+        http_method: POST
+        request_body_json:
+          export: json
+          from: "{{ stream_interval.start_time }}"
+          to: "{{ stream_interval.end_time }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/account_partition_router"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timesheetDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc().strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      step: P1D
+      cursor_granularity: P1D
+      is_data_feed: true
+    transformations:
+      - $ref: "#/definitions/add_account_name_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          userId:
+            type:
+              - "null"
+              - string
+          userEmployeeNr:
+            type:
+              - "null"
+              - string
+          timesheetDate:
+            type:
+              - "null"
+              - string
+            format: date
+          day:
+            type:
+              - "null"
+              - string
+          timesheetStarttime:
+            type:
+              - "null"
+              - string
+          timesheetClockedIn:
+            type:
+              - "null"
+              - string
+          timesheetEndtime:
+            type:
+              - "null"
+              - string
+          timesheetClockedOut:
+            type:
+              - "null"
+              - string
+          timesheetBreak:
+            type:
+              - "null"
+              - integer
+          timesheetPaidBreak:
+            type:
+              - "null"
+              - integer
+          timesheetClockedBreakMinutes:
+            type:
+              - "null"
+              - integer
+          shiftLongName:
+            type:
+              - "null"
+              - string
+          locationName:
+            type:
+              - "null"
+              - string
+          departmentName:
+            type:
+              - "null"
+              - string
+          teamName:
+            type:
+              - "null"
+              - string
+          contractContractType:
+            type:
+              - "null"
+              - string
+          contractDepartmentName:
+            type:
+              - "null"
+              - string
+          timesheetTotal:
+            type:
+              - "null"
+              - number
+          timesheetSurchargePay:
+            type:
+              - "null"
+              - number
+          timesheetSurchargeTotal:
+            type:
+              - "null"
+              - number
+          timesheetMeals:
+            type:
+              - "null"
+              - integer
+          timesheetKilometers:
+            type:
+              - "null"
+              - integer
+          "timesheet100.00%":
+            type:
+              - "null"
+              - number
+          "timesheet150.00%":
+            type:
+              - "null"
+              - number
+          "timesheet200.00%":
+            type:
+              - "null"
+              - number
+          timesheetOvertime:
+            type:
+              - "null"
+              - number
+          timesheetRegularTime:
+            type:
+              - "null"
+              - number
+          timesheetStatus:
+            type:
+              - "null"
+              - string
+          timesheetSalary:
+            type:
+              - "null"
+              - number
+          timesheetCoc:
+            type:
+              - "null"
+              - number
+          userContractHours:
+            type:
+              - "null"
+              - number
+          rosterStarttime:
+            type:
+              - "null"
+              - string
+          rosterEndtime:
+            type:
+              - "null"
+              - string
+          rosterBreak:
+            type:
+              - "null"
+              - integer
+          rosterPaidBreak:
+            type:
+              - "null"
+              - integer
+          rosterTotal:
+            type:
+              - "null"
+              - number
+          rosterDifference:
+            type:
+              - "null"
+              - number
+          timesheetClock:
+            type:
+              - "null"
+              - boolean
+          timesheetClockBreakSummary:
+            type:
+              - "null"
+              - string
+          timesheetCreated:
+            type:
+              - "null"
+              - string
+          timesheetUpdated:
+            type:
+              - "null"
+              - string
+          timesheetReviewed:
+            type:
+              - "null"
+              - string
+          timesheetId:
+            type:
+              - "null"
+              - string
+          timesheetRosterId:
+            type:
+              - "null"
+              - string
+          timesheetShiftId:
+            type:
+              - "null"
+              - string
+          timesheetTeamId:
+            type:
+              - "null"
+              - string
+          departmentId:
+            type:
+              - "null"
+              - string
+          contractDepartmentId:
+            type:
+              - "null"
+              - string
+          locationId:
+            type:
+              - "null"
+              - string
+          timesheetRateCardId:
+            type:
+              - "null"
+              - string
+          contractContractTypeId:
+            type:
+              - "null"
+              - string
+          contractWage:
+            type:
+              - "null"
+              - number
+          timesheetCustomFields4490:
+            type:
+              - "null"
+              - string
+          account_name:
+            type:
+              - "null"
+              - string
+
+  schedule_detail_report_stream:
+    type: DeclarativeStream
+    name: schedule_detail_report
+    primary_key:
+      - userId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: reports/schedule_detail
+        http_method: POST
+        request_body_json:
+          export: json
+          from: "{{ stream_interval.start_time }}"
+          to: "{{ stream_interval.end_time }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/account_partition_router"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: rosterDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc().strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      step: P1D
+      cursor_granularity: P1D
+      is_data_feed: true
+    transformations:
+      - $ref: "#/definitions/add_account_name_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          userId:
+            type:
+              - "null"
+              - string
+          userEmployeeNr:
+            type:
+              - "null"
+              - string
+          rosterDate:
+            type:
+              - "null"
+              - string
+            format: date
+          day:
+            type:
+              - "null"
+              - string
+          rosterStarttime:
+            type:
+              - "null"
+              - string
+          rosterEndtime:
+            type:
+              - "null"
+              - string
+          rosterBreak:
+            type:
+              - "null"
+              - integer
+          rosterPaidBreak:
+            type:
+              - "null"
+              - integer
+          shiftLongName:
+            type:
+              - "null"
+              - string
+          rosterDepartmentLocationName:
+            type:
+              - "null"
+              - string
+          rosterDepartmentName:
+            type:
+              - "null"
+              - string
+          teamName:
+            type:
+              - "null"
+              - string
+          rosterTotal:
+            type:
+              - "null"
+              - number
+          rosterSalary:
+            type:
+              - "null"
+              - number
+          rosterCoc:
+            type:
+              - "null"
+              - number
+          rosterCreated:
+            type:
+              - "null"
+              - string
+          rosterUpdated:
+            type:
+              - "null"
+              - string
+          rosterId:
+            type:
+              - "null"
+              - string
+          rosterShiftId:
+            type:
+              - "null"
+              - string
+          rosterTeamId:
+            type:
+              - "null"
+              - string
+          rosterDepartmentId:
+            type:
+              - "null"
+              - string
+          rosterDepartmentLocationId:
+            type:
+              - "null"
+              - string
+          rosterRateCardId:
+            type:
+              - "null"
+              - string
+          account_name:
+            type:
+              - "null"
+              - string
+
+streams:
+  - $ref: "#/definitions/departments_stream"
+  - $ref: "#/definitions/employees_stream"
+  - $ref: "#/definitions/absentees_stream"
+  - $ref: "#/definitions/employee_time_distribution_stream"
+  - $ref: "#/definitions/availabilities_stream"
+  - $ref: "#/definitions/shifts_stream"
+  - $ref: "#/definitions/users_stream"
+  - $ref: "#/definitions/employees_report_stream"
+  - $ref: "#/definitions/timesheet_detail_report_stream"
+  - $ref: "#/definitions/schedule_detail_report_stream"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Shiftbase Spec
+    type: object
+    required:
+      - accounts
+      - start_date
+    properties:
+      accounts:
+        type: array
+        title: Accounts
+        description: List of Shiftbase accounts to sync data from.
+        items:
+          type: object
+          required:
+            - access_token
+            - account_name
+          properties:
+            access_token:
+              type: string
+              title: Access Token
+              description: Access Token generated from Shiftbase App Center.
+              airbyte_secret: true
+            account_name:
+              type: string
+              title: Account Name
+              description: Account name for tracking purposes.
+      start_date:
+        type: string
+        title: Start Date
+        description: Start date for historical data sync in YYYY-MM-DD format.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        examples:
+          - "2024-01-01"
+  documentation_url: https://docs.airbyte.com/integrations/sources/shiftbase
