@@ -458,6 +458,11 @@ class CriterionRetriever(SimpleRetriever):
 
     cursor_field: str = "change_status.last_change_date_time"
 
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        if hasattr(self.requester, "name") and not self.requester.name:
+            self.requester.name = self.name
+
     def _read_pages(
         self,
         records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
@@ -535,6 +540,11 @@ class GoogleAdsRetriever(SimpleRetriever):
 
     MAX_RETRIES: int = 3
     DATE_FORMAT: str = "%Y-%m-%d"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        if hasattr(self.requester, "name") and not self.requester.name:
+            self.requester.name = self.name
 
     def _read_pages(
         self,
