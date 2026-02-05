@@ -274,7 +274,7 @@ definitions:
         request_headers:
           Content-Type: application/json
           Accept: application/json
-          Authorization: "API {{ stream_slice.extra_fields.access_token }}"
+          Authorization: "API {{ stream_partition.parent_slice.account.access_token }}"
         request_parameters:
           min_date: "{{ config.start_date }}"
         error_handler:
@@ -308,9 +308,6 @@ definitions:
             partition_field: department_id
             stream:
               $ref: "#/definitions/departments_stream"
-            extra_fields:
-              - - account_name
-              - - access_token
     transformations:
       - type: AddFields
         fields:
@@ -319,14 +316,13 @@ definitions:
             value: "{{ stream_partition.department_id }}"
           - path:
               - account_name
-            value: "{{ stream_slice.extra_fields.account_name }}"
+            value: "{{ stream_partition.parent_slice.account.account_name }}"
           - path:
               - team_id
             value: "{{ record.teamId }}"
       - type: RemoveFields
         field_pointers:
           - - teamId
-          - - access_token
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -369,7 +365,7 @@ definitions:
         request_headers:
           Content-Type: application/json
           Accept: application/json
-          Authorization: "API {{ stream_slice.extra_fields.access_token }}"
+          Authorization: "API {{ stream_partition.parent_slice.parent_slice.account.access_token }}"
         request_parameters:
           year: "{{ stream_slice.start_time[:4] }}"
         error_handler:
@@ -403,9 +399,6 @@ definitions:
             partition_field: employee_id
             stream:
               $ref: "#/definitions/employees_stream"
-            extra_fields:
-              - - access_token
-              - - account_name
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: _year_partition
@@ -428,16 +421,13 @@ definitions:
         fields:
           - path:
               - account_name
-            value: "{{ stream_slice.extra_fields.account_name }}"
+            value: "{{ stream_partition.parent_slice.parent_slice.account.account_name }}"
           - path:
               - employee_id
             value: "{{ stream_partition.employee_id }}"
           - path:
               - year
             value: "{{ stream_slice.start_time[:4] }}"
-      - type: RemoveFields
-        field_pointers:
-          - - access_token
     schema_loader:
       type: InlineSchemaLoader
       schema:
