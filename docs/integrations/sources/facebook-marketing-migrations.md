@@ -2,7 +2,7 @@
 
 ## Upgrading to 5.0.0
 
-Custom Insights streams now use level-based primary keys. Previously, all Custom Insights streams used `ad_id` as part of their primary key regardless of the configured `level` setting. This caused issues when using non-default levels (adset, campaign, or account) because the `ad_id` field would be null, making deduplication impossible.
+Custom Insights streams now use level-based primary keys. Previously, all Custom Insights streams used `ad_id` as part of their primary key regardless of the configured `level` setting. This caused issues when using `level=adset`, `level=campaign`, or `level=account` because the `ad_id` field would be null, making deduplication impossible.
 
 With this update, the primary key now correctly reflects the configured level:
 
