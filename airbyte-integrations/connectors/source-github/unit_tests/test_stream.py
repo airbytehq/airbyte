@@ -611,7 +611,9 @@ def test_stream_commits_skips_empty_repository(caplog, requests_mock):
     assert len(records) == 1
     assert records[0]["sha"] == "commit1"
     assert records[0]["repository"] == "organization/normal-repo"
-    warning_message = "Repository 'organization/empty-repo' appears to be empty (no branches found). Skipping commits sync for this repository."
+    warning_message = (
+        "Repository 'organization/empty-repo' appears to be empty (no branches found). Skipping commits sync for this repository."
+    )
     assert warning_message in caplog.messages
 
 

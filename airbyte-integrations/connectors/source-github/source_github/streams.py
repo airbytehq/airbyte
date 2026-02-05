@@ -751,7 +751,9 @@ class Commits(IncrementalMixin, GithubStream):
         # If no branches are specified for a repo, use its default branch
         for repo in self.repositories:
             if repo not in repos_with_branches:
-                self.logger.warning(f"Repository '{repo}' appears to be empty (no branches found). Skipping commits sync for this repository.")
+                self.logger.warning(
+                    f"Repository '{repo}' appears to be empty (no branches found). Skipping commits sync for this repository."
+                )
                 continue
 
             repo_branches = []
