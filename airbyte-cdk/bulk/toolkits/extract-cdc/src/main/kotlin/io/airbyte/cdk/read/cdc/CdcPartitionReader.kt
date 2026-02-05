@@ -282,6 +282,12 @@ class CdcPartitionReader<T : Comparable<T>>(
                     duration.seconds > 0
                 }
             }
+                ?: run {
+                    log.info {
+                        "$AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS not configured, defaulting to 300 seconds"
+                    }
+                    Duration.ofSeconds(300)
+                }
 
         override fun accept(changeEvent: ChangeEvent<String?, String?>) {
             // Stop watchdog once we receive any event - connection is working
@@ -419,6 +425,10 @@ class CdcPartitionReader<T : Comparable<T>>(
                     lastHeartbeatTime = now
                     log.info { "Heartbeat progressing to position: $currentPosition" }
                 } else {
+                    // testing
+                    log.info {
+                        "No progress since last heartbeat position found for $currentPosition"
+                    }
                     val timeSinceLastProgress = Duration.between(lastHeartbeatTime!!, now)
                     if (timeSinceLastProgress > heartbeatTimeoutDuration) {
                         log.info {
@@ -428,7 +438,8 @@ class CdcPartitionReader<T : Comparable<T>>(
                         return CloseReason.HEARTBEAT_NOT_PROGRESSING
                     }
                     log.info {
-                        "Heartbeat not progressing, time since last progress: ${timeSinceLastProgress.toSeconds()}s"
+                        "Heartbeat not progressing, time since last progress: ${timeSinceLastProgress.toSeconds()}s, " +
+                            "timeout in: ${(heartbeatTimeoutDuration.seconds - timeSinceLastProgress.toSeconds())}s"
                     }
                 }
             }
