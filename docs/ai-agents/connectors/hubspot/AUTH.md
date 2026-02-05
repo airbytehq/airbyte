@@ -59,8 +59,8 @@ Create a connector with OAuth credentials.
 Example request:
 
 ```bash
-curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
-  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
@@ -93,8 +93,8 @@ Request a consent URL for your user.
 Example request:
 
 ```bash
-curl -X POST "https://api.airbyte.ai/v1/integrations/connectors/oauth/initiate" \
-  -H "Authorization: Bearer <BEARER_TOKEN>" \
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
@@ -117,8 +117,8 @@ Redirect your user to the `consent_url` from the response. After they authorize,
 Example request:
 
 ```bash
-curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
-  -H "Authorization: Bearer <BEARER_TOKEN>" \
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
     "external_user_id": "<EXTERNAL_USER_ID>",
@@ -138,12 +138,14 @@ After creating the connector, execute operations using either the Python SDK or 
 **Python SDK**
 
 ```python
-from airbyte_agent_hubspot import HubspotConnector
+from airbyte_agent_hubspot import HubspotConnector, AirbyteAuthConfig
 
 connector = HubspotConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -155,8 +157,8 @@ async def hubspot_execute(entity: str, action: str, params: dict | None = None):
 **API**
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-  -H 'Authorization: Bearer <SCOPED_TOKEN>' \
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
+  -H 'Authorization: Bearer <YOUR_BEARER_TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{"entity": "<entity>", "action": "<action>", "params": {}}'
 ```
