@@ -152,14 +152,16 @@ Airbyte writes each stream to its own table in ClickHouse. It creates tables in 
 
 The connector converts Airbyte data types to ClickHouse types as follows:
 
-- **Decimal** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
-- **Timestamp** types → `DateTime64(3)` (millisecond precision)
-- **Object** types → `JSON` if you enable JSON in the connector configuration, otherwise → `String`
-- **Integer** types → `Int64`
 - **Boolean** types → `Bool`
+- **Date** types → `Date32`
+- **Decimal** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
+- **Integer** types → `Int64`
 - **String** types → `String`
-- **Union** types → `String`
+- **Time** types → `String`
+- **Timestamp** types → `DateTime64(3)` (millisecond precision)
 - **Array** types → `String`
+- **Object** types → `JSON` if you enable JSON in the connector configuration, otherwise → `String`
+- **Union** types → `String`
 
 :::note
 The connector converts arrays and unions to strings for compatibility. If you need to query these as structured data, use ClickHouse's JSON functions to parse the string values.
