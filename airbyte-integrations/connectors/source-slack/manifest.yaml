@@ -369,12 +369,68 @@ definitions:
       schema:
         $ref: "#/schemas/threads"
 
+  files_stream:
+    primary_key: "id"
+    $parameters:
+      name: files
+      path: files.list
+      extractor_field_path: files
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/files"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          field_name: count
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: ts_from
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: ts_to
+        type: RequestOption
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: P30D
+      cursor_granularity: PT1S
+
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/channels_stream"
   - "#/definitions/channel_members_stream"
   - "#/definitions/channel_messages_stream"
   - "#/definitions/threads_stream"
+  - "#/definitions/files_stream"
 
 check:
   type: CheckStream
@@ -1431,3 +1487,175 @@ schemas:
         type:
           - "null"
           - boolean
+
+  files:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type: object
+    properties:
+      id:
+        description: The unique identifier of the file.
+        type: string
+      created:
+        description: Unix timestamp representing when the file was created.
+        type:
+          - "null"
+          - integer
+      timestamp:
+        description: A deprecated property provided for backwards compatibility.
+        type:
+          - "null"
+          - integer
+      name:
+        description: Name of the file.
+        type:
+          - "null"
+          - string
+      title:
+        description: Title of the file.
+        type:
+          - "null"
+          - string
+      mimetype:
+        description: The MIME type of the file.
+        type:
+          - "null"
+          - string
+      filetype:
+        description: The type identifier of the file.
+        type:
+          - "null"
+          - string
+      pretty_type:
+        description: A human-readable version of the file type.
+        type:
+          - "null"
+          - string
+      user:
+        description: The ID of the user who created the file.
+        type:
+          - "null"
+          - string
+      user_team:
+        description: The team ID of the user who created the file.
+        type:
+          - "null"
+          - string
+      editable:
+        description: Indicates whether the file is stored in editable mode.
+        type:
+          - "null"
+          - boolean
+      size:
+        description: The filesize in bytes.
+        type:
+          - "null"
+          - integer
+      mode:
+        description: One of hosted, external, snippet, or post.
+        type:
+          - "null"
+          - string
+      is_external:
+        description: Indicates whether the master copy is stored externally.
+        type:
+          - "null"
+          - boolean
+      external_type:
+        description: The kind of external file (e.g., dropbox, gdoc).
+        type:
+          - "null"
+          - string
+      is_public:
+        description: Whether the file is public.
+        type:
+          - "null"
+          - boolean
+      public_url_shared:
+        description: Whether the public URL of the file has been shared.
+        type:
+          - "null"
+          - boolean
+      display_as_bot:
+        description: Whether the file is displayed as coming from a bot.
+        type:
+          - "null"
+          - boolean
+      username:
+        description: Username of the file creator.
+        type:
+          - "null"
+          - string
+      url_private:
+        description: URL to the file contents (requires authentication).
+        type:
+          - "null"
+          - string
+      url_private_download:
+        description: URL to force browser download of the file (requires authentication).
+        type:
+          - "null"
+          - string
+      permalink:
+        description: Permanent link to the file.
+        type:
+          - "null"
+          - string
+      permalink_public:
+        description: Public permanent link to the file.
+        type:
+          - "null"
+          - string
+      comments_count:
+        description: Number of comments on the file.
+        type:
+          - "null"
+          - integer
+      is_starred:
+        description: Whether the calling user has starred the file.
+        type:
+          - "null"
+          - boolean
+      shares:
+        description: Information about channels and conversations where the file is shared.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      channels:
+        description: IDs of channels where the file is currently shared.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      groups:
+        description: IDs of private groups where the file is currently shared.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      ims:
+        description: IDs of direct message channels where the file is currently shared.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      has_rich_preview:
+        description: Whether the file has a rich preview.
+        type:
+          - "null"
+          - boolean
+      updated:
+        description: Unix timestamp of when the file was last updated.
+        type:
+          - "null"
+          - integer
