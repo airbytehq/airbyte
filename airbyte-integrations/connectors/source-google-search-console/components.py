@@ -4,17 +4,17 @@
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 import requests
 
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from airbyte_protocol_dataclasses.models import FailureType
 
 logger = logging.getLogger("airbyte")
 
@@ -194,34 +194,39 @@ class CustomReportSchemaLoader(SchemaLoader):
 
 
 @dataclass
-class EnhancedSitesRetriever(SimpleRetriever):
+class EnhancedSitesErrorHandler(DefaultErrorHandler):
     """
-    Custom retriever for the sites stream that enriches error messages during connection checks.
+    Custom error handler for the sites stream that enriches error messages with property suggestions.
 
-    When reading records fails (e.g., invalid property URL), this retriever calls GET /sites
-    to fetch the user's available properties and includes them as suggestions in the error message.
+    When the sites endpoint returns a non-OK response (e.g., 403 for an invalid property URL),
+    this handler calls GET /sites to fetch the user's available properties and includes them
+    as suggestions in the error message.
     """
 
-    def read_records(
+    def interpret_response(
+        self, response_or_exception: Optional[Union[requests.Response, Exception]]
+    ) -> ErrorResolution:
+        resolution = super().interpret_response(response_or_exception)
+        if resolution.response_action != ResponseAction.FAIL:
+            return resolution
+
+        enhanced_message = self._build_enhanced_error_message(
+            response_or_exception, resolution.error_message
+        )
+        return ErrorResolution(
+            response_action=ResponseAction.FAIL,
+            failure_type=resolution.failure_type or FailureType.config_error,
+            error_message=enhanced_message,
+        )
+
+    def _build_enhanced_error_message(
         self,
-        records_schema: Mapping[str, Any],
-        stream_slice: Optional[StreamSlice] = None,
-    ) -> Iterable[Union[Mapping[str, Any], AirbyteMessage]]:
-        try:
-            yield from super().read_records(records_schema, stream_slice)
-        except AirbyteTracedException as error:
-            original_message = error.message or error.internal_message or str(error)
-            enhanced_context = self._build_enhanced_error_message()
-            enhanced_message = f"{enhanced_context} (Original error: {original_message})"
-            raise AirbyteTracedException(
-                internal_message=enhanced_message,
-                message=enhanced_message,
-                failure_type=error.failure_type,
-            ) from error
-
-    def _build_enhanced_error_message(self) -> str:
+        response_or_exception: Optional[Union[requests.Response, Exception]],
+        original_message: Optional[str],
+    ) -> str:
         """Compose an enhanced error message with property suggestions when available."""
-        available_properties = self._fetch_available_properties()
+        available_properties = self._fetch_available_properties(response_or_exception)
+        original_detail = f" (Original error: {original_message})" if original_message else ""
 
         if available_properties is None:
             return (
@@ -231,7 +236,7 @@ class EnhancedSitesRetriever(SimpleRetriever):
                 "URL-prefix properties or 'sc-domain:example.com' for "
                 "domain properties. "
                 "Open Google Search Console to check your property names: "
-                "https://search.google.com/search-console"
+                "https://search.google.com/search-console" + original_detail
             )
 
         if not available_properties:
@@ -241,7 +246,7 @@ class EnhancedSitesRetriever(SimpleRetriever):
                 "account email) has been added as a user in Google Search "
                 "Console. To add access, go to Settings > Users and "
                 "permissions in Search Console: "
-                "https://search.google.com/search-console"
+                "https://search.google.com/search-console" + original_detail
             )
 
         property_list = ", ".join(p.get("siteUrl", "unknown") for p in available_properties)
@@ -251,21 +256,27 @@ class EnhancedSitesRetriever(SimpleRetriever):
             f"{property_list}. "
             f"Choose the property that matches the site you want to sync and "
             f"enter the exact value into the 'Search Console Properties' field."
+            f"{original_detail}"
         )
 
-    def _fetch_available_properties(self) -> Optional[List[Dict[str, str]]]:
+    def _fetch_available_properties(
+        self,
+        response_or_exception: Optional[Union[requests.Response, Exception]],
+    ) -> Optional[List[Dict[str, str]]]:
         """Call GET /sites to retrieve all properties the authenticated user can access.
 
+        Reuses auth headers from the failed response's request when available.
         Returns a list of property dicts on success, an empty list if the account has no
-        properties, or None if the request could not be completed (auth failure, HTTP error, etc.).
+        properties, or None if the request could not be completed.
         """
-        try:
-            authenticator = self.requester.authenticator
-            if not authenticator:
+        headers = {}
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.request:
+            auth_header = response_or_exception.request.headers.get("Authorization")
+            if auth_header:
+                headers["Authorization"] = auth_header
+            else:
                 return None
-            headers = authenticator.get_auth_header()
-        except Exception:
-            logger.warning("Could not get auth headers for property lookup", exc_info=True)
+        else:
             return None
 
         try:

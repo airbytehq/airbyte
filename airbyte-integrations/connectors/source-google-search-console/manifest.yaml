@@ -911,25 +911,31 @@ definitions:
     type: DeclarativeStream
     name: sites
     retriever:
-      type: CustomRetriever
-      class_name: "source_declarative_manifest.components.EnhancedSitesRetriever"
-      $parameters:
-        name: sites
+      type: SimpleRetriever
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}"
         http_method: GET
         authenticator: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CustomErrorHandler
+          class_name: "source_declarative_manifest.components.EnhancedSitesErrorHandler"
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 403
+                - 404
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
       partition_router:
-        type: ListPartitionRouter
-        values: "{{ config['site_urls'] }}"
-        cursor_field: site_url
+        - type: ListPartitionRouter
+          values: "{{ config['site_urls'] }}"
+          cursor_field: site_url
     schema_loader:
       type: InlineSchemaLoader
       schema:
