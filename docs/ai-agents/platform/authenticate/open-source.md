@@ -1,17 +1,15 @@
+---
+sidebar_position: 0
+---
+
 # Open source authentication
 
-When you use agent connectors as open source Python packages, you manage credentials locally and provide them directly to the connector. This approach gives you full control over credential storage and is ideal for development, testing, and single-user scenarios.
-
-## How it works
-
-In open source mode, you install agent connectors as Python packages and provide API credentials directly when initializing the connector. The connector then makes HTTP calls directly to the external API using those credentials.
-
-Key characteristics of open source authentication:
+When you use agent connectors as open source Python packages, you provide user credentials to the connector in your app. The connector then makes HTTP calls directly to the external API using those credentials. In this case, you don't need to subscribe to Agent Engine, but you are responsible for managing your users' credentials.
 
 - You provide actual API credentials (tokens, keys, OAuth tokens) directly to the connector.
-- Credentials are stored and managed locally by you.
 - Connectors make direct HTTP calls to external APIs.
 - You are responsible for credential security, rotation, and lifecycle management.
+- You can't use the [entity cache](../entity-cache).
 
 ## Authentication methods
 
@@ -30,7 +28,7 @@ Many connectors support OAuth authentication, which typically requires some comb
 
 Here's an example using OAuth with the HubSpot connector:
 
-```python
+```python title="agent.py"
 from airbyte_agent_hubspot import HubspotConnector
 from airbyte_agent_hubspot.models import HubspotAuthConfig
 
@@ -53,7 +51,7 @@ Some connectors support simpler token-based authentication using API keys or per
 
 Here's an example using a personal access token with the GitHub connector:
 
-```python
+```python title="agent.py"
 from airbyte_agent_github import GithubConnector
 from airbyte_agent_github.models import GithubPersonalAccessTokenAuthConfig
 
@@ -66,19 +64,17 @@ connector = GithubConnector(
 
 ### Finding connector-specific authentication options
 
-Each connector has its own authentication requirements. See the [connector reference documentation](../../connectors/) for details on the authentication methods and required fields for each connector.
+Each connector has its own authentication requirements. See the [reference documentation](../../connectors/) for the connector you want to use.
 
 ## Security considerations
 
 When managing credentials locally, follow these best practices:
 
-- **Use environment variables**: Store credentials in environment variables rather than hardcoding them in your source code. Use a library like `python-dotenv` to load them from a `.env` file during development.
+- **Use environment variables**: Store credentials in environment variables rather than hardcoding them in your source code. Use a library like `python-dotenv` to load them from a `.env` file during development. Add `.env` files to your `.gitignore` to prevent accidentally committing secrets to version control.
 
-- **Never commit credentials**: Add `.env` files to your `.gitignore` to prevent accidentally committing secrets to version control.
+- **Rotate credentials regularly**: Periodically rotate API keys and tokens.
 
-- **Rotate credentials regularly**: Periodically rotate API keys and tokens, especially if you suspect they may have been exposed.
-
-- **Use least privilege**: Request only the scopes and permissions your application actually needs.
+- **Use least privilege**: Request only the scopes and permissions your agent actually needs.
 
 - **Secure your environment**: Ensure the machine running your agent has appropriate access controls.
 
@@ -91,4 +87,4 @@ Open source authentication is most appropriate when:
 - You need full control over credential storage and don't want to use a cloud service.
 - You're building a proof of concept before moving to production.
 
-For production B2B applications with multiple end-users, consider using [hosted authentication](hosted.md) instead, which provides centralized credential management and enhanced security.
+For production B2B applications with multiple end-users, use [hosted authentication](hosted.md) instead, which provides centralized credential management.

@@ -1,15 +1,13 @@
+---
+sidebar_position: 1
+---
+
 # Agent Engine authentication
 
-When you use the Agent Engine in hosted mode, Airbyte Cloud manages your end-users' credentials securely. This approach is ideal for production B2B applications where you need centralized credential management across multiple customers.
-
-## How it works
-
-In hosted mode, you authenticate with Airbyte Cloud using your application credentials, and Airbyte stores your end-users' API credentials securely. When your agent executes operations, API calls are proxied through Airbyte Cloud.
-
-Key characteristics of hosted authentication:
+When you subscribe to the Agent Engine, you authenticate with Airbyte Cloud using your Airbyte credentials, and Airbyte manages your end-users' credentials securely. This approach is ideal for production B2B applications where you need centralized credential management across multiple customers. When your agent executes operations, your proxy API calls through Airbyte Cloud.
 
 - You authenticate using Airbyte Cloud client credentials.
-- End-user API credentials are stored securely in Airbyte Cloud.
+- You store end-user API credentials securely in Airbyte Cloud.
 - API calls are proxied through Airbyte Cloud.
 - Airbyte handles credential lifecycle management, including token refresh.
 
@@ -17,19 +15,17 @@ Key characteristics of hosted authentication:
 
 The Agent Engine uses a hierarchical token system with three types of tokens, each designed for specific use cases.
 
-| Token type | Use case | Scope |
-|------------|----------|-------|
-| Operator Bearer Token | Organization management, template creation | Organization-wide |
-| Scoped Token | API integration, programmatic workspace access | Single workspace |
-| Widget Token | Embedded widget integration | Single workspace with CORS protection |
+| Token type            | Use case                                                       | Scope                                 |
+| --------------------- | -------------------------------------------------------------- | ------------------------------------- |
+| Operator Bearer Token | Organization management, template creation                     | Organization-wide                     |
+| Scoped Token          | API integration, programmatic workspace access                 | Single workspace                      |
+| Widget Token          | Using the [authentication module](../authentication-module) | Single workspace with CORS protection |
 
 ### Operator bearer token
 
-The Operator Bearer Token provides organization-level access and is used for administrative operations like creating templates and generating other tokens.
+The Operator Bearer Token provides organization-level access. use it for administrative operations like generating other tokens, lower in the hierarchy. To obtain an Operator Bearer Token, use the client credentials endpoint with your application credentials. Find your credentials in the Agent Engine under **Authentication Module** > **Installation**.
 
-To obtain an Operator Bearer Token, use the client credentials endpoint with your application credentials:
-
-```bash
+```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
   -H 'Content-Type: application/json' \
   -d '{
@@ -38,11 +34,9 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
   }'
 ```
 
-You can find your credentials in the Airbyte Cloud dashboard under **Settings > Applications**.
-
 The response contains your Operator Bearer Token:
 
-```json
+```json title="Response"
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "token_type": "bearer",
@@ -53,9 +47,7 @@ The response contains your Operator Bearer Token:
 
 ### Scoped token
 
-Scoped tokens provide workspace-level access and are designed for end-user operations. Each scoped token is limited to a single workspace, ensuring data isolation between customers.
-
-Generate a scoped token using your Operator Bearer Token:
+Scoped tokens provide workspace-level access for end-user operations. Each scoped token is limited to a single customer, ensuring data isolation between customers. Generate a scoped token using your Operator Bearer Token:
 
 ```bash
 curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
@@ -70,7 +62,7 @@ If the workspace doesn't exist, Airbyte creates it automatically.
 
 ### Widget token
 
-Widget tokens are specialized tokens for embedding the Airbyte configuration widget in your application. They include all features of scoped tokens plus origin validation for CORS protection.
+Widget tokens are specialized tokens for embedding the authentication module in your app. They include all features of scoped tokens plus origin validation for CORS protection.
 
 ```bash
 curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
@@ -82,17 +74,17 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
   }'
 ```
 
-For more details on widget tokens and template filtering, see the [Authentication Module](authentication-module.md) documentation.
+For more details on widget tokens and template filtering, see the [Authentication Module](authentication-module) documentation.
 
 ## Authentication flow
 
 The typical authentication flow for hosted mode involves these steps:
 
-1. **Get an Operator Bearer Token** using your Airbyte client credentials.
+1. **Get an Operator Bearer Token** using your Airbyte credentials.
 
-2. **Generate a Scoped Token** for the end-user's workspace.
+2. **Generate a Scoped Token** for the customer's workspace.
 
-3. **Create a connector** with the end-user's API credentials. Airbyte stores these credentials securely.
+3. **Create a connector** using the end-user's API credentials. Airbyte stores these credentials securely.
 
 4. **Use the connector** in your agent with your Airbyte credentials.
 
@@ -138,9 +130,9 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   }'
 ```
 
-### With server-side OAuth
+### With your own OAuth flow
 
-You can implement your own OAuth flow and use Airbyte's server-side OAuth endpoints to handle the token exchange. This allows you to show your own branding on the OAuth consent screen. See [Build your own OAuth flow](build-your-own.md) for details.
+You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints to handle the token exchange. This allows you to show your own branding on the OAuth consent screen. See [Build your own OAuth flow](build-your-own.md) for details.
 
 ## Security considerations
 
