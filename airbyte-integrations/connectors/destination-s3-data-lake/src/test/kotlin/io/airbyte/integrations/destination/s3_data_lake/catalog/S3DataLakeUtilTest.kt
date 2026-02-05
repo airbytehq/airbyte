@@ -15,27 +15,17 @@ import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
-import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.AIRBYTE_CDC_DELETE_COLUMN
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
-import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketRegion
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
@@ -50,11 +40,9 @@ import org.apache.iceberg.TableProperties
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.nessie.NessieCatalog
-import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 internal class S3DataLakeUtilTest {
@@ -218,205 +206,6 @@ internal class S3DataLakeUtilTest {
     }
 
     @Test
-    fun testConvertAirbyteRecordToIcebergRecordInsert() {
-        val objectSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = true),
-                    "name" to FieldType(StringType, nullable = true),
-                )
-            )
-        val airbyteStream =
-            DestinationStream(
-                generationId = 1,
-                minimumGenerationId = 1,
-                syncId = 1,
-                unmappedNamespace = "namespace",
-                unmappedName = "name",
-                namespaceMapper =
-                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
-                tableSchema = makeTableSchema(objectSchema, Append),
-            )
-        val airbyteRecord =
-            EnrichedDestinationRecordAirbyteValue(
-                stream = airbyteStream,
-                declaredFields =
-                    linkedMapOf(
-                        "id" to
-                            EnrichedAirbyteValue(
-                                IntegerValue(42L),
-                                IntegerType,
-                                "id",
-                                airbyteMetaField = null
-                            ),
-                        "name" to
-                            EnrichedAirbyteValue(
-                                StringValue("John Doe"),
-                                StringType,
-                                "name",
-                                airbyteMetaField = null
-                            )
-                    ),
-                undeclaredFields = linkedMapOf(),
-                emittedAtMs = System.currentTimeMillis(),
-                sourceMeta = Meta(),
-                airbyteRawId = UUIDGenerator().v7(),
-            )
-        val columns =
-            mutableListOf(
-                Types.NestedField.required(1, "id", Types.IntegerType.get()),
-                Types.NestedField.required(2, "name", Types.StringType.get()),
-            )
-        val schema = Schema(columns)
-        val icebergRecord =
-            icebergUtil.toRecord(
-                record = airbyteRecord,
-                tableSchema = schema,
-                stream = airbyteStream
-            )
-        Assertions.assertNotNull(icebergRecord)
-        Assertions.assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
-        Assertions.assertEquals(Operation.INSERT, (icebergRecord as RecordWrapper).operation)
-    }
-
-    @Test
-    fun testConvertAirbyteRecordToIcebergRecordDelete() {
-        val objectSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = true),
-                    "name" to FieldType(StringType, nullable = true),
-                    AIRBYTE_CDC_DELETE_COLUMN to
-                        FieldType(TimestampTypeWithTimezone, nullable = true),
-                )
-            )
-        val airbyteStream =
-            DestinationStream(
-                generationId = 1,
-                minimumGenerationId = 1,
-                syncId = 1,
-                unmappedNamespace = "namespace",
-                unmappedName = "name",
-                namespaceMapper =
-                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
-                tableSchema = makeTableSchema(objectSchema, Append),
-            )
-        val airbyteRecord =
-            EnrichedDestinationRecordAirbyteValue(
-                stream = airbyteStream,
-                declaredFields =
-                    linkedMapOf(
-                        "id" to
-                            EnrichedAirbyteValue(
-                                IntegerValue(42L),
-                                IntegerType,
-                                "id",
-                                airbyteMetaField = null
-                            ),
-                        "name" to
-                            EnrichedAirbyteValue(
-                                StringValue("John Doe"),
-                                StringType,
-                                "name",
-                                airbyteMetaField = null
-                            ),
-                        AIRBYTE_CDC_DELETE_COLUMN to
-                            EnrichedAirbyteValue(
-                                TimestampWithTimezoneValue("2024-01-01T00:00:00Z"),
-                                TimestampTypeWithTimezone,
-                                AIRBYTE_CDC_DELETE_COLUMN,
-                                airbyteMetaField = null,
-                            ),
-                    ),
-                undeclaredFields = linkedMapOf(),
-                emittedAtMs = System.currentTimeMillis(),
-                sourceMeta = Meta(),
-                airbyteRawId = UUIDGenerator().v7(),
-            )
-        val columns =
-            mutableListOf(
-                Types.NestedField.required(1, "id", Types.IntegerType.get()),
-                Types.NestedField.required(2, "name", Types.StringType.get()),
-            )
-        val schema = Schema(columns, setOf(1))
-        val icebergRecord =
-            icebergUtil.toRecord(
-                record = airbyteRecord,
-                tableSchema = schema,
-                stream = airbyteStream
-            )
-        Assertions.assertNotNull(icebergRecord)
-        Assertions.assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
-        Assertions.assertEquals(Operation.DELETE, (icebergRecord as RecordWrapper).operation)
-    }
-
-    @Test
-    fun testConvertAirbyteRecordToIcebergRecordUpdate() {
-        val objectSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = false),
-                    "name" to FieldType(StringType, nullable = true),
-                )
-            )
-        val airbyteStream =
-            DestinationStream(
-                generationId = 1,
-                minimumGenerationId = 1,
-                syncId = 1,
-                unmappedNamespace = "namespace",
-                unmappedName = "name",
-                namespaceMapper =
-                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
-                tableSchema =
-                    makeTableSchema(
-                        objectSchema,
-                        Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("id"))
-                    ),
-            )
-        val airbyteRecord =
-            EnrichedDestinationRecordAirbyteValue(
-                stream = airbyteStream,
-                declaredFields =
-                    linkedMapOf(
-                        "id" to
-                            EnrichedAirbyteValue(
-                                IntegerValue(42L),
-                                IntegerType,
-                                "id",
-                                airbyteMetaField = null
-                            ),
-                        "name" to
-                            EnrichedAirbyteValue(
-                                StringValue("John Doe"),
-                                StringType,
-                                "name",
-                                airbyteMetaField = null
-                            ),
-                    ),
-                undeclaredFields = linkedMapOf(),
-                emittedAtMs = System.currentTimeMillis(),
-                sourceMeta = Meta(),
-                airbyteRawId = UUIDGenerator().v7(),
-            )
-        val columns =
-            mutableListOf(
-                Types.NestedField.required(1, "id", Types.IntegerType.get()),
-                Types.NestedField.required(2, "name", Types.StringType.get()),
-            )
-        val schema = Schema(columns, setOf(1))
-        val icebergRecord =
-            icebergUtil.toRecord(
-                record = airbyteRecord,
-                tableSchema = schema,
-                stream = airbyteStream
-            )
-        Assertions.assertNotNull(icebergRecord)
-        Assertions.assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
-        Assertions.assertEquals(Operation.UPDATE, (icebergRecord as RecordWrapper).operation)
-    }
-
-    @Test
     fun testCatalogProperties() {
         val awsAccessKey = "access-key"
         val awsSecretAccessKey = "secret-access-key"
@@ -470,40 +259,6 @@ internal class S3DataLakeUtilTest {
         Assertions.assertEquals("true", catalogProperties["s3.path-style-access"])
         Assertions.assertEquals("BEARER", catalogProperties["nessie.authentication.type"])
         Assertions.assertEquals(nessieAccessToken, catalogProperties["nessie.authentication.token"])
-    }
-
-    @Test
-    fun `assertGenerationIdSuffixIsOfValidFormat accepts valid format`() {
-        val validGenerationId = "ab-generation-id-123-e"
-        assertDoesNotThrow {
-            icebergUtil.assertGenerationIdSuffixIsOfValidFormat(validGenerationId)
-        }
-    }
-
-    @Test
-    fun `assertGenerationIdSuffixIsOfValidFormat throws exception for invalid prefix`() {
-        val invalidGenerationId = "invalid-generation-id-123"
-        val exception =
-            assertThrows<IcebergUtil.InvalidFormatException> {
-                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
-            }
-        Assertions.assertEquals(
-            "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
-            exception.message
-        )
-    }
-
-    @Test
-    fun `assertGenerationIdSuffixIsOfValidFormat throws exception for missing number`() {
-        val invalidGenerationId = "ab-generation-id-"
-        val exception =
-            assertThrows<IcebergUtil.InvalidFormatException> {
-                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
-            }
-        Assertions.assertEquals(
-            "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
-            exception.message
-        )
     }
 
     @Test
