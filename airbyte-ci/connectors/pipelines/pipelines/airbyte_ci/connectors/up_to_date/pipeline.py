@@ -145,16 +145,16 @@ async def run_connector_up_to_date_pipeline(
                     step_results.append(dependency_updates_result)
                     dependency_updates = dependency_updates_result.output
 
-                    # We open a PR even if build is failing.
-                    # This might allow a developer to fix the build in the PR.
-                    initial_labels = DEFAULT_PR_LABELS + ([AUTO_MERGE_PR_LABEL] if auto_merge else [])
-                    initial_pr_creation = CreateOrUpdatePullRequest(
-                        context,
-                        labels=initial_labels,
-                        # Reduce pressure on rate limit, since we need to push a
-                        # a follow-on commit anyway once we have the PR number:
-                        skip_ci=True,
-                    )
+                # We open a PR even if build is failing.
+                # This might allow a developer to fix the build in the PR.
+                initial_labels = DEFAULT_PR_LABELS + ([AUTO_MERGE_PR_LABEL] if auto_merge else [])
+                initial_pr_creation = CreateOrUpdatePullRequest(
+                    context,
+                    labels=initial_labels,
+                    # Reduce pressure on rate limit, since we need to push a
+                    # a follow-on commit anyway once we have the PR number:
+                    skip_ci=True,
+                )
                 pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
                     all_modified_files, context, step_results, dependency_updates
                 )
