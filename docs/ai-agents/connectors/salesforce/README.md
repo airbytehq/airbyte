@@ -10,6 +10,9 @@ notes, and attachments for sales analytics and customer relationship management.
 
 The Salesforce connector is optimized to handle prompts like these.
 
+- List recent contacts in my Salesforce account
+- List open cases in my Salesforce account
+- Show me the notes and attachments for a recent account
 - Show me my top 5 opportunities this month
 - List all contacts from \{company\} in the last quarter
 - Search for leads in the technology sector with revenue over $10M
@@ -18,7 +21,6 @@ The Salesforce connector is optimized to handle prompts like these.
 - Find upcoming events related to my most important opportunities
 - Analyze the performance of my recent marketing campaigns
 - Identify the highest value opportunities I'm currently tracking
-- Show me the notes and attachments for \{customer\}'s account
 
 ## Unsupported questions
 
@@ -115,7 +117,7 @@ See the official [Salesforce API reference](https://developer.salesforce.com/doc
 
 ## Version information
 
-- **Package version:** 0.1.73
-- **Connector version:** 1.0.10
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.74
+- **Connector version:** 1.0.11
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/salesforce/CHANGELOG.md)

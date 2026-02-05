@@ -10,16 +10,16 @@ Ads Manager data for analytics and reporting purposes.
 The Facebook-Marketing connector is optimized to handle prompts like these.
 
 - List all active campaigns in my ad account
-- Show me the ad sets with the highest daily budget
-- What ads are currently running in campaign \{campaign_name\}?
-- Show me the performance insights for the last 7 days
-- Which campaigns have the most spend this month?
+- What ads are currently running in a recent campaign?
 - List all ad creatives in my account
 - What is the status of my campaigns?
-- Show me ads with the highest click-through rate
 - List all custom conversion events in my account
 - Show me all ad images in my account
 - What videos are available in my ad account?
+- Show me the ad sets with the highest daily budget
+- Show me the performance insights for the last 7 days
+- Which campaigns have the most spend this month?
+- Show me ads with the highest click-through rate
 
 ## Unsupported questions
 
@@ -112,7 +112,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.15
-- **Connector version:** 1.0.13
-- **Generated with Connector SDK commit SHA:** 9d088ae971839a1bcc590342a987fe496083aa2e
+- **Package version:** 0.1.16
+- **Connector version:** 1.0.14
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)

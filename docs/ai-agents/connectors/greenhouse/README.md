@@ -10,14 +10,15 @@ for recruiting analytics and talent acquisition insights.
 
 The Greenhouse connector is optimized to handle prompts like these.
 
+- List all open jobs
+- Show me upcoming interviews this week
+- Show me recent job offers
+- List recent applications
 - Show me candidates from \{company\} who applied last month
 - What are the top 5 sources for our job applications this quarter?
-- List all open jobs in the Sales department
 - Analyze the interview schedules for our engineering candidates this week
-- Get details of recent job offers for \{team_member\}
 - Compare the number of applications across different offices
 - Identify candidates who have multiple applications in our system
-- Show me upcoming scheduled interviews for our marketing positions
 - Summarize the candidate pipeline for our latest job posting
 - Find the most active departments in recruiting this month
 
@@ -115,7 +116,7 @@ See the official [Greenhouse API reference](https://developers.greenhouse.io/har
 
 ## Version information
 
-- **Package version:** 0.17.76
-- **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.17.77
+- **Connector version:** 0.1.5
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/greenhouse/CHANGELOG.md)

@@ -11,19 +11,19 @@ email templates for marketing analytics and customer engagement insights.
 The Klaviyo connector is optimized to handle prompts like these.
 
 - List all profiles in my Klaviyo account
-- Get profile details for a specific contact
+- Show me details for a recent profile
 - Show me all email lists
-- Get details for a specific email list
+- Show me details for a recent email list
 - What campaigns have been created?
-- Get details for a specific campaign
+- Show me details for a recent campaign
 - Show me all email campaigns
 - List all events for tracking customer actions
 - Show me all metrics (event types)
-- Get details for a specific metric
+- Show me details for a recent metric
 - What automated flows are configured?
-- Get details for a specific flow
+- Show me details for a recent flow
 - List all email templates
-- Get details for a specific email template
+- Show me details for a recent email template
 
 ## Unsupported questions
 
@@ -113,7 +113,7 @@ See the official [Klaviyo API reference](https://developers.klaviyo.com/en/refer
 
 ## Version information
 
-- **Package version:** 0.1.8
-- **Connector version:** 1.0.0
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.9
+- **Connector version:** 1.0.1
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/klaviyo/CHANGELOG.md)

@@ -13,15 +13,15 @@ The Orb connector is optimized to handle prompts like these.
 - List all active subscriptions
 - What plans are available?
 - Show me recent invoices
-- Get details for customer \{customer_id\}
-- What is the status of subscription \{subscription_id\}?
+- Show me details for a recent customer
+- What is the status of a recent subscription?
+- Show me the pricing details for a plan
+- Confirm the Stripe ID linked to a customer
+- What is the payment provider ID for a customer?
 - List all invoices for a specific customer
-- Show me the pricing details for plan \{plan_id\}
 - List all subscriptions for customer XYZ
 - Show all active subscriptions for a specific customer
 - What subscriptions does customer \{external_customer_id\} have?
-- Confirm the Stripe ID linked to this customer
-- What is the payment provider ID for customer \{customer_id\}?
 - Pull all invoices from the last month
 - Show invoices created after \{date\}
 - List all paid invoices for customer \{customer_id\}
@@ -114,7 +114,7 @@ See the official [Orb API reference](https://docs.withorb.com/api-reference).
 
 ## Version information
 
-- **Package version:** 0.1.10
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.11
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/orb/CHANGELOG.md)
