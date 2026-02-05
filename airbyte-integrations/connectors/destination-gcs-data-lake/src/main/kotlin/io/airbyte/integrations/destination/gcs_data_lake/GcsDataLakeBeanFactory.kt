@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -37,6 +38,13 @@ class GcsDataLakeBeanFactory {
     // from being loaded. So this is necessary for now.
     @Singleton
     fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
+
+    /** Iceberg has specific timestamp requirements */
+    @Singleton
+    fun mediumConverterConfig() =
+        MediumConverterConfig(
+            extractedAtAsTimestampWithTimezone = false,
+        )
 
     /**
      * Socket configuration for GCS Data Lake destination.
