@@ -1,10 +1,10 @@
 # GitLab
 
-This page contains the setup guide and reference information for the Gitlab Source connector.
+This page contains the setup guide and reference information for the GitLab Source connector.
 
 ## Prerequisites
 
-- Gitlab instance or an account at [Gitlab](https://gitlab.com)
+- GitLab instance or an account at [GitLab](https://gitlab.com)
 
 <!-- env:cloud -->
 
@@ -31,7 +31,7 @@ Create a [GitLab Account](https://gitlab.com) or set up a local instance of GitL
 
 **Airbyte Open Source additional setup steps**
 
-Log into [GitLab](https://gitlab.com) and then generate a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html). Your token should have the `read_api` scope, that Grants read access to the API, including all groups and projects, the container registry, and the package registry.
+Log into [GitLab](https://gitlab.com) and then generate a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html). Your token should have the `read_api` scope, that grants read access to the API, including all groups and projects, the container registry, and the package registry.
 
 <!-- /env:oss -->
 
@@ -65,7 +65,7 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 
 ## Supported sync modes
 
-The Gitlab Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The GitLab Source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -78,24 +78,27 @@ This connector outputs the following streams:
 
 - [Branches](https://docs.gitlab.com/ee/api/branches.html)
 - [Commits](https://docs.gitlab.com/ee/api/commits.html) \(Incremental\)
-- [Issues](https://docs.gitlab.com/ee/api/issues.html) \(Incremental\)
-- [Group Issue Boards](https://docs.gitlab.com/ee/api/group_boards.html)
-- [Pipelines](https://docs.gitlab.com/ee/api/pipelines.html) \(Incremental\)
-- [Jobs](https://docs.gitlab.com/ee/api/jobs.html)
-- [Projects](https://docs.gitlab.com/ee/api/projects.html)
-- [Project Milestones](https://docs.gitlab.com/ee/api/milestones.html)
-- [Project Merge Requests](https://docs.gitlab.com/ee/api/merge_requests.html) \(Incremental\)
-- [Users](https://docs.gitlab.com/ee/api/users.html)
-- [Groups](https://docs.gitlab.com/ee/api/groups.html)
-- [Group Milestones](https://docs.gitlab.com/ee/api/group_milestones.html)
-- [Group and Project members](https://docs.gitlab.com/ee/api/members.html)
-- [Tags](https://docs.gitlab.com/ee/api/tags.html)
-- [Releases](https://docs.gitlab.com/ee/api/releases/index.html)
 - [Deployments](https://docs.gitlab.com/ee/api/deployments/index.html)
+- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) \(only available for GitLab Premium and Ultimate tiers\)
+- [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Premium and Ultimate tiers\)
+- [Group Issue Boards](https://docs.gitlab.com/ee/api/group_boards.html)
 - [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
+- [Group Members](https://docs.gitlab.com/ee/api/members.html)
+- [Group Milestones](https://docs.gitlab.com/ee/api/group_milestones.html)
+- [Groups](https://docs.gitlab.com/ee/api/groups.html)
+- [Issues](https://docs.gitlab.com/ee/api/issues.html) \(Incremental\)
+- [Jobs](https://docs.gitlab.com/ee/api/jobs.html)
+- [Merge Request Commits](https://docs.gitlab.com/ee/api/merge_requests.html) \(commits for each merge request\)
+- [Merge Requests](https://docs.gitlab.com/ee/api/merge_requests.html) \(Incremental\)
+- [Pipelines](https://docs.gitlab.com/ee/api/pipelines.html) \(Incremental\)
+- [Pipelines Extended](https://docs.gitlab.com/ee/api/pipelines.html) \(detailed pipeline information\)
 - [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
-- [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts. Stream Epics uses iid field as primary key for more convenient search and matching with UI. Iid is the internal ID of the epic, number of Epic on UI.\)
-- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
+- [Project Members](https://docs.gitlab.com/ee/api/members.html)
+- [Project Milestones](https://docs.gitlab.com/ee/api/milestones.html)
+- [Projects](https://docs.gitlab.com/ee/api/projects.html)
+- [Releases](https://docs.gitlab.com/ee/api/releases/index.html)
+- [Tags](https://docs.gitlab.com/ee/api/tags.html)
+- [Users](https://docs.gitlab.com/ee/api/users.html)
 
 ## Additional information
 
