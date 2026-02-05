@@ -138,12 +138,11 @@ class ChannelsRetriever(SimpleRetriever):
 
         record_generator = partial(
             self._parse_records,
-            stream_state=self.state or {},
             stream_slice=_slice,
             records_schema=records_schema,
         )
 
-        for stream_data in self._read_pages(record_generator, self.state, _slice):
+        for stream_data in self._read_pages(record_generator, _slice):
             # joining channel logic
             if self.should_join_to_channel(self.config, stream_data):
                 self.join_channel(self.config, stream_data)
