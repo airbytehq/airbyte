@@ -555,6 +555,66 @@ def test_stream_commits_409_empty_repository(caplog, requests_mock):
     assert ignore_message in caplog.messages
 
 
+def test_stream_commits_skips_empty_repository(caplog, requests_mock):
+    """
+    Test that the Commits stream skips empty repositories (repos with no branches)
+    during the _validate_branches_to_pull phase, preventing 409 errors.
+    """
+    repository_args_with_start_date = {
+        "repositories": ["organization/empty-repo", "organization/normal-repo"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-02T10:10:03Z",
+    }
+
+    branches_to_pull = []
+
+    stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull)
+    stream.page_size = 2
+
+    empty_repo_api_url = "https://api.github.com/repos/organization/empty-repo"
+    normal_repo_api_url = "https://api.github.com/repos/organization/normal-repo"
+    empty_branches_api_url = "https://api.github.com/repos/organization/empty-repo/branches"
+    normal_branches_api_url = "https://api.github.com/repos/organization/normal-repo/branches"
+    normal_commits_api_url = "https://api.github.com/repos/organization/normal-repo/commits"
+
+    requests_mock.get(
+        empty_repo_api_url,
+        json={"id": 1, "updated_at": "2022-02-02T10:10:02Z", "default_branch": "main", "full_name": "organization/empty-repo"},
+    )
+    requests_mock.get(
+        normal_repo_api_url,
+        json={"id": 2, "updated_at": "2022-02-02T10:10:02Z", "default_branch": "main", "full_name": "organization/normal-repo"},
+    )
+    requests_mock.get(
+        empty_branches_api_url,
+        json=[],
+        status_code=200,
+    )
+    requests_mock.get(
+        normal_branches_api_url,
+        json=[
+            {
+                "name": "main",
+                "commit": {"sha": "abc123", "url": "https://api.github.com/repos/organization/normal-repo/commits/abc123"},
+                "protected": False,
+            }
+        ],
+        status_code=200,
+    )
+    requests_mock.get(
+        f"{normal_commits_api_url}?per_page=2&since=2022-02-02T10%3A10%3A03Z&sha=main",
+        json=[{"sha": "commit1", "commit": {"author": {"date": "2022-02-02T10:10:05Z"}}}],
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+    assert len(records) == 1
+    assert records[0]["sha"] == "commit1"
+    assert records[0]["repository"] == "organization/normal-repo"
+    warning_message = "Repository 'organization/empty-repo' appears to be empty (no branches found). Skipping commits sync for this repository."
+    assert warning_message in caplog.messages
+
+
 def test_stream_pull_request_commits(requests_mock):
     repository_args = {
         "repositories": ["organization/repository"],

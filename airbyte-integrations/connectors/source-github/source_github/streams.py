@@ -745,9 +745,15 @@ class Commits(IncrementalMixin, GithubStream):
             for branch in self.branches_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 all_branches.append(f"{branch['repository']}/{branch['name']}")
 
+        repos_with_branches = {branch.rsplit("/", 1)[0] for branch in all_branches}
+
         # Create mapping of repository to list of branches to pull commits for
         # If no branches are specified for a repo, use its default branch
         for repo in self.repositories:
+            if repo not in repos_with_branches:
+                self.logger.warning(f"Repository '{repo}' appears to be empty (no branches found). Skipping commits sync for this repository.")
+                continue
+
             repo_branches = []
             for branch in self.branches_to_pull:
                 branch_parts = branch.split("/", 2)
