@@ -86,7 +86,7 @@ class BlocksRetriever(SimpleRetriever):
         """
         Check if a record should be synced based on its last_edited_time.
         Returns True if the record's cursor value is >= the start_time boundary.
-        
+
         The start_time boundary comes from the DatetimeBasedCursor and represents
         the earliest datetime that should be synced (cursor state - lookback window).
         """
