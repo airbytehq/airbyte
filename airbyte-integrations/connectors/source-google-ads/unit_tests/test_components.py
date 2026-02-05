@@ -418,6 +418,53 @@ class TestGoogleAdsStreamingDecoder:
         assert exc_info.value.failure_type.value == "transient_error"
         assert "ChunkedEncodingError" in exc_info.value.internal_message
 
+    def test_chunked_encoding_error_is_retryable_by_platform(self, decoder):
+        """
+        Verify that ChunkedEncodingError produces an AirbyteTracedException that:
+        1. Has the original exception properly chained for debugging
+        2. Can be converted to an AirbyteTraceMessage with transient_error failure type
+        3. Contains the necessary information for the platform to trigger a retry
+
+        The platform uses the failure_type in the AirbyteTraceMessage to determine
+        whether to retry the sync. A transient_error indicates the error is temporary
+        and the sync should be retried.
+        """
+        msg = [{"results": [{"data": "test"}]}]
+        raw = json.dumps(msg).encode("utf-8")
+
+        @dataclass
+        class _ErroringResponse:
+            def iter_content(self, chunk_size=1):
+                yield raw[:10]
+                raise ChunkedEncodingError("Connection reset by peer")
+
+            def raise_for_status(self):
+                pass
+
+        resp = _ErroringResponse()
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            _ = list(decoder.decode(resp))
+
+        exception = exc_info.value
+
+        # Verify the original exception is properly chained for debugging
+        assert exception.__cause__ is not None
+        assert isinstance(exception.__cause__, ChunkedEncodingError)
+        assert "Connection reset by peer" in str(exception.__cause__)
+
+        # Verify the exception can be converted to an AirbyteTraceMessage
+        trace_message = exception.as_airbyte_message()
+        assert trace_message.type.value == "TRACE"
+        assert trace_message.trace.type.value == "ERROR"
+        assert trace_message.trace.error.failure_type.value == "transient_error"
+
+        # Verify the error message is user-friendly
+        assert "transient" in exception.message.lower() or "retry" in exception.message.lower()
+
+        # Verify the internal message contains debugging info
+        assert "ChunkedEncodingError" in exception.internal_message
+
     def test_stream_consumed_error_propagates_immediately(self, decoder):
         @dataclass
         class _AlreadyConsumedResponse:
