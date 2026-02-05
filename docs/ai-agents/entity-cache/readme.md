@@ -48,26 +48,51 @@ When you turn off the cache, Airbyte removes the cached data from Airbyte storag
 
 Once the entity cache is enabled and populated, you can query it programmatically using the search API. This allows your applications and AI agents to execute structured queries against cached data with sub-second latency.
 
+### Discover available streams and fields
+
+Before querying, discover what data is available in the cache.
+
+#### List available streams
+
+```http
+GET /api/v1/integrations/connectors/{connector_id}/streams
+```
+
+Returns metadata about all cached streams for a source, such as `contacts`, `deals`, or `issues`.
+
+#### Get field metadata for a stream
+
+```http
+GET /api/v1/integrations/connectors/{connector_id}/streams/{stream_name}/fields
+```
+
+Returns field names and types for a specific stream, helping you build valid queries.
+
 ### Search endpoint
 
 ```http
 POST /api/v1/integrations/connectors/{connector_id}/search/{stream_name}
 ```
 
-Replace `{connector_id}` with your source's ID and `{stream_name}` with the entity you want to query (for example, `contacts`, `deals`, or `issues`).
+Replace `{connector_id}` with your source's ID and `{stream_name}` with the entity you want to query.
 
 ### Request format
 
-```json
-{
-  "query": {
-    "filter": { "eq": { "status": "active" } },
-    "sort": [{ "created_at": "desc" }]
-  },
-  "limit": 100,
-  "cursor": null,
-  "fields": ["id", "name", "email"]
-}
+The following example shows a complete curl request to search for active contacts:
+
+```bash
+curl -X POST "https://api.airbyte.com/api/v1/integrations/connectors/{connector_id}/search/contacts" \
+  -H "Authorization: Bearer {your_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {
+      "filter": { "eq": { "status": "active" } },
+      "sort": [{ "created_at": "desc" }]
+    },
+    "limit": 100,
+    "cursor": null,
+    "fields": ["id", "name", "email"]
+  }'
 ```
 
 The request body contains the following fields.
@@ -161,26 +186,6 @@ The response contains the following fields.
 | `hits` | array | Array of matching records. Each hit contains `id`, `score`, and `data`. |
 | `next_cursor` | string | Cursor for fetching the next page. Null if no more results. |
 | `took_ms` | integer | Query execution time in milliseconds. |
-
-### Discover available streams and fields
-
-Before querying, you can discover what data is available in the cache.
-
-#### List available streams
-
-```http
-GET /api/v1/integrations/connectors/{connector_id}/streams
-```
-
-Returns metadata about all cached streams for a source.
-
-#### Get field metadata for a stream
-
-```http
-GET /api/v1/integrations/connectors/{connector_id}/streams/{stream_name}/fields
-```
-
-Returns field names and types for a specific stream, helping you build valid queries.
 
 ### Example: Find high-value deals closing this month
 
