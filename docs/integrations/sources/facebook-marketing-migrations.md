@@ -15,7 +15,7 @@ With this update, the primary key now correctly reflects the configured level:
 
 ### Who is affected?
 
-This change only affects Custom Insights streams that use a non-default `level` setting (adset, campaign, or account). If your Custom Insights streams use the default `level=ad` setting, no action is required.
+Users that sync Custom Insights streams with a `level` setting other than `ad` are affected by this update. Specifically, if your Custom Insights streams use `level=adset`, `level=campaign`, or `level=account`, you will need to follow the upgrade steps below. If your Custom Insights streams use the default `level=ad` setting, no action is required.
 
 ### Steps to upgrade
 
