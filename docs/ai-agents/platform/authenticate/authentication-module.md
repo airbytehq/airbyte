@@ -12,110 +12,16 @@ Before embedding the authentication module, complete the following setup:
 
 2. **Get your API credentials.** You need your `client_id` and `client_secret` from the Agent Engine under **Authentication Module** > **Installation**. See [Agent Engine authentication](hosted) for details on the token system.
 
-3. **Create at least one connection template.** Connection templates define where your users' data lands when they authenticate a source. Without one, the module has nothing to connect to. You can create connection templates in the Agent Engine UI under **Connection Templates**, or via the API:
+3. **(Optional) Create a connection template.** If you want data replication, connection templates define where your users' data lands when they authenticate a source. You can create connection templates in the Agent Engine UI under **Data Replication**, or via the [API](/ai-agents/api/api-reference). If you only need direct connector access (no replication), you can skip this step.
 
-   ```bash
-   curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/connections' \
-     -H "Authorization: Bearer <operator_token>" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "organization_id": "<your_organization_id>",
-       "destination_name": "My S3 Bucket",
-       "destination_definition_id": "<destination_definition_id>",
-       "destination_config": {
-         "access_key_id": "<aws_access_key>",
-         "secret_access_key": "<aws_secret_key>",
-         "s3_bucket_name": "<bucket_name>",
-         "s3_bucket_path": "<prefix>",
-         "s3_bucket_region": "<region>",
-         "format": {
-           "format_type": "CSV",
-           "compression": {"compression_type": "No Compression"},
-           "flattening": "Root level flattening"
-         }
-       },
-       "cron_expression": "0 0 12 * * ?",
-       "sync_on_create": true
-     }'
-   ```
+## Agent Engine UI
 
-   See the [API reference](https://api.airbyte.ai/api/v1/docs#tag/Template-Connections) for the full connection template specification.
+The **Authentication Module** page in the Agent Engine dashboard provides everything you need to get started:
 
-## Quick start
+- **Installation credentials**: Your `organization_id`, `client_id`, and `client_secret` are displayed under the **Installation** section. Copy these into your application's environment variables.
+- **Widget preview**: Click **Preview your auth module** to see what the authentication widget looks like with your currently enabled connectors. This preview reflects the same connector selection UI your end users will see.
 
-The authentication module requires a backend component (to generate tokens securely) and a frontend component (to render the widget).
-
-### 1. Generate an operator token (backend)
-
-Request an operator token using your API credentials. This token is used to generate widget tokens for your end users.
-
-```bash
-curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "client_id": "<your_client_id>",
-    "client_secret": "<your_client_secret>"
-  }'
-```
-
-For details on operator tokens and their lifecycle, see [Agent Engine authentication](hosted).
-
-### 2. Generate a widget token (backend)
-
-For each end user, generate a widget token. This token scopes the user to their own workspace and validates the origin of the request.
-
-```bash
-curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
-  -H 'Authorization: Bearer <operator_token>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "workspace_name": "<unique_user_identifier>",
-    "allowed_origin": "https://yourapp.com"
-  }'
-```
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `workspace_name` | Yes | A unique identifier for this end user (e.g., your internal user ID). If the workspace doesn't exist, Airbyte creates it automatically. |
-| `allowed_origin` | Yes | The URL where you're embedding the widget, used for CORS validation. Must include the protocol (e.g., `https://`). No trailing slash. |
-
-The response contains a base64-encoded token:
-
-```json
-{
-  "token": "eyJ0b2tlbiI6ImV5SmhiR2NpT2lKSV..."
-}
-```
-
-### 3. Embed the widget (frontend)
-
-Install the widget package:
-
-```bash npm2yarn
-npm install @airbyte-embedded/airbyte-embedded-widget
-```
-
-Add the widget to your app:
-
-```tsx title="ConnectData.tsx"
-import { AirbyteEmbeddedWidget } from "@airbyte-embedded/airbyte-embedded-widget";
-
-export const ConnectData: React.FC = () => {
-  const handleConnect = async () => {
-    const response = await fetch("/api/airbyte/widget-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: "user_123" }),
-    });
-    const { token } = await response.json();
-
-    const widget = new AirbyteEmbeddedWidget({ token });
-    widget.open();
-  };
-
-  return <button onClick={handleConnect}>Connect your data</button>;
-};
-```
+You'll use the `client_id` and `client_secret` from this page in your backend to generate tokens. The `organization_id` is included for reference but isn't required in the widget token request.
 
 ## Backend implementation
 
@@ -334,4 +240,4 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
 | `selected_connection_template_tags` | Tags to filter which connection templates are used. |
 | `selected_connection_template_tags_mode` | `any` or `all`. |
 
-You can manage tags through the Agent Engine UI or the [API](https://api.airbyte.ai/api/v1/docs#tag/Template-Tags).
+You can manage tags through the Agent Engine UI or the [API](/ai-agents/api/api-reference).
