@@ -19,6 +19,7 @@ from source_google_ads.components import (
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.types import StreamSlice
 
 from .conftest import Obj
 
@@ -486,10 +487,49 @@ class TestGoogleAdsStreamingDecoder:
 
 
 class TestGoogleAdsRetriever:
-    def test_chunked_encoding_error_triggers_retry(self):
+    def test_chunked_encoding_error_splits_slice(self):
         """
-        Verify that GoogleAdsRetriever retries the request when ChunkedEncodingError occurs.
-        The retriever should retry up to CHUNKED_ENCODING_ERROR_RETRIES times before failing.
+        Verify that GoogleAdsRetriever splits the slice when ChunkedEncodingError occurs.
+        A 14-day slice should be split into two 7-day slices.
+        """
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=MagicMock(),
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        call_count = 0
+        slices_processed = []
+
+        def mock_read_pages(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            stream_slice = args[1] if len(args) > 1 else kwargs.get("stream_slice")
+            slices_processed.append(stream_slice)
+            if call_count == 1:
+                raise ChunkedEncodingError("simulated network error")
+            yield MagicMock()
+
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-14"},
+        )
+
+        with patch.object(retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages):
+            records = list(retriever._read_pages(MagicMock(), stream_slice))
+            assert len(records) == 2
+            assert call_count == 3
+            assert slices_processed[1].cursor_slice["start_time"] == "2026-01-01"
+            assert slices_processed[1].cursor_slice["end_time"] == "2026-01-07"
+            assert slices_processed[2].cursor_slice["start_time"] == "2026-01-08"
+            assert slices_processed[2].cursor_slice["end_time"] == "2026-01-14"
+
+    def test_chunked_encoding_error_retries_on_minimum_slice(self):
+        """
+        Verify that GoogleAdsRetriever retries when error occurs on minimum slice (1 day).
         """
         retriever = GoogleAdsRetriever(
             name="test_stream",
@@ -509,14 +549,19 @@ class TestGoogleAdsRetriever:
                 raise ChunkedEncodingError("simulated network error")
             yield MagicMock()
 
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-01"},
+        )
+
         with patch.object(retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_with_error):
-            records = list(retriever._read_pages(MagicMock(), MagicMock()))
+            records = list(retriever._read_pages(MagicMock(), stream_slice))
             assert len(records) == 1
             assert call_count == 3
 
-    def test_chunked_encoding_error_raises_after_max_retries(self):
+    def test_chunked_encoding_error_raises_after_max_retries_on_minimum_slice(self):
         """
-        Verify that GoogleAdsRetriever raises AirbyteTracedException after max retries.
+        Verify that GoogleAdsRetriever raises AirbyteTracedException after max retries on minimum slice.
         """
         retriever = GoogleAdsRetriever(
             name="test_stream",
@@ -534,13 +579,18 @@ class TestGoogleAdsRetriever:
             call_count += 1
             raise ChunkedEncodingError("persistent network error")
 
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-01"},
+        )
+
         with patch.object(retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_always_fails):
             with pytest.raises(AirbyteTracedException) as exc_info:
-                list(retriever._read_pages(MagicMock(), MagicMock()))
+                list(retriever._read_pages(MagicMock(), stream_slice))
 
-            assert call_count == retriever.CHUNKED_ENCODING_ERROR_RETRIES
+            assert call_count == retriever.MAX_RETRIES + 1
             assert exc_info.value.failure_type.value == "transient_error"
-            assert "3 retry attempts" in exc_info.value.message
+            assert "retries were exhausted" in exc_info.value.message
 
     def test_successful_request_does_not_retry(self):
         """
@@ -563,7 +613,81 @@ class TestGoogleAdsRetriever:
             yield MagicMock()
             yield MagicMock()
 
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-14"},
+        )
+
         with patch.object(retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_success):
-            records = list(retriever._read_pages(MagicMock(), MagicMock()))
+            records = list(retriever._read_pages(MagicMock(), stream_slice))
             assert len(records) == 2
             assert call_count == 1
+
+    def test_split_slice_returns_correct_halves(self):
+        """
+        Verify that _split_slice correctly splits a date range in half.
+        """
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=MagicMock(),
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-14"},
+        )
+
+        result = retriever._split_slice(stream_slice)
+        assert result is not None
+        first_slice, second_slice = result
+
+        assert first_slice.cursor_slice["start_time"] == "2026-01-01"
+        assert first_slice.cursor_slice["end_time"] == "2026-01-07"
+        assert second_slice.cursor_slice["start_time"] == "2026-01-08"
+        assert second_slice.cursor_slice["end_time"] == "2026-01-14"
+
+    def test_split_slice_returns_none_for_single_day(self):
+        """
+        Verify that _split_slice returns None for a single day slice.
+        """
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=MagicMock(),
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-01"},
+        )
+
+        result = retriever._split_slice(stream_slice)
+        assert result is None
+
+    def test_split_slice_returns_none_for_non_date_slice(self):
+        """
+        Verify that _split_slice returns None for slices without date fields.
+        """
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=MagicMock(),
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={},
+        )
+
+        result = retriever._split_slice(stream_slice)
+        assert result is None
