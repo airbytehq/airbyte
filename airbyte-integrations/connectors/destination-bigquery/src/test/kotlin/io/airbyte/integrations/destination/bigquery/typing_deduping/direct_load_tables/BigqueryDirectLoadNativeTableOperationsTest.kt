@@ -25,6 +25,11 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
+import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryRegion
+import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.bigquery.spec.PartitioningGranularity
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
@@ -35,6 +40,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -270,10 +276,36 @@ class BigqueryDirectLoadNativeTableOperationsTest {
     @Test
     fun testPartitioningMatches() {
         val existingTable = Mockito.mock(StandardTableDefinition::class.java)
-        val stream = mock<DestinationStream>()
-        val columnNameMapping = mock<ColumnNameMapping>()
-        val streamConfigProvider = mock<StreamConfigProvider>()
-        whenever(streamConfigProvider.getPartitioningField(any())).thenReturn(null)
+        val stream =
+            DestinationStream(
+                "foo",
+                "bar",
+                Append,
+                ObjectType(linkedMapOf()),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+                namespaceMapper = NamespaceMapper()
+            )
+        val columnNameMapping = ColumnNameMapping(mapOf())
+        val streamConfigProvider =
+            StreamConfigProvider(
+                BigqueryConfiguration(
+                    projectId = "unused",
+                    datasetLocation = BigqueryRegion.US,
+                    datasetId = "unused_dataset",
+                    loadingMethod = BatchedStandardInsertConfiguration,
+                    credentialsJson = null,
+                    cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
+                    internalTableDataset = "unused_internal",
+                    legacyRawTablesOnly = false,
+                    defaultPartitioningField = null,
+                    defaultClusteringField = null,
+                    defaultTableSuffix = null,
+                    defaultPartitioningGranularity = PartitioningGranularity.DAY,
+                    streamConfigMap = emptyMap(),
+                )
+            )
 
         // Partitioning is null
         Mockito.`when`(existingTable.timePartitioning).thenReturn(null)
