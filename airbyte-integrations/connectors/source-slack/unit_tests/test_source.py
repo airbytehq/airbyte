@@ -24,7 +24,7 @@ def test_streams(conversations_list, config, is_valid):
     source = get_source(config)
     if is_valid:
         streams = source.streams(config)
-        assert len(streams) == 5
+        assert len(streams) == 6
     else:
         with pytest.raises(Exception) as exc_info:
             _ = source.streams(config)
