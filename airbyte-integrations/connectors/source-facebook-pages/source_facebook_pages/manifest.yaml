@@ -19,6 +19,9 @@ definitions:
         - action: FAIL
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
+        - http_codes: [500]
+          action: FAIL
+          error_message: "Internal server error: {{ response.get('error', {}).get('message', 'Unknown error') }}"
         - http_codes: [400]
           action: RETRY
     authenticator:
