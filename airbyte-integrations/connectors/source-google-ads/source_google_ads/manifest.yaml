@@ -66,7 +66,8 @@ definitions:
         - results
 
   base_retriever:
-    type: SimpleRetriever
+    type: CustomRetriever
+    class_name: "source_google_ads.components.GoogleAdsRetriever"
     requester:
       $ref: "#/definitions/stream_requester"
     record_selector:

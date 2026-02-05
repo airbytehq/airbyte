@@ -517,6 +517,42 @@ class CriterionRetriever(SimpleRetriever):
 
 
 @dataclass
+class GoogleAdsRetriever(SimpleRetriever):
+    """
+    Custom retriever for Google Ads that implements connector-level retry for ChunkedEncodingError.
+
+    When streaming large responses from the Google Ads API, the connection may be interrupted
+    causing a ChunkedEncodingError. This retriever catches such errors and retries the request
+    up to CHUNKED_ENCODING_ERROR_RETRIES times before failing.
+
+    This approach is similar to the Iterable connector's IterableExportStreamAdjustableRange.
+    """
+
+    CHUNKED_ENCODING_ERROR_RETRIES: int = 3
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
+        stream_slice: StreamSlice,
+    ) -> Iterable[Record]:
+        for attempt in range(self.CHUNKED_ENCODING_ERROR_RETRIES):
+            try:
+                yield from super()._read_pages(records_generator_fn, stream_slice)
+                return
+            except requests.exceptions.ChunkedEncodingError:
+                if attempt < self.CHUNKED_ENCODING_ERROR_RETRIES - 1:
+                    logger.warning(
+                        f"ChunkedEncodingError occurred on attempt {attempt + 1}/{self.CHUNKED_ENCODING_ERROR_RETRIES}. Retrying..."
+                    )
+                else:
+                    raise AirbyteTracedException(
+                        message=f"Response stream was interrupted after {self.CHUNKED_ENCODING_ERROR_RETRIES} retry attempts.",
+                        internal_message=f"ChunkedEncodingError persisted after {self.CHUNKED_ENCODING_ERROR_RETRIES} retries.",
+                        failure_type=FailureType.transient_error,
+                    )
+
+
+@dataclass
 class CriterionIncrementalRequester(GoogleAdsHttpRequester):
     CURSOR_FIELD: str = "change_status.last_change_date_time"
 
@@ -926,27 +962,20 @@ class GoogleAdsStreamingDecoder(Decoder):
         return True
 
     def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
-        try:
-            data, complete = self._buffer_up_to_limit(response)
-            if complete:
-                yield from self.parser.parse(io.BytesIO(data))
-                return
+        data, complete = self._buffer_up_to_limit(response)
+        if complete:
+            yield from self.parser.parse(io.BytesIO(data))
+            return
 
-            records_batch: List[Dict[str, Any]] = []
-            for record in self._parse_records_from_stream(data):
-                records_batch.append(record)
-                if len(records_batch) >= 100:
-                    yield {"results": records_batch}
-                    records_batch = []
-
-            if records_batch:
+        records_batch: List[Dict[str, Any]] = []
+        for record in self._parse_records_from_stream(data):
+            records_batch.append(record)
+            if len(records_batch) >= 100:
                 yield {"results": records_batch}
-        except requests.exceptions.ChunkedEncodingError as e:
-            raise AirbyteTracedException(
-                message="Response stream was interrupted. This is a transient error, please retry.",
-                internal_message=f"ChunkedEncodingError while streaming response: {e}",
-                failure_type=FailureType.transient_error,
-            ) from e
+                records_batch = []
+
+        if records_batch:
+            yield {"results": records_batch}
 
     def _buffer_up_to_limit(self, response: requests.Response) -> Tuple[Union[bytes, Iterable[bytes]], bool]:
         buf = bytearray()

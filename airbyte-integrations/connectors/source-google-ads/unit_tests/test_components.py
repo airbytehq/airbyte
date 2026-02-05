@@ -13,6 +13,7 @@ from source_google_ads.components import (
     ClickViewHttpRequester,
     CustomGAQueryHttpRequester,
     CustomGAQuerySchemaLoader,
+    GoogleAdsRetriever,
     GoogleAdsStreamingDecoder,
 )
 
@@ -387,10 +388,10 @@ class TestGoogleAdsStreamingDecoder:
         out = self._decode_all(decoder, resp)
         assert out == {"results": msg[0]["results"]}
 
-    def test_midstream_chunked_encoding_error_raises_transient_error(self, decoder):
+    def test_midstream_chunked_encoding_error_propagates(self, decoder):
         """
-        A network break should surface as AirbyteTracedException with transient_error failure type.
-        This allows the platform to automatically retry the job.
+        A network break (ChunkedEncodingError) should propagate from the decoder.
+        The GoogleAdsRetriever handles retry logic at the connector level.
         """
         msg = [{"results": [{"i": 1}, {"i": 2}, {"i": 3}, {"i": 4}]}]
         raw = json.dumps(msg).encode("utf-8")
@@ -413,57 +414,8 @@ class TestGoogleAdsStreamingDecoder:
 
         resp = _ErroringResponse(parts=chunks, raise_after_index=2)
 
-        with pytest.raises(AirbyteTracedException) as exc_info:
+        with pytest.raises(ChunkedEncodingError):
             _ = list(decoder.decode(resp))
-        assert exc_info.value.failure_type.value == "transient_error"
-        assert "ChunkedEncodingError" in exc_info.value.internal_message
-
-    def test_chunked_encoding_error_is_retryable_by_platform(self, decoder):
-        """
-        Verify that ChunkedEncodingError produces an AirbyteTracedException that:
-        1. Has the original exception properly chained for debugging
-        2. Can be converted to an AirbyteTraceMessage with transient_error failure type
-        3. Contains the necessary information for the platform to trigger a retry
-
-        The platform uses the failure_type in the AirbyteTraceMessage to determine
-        whether to retry the sync. A transient_error indicates the error is temporary
-        and the sync should be retried.
-        """
-        msg = [{"results": [{"data": "test"}]}]
-        raw = json.dumps(msg).encode("utf-8")
-
-        @dataclass
-        class _ErroringResponse:
-            def iter_content(self, chunk_size=1):
-                yield raw[:10]
-                raise ChunkedEncodingError("Connection reset by peer")
-
-            def raise_for_status(self):
-                pass
-
-        resp = _ErroringResponse()
-
-        with pytest.raises(AirbyteTracedException) as exc_info:
-            _ = list(decoder.decode(resp))
-
-        exception = exc_info.value
-
-        # Verify the original exception is properly chained for debugging
-        assert exception.__cause__ is not None
-        assert isinstance(exception.__cause__, ChunkedEncodingError)
-        assert "Connection reset by peer" in str(exception.__cause__)
-
-        # Verify the exception can be converted to an AirbyteTraceMessage
-        trace_message = exception.as_airbyte_message()
-        assert trace_message.type.value == "TRACE"
-        assert trace_message.trace.type.value == "ERROR"
-        assert trace_message.trace.error.failure_type.value == "transient_error"
-
-        # Verify the error message is user-friendly
-        assert "transient" in exception.message.lower() or "retry" in exception.message.lower()
-
-        # Verify the internal message contains debugging info
-        assert "ChunkedEncodingError" in exception.internal_message
 
     def test_stream_consumed_error_propagates_immediately(self, decoder):
         @dataclass
@@ -531,3 +483,93 @@ class TestGoogleAdsStreamingDecoder:
             results = [row for batch in outputs for row in batch["results"]]
             assert results == base[0]["results"]
             mock_stream.assert_called_once()
+
+
+class TestGoogleAdsRetriever:
+    def test_chunked_encoding_error_triggers_retry(self):
+        """
+        Verify that GoogleAdsRetriever retries the request when ChunkedEncodingError occurs.
+        The retriever should retry up to CHUNKED_ENCODING_ERROR_RETRIES times before failing.
+        """
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=MagicMock(),
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        call_count = 0
+
+        def mock_read_pages_with_error(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count < 3:
+                raise ChunkedEncodingError("simulated network error")
+            yield MagicMock()
+
+        with patch.object(
+            retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_with_error
+        ):
+            records = list(retriever._read_pages(MagicMock(), MagicMock()))
+            assert len(records) == 1
+            assert call_count == 3
+
+    def test_chunked_encoding_error_raises_after_max_retries(self):
+        """
+        Verify that GoogleAdsRetriever raises AirbyteTracedException after max retries.
+        """
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=MagicMock(),
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        call_count = 0
+
+        def mock_read_pages_always_fails(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            raise ChunkedEncodingError("persistent network error")
+
+        with patch.object(
+            retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_always_fails
+        ):
+            with pytest.raises(AirbyteTracedException) as exc_info:
+                list(retriever._read_pages(MagicMock(), MagicMock()))
+
+            assert call_count == retriever.CHUNKED_ENCODING_ERROR_RETRIES
+            assert exc_info.value.failure_type.value == "transient_error"
+            assert "3 retry attempts" in exc_info.value.message
+
+    def test_successful_request_does_not_retry(self):
+        """
+        Verify that GoogleAdsRetriever does not retry when the request succeeds.
+        """
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=MagicMock(),
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        call_count = 0
+
+        def mock_read_pages_success(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            yield MagicMock()
+            yield MagicMock()
+
+        with patch.object(
+            retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_success
+        ):
+            records = list(retriever._read_pages(MagicMock(), MagicMock()))
+            assert len(records) == 2
+            assert call_count == 1
