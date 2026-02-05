@@ -45,28 +45,39 @@ async function getOperatorToken() {
       client_secret: process.env.AIRBYTE_CLIENT_SECRET,
     }),
   });
+  if (!response.ok) {
+    throw new Error(`Operator token request failed: ${response.status}`);
+  }
   const data = await response.json();
   return data.access_token;
 }
 
 app.post("/api/airbyte/widget-token", async (req, res) => {
-  const { userId } = req.body;
-  const operatorToken = await getOperatorToken();
+  try {
+    const { userId } = req.body;
+    const operatorToken = await getOperatorToken();
 
-  const response = await fetch(`${AIRBYTE_API}/embedded/widget-token`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${operatorToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      workspace_name: userId,
-      allowed_origin: process.env.ALLOWED_ORIGIN,
-    }),
-  });
+    const response = await fetch(`${AIRBYTE_API}/embedded/widget-token`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${operatorToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        workspace_name: userId, // creates or reuses a workspace for this user
+        allowed_origin: process.env.ALLOWED_ORIGIN, // must match your frontend's origin exactly (including port)
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`Widget token request failed: ${response.status}`);
+    }
 
-  const data = await response.json();
-  res.json({ token: data.token });
+    const data = await response.json();
+    res.json({ token: data.token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.listen(3000);
@@ -182,9 +193,8 @@ const widget = new AirbyteEmbeddedWidget({
 When a user authenticates through the module:
 
 1. Airbyte validates the user's credentials against the data source.
-2. Airbyte creates a source in the user's workspace.
-3. Airbyte applies your connection templates, creating connections between the source and your configured destinations.
-4. Data begins syncing according to the schedule in your connection templates.
+2. Airbyte creates a source in the user's workspace. If a workspace with the given `workspace_name` already exists, Airbyte reuses it.
+3. If you configured connection templates, Airbyte applies them automatically — creating connections between the source and your configured destinations, and syncing data on the schedule you defined.
 
 You can then [execute operations](../execute) against the user's connector to query their data in your AI agent.
 
