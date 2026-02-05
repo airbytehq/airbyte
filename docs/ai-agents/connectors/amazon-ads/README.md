@@ -12,7 +12,7 @@ The Amazon-Ads connector is optimized to handle prompts like these.
 - List all my advertising profiles across marketplaces
 - Show me the profiles for my seller accounts
 - What marketplaces do I have advertising profiles in?
-- List all portfolios for a specific profile
+- List all portfolios for one of my profiles
 - Show me all sponsored product campaigns
 - What campaigns are currently enabled?
 - Find campaigns with a specific targeting type
@@ -102,7 +102,7 @@ See the official [Amazon-Ads API reference](https://advertising.amazon.com/API/d
 
 ## Version information
 
-- **Package version:** 0.1.30
-- **Connector version:** 1.0.6
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.31
+- **Connector version:** 1.0.7
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/amazon-ads/CHANGELOG.md)

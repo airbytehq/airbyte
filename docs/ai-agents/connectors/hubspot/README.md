@@ -9,9 +9,12 @@ tickets, and custom objects for customer relationship management and sales analy
 
 The Hubspot connector is optimized to handle prompts like these.
 
+- List recent deals
+- List recent tickets
+- List companies in my CRM
+- List contacts in my CRM
 - Show me all deals from \{company\} this quarter
 - What are the top 5 most valuable deals in my pipeline right now?
-- List recent tickets from \{customer\} and analyze their support trends
 - Search for contacts in the marketing department at \{company\}
 - Give me an overview of my sales team's deals in the last 30 days
 - Identify the most active companies in our CRM this month
@@ -108,7 +111,7 @@ See the official [Hubspot API reference](https://developers.hubspot.com/docs/api
 
 ## Version information
 
-- **Package version:** 0.15.82
-- **Connector version:** 0.1.10
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.15.83
+- **Connector version:** 0.1.11
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/hubspot/CHANGELOG.md)

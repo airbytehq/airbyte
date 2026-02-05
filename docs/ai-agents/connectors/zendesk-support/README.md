@@ -12,11 +12,11 @@ for customer support analytics and service performance insights.
 The Zendesk-Support connector is optimized to handle prompts like these.
 
 - Show me the tickets assigned to me last week
+- List all unresolved tickets
+- Show me the details of recent tickets
 - What are the top 5 support issues our organization has faced this month?
-- List all unresolved tickets for \{customer\}
 - Analyze the satisfaction ratings for our support team in the last 30 days
 - Compare ticket resolution times across different support groups
-- Show me the details of recent tickets tagged with \{tag\}
 - Identify the most common ticket fields used in our support workflow
 - Summarize the performance of our SLA policies this quarter
 
@@ -124,7 +124,7 @@ See the official [Zendesk-Support API reference](https://developer.zendesk.com/a
 
 ## Version information
 
-- **Package version:** 0.18.82
-- **Connector version:** 0.1.11
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.18.83
+- **Connector version:** 0.1.12
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-support/CHANGELOG.md)

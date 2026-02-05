@@ -11,6 +11,17 @@ The Linear connector is optimized to handle prompts like these.
 
 - Show me the open issues assigned to my team this week
 - List out all projects I'm currently involved in
+- List all users in my Linear workspace
+- Who is assigned to the most recently updated issue?
+- Create a new issue titled 'Fix login bug'
+- Update the priority of a recent issue to urgent
+- Change the title of a recent issue to 'Updated feature request'
+- Add a comment to a recent issue saying 'This is ready for review'
+- Update my most recent comment to say 'Revised feedback after testing'
+- Create a high priority issue about API performance
+- Assign a recent issue to a teammate
+- Unassign the current assignee from a recent issue
+- Reassign a recent issue from one teammate to another
 - Analyze the workload distribution across my development team
 - What are the top priority issues in our current sprint?
 - Identify the most active projects in our organization right now
@@ -18,17 +29,6 @@ The Linear connector is optimized to handle prompts like these.
 - Compare the issue complexity across different teams
 - Which projects have the most unresolved issues?
 - Give me an overview of my team's current project backlog
-- Create a new issue titled 'Fix login bug' for the Engineering team
-- Update issue ABC-123 to set priority to urgent
-- Change the title of issue XYZ-456 to 'Updated feature request'
-- Add a comment to issue DEF-789 saying 'This is ready for review'
-- Update my comment on issue to say 'Revised feedback after testing'
-- Create a high priority issue for the backend team about the API performance
-- List all users in my Linear workspace
-- Assign John to issue ABC-123
-- Unassign the current assignee from issue XYZ-456
-- Who is assigned to issue DEF-789?
-- Reassign issue ABC-123 from John to Jane
 
 ## Unsupported questions
 
@@ -115,7 +115,7 @@ See the official [Linear API reference](https://linear.app/developers/graphql).
 
 ## Version information
 
-- **Package version:** 0.19.78
-- **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.19.79
+- **Connector version:** 0.1.9
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/linear/CHANGELOG.md)

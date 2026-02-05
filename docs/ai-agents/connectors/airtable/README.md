@@ -10,12 +10,14 @@ data analysis and workflow automation.
 The Airtable connector is optimized to handle prompts like these.
 
 - List all my Airtable bases
-- What tables are in base appXXX?
-- Show me the schema for tables in base appXXX
-- List records from table tblXXX in base appXXX
-- Get record recXXX from table tblXXX in base appXXX
-- What fields are in table tblXXX?
+- What tables are in my first base?
+- Show me the schema for tables in a base
+- List records from a table in my base
+- Show me recent records from a table
+- What fields are in a table?
 - List records where Status is 'Done' in table tblXXX
+- Find records created last week in table tblXXX
+- Show me records updated in the last 30 days in base appXXX
 
 ## Unsupported questions
 
@@ -101,7 +103,7 @@ See the official [Airtable API reference](https://airtable.com/developers/web/ap
 
 ## Version information
 
-- **Package version:** 0.1.9
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.10
+- **Connector version:** 1.0.3
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/airtable/CHANGELOG.md)
