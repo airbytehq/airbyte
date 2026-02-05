@@ -44,7 +44,7 @@ class GcsDataLakeAggregate(
     }
 
     private val operationType =
-        if (stream.importType is Dedupe) {
+        if (stream.tableSchema.importType is Dedupe) {
             Operation.UPDATE
         } else {
             Operation.INSERT
