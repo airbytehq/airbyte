@@ -96,6 +96,36 @@ def get_pr_validators(pr: PullRequest) -> set[Callable]:
     return validators
 
 
+def mark_pr_as_ready(node_id: str) -> None:
+    """Mark a draft PR as ready for review using the GitHub GraphQL API.
+
+    The REST API PATCH endpoint does not support changing draft status.
+    The GraphQL markPullRequestReadyForReview mutation is required instead.
+
+    Args:
+        node_id (str): The GraphQL node ID of the pull request
+    """
+    query = """
+    mutation($prId: ID!) {
+      markPullRequestReadyForReview(input: {pullRequestId: $prId}) {
+        pullRequest { isDraft }
+      }
+    }
+    """
+    response = requests.post(
+        "https://api.github.com/graphql",
+        json={"query": query, "variables": {"prId": node_id}},
+        headers={
+            "Authorization": f"token {GITHUB_TOKEN}",
+            "Accept": "application/vnd.github+json",
+        },
+    )
+    response.raise_for_status()
+    data = response.json()
+    if "errors" in data:
+        raise RuntimeError(f"GraphQL error marking PR as ready: {data['errors']}")
+
+
 def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 60) -> Optional[PullRequest]:
     """Merge a PR with retries
 
@@ -106,14 +136,8 @@ def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 6
     """
     if pr.draft:
         logger.info(f"PR #{pr.number} is a draft, marking as ready for review before merging")
-        requests.patch(
-            pr.url,
-            json={"draft": False},
-            headers={
-                "Authorization": f"token {GITHUB_TOKEN}",
-                "Accept": "application/vnd.github+json",
-            },
-        ).raise_for_status()
+        mark_pr_as_ready(pr.node_id)
+        pr.update()
     for i in range(max_retries):
         try:
             pr.merge(merge_method=MERGE_METHOD)
