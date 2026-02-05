@@ -28,7 +28,7 @@ Users that sync Custom Insights streams with a `level` setting other than `ad` a
    Any detected schema changes will be listed for your review.
    :::
 3. Select **Save changes** at the bottom of the page.
-   1. Ensure the **Reset affected streams** option is checked.
+   1. Ensure the **Clear affected streams** option is checked.
 4. Select **Save connection**.
    :::note
    This will reset the data in your destination and initiate a fresh sync.
