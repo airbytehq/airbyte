@@ -563,13 +563,8 @@ class GoogleAdsRetriever(SimpleRetriever):
 
             if sub_slices is None:
                 if retry_count < self.MAX_RETRIES:
-                    logger.warning(
-                        f"ChunkedEncodingError on minimum slice size (1 day). "
-                        f"Retry {retry_count + 1}/{self.MAX_RETRIES}..."
-                    )
-                    yield from self._read_pages_with_slice_splitting(
-                        records_generator_fn, stream_slice, retry_count + 1
-                    )
+                    logger.warning(f"ChunkedEncodingError on minimum slice size (1 day). Retry {retry_count + 1}/{self.MAX_RETRIES}...")
+                    yield from self._read_pages_with_slice_splitting(records_generator_fn, stream_slice, retry_count + 1)
                 else:
                     raise AirbyteTracedException(
                         message="Response stream was interrupted. The slice is already at minimum size (1 day) "
