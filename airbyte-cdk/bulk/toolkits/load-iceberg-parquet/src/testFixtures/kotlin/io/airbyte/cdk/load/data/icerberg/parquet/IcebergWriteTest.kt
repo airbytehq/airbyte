@@ -10,6 +10,8 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
@@ -37,6 +39,7 @@ abstract class IcebergWriteTest(
     tableIdGenerator: TableIdGenerator,
     additionalMicronautEnvs: List<String> = emptyList(),
     micronautProperties: Map<Property, String> = emptyMap(),
+    enableSpeed: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents,
@@ -60,9 +63,27 @@ abstract class IcebergWriteTest(
                 // we stringify objects, so nested floats stay exact
                 nestedFloatLosesPrecision = false,
             ),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        // Protobuf can't encode unknown/schemaless types, so they get nulled
+        unknownTypesBehavior =
+            if (enableSpeed) {
+                UnknownTypesBehavior.NULL
+            } else {
+                UnknownTypesBehavior.SERIALIZE
+            },
         nullEqualsUnset = true,
         configUpdater = IcebergConfigUpdater,
+        dataChannelFormat =
+            if (enableSpeed) {
+                DataChannelFormat.PROTOBUF
+            } else {
+                DataChannelFormat.JSONL
+            },
+        dataChannelMedium =
+            if (enableSpeed) {
+                DataChannelMedium.SOCKET
+            } else {
+                DataChannelMedium.STDIO
+            },
     ) {
     /**
      * This test differs from the base test in two critical aspects:
@@ -82,17 +103,19 @@ abstract class IcebergWriteTest(
     @Test
     override fun testAppendSchemaEvolution() {
         Assumptions.assumeTrue(verifyDataWriting)
-        fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>) =
+
+        fun makeStream(
+            syncId: Long,
+            schema: LinkedHashMap<String, FieldType>,
+        ) =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Append,
-                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
-                syncId,
+                syncId = syncId,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
+                tableSchema = makeTableSchema(ObjectType(schema), Append),
             )
 
         val firstStream =
@@ -122,7 +145,7 @@ abstract class IcebergWriteTest(
             listOf(
                 InputRecord(
                     finalStream,
-                    """{"id": 42, "same": "43", "to_add": "val3"}""",
+                    """{"id": 42, "same": 43, "to_add": "val3"}""",
                     emittedAtMs = 1234,
                 ),
             ),
@@ -145,7 +168,7 @@ abstract class IcebergWriteTest(
             ),
             finalStream,
             primaryKey = listOf(listOf("id")),
-            cursor = listOf("same"),
+            cursor = null,
         )
     }
 
@@ -156,17 +179,17 @@ abstract class IcebergWriteTest(
      */
     @Test
     open fun testDedupNullPk() {
+        val dedupImportType = Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
+        val dedupSchema = ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true)))
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
-                ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 12,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
+                tableSchema = makeTableSchema(dedupSchema, dedupImportType),
             )
         val failure = expectFailure {
             runSync(

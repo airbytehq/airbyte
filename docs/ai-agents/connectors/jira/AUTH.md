@@ -41,6 +41,9 @@ In hosted mode, you first create a connector via the Airbyte API (providing your
 #### OAuth
 This authentication method isn't available for this connector.
 
+#### Bring your own OAuth flow
+This authentication method isn't available for this connector.
+
 #### Token
 Create a connector with Token credentials.
 

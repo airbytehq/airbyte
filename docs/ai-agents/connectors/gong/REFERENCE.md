@@ -655,6 +655,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 ### Call Audio Download
 
+ALWAYS configure the request with the exposedFields: \{"media": true\}. If you don't the call won't work.
 Downloads the audio media file for a call. Temporarily, the request body must be configured with:
 \{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
 
@@ -697,6 +698,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 ### Call Video Download
 
+ALWAYS configure the request with the exposedFields: \{"media": true\}. If you don't the call won't work.
 Downloads the video media file for a call. Temporarily, the request body must be configured with:
 \{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
 
