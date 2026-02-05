@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Optional
 
+import requests
 from github import Auth, Github
 
 from .consts import (
@@ -141,6 +142,35 @@ def process_pr(repo: GithubRepo, pr: PullRequest, required_passing_contexts: set
     return None
 
 
+def get_required_passing_contexts(repo_name: str, branch: str, token: str) -> set[str]:
+    """Fetch required status check contexts from GitHub rulesets for a branch.
+
+    Uses the GitHub Rules API (GET /repos/{owner}/{repo}/rules/branches/{branch})
+    which returns active rules from repository rulesets.
+
+    Args:
+        repo_name (str): The repository in owner/repo format
+        branch (str): The branch name
+        token (str): The GitHub token for authentication
+
+    Returns:
+        set[str]: The set of required status check context strings
+    """
+    url = f"https://api.github.com/repos/{repo_name}/rules/branches/{branch}"
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github+json",
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    contexts: set[str] = set()
+    for rule in response.json():
+        if rule["type"] == "required_status_checks":
+            for check in rule.get("parameters", {}).get("required_status_checks", []):
+                contexts.add(check["context"])
+    return contexts
+
+
 def back_off_if_rate_limited(github_client: Github) -> None:
     """Sleep if the rate limit is reached
 
@@ -168,9 +198,8 @@ def auto_merge() -> None:
 
     with github_client() as gh_client:
         repo = gh_client.get_repo(AIRBYTE_REPO)
-        main_branch = repo.get_branch(BASE_BRANCH)
         logger.info(f"Fetching required passing contexts for {BASE_BRANCH}")
-        required_passing_contexts = set(main_branch.get_required_status_checks().contexts)
+        required_passing_contexts = get_required_passing_contexts(AIRBYTE_REPO, BASE_BRANCH, GITHUB_TOKEN)
         candidate_issues = gh_client.search_issues(
             f"repo:{AIRBYTE_REPO} is:pr label:{AUTO_MERGE_LABEL},{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} base:{BASE_BRANCH} state:open"
         )
