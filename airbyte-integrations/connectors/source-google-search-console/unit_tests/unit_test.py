@@ -13,7 +13,6 @@ from pytest_lazy_fixtures import lf as lazy_fixture
 from airbyte_cdk import AirbyteConnectionStatus, AirbyteEntrypoint, AirbyteTracedException
 from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.sources.types import StreamSlice
-
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 

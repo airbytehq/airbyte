@@ -244,9 +244,7 @@ class EnhancedSitesRetriever(SimpleRetriever):
                 "https://search.google.com/search-console"
             )
 
-        property_list = ", ".join(
-            p.get("siteUrl", "unknown") for p in available_properties
-        )
+        property_list = ", ".join(p.get("siteUrl", "unknown") for p in available_properties)
         return (
             f"The property was not found in your account. "
             f"Your account has access to these Search Console properties: "
@@ -273,9 +271,9 @@ class EnhancedSitesRetriever(SimpleRetriever):
         try:
             response = requests.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
             response.raise_for_status()
-        except requests.RequestException:
+            data = response.json()
+        except (requests.RequestException, ValueError):
             logger.warning("GET /sites request failed during property lookup", exc_info=True)
             return None
 
-        data = response.json()
         return data.get("siteEntry", [])
