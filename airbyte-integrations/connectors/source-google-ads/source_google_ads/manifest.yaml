@@ -146,7 +146,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
       lookback_window: P{{ config.get('conversion_window_days', 14) }}D
       cursor_granularity: P1D
-      step: P14D
+      step: P{{ config.get('step_days', 14) }}D
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
@@ -864,7 +864,7 @@ definitions:
       cursor_field: change_status.last_change_date_time
       datetime_format: "%Y-%m-%d %H:%M:%S.%f"
       cursor_granularity: PT0.000001S
-      step: P14D
+      step: P{{ config.get('step_days', 14) }}D
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ day_delta(-90, format='%Y-%m-%d %H:%M:%S.%f') }}"
@@ -972,7 +972,7 @@ definitions:
               "datetime_format": "%Y-%m-%d",
               "lookback_window": "P{{ config.get('conversion_window_days', 14) }}D",
               "cursor_granularity": "P1D",
-              "step": "P14D",
+              "step": "P{{ config.get('step_days', 14) }}D",
               "start_datetime": {
                 "type": "MinMaxDatetime",
                 "datetime": "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}",
