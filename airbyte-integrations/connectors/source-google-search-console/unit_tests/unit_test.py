@@ -14,6 +14,9 @@ from airbyte_cdk import AirbyteConnectionStatus, AirbyteEntrypoint, AirbyteTrace
 from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.sources.types import StreamSlice
 
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
+
 from .conftest import find_stream, get_source
 
 
@@ -153,14 +156,14 @@ def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
 def test_streams(config):
     source = get_source(config)
     streams = source.streams(config)
-    assert len(streams) == 15
+    assert len(streams) == 16
 
 
 def test_streams_without_custom_reports(config_gen):
     config = config_gen(custom_reports_array=..., custom_reports=...)
     source = get_source(config)
     streams = source.streams(config)
-    assert len(streams) == 14
+    assert len(streams) == 15
 
 
 @pytest.mark.parametrize(
@@ -215,3 +218,173 @@ def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, 
     schema = stream.get_json_schema()
     assert set(schema["properties"]) == set(schema_props)
     assert set(stream.primary_key) == set(primary_key)
+
+
+# --- Phase 0: Spec Field Tests (Change 1) ---
+
+
+def test_spec_field_title_is_search_console_properties(config):
+    source = get_source(config)
+    spec = source.spec(logger=MagicMock())
+    site_urls_spec = spec.connectionSpecification["properties"]["site_urls"]
+    assert site_urls_spec["title"] == "Search Console Properties"
+
+
+def test_spec_field_description_contains_format_guidance(config):
+    source = get_source(config)
+    spec = source.spec(logger=MagicMock())
+    site_urls_spec = spec.connectionSpecification["properties"]["site_urls"]
+    assert "sc-domain:" in site_urls_spec["description"]
+    assert "https://" in site_urls_spec["description"]
+    assert "Search Console" in site_urls_spec["title"]
+
+
+# --- Phase 0: sites_list Stream Tests (Change 3) ---
+
+
+def test_sites_list_in_stream_names(config):
+    source = get_source(config)
+    streams = source.streams(config)
+    stream_names = [s.name for s in streams]
+    assert "sites_list" in stream_names
+
+
+def test_sites_list_stream_reads_records(config_gen, requests_mock):
+    config = config_gen()
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        json={
+            "siteEntry": [
+                {"siteUrl": "https://example.com/", "permissionLevel": "siteOwner"},
+                {"siteUrl": "sc-domain:example.com", "permissionLevel": "siteFullUser"},
+            ]
+        },
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    catalog = CatalogBuilder().with_stream("sites_list", SyncMode.full_refresh).build()
+    output = read(source, config=config, catalog=catalog)
+
+    assert len(output.records) == 2
+    assert output.records[0].record.data["siteUrl"] == "https://example.com/"
+    assert output.records[0].record.data["permissionLevel"] == "siteOwner"
+    assert output.records[1].record.data["siteUrl"] == "sc-domain:example.com"
+
+
+def test_sites_list_stream_empty_response(config_gen, requests_mock):
+    config = config_gen()
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        json={"siteEntry": []},
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    catalog = CatalogBuilder().with_stream("sites_list", SyncMode.full_refresh).build()
+    output = read(source, config=config, catalog=catalog)
+
+    assert len(output.records) == 0
+
+
+# --- Phase 0: Enhanced Error Message Tests (Change 2) ---
+
+
+def test_check_enhanced_error_invalid_url_with_suggestions(config_gen, requests_mock):
+    config = config_gen(site_urls=["https://wrong-site.com/"])
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwrong-site.com%2F",
+        status_code=403,
+        json={"error": {"message": "User does not have sufficient permission"}},
+    )
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        json={
+            "siteEntry": [
+                {"siteUrl": "https://example.com/", "permissionLevel": "siteOwner"},
+                {"siteUrl": "sc-domain:example.com", "permissionLevel": "siteFullUser"},
+            ]
+        },
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    result = source.check(logger=MagicMock(), config=config)
+
+    assert result.status == Status.FAILED
+    assert "https://example.com/" in result.message
+    assert "sc-domain:example.com" in result.message
+    assert "Choose the property that matches" in result.message
+
+
+def test_check_enhanced_error_empty_sites_list(config_gen, requests_mock):
+    config = config_gen(site_urls=["https://no-access.com/"])
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fno-access.com%2F",
+        status_code=403,
+        json={"error": {"message": "User does not have sufficient permission"}},
+    )
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        json={"siteEntry": []},
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    result = source.check(logger=MagicMock(), config=config)
+
+    assert result.status == Status.FAILED
+    assert "No Search Console properties were found" in result.message
+
+
+def test_check_enhanced_error_sites_list_auth_failure(config_gen, requests_mock):
+    config = config_gen(site_urls=["https://wrong-site.com/"])
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwrong-site.com%2F",
+        status_code=403,
+        json={"error": {"message": "Forbidden"}},
+    )
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        status_code=401,
+        json={"error": {"message": "Invalid credentials"}},
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    result = source.check(logger=MagicMock(), config=config)
+
+    assert result.status == Status.FAILED
+    assert "sc-domain:example.com" in result.message
+    assert "https://example.com/" in result.message
+
+
+def test_check_backward_compatibility_valid_config(config_gen, config, requests_mock):
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com%2F",
+        json={"siteUrl": "https://example.com/", "permissionLevel": "siteOwner"},
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    result = source.check(logger=MagicMock(), config=config_gen())
+
+    assert result == AirbyteConnectionStatus(status=Status.SUCCEEDED)

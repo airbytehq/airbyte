@@ -22,12 +22,26 @@ spec:
         type: array
         items:
           type: string
-        title: Website URL Property
-        description: The URLs of the website property attached to your GSC account.
-          Learn more about properties <a href="https://support.google.com/webmasters/answer/34592?hl=en">here</a>.
+        title: Search Console Properties
+        description: >-
+          Enter the Google Search Console property you want to sync. Most users
+          should select just one property. There are two property types:
+
+          URL-prefix property — includes the protocol and trailing slash
+          (e.g., https://example.com/ or https://www.example.com/).
+
+          Domain property — uses the sc-domain: prefix with no protocol
+          (e.g., sc-domain:example.com). Domain properties aggregate data
+          across all subdomains and protocols, so you usually do not need
+          to add URL-prefix properties for the same domain.
+
+          To find your property name, open Google Search Console and look at
+          the property selector in the top-left corner. Enter the value exactly
+          as it appears there. Learn more:
+          https://support.google.com/webmasters/answer/34592
         examples:
-        - https://example1.com/
-        - sc-domain:example2.com
+          - https://example.com/
+          - sc-domain:example.com
         order: 0
       start_date:
         type: string
@@ -897,7 +911,8 @@ definitions:
     type: DeclarativeStream
     name: sites
     retriever:
-      type: SimpleRetriever
+      type: CustomRetriever
+      class_name: "source_declarative_manifest.components.EnhancedSitesRetriever"
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
@@ -910,9 +925,9 @@ definitions:
           type: DpathExtractor
           field_path: []
       partition_router:
-        - type: ListPartitionRouter
-          values: "{{ config['site_urls'] }}"
-          cursor_field: site_url
+        type: ListPartitionRouter
+        values: "{{ config['site_urls'] }}"
+        cursor_field: site_url
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -943,6 +958,28 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/sitemaps"
+
+  sites_list_stream:
+    type: DeclarativeStream
+    name: sites_list
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.googleapis.com/webmasters/v3
+        path: "/sites"
+        http_method: GET
+        authenticator: "#/definitions/selective_authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - siteEntry
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/sites_list"
 
   # This stream is only used as a parent stream for search_by_keyword substreams
   search_appearances_stream:
@@ -1228,6 +1265,7 @@ streams:
   # Regular streams
   - "#/definitions/sites_stream"
   - "#/definitions/sitemaps_stream"
+  - "#/definitions/sites_list_stream"
   # Search Analytics streams
   - "#/definitions/search_analytics_all_fields_stream"
   - "#/definitions/search_analytics_by_country_stream"
@@ -1791,6 +1829,21 @@ schemas:
         type: ["null", "string"]
       permissionLevel:
         description: "The user's permission level for the site (owner, full, restricted, etc.)"
+        type: ["null", "string"]
+  sites_list:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      siteUrl:
+        description: >-
+          The URL of the property as it appears in Google Search Console.
+          Domain properties use the sc-domain: prefix (e.g., sc-domain:example.com).
+          URL-prefix properties include the full URL (e.g., https://example.com/).
+        type: ["null", "string"]
+      permissionLevel:
+        description: >-
+          The authenticated user's permission level for this property.
+          Values: siteOwner, siteFullUser, siteRestrictedUser, siteUnverifiedUser.
         type: ["null", "string"]
   sitemaps:
     $schema: "http://json-schema.org/draft-07/schema#"

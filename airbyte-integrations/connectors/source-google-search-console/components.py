@@ -2,13 +2,23 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 
+import requests as requests_lib
+
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+
+logger = logging.getLogger("airbyte")
+
+GSC_SITES_LIST_URL = "https://www.googleapis.com/webmasters/v3/sites"
 
 
 @dataclass
@@ -181,3 +191,84 @@ class CustomReportSchemaLoader(SchemaLoader):
             for field in fields:
                 properties = {**properties, **field}
         return properties
+
+
+@dataclass
+class EnhancedSitesRetriever(SimpleRetriever):
+    """
+    Custom retriever for the sites stream that enriches error messages during connection checks.
+
+    When reading records fails (e.g., invalid property URL), this retriever calls GET /sites
+    to fetch the user's available properties and includes them as suggestions in the error message.
+    """
+
+    def read_records(
+        self,
+        records_schema: Mapping[str, Any],
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Iterable[Union[Mapping[str, Any], AirbyteMessage]]:
+        try:
+            yield from super().read_records(records_schema, stream_slice)
+        except AirbyteTracedException as error:
+            enhanced_message = self._build_enhanced_error_message(error)
+            raise AirbyteTracedException(
+                internal_message=enhanced_message,
+                message=enhanced_message,
+                failure_type=error.failure_type,
+            ) from error
+
+    def _build_enhanced_error_message(self, original_error: AirbyteTracedException) -> str:
+        """Compose an enhanced error message with property suggestions when available."""
+        try:
+            available_properties = self._fetch_available_properties()
+        except Exception as fetch_error:
+            logger.warning(f"Could not fetch property suggestions: {fetch_error}")
+            available_properties = None
+
+        if available_properties is None:
+            return (
+                "Could not verify the property. "
+                "Make sure each property matches the exact format shown in "
+                "Google Search Console: use 'https://example.com/' for "
+                "URL-prefix properties or 'sc-domain:example.com' for "
+                "domain properties. "
+                "Open Google Search Console to check your property names: "
+                "https://search.google.com/search-console"
+            )
+
+        if not available_properties:
+            return (
+                "No Search Console properties were found for this account. "
+                "Make sure the authenticated account (OAuth user or service "
+                "account email) has been added as a user in Google Search "
+                "Console. To add access, go to Settings > Users and "
+                "permissions in Search Console: "
+                "https://search.google.com/search-console"
+            )
+
+        property_list = ", ".join(
+            p.get("siteUrl", "unknown") for p in available_properties
+        )
+        return (
+            f"The property was not found in your account. "
+            f"Your account has access to these Search Console properties: "
+            f"{property_list}. "
+            f"Choose the property that matches the site you want to sync and "
+            f"enter the exact value into the 'Search Console Properties' field."
+        )
+
+    def _fetch_available_properties(self) -> Optional[List[Dict[str, str]]]:
+        """Call GET /sites to retrieve all properties the authenticated user can access."""
+        headers = {}
+        try:
+            authenticator = self.requester.authenticator
+            if authenticator:
+                headers = authenticator.get_auth_header()
+        except Exception as auth_error:
+            logger.warning(f"Could not get auth headers for property lookup: {auth_error}")
+
+        response = requests_lib.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
+        response.raise_for_status()
+
+        data = response.json()
+        return data.get("siteEntry", [])
