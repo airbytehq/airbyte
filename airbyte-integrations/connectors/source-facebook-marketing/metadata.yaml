@@ -74,7 +74,7 @@ data:
               - "ad_creatives"
       5.0.0:
         message: "Custom Insights streams now use level-based primary keys. When `level` is set to `adset`, `campaign`, or `account`, the primary key will use `adset_id`, `campaign_id`, or just `account_id` respectively, instead of always using `ad_id`. Users that sync Custom Insights streams with a level other than `ad` (i.e., `adset`, `campaign`, or `account`) are affected by this update and should refresh their source schema and reset affected streams. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)."
-        upgradeDeadline: "2026-05-05"
+        upgradeDeadline: "2026-02-19"
   suggestedStreams:
     streams:
       - ads_insights
