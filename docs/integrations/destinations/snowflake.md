@@ -148,7 +148,10 @@ username/password or key pair authentication:
 | Username                                                                                              | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                                                                  |
 | Password                                                                                              | The password associated with the username.                                                                                                                                                                                           |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`                                      |
-| Disable Final Tables (Optional)                                                                       | Disables writing final Typed tables See [output schema](#output-schema). WARNING! The data format in \_airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions |
+| Disable Final Tables (Optional)                                                                       | Disables writing final Typed tables. See [output schema](#output-schema). WARNING! The data format in \_airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions. |
+| CDC Deletion Mode (Optional)                                                                          | Whether to execute CDC deletions as hard deletes (propagate source deletions to the destination) or soft deletes (leave a tombstone record in the destination). Defaults to hard deletes.                                            |
+| [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on the tables. Setting a nonzero value incurs increased storage costs in your Snowflake instance. Defaults to 1 day.                                                          |
+| Airbyte Internal Table Schema (Optional)                                                              | The schema Airbyte uses for various internal tables. In legacy raw tables mode, the raw tables are stored in this schema. Defaults to `airbyte_internal`.                                                                            |
 
 ### Key pair authentication
 
@@ -161,8 +164,8 @@ overriden by user) and a final table with Typed columns. Contents in raw table a
 deduplicated.
 
 **Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
-dedicated transient database for Airbyte. For more information, refer
-to[Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+dedicated transient database for Airbyte. For more information, refer to
+[Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html).
 
 ### Raw Table schema
 
