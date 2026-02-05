@@ -243,7 +243,7 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
 
 ## Part 4: Execute operations
 
-Once you create your connector, you can use the connector in hosted mode to execute operations. See [how to execute operations](../execute-actions).
+Once you create your connector, you can use the connector in hosted mode to execute operations. See [how to execute operations](../execute).
 
 ## Complete example
 

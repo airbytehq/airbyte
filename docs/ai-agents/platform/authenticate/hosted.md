@@ -19,7 +19,7 @@ The Agent Engine uses a hierarchical token system with three types of tokens, ea
 | --------------------- | -------------------------------------------------------------- | ------------------------------------- |
 | Operator Bearer Token | Organization management, template creation                     | Organization-wide                     |
 | Scoped Token          | API integration, programmatic workspace access                 | Single workspace                      |
-| Widget Token          | Using the [authentication module](../authentication-module) | Single workspace with CORS protection |
+| Widget Token          | Using the [authentication module](authentication-module) | Single workspace with CORS protection |
 
 ### Operator bearer token
 
