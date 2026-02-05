@@ -110,11 +110,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         return casing.camel_to_snake(name)
 
     # Mapping from level to the corresponding entity ID field
+    # Note: "account" level is not included because account_id is already in the base primary key
     LEVEL_TO_ID_FIELD = {
         "ad": "ad_id",
         "adset": "adset_id",
         "campaign": "campaign_id",
-        "account": None,  # account_id is already included in base primary key
     }
 
     @property
@@ -136,7 +136,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 breakdowns_pks.append(breakdown)
 
         # Determine the entity ID field based on the configured level
-        entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level, "ad_id")
+        # For "account" level (or any unknown level), no additional entity ID is needed
+        # since account_id is already in the base primary key
+        entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level)
 
         base_pk = ["date_start", "account_id"]
         if entity_id_field:
@@ -444,7 +446,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         if self._custom_fields:
             # 'date_stop' and 'account_id' are also returned by default, even if they are not requested
             # Include the appropriate entity ID field based on the configured level
-            entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level, "ad_id")
+            # For "account" level, no additional entity ID is needed since account_id is already included
+            entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level)
             required_fields = [self.cursor_field, "date_stop", "account_id"]
             if entity_id_field:
                 required_fields.append(entity_id_field)

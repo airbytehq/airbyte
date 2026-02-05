@@ -1,5 +1,41 @@
 # Facebook Marketing Migration Guide
 
+## Upgrading to 5.0.0
+
+Custom Insights streams now use level-based primary keys. Previously, all Custom Insights streams used `ad_id` as part of their primary key regardless of the configured `level` setting. This caused issues when using non-default levels (adset, campaign, or account) because the `ad_id` field would be null, making deduplication impossible.
+
+With this update, the primary key now correctly reflects the configured level:
+
+| Level | Primary Key Fields |
+| :---- | :----------------- |
+| `ad` (default) | `date_start`, `account_id`, `ad_id`, plus any breakdowns |
+| `adset` | `date_start`, `account_id`, `adset_id`, plus any breakdowns |
+| `campaign` | `date_start`, `account_id`, `campaign_id`, plus any breakdowns |
+| `account` | `date_start`, `account_id`, plus any breakdowns |
+
+### Who is affected?
+
+This change only affects Custom Insights streams that use a non-default `level` setting (adset, campaign, or account). If your Custom Insights streams use the default `level=ad` setting, no action is required.
+
+### Steps to upgrade
+
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Schema** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
+   :::note
+   Any detected schema changes will be listed for your review.
+   :::
+3. Select **Save changes** at the bottom of the page.
+   1. Ensure the **Reset affected streams** option is checked.
+4. Select **Save connection**.
+   :::note
+   This will reset the data in your destination and initiate a fresh sync.
+   :::
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
 ## Upgrading to 4.0.0
 
 The connector has been updated to use [v23.0 of Meta's Marketing API](https://developers.facebook.com/docs/marketing-api/marketing-api-changelog/version23.0) as v21.0 will be deprecated on September 9, 2025.
