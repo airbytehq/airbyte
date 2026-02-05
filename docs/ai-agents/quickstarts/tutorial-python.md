@@ -1,9 +1,9 @@
 ---
-sidebar_label: "Python SDK tutorial"
+sidebar_label: "Open source Python SDK"
 sidebar_position: 1
 ---
 
-# Agent connector tutorial: Python SDK
+# Agent connector tutorial: Open source Python SDK
 
 In this tutorial, you'll create a new Python project with uv, add a Pydantic AI agent, equip it to use one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
 
@@ -161,12 +161,12 @@ Add the following code to `agent.py`.
 
 ```python title="agent.py"
 @agent.tool_plain
-@GithubConnector.describe
+@GithubConnector.tool_utils
 async def github_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-The `@GithubConnector.describe` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
+The `@GithubConnector.tool_utils` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
 
 With this single tool, your agent can access all of the connector's capabilities. The agent decides which entity and action to use based on your natural language questions.
 

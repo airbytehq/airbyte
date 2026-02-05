@@ -50,9 +50,13 @@ interface DestinationProcess {
      * unless you're trying to send a poison pill.
      */
     suspend fun sendMessage(string: String)
-    suspend fun sendMessage(message: InputMessage, broadcast: Boolean = false)
-    suspend fun sendMessages(vararg messages: InputMessage) {
-        messages.forEach { sendMessage(it) }
+    suspend fun sendMessage(
+        message: InputMessage,
+        broadcast: Boolean = false,
+        useSingleSocket: Boolean = false
+    )
+    suspend fun sendMessages(vararg messages: InputMessage, useSingleSocket: Boolean = false) {
+        messages.forEach { sendMessage(it, useSingleSocket = useSingleSocket) }
     }
 
     /** Return all messages the destination emitted since the last call to [readMessages]. */
@@ -133,6 +137,7 @@ abstract class DestinationProcessFactory {
         useFileTransfer: Boolean = false,
         namespaceMappingConfig: NamespaceMappingConfig? = null,
         micronautProperties: Map<Property, String> = emptyMap(),
+        useSingleSocket: Boolean = false,
     ): List<AirbyteMessage> {
         check(streamStatus == null || streamStatus == AirbyteStreamStatus.COMPLETE) {
             "Invalid stream status: $streamStatus"
@@ -155,7 +160,7 @@ abstract class DestinationProcessFactory {
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
-            messages.forEach { destination.sendMessage(it) }
+            messages.forEach { destination.sendMessage(it, useSingleSocket = useSingleSocket) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     val streamStatusMessage =

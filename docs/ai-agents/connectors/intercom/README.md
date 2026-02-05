@@ -11,17 +11,17 @@ admins, tags, and segments for customer support analytics and insights.
 The Intercom connector is optimized to handle prompts like these.
 
 - List all contacts in my Intercom workspace
-- Show me conversations from the last week
 - List all companies in Intercom
 - What teams are configured in my workspace?
 - Show me all admins in my Intercom account
 - List all tags used in Intercom
-- Get details for contact \{contact_id\}
 - Show me all customer segments
-- Get company details for \{company_id\}
+- Show me details for a recent contact
+- Show me details for a recent company
+- Show me details for a recent conversation
+- Show me conversations from the last week
 - List conversations assigned to team \{team_id\}
 - Show me open conversations
-- Get conversation details for \{conversation_id\}
 
 ## Unsupported questions
 
@@ -42,21 +42,54 @@ uv pip install airbyte-agent-intercom
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_intercom import IntercomConnector, IntercomAuthConfig
+from airbyte_agent_intercom import IntercomConnector
+from airbyte_agent_intercom.models import IntercomAuthConfig
 
 connector = IntercomConnector(
-  auth_config=IntercomAuthConfig(
-    access_token="..."
-  )
+    auth_config=IntercomAuthConfig(
+        access_token="<Your Intercom API Access Token>"
+    )
 )
-result = await connector.contacts.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@IntercomConnector.tool_utils
+async def intercom_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_intercom import IntercomConnector
+
+connector = IntercomConnector(
+    external_user_id="<your_external_user_id>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@IntercomConnector.tool_utils
+async def intercom_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
@@ -69,12 +102,17 @@ This connector supports the following entities and actions.
 | Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get) |
 
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Authentication and configuration
 
-For the service's official API docs, see the [Intercom API reference](https://developers.intercom.com/docs/references/rest-api/api.intercom.io).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+
+### Intercom API docs
+
+See the official [Intercom API reference](https://developers.intercom.com/docs/references/rest-api/api.intercom.io).
 
 ## Version information
 
-- **Package version:** 0.1.22
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** c713ec4833c2b52dc89926ec68caa343423884cd
+- **Package version:** 0.1.52
+- **Connector version:** 0.1.7
+- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/intercom/CHANGELOG.md)
