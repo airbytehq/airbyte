@@ -104,6 +104,16 @@ def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 6
         max_retries (int, optional): The maximum number of retries. Defaults to 3.
         wait_time (int, optional): The time to wait between retries in seconds. Defaults to 60.
     """
+    if pr.draft:
+        logger.info(f"PR #{pr.number} is a draft, marking as ready for review before merging")
+        requests.patch(
+            pr.url,
+            json={"draft": False},
+            headers={
+                "Authorization": f"token {GITHUB_TOKEN}",
+                "Accept": "application/vnd.github+json",
+            },
+        ).raise_for_status()
     for i in range(max_retries):
         try:
             pr.merge(merge_method=MERGE_METHOD)
