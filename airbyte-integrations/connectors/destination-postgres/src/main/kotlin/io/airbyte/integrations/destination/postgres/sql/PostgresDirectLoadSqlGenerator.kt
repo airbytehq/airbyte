@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.postgres.sql
 
-import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
@@ -332,7 +331,6 @@ class PostgresDirectLoadSqlGenerator(
      * Uses NOT EXISTS to check for existing records by primary key. If CDC hard delete is enabled,
      * filters out records marked as deleted.
      */
-    @VisibleForTesting
     internal fun insertNewRows(
         dedupTableAlias: String,
         targetTableName: TableName,
@@ -373,7 +371,6 @@ class PostgresDirectLoadSqlGenerator(
      * cursor or extracted_at comparison). If CDC hard delete is enabled, skips records marked as
      * deleted.
      */
-    @VisibleForTesting
     internal fun updateExistingRows(
         dedupTableAlias: String,
         targetTableName: TableName,
@@ -414,7 +411,6 @@ class PostgresDirectLoadSqlGenerator(
      * Deletes rows from the target table where the source has a CDC deletion marker and the
      * deletion is newer than the target record (based on cursor or extracted_at).
      */
-    @VisibleForTesting
     internal fun cdcDelete(
         dedupTableAlias: String,
         cursorTargetColumn: String?,
@@ -483,7 +479,6 @@ class PostgresDirectLoadSqlGenerator(
      * Partitions by primary key and orders by cursor (if present) then extracted_at, keeping only
      * the most recent record for each unique primary key.
      */
-    @VisibleForTesting
     internal fun selectDeduped(
         primaryKeyTargetColumns: List<String>,
         cursorTargetColumn: String?,

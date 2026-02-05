@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
@@ -339,12 +341,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 "updatedAt" to ColumnType("timestamp with time zone", true),
                 CDC_DELETED_AT_COLUMN to ColumnType("timestamp with time zone", true)
             )
-        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val inputSchema = mapOf(CDC_DELETED_AT_COLUMN to FieldType(TimestampTypeWithTimezone, true))
+        val columnSchema = ColumnSchema(inputSchema, emptyMap(), finalSchema)
         val streamTableSchema =
             mockk<StreamTableSchema> {
                 every { this@mockk.columnSchema } returns columnSchema
                 every { getPrimaryKey() } returns listOf(listOf("id"))
                 every { getCursor() } returns listOf("updatedAt")
+                every { importType } returns
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
             }
         val stream = mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
 
