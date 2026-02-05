@@ -16,6 +16,9 @@ MAX_BLOCK_DEPTH = 30
 CURSOR_FIELD = "last_edited_time"
 # datetime format used by Notion API
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+# partition field names from DatetimeBasedCursor
+PARTITION_FIELD_START = "start_time"
+PARTITION_FIELD_END = "end_time"
 logger = logging.getLogger("airbyte")
 
 
@@ -71,8 +74,9 @@ class BlocksRetriever(SimpleRetriever):
     Records are filtered based on their last_edited_time against the cursor state.
     """
 
-    # Cursor state value for filtering - will be set from the stream slice's cursor_slice
-    _cursor_state_value: Optional[str] = field(default=None, init=False, repr=False)
+    # Start time boundary for filtering - extracted from the stream slice's cursor_slice
+    # This is the earliest datetime boundary (cursor state - lookback window) from DatetimeBasedCursor
+    _start_time_boundary: Optional[str] = field(default=None, init=False, repr=False)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
@@ -81,10 +85,13 @@ class BlocksRetriever(SimpleRetriever):
     def _should_be_synced(self, record_data: Mapping[str, Any]) -> bool:
         """
         Check if a record should be synced based on its last_edited_time.
-        Returns True if the record's cursor value is >= the cursor state value.
+        Returns True if the record's cursor value is >= the start_time boundary.
+        
+        The start_time boundary comes from the DatetimeBasedCursor and represents
+        the earliest datetime that should be synced (cursor state - lookback window).
         """
-        if not self._cursor_state_value:
-            # No cursor state, sync all records
+        if not self._start_time_boundary:
+            # No start time boundary, sync all records (first sync or full refresh)
             return True
 
         record_cursor_value = record_data.get(CURSOR_FIELD)
@@ -95,8 +102,8 @@ class BlocksRetriever(SimpleRetriever):
 
         try:
             record_time = datetime.strptime(record_cursor_value, DATETIME_FORMAT)
-            state_time = datetime.strptime(self._cursor_state_value, DATETIME_FORMAT)
-            return record_time >= state_time
+            start_time = datetime.strptime(self._start_time_boundary, DATETIME_FORMAT)
+            return record_time >= start_time
         except ValueError as e:
             # If parsing fails, sync the record to be safe
             logger.warning(f"Failed to parse datetime for filtering: {e}. The record will be synced.")
@@ -112,13 +119,15 @@ class BlocksRetriever(SimpleRetriever):
             logger.info("Reached max block depth limit. Exiting.")
             return
 
-        # Extract cursor state from the stream slice for filtering
-        # The cursor_slice contains the state from the GlobalSubstreamCursor
+        # Extract start_time boundary from the stream slice for filtering
+        # The cursor_slice contains start_time/end_time from DatetimeBasedCursor._partition_daterange()
+        # start_time is the earliest boundary (cursor state - lookback window) for incremental filtering
         if stream_slice and stream_slice.cursor_slice and self.current_block_depth == 0:
-            # Only set cursor state at the top level to avoid overwriting during recursion
-            cursor_state = stream_slice.cursor_slice.get(CURSOR_FIELD)
-            if cursor_state:
-                self._cursor_state_value = cursor_state
+            # Only set start time boundary at the top level to avoid overwriting during recursion
+            start_time = stream_slice.cursor_slice.get(PARTITION_FIELD_START)
+            if start_time:
+                self._start_time_boundary = start_time
+                logger.debug(f"BlocksRetriever: Using start_time boundary for filtering: {start_time}")
 
         for sequence_number, stream_data in enumerate(super().read_records(records_schema, stream_slice)):
             if stream_data.data.get("has_children"):
