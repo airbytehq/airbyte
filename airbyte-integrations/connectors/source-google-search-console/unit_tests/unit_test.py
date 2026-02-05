@@ -324,6 +324,7 @@ def test_check_enhanced_error_invalid_url_with_suggestions(config_gen, requests_
     assert "https://example.com/" in result.message
     assert "sc-domain:example.com" in result.message
     assert "Choose the property that matches" in result.message
+    assert "Original error:" in result.message
 
 
 def test_check_enhanced_error_empty_sites_list(config_gen, requests_mock):
@@ -347,9 +348,11 @@ def test_check_enhanced_error_empty_sites_list(config_gen, requests_mock):
 
     assert result.status == Status.FAILED
     assert "No Search Console properties were found" in result.message
+    assert "Original error:" in result.message
 
 
 def test_check_enhanced_error_sites_list_auth_failure(config_gen, requests_mock):
+    """When GET /sites returns 401, the fallback message provides static format guidance."""
     config = config_gen(site_urls=["https://wrong-site.com/"])
     requests_mock.get(
         "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwrong-site.com%2F",
@@ -370,8 +373,10 @@ def test_check_enhanced_error_sites_list_auth_failure(config_gen, requests_mock)
     result = source.check(logger=MagicMock(), config=config)
 
     assert result.status == Status.FAILED
+    # Fallback message contains static format examples
     assert "sc-domain:example.com" in result.message
     assert "https://example.com/" in result.message
+    assert "Original error:" in result.message
 
 
 def test_check_backward_compatibility_valid_config(config_gen, config, requests_mock):

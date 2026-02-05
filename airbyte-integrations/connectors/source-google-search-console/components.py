@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 
-import requests as requests_lib
+import requests
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import AirbyteMessage
@@ -210,14 +210,16 @@ class EnhancedSitesRetriever(SimpleRetriever):
         try:
             yield from super().read_records(records_schema, stream_slice)
         except AirbyteTracedException as error:
-            enhanced_message = self._build_enhanced_error_message(error)
+            original_message = error.message or error.internal_message or str(error)
+            enhanced_context = self._build_enhanced_error_message()
+            enhanced_message = f"{enhanced_context} (Original error: {original_message})"
             raise AirbyteTracedException(
                 internal_message=enhanced_message,
                 message=enhanced_message,
                 failure_type=error.failure_type,
             ) from error
 
-    def _build_enhanced_error_message(self, original_error: AirbyteTracedException) -> str:
+    def _build_enhanced_error_message(self) -> str:
         """Compose an enhanced error message with property suggestions when available."""
         try:
             available_properties = self._fetch_available_properties()
@@ -259,15 +261,16 @@ class EnhancedSitesRetriever(SimpleRetriever):
 
     def _fetch_available_properties(self) -> Optional[List[Dict[str, str]]]:
         """Call GET /sites to retrieve all properties the authenticated user can access."""
-        headers = {}
         try:
             authenticator = self.requester.authenticator
-            if authenticator:
-                headers = authenticator.get_auth_header()
+            if not authenticator:
+                return None
+            headers = authenticator.get_auth_header()
         except Exception as auth_error:
             logger.warning(f"Could not get auth headers for property lookup: {auth_error}")
+            return None
 
-        response = requests_lib.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
+        response = requests.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
         response.raise_for_status()
 
         data = response.json()
