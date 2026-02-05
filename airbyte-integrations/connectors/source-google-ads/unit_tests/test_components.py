@@ -509,9 +509,7 @@ class TestGoogleAdsRetriever:
                 raise ChunkedEncodingError("simulated network error")
             yield MagicMock()
 
-        with patch.object(
-            retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_with_error
-        ):
+        with patch.object(retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_with_error):
             records = list(retriever._read_pages(MagicMock(), MagicMock()))
             assert len(records) == 1
             assert call_count == 3
@@ -536,9 +534,7 @@ class TestGoogleAdsRetriever:
             call_count += 1
             raise ChunkedEncodingError("persistent network error")
 
-        with patch.object(
-            retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_always_fails
-        ):
+        with patch.object(retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_always_fails):
             with pytest.raises(AirbyteTracedException) as exc_info:
                 list(retriever._read_pages(MagicMock(), MagicMock()))
 
@@ -567,9 +563,7 @@ class TestGoogleAdsRetriever:
             yield MagicMock()
             yield MagicMock()
 
-        with patch.object(
-            retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_success
-        ):
+        with patch.object(retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages_success):
             records = list(retriever._read_pages(MagicMock(), MagicMock()))
             assert len(records) == 2
             assert call_count == 1
