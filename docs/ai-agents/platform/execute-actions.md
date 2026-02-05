@@ -92,20 +92,9 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 You can execute operations directly through the Agent Engine API. This approach is useful when you're not using Python, when building custom integrations, or when you need to execute operations from a backend service.
 
-### Get an application token
+### Authentication
 
-Before making API calls, request an application token using your Airbyte client credentials.
-
-```bash title="Request"
-curl --location 'https://cloud.airbyte.com/api/v1/applications/token' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "client_id": "<your_client_id>",
-    "client_secret": "<your_client_secret>"
-  }'
-```
-
-Save the returned access token for subsequent API calls.
+Before making API calls, you need a bearer token. For executing operations on connectors that belong to specific end users, use a scoped token. For details on obtaining tokens, see [Authentication](../embedded/api/authentication.md).
 
 ### Execute an operation
 
@@ -113,7 +102,7 @@ To execute an operation against a connector, send a POST request to the execute 
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
+  --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{
     "entity": "<entity_name>",
@@ -136,7 +125,7 @@ This example lists users from a Gong connector.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
+  --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{
     "entity": "users",
@@ -150,7 +139,7 @@ This example retrieves a specific user by ID.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
+  --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{
     "entity": "users",
@@ -167,7 +156,7 @@ This example searches for records using filter conditions. The search action is 
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
+  --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{
     "entity": "users",
@@ -201,7 +190,7 @@ To retrieve additional pages, include the cursor in subsequent requests.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
+  --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{
     "entity": "users",
