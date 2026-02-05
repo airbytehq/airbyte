@@ -260,7 +260,7 @@ class PostgresDirectLoadSqlGenerator(
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
-        val importType = stream.importType as Dedupe
+        val importType = stream.tableSchema.importType as Dedupe
 
         if (importType.primaryKey.isEmpty()) {
             throw IllegalArgumentException("Cannot perform upsert without primary key")
@@ -279,7 +279,7 @@ class PostgresDirectLoadSqlGenerator(
             )
 
         val cdcHardDeleteEnabled =
-            stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
+            stream.tableSchema.columnSchema.inputSchema.containsKey(CDC_DELETED_AT_COLUMN) &&
                 postgresConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
 
         val cdcDeleteQuery =

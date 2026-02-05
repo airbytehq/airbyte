@@ -59,8 +59,7 @@ class PostgresDataDumper(
 
         // Build reverse mapping from sanitized column names back to original names
         val reverseMapping = mutableMapOf<String, String>()
-        (stream.schema as? io.airbyte.cdk.load.data.ObjectType)?.properties?.keys?.forEach {
-            originalName ->
+        stream.tableSchema.columnSchema.inputSchema.keys.forEach { originalName ->
             val sanitizedName = sanitizeColumnName(originalName)
             reverseMapping[sanitizedName] = originalName
         }
