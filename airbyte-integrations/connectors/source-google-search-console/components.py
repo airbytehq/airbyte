@@ -221,11 +221,7 @@ class EnhancedSitesRetriever(SimpleRetriever):
 
     def _build_enhanced_error_message(self) -> str:
         """Compose an enhanced error message with property suggestions when available."""
-        try:
-            available_properties = self._fetch_available_properties()
-        except Exception as fetch_error:
-            logger.warning(f"Could not fetch property suggestions: {fetch_error}")
-            available_properties = None
+        available_properties = self._fetch_available_properties()
 
         if available_properties is None:
             return (
@@ -260,18 +256,26 @@ class EnhancedSitesRetriever(SimpleRetriever):
         )
 
     def _fetch_available_properties(self) -> Optional[List[Dict[str, str]]]:
-        """Call GET /sites to retrieve all properties the authenticated user can access."""
+        """Call GET /sites to retrieve all properties the authenticated user can access.
+
+        Returns a list of property dicts on success, an empty list if the account has no
+        properties, or None if the request could not be completed (auth failure, HTTP error, etc.).
+        """
         try:
             authenticator = self.requester.authenticator
             if not authenticator:
                 return None
             headers = authenticator.get_auth_header()
-        except Exception as auth_error:
-            logger.warning(f"Could not get auth headers for property lookup: {auth_error}")
+        except Exception:
+            logger.warning("Could not get auth headers for property lookup", exc_info=True)
             return None
 
-        response = requests.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
-        response.raise_for_status()
+        try:
+            response = requests.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
+            response.raise_for_status()
+        except requests.RequestException:
+            logger.warning("GET /sites request failed during property lookup", exc_info=True)
+            return None
 
         data = response.json()
         return data.get("siteEntry", [])
