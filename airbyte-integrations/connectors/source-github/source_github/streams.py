@@ -509,6 +509,67 @@ class Releases(SemiIncrementalMixin, GithubStream):
 
     cursor_field = "created_at"
 
+    # GitHub API limits pagination to 10,000 results maximum
+    # With 100 results per page (default), this means max 100 pages
+    # https://docs.github.com/en/rest/releases/releases#list-releases
+    MAX_PAGE_NUMBER = 100
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._pagination_limit_reached = False
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Override to stop pagination at page 100 (10,000 results) to avoid GitHub API 422 error.
+        GitHub's REST API has a hard limit of 10,000 results for list endpoints.
+        """
+        token = super().next_page_token(response)
+        if token:
+            page = int(token.get("page", 0))
+            if page > self.MAX_PAGE_NUMBER:
+                self._pagination_limit_reached = True
+                self.logger.warning(
+                    f"Stopping pagination at page {self.MAX_PAGE_NUMBER} due to GitHub API limit of 10,000 results. "
+                    "Some releases may not be synced."
+                )
+                return None
+        return token
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Override to fail the sync after loading records when pagination limit is reached.
+        This ensures users are explicitly notified that not all releases were synced due to GitHub API limitations,
+        while still loading the first 10,000 releases to the destination.
+        """
+        # Reset the flag for each slice
+        self._pagination_limit_reached = False
+
+        # Yield all records from parent
+        yield from super().read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )
+
+        # After all records are yielded, fail the sync if we hit the pagination limit
+        # This ensures the 10,000 records are loaded but the user is explicitly notified
+        if self._pagination_limit_reached:
+            repository = stream_slice.get("repository", "unknown") if stream_slice else "unknown"
+            raise AirbyteTracedException(
+                message=(
+                    f"GitHub API pagination limit reached for repository '{repository}'. "
+                    f"Only the first 10,000 releases (sorted by creation date, newest first) were synced to the destination. "
+                    f"This repository has more releases than GitHub's API limit allows. "
+                    f"See: https://docs.github.com/en/rest/releases/releases#list-releases"
+                ),
+                internal_message=f"GitHub API 10,000 result limit reached for repository '{repository}'",
+                failure_type=FailureType.system_error,
+            )
+
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record, stream_slice=stream_slice)
 
