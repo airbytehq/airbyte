@@ -460,7 +460,7 @@ class CriterionRetriever(SimpleRetriever):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
-        if hasattr(self.requester, "name") and not self.requester.name:
+        if hasattr(self.requester, "name"):
             self.requester.name = self.name
 
     def _read_pages(
@@ -543,7 +543,7 @@ class GoogleAdsRetriever(SimpleRetriever):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
-        if hasattr(self.requester, "name") and not self.requester.name:
+        if hasattr(self.requester, "name"):
             self.requester.name = self.name
 
     def _read_pages(
