@@ -12,7 +12,7 @@ Before embedding the authentication module, complete the following setup:
 
 2. **Get your API credentials.** You need your `client_id` and `client_secret` from the Agent Engine under **Authentication Module** > **Installation**. See [Agent Engine authentication](hosted) for details on the token system.
 
-3. **(Optional) Create a connection template.** If you want data replication, connection templates define where your users' data lands when they authenticate a source. You can create connection templates in the Agent Engine UI under **Data Replication**, or via the [API](/ai-agents/api/api-reference). If you only need direct connector access (no replication), you can skip this step.
+3. **(Optional) Create a connection template.** If you want data replication, connection templates define where your users' data lands when they authenticate a source. You can create connection templates in the Agent Engine UI under **Data Replication**, or via the [API](https://api.airbyte.ai/api/v1/docs). If you only need direct connector access (no replication), you can skip this step.
 
 ## Agent Engine UI
 
@@ -240,4 +240,4 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
 | `selected_connection_template_tags` | Tags to filter which connection templates are used. |
 | `selected_connection_template_tags_mode` | `any` or `all`. |
 
-You can manage tags through the Agent Engine UI or the [API](/ai-agents/api/api-reference).
+You can manage tags through the Agent Engine UI or the [API](https://api.airbyte.ai/api/v1/docs).
