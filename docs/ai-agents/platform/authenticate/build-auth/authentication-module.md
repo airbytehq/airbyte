@@ -122,7 +122,7 @@ app.listen(3000);
 
 Pin your widget version to avoid unexpected changes.
 
-- If you're using a package manager, use a caret range in `package.json` to pin to a minor version. For example, `"@airbyte-embedded/airbyte-embedded-widget": "^0.4.5"`. 
+- If you're using a package manager, use a caret range in `package.json` to pin to a minor version. For example, `"@airbyte-embedded/airbyte-embedded-widget": "^0.4.5"`.
 
 - If you're using a CDN, specify the exact version in the script URL. For example, `<script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget@0.4.5"></script>`.
 
