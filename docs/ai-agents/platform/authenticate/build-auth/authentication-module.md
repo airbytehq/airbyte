@@ -53,7 +53,7 @@ This starts all apps simultaneously: the server at `http://localhost:3000`, Next
 
 ## Implement it into your app
 
-Since you probably want to overlay the Authentication Module on your own app, you can configure it on your backend and frontend. Here's a complete Node.js example.
+Since you probably want to overlay the Authentication Module on your own app, you can configure it on your backend and frontend. Here's a basic Node.js example.
 
 ### Backend
 

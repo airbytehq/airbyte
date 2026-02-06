@@ -44,15 +44,23 @@ If agentic data isn't what you're looking for and you need complex data aggregat
 
 ### The problem with AI agents
 
-The promise of AI agents to scale productivity, accelerate insights, and democratize access to information is nearly without measure. However, most organizations aren't able to realize this promise.
+The promise of AI agents to scale productivity, accelerate insights, and democratize information is without measure. However, most organizations aren't able to realize this promise.
 
 - Large language models can reason, but rely on stale public training data that limits their effectiveness.
 
-- Improving context with real business data is difficult. RAG pipelines are indirect solutions, and building them is hard. Entire teams of data engineers are necessary to plan pipelines, refine data, and transform it into something usable.
+- Improving context with real business data is difficult. It forces teams to build infrastructure they don't want to own: storage layers, indexing services, pipelines, and permissions models. All of this is maintenance debt just to acquire missing context.
 
-- Even if high-quality data is available, agents still need to take action. Search alone isn't enough. They need write operations to produce results. This means even more development of integrations with common business platforms, managing credentials, and more.
+- Even if high-quality data is available, agents still perform poorly. They lack real-time access, can't search, can't write, miss key information, and need human intervention.
 
-For many organizations, the means making a choice: massive upfront investment _or_ agents that are ill-equipped to do the work you wish they could. Sometimes, it's both.
+Organizations trying to build AI face a conundrum:
+
+- They need massive upfront investment, or
+
+- Their agents don't perform well, or
+
+- Both
+
+The result is that agentic features never scale. They remain fragile prototypes that can't support real operations.
 
 ### How Airbyte solve that problem
 

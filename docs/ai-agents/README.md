@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Agent Engine
 
-Airbyte's Agent Engine is a data layer <!-- runtime execution platform for AI agents. It's a unified interface for AI agents to securely execute operations against external systems, using end-user credentials and type-safe connectors that Airbyte has built and optimized to do agentic work. -->
+Airbyte's Agent Engine is a data layer for AI agents.  <!-- runtime execution platform for AI agents. It's a unified interface for AI agents to securely execute operations against external systems, using end-user credentials and type-safe connectors that Airbyte has built and optimized to do agentic work. -->
 
 You can use the Agent Engine as a cloud platform to manage connectors, credentials, and data replication for your agents. Or you can use the open source agent connectors as standalone Python packages, import them into your AI agents, and manage storage and credentials yourself.
 
@@ -24,8 +24,8 @@ The Agent engine is new and growing. Airbyte is actively seeking feedback, desig
 
 <Grid columns="3">
 
-<CardWithIcon title="Connectors" description="Browse our catalog of connectors and copy code samples to start running connectors." ctaText="Connectors" ctaLink="connectors/" icon="fa-python" />
+<CardWithIcon title="API docs" description="Use our API to set up connectors, authentication, execute operations, and your customers." ctaText="API docs" ctaLink="api/" icon="fa-cloud" />
 
-<CardWithIcon title="API docs" description="Use our API to create and manage connectors, authentication, and customers." ctaText="API docs" ctaLink="api/" icon="fa-cloud" />
+<CardWithIcon title="Connectors" description="Browse our catalog of connectors, copy code samples, and start powering your agents." ctaText="Connectors" ctaLink="connectors/" icon="fa-python" />
 
 </Grid>
