@@ -1,6 +1,6 @@
 # Authentication module
 
-The authentication module (formerly known as Airbyte Embedded) is a pre-built UI component you embed in your application so your end users can connect their data sources without leaving your app. Instead of building a custom credential collection flow, you integrate Airbyte's widget and let it handle connector selection, credential input, and validation.
+The authentication module (also known as Airbyte Embedded) is a pre-built UI component you embed in your application so your end users can connect their data sources without leaving your app. Instead of building a custom credential collection flow, you integrate Airbyte's widget and let it handle connector selection, credential input, and validation.
 
 When a user completes authentication through the module, Airbyte stores their credentials, creates a source in their workspace, and begins syncing data according to your connection templates.
 
@@ -122,9 +122,9 @@ app.listen(3000);
 
 Pin your widget version to avoid unexpected changes.
 
-- If you're using a package manager, use a caret range in `package.json` to pin to a minor version. For example, `"@airbyte-embedded/airbyte-embedded-widget": "^0.4.2"`. 
+- If you're using a package manager, use a caret range in `package.json` to pin to a minor version. For example, `"@airbyte-embedded/airbyte-embedded-widget": "^0.4.5"`.
 
-- If you're using a CDN, specify the exact version in the script URL. For example, `<script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget@0.4.2"></script>`.
+- If you're using a CDN, specify the exact version in the script URL. For example, `<script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget@0.4.5"></script>`.
 
 Below are two example implementations.
 
@@ -141,6 +141,15 @@ Then, import the widget into your frontend.
 
 ```tsx title="ConnectData.tsx"
 import { AirbyteEmbeddedWidget } from "@airbyte-embedded/airbyte-embedded-widget";
+
+async function fetchWidgetToken() {
+  const response = await fetch("/api/airbyte/widget-token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId: "user_123" }),
+  });
+  return response.json();
+}
 
 export const ConnectData: React.FC = () => {
   const handleConnect = async () => {
@@ -170,7 +179,7 @@ export const ConnectData: React.FC = () => {
 Alternatively, load the widget from jsDelivr.
 
 ```html title="your-app.html"
-<script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget@0.4.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget@0.4.5"></script>
 <script>
   async function connectData() {
     const response = await fetch("/api/airbyte/widget-token", {
@@ -255,7 +264,7 @@ Once a user authenticates through the Authentication module, the following happe
 
 Your AI agent can now [execute operations](../../execute) against the user's connector.
 
-## Filtering available connectors
+<!-- ## Filtering available connectors
 
 By default, the authentication module displays all connectors you've enabled. To show only specific connectors to specific users, you can filter using tags on your source and connection templates.
 
@@ -282,4 +291,4 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
 | `selected_connection_template_tags` | Tags to filter which connection templates are used. |
 | `selected_connection_template_tags_mode` | `any` or `all`. |
 
-You can manage tags through the Agent Engine UI or the [API](https://api.airbyte.ai/api/v1/docs).
+You can manage tags through the Agent Engine UI or the [API](https://api.airbyte.ai/api/v1/docs). -->
