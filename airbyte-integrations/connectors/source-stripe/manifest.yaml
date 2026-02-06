@@ -1441,15 +1441,14 @@ definitions:
               type: DpathExtractor
               field_path:
                 - data
-                - object
               record_expander:
                 type: RecordExpander
                 expand_records_from_field:
+                  - data
+                  - object
                   - lines
                   - data
                 remain_original_record: true
-            record_filter:
-              condition: "{{ 'original_record' in record }}"
             transform_before_filtering: true
         schema_loader:
           type: InlineSchemaLoader
@@ -1466,18 +1465,18 @@ definitions:
             fields:
               - path:
                   - invoice_updated
-                value: "{{ record.get('original_record', {}).get('updated', record.get('original_record', {}).get('created', now_utc().timestamp())) | int }}"
+                value: "{{ record.get('original_record', {}).get('data', {}).get('object', {}).get('updated', record.get('original_record', {}).get('created', now_utc().timestamp())) | int }}"
                 value_type: integer
           - type: AddFields
             fields:
               - path:
                   - invoice_id
-                value: "{{ record.get('original_record', {}).get('id', '') }}"
+                value: "{{ record.get('original_record', {}).get('data', {}).get('object', {}).get('id', '') }}"
           - type: AddFields
             fields:
               - path:
                   - invoice_created
-                value: "{{ record.get('original_record', {}).get('created', 0) | int }}"
+                value: "{{ record.get('original_record', {}).get('data', {}).get('object', {}).get('created', 0) | int }}"
                 value_type: integer
           - type: RemoveFields
             field_pointers:
@@ -1610,15 +1609,14 @@ definitions:
               type: DpathExtractor
               field_path:
                 - data
-                - object
               record_expander:
                 type: RecordExpander
                 expand_records_from_field:
+                  - data
+                  - object
                   - items
                   - data
                 remain_original_record: true
-            record_filter:
-              condition: "{{ 'original_record' in record }}"
             transform_before_filtering: true
         schema_loader:
           type: InlineSchemaLoader
@@ -1635,18 +1633,18 @@ definitions:
             fields:
               - path:
                   - subscription_updated
-                value: "{{ record.get('original_record', {}).get('updated', record.get('original_record', {}).get('created', now_utc().timestamp())) | int }}"
+                value: "{{ record.get('original_record', {}).get('data', {}).get('object', {}).get('updated', record.get('original_record', {}).get('created', now_utc().timestamp())) | int }}"
                 value_type: integer
           - type: AddFields
             fields:
               - path:
                   - subscription_id
-                value: "{{ record.get('original_record', {}).get('id', '') }}"
+                value: "{{ record.get('original_record', {}).get('data', {}).get('object', {}).get('id', '') }}"
           - type: AddFields
             fields:
               - path:
                   - subscription_created
-                value: "{{ record.get('original_record', {}).get('created', 0) | int }}"
+                value: "{{ record.get('original_record', {}).get('data', {}).get('object', {}).get('created', 0) | int }}"
                 value_type: integer
           - type: RemoveFields
             field_pointers:
