@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.15.17
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
@@ -45,6 +45,12 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["refunds"]
+      6.0.0:
+        message: "Version 6.0.0 fixes the `invoice_line_items` and `subscription_items` incremental streams. These streams now correctly emit individual child items (line items and subscription items) instead of parent objects (invoices and subscriptions). This is a breaking change in data structure. A schema refresh and data reset of affected streams is required. For detailed migration steps, see the [Stripe migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations)."
+        upgradeDeadline: "2026-02-19"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["invoice_line_items", "subscription_items"]
   suggestedStreams:
     streams:
       - customers

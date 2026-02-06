@@ -1,6 +1,44 @@
 # Stripe Migration Guide
 
-###  Upgrading to 5.6.0
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
+## Upgrading to 6.0.0
+
+Version 6.0.0 fixes the `invoice_line_items` and `subscription_items` incremental streams. These streams were incorrectly emitting parent objects (invoices and subscriptions) instead of individual child items (line items and subscription items).
+
+### Summary of changes
+
+The `invoice_line_items` stream now emits individual line item records with IDs starting with `il_` instead of invoice records with IDs starting with `in_`. Similarly, the `subscription_items` stream now emits individual subscription item records with IDs starting with `si_` instead of subscription records with IDs starting with `sub_`.
+
+Each child record includes parent metadata fields for context:
+- `invoice_line_items`: Includes `invoice_id`, `invoice_created`, and `invoice_updated` fields
+- `subscription_items`: Includes `subscription_id`, `subscription_created`, and `subscription_updated` fields
+
+### Migration Steps
+
+1. Upgrade the Stripe connector by pressing the upgrade button and following the instructions on the screen.
+
+2. Navigate to the connection's **Schema** tab.
+
+3. Select **Refresh source schema** to detect the new schema structure.
+
+4. For the `invoice_line_items` and `subscription_items` streams, you will need to reset the data since the record structure has fundamentally changed.
+
+5. If your destination supports the **Refresh** feature:
+   - Select **Refresh and retain records** for the affected streams
+   - This will pull in all historical data with the new structure
+
+6. If your destination does not support the **Refresh** feature:
+   - You will need to [Clear](/platform/operator-guides/clear) the affected streams
+   - Then sync the connection again to retrieve all data with the new structure
+
+### Downstream Impact
+
+If you have downstream transformations or queries that depend on the structure of `invoice_line_items` or `subscription_items` data, you will need to update them to work with the new record structure. The records now represent individual line items and subscription items rather than their parent objects.
+
+<MigrationGuide />
+
+### Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
 

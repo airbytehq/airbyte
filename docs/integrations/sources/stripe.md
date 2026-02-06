@@ -105,7 +105,7 @@ The Stripe source connector supports the following streams:
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
-- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -124,7 +124,7 @@ The Stripe source connector supports the following streams:
 - [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
 - [Setup Intents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Shipping Rates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
-- [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+- [Subscription Items](https://stripe.com/docs/api/subscription_items/list) \(Incremental\)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
@@ -246,6 +246,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.0 | 2026-02-06 | [72845](https://github.com/airbytehq/airbyte/pull/72845) | Fix `invoice_line_items` and `subscription_items` incremental streams to emit individual child items instead of parent objects |
 | 5.15.17 | 2026-01-27 | [72363](https://github.com/airbytehq/airbyte/pull/72363) | fix(source-stripe): Add date filtering for checkout_sessions full refresh |
 | 5.15.16 | 2026-01-20 | [72106](https://github.com/airbytehq/airbyte/pull/72106) | Update dependencies |
 | 5.15.15 | 2026-01-14 | [71614](https://github.com/airbytehq/airbyte/pull/71614) | Update dependencies |
