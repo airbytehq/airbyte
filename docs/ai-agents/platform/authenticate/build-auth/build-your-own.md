@@ -3,7 +3,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-If you provide an environment where your users can create connectors, they need to supply their credentials so agents can access their data. Airbyte provides a standard [Embedded widget](../authenticate/) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding and UX. In this case, you can implement your own OAuth flow.
+If you provide an environment where your users can create connectors, they need to supply their credentials so agents can access their data. Airbyte provides a standard [Embedded widget](./..) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding and UX. In this case, you can implement your own OAuth flow.
 
 This tutorial walks you through implementing a server-side OAuth flow for your users. By the end, you'll be able to initiate OAuth consent, handle the callback, and create connectors using the obtained credentials.
 
@@ -39,7 +39,7 @@ Before implementing an OAuth flow, ensure you have:
 
 1. **Airbyte Cloud credentials**: Your `client_id` and `client_secret` from the Airbyte Cloud dashboard under **Settings > Applications**.
 
-2. **An bearer token**: See [Authentication](../authenticate/) for how to obtain one.
+2. **An bearer token**: See [Authentication](./..) for how to obtain one.
 
 3. **A scoped token**: Required for workspace-level operations. Generate one using your operator token.
 
@@ -173,7 +173,7 @@ window.location.href = consent_url;
 
 After the user authorizes access, the third-party authorization flow redirects them to your `redirect_url` with a `secret_id` query parameter. Use this `secret_id` to create a connector.
 
-Some connectors require additional configuration options. See the documentation for [your connector](../../connectors/) to learn more.
+Some connectors require additional configuration options. See the documentation for [your connector](../../../connectors) to learn more.
 
 ### Handle the OAuth callback
 
@@ -243,7 +243,7 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
 
 ## Part 4: Execute operations
 
-Once you create your connector, you can use the connector in hosted mode to execute operations. See [how to execute operations](../execute).
+Once you create your connector, you can use the connector in hosted mode to execute operations. See [how to execute operations](../../execute).
 
 ## Complete example
 

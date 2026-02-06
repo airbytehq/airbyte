@@ -19,7 +19,7 @@ The Agent Engine uses a hierarchical token system with three types of tokens, ea
 | --------------------- | -------------------------------------------------------------- | ------------------------------------- |
 | Operator Bearer Token | Organization management, template creation                     | Organization-wide                     |
 | Scoped Token          | API integration, programmatic workspace access                 | Single workspace                      |
-| Widget Token          | Using the [authentication module](authentication-module) | Single workspace with CORS protection |
+| Widget Token          | Using the [authentication module](build-auth/authentication-module) | Single workspace with CORS protection |
 
 ### Operator bearer token
 
@@ -74,7 +74,7 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
   }'
 ```
 
-For more details on widget tokens and template filtering, see the [Authentication Module](authentication-module) documentation.
+For more details on widget tokens and template filtering, see the [Authentication Module](build-auth/authentication-module) documentation.
 
 ## Authentication flow
 
@@ -132,7 +132,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 
 ### With your own OAuth flow
 
-You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints to handle the token exchange. This allows you to show your own branding on the OAuth consent screen. See [Build your own OAuth flow](build-your-own.md) for details.
+You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints to handle the token exchange. This allows you to show your own branding on the OAuth consent screen. See [Build your own OAuth flow](build-auth/build-your-own.md) for details.
 
 ## Security considerations
 

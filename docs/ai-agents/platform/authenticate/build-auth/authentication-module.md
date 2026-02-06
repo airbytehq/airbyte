@@ -1,6 +1,6 @@
 # Authentication module
 
-The authentication module is a pre-built UI component you embed in your application so your end users can connect their data sources without leaving your app. Instead of building a custom credential collection flow, you integrate Airbyte's widget and let it handle connector selection, credential input, and validation.
+The authentication module (formerly known as Airbyte Embedded) is a pre-built UI component you embed in your application so your end users can connect their data sources without leaving your app. Instead of building a custom credential collection flow, you integrate Airbyte's widget and let it handle connector selection, credential input, and validation.
 
 When a user completes authentication through the module, Airbyte stores their credentials, creates a source in their workspace, and begins syncing data according to your connection templates.
 
@@ -8,11 +8,11 @@ When a user completes authentication through the module, Airbyte stores their cr
 
 Before embedding the authentication module, complete the following prerequisites.
 
-1. [Enable](../enable-connector) at least one connector. The module displays only the connectors you've enabled.
+1. [Enable](../../enable-connector) at least one connector. The module displays only the connectors you've enabled.
 
 2. Get your API credentials. Click **Authentication Module** and find your credentials under **Installation**.
 
-3. If you need [data replication](../data-replication), create a destination. If you don't need data replication, you can skip this step.
+3. If you need [data replication](../../data-replication), create a destination. If you don't need data replication, you can skip this step.
 
 ## Preview the authentication module widget
 
@@ -20,7 +20,7 @@ You can see what your authentication widget looks like before implementing it.
 
 1. In the Agent Engine, click **Authentication Module**.
 
-2. Enter a sample [customer name](../customers).
+2. Enter a sample [customer name](../../customers).
 
 3. Click **Preview your auth module**. This is exactly what users from that customer see when adding a connector.
 
@@ -253,7 +253,7 @@ Once a user authenticates through the Authentication module, the following happe
 
 - If you configured data replication, Airbyte creates a connection between this connector and your configured destination, then replicates data on the schedule you defined.
 
-Your AI agent can now [execute operations](../execute) against the user's connector.
+Your AI agent can now [execute operations](../../execute) against the user's connector.
 
 ## Filtering available connectors
 
