@@ -1047,6 +1047,117 @@ schemas:
         type:
           - "null"
           - array
+      files:
+        description: List of file attachments included in the message
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              description: The unique identifier of the file
+              type:
+                - "null"
+                - string
+            name:
+              description: Name of the file
+              type:
+                - "null"
+                - string
+            title:
+              description: Title of the file
+              type:
+                - "null"
+                - string
+            mimetype:
+              description: The MIME type of the file
+              type:
+                - "null"
+                - string
+            filetype:
+              description: The type identifier of the file
+              type:
+                - "null"
+                - string
+            pretty_type:
+              description: A human-readable version of the file type
+              type:
+                - "null"
+                - string
+            user:
+              description: The ID of the user who created the file
+              type:
+                - "null"
+                - string
+            user_team:
+              description: The team ID of the user who created the file
+              type:
+                - "null"
+                - string
+            size:
+              description: The filesize in bytes
+              type:
+                - "null"
+                - integer
+            mode:
+              description: One of hosted, external, snippet, or post
+              type:
+                - "null"
+                - string
+            is_external:
+              description: Indicates whether the master copy is stored externally
+              type:
+                - "null"
+                - boolean
+            is_public:
+              description: Whether the file is public
+              type:
+                - "null"
+                - boolean
+            url_private:
+              description: URL to the file contents (requires authentication)
+              type:
+                - "null"
+                - string
+            url_private_download:
+              description: URL to force browser download of the file (requires authentication)
+              type:
+                - "null"
+                - string
+            permalink:
+              description: Permanent link to the file
+              type:
+                - "null"
+                - string
+            permalink_public:
+              description: Public permanent link to the file
+              type:
+                - "null"
+                - string
+            created:
+              description: Unix timestamp representing when the file was created
+              type:
+                - "null"
+                - integer
+            updated:
+              description: Unix timestamp of when the file was last updated
+              type:
+                - "null"
+                - integer
+            editable:
+              description: Indicates whether the file is stored in editable mode
+              type:
+                - "null"
+                - boolean
+            display_as_bot:
+              description: Whether the file is displayed as coming from a bot
+              type:
+                - "null"
+                - boolean
       icons:
         description: Icons associated with the message
         additionalProperties: true
