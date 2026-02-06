@@ -11,14 +11,14 @@ The Asana connector is optimized to handle prompts like these.
 
 - What tasks are assigned to me this week?
 - List all projects in my workspace
+- Show me the tasks for a recent project
+- Who are the team members in one of my teams?
+- Show me details of my current workspace and its users
 - Summarize my team's workload and task completion rates
-- Show me the tasks for the \{project_name\} project
-- Who are the team members in my \{team_name\} team?
 - Find all tasks related to \{client_name\} across my workspaces
 - Analyze the most active projects in my workspace last month
 - Compare task completion rates between my different teams
 - Identify overdue tasks across all my projects
-- Show me details of my current workspace and its users
 
 ## Unsupported questions
 
@@ -68,12 +68,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_asana import AsanaConnector
+from airbyte_agent_asana import AsanaConnector, AirbyteAuthConfig
 
 connector = AsanaConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -124,7 +126,7 @@ See the official [Asana API reference](https://developers.asana.com/reference/re
 
 ## Version information
 
-- **Package version:** 0.19.74
-- **Connector version:** 0.1.9
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.19.95
+- **Connector version:** 0.1.12
+- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/asana/CHANGELOG.md)

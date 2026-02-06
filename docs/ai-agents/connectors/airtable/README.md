@@ -10,12 +10,14 @@ data analysis and workflow automation.
 The Airtable connector is optimized to handle prompts like these.
 
 - List all my Airtable bases
-- What tables are in base appXXX?
-- Show me the schema for tables in base appXXX
-- List records from table tblXXX in base appXXX
-- Get record recXXX from table tblXXX in base appXXX
-- What fields are in table tblXXX?
+- What tables are in my first base?
+- Show me the schema for tables in a base
+- List records from a table in my base
+- Show me recent records from a table
+- What fields are in a table?
 - List records where Status is 'Done' in table tblXXX
+- Find records created last week in table tblXXX
+- Show me records updated in the last 30 days in base appXXX
 
 ## Unsupported questions
 
@@ -64,12 +66,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_airtable import AirtableConnector
+from airbyte_agent_airtable import AirtableConnector, AirbyteAuthConfig
 
 connector = AirtableConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -101,7 +105,7 @@ See the official [Airtable API reference](https://airtable.com/developers/web/ap
 
 ## Version information
 
-- **Package version:** 0.1.2
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.1.22
+- **Connector version:** 1.0.3
+- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/airtable/CHANGELOG.md)

@@ -11,19 +11,19 @@ email templates for marketing analytics and customer engagement insights.
 The Klaviyo connector is optimized to handle prompts like these.
 
 - List all profiles in my Klaviyo account
-- Get profile details for a specific contact
+- Show me details for a recent profile
 - Show me all email lists
-- Get details for a specific email list
+- Show me details for a recent email list
 - What campaigns have been created?
-- Get details for a specific campaign
+- Show me details for a recent campaign
 - Show me all email campaigns
 - List all events for tracking customer actions
 - Show me all metrics (event types)
-- Get details for a specific metric
+- Show me details for a recent metric
 - What automated flows are configured?
-- Get details for a specific flow
+- Show me details for a recent flow
 - List all email templates
-- Get details for a specific email template
+- Show me details for a recent email template
 
 ## Unsupported questions
 
@@ -72,12 +72,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_klaviyo import KlaviyoConnector
+from airbyte_agent_klaviyo import KlaviyoConnector, AirbyteAuthConfig
 
 connector = KlaviyoConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -113,7 +115,7 @@ See the official [Klaviyo API reference](https://developers.klaviyo.com/en/refer
 
 ## Version information
 
-- **Package version:** 0.1.2
-- **Connector version:** 1.0.0
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.1.21
+- **Connector version:** 1.0.1
+- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/klaviyo/CHANGELOG.md)
