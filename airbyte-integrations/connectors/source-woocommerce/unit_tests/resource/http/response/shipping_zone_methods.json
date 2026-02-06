@@ -1,0 +1,33 @@
+[
+  {
+    "instance_id": 1,
+    "title": "Flat rate",
+    "order": 1,
+    "enabled": true,
+    "method_id": "flat_rate",
+    "method_title": "Flat rate",
+    "method_description": "Lets you charge a fixed rate for shipping.",
+    "settings": {
+      "title": {
+        "id": "title",
+        "label": "Method title",
+        "description": "This controls the title which the user sees during checkout.",
+        "type": "text",
+        "value": "Flat rate",
+        "default": "Flat rate",
+        "tip": "This controls the title which the user sees during checkout.",
+        "placeholder": ""
+      },
+      "cost": {
+        "id": "cost",
+        "label": "Cost",
+        "description": "Enter a cost (excl. tax) or sum, e.g. 10.00 * [qty].",
+        "type": "text",
+        "value": "10.00",
+        "default": "",
+        "tip": "Enter a cost (excl. tax) or sum, e.g. 10.00 * [qty].",
+        "placeholder": ""
+      }
+    }
+  }
+]

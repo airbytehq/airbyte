@@ -138,6 +138,7 @@ definitions:
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: updatedAt
+    allow_catalog_defined_cursor_field: true
     start_datetime:
       type: MinMaxDatetime
       datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"

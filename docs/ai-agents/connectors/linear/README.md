@@ -1,0 +1,123 @@
+# Linear agent connector
+
+Linear is a modern issue tracking and project management tool built for software
+development teams. This connector provides access to issues, projects, and teams
+for sprint planning, backlog management, and development workflow analysis.
+
+
+## Example questions
+
+The Linear connector is optimized to handle prompts like these.
+
+- Show me the open issues assigned to my team this week
+- List out all projects I'm currently involved in
+- List all users in my Linear workspace
+- Who is assigned to the most recently updated issue?
+- Create a new issue titled 'Fix login bug'
+- Update the priority of a recent issue to urgent
+- Change the title of a recent issue to 'Updated feature request'
+- Add a comment to a recent issue saying 'This is ready for review'
+- Update my most recent comment to say 'Revised feedback after testing'
+- Create a high priority issue about API performance
+- Assign a recent issue to a teammate
+- Unassign the current assignee from a recent issue
+- Reassign a recent issue from one teammate to another
+- Analyze the workload distribution across my development team
+- What are the top priority issues in our current sprint?
+- Identify the most active projects in our organization right now
+- Summarize the recent issues for \{team_member\} in the last two weeks
+- Compare the issue complexity across different teams
+- Which projects have the most unresolved issues?
+- Give me an overview of my team's current project backlog
+
+## Unsupported questions
+
+The Linear connector isn't currently able to handle prompts like these.
+
+- Delete an outdated project from our workspace
+- Schedule a sprint planning meeting
+- Delete this issue
+- Remove a comment from an issue
+
+## Installation
+
+```bash
+uv pip install airbyte-agent-linear
+```
+
+## Usage
+
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+```python
+from airbyte_agent_linear import LinearConnector
+from airbyte_agent_linear.models import LinearAuthConfig
+
+connector = LinearConnector(
+    auth_config=LinearAuthConfig(
+        api_key="<Your Linear API key from Settings > API > Personal API keys>"
+    )
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_linear import LinearConnector, AirbyteAuthConfig
+
+connector = LinearConnector(
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+## Full documentation
+
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+
+| Entity | Actions |
+|--------|---------|
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
+| Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Create](./REFERENCE.md#comments-create), [Update](./REFERENCE.md#comments-update) |
+
+
+### Authentication and configuration
+
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+
+### Linear API docs
+
+See the official [Linear API reference](https://linear.app/developers/graphql).
+
+## Version information
+
+- **Package version:** 0.19.92
+- **Connector version:** 0.1.10
+- **Generated with Connector SDK commit SHA:** b36beaead6fb6c49f155ba346a49e61388c16278
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/linear/CHANGELOG.md)

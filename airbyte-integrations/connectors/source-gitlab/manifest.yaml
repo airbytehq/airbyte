@@ -903,7 +903,7 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - projects
+    - groups
 
 schemas:
   branches:

@@ -1,0 +1,17 @@
+{
+  "list": [
+    {
+      "transaction": {
+        "id": "txn_001",
+        "customer_id": "cust_123",
+        "amount": 10000,
+        "type": "payment",
+        "status": "success",
+        "updated_at": 1705312800,
+        "date": 1705312800,
+        "cf_payment_method": "Credit Card",
+        "cf_processor_response": "Approved"
+      }
+    }
+  ]
+}

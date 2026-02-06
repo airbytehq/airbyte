@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
@@ -182,7 +183,10 @@ public class MongoDbSource extends BaseConnector implements Source {
           iterators
               .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
         }
-        return AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
+        final AutoCloseableIterator<AirbyteMessage> baseIterator =
+            AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
+        // Wrap the iterator to catch BSONObjectTooLarge errors and provide helpful error messages
+        return wrapIteratorWithBsonErrorHandling(baseIterator);
       } catch (final Exception e) {
         mongoClient.close();
         throw e;
@@ -191,6 +195,54 @@ public class MongoDbSource extends BaseConnector implements Source {
       LOGGER.error("Unable to perform sync read operation.", e);
       throw e;
     }
+  }
+
+  /**
+   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
+   * actionable error messages to users.
+   *
+   * @param iterator The base iterator to wrap.
+   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
+   */
+  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
+                                                                                  final AutoCloseableIterator<AirbyteMessage> iterator) {
+    return new AutoCloseableIterator<>() {
+
+      @Override
+      public boolean hasNext() {
+        try {
+          return iterator.hasNext();
+        } catch (final Exception e) {
+          throw handlePotentialBsonTooLargeError(e);
+        }
+      }
+
+      @Override
+      public AirbyteMessage next() {
+        try {
+          return iterator.next();
+        } catch (final Exception e) {
+          throw handlePotentialBsonTooLargeError(e);
+        }
+      }
+
+      @Override
+      public void close() throws Exception {
+        iterator.close();
+      }
+
+      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+        if (MongoUtil.isBsonObjectTooLargeException(e)) {
+          LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        if (e instanceof RuntimeException) {
+          throw (RuntimeException) e;
+        }
+        throw new RuntimeException(e);
+      }
+
+    };
   }
 
   protected MongoClient createMongoClient(final MongoDbSourceConfig config) {

@@ -57,7 +57,9 @@ Before starting, you must have:
 
 ---
 
-## Step 1: Implement Test Helper Classes
+## Testing Phase 1: BasicFunctionalityIntegrationTest
+
+### Testing Step 1: Implement Test Helper Classes
 
 ### Step 1.1: Create DestinationDataDumper
 
@@ -210,7 +212,7 @@ class {DB}Cleaner(
 
 ---
 
-## Step 2: Create BasicFunctionalityIntegrationTest Class
+### Testing Step 2: Create BasicFunctionalityIntegrationTest Class
 
 ### Step 2.1: Understand Required Parameters
 
@@ -346,7 +348,7 @@ class {DB}BasicFunctionalityTest : BasicFunctionalityIntegrationTest(
 
 ---
 
-## Step 3: Configure Test Parameters
+### Testing Step 3: Configure Test Parameters
 
 ### Quick Reference Table
 
@@ -531,7 +533,7 @@ AllTypesBehavior.StronglyTyped(
 
 ---
 
-## Step 4: Run Tests
+### Testing Step 4: Run Tests
 
 ### Test Individually
 
@@ -558,7 +560,7 @@ $ ./gradlew :destination-{db}:integrationTest --tests "*BasicFunctionalityTest"
 
 ---
 
-## Step 5: Debug Common Failures
+### Testing Step 5: Debug Common Failures
 
 ### Test: testAppend fails with "Record mismatch"
 
@@ -598,7 +600,7 @@ $ ./gradlew :destination-{db}:integrationTest --tests "*BasicFunctionalityTest"
 
 ---
 
-## Step 6: Optional Test Customization
+### Testing Step 6: Optional Test Customization
 
 ### Skip Tests Not Applicable
 

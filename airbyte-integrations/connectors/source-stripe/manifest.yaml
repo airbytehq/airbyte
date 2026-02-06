@@ -988,7 +988,7 @@ definitions:
       $parameters:
         name: checkout_sessions
       full_refresh_stream:
-        $ref: "#/definitions/entity_restricted_stream"
+        $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:

@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 # Managing Airbyte Embedded
 
 ## Customer Workspaces
