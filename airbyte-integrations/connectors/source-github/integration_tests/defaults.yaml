@@ -1,0 +1,11 @@
+default:
+  api_url: api.github.com
+  repository: airbytehq/integration-test
+  repositories:
+  - airbytehq/integration-test
+oauth:
+  api_url: api.github.com
+  repository: airbytehq/integration-test
+  start_date: '2021-08-27T00:00:46Z'
+  repositories:
+  - airbytehq/integration-test

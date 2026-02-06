@@ -1,0 +1,27 @@
+# Manual field classification overrides
+#
+# Format:
+#   connector-name.field_name: classification
+#
+# Valid classifications: secret, config, login
+#
+# Example:
+#   source-stripe.publishable_key: config  # Public key, not secret
+#   source-github.app_id: config           # Public identifier
+
+# Connector-specific overrides
+# Add your overrides below in the format: source-name.field_name: classification
+
+source-stripe.slice_range: config  # Time range for API query pagination, not sensitive
+
+source-github.repository: config  # GitHub repo identifier (owner/repo), not sensitive
+source-github.repositories: config  # List of repos to sync, not sensitive
+source-github.credentials_api_url: config  # GitHub API URL (public), not sensitive
+
+
+# Global overrides (apply to all connectors)
+_global:
+  # Add global overrides here
+  # Example:
+  # refresh_token: secret
+  # webhook_secret: secret
