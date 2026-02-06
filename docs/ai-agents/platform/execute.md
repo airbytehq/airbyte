@@ -125,7 +125,7 @@ You can execute operations directly through the Agent Engine API. This approach 
 
 ### Authentication
 
-Before making API calls, you need a bearer token. For executing operations on connectors that belong to specific end users, use a scoped token. For details on obtaining tokens, see [Authentication](authenticate).
+Before making API calls, you need a bearer token. For executing operations on connectors that belong to specific end users, use a scoped token. For details on obtaining tokens, see [Token types](/ai-agents/api/#token-types) in the API documentation.
 
 ### Execute an operation
 

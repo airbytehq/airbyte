@@ -13,68 +13,9 @@ When you subscribe to the Agent Engine, you authenticate with Airbyte Cloud usin
 
 ## Token types
 
-The Agent Engine uses a hierarchical token system with three types of tokens, each designed for specific use cases.
+The Agent Engine uses a hierarchical token system with three token types: Operator Bearer Tokens for organization-level access, scoped tokens for workspace-level end-user operations, and widget tokens for embedding the authentication module with CORS protection.
 
-| Token type            | Use case                                                       | Scope                                 |
-| --------------------- | -------------------------------------------------------------- | ------------------------------------- |
-| Operator Bearer Token | Organization management, template creation                     | Organization-wide                     |
-| Scoped Token          | API integration, programmatic workspace access                 | Single workspace                      |
-| Widget Token          | Using the [authentication module](build-auth/authentication-module) | Single workspace with CORS protection |
-
-### Operator bearer token
-
-The Operator Bearer Token provides organization-level access. use it for administrative operations like generating other tokens, lower in the hierarchy. To obtain an Operator Bearer Token, use the client credentials endpoint with your application credentials. Find your credentials in the Agent Engine under **Authentication Module** > **Installation**.
-
-```bash title="Request"
-curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "client_id": "<your_client_id>",
-    "client_secret": "<your_client_secret>"
-  }'
-```
-
-The response contains your Operator Bearer Token:
-
-```json title="Response"
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer",
-  "expires_in": 900,
-  "organization_id": "12345678-1234-1234-1234-123456789012"
-}
-```
-
-### Scoped token
-
-Scoped tokens provide workspace-level access for end-user operations. Each scoped token is limited to a single customer, ensuring data isolation between customers. Generate a scoped token using your Operator Bearer Token:
-
-```bash
-curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
-  -H 'Authorization: Bearer <your_operator_token>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "workspace_name": "customer_workspace_123"
-  }'
-```
-
-If the workspace doesn't exist, Airbyte creates it automatically.
-
-### Widget token
-
-Widget tokens are specialized tokens for embedding the authentication module in your app. They include all features of scoped tokens plus origin validation for CORS protection.
-
-```bash
-curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
-  -H 'Authorization: Bearer <your_operator_token>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "workspace_name": "customer_workspace_123",
-    "allowed_origin": "https://yourapp.com"
-  }'
-```
-
-For more details on widget tokens and template filtering, see the [Authentication Module](build-auth/authentication-module) documentation.
+For complete details on each token type, how to generate them, and security considerations, see [Token types](/ai-agents/api/#token-types) in the API documentation.
 
 ## Authentication flow
 

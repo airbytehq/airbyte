@@ -14,13 +14,13 @@ The `workspace_name` you provide when creating tokens serves as the unique custo
 
 Agent Engine uses the customer concept to provide data isolation in multi-tenant applications.
 
-Airbyte isolates each customer's data, credentials, and configurations in their workspace. A [scoped token](../platform/authenticate/hosted) can only access a single customer's workspace, following the principle of least privilege. Customer data never crosses workspace boundaries, which simplifies compliance and security.
+Airbyte isolates each customer's data, credentials, and configurations in their workspace. A [scoped token](/ai-agents/api/#scoped-token) can only access a single customer's workspace, following the principle of least privilege. Customer data never crosses workspace boundaries, which simplifies compliance and security.
 
 This architecture means you can safely serve multiple end-users from a single Agent Engine organization without worrying about data leakage between customers.
 
 ## Customers and authentication
 
-Agent Engine uses a hierarchical token system where each token type has a different scope. For complete details on token types and authentication flows, see [Agent Engine authentication](authenticate/hosted.md)
+Agent Engine uses a hierarchical token system where each token type has a different scope. For complete details on token types and how to generate them, see [Token types](/ai-agents/api/#token-types) in the API documentation.
 
 ## Create a new customer
 
