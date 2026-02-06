@@ -1637,30 +1637,6 @@ The Extract Bulk CDK uses a **toolkit-first approach**. The JDBC and CDC toolkit
 
 Use these real connectors as reference when building a new database extract connector. Each demonstrates different patterns and complexity levels.
 
-### source-mongodb (Non-JDBC, Extract Core Only)
-
-**Branch:** `rodi/source-mongodb-bulk`
-**Path:** `airbyte-integrations/connectors/source-mongodb/`
-**Complexity:** Minimal (no JDBC toolkit, no CDC)
-**Toolkits:** `core = 'extract'`, `toolkits = []`
-
-**Key Files:**
-| File | Purpose |
-|------|---------|
-| `MongoDbSource.kt` | Entry point: `AirbyteSourceRunner.run(*args)` |
-| `MongoDbSourceConfigurationSpecification.kt` | Config JSON schema (connection_string, database, credentials) |
-| `MongoDbSourceConfiguration.kt` | Runtime config + factory, creates MongoClient |
-| `MongoDbMetadataQuerier.kt` | Schema discovery via MongoDB aggregation pipeline sampling |
-| `MongoDbFieldType.kt` | BSON type → Airbyte type mapping (enum) |
-| `MongoDbAirbyteStreamFactory.kt` | Stream definitions with CDC metadata columns |
-
-**Key Patterns:**
-- Uses MongoDB aggregation framework (`$objectToArray`, `$type`) for schema inference
-- No JDBC: implements `SourceConfiguration` directly (not `JdbcSourceConfiguration`)
-- Always returns `_id` as primary key
-- Samples `discoverSampleSize` documents to infer field types
-- Lazy memoization for collection names and field metadata
-
 ### source-mysql (Full JDBC + CDC)
 
 **Branch:** `master`
@@ -1744,13 +1720,13 @@ Use these real connectors as reference when building a new database extract conn
 
 ### Comparison Matrix
 
-| Feature | MongoDB | MySQL | MSSQL | Postgres |
-|---------|---------|-------|-------|----------|
-| **JDBC** | No | Yes | Yes | Yes |
-| **CDC** | No | Binlog | LSN | WAL LSN |
-| **Quoting** | N/A | `` ` `` | `[ ]` | `" "` |
-| **Pagination** | N/A | `LIMIT` | `TOP N` | `LIMIT` |
-| **Sampling** | Aggregation | N/A | `TABLESAMPLE` | `TABLESAMPLE` |
-| **Concurrent** | No | PK ranges | Clustered idx | CTID pages |
-| **Special Types** | BSON | JSON, GEOMETRY | GEOGRAPHY, HIERARCHYID | hstore, arrays |
-| **Debezium** | No | MySqlConnector | SqlServerConnector | PostgresConnector |
+| Feature | MySQL | MSSQL | Postgres |
+|---------|-------|-------|----------|
+| **JDBC** | Yes | Yes | Yes |
+| **CDC** | Binlog | LSN | WAL LSN |
+| **Quoting** | `` ` `` | `[ ]` | `" "` |
+| **Pagination** | `LIMIT` | `TOP N` | `LIMIT` |
+| **Sampling** | N/A | `TABLESAMPLE` | `TABLESAMPLE` |
+| **Concurrent** | PK ranges | Clustered idx | CTID pages |
+| **Special Types** | JSON, GEOMETRY | GEOGRAPHY, HIERARCHYID | hstore, arrays |
+| **Debezium** | MySqlConnector | SqlServerConnector | PostgresConnector |

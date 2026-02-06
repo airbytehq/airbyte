@@ -40,7 +40,6 @@ When invoked, follow this process:
 2. **Study a reference connector** - Before writing any code, read the actual source code of the closest reference connector:
    - **JDBC source (recommended start):** `source-mysql` on `master` branch (`airbyte-integrations/connectors/source-mysql/`)
    - **JDBC + CDC:** `source-mssql` on `master` branch (`airbyte-integrations/connectors/source-mssql/`)
-   - **Non-JDBC source:** `source-mongodb` on `rodi/source-mongodb-bulk` branch (`airbyte-integrations/connectors/source-mongodb/`)
    - **Advanced JDBC:** `source-postgres` on `source-postgres/bulk-cdk` branch (`airbyte-integrations/connectors/source-postgres/`)
 
 3. **Complete `source/preflight-checklist.md`** for the target database (JDBC driver, type system, CDC support, etc.)
@@ -80,7 +79,6 @@ When invoked, follow this process:
 
 | Connector | Branch | Toolkits | Use As Reference For |
 |-----------|--------|----------|---------------------|
-| `source-mongodb` | `rodi/source-mongodb-bulk` | extract core only | Non-JDBC sources, custom schema discovery |
 | `source-mysql` | `master` | extract-jdbc, extract-cdc | Standard JDBC + CDC, backtick quoting, LIMIT |
 | `source-mssql` | `master` | extract-jdbc, extract-cdc | SQL Server dialect, TOP N, TABLESAMPLE, LSN CDC |
 | `source-postgres` | `source-postgres/bulk-cdk` | extract-jdbc, extract-cdc | CTID partitioning, XMIN, rich types, pgoutput CDC |
