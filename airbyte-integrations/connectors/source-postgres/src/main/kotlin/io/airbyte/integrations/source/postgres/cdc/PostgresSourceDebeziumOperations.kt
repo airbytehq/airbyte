@@ -77,7 +77,7 @@ class PostgresSourceDebeziumOperations(
             check(stateNode.size() == 1) { "State value has unexpected format: $opaqueStateValue" }
             val offsetMap: Map<JsonNode, JsonNode> =
                 stateNode
-                    .properties()
+                    .fields()
                     .asSequence()
                     .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
                     .toMap()
@@ -118,9 +118,13 @@ class PostgresSourceDebeziumOperations(
             .with("plugin.name", "pgoutput")
             .with("slot.name", cdcConfig.replicationSlot)
             .with("publication.name", cdcConfig.publication)
-    // TODO: heartbeat.action.query
-    // TODO: SSL support
+            .apply {
+                if (cdcConfig.heartbeatActionQuery.isNotEmpty()) {
+                    this.with("heartbeat.action.query", cdcConfig.heartbeatActionQuery)
+                }
+            }
     // TODO: airbyte.heartbeat.timeout.seconds
+    // TODO: SSL support
 
     override fun startup(offset: DebeziumOffset) {
         // Need to validate replication slot even on cold start.
@@ -146,6 +150,13 @@ class PostgresSourceDebeziumOperations(
                 .putNull("transaction_id")
                 .put(LSN, startupState.lsn)
                 .put(LSN_PROC, startupState.lsn)
+                // Postgres commits get their own LSNs, just like row-level changes. There is no way
+                // of fetching the LSN of the latest commit, only the latest LSN overall. By putting
+                // the max LSN into this field, we are telling Debezium that we've already seen and
+                // processed all transactions before this LSN, which is true, as our snapshot will
+                // include all transactions committed before this LSN. We will start streaming from
+                // the next transaction greater than this LSN.
+                .put(LSN_COMMIT, startupState.lsn)
                 .put("txId", startupState.txId)
                 .put("ts_usec", Conversions.toEpochMicros(startupState.time))
         val wrapped = mapOf<JsonNode, JsonNode>(key to value)
