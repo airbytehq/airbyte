@@ -277,6 +277,8 @@ class EnhancedSitesErrorHandler(DefaultErrorHandler):
             return None
 
         try:
+            # Best-effort diagnostic call outside the CDK pipeline — no retries or rate limiting.
+            # If the token has expired since the original request, this will fail silently (returns None).
             response = requests.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
             response.raise_for_status()
             data = response.json()
