@@ -9,9 +9,12 @@ tickets, and custom objects for customer relationship management and sales analy
 
 The Hubspot connector is optimized to handle prompts like these.
 
+- List recent deals
+- List recent tickets
+- List companies in my CRM
+- List contacts in my CRM
 - Show me all deals from \{company\} this quarter
 - What are the top 5 most valuable deals in my pipeline right now?
-- List recent tickets from \{customer\} and analyze their support trends
 - Search for contacts in the marketing department at \{company\}
 - Give me an overview of my sales team's deals in the last 30 days
 - Identify the most active companies in our CRM this month
@@ -68,12 +71,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_hubspot import HubspotConnector
+from airbyte_agent_hubspot import HubspotConnector, AirbyteAuthConfig
 
 connector = HubspotConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -108,6 +113,7 @@ See the official [Hubspot API reference](https://developers.hubspot.com/docs/api
 
 ## Version information
 
-- **Package version:** 0.15.72
-- **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** 43200eed5845ee089ef5b9afc0199a8af3966169
+- **Package version:** 0.15.95
+- **Connector version:** 0.1.11
+- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/hubspot/CHANGELOG.md)

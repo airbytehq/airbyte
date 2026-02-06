@@ -11,21 +11,21 @@ and change tracking for data analysis and integration workflows.
 The Google-Drive connector is optimized to handle prompts like these.
 
 - List all files in my Google Drive
-- Show me files modified in the last week
-- Get details for file abc123
-- Download file abc123 from my Drive
-- Export Google Doc abc123 as PDF
-- Export Google Sheet xyz789 as CSV
-- Get the content of file abc123
+- Show me details for a recent file
+- Download a recent file from my Drive
+- Export a recent Google Doc as PDF
+- Export a recent Google Sheet as CSV
+- Show me the content of a recent file
 - List all shared drives I have access to
-- Get shared drive xyz789
-- Show permissions for file abc123
-- List comments on file abc123
-- Get all replies to comment def456 on file abc123
-- Show revision history for file abc123
-- What changes have been made since my last sync?
+- Show me details for a shared drive I have access to
+- Show permissions for a recent file
+- List comments on a recent file
+- Show replies to a recent comment on a file
+- Show revision history for a recent file
 - Get my Drive storage quota and user info
-- List files in a specific folder
+- List files in a folder I have access to
+- Show me files modified in the last week
+- What changes have been made since my last sync?
 
 ## Unsupported questions
 
@@ -53,7 +53,7 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_google-drive import GoogleDriveConnector
+from airbyte_agent_google_drive import GoogleDriveConnector
 from airbyte_agent_google_drive.models import GoogleDriveAuthConfig
 
 connector = GoogleDriveConnector(
@@ -67,7 +67,7 @@ connector = GoogleDriveConnector(
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @GoogleDriveConnector.tool_utils
-async def google-drive_execute(entity: str, action: str, params: dict | None = None):
+async def google_drive_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -78,17 +78,19 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_google-drive import GoogleDriveConnector
+from airbyte_agent_google_drive import GoogleDriveConnector, AirbyteAuthConfig
 
 connector = GoogleDriveConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @GoogleDriveConnector.tool_utils
-async def google-drive_execute(entity: str, action: str, params: dict | None = None):
+async def google_drive_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -122,6 +124,7 @@ See the official [Google-Drive API reference](https://developers.google.com/work
 
 ## Version information
 
-- **Package version:** 0.1.39
-- **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** 43200eed5845ee089ef5b9afc0199a8af3966169
+- **Package version:** 0.1.63
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-drive/CHANGELOG.md)

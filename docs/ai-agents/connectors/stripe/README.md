@@ -9,6 +9,12 @@ access to customers for payment analytics and customer management.
 
 The Stripe connector is optimized to handle prompts like these.
 
+- List customers created in the last 7 days
+- Show me details for a recent customer
+- List recent charges
+- Show me details for a recent charge
+- List recent invoices
+- List active subscriptions
 - Show me my top 10 customers by total revenue this month
 - List all customers who have spent over $5,000 in the last quarter
 - Analyze payment trends for my Stripe customers
@@ -67,12 +73,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_stripe import StripeConnector
+from airbyte_agent_stripe import StripeConnector, AirbyteAuthConfig
 
 connector = StripeConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -112,6 +120,7 @@ See the official [Stripe API reference](https://docs.stripe.com/api).
 
 ## Version information
 
-- **Package version:** 0.5.70
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** 43200eed5845ee089ef5b9afc0199a8af3966169
+- **Package version:** 0.5.92
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/stripe/CHANGELOG.md)

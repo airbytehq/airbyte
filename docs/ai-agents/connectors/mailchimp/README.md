@@ -10,16 +10,16 @@ for marketing analytics and audience management.
 
 The Mailchimp connector is optimized to handle prompts like these.
 
-- Show me all my email campaigns from the last month
 - List all subscribers in my main mailing list
-- What are the open rates for my recent campaigns?
-- Show me the performance report for campaign \{campaign_id\}
 - List all automation workflows in my account
-- Who unsubscribed from list \{list_id\} this week?
 - Show me all segments for my primary audience
+- List all interest categories for my primary audience
+- Show me email activity for a recent campaign
+- Show me the performance report for a recent campaign
+- Show me all my email campaigns from the last month
+- What are the open rates for my recent campaigns?
+- Who unsubscribed from list \{list_id\} this week?
 - What tags are applied to my subscribers?
-- List all interest categories for list \{list_id\}
-- Show me email activity for campaign \{campaign_id\}
 - How many subscribers do I have in each list?
 - What are my top performing campaigns by click rate?
 
@@ -71,12 +71,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_mailchimp import MailchimpConnector
+from airbyte_agent_mailchimp import MailchimpConnector, AirbyteAuthConfig
 
 connector = MailchimpConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -117,6 +119,7 @@ See the official [Mailchimp API reference](https://mailchimp.com/developer/marke
 
 ## Version information
 
-- **Package version:** 0.1.28
-- **Connector version:** 1.0.4
-- **Generated with Connector SDK commit SHA:** 43200eed5845ee089ef5b9afc0199a8af3966169
+- **Package version:** 0.1.50
+- **Connector version:** 1.0.6
+- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/mailchimp/CHANGELOG.md)

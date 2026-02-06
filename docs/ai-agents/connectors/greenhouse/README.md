@@ -10,14 +10,15 @@ for recruiting analytics and talent acquisition insights.
 
 The Greenhouse connector is optimized to handle prompts like these.
 
+- List all open jobs
+- Show me upcoming interviews this week
+- Show me recent job offers
+- List recent applications
 - Show me candidates from \{company\} who applied last month
 - What are the top 5 sources for our job applications this quarter?
-- List all open jobs in the Sales department
 - Analyze the interview schedules for our engineering candidates this week
-- Get details of recent job offers for \{team_member\}
 - Compare the number of applications across different offices
 - Identify candidates who have multiple applications in our system
-- Show me upcoming scheduled interviews for our marketing positions
 - Summarize the candidate pipeline for our latest job posting
 - Find the most active departments in recruiting this month
 
@@ -69,12 +70,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_greenhouse import GreenhouseConnector
+from airbyte_agent_greenhouse import GreenhouseConnector, AirbyteAuthConfig
 
 connector = GreenhouseConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -115,6 +118,7 @@ See the official [Greenhouse API reference](https://developers.greenhouse.io/har
 
 ## Version information
 
-- **Package version:** 0.17.68
-- **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** 43200eed5845ee089ef5b9afc0199a8af3966169
+- **Package version:** 0.17.89
+- **Connector version:** 0.1.5
+- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/greenhouse/CHANGELOG.md)

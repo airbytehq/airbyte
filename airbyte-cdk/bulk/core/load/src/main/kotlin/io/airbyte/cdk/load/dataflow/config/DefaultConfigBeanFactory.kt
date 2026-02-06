@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.dataflow.config
 
-import io.airbyte.cdk.load.dataflow.config.model.JsonConverterConfig
 import io.airbyte.cdk.load.dataflow.config.model.LifecycleParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -16,7 +16,7 @@ class DefaultConfigBeanFactory {
     @Singleton
     @Secondary
     fun defaultJsonConvertConfig() =
-        JsonConverterConfig(
+        MediumConverterConfig(
             extractedAtAsTimestampWithTimezone = true,
         )
 

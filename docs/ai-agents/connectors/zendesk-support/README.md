@@ -12,11 +12,11 @@ for customer support analytics and service performance insights.
 The Zendesk-Support connector is optimized to handle prompts like these.
 
 - Show me the tickets assigned to me last week
+- List all unresolved tickets
+- Show me the details of recent tickets
 - What are the top 5 support issues our organization has faced this month?
-- List all unresolved tickets for \{customer\}
 - Analyze the satisfaction ratings for our support team in the last 30 days
 - Compare ticket resolution times across different support groups
-- Show me the details of recent tickets tagged with \{tag\}
 - Identify the most common ticket fields used in our support workflow
 - Summarize the performance of our SLA policies this quarter
 
@@ -45,7 +45,7 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_zendesk-support import ZendeskSupportConnector
+from airbyte_agent_zendesk_support import ZendeskSupportConnector
 from airbyte_agent_zendesk_support.models import ZendeskSupportApiTokenAuthConfig
 
 connector = ZendeskSupportConnector(
@@ -57,7 +57,7 @@ connector = ZendeskSupportConnector(
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @ZendeskSupportConnector.tool_utils
-async def zendesk-support_execute(entity: str, action: str, params: dict | None = None):
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -68,17 +68,19 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_zendesk-support import ZendeskSupportConnector
+from airbyte_agent_zendesk_support import ZendeskSupportConnector, AirbyteAuthConfig
 
 connector = ZendeskSupportConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @ZendeskSupportConnector.tool_utils
-async def zendesk-support_execute(entity: str, action: str, params: dict | None = None):
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -124,6 +126,7 @@ See the official [Zendesk-Support API reference](https://developer.zendesk.com/a
 
 ## Version information
 
-- **Package version:** 0.18.72
-- **Connector version:** 0.1.9
-- **Generated with Connector SDK commit SHA:** 43200eed5845ee089ef5b9afc0199a8af3966169
+- **Package version:** 0.18.95
+- **Connector version:** 0.1.12
+- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-support/CHANGELOG.md)
