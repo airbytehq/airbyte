@@ -4,12 +4,10 @@
 
 import json
 from dataclasses import dataclass
-from pathlib import Path
 from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
-import yaml
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
     ClickViewHttpRequester,
@@ -23,14 +21,7 @@ from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.types import StreamSlice
 
-from .conftest import Obj
-
-
-_MANIFEST_PATH = Path(__file__).parent.parent / "source_google_ads" / "manifest.yaml"
-
-
-def _load_manifest():
-    return yaml.safe_load(_MANIFEST_PATH.read_text())
+from .conftest import Obj, get_source
 
 
 class TestCustomGAQuerySchemaLoader:
@@ -702,62 +693,40 @@ class TestGoogleAdsRetriever:
         assert result is None
 
 
-def _get_manifest_stream_names():
-    manifest = _load_manifest()
-    names = []
-    for ref in manifest.get("streams", []):
-        key = ref.split("/")[-1]
-        assert key.endswith("_stream")
-        names.append(key[:-7])  # strip _stream
-    return names
+_GOOGLE_ADS_RETRIEVER_CLASS = "source_google_ads.components.GoogleAdsRetriever"
+
+_DEFAULT_CONFIG = {
+    "credentials": {
+        "developer_token": "test_token",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "refresh_token": "test_refresh_token",
+    },
+    "customer_id": "1234567890",
+    "start_date": "2021-01-01",
+    "conversion_window_days": 14,
+    "custom_queries_array": [],
+}
 
 
-def _split_streams_by_base():
-    manifest = _load_manifest()
-    defs = manifest["definitions"]
-    base_incremental, base_full = [], []
-    for name in _get_manifest_stream_names():
-        d = defs.get(f"{name}_stream", {})
-        ref = d.get("$ref", "")
-        if "full_refresh_stream_base" in ref:
-            base_full.append(name)
-        elif "incremental_stream_base" in ref or "incremental_non_manager_stream_base" in ref:
-            base_incremental.append(name)
-    return base_incremental, base_full
-
-
-def _resolve_incremental_sync(stream_def: dict, defs: dict):
-    visited = set()
-    current = stream_def
-    while isinstance(current, dict):
-        inc = current.get("incremental_sync")
-        if inc is not None:
-            return inc
-        ref = current.get("$ref")
-        if not ref:
-            return None
-        key = ref.split("/")[-1]
-        if key in visited:
-            return None
-        visited.add(key)
-        current = defs.get(key)
-    return None
+def _get_google_ads_retriever_streams():
+    source = get_source(_DEFAULT_CONFIG)
+    resolved = source.resolved_manifest
+    streams = []
+    for stream_def in resolved.get("streams", []):
+        retriever = stream_def.get("retriever", {})
+        inc_sync = stream_def.get("incremental_sync")
+        if retriever.get("class_name") == _GOOGLE_ADS_RETRIEVER_CLASS and inc_sync:
+            streams.append((stream_def["name"], inc_sync["datetime_format"]))
+    return streams
 
 
 @pytest.mark.parametrize(
-    "stream_name",
-    [
-        pytest.param(s, id=s)
-        for s in sorted(set(_split_streams_by_base()[0] + ["click_view"]))  # all incremental base + click_view
-        if s != "change_status"
-    ],
+    "stream_name,datetime_format",
+    [pytest.param(name, fmt, id=name) for name, fmt in _get_google_ads_retriever_streams()],
 )
-def test_custom_retriever_streams_have_expected_date_format(stream_name):
-    manifest = _load_manifest()
-    defs = manifest["definitions"]
-
-    stream_def = defs.get(f"{stream_name}_stream", {})
-    inc_sync = _resolve_incremental_sync(stream_def, defs)
-
-    assert inc_sync is not None, f"Stream {stream_name} has no incremental_sync configuration"
-    assert inc_sync["datetime_format"] == GoogleAdsRetriever.DATE_FORMAT
+def test_custom_retriever_streams_have_expected_date_format(stream_name, datetime_format):
+    assert datetime_format == GoogleAdsRetriever.DATE_FORMAT, (
+        f"Stream {stream_name} uses datetime_format={datetime_format!r} "
+        f"but GoogleAdsRetriever.DATE_FORMAT={GoogleAdsRetriever.DATE_FORMAT!r}"
+    )
