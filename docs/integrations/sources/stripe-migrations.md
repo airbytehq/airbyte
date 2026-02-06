@@ -38,7 +38,7 @@ If you have downstream transformations or queries that depend on the structure o
 
 <MigrationGuide />
 
-## Upgrading to 5.6.0
+### Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
 
