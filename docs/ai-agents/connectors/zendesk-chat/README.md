@@ -108,17 +108,17 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Accounts | [Get](./REFERENCE.md#accounts-get) |
-| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get) |
+| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Search](./REFERENCE.md#agents-search) |
 | Agent Timeline | [List](./REFERENCE.md#agent-timeline-list) |
 | Bans | [List](./REFERENCE.md#bans-list), [Get](./REFERENCE.md#bans-get) |
-| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get) |
-| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get) |
+| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get), [Search](./REFERENCE.md#chats-search) |
+| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Search](./REFERENCE.md#departments-search) |
 | Goals | [List](./REFERENCE.md#goals-list), [Get](./REFERENCE.md#goals-get) |
 | Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get) |
 | Routing Settings | [Get](./REFERENCE.md#routing-settings-get) |
-| Shortcuts | [List](./REFERENCE.md#shortcuts-list), [Get](./REFERENCE.md#shortcuts-get) |
+| Shortcuts | [List](./REFERENCE.md#shortcuts-list), [Get](./REFERENCE.md#shortcuts-get), [Search](./REFERENCE.md#shortcuts-search) |
 | Skills | [List](./REFERENCE.md#skills-list), [Get](./REFERENCE.md#skills-get) |
-| Triggers | [List](./REFERENCE.md#triggers-list) |
+| Triggers | [List](./REFERENCE.md#triggers-list), [Search](./REFERENCE.md#triggers-search) |
 
 
 ### Authentication and configuration
@@ -131,7 +131,7 @@ See the official [Zendesk-Chat API reference](https://developer.zendesk.com/api-
 
 ## Version information
 
-- **Package version:** 0.1.45
+- **Package version:** 0.1.46
 - **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** b36beaead6fb6c49f155ba346a49e61388c16278
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-chat/CHANGELOG.md)
