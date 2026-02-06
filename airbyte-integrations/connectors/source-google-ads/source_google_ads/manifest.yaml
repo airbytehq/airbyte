@@ -32,7 +32,9 @@ definitions:
   stream_requester:
     type: CustomRequester
     class_name: "source_google_ads.components.GoogleAdsHttpRequester"
-    name: "placeholder"
+    # Name is required by CDK for CustomRequester but the actual stream name is propagated
+    # at runtime by the retriever's __post_init__ method (GoogleAdsRetriever/CriterionRetriever)
+    name: "custom_requester"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -185,7 +187,8 @@ definitions:
         requester:
           type: CustomRequester
           class_name: "source_google_ads.components.CriterionFullRefreshRequester"
-          name: "placeholder"
+          # Name is required by CDK for CustomRequester; actual stream name propagated at runtime
+          name: "custom_requester"
           schema_loader:
             type: InlineSchemaLoader
             schema:
@@ -224,7 +227,8 @@ definitions:
         requester:
           type: CustomRequester
           class_name: "source_google_ads.components.CriterionIncrementalRequester"
-          name: "placeholder"
+          # Name is required by CDK for CustomRequester; actual stream name propagated at runtime
+          name: "custom_requester"
           schema_loader:
             type: InlineSchemaLoader
             schema:
@@ -394,7 +398,8 @@ definitions:
       requester:
         type: CustomRequester
         class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
-        name: "placeholder"
+        # Name is required by CDK for CustomRequester; actual stream name propagated at runtime
+        name: "custom_requester"
         authenticator:
           $ref: "#/definitions/authenticator"
         url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"

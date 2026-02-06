@@ -671,9 +671,10 @@ class TestGoogleAdsRetriever:
         result = retriever._split_slice(stream_slice)
         assert result is None
 
-    def test_split_slice_returns_none_for_non_date_slice(self):
+    def test_split_slice_raises_for_non_date_slice(self):
         """
-        Verify that _split_slice returns None for slices without date fields.
+        Verify that _split_slice raises AirbyteTracedException for slices without date fields.
+        This is because slice splitting cannot work without date boundaries.
         """
         retriever = GoogleAdsRetriever(
             name="test_stream",
@@ -689,8 +690,9 @@ class TestGoogleAdsRetriever:
             cursor_slice={},
         )
 
-        result = retriever._split_slice(stream_slice)
-        assert result is None
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            retriever._split_slice(stream_slice)
+        assert "lacks date boundaries" in str(exc_info.value.message)
 
 
 _GOOGLE_ADS_RETRIEVER_CLASS = "source_google_ads.components.GoogleAdsRetriever"

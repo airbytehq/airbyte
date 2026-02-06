@@ -596,14 +596,20 @@ class GoogleAdsRetriever(SimpleRetriever):
         """
         Split a stream slice into two halves based on date range.
 
-        Returns None if the slice cannot be split further (already at 1 day or less),
-        or if the slice doesn't have date-based cursor fields.
+        Returns None if the slice cannot be split further (already at 1 day or less).
+        Raises AirbyteTracedException if the slice doesn't have date-based cursor fields,
+        since slice splitting cannot work without date boundaries.
         """
         start_time_str = stream_slice.cursor_slice.get("start_time")
         end_time_str = stream_slice.cursor_slice.get("end_time")
 
         if not start_time_str or not end_time_str:
-            return None
+            raise AirbyteTracedException(
+                message="Response stream was interrupted. Cannot split slice because it lacks date boundaries (start_time/end_time).",
+                internal_message=f"ChunkedEncodingError occurred but slice cannot be split: missing start_time or end_time in cursor_slice. "
+                f"Slice: {stream_slice.cursor_slice}",
+                failure_type=FailureType.transient_error,
+            )
 
         start_date = datetime.strptime(start_time_str, self.DATE_FORMAT)
         end_date = datetime.strptime(end_time_str, self.DATE_FORMAT)
