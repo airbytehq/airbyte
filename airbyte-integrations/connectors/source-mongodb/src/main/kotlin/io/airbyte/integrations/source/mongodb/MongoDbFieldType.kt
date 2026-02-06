@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.mongodb
 
 import io.airbyte.cdk.data.AirbyteSchemaType
+import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.BooleanCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.JsonEncoder
@@ -26,9 +27,8 @@ import io.airbyte.protocol.models.JsonSchemaType
  * - null -> NULL
  * - Everything else (including dates, strings, objectId) -> STRING
  *
- * Note: For ARRAY and OBJECT types, we store STRING as the airbyteSchemaType
- * (since AirbyteSchemaType is sealed), but provide the correct JsonSchemaType
- * via [jsonSchemaType] for schema generation in [MongoDbAirbyteStreamFactory].
+ * ARRAY and OBJECT use JSONB-based airbyteSchemaTypes since MongoDB documents
+ * are schema-less. The [jsonSchemaType] provides the catalog schema representation.
  */
 enum class MongoDbFieldType(
     override val airbyteSchemaType: AirbyteSchemaType,
@@ -42,11 +42,11 @@ enum class MongoDbFieldType(
     // Numeric types - all map to NUMBER to match v2
     NUMBER(LeafAirbyteSchemaType.NUMBER, DoubleCodec, JsonSchemaType.NUMBER),
 
-    // Array type - uses STRING internally but renders as {"type": "array"} via jsonSchemaType
-    ARRAY(LeafAirbyteSchemaType.STRING, JsonStringCodec, JsonSchemaType.ARRAY),
+    // Array type - schema-less arrays, items are JSONB
+    ARRAY(ArrayAirbyteSchemaType(LeafAirbyteSchemaType.JSONB), JsonStringCodec, JsonSchemaType.ARRAY),
 
-    // Object type - uses STRING internally but renders as {"type": "object"} via jsonSchemaType
-    OBJECT(LeafAirbyteSchemaType.STRING, JsonStringCodec, JsonSchemaType.OBJECT),
+    // Object type - schema-less objects map to JSONB
+    OBJECT(LeafAirbyteSchemaType.JSONB, JsonStringCodec, JsonSchemaType.OBJECT),
 
     // Null type
     NULL(LeafAirbyteSchemaType.NULL, NullCodec, JsonSchemaType.NULL),

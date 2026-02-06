@@ -1256,10 +1256,13 @@ class PostgresSourceDebeziumOperations {
 |-----------|---------------------|-------------------|----------------|
 | **Configuration** | Generic spec template | Always (database-specific params) | 150-250 LOC |
 | **Metadata Querier** | `JdbcMetadataQuerier` | Only if non-standard catalog API | 0-200 LOC (usually extend base) |
+| **MetaFieldDecorator** | None (must implement) | Always (required by ReadOperation) | 30-50 LOC |
 | **Partition Factory** | Generic JDBC factory | Customize for PK vs CTID vs custom strategy | 100-500 LOC |
 | **Partition Types** | Standard partitions provided | Only if unique partition requirements | 0-400 LOC (often reuse) |
 | **Query Generator** | Default SQL generator | Customize for dialect (quoting, LIMIT syntax) | 100-300 LOC |
 | **Field Type Mapper** | Common type mappings | Add database-specific types | 50-200 LOC |
+
+**MetaFieldDecorator:** A `@Singleton` bean declaring the global cursor field, CDC meta-fields (e.g., `_ab_cdc_updated_at`, `_ab_cdc_deleted_at`, `_ab_cdc_cursor`), and record decoration logic. Required by `ReadOperation` and `StateManagerFactory`. Even non-CDC connectors must provide this bean with no-op decoration methods.
 
 ### Optional Customizations
 
@@ -1605,6 +1608,7 @@ The Extract Bulk CDK uses a **toolkit-first approach**. The JDBC and CDC toolkit
 **What you customize (only as needed):**
 
 - 🔧 Configuration (always - your database connection params)
+- 🔧 MetaFieldDecorator (always - declares CDC meta-fields and global cursor, required by ReadOperation)
 - 🔧 Query Generator (customize for SQL dialect: quoting, LIMIT syntax)
 - 🔧 Field Type Mapper (add database-specific types)
 - 🔧 Metadata Querier (extend if non-standard catalog API)
@@ -1718,15 +1722,61 @@ Use these real connectors as reference when building a new database extract conn
 - Rich type system: hstore, geometric types, arrays, ranges
 - CDC: WAL LSN-based position tracking
 
+### source-mongodb (Non-JDBC, Native Client)
+
+**Branch:** `master`
+**Path:** `airbyte-integrations/connectors/source-mongodb/`
+**Complexity:** Standard (custom read pipeline, no JDBC)
+**Toolkits:** `core = 'extract'`, `toolkits = []` (no JDBC toolkit)
+
+**Key Files:**
+| File | Purpose |
+|------|---------|
+| `MongoDbSource.kt` | Entry point |
+| `MongoDbSourceConfigurationSpecification.kt` | Config with connection_string, database, auth |
+| `MongoDbSourceConfiguration.kt` | Runtime config implementing `SourceConfiguration` (not `JdbcSourceConfiguration`) |
+| `MongoDbMetadataQuerier.kt` | Native MongoDB schema discovery (sampling documents for field types) |
+| `MongoDbFieldType.kt` | BSON type → Airbyte type mapping |
+| `MongoDbAirbyteStreamFactory.kt` | Custom AirbyteStreamFactory with CDC meta-fields and array `"items"` handling |
+| `MongoDbMetaFieldDecorator.kt` | MetaFieldDecorator declaring CDC cursor and meta-fields |
+| `MongoDbPartitionsCreatorFactory.kt` | Custom `PartitionsCreatorFactory` (no JDBC) |
+| `MongoDbPartitionsCreator.kt` | Creates `PartitionReader` instances using MongoDB native client |
+| `MongoDbPartitionReader.kt` | Reads documents via `MongoClient`, converts BSON to `NativeRecordPayload` |
+| `MongoDbStreamState.kt` | Checkpoint state for `_id`-based resumability |
+
+**Key Patterns:**
+- No JDBC toolkit — implements `PartitionsCreator` and `PartitionReader` directly
+- Uses `MongoClient` (native driver) instead of JDBC `Connection`
+- Schema-less: all documents sampled for field types, arrays/objects use JSONB
+- `_id` field used as primary key for all collections (always exists in MongoDB)
+- `_id` can be ObjectId, Integer, or String — code must handle all types
+- `application.yml` only needs data-channel config (no JDBC/extract sections)
+- Custom `AirbyteStreamFactory` because `CatalogHelpers` doesn't add `"items": {}` to array schemas
+
+**Non-JDBC Connector Architecture:**
+
+For databases without JDBC drivers or where native clients are preferred:
+
+```
+PartitionsCreatorFactory (@Singleton, DI entry point)
+  → creates PartitionsCreator
+    → creates PartitionReader instances
+      → reads data using native client
+      → emits records via StreamRecordConsumer.accept()
+      → returns PartitionReadCheckpoint with state
+```
+
+Build config uses `core = 'extract'` with `toolkits = []` (empty). The connector implements the CDK's core abstractions directly without JDBC stock implementations.
+
 ### Comparison Matrix
 
-| Feature | MySQL | MSSQL | Postgres |
-|---------|-------|-------|----------|
-| **JDBC** | Yes | Yes | Yes |
-| **CDC** | Binlog | LSN | WAL LSN |
-| **Quoting** | `` ` `` | `[ ]` | `" "` |
-| **Pagination** | `LIMIT` | `TOP N` | `LIMIT` |
-| **Sampling** | N/A | `TABLESAMPLE` | `TABLESAMPLE` |
-| **Concurrent** | PK ranges | Clustered idx | CTID pages |
-| **Special Types** | JSON, GEOMETRY | GEOGRAPHY, HIERARCHYID | hstore, arrays |
-| **Debezium** | MySqlConnector | SqlServerConnector | PostgresConnector |
+| Feature | MySQL | MSSQL | Postgres | MongoDB |
+|---------|-------|-------|----------|---------|
+| **JDBC** | Yes | Yes | Yes | No (native) |
+| **CDC** | Binlog | LSN | WAL LSN | Change Streams |
+| **Quoting** | `` ` `` | `[ ]` | `" "` | N/A |
+| **Pagination** | `LIMIT` | `TOP N` | `LIMIT` | `_id` cursor |
+| **Sampling** | N/A | `TABLESAMPLE` | `TABLESAMPLE` | Document sampling |
+| **Concurrent** | PK ranges | Clustered idx | CTID pages | `_id` ranges |
+| **Special Types** | JSON, GEOMETRY | GEOGRAPHY, HIERARCHYID | hstore, arrays | BSON (all types) |
+| **Debezium** | MySqlConnector | SqlServerConnector | PostgresConnector | MongoDbConnector |

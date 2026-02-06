@@ -218,6 +218,130 @@ private fun leafType(type: SystemType): JdbcFieldType<*> {
 
 ## Read Operation Errors
 
+### Error: No bean of type [MetaFieldDecorator] exists
+
+**Symptom:**
+```
+io.micronaut.context.exceptions.NoSuchBeanException: No bean of type [io.airbyte.cdk.discover.MetaFieldDecorator] exists
+```
+
+**Cause:** The CDK's `ReadOperation` requires a `MetaFieldDecorator` bean to declare CDC meta-fields and the global cursor. This bean is not provided by default — you must implement it.
+
+**Solution:** Create a `@Singleton` implementing `MetaFieldDecorator`:
+```kotlin
+@Singleton
+class {DB}MetaFieldDecorator : MetaFieldDecorator {
+    override val globalCursor: FieldOrMetaField = {DB}CdcMetaFields.CDC_CURSOR
+    override val globalMetaFields: Set<MetaField> = setOf(
+        CommonMetaField.CDC_UPDATED_AT,
+        CommonMetaField.CDC_DELETED_AT,
+        {DB}CdcMetaFields.CDC_CURSOR,
+    )
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime, globalStateValue: OpaqueStateValue?,
+        stream: Stream, recordData: ObjectNode
+    ) {}
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime, globalStateValue: OpaqueStateValue?,
+        stream: Stream, recordData: NativeRecordPayload
+    ) {}
+}
+```
+
+You also need a CDC meta-fields enum:
+```kotlin
+enum class {DB}CdcMetaFields(override val type: FieldType) : MetaField {
+    CDC_CURSOR(CdcIntegerMetaFieldType),
+    ;
+    override val id: String get() = MetaField.META_PREFIX + name.lowercase()
+}
+```
+
+**Note:** This is required even if you are not implementing CDC yet. The `ReadOperation` and `StateManagerFactory` depend on it.
+
+---
+
+### Error: NullPointerException in StateManagerFactory (array fields)
+
+**Symptom:**
+```
+NullPointerException: get(...) must not be null
+  at StateManagerFactory.airbyteTypeFromJsonSchema(...)
+```
+
+**Cause:** The catalog's JSON schema has `{"type": "array"}` without an `"items"` field. The CDK's `StateManagerFactory` calls `jsonSchema["items"]` which returns null.
+
+**Solution:** Ensure all array fields in the discover output include `"items": {}`:
+```json
+{
+  "type": "array",
+  "items": {}
+}
+```
+
+If using `CatalogHelpers.createAirbyteStream()`, add post-processing:
+```kotlin
+val properties = (stream.jsonSchema as? ObjectNode)?.get("properties") as? ObjectNode
+if (properties != null) {
+    for (column in discoveredStream.columns) {
+        if (column.type == MyFieldType.ARRAY) {
+            val fieldSchema = properties.get(column.id) as? ObjectNode
+            fieldSchema?.set<ObjectNode>("items", Jsons.objectNode())
+        }
+    }
+}
+```
+
+---
+
+### Error: Field type mismatch (catalog vs FieldType)
+
+**Symptom:**
+```
+WARN: field 'my_field' is STRING but catalog expects ArrayAirbyteSchemaType(item=JSONB)
+```
+Streams may be skipped entirely with no records emitted.
+
+**Cause:** The `airbyteSchemaType` in your `FieldType` enum doesn't match what the catalog's `json_schema` advertises. For example, if the catalog says `{"type": "array", "items": {}}`, the CDK parses this as `ArrayAirbyteSchemaType(item=JSONB)`, but your FieldType uses `LeafAirbyteSchemaType.STRING`.
+
+**Solution:** Ensure alignment between `FieldType.airbyteSchemaType` and the catalog schema:
+```kotlin
+// For array fields:
+ARRAY(ArrayAirbyteSchemaType(LeafAirbyteSchemaType.JSONB), JsonStringCodec, JsonSchemaType.ARRAY)
+
+// For object fields:
+OBJECT(LeafAirbyteSchemaType.JSONB, JsonStringCodec, JsonSchemaType.OBJECT)
+```
+
+**Rule:** The `airbyteSchemaType` must produce the same type that `StateManagerFactory.airbyteTypeFromJsonSchema()` would parse from your catalog's `json_schema`.
+
+---
+
+### Error: Error resolving property value (data-channel)
+
+**Symptom:**
+```
+Error resolving property value [${airbyte.connector.data-channel.medium}]. Property doesn't exist
+```
+
+**Cause:** Missing or incomplete `application.yml`. The CDK requires data-channel configuration to be present.
+
+**Solution:** Add minimal required properties to `src/main/resources/application.yml`:
+```yaml
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
+```
+
+**Note:** The `socket-paths` field must be declared even though it resolves to null at runtime when using STDIO. Without it, the property resolver fails.
+
+---
+
 ### Error: Column not found
 
 **Symptom:**
@@ -399,6 +523,80 @@ override fun generate(ast: SelectQuerySpec): SelectQuery {
 
 ---
 
+## CLI & Testing Errors
+
+### Error: Failed to serialize fallback instance
+
+**Symptom:**
+```
+failed to serialize fallback instance for class {DB}SourceConfigurationSpecification
+```
+
+**Cause:** Using a relative path for `--config` that Gradle can't resolve from its working directory.
+
+**Solution:** Always use **absolute paths** when running via Gradle:
+```bash
+./gradlew :airbyte-integrations:connectors:source-{db}:run \
+  --args='--read --config /absolute/path/to/config.json --catalog /absolute/path/to/catalog.json'
+```
+
+---
+
+### Error: Command line is missing an operation
+
+**Symptom:**
+```
+Command line is missing an operation
+```
+
+**Cause:** CLI args use single-dash format (`-discover`) instead of double-dash (`--discover`).
+
+**Solution:** The Bulk CDK CLI uses double-dash for all operations:
+```bash
+# Correct:
+--args='--spec'
+--args='--check --config /path/to/config.json'
+--args='--discover --config /path/to/config.json'
+--args='--read --config /path/to/config.json --catalog /path/to/catalog.json'
+```
+
+---
+
+### Configured Catalog Format
+
+When creating `catalog.json` for testing reads, use the **configured catalog** format (not raw discover output). Each stream must be wrapped with sync configuration:
+
+```json
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "my_table",
+        "namespace": "my_schema",
+        "json_schema": { "type": "object", "properties": { ... } },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["id"]],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_cdc_cursor"],
+        "is_resumable": true
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]],
+      "generation_id": 0,
+      "minimum_generation_id": 0,
+      "sync_id": 0,
+      "include_files": false
+    }
+  ]
+}
+```
+
+**Tip:** Run `--discover`, then wrap each stream in the configured format above.
+
+---
+
 ## Quick Fixes Checklist
 
 | Symptom | Check |
@@ -413,6 +611,11 @@ override fun generate(ast: SelectQuerySpec): SelectQuery {
 | Resume fails | State format changed? Reset state. |
 | SQL errors | Identifier quoting correct for DB? |
 | Memory issues | `fetch-size` configured? |
+| MetaFieldDecorator missing | Create `@Singleton` implementing `MetaFieldDecorator` |
+| NPE in StateManagerFactory | Array fields need `"items": {}` in json_schema |
+| Streams skipped | `FieldType.airbyteSchemaType` must match catalog schema |
+| data-channel error | Add data-channel config to `application.yml` |
+| Config path error | Use absolute paths with Gradle runner |
 
 ---
 

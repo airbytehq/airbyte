@@ -201,6 +201,7 @@ Platform → CLI args → AirbyteSourceRunner
 
 ## File Structure Overview
 
+**JDBC Connector:**
 ```
 source-{db}/
 ├── src/main/kotlin/io/airbyte/integrations/source/{db}/
@@ -209,6 +210,8 @@ source-{db}/
 │   ├── {DB}SourceConfiguration.kt                 # Runtime config + factory
 │   ├── {DB}SourceMetadataQuerier.kt              # Schema discovery
 │   ├── {DB}SourceOperations.kt                   # Type mapping + queries
+│   ├── {DB}MetaFieldDecorator.kt                 # CDC meta-fields (required)
+│   ├── {DB}CdcMetaFields.kt                     # CDC meta-field enum (required)
 │   ├── {DB}SourceJdbcPartitionFactory.kt         # Partition creation
 │   ├── {DB}SourceJdbcPartition.kt                # Partition implementations
 │   ├── {DB}SourceJdbcStreamStateValue.kt         # State serialization
@@ -217,6 +220,28 @@ source-{db}/
 │   └── application.yml                            # CDK configuration
 ├── src/test/kotlin/...                           # Unit tests
 ├── build.gradle                                   # Build configuration
+└── metadata.yaml                                  # Connector metadata
+```
+
+**Non-JDBC Connector (e.g., MongoDB):**
+```
+source-{db}/
+├── src/main/kotlin/io/airbyte/integrations/source/{db}/
+│   ├── {DB}Source.kt                              # Entry point
+│   ├── {DB}SourceConfigurationSpecification.kt    # Config JSON schema
+│   ├── {DB}SourceConfiguration.kt                 # Runtime config (SourceConfiguration, not JdbcSourceConfiguration)
+│   ├── {DB}MetadataQuerier.kt                    # Custom schema discovery (native client)
+│   ├── {DB}FieldType.kt                          # Native type → Airbyte type mapping
+│   ├── {DB}AirbyteStreamFactory.kt               # Custom stream factory
+│   ├── {DB}MetaFieldDecorator.kt                 # CDC meta-fields (required)
+│   ├── {DB}CdcMetaFields.kt                     # CDC meta-field enum (required)
+│   ├── {DB}PartitionsCreatorFactory.kt           # Custom PartitionsCreatorFactory
+│   ├── {DB}PartitionsCreator.kt                  # Custom PartitionsCreator
+│   ├── {DB}PartitionReader.kt                    # Custom PartitionReader (native client)
+│   └── {DB}StreamState.kt                        # State for resumability
+├── src/main/resources/
+│   └── application.yml                            # Minimal CDK config (data-channel only)
+├── build.gradle                                   # core='extract', toolkits=[]
 └── metadata.yaml                                  # Connector metadata
 ```
 

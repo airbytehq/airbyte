@@ -535,6 +535,87 @@ class {DB}SourceJdbcPartitionFactory(
 
 ---
 
+## Read Phase 2.5: MetaFieldDecorator (Required)
+
+**Goal:** Provide the `MetaFieldDecorator` bean required by `ReadOperation`
+
+**Checkpoint:** No "No bean of type MetaFieldDecorator" error at startup
+
+### Step 1: Create CDC Meta Fields Enum
+
+The CDK requires a `MetaFieldDecorator` bean even before implementing CDC. Create a minimal CDC meta-fields enum:
+
+**File:** `src/main/kotlin/io/airbyte/integrations/source/{db}/{DB}CdcMetaFields.kt`
+
+```kotlin
+package io.airbyte.integrations.source.{db}
+
+import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
+import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.MetaField
+
+enum class {DB}CdcMetaFields(
+    override val type: FieldType,
+) : MetaField {
+    CDC_CURSOR(CdcIntegerMetaFieldType),
+    ;
+    override val id: String
+        get() = MetaField.META_PREFIX + name.lowercase()
+}
+```
+
+### Step 2: Create MetaFieldDecorator
+
+**File:** `src/main/kotlin/io/airbyte/integrations/source/{db}/{DB}MetaFieldDecorator.kt`
+
+```kotlin
+package io.airbyte.integrations.source.{db}
+
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.CommonMetaField
+import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.read.Stream
+import jakarta.inject.Singleton
+import java.time.OffsetDateTime
+
+@Singleton
+class {DB}MetaFieldDecorator : MetaFieldDecorator {
+    override val globalCursor: FieldOrMetaField = {DB}CdcMetaFields.CDC_CURSOR
+
+    override val globalMetaFields: Set<MetaField> = setOf(
+        CommonMetaField.CDC_UPDATED_AT,
+        CommonMetaField.CDC_DELETED_AT,
+        {DB}CdcMetaFields.CDC_CURSOR,
+    )
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: ObjectNode,
+    ) {
+        // No-op for now; implement when adding CDC support
+    }
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload,
+    ) {
+        // No-op for now; implement when adding CDC support
+    }
+}
+```
+
+**Why is this needed?** The CDK's `ReadOperation` and `StateManagerFactory` inject `MetaFieldDecorator` to determine CDC meta-fields and the global cursor. Without it, the read operation fails at startup with a `NoSuchBeanException`.
+
+---
+
 ## Read Phase 3: Test Full Refresh
 
 **Goal:** Verify full refresh read works
@@ -542,6 +623,8 @@ class {DB}SourceJdbcPartitionFactory(
 **Checkpoint:** `read` operation emits records
 
 ### Step 1: Create Test Catalog
+
+Run `--discover` first to get the raw catalog, then create a **configured catalog** by wrapping each stream with sync configuration.
 
 **File:** `secrets/catalog.json`
 
@@ -560,20 +643,33 @@ class {DB}SourceJdbcPartitionFactory(
           }
         },
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["id"]],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_cdc_cursor"],
+        "is_resumable": true
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]],
+      "generation_id": 0,
+      "minimum_generation_id": 0,
+      "sync_id": 0,
+      "include_files": false
     }
   ]
 }
 ```
 
+**Important:** The configured catalog requires `sync_mode`, `destination_sync_mode`, `primary_key`, `generation_id`, `minimum_generation_id`, `sync_id`, and `include_files` fields. Missing fields will cause parsing errors.
+
 ### Step 2: Run Read Operation
+
+**Important:** Use absolute paths when running via Gradle, as Gradle changes the working directory.
 
 ```bash
 ./gradlew :airbyte-integrations:connectors:source-{db}:run \
-  --args='read --config secrets/config.json --catalog secrets/catalog.json'
+  --args='--read --config /absolute/path/to/secrets/config.json --catalog /absolute/path/to/secrets/catalog.json'
 ```
 
 **Expected output:**

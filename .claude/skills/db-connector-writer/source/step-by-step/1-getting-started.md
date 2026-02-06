@@ -303,12 +303,34 @@ class {DB}SourceConfigurationFactory :
 
 **File:** `src/main/resources/application.yml`
 
+Every connector needs the data-channel configuration at minimum. JDBC connectors also need extract and check sections.
+
+**Minimal (non-JDBC connectors):**
+
 ```yaml
+---
 airbyte:
   connector:
     data-channel:
       medium: ${DATA_CHANNEL_MEDIUM:STDIO}
       format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
+```
+
+**Full (JDBC connectors):**
+
+```yaml
+---
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
     extract:
       jdbc:
         mode: concurrent
@@ -328,7 +350,9 @@ airbyte:
           - SELECT 1;  # Simple query to validate connection
 ```
 
-**Key settings:**
+**Critical:** The `data-channel` section with `medium`, `format`, and `socket-paths` is required by the CDK. Without it, the CDK fails with "Error resolving property value" at startup. The `socket-paths` field must be declared even though it resolves to null when using STDIO.
+
+**Key settings (JDBC only):**
 - `namespace-kind`: How your database organizes tables
   - `CATALOG_AND_SCHEMA`: catalog.schema.table (SQL Server)
   - `SCHEMA`: schema.table (PostgreSQL)

@@ -82,6 +82,7 @@ When invoked, follow this process:
 | `source-mysql` | `master` | extract-jdbc, extract-cdc | Standard JDBC + CDC, backtick quoting, LIMIT |
 | `source-mssql` | `master` | extract-jdbc, extract-cdc | SQL Server dialect, TOP N, TABLESAMPLE, LSN CDC |
 | `source-postgres` | `source-postgres/bulk-cdk` | extract-jdbc, extract-cdc | CTID partitioning, XMIN, rich types, pgoutput CDC |
+| `source-mongodb` | `master` | none (core only) | Non-JDBC connector, custom PartitionsCreator/PartitionReader, native client |
 
 ## Document Index
 

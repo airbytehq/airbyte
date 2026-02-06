@@ -74,11 +74,24 @@ class MongoDbAirbyteStreamFactory : AirbyteStreamFactory {
             AirbyteField.of(column.id, jsonSchemaType)
         }
 
-        return CatalogHelpers.createAirbyteStream(
+        val stream = CatalogHelpers.createAirbyteStream(
             discoveredStream.id.name,
             discoveredStream.id.namespace,
             fields,
         )
+
+        // Add "items": {} to array fields so the CDK's StateManagerFactory can parse them.
+        val properties = (stream.jsonSchema as? ObjectNode)?.get("properties") as? ObjectNode
+        if (properties != null) {
+            for (column in discoveredStream.columns) {
+                if (column.type is MongoDbFieldType && column.type == MongoDbFieldType.ARRAY) {
+                    val fieldSchema = properties.get(column.id) as? ObjectNode
+                    fieldSchema?.set<ObjectNode>("items", Jsons.objectNode())
+                }
+            }
+        }
+
+        return stream
     }
 
     /**
