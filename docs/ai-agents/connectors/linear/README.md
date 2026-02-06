@@ -100,11 +100,11 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update) |
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
-| Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Create](./REFERENCE.md#comments-create), [Update](./REFERENCE.md#comments-update) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update), [Search](./REFERENCE.md#issues-search) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Search](./REFERENCE.md#projects-search) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
+| Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Create](./REFERENCE.md#comments-create), [Update](./REFERENCE.md#comments-update), [Search](./REFERENCE.md#comments-search) |
 
 
 ### Authentication and configuration
@@ -117,7 +117,7 @@ See the official [Linear API reference](https://linear.app/developers/graphql).
 
 ## Version information
 
-- **Package version:** 0.19.92
+- **Package version:** 0.19.93
 - **Connector version:** 0.1.10
-- **Generated with Connector SDK commit SHA:** b36beaead6fb6c49f155ba346a49e61388c16278
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/linear/CHANGELOG.md)

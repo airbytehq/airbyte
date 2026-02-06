@@ -92,16 +92,16 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Current User | [Get](./REFERENCE.md#current-user-get) |
-| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get) |
-| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Get](./REFERENCE.md#ad-sets-get) |
-| Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get) |
-| Ad Creatives | [List](./REFERENCE.md#ad-creatives-list) |
-| Ads Insights | [List](./REFERENCE.md#ads-insights-list) |
-| Ad Account | [Get](./REFERENCE.md#ad-account-get) |
-| Custom Conversions | [List](./REFERENCE.md#custom-conversions-list) |
-| Images | [List](./REFERENCE.md#images-list) |
-| Videos | [List](./REFERENCE.md#videos-list) |
+| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list), [Search](./REFERENCE.md#ad-accounts-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Search](./REFERENCE.md#campaigns-search) |
+| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Get](./REFERENCE.md#ad-sets-get), [Search](./REFERENCE.md#ad-sets-search) |
+| Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get), [Search](./REFERENCE.md#ads-search) |
+| Ad Creatives | [List](./REFERENCE.md#ad-creatives-list), [Search](./REFERENCE.md#ad-creatives-search) |
+| Ads Insights | [List](./REFERENCE.md#ads-insights-list), [Search](./REFERENCE.md#ads-insights-search) |
+| Ad Account | [Get](./REFERENCE.md#ad-account-get), [Search](./REFERENCE.md#ad-account-search) |
+| Custom Conversions | [List](./REFERENCE.md#custom-conversions-list), [Search](./REFERENCE.md#custom-conversions-search) |
+| Images | [List](./REFERENCE.md#images-list), [Search](./REFERENCE.md#images-search) |
+| Videos | [List](./REFERENCE.md#videos-list), [Search](./REFERENCE.md#videos-search) |
 
 
 ### Authentication and configuration
@@ -114,7 +114,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.29
+- **Package version:** 0.1.30
 - **Connector version:** 1.0.15
-- **Generated with Connector SDK commit SHA:** b36beaead6fb6c49f155ba346a49e61388c16278
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)

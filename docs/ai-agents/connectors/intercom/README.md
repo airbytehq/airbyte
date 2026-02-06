@@ -95,10 +95,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get) |
-| Conversations | [List](./REFERENCE.md#conversations-list), [Get](./REFERENCE.md#conversations-get) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Search](./REFERENCE.md#contacts-search) |
+| Conversations | [List](./REFERENCE.md#conversations-list), [Get](./REFERENCE.md#conversations-get), [Search](./REFERENCE.md#conversations-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [Search](./REFERENCE.md#companies-search) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
 | Admins | [List](./REFERENCE.md#admins-list), [Get](./REFERENCE.md#admins-get) |
 | Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get) |
 | Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get) |
@@ -114,7 +114,7 @@ See the official [Intercom API reference](https://developers.intercom.com/docs/r
 
 ## Version information
 
-- **Package version:** 0.1.65
+- **Package version:** 0.1.66
 - **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** b36beaead6fb6c49f155ba346a49e61388c16278
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/intercom/CHANGELOG.md)

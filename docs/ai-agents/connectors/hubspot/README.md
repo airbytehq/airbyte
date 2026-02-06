@@ -95,9 +95,9 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [API Search](./REFERENCE.md#contacts-api_search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [API Search](./REFERENCE.md#companies-api_search) |
-| Deals | [List](./REFERENCE.md#deals-list), [Get](./REFERENCE.md#deals-get), [API Search](./REFERENCE.md#deals-api_search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [API Search](./REFERENCE.md#contacts-api_search), [Search](./REFERENCE.md#contacts-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [API Search](./REFERENCE.md#companies-api_search), [Search](./REFERENCE.md#companies-search) |
+| Deals | [List](./REFERENCE.md#deals-list), [Get](./REFERENCE.md#deals-get), [API Search](./REFERENCE.md#deals-api_search), [Search](./REFERENCE.md#deals-search) |
 | Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [API Search](./REFERENCE.md#tickets-api_search) |
 | Schemas | [List](./REFERENCE.md#schemas-list), [Get](./REFERENCE.md#schemas-get) |
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
@@ -113,7 +113,7 @@ See the official [Hubspot API reference](https://developers.hubspot.com/docs/api
 
 ## Version information
 
-- **Package version:** 0.15.96
+- **Package version:** 0.15.97
 - **Connector version:** 0.1.12
-- **Generated with Connector SDK commit SHA:** b36beaead6fb6c49f155ba346a49e61388c16278
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/hubspot/CHANGELOG.md)
