@@ -2771,6 +2771,9 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              asinGranularity: "SKU"
+              dateGranularity: "DAY"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
