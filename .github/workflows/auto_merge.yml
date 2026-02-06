@@ -16,8 +16,8 @@ jobs:
         with:
           owner: "airbytehq"
           repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
       - name: Checkout
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Set up Python
