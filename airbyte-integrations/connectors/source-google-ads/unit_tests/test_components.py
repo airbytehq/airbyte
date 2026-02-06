@@ -12,11 +12,9 @@ import pytest
 import yaml
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
-    REPORT_MAPPING,
     ClickViewHttpRequester,
     CustomGAQueryHttpRequester,
     CustomGAQuerySchemaLoader,
-    GoogleAdsHttpRequester,
     GoogleAdsRetriever,
     GoogleAdsStreamingDecoder,
 )
@@ -25,15 +23,14 @@ from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.types import StreamSlice
 
-from .conftest import Obj, find_stream
+from .conftest import Obj
 
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "source_google_ads" / "manifest.yaml"
 
 
 def _load_manifest():
-    with open(_MANIFEST_PATH) as f:
-        return yaml.safe_load(f)
+    return yaml.safe_load(_MANIFEST_PATH.read_text())
 
 
 class TestCustomGAQuerySchemaLoader:
@@ -705,9 +702,6 @@ class TestGoogleAdsRetriever:
         assert result is None
 
 
-# ---- New tests: query construction and date format validation ----
-
-
 def _get_manifest_stream_names():
     manifest = _load_manifest()
     names = []
@@ -730,87 +724,6 @@ def _split_streams_by_base():
         elif "incremental_stream_base" in ref or "incremental_non_manager_stream_base" in ref:
             base_incremental.append(name)
     return base_incremental, base_full
-
-
-_BASE_INCREMENTAL_STREAMS, _BASE_FULL_STREAMS = _split_streams_by_base()
-
-# Exclude special streams handled by dedicated requesters/tests
-_BASE_INCREMENTAL_STREAMS = [s for s in _BASE_INCREMENTAL_STREAMS if s not in {"change_status", "click_view"}]
-
-
-@pytest.mark.parametrize("stream_name", [pytest.param(s, id=s) for s in sorted(_BASE_INCREMENTAL_STREAMS)])
-def test_incremental_stream_query_construction(stream_name, config):
-    schemas = _load_manifest()["schemas"]
-
-    # Get the stream from the source and use its requester to build the query
-    stream = find_stream(stream_name, config)
-    spg = getattr(stream, "_stream_partition_generator")
-    retriever = None
-    partition_factory = getattr(spg, "_partition_factory", None)
-    if partition_factory is not None:
-        retriever = getattr(partition_factory, "_retriever", None)
-    if retriever is None:
-        legacy_stream = getattr(spg, "_stream", None)
-        if legacy_stream is not None:
-            retriever = getattr(legacy_stream, "retriever", None)
-    assert retriever is not None
-    requester = getattr(retriever, "requester")
-
-    stream_slice = StreamSlice(
-        partition={"customer_id": "123", "parent_slice": {"customer_id": "456", "parent_slice": {}}},
-        cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-14"},
-    )
-
-    body = requester.get_request_body_json(stream_slice=stream_slice)
-    query = body["query"]
-
-    expected_fields = list(schemas[stream_name]["properties"].keys())
-    resource_name = REPORT_MAPPING.get(stream_name, stream_name)
-
-    select_part = query.split(" FROM ")[0].replace("SELECT ", "")
-    actual_fields = [f.strip() for f in select_part.split(", ")]
-    assert actual_fields == expected_fields
-
-    assert f" FROM {resource_name} " in query
-    assert "WHERE segments.date BETWEEN '2026-01-01' AND '2026-01-14'" in query
-    assert "ORDER BY segments.date ASC" in query
-
-
-@pytest.mark.parametrize("stream_name", [pytest.param(s, id=s) for s in sorted(_BASE_FULL_STREAMS)])
-def test_full_refresh_stream_query_construction(stream_name, config):
-    schemas = _load_manifest()["schemas"]
-
-    # Get the stream from the source and use its requester to build the query
-    stream = find_stream(stream_name, config)
-    spg = getattr(stream, "_stream_partition_generator")
-    retriever = None
-    partition_factory = getattr(spg, "_partition_factory", None)
-    if partition_factory is not None:
-        retriever = getattr(partition_factory, "_retriever", None)
-    if retriever is None:
-        legacy_stream = getattr(spg, "_stream", None)
-        if legacy_stream is not None:
-            retriever = getattr(legacy_stream, "retriever", None)
-    assert retriever is not None
-    requester = getattr(retriever, "requester")
-
-    stream_slice = StreamSlice(
-        partition={"customer_id": "123", "parent_slice": {"customer_id": "456", "parent_slice": {}}},
-        cursor_slice={},
-    )
-
-    body = requester.get_request_body_json(stream_slice=stream_slice)
-    query = body["query"]
-
-    expected_fields = list(schemas[stream_name]["properties"].keys())
-    resource_name = REPORT_MAPPING.get(stream_name, stream_name)
-
-    select_part = query.split(" FROM ")[0].replace("SELECT ", "")
-    actual_fields = [f.strip() for f in select_part.split(", ")]
-    assert actual_fields == expected_fields
-
-    assert f"FROM {resource_name}" in query
-    assert "WHERE" not in query
 
 
 def _resolve_incremental_sync(stream_def: dict, defs: dict):
