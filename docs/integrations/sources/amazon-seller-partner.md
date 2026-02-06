@@ -285,7 +285,7 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.4.0 | 2026-02-04 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Add marketplaceId to GET_SALES_AND_TRAFFIC_REPORT stream and add new GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH stream for monthly granularity |
+| 5.4.0 | 2026-02-06 | [72837](https://github.com/airbytehq/airbyte/pull/72837) | Add marketplaceId to GET_SALES_AND_TRAFFIC_REPORT stream and add new GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH stream for monthly granularity |
 | 5.3.0 | 2026-02-02 | [72259](https://github.com/airbytehq/airbyte/pull/72259) | Add configurable MaxResultsPerPage for ListFinancialEvents stream with InvalidInput error handling |
 | 5.2.0 | 2026-01-21 | [71055](https://github.com/airbytehq/airbyte/pull/71055) | Re-add 8 brand analytics and vendor analytics streams to Cloud. Fix token expiration handling for long-running syncs. |
 | 5.1.2 | 2026-01-20 | [71037](https://github.com/airbytehq/airbyte/pull/71037) | Fix GB marketplace_id config transformation |
