@@ -12,13 +12,13 @@ import pytest
 import yaml
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
+    REPORT_MAPPING,
     ClickViewHttpRequester,
     CustomGAQueryHttpRequester,
     CustomGAQuerySchemaLoader,
     GoogleAdsHttpRequester,
     GoogleAdsRetriever,
     GoogleAdsStreamingDecoder,
-    REPORT_MAPPING,
 )
 
 from airbyte_cdk import AirbyteTracedException
@@ -26,6 +26,7 @@ from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.types import StreamSlice
 
 from .conftest import Obj, find_stream
+
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "source_google_ads" / "manifest.yaml"
 
@@ -705,6 +706,7 @@ class TestGoogleAdsRetriever:
 
 
 # ---- New tests: query construction and date format validation ----
+
 
 def _get_manifest_stream_names():
     manifest = _load_manifest()

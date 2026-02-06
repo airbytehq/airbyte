@@ -8,6 +8,7 @@ import yaml
 
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
+
 MANIFEST_PATH = Path(__file__).parent.parent.parent / "source_google_ads" / "manifest.yaml"
 API_BASE = "https://googleads.googleapis.com/v20"
 OAUTH_URL = "https://www.googleapis.com/oauth2/v3/token"
@@ -136,12 +137,7 @@ def mock_oauth(
     client_secret: str = "test_client_secret",
     refresh_token: str = "test_refresh_token",
 ) -> None:
-    body = (
-        f"grant_type=refresh_token"
-        f"&client_id={client_id}"
-        f"&client_secret={client_secret}"
-        f"&refresh_token={refresh_token}"
-    )
+    body = f"grant_type=refresh_token" f"&client_id={client_id}" f"&client_secret={client_secret}" f"&refresh_token={refresh_token}"
     http_mocker.post(
         HttpRequest(url=OAUTH_URL, body=body),
         HttpResponse(

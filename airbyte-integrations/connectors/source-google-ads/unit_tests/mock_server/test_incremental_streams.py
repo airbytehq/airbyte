@@ -18,6 +18,7 @@ from unit_tests.mock_server.helpers import (
     setup_full_refresh_parent_mocks,
 )
 
+
 _CUSTOMER_ID = "1234567890"
 
 _STREAM_RECORDS = {

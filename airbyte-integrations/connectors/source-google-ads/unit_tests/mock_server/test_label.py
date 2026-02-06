@@ -15,6 +15,7 @@ from unit_tests.mock_server.helpers import (
     setup_full_refresh_parent_mocks,
 )
 
+
 _STREAM_NAME = "label"
 _CUSTOMER_ID = "1234567890"
 
