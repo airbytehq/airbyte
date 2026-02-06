@@ -68,13 +68,17 @@ def test_chunked_encoding_error_triggers_slice_split():
     with HttpMocker() as http_mocker:
         setup_full_refresh_parent_mocks(http_mocker)
         mock_incremental_stream(
-            http_mocker, _STREAM_NAME,
-            start_date="2024-01-01", end_date="2024-01-07",
+            http_mocker,
+            _STREAM_NAME,
+            start_date="2024-01-01",
+            end_date="2024-01-07",
             response=build_stream_response([_RECORD_FIRST_HALF]),
         )
         mock_incremental_stream(
-            http_mocker, _STREAM_NAME,
-            start_date="2024-01-08", end_date="2024-01-14",
+            http_mocker,
+            _STREAM_NAME,
+            start_date="2024-01-08",
+            end_date="2024-01-14",
             response=build_stream_response([_RECORD_SECOND_HALF]),
         )
 
@@ -111,8 +115,10 @@ def test_chunked_encoding_error_retries_on_minimum_slice():
     with HttpMocker() as http_mocker:
         setup_full_refresh_parent_mocks(http_mocker)
         mock_incremental_stream(
-            http_mocker, _STREAM_NAME,
-            start_date="2024-01-01", end_date="2024-01-01",
+            http_mocker,
+            _STREAM_NAME,
+            start_date="2024-01-01",
+            end_date="2024-01-01",
             response=build_stream_response([_RECORD_SINGLE_DAY]),
         )
 
