@@ -18,7 +18,7 @@ This page contains the setup guide and reference information for the [Bing Ads](
 For Airbyte Open Source set up your application to get **Client ID**, **Client Secret**, **Refresh Token**
 
 1. [Register your application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
-2. [Request user consent](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get the authorization code.
+2. [Request user consent](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13) to get the authorization code.
 3. Use the authorization code to [get a refresh token](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13).
 
 :::note
@@ -57,14 +57,14 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for the Bing Ads connector.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
-7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
+7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
-10. For _Custom Reports_ - see [custom reports](#custom-reports) section, list of custom reports object:
-11. For _Report Name_ enter the name that you want for your custom report.
-12. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
-13. For _Columns_ add list columns of Reporting Data Object that you want to see in the custom report.
-14. For _Aggregation_ add time aggregation. See [report aggregation](#report-aggregation) section.
+9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, leave it at the default value of 0.
+10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
+11. For _Report Name_, enter the name that you want for your custom report.
+12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
+13. For _Columns_, add the columns of the Reporting Data Object that you want to see in the custom report.
+14. For _Aggregation_, add the time aggregation. See the [report aggregation](#report-aggregation) section.
 15. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
 16. Click **Authenticate your Bing Ads account**.
 17. Log in and authorize the Bing Ads account.
@@ -81,14 +81,14 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for the Bing Ads connector.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
-7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
+7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
-10. For _Custom Reports_ - see [custom reports](#custom-reports) section:
-11. For _Report Name_ enter the name that you want for your custom report.
-12. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
-13. For _Columns_ add columns of Reporting Data Object that you want to see in the custom report.
-14. For _Aggregation_ select time aggregation. See [report aggregation](#report-aggregation) section.
+9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, leave it at the default value of 0.
+10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
+11. For _Report Name_, enter the name that you want for your custom report.
+12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
+13. For _Columns_, add the columns of the Reporting Data Object that you want to see in the custom report.
+14. For _Aggregation_, select the time aggregation. See the [report aggregation](#report-aggregation) section.
 15. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
 
 16. Click **Set up source**.
@@ -128,10 +128,10 @@ The Bing Ads source connector supports the following streams. For more informati
 
 :::note
 
-Be careful with removing fields that you don't want to sync in the Replication Stream Settings.
-Report will be generated by request with all fields in the Stream Schema. Removing fields from in the setting does not affect actual request for the report.
-The results of such a report can be not accurate due to not visible values in removed fields.
-If you faced this issue please use custom report, where you can define only that fields that you want to see in the report, and no other fields will be used in the request.
+Be careful when removing fields that you don't want to sync in the replication stream settings.
+Reports are generated with all fields in the stream schema. Removing fields in the replication settings does not change the actual API request for the report.
+The results of such a report may be inaccurate due to invisible values in the removed fields.
+If you encounter this issue, use a custom report where you can define only the fields that you want to see in the report. No other fields will be included in the request.
 :::
 
 - [Account Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
@@ -308,7 +308,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
-- Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budgets) will ignore (fallback: none) the `LastSyncTimeInUTC` for dates > 30 days ago, which will trigger a full download request.
+- Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budget) ignore the `LastSyncTimeInUTC` for dates more than 30 days ago, which triggers a full download request.
 
 </details>
 
