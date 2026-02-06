@@ -27,36 +27,36 @@ Given a target database (e.g., MongoDB, Oracle, CockroachDB), this skill guides 
 
 Example: `/db-connector-writer oracle`
 
-### What You Get
+### Implementation Process
 
-The skill provides access to the following reference documents:
+When invoked, follow this process:
 
-| Document | Purpose |
-|----------|---------|
-| `source/architecture.md` | CDK architecture overview, core abstractions, data flow |
-| `source/coding-standards.md` | Code organization, naming, JDBC patterns, error handling |
-| `source/implementation-reference.md` | Component API reference, type mappings, query patterns |
-| `source/preflight-checklist.md` | Database research checklist before implementation |
-| `source/step-by-step/0-introduction.md` | Development flow overview and milestones |
-| `source/step-by-step/1-getting-started.md` | Project scaffolding and spec operation |
-| `source/step-by-step/2-schema-discovery.md` | Check and discover operations |
-| `source/step-by-step/3-full-refresh.md` | Full refresh read operation |
-| `source/step-by-step/4-incremental.md` | Cursor-based incremental sync |
-| `source/step-by-step/5-cdc.md` | CDC with Debezium integration |
-| `source/step-by-step/6-troubleshooting.md` | Common issues and solutions |
+1. **Start with `source/architecture.md`** - This is the primary document. Read it fully to understand:
+   - The Bulk CDK framework architecture (entry point, data flow, core abstractions)
+   - The JDBC and CDC toolkit stock implementations
+   - What you need to implement vs what the CDK provides
+   - The reference connector implementations section at the bottom (with exact file paths)
 
-### Development Path
+2. **Study a reference connector** - Before writing any code, read the actual source code of the closest reference connector:
+   - **JDBC source (recommended start):** `source-mysql` on `master` branch (`airbyte-integrations/connectors/source-mysql/`)
+   - **JDBC + CDC:** `source-mssql` on `master` branch (`airbyte-integrations/connectors/source-mssql/`)
+   - **Non-JDBC source:** `source-mongodb` on `rodi/source-mongodb-bulk` branch (`airbyte-integrations/connectors/source-mongodb/`)
+   - **Advanced JDBC:** `source-postgres` on `source-postgres/bulk-cdk` branch (`airbyte-integrations/connectors/source-postgres/`)
 
-**Path 1: Fast Path (No CDC)**
-1. Read `architecture.md` for framework understanding
-2. Complete `preflight-checklist.md` for your target database
-3. Follow guides 1-4 sequentially
-4. Result: Working connector with full refresh + incremental
+3. **Complete `source/preflight-checklist.md`** for the target database (JDBC driver, type system, CDC support, etc.)
 
-**Path 2: Full CDC Path**
-1. Complete Fast Path (guides 1-4)
-2. Follow guide 5 for CDC implementation
-3. Result: Full-featured connector with all sync modes
+4. **Follow the step-by-step guides** in order, verifying each milestone:
+   - `source/step-by-step/0-introduction.md` - Overview and development paths
+   - `source/step-by-step/1-getting-started.md` - Scaffolding and spec operation
+   - `source/step-by-step/2-schema-discovery.md` - Check and discover operations
+   - `source/step-by-step/3-full-refresh.md` - Full refresh read
+   - `source/step-by-step/4-incremental.md` - Cursor-based incremental
+   - `source/step-by-step/5-cdc.md` - CDC with Debezium (optional)
+
+5. **Reference documents** (use during development as needed):
+   - `source/coding-standards.md` - Code organization, naming, JDBC patterns, error handling
+   - `source/implementation-reference.md` - Component API reference, type mappings, query patterns
+   - `source/step-by-step/6-troubleshooting.md` - Common issues and solutions
 
 ### Milestones
 
@@ -68,17 +68,6 @@ The skill provides access to the following reference documents:
 | 4 - Incremental | `read` works for cursor-based incremental sync |
 | 5 - CDC | `read` works for CDC sync mode |
 
-## Implementation Process
-
-When invoked, follow this process:
-
-1. **Read the architecture document** to understand the Bulk CDK framework
-2. **Complete the preflight checklist** for the target database (JDBC driver, type system, CDC support, etc.)
-3. **Follow the step-by-step guides** in order, verifying each milestone before proceeding
-4. **Reference coding-standards.md** for conventions and best practices
-5. **Use implementation-reference.md** as a lookup guide during development
-6. **Consult troubleshooting.md** when encountering errors
-
 ## Key Architecture Concepts
 
 - **Bulk CDK**: Kotlin-based framework using Micronaut DI that orchestrates source connector operations
@@ -87,9 +76,27 @@ When invoked, follow this process:
 - **Toolkit-First Approach**: Extend and customize only what's specific to your database dialect
 - **Partition Model**: Data extraction is organized into partitions (units of work) that support resumability
 
-## Existing Reference Connectors
+## Reference Connectors
 
-- `source-mysql` - Full JDBC + CDC connector (Kotlin, Bulk CDK)
-- `source-mssql` - Full JDBC + CDC connector (Kotlin, Bulk CDK)
-- `source-mongodb` - Non-JDBC connector (Kotlin, Bulk CDK, extract core only)
-- `source-snowflake` - JDBC connector without CDC (Java, Bulk CDK)
+| Connector | Branch | Toolkits | Use As Reference For |
+|-----------|--------|----------|---------------------|
+| `source-mongodb` | `rodi/source-mongodb-bulk` | extract core only | Non-JDBC sources, custom schema discovery |
+| `source-mysql` | `master` | extract-jdbc, extract-cdc | Standard JDBC + CDC, backtick quoting, LIMIT |
+| `source-mssql` | `master` | extract-jdbc, extract-cdc | SQL Server dialect, TOP N, TABLESAMPLE, LSN CDC |
+| `source-postgres` | `source-postgres/bulk-cdk` | extract-jdbc, extract-cdc | CTID partitioning, XMIN, rich types, pgoutput CDC |
+
+## Document Index
+
+| Document | Purpose |
+|----------|---------|
+| `source/architecture.md` | **Start here.** CDK architecture, core abstractions, data flow, reference connector file paths |
+| `source/coding-standards.md` | Code organization, naming conventions, JDBC patterns, error handling, common gotchas |
+| `source/implementation-reference.md` | Component API reference, type mappings, sync mode queries, CDC integration |
+| `source/preflight-checklist.md` | Database research checklist (types, CDC, queries) to complete before implementation |
+| `source/step-by-step/0-introduction.md` | Development flow overview, paths, and milestones |
+| `source/step-by-step/1-getting-started.md` | Project scaffolding, build.gradle, spec operation |
+| `source/step-by-step/2-schema-discovery.md` | MetadataQuerier, FieldTypeMapper, check + discover operations |
+| `source/step-by-step/3-full-refresh.md` | SelectQueryGenerator, PartitionFactory, full refresh read |
+| `source/step-by-step/4-incremental.md` | Cursor partitions, state management, incremental sync |
+| `source/step-by-step/5-cdc.md` | Debezium integration, CDC position, meta-fields, state |
+| `source/step-by-step/6-troubleshooting.md` | Common DI errors, type issues, state problems, quick fixes |

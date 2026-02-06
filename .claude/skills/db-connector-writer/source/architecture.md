@@ -1630,3 +1630,127 @@ The Extract Bulk CDK uses a **toolkit-first approach**. The JDBC and CDC toolkit
 - **Standard connector** (MySQL-like, customize partitioning): ~800-1200 LOC, 1 week
 - **Advanced connector** (Postgres-like, custom types + partitions): ~1500-2500 LOC, 1-2 weeks
 - **With CDC** (add to any above): +300-500 LOC, +3-5 days
+
+---
+
+## Reference Connector Implementations
+
+Use these real connectors as reference when building a new database extract connector. Each demonstrates different patterns and complexity levels.
+
+### source-mongodb (Non-JDBC, Extract Core Only)
+
+**Branch:** `rodi/source-mongodb-bulk`
+**Path:** `airbyte-integrations/connectors/source-mongodb/`
+**Complexity:** Minimal (no JDBC toolkit, no CDC)
+**Toolkits:** `core = 'extract'`, `toolkits = []`
+
+**Key Files:**
+| File | Purpose |
+|------|---------|
+| `MongoDbSource.kt` | Entry point: `AirbyteSourceRunner.run(*args)` |
+| `MongoDbSourceConfigurationSpecification.kt` | Config JSON schema (connection_string, database, credentials) |
+| `MongoDbSourceConfiguration.kt` | Runtime config + factory, creates MongoClient |
+| `MongoDbMetadataQuerier.kt` | Schema discovery via MongoDB aggregation pipeline sampling |
+| `MongoDbFieldType.kt` | BSON type → Airbyte type mapping (enum) |
+| `MongoDbAirbyteStreamFactory.kt` | Stream definitions with CDC metadata columns |
+
+**Key Patterns:**
+- Uses MongoDB aggregation framework (`$objectToArray`, `$type`) for schema inference
+- No JDBC: implements `SourceConfiguration` directly (not `JdbcSourceConfiguration`)
+- Always returns `_id` as primary key
+- Samples `discoverSampleSize` documents to infer field types
+- Lazy memoization for collection names and field metadata
+
+### source-mysql (Full JDBC + CDC)
+
+**Branch:** `master`
+**Path:** `airbyte-integrations/connectors/source-mysql/`
+**Complexity:** Standard (JDBC + CDC with Debezium)
+**Toolkits:** `core = 'extract'`, `toolkits = ['extract-jdbc', 'extract-cdc']`
+
+**Key Files:**
+| File | Purpose |
+|------|---------|
+| `MySqlSource.kt` | Entry point |
+| `MySqlSourceConfigurationSpecification.kt` | Config with SSL, SSH tunnel, replication method |
+| `MySqlSourceConfiguration.kt` | Runtime config implementing `JdbcSourceConfiguration` + `CdcSourceConfiguration` |
+| `MySqlSourceMetadataQuerier.kt` | JDBC metadata + CDC prerequisite checks (binlog settings) |
+| `MySqlSourceOperations.kt` | Type mapping + SQL generation (backtick quoting, LIMIT) |
+| `MySqlSourceJdbcPartitionFactory.kt` | Partition creation with PK-based splitting (Unicode/GUID string interpolation) |
+| `MySqlSourceJdbcPartition.kt` | All partition types (snapshot, cursor, CDC snapshot) |
+| `MySqlSourceJdbcStreamStateValue.kt` | Cursor-based state (PRIMARY_KEY and CURSOR_BASED phases) |
+| `MySqlSourceDebeziumOperations.kt` | Debezium CDC: binlog position, GTID validation, record deserialization |
+| `MySqlSourceCdcPosition.kt` | Binlog file + position combined into monotonic cursor |
+| `MySqlSourceCdcMetaFields.kt` | CDC metadata fields enum |
+| `MySqlSourceCdcBooleanConverter.kt` | Debezium TINYINT(1) → boolean converter |
+| `MySqlSourceCdcTemporalConverter.kt` | Debezium temporal type converters (datetime, date, time, timestamp) |
+| `StringInterpolationUtils.kt` | PK range splitting for Unicode and GUID strings |
+
+**Key Patterns:**
+- Backtick identifier quoting: `` `column` ``
+- `LIMIT ?` for pagination
+- CDC: Binlog file + position, GTID set validation
+- Concurrent partition splitting: estimates table size from `information_schema.TABLES.DATA_LENGTH`
+- Custom Debezium converters for boolean and temporal types
+- `Int.MIN_VALUE` fetch size for MySQL streaming mode
+
+### source-mssql (Full JDBC + CDC, SQL Server Dialect)
+
+**Branch:** `master`
+**Path:** `airbyte-integrations/connectors/source-mssql/`
+**Complexity:** Standard (JDBC + CDC, SQL Server-specific features)
+**Toolkits:** `core = 'extract'`, `toolkits = ['extract-jdbc', 'extract-cdc']`
+
+**Key Files:**
+| File | Purpose |
+|------|---------|
+| `MsSqlServerSource.kt` | Entry point |
+| `MsSqlServerSourceConfigurationSpecification.kt` | Config with Azure support, encryption options |
+| `MsSqlServerSourceConfiguration.kt` | Runtime config, Azure SQL handling |
+| `MsSqlSourceMetadataQuerier.kt` | JDBC metadata + CDC checks (SQL Agent, database CDC enabled) |
+| `MsSqlSourceOperations.kt` | Type mapping + SQL generation (bracket quoting, TOP N, TABLESAMPLE) |
+| `MsSqlServerJdbcPartitionFactory.kt` | Partition creation with clustered index preference |
+| `MsSqlServerJdbcPartition.kt` | Partition types with view-specific handling |
+| `MsSqlServerJdbcStreamStateValue.kt` | State with version migration support |
+| `MsSqlServerDebeziumOperations.kt` | LSN-based CDC, heartbeat corruption fix |
+| `MsSqlServerCdcMetaFields.kt` | CDC meta-fields (LSN, event_serial_no) |
+
+**Key Patterns:**
+- Square bracket identifier quoting: `[column]`
+- `TOP N` instead of `LIMIT`
+- `TABLESAMPLE (N) PERCENT` for sampling, `ORDER BY NEWID()` for randomization
+- Prefers clustered index over primary key for partition ordering
+- Special handling for views (no TABLESAMPLE allowed)
+- CDC: LSN-based position tracking, heartbeat offset sanitization
+- Special data types: GEOGRAPHY, GEOMETRY, HIERARCHYID
+- Azure SQL detection and special handling
+
+### source-postgres (Full JDBC + CDC, Advanced Features)
+
+**Branch:** `source-postgres/bulk-cdk`
+**Path:** `airbyte-integrations/connectors/source-postgres/`
+**Complexity:** Advanced (CTID partitioning, XMIN incremental, rich type system)
+**Toolkits:** `core = 'extract'`, `toolkits = ['extract-jdbc', 'extract-cdc']`
+
+**Key Patterns (Unique to Postgres):**
+- Double-quote identifier quoting: `"column"`
+- `LIMIT N` for pagination
+- CTID-based physical page splitting for concurrent reads
+- XMIN-based incremental sync (transaction ID tracking)
+- Filenode tracking to detect VACUUM FULL
+- pgoutput plugin for logical replication CDC
+- Rich type system: hstore, geometric types, arrays, ranges
+- CDC: WAL LSN-based position tracking
+
+### Comparison Matrix
+
+| Feature | MongoDB | MySQL | MSSQL | Postgres |
+|---------|---------|-------|-------|----------|
+| **JDBC** | No | Yes | Yes | Yes |
+| **CDC** | No | Binlog | LSN | WAL LSN |
+| **Quoting** | N/A | `` ` `` | `[ ]` | `" "` |
+| **Pagination** | N/A | `LIMIT` | `TOP N` | `LIMIT` |
+| **Sampling** | Aggregation | N/A | `TABLESAMPLE` | `TABLESAMPLE` |
+| **Concurrent** | No | PK ranges | Clustered idx | CTID pages |
+| **Special Types** | BSON | JSON, GEOMETRY | GEOGRAPHY, HIERARCHYID | hstore, arrays |
+| **Debezium** | No | MySqlConnector | SqlServerConnector | PostgresConnector |
