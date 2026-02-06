@@ -174,7 +174,7 @@ def test_non_manager_with_state(stream_name):
         http_mocker.post(
             HttpRequest(
                 url=f"{API_BASE}/customers/{_CUSTOMER_ID}/googleAds:searchStream",
-                body=json.dumps({"query": build_incremental_query(stream_name, "2024-01-10", "2024-01-14")}),
+                body=json.dumps({"query": build_incremental_query(stream_name, "2024-01-01", "2024-01-14")}),
             ),
             build_stream_response([_STREAM_RECORDS[stream_name]]),
         )
