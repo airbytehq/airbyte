@@ -3,12 +3,13 @@ const { toAttributes } = require("../helpers/objects");
 const visit = require("unist-util-visit").visit;
 const { fetchRegistry } = require("../scripts/fetch-registry");
 
+const FALLBACK_VERSION = "No version information available";
 const FALLBACK_DEFINITION_ID = "No definition ID available.";
 
 const getEnterpriseConnectorRegistryInfo = async (dockerRepository) => {
   if (!dockerRepository) {
     return {
-      version: "No version information available",
+      version: FALLBACK_VERSION,
       definitionId: FALLBACK_DEFINITION_ID,
     };
   }
@@ -22,7 +23,7 @@ const getEnterpriseConnectorRegistryInfo = async (dockerRepository) => {
     );
     if (!registryEntry) {
       return {
-        version: "No version information available",
+        version: FALLBACK_VERSION,
         definitionId: FALLBACK_DEFINITION_ID,
       };
     }
@@ -36,7 +37,7 @@ const getEnterpriseConnectorRegistryInfo = async (dockerRepository) => {
   }
 
   return {
-    version: "No version information available",
+    version: FALLBACK_VERSION,
     definitionId: FALLBACK_DEFINITION_ID,
   };
 };
