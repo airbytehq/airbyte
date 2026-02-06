@@ -1576,6 +1576,8 @@ definitions:
                 partition_field: subscription_id
                 lazy_read_pointer: ["items"]
                 extra_fields:
+                  - ["id"]
+                  - ["created"]
                   - ["updated"]
                 stream:
                   $ref: "#/definitions/streams/subscriptions"
@@ -1588,6 +1590,17 @@ definitions:
           cursor_field: subscription_updated
           global_substream_cursor: true
         transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - subscription_id
+                value: "{{ stream_slice.extra_fields['id']}}"
+          - type: AddFields
+            fields:
+              - path:
+                  - subscription_created
+                value: "{{ stream_slice.extra_fields['created'] | int}}"
+                value_type: integer
           - type: AddFields
             fields:
               - path:

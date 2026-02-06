@@ -1,3 +1,5 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Stripe Migration Guide
 
 ## Upgrading to 6.0.0
@@ -34,7 +36,9 @@ Each child record includes parent metadata fields for context:
 
 If you have downstream transformations or queries that depend on the structure of `invoice_line_items` or `subscription_items` data, you will need to update them to work with the new record structure. The records now represent individual line items and subscription items rather than their parent objects.
 
-### Upgrading to 5.6.0
+<MigrationGuide />
+
+## Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
 
