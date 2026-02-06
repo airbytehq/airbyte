@@ -128,4 +128,4 @@ curl 'https://api.airbyte.ai/api/v1/integrations/definitions/sources?name=github
 
 ## Full API reference
 
-For the complete list of endpoints, request and response schemas, and authentication requirements, see the [Agent Engine API reference](api-reference).
+For the complete list of endpoints, request and response schemas, and authentication requirements, see the [Agent Engine API reference](api-reference/agent-engine).
