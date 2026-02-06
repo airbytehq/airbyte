@@ -169,6 +169,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.12 | 2026-02-03 | [72758](https://github.com/airbytehq/airbyte/pull/72758) | Update dependencies |
 | 4.3.11 | 2026-01-20 | [71963](https://github.com/airbytehq/airbyte/pull/71963) | Update dependencies |
 | 4.3.10 | 2026-01-14 | [71423](https://github.com/airbytehq/airbyte/pull/71423) | Update dependencies |
 | 4.3.9 | 2025-12-18 | [70533](https://github.com/airbytehq/airbyte/pull/70533) | Update dependencies |
