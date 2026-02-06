@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 import requests
+from airbyte_protocol_dataclasses.models import FailureType
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
@@ -14,7 +15,7 @@ from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from airbyte_protocol_dataclasses.models import FailureType
+
 
 logger = logging.getLogger("airbyte")
 
@@ -203,16 +204,12 @@ class EnhancedSitesErrorHandler(DefaultErrorHandler):
     as suggestions in the error message.
     """
 
-    def interpret_response(
-        self, response_or_exception: Optional[Union[requests.Response, Exception]]
-    ) -> ErrorResolution:
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         resolution = super().interpret_response(response_or_exception)
         if resolution.response_action != ResponseAction.FAIL:
             return resolution
 
-        enhanced_message = self._build_enhanced_error_message(
-            response_or_exception, resolution.error_message
-        )
+        enhanced_message = self._build_enhanced_error_message(response_or_exception, resolution.error_message)
         return ErrorResolution(
             response_action=ResponseAction.FAIL,
             failure_type=resolution.failure_type or FailureType.config_error,
