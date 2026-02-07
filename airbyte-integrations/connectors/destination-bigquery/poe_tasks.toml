@@ -1,3 +1,27 @@
 include = [
     "${POE_GIT_DIR}/poe-tasks/gradle-connector-tasks.toml",
 ]
+
+[tasks.test-integration-tests]
+shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if [ ! -d src/test-integration ]; then
+  echo "No integration tests defined; skipping integration tests."
+  exit 0
+fi
+
+set -- \
+  secrets/credentials-1s1t-standard.json \
+  secrets/credentials-1s1t-gcs.json \
+  secrets/credentials-badproject.json
+for secret_file in "$@"; do
+  if [ ! -f "$secret_file" ]; then
+    echo "Missing required integration secret '$secret_file'; skipping integration tests."
+    exit 0
+  fi
+done
+
+echo "Found 'src/test-integration' directory and required secrets, running integration tests..."
+gradle integrationTestJava
+'''
