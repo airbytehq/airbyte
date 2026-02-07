@@ -355,6 +355,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
 |---------|------------|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.7.2 | 2026-02-07 | [72937](https://github.com/airbytehq/airbyte/pull/72937) | Fix CTID cursor reset to (0,0) when incremental sync returns 0 records. |
 | 3.7.1 | 2026-01-27 | [72396](https://github.com/airbytehq/airbyte/pull/72396) | Promoting release candidate 3.7.1-rc.1 to a main version. |
 | 3.7.0 | 2025-08-12 | [57511](https://github.com/airbytehq/airbyte/pull/57511) | Add configurations for Azure authentication to Azure Postgres servers. |
 | 3.6.35  | 2025-06-12 | [61527](https://github.com/airbytehq/airbyte/pull/61527)   | Add error handling for connection issues and adopt the latest CDK version.
