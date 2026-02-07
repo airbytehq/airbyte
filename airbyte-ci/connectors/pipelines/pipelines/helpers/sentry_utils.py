@@ -38,7 +38,7 @@ def before_send(event: Dict[str, Any], hint: Dict[str, Any]) -> Optional[Dict[st
 
 def with_step_context(func: Callable) -> Callable:
     def wrapper(self: Step, *args: Any, **kwargs: Any) -> Step:
-        with sentry_sdk.configure_scope() as scope:
+        with sentry_sdk.isolation_scope() as scope:
             step_name = self.__class__.__name__
             scope.set_tag("pipeline_step", step_name)
             scope.set_context(
@@ -73,7 +73,7 @@ def with_step_context(func: Callable) -> Callable:
 
 def with_command_context(func: Callable) -> Callable:
     def wrapper(self: Command, ctx: Context, *args: Any, **kwargs: Any) -> Command:
-        with sentry_sdk.configure_scope() as scope:
+        with sentry_sdk.isolation_scope() as scope:
             scope.set_tag("pipeline_command", self.name)
             scope.set_context(
                 "Pipeline Command",
