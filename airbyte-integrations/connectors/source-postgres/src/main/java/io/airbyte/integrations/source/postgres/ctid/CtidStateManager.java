@@ -84,9 +84,17 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
     final Long fileNode = fileNodeHandler.getFileNode(pair);
     assert fileNode != null;
     final String lastCtid = pairToLastCtid.get(pair);
-    // If the table is empty, lastCtid will be set to zero for the final state message.
-    final String lastCtidInState = (Objects.nonNull(lastCtid)
-        && StringUtils.isNotBlank(lastCtid)) ? lastCtid : Ctid.ZERO.toString();
+    final String lastCtidInState;
+    if (Objects.nonNull(lastCtid) && StringUtils.isNotBlank(lastCtid)) {
+      lastCtidInState = lastCtid;
+    } else {
+      final CtidStatus previousStatus = pairToCtidStatus.get(pair);
+      if (previousStatus != null && StringUtils.isNotBlank(previousStatus.getCtid())) {
+        lastCtidInState = previousStatus.getCtid();
+      } else {
+        lastCtidInState = Ctid.ZERO.toString();
+      }
+    }
     return new CtidStatus()
         .withVersion(CTID_STATUS_VERSION)
         .withStateType(StateType.CTID)
