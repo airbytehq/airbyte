@@ -10,16 +10,16 @@ for marketing analytics and audience management.
 
 The Mailchimp connector is optimized to handle prompts like these.
 
-- Show me all my email campaigns from the last month
 - List all subscribers in my main mailing list
-- What are the open rates for my recent campaigns?
-- Show me the performance report for campaign \{campaign_id\}
 - List all automation workflows in my account
-- Who unsubscribed from list \{list_id\} this week?
 - Show me all segments for my primary audience
+- List all interest categories for my primary audience
+- Show me email activity for a recent campaign
+- Show me the performance report for a recent campaign
+- Show me all my email campaigns from the last month
+- What are the open rates for my recent campaigns?
+- Who unsubscribed from list \{list_id\} this week?
 - What tags are applied to my subscribers?
-- List all interest categories for list \{list_id\}
-- Show me email activity for campaign \{campaign_id\}
 - How many subscribers do I have in each list?
 - What are my top performing campaigns by click rate?
 
@@ -42,30 +42,64 @@ uv pip install airbyte-agent-mailchimp
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_mailchimp import MailchimpConnector, MailchimpAuthConfig
+from airbyte_agent_mailchimp import MailchimpConnector
+from airbyte_agent_mailchimp.models import MailchimpAuthConfig
 
 connector = MailchimpConnector(
-  auth_config=MailchimpAuthConfig(
-    api_key="...",
-    data_center="..."
-  )
+    auth_config=MailchimpAuthConfig(
+        api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
+    )
 )
-result = await connector.campaigns.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@MailchimpConnector.tool_utils
+async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_mailchimp import MailchimpConnector, AirbyteAuthConfig
+
+connector = MailchimpConnector(
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@MailchimpConnector.tool_utils
+async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get) |
-| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Search](./REFERENCE.md#campaigns-search) |
+| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Search](./REFERENCE.md#lists-search) |
 | List Members | [List](./REFERENCE.md#list-members-list), [Get](./REFERENCE.md#list-members-get) |
-| Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get) |
-| Email Activity | [List](./REFERENCE.md#email-activity-list) |
+| Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get), [Search](./REFERENCE.md#reports-search) |
+| Email Activity | [List](./REFERENCE.md#email-activity-list), [Search](./REFERENCE.md#email-activity-search) |
 | Automations | [List](./REFERENCE.md#automations-list) |
 | Tags | [List](./REFERENCE.md#tags-list) |
 | Interest Categories | [List](./REFERENCE.md#interest-categories-list), [Get](./REFERENCE.md#interest-categories-get) |
@@ -75,12 +109,17 @@ This connector supports the following entities and actions.
 | Unsubscribes | [List](./REFERENCE.md#unsubscribes-list) |
 
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Authentication and configuration
 
-For the service's official API docs, see the [Mailchimp API reference](https://mailchimp.com/developer/marketing/api/).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+
+### Mailchimp API docs
+
+See the official [Mailchimp API reference](https://mailchimp.com/developer/marketing/api/).
 
 ## Version information
 
-- **Package version:** 0.1.6
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** a50c8f71ed01cb9fd029c6c72d7523dbe2d5cec7
+- **Package version:** 0.1.52
+- **Connector version:** 1.0.7
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/mailchimp/CHANGELOG.md)
