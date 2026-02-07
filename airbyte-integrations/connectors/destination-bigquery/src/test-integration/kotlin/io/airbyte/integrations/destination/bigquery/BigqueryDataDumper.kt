@@ -51,9 +51,8 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         val streamConfigProvider = StreamConfigProvider(config)
 
         val (_, rawTableName) =
-            BigqueryRawTableNameGenerator(config, streamConfigProvider).getTableName(
-                stream.mappedDescriptor
-            )
+            BigqueryRawTableNameGenerator(config, streamConfigProvider)
+                .getTableName(stream.mappedDescriptor)
 
         return bigquery.getTable(TableId.of(config.internalTableDataset, rawTableName))?.let { table
             ->
@@ -101,9 +100,8 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
         val streamConfigProvider = StreamConfigProvider(config)
 
         val (datasetName, finalTableName) =
-            BigqueryFinalTableNameGenerator(config, streamConfigProvider).getTableName(
-                stream.mappedDescriptor
-            )
+            BigqueryFinalTableNameGenerator(config, streamConfigProvider)
+                .getTableName(stream.mappedDescriptor)
 
         return bigquery.getTable(TableId.of(datasetName, finalTableName))?.let { table ->
             val bigquerySchema = table.getDefinition<StandardTableDefinition>().schema!!

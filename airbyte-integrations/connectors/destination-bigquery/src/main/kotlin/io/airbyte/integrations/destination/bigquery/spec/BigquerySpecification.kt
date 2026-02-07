@@ -107,13 +107,17 @@ class BigquerySpecification : ConfigurationSpecification() {
     val internalTableDataset: String? = null
 
     @get:JsonSchemaTitle("Default Partitioning Field")
-    @get:JsonPropertyDescription("Default field to use for partitioning (e.g. _airbyte_extracted_at)")
+    @get:JsonPropertyDescription(
+        "Default field to use for partitioning (e.g. _airbyte_extracted_at)"
+    )
     @get:JsonProperty("default_partitioning_field")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
     val defaultPartitioningField: String? = null
 
     @get:JsonSchemaTitle("Default Partitioning Granularity")
-    @get:JsonPropertyDescription("Default partitioning granularity: DAY, MONTH, or YEAR. Defaults to DAY.")
+    @get:JsonPropertyDescription(
+        "Default partitioning granularity: DAY, MONTH, or YEAR. Defaults to DAY."
+    )
     @get:JsonProperty("default_partitioning_granularity")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
     val defaultPartitioningGranularity: PartitioningGranularity? = null
@@ -139,36 +143,28 @@ class BigquerySpecification : ConfigurationSpecification() {
     val streams: List<SingleStreamConfiguration>? = null
 }
 
-/**
- * Per-stream configuration for custom partitioning, clustering, and table naming.
- */
+/** Per-stream configuration for custom partitioning, clustering, and table naming. */
 data class SingleStreamConfiguration(
     @get:JsonSchemaTitle("Stream Name")
     @get:JsonPropertyDescription("Name of the stream (or namespace.stream_name)")
     @JsonProperty("name")
     val name: String = "",
-
     @get:JsonSchemaTitle("Partitioning Field")
     @JsonProperty("partitioning_field")
     val partitioningField: String? = null,
-
     @get:JsonSchemaTitle("Partitioning Granularity")
     @get:JsonPropertyDescription(
-        "Partitioning granularity for the partitioning field. Allowed values: DAY, MONTH, YEAR. Defaults to DAY.")
+        "Partitioning granularity for the partitioning field. Allowed values: DAY, MONTH, YEAR. Defaults to DAY."
+    )
     @JsonProperty("partitioning_granularity")
     val partitioningGranularity: PartitioningGranularity? = null,
-
     @get:JsonSchemaTitle("Clustering Field")
     @JsonProperty("clustering_field")
     val clusteringField: String? = null,
-
     @get:JsonSchemaTitle("Table Suffix")
     @JsonProperty("table_suffix")
     val tableSuffix: String? = null,
-
-    @get:JsonSchemaTitle("Target Dataset")
-    @JsonProperty("dataset")
-    val dataset: String? = null,
+    @get:JsonSchemaTitle("Target Dataset") @JsonProperty("dataset") val dataset: String? = null,
 )
 
 @JsonTypeInfo(
