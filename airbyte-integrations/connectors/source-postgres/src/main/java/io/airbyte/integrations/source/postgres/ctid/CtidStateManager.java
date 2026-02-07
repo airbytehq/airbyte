@@ -89,7 +89,7 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
       lastCtidInState = lastCtid;
     } else {
       final CtidStatus previousStatus = pairToCtidStatus.get(pair);
-      lastCtidInState = (previousStatus != null && StringUtils.isNotBlank(previousStatus.getCtid())) ? previousStatus.getCtid() : Ctid.ZERO.toString();
+      lastCtidInState = (Objects.nonNull(previousStatus) && StringUtils.isNotBlank(previousStatus.getCtid())) ? previousStatus.getCtid() : Ctid.ZERO.toString();
     }
     return new CtidStatus()
         .withVersion(CTID_STATUS_VERSION)
