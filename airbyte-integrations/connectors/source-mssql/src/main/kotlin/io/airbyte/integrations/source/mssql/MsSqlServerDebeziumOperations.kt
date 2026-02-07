@@ -478,18 +478,14 @@ class MsSqlServerDebeziumOperations(
                         val minLsn = Lsn.valueOf(minLsnBytes)
                         val maxLsn = Lsn.valueOf(maxLsnBytes)
 
-                        log.info {
-                            "LSN range parsed - min: $minLsn, max: $maxLsn, saved: $lsn"
-                        }
+                        log.info { "LSN range parsed - min: $minLsn, max: $maxLsn, saved: $lsn" }
 
-                        // if minLsn is just zeros it means we didn't get a valid min LSN to compare against.
-                        // This can happen if the change table doesn't include valid capture instance or if we're not
-                        // authorized to access the CDC data. In both cases, this is not a valid LSN.
-                        // See: https://learn.microsoft.com/en-us/sql/relational-databases/system-functions/sys-fn-cdc-get-min-lsn-transact-sql
+                        // Lsn.ZERO indicates no valid CDC data is available (e.g., no capture
+                        // instances exist or insufficient permissions).
                         if (minLsn == Lsn.ZERO) {
                             log.warn {
-                                "Got zero min LSM from the server. Unable to validate LSN availability, " +
-                                        "treating as invalid"
+                                "Min LSN is zero, no CDC capture instances found or insufficient permissions. " +
+                                    "Treating saved LSN as invalid."
                             }
                             return false
                         }
