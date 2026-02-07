@@ -26,8 +26,8 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.cdk.util.containsIgnoreCase
 import io.airbyte.cdk.util.findIgnoreCase
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.spec.PartitioningGranularity
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
@@ -42,7 +42,8 @@ class BigqueryDirectLoadNativeTableOperations(
     private val databaseHandler: BigQueryDatabaseHandler,
     private val projectId: String,
     private val tempTableNameGenerator: TempTableNameGenerator,
-    private val streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
+    private val streamConfigProvider:
+        io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
 ) : DirectLoadTableNativeOperations {
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
@@ -401,7 +402,8 @@ class BigqueryDirectLoadNativeTableOperations(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping,
             existingTable: StandardTableDefinition,
-            streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
+            streamConfigProvider:
+                io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
         ): Boolean {
             // We always want to set a clustering config, so if the table doesn't have one,
             // then we should fix it.
@@ -413,10 +415,12 @@ class BigqueryDirectLoadNativeTableOperations(
 
             // Calculate expected clustering columns using the provider
             val expectedClusteringColumns = mutableListOf<String>()
-            val customClusteringField = streamConfigProvider.getClusteringField(stream.unmappedDescriptor)
+            val customClusteringField =
+                streamConfigProvider.getClusteringField(stream.unmappedDescriptor)
 
             if (customClusteringField != null) {
-                val clusterFields = customClusteringField.split(",").map{ it.trim() }.filter { it.isNotEmpty() }
+                val clusterFields =
+                    customClusteringField.split(",").map { it.trim() }.filter { it.isNotEmpty() }
 
                 for (field in clusterFields) {
                     val actualColumnName = columnNameMapping[field]
@@ -426,12 +430,17 @@ class BigqueryDirectLoadNativeTableOperations(
                 }
 
                 if (expectedClusteringColumns.isEmpty()) {
-                     // Fallback to default if no columns found (shouldn't happen if validation passes elsewhere)
-                     expectedClusteringColumns.addAll(BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping))
+                    // Fallback to default if no columns found (shouldn't happen if validation
+                    // passes elsewhere)
+                    expectedClusteringColumns.addAll(
+                        BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping)
+                    )
                 }
             } else {
                 // No custom field, use default logic
-                expectedClusteringColumns.addAll(BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping))
+                expectedClusteringColumns.addAll(
+                    BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping)
+                )
             }
 
             // We're OK with a column being in the clustering config that we don't expect
@@ -460,7 +469,8 @@ class BigqueryDirectLoadNativeTableOperations(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping,
             existingTable: StandardTableDefinition,
-            streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
+            streamConfigProvider:
+                io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
         ): Boolean {
             val (expectedPartitionField, expectedPartitionType) =
                 resolvePartitioningField(stream, columnNameMapping, streamConfigProvider)
@@ -474,10 +484,13 @@ class BigqueryDirectLoadNativeTableOperations(
         private fun resolvePartitioningField(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping,
-            streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
+            streamConfigProvider:
+                io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
         ): Pair<String, TimePartitioning.Type> {
-            val requestedField = streamConfigProvider.getPartitioningField(stream.unmappedDescriptor)
-            val granularity = streamConfigProvider.getPartitioningGranularity(stream.unmappedDescriptor)
+            val requestedField =
+                streamConfigProvider.getPartitioningField(stream.unmappedDescriptor)
+            val granularity =
+                streamConfigProvider.getPartitioningGranularity(stream.unmappedDescriptor)
             val expectedPartitionType =
                 when (granularity) {
                     PartitioningGranularity.DAY -> TimePartitioning.Type.DAY

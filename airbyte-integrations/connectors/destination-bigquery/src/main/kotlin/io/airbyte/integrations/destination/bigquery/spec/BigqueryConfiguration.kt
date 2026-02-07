@@ -83,15 +83,18 @@ class BigqueryConfigurationFactory :
             defaultClusteringField = pojo.defaultClusteringField,
             defaultTableSuffix = pojo.defaultTableSuffix,
             defaultPartitioningGranularity = pojo.defaultPartitioningGranularity,
-            streamConfigMap = pojo.streams?.associate {
-                it.name to StreamLevelConfig(
-                    partitioningField = it.partitioningField,
-                    partitioningGranularity = it.partitioningGranularity,
-                    clusteringField = it.clusteringField,
-                    tableSuffix = it.tableSuffix,
-                    dataset = it.dataset
-                )
-            } ?: emptyMap(),
+            streamConfigMap =
+                pojo.streams?.associate {
+                    it.name to
+                        StreamLevelConfig(
+                            partitioningField = it.partitioningField,
+                            partitioningGranularity = it.partitioningGranularity,
+                            clusteringField = it.clusteringField,
+                            tableSuffix = it.tableSuffix,
+                            dataset = it.dataset
+                        )
+                }
+                    ?: emptyMap(),
         )
     }
 }

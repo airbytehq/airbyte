@@ -25,7 +25,6 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -93,9 +92,7 @@ class SafeDestinationCatalogFactory {
                     unmappedName = "test$date$random",
                     importType = Append,
                     schema =
-                        ObjectType(
-                            linkedMapOf("test" to FieldType(IntegerType, nullable = true))
-                        ),
+                        ObjectType(linkedMapOf("test" to FieldType(IntegerType, nullable = true))),
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,

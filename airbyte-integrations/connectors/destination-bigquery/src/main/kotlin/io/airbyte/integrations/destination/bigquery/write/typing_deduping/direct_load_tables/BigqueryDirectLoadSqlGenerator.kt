@@ -38,7 +38,8 @@ import org.apache.commons.lang3.StringUtils
 class BigqueryDirectLoadSqlGenerator(
     private val projectId: String?,
     private val cdcDeletionMode: CdcDeletionMode,
-    private val streamConfigProvider: io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
+    private val streamConfigProvider:
+        io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider,
 ) : DirectLoadSqlGenerator {
     override fun createTable(
         stream: DestinationStream,
@@ -60,7 +61,7 @@ class BigqueryDirectLoadSqlGenerator(
                 .joinToString(",\n")
 
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
-        
+
         // Use custom clustering if provided, else use PK-based clustering
         val clusterConfig =
             getClusteringColumns(stream, columnNameMapping)
@@ -70,7 +71,7 @@ class BigqueryDirectLoadSqlGenerator(
 
         val partitioningExpression = resolvePartitioningExpression(stream, columnNameMapping)
         val finalTableId = tableName.toPrettyString(QUOTE)
-        
+
         // bigquery has a CREATE OR REPLACE TABLE statement, but we can't use it
         // because you can't change a partitioning/clustering scheme in-place.
         // Bigquery requires you to drop+recreate the table in this case.
@@ -356,8 +357,7 @@ class BigqueryDirectLoadSqlGenerator(
     }
 
     /**
-     * Get clustering columns with stream-level override support.
-     * Priority:
+     * Get clustering columns with stream-level override support. Priority:
      * 1. Stream-level clustering field from config
      * 2. Default clustering field from connector config
      * 3. PK-based clustering (for dedupe mode)
@@ -366,11 +366,13 @@ class BigqueryDirectLoadSqlGenerator(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): List<String> {
-        val customClusteringField = streamConfigProvider.getClusteringField(stream.unmappedDescriptor)
+        val customClusteringField =
+            streamConfigProvider.getClusteringField(stream.unmappedDescriptor)
 
         if (customClusteringField != null) {
             // Validate that the clustering field exists and is a valid type
-            val clusterFields = customClusteringField.split(",").map{ it.trim() }.filter { it.isNotEmpty() }
+            val clusterFields =
+                customClusteringField.split(",").map { it.trim() }.filter { it.isNotEmpty() }
             val resolvedColumns = mutableListOf<String>()
 
             for (field in clusterFields) {
@@ -378,12 +380,12 @@ class BigqueryDirectLoadSqlGenerator(
                 if (actualColumnName != null) {
                     val fieldType = stream.schema.asColumns()[field]
                     if (fieldType != null) {
-                       val bigqueryType = toDialectType(fieldType.type)
-                       if (bigqueryType == StandardSQLTypeName.JSON) {
+                        val bigqueryType = toDialectType(fieldType.type)
+                        if (bigqueryType == StandardSQLTypeName.JSON) {
                             throw ConfigErrorException(
                                 "Stream ${stream.mappedDescriptor.toPrettyString()}: Clustering field '$field' is JSON type, which cannot be used for clustering"
                             )
-                       }
+                        }
                     }
                     resolvedColumns.add(actualColumnName)
                 }
