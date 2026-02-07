@@ -11,7 +11,7 @@ data:
     ql: 400
     sl: 300
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.7.0@sha256:b3703270c2d0f840357a5ee92c95f87a0bd403573d784e5dafac835f7e1663f0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.9.0.post4.dev21736270088@sha256:1415b3874a0b7d7bc1708f7e8e3489cff6a4ca7903eb44c84bc353549e48e84f
   connectorSubtype: api
   connectorType: source
   definitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460

@@ -95,13 +95,24 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
         response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
         attempt_count: int,
     ) -> Optional[float]:
-        # Check if this is a token expiration error and invalidate the token if so
         self._check_and_invalidate_expired_token(response_or_exception)
 
         time_from_header = super().backoff_time(response_or_exception, attempt_count)
         if time_from_header:
-            return 1 / float(time_from_header)
+            computed_backoff = 1 / float(time_from_header)
+            logger.info(
+                "Amazon SP rate limit: header value=%.4f, computed backoff=%.2fs (status code: %s)",
+                time_from_header,
+                computed_backoff,
+                response_or_exception.status_code if isinstance(response_or_exception, requests.Response) else "N/A",
+            )
+            return computed_backoff
         else:
+            logger.info(
+                "Amazon SP rate limit: no header value found, using default backoff=%.2fs (status code: %s)",
+                self.default_backoff_time,
+                response_or_exception.status_code if isinstance(response_or_exception, requests.Response) else "N/A",
+            )
             return self.default_backoff_time
 
     @staticmethod
