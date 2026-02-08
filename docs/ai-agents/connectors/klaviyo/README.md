@@ -72,12 +72,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_klaviyo import KlaviyoConnector
+from airbyte_agent_klaviyo import KlaviyoConnector, AirbyteAuthConfig
 
 connector = KlaviyoConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -94,13 +96,13 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Profiles | [List](./REFERENCE.md#profiles-list), [Get](./REFERENCE.md#profiles-get) |
-| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get) |
-| Events | [List](./REFERENCE.md#events-list) |
-| Metrics | [List](./REFERENCE.md#metrics-list), [Get](./REFERENCE.md#metrics-get) |
-| Flows | [List](./REFERENCE.md#flows-list), [Get](./REFERENCE.md#flows-get) |
-| Email Templates | [List](./REFERENCE.md#email-templates-list), [Get](./REFERENCE.md#email-templates-get) |
+| Profiles | [List](./REFERENCE.md#profiles-list), [Get](./REFERENCE.md#profiles-get), [Search](./REFERENCE.md#profiles-search) |
+| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Search](./REFERENCE.md#lists-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Search](./REFERENCE.md#campaigns-search) |
+| Events | [List](./REFERENCE.md#events-list), [Search](./REFERENCE.md#events-search) |
+| Metrics | [List](./REFERENCE.md#metrics-list), [Get](./REFERENCE.md#metrics-get), [Search](./REFERENCE.md#metrics-search) |
+| Flows | [List](./REFERENCE.md#flows-list), [Get](./REFERENCE.md#flows-get), [Search](./REFERENCE.md#flows-search) |
+| Email Templates | [List](./REFERENCE.md#email-templates-list), [Get](./REFERENCE.md#email-templates-get), [Search](./REFERENCE.md#email-templates-search) |
 
 
 ### Authentication and configuration
@@ -113,7 +115,7 @@ See the official [Klaviyo API reference](https://developers.klaviyo.com/en/refer
 
 ## Version information
 
-- **Package version:** 0.1.9
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
+- **Package version:** 0.1.23
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/klaviyo/CHANGELOG.md)

@@ -70,12 +70,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_greenhouse import GreenhouseConnector
+from airbyte_agent_greenhouse import GreenhouseConnector, AirbyteAuthConfig
 
 connector = GreenhouseConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -92,15 +94,15 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get) |
-| Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get) |
-| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get) |
-| Offers | [List](./REFERENCE.md#offers-list), [Get](./REFERENCE.md#offers-get) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
-| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get) |
-| Offices | [List](./REFERENCE.md#offices-list), [Get](./REFERENCE.md#offices-get) |
-| Job Posts | [List](./REFERENCE.md#job-posts-list), [Get](./REFERENCE.md#job-posts-get) |
-| Sources | [List](./REFERENCE.md#sources-list) |
+| Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get), [Search](./REFERENCE.md#candidates-search) |
+| Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get), [Search](./REFERENCE.md#applications-search) |
+| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get), [Search](./REFERENCE.md#jobs-search) |
+| Offers | [List](./REFERENCE.md#offers-list), [Get](./REFERENCE.md#offers-get), [Search](./REFERENCE.md#offers-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
+| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Search](./REFERENCE.md#departments-search) |
+| Offices | [List](./REFERENCE.md#offices-list), [Get](./REFERENCE.md#offices-get), [Search](./REFERENCE.md#offices-search) |
+| Job Posts | [List](./REFERENCE.md#job-posts-list), [Get](./REFERENCE.md#job-posts-get), [Search](./REFERENCE.md#job-posts-search) |
+| Sources | [List](./REFERENCE.md#sources-list), [Search](./REFERENCE.md#sources-search) |
 | Scheduled Interviews | [List](./REFERENCE.md#scheduled-interviews-list), [Get](./REFERENCE.md#scheduled-interviews-get) |
 | Application Attachment | [Download](./REFERENCE.md#application-attachment-download) |
 | Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
@@ -116,7 +118,7 @@ See the official [Greenhouse API reference](https://developers.greenhouse.io/har
 
 ## Version information
 
-- **Package version:** 0.17.77
-- **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
+- **Package version:** 0.17.91
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/greenhouse/CHANGELOG.md)
