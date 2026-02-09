@@ -24,16 +24,10 @@ object HstoreFieldType :
     )
 
 object HstoreAccessor : JdbcAccessor<Map<String, String?>> {
+    @Suppress("UNCHECKED_CAST")
     override fun get(rs: ResultSet, colIdx: Int): Map<String, String?>? {
-        val str = rs.getString(colIdx) ?: return null
-        return str.split(",")
-            .map { it.split("=>", limit = 2) } // "key => value" to ["key", "value"]
-            .associate { parts ->
-                val key = parts[0].trim().removeSurrounding("\"")
-                val rawValue = parts[1].trim()
-                val value = if (rawValue == "NULL") null else rawValue.removeSurrounding("\"")
-                key to value
-            }
+        val obj = rs.getObject(colIdx) ?: return null
+        return obj as Map<String, String?>
     }
     override fun set(stmt: PreparedStatement, paramIdx: Int, value: Map<String, String?>) {
         stmt.setString(
