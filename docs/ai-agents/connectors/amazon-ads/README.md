@@ -12,7 +12,7 @@ The Amazon-Ads connector is optimized to handle prompts like these.
 - List all my advertising profiles across marketplaces
 - Show me the profiles for my seller accounts
 - What marketplaces do I have advertising profiles in?
-- List all portfolios for a specific profile
+- List all portfolios for one of my profiles
 - Show me all sponsored product campaigns
 - What campaigns are currently enabled?
 - Find campaigns with a specific targeting type
@@ -41,7 +41,7 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_amazon-ads import AmazonAdsConnector
+from airbyte_agent_amazon_ads import AmazonAdsConnector
 from airbyte_agent_amazon_ads.models import AmazonAdsAuthConfig
 
 connector = AmazonAdsConnector(
@@ -54,7 +54,7 @@ connector = AmazonAdsConnector(
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @AmazonAdsConnector.tool_utils
-async def amazon-ads_execute(entity: str, action: str, params: dict | None = None):
+async def amazon_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -65,40 +65,46 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_amazon-ads import AmazonAdsConnector
+from airbyte_agent_amazon_ads import AmazonAdsConnector, AirbyteAuthConfig
 
 connector = AmazonAdsConnector(
-    external_user_id="<your-scoped-token>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @AmazonAdsConnector.tool_utils
-async def amazon-ads_execute(entity: str, action: str, params: dict | None = None):
+async def amazon_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Profiles | [List](./REFERENCE.md#profiles-list), [Get](./REFERENCE.md#profiles-get) |
+| Profiles | [List](./REFERENCE.md#profiles-list), [Get](./REFERENCE.md#profiles-get), [Search](./REFERENCE.md#profiles-search) |
 | Portfolios | [List](./REFERENCE.md#portfolios-list), [Get](./REFERENCE.md#portfolios-get) |
 | Sponsored Product Campaigns | [List](./REFERENCE.md#sponsored-product-campaigns-list), [Get](./REFERENCE.md#sponsored-product-campaigns-get) |
 
 
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
+### Authentication and configuration
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
 
-For the service's official API docs, see the [Amazon-Ads API reference](https://advertising.amazon.com/API/docs/en-us).
+### Amazon-Ads API docs
+
+See the official [Amazon-Ads API reference](https://advertising.amazon.com/API/docs/en-us).
 
 ## Version information
 
-- **Package version:** 0.1.9
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
+- **Package version:** 0.1.45
+- **Connector version:** 1.0.8
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/amazon-ads/CHANGELOG.md)

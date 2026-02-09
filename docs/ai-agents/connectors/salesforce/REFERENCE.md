@@ -8,6 +8,7 @@ The Salesforce connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
+| Sobjects | [List](#sobjects-list) |
 | Accounts | [List](#accounts-list), [Get](#accounts-get), [API Search](#accounts-api-search), [Search](#accounts-search) |
 | Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Search](#contacts-search) |
 | Leads | [List](#leads-list), [Get](#leads-get), [API Search](#leads-api-search), [Search](#leads-search) |
@@ -20,6 +21,56 @@ The Salesforce connector supports the following entities and actions.
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Query | [List](#query-list) |
+
+## Sobjects
+
+### Sobjects List
+
+Returns a list of all available Salesforce objects (sObjects) in the organization.
+This endpoint is used for health checks to verify authentication and connectivity.
+
+
+#### Python SDK
+
+```python
+await salesforce.sobjects.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "sobjects",
+    "action": "list"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `name` | `string` |  |
+| `label` | `null \| string` |  |
+| `labelPlural` | `null \| string` |  |
+| `keyPrefix` | `null \| string` |  |
+| `custom` | `null \| boolean` |  |
+| `queryable` | `null \| boolean` |  |
+| `searchable` | `null \| boolean` |  |
+| `createable` | `null \| boolean` |  |
+| `updateable` | `null \| boolean` |  |
+| `deletable` | `null \| boolean` |  |
+| `urls` | `null \| object` |  |
+
+
+</details>
 
 ## Accounts
 
@@ -40,7 +91,7 @@ await salesforce.accounts.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -70,14 +121,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LI
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -98,7 +152,7 @@ await salesforce.accounts.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -153,7 +207,7 @@ await salesforce.accounts.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -205,7 +259,7 @@ await salesforce.accounts.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -326,7 +380,7 @@ await salesforce.contacts.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -356,14 +410,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMI
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -384,7 +441,7 @@ await salesforce.contacts.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -438,7 +495,7 @@ await salesforce.contacts.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -489,7 +546,7 @@ await salesforce.contacts.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -602,7 +659,7 @@ await salesforce.leads.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -632,14 +689,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100"
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -660,7 +720,7 @@ await salesforce.leads.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -714,7 +774,7 @@ await salesforce.leads.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -765,7 +825,7 @@ await salesforce.leads.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -894,7 +954,7 @@ await salesforce.opportunities.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -924,14 +984,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -952,7 +1015,7 @@ await salesforce.opportunities.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1006,7 +1069,7 @@ await salesforce.opportunities.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1057,7 +1120,7 @@ await salesforce.opportunities.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1170,7 +1233,7 @@ await salesforce.tasks.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1200,14 +1263,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 1
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Subject` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Subject` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -1228,7 +1294,7 @@ await salesforce.tasks.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1282,7 +1348,7 @@ await salesforce.tasks.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1333,7 +1399,7 @@ await salesforce.tasks.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1442,7 +1508,7 @@ await salesforce.events.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1472,14 +1538,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime > TODAY LIMIT 5
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Subject` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Subject` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -1500,7 +1569,7 @@ await salesforce.events.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1554,7 +1623,7 @@ await salesforce.events.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1609,7 +1678,7 @@ await salesforce.campaigns.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1639,14 +1708,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50"
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -1667,7 +1739,7 @@ await salesforce.campaigns.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1721,7 +1793,7 @@ await salesforce.campaigns.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1776,7 +1848,7 @@ await salesforce.cases.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1806,15 +1878,18 @@ Example: "SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100"
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `CaseNumber` | `string` |  |
+| `Subject` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].CaseNumber` | `string` |  |
-| `records[].Subject` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -1835,7 +1910,7 @@ await salesforce.cases.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1890,7 +1965,7 @@ await salesforce.cases.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1945,7 +2020,7 @@ await salesforce.notes.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1975,14 +2050,17 @@ Example: "SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Title` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Title` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -2003,7 +2081,7 @@ await salesforce.notes.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2057,7 +2135,7 @@ await salesforce.notes.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2113,7 +2191,7 @@ await salesforce.content_versions.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2143,19 +2221,22 @@ Example: "SELECT Id, Title, FileExtension, ContentSize FROM ContentVersion WHERE
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Title` | `string` |  |
+| `FileExtension` | `string` |  |
+| `ContentSize` | `integer` |  |
+| `ContentDocumentId` | `string` |  |
+| `VersionNumber` | `string` |  |
+| `IsLatest` | `boolean` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Title` | `string` |  |
-| `records[].FileExtension` | `string` |  |
-| `records[].ContentSize` | `integer` |  |
-| `records[].ContentDocumentId` | `string` |  |
-| `records[].VersionNumber` | `string` |  |
-| `records[].IsLatest` | `boolean` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -2176,7 +2257,7 @@ await salesforce.content_versions.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2238,7 +2319,7 @@ async for chunk in salesforce.content_versions.download(    id="<str>"):# Proces
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2281,7 +2362,7 @@ await salesforce.attachments.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2311,17 +2392,20 @@ Example: "SELECT Id, Name, ContentType, BodyLength, ParentId FROM Attachment WHE
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `ContentType` | `string` |  |
+| `BodyLength` | `integer` |  |
+| `ParentId` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].ContentType` | `string` |  |
-| `records[].BodyLength` | `integer` |  |
-| `records[].ParentId` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
@@ -2343,7 +2427,7 @@ await salesforce.attachments.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2403,7 +2487,7 @@ async for chunk in salesforce.attachments.download(    id="<str>"):# Process eac
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2445,7 +2529,7 @@ await salesforce.query.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2473,16 +2557,14 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-#### Records
+
+
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-
 
 </details>
-
 

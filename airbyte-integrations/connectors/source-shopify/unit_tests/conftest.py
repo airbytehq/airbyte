@@ -740,6 +740,15 @@ def collections_jsonl_content_example():
 
 
 @pytest.fixture
+def collection_products_jsonl_content_example():
+    return """{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/270889287869","handle":"frontpage","updatedAt":"2023-09-05T14:06:59Z"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/6796220989629","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/6796825198781","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
+{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/273278566589","handle":"test-collection","updatedAt":"2023-09-05T14:12:04Z"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/7654321098765","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}\n"""
+
+
+@pytest.fixture
 def transactions_jsonl_content_example():
     return """{"__typename":"Order","id":"gid:\/\/shopify\/Order\/4554821468349","currency":"USD","transactions":[{"id":"gid:\/\/shopify\/OrderTransaction\/5721110872253","errorCode":null,"test":true,"kind":"SALE","amount":"57.23","createdAt":"2023-06-15T12:16:52Z","status":"SUCCESS","processedAt":"2023-06-15T12:16:52Z","gateway":"bogus","paymentId":"c25048437719229.1","accountNumber":"•••• •••• •••• 1","formattedGateway":"(For Testing) Bogus Gateway","manuallyCapturable":false,"receipt":"{}","parentTransaction":null,"authorization":"53433","totalUnsettledSet":{"presentmentMoney":{"amount":"0.0","currency":"USD"},"shopMoney":{"amount":"0.0","currency":"USD"}},"amountSet":{"shop_money":{"amount":"57.23","currency":"USD"}},"fees":[],"paymentDetails":{"avsResultCode":null,"cvvResultCode":null,"creditCardBin":"1","creditCardCompany":"Bogus","creditCardNumber":"•••• •••• •••• 1","creditCardName":"Bogus Gateway","creditCardWallet":null,"creditCardExpirationYear":2025,"creditCardExpirationMonth":2}},{"id":"gid:\/\/shopify\/OrderTransaction\/5721170968765","errorCode":null,"test":true,"kind":"REFUND","amount":"57.23","createdAt":"2022-06-15T13:25:42Z","status":"SUCCESS","processedAt":"2022-06-15T13:25:42Z","gateway":"bogus","paymentId":"c25048437719229.2","accountNumber":"•••• •••• •••• 1","formattedGateway":"(For Testing) Bogus Gateway","manuallyCapturable":false,"receipt":"{}","parentTransaction":{"parentId":"gid:\/\/shopify\/OrderTransaction\/5721110872253"},"authorization":null,"totalUnsettledSet":{"presentmentMoney":{"amount":"0.0","currency":"USD"},"shopMoney":{"amount":"0.0","currency":"USD"}},"amountSet":{"shop_money":{"amount":"57.23","currency":"USD"}},"fees":[],"paymentDetails":{"avsResultCode":null,"cvvResultCode":null,"creditCardBin":"1","creditCardCompany":"Bogus","creditCardNumber":"•••• •••• •••• 1","creditCardName":"Bogus Gateway","creditCardWallet":null,"creditCardExpirationYear":2025,"creditCardExpirationMonth":2}}]}\n"""
 
@@ -1491,6 +1500,39 @@ def collections_response_expected_result():
             "products_count": 26,
             "admin_graphql_api_id": "gid://shopify/Collection/273278566589",
             "published_at": "2021-07-19T14:02:54+00:00",
+            "shop_url": "test_shop",
+        },
+    ]
+
+
+@pytest.fixture
+def collection_products_response_expected_result():
+    return [
+        {
+            "collection_id": 270889287869,
+            "collection_admin_graphql_api_id": "gid://shopify/Collection/270889287869",
+            "collection_handle": "frontpage",
+            "collection_updated_at": "2023-09-05T14:06:59+00:00",
+            "product_id": 6796220989629,
+            "product_admin_graphql_api_id": "gid://shopify/Product/6796220989629",
+            "shop_url": "test_shop",
+        },
+        {
+            "collection_id": 270889287869,
+            "collection_admin_graphql_api_id": "gid://shopify/Collection/270889287869",
+            "collection_handle": "frontpage",
+            "collection_updated_at": "2023-09-05T14:06:59+00:00",
+            "product_id": 6796825198781,
+            "product_admin_graphql_api_id": "gid://shopify/Product/6796825198781",
+            "shop_url": "test_shop",
+        },
+        {
+            "collection_id": 273278566589,
+            "collection_admin_graphql_api_id": "gid://shopify/Collection/273278566589",
+            "collection_handle": "test-collection",
+            "collection_updated_at": "2023-09-05T14:12:04+00:00",
+            "product_id": 7654321098765,
+            "product_admin_graphql_api_id": "gid://shopify/Product/7654321098765",
             "shop_url": "test_shop",
         },
     ]
