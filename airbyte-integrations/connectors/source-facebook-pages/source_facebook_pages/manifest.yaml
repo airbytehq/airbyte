@@ -352,4 +352,4 @@ streams:
 
 check:
   stream_names:
-    - "post"
+    - "page_insights"
