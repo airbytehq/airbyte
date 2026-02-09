@@ -18,6 +18,7 @@ from source_google_ads.components import (
 )
 
 from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.types import StreamSlice
 
@@ -671,10 +672,11 @@ class TestGoogleAdsRetriever:
         result = retriever._split_slice(stream_slice)
         assert result is None
 
-    def test_split_slice_raises_for_non_date_slice(self):
+    def test_split_slice_returns_none_for_non_date_slice(self):
         """
-        Verify that _split_slice raises AirbyteTracedException for slices without date fields.
-        This is because slice splitting cannot work without date boundaries.
+        Verify that _split_slice returns None for slices without date fields.
+        This allows full refresh streams (which don't have date boundaries) to be retried
+        without slice splitting.
         """
         retriever = GoogleAdsRetriever(
             name="test_stream",
@@ -690,9 +692,72 @@ class TestGoogleAdsRetriever:
             cursor_slice={},
         )
 
-        with pytest.raises(AirbyteTracedException) as exc_info:
-            retriever._split_slice(stream_slice)
-        assert "lacks date boundaries" in str(exc_info.value.message)
+        result = retriever._split_slice(stream_slice)
+        assert result is None
+
+    def test_chunked_encoding_error_retries_on_full_refresh_slice(self):
+        """
+        Verify that ChunkedEncodingError on a full refresh slice (no date boundaries)
+        triggers retry with appropriate log message.
+        """
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=MagicMock(),
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        call_count = 0
+
+        def mock_read_pages_with_error(records_generator_fn, stream_slice):
+            nonlocal call_count
+            call_count += 1
+            if call_count < 3:
+                raise ChunkedEncodingError("Connection broken")
+            yield {"id": "1", "name": "record1"}
+
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={},  # No date boundaries - full refresh
+        )
+
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages_with_error):
+            records = list(retriever._read_pages(lambda x: [], stream_slice))
+
+        assert call_count == 3
+        assert len(records) == 1
+
+    def test_chunked_encoding_error_raises_after_max_retries_on_full_refresh_slice(self):
+        """
+        Verify that ChunkedEncodingError on a full refresh slice raises AirbyteTracedException
+        after MAX_RETRIES attempts with appropriate error message.
+        """
+        retriever = GoogleAdsRetriever(
+            name="test_stream",
+            primary_key="id",
+            requester=MagicMock(),
+            record_selector=MagicMock(),
+            config={},
+            parameters={},
+        )
+
+        def mock_read_pages_always_fails(records_generator_fn, stream_slice):
+            raise ChunkedEncodingError("Connection broken")
+            yield  # Make this a generator
+
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={},  # No date boundaries - full refresh
+        )
+
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages_always_fails):
+            with pytest.raises(AirbyteTracedException) as exc_info:
+                list(retriever._read_pages(lambda x: [], stream_slice))
+
+        assert "retries were exhausted" in str(exc_info.value.message)
+        assert "full refresh slice" in str(exc_info.value.internal_message)
 
 
 _GOOGLE_ADS_RETRIEVER_CLASS = "source_google_ads.components.GoogleAdsRetriever"
