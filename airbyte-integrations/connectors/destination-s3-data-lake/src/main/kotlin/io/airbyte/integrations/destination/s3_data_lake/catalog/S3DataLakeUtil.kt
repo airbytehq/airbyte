@@ -86,7 +86,13 @@ class S3DataLakeUtil(
                 buildNessieProperties(config, catalogConfig, s3Properties)
             }
             is GlueCatalogConfiguration ->
-                buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region, s3Properties)
+                buildGlueProperties(
+                    config,
+                    catalogConfig,
+                    icebergCatalogConfig,
+                    region,
+                    s3Properties
+                )
             is RestCatalogConfiguration -> {
                 //                System.setProperty(AWS_REGION, region)
                 buildRestProperties(config, catalogConfig, s3Properties, region)
@@ -237,7 +243,9 @@ class S3DataLakeUtil(
                 buildKeyBasedClientProperties(config)
             }
 
-        return baseGlueProperties + clientProperties + s3Properties.filterKeys { it != CatalogProperties.WAREHOUSE_LOCATION }
+        return baseGlueProperties +
+            clientProperties +
+            s3Properties.filterKeys { it != CatalogProperties.WAREHOUSE_LOCATION }
     }
 
     private fun buildRoleBasedClientProperties(
