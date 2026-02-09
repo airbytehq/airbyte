@@ -161,7 +161,7 @@ def traced_exception(fb_exception: FacebookRequestError):
     """
     msg = fb_exception.api_error_message() or fb_exception.get_message()
 
-    if "Error validating access token" in msg:
+    if "Error validating access token" in msg or "Invalid OAuth access token" in msg:
         failure_type = FailureType.config_error
         friendly_msg = "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
 
