@@ -31,7 +31,7 @@ class S3DataLakeAggregateFactory(
             icebergTableWriterFactory.create(
                 table = state.table,
                 generationId = icebergUtil.constructGenerationIdSuffix(stream),
-                importType = stream.importType,
+                importType = stream.tableSchema.importType,
                 schema = state.schema
             )
 
