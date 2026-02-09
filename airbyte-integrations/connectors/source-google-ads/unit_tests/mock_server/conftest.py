@@ -2,7 +2,6 @@
 
 from typing import Any, List, Mapping, Optional
 
-import pytest
 from source_google_ads.source import SourceGoogleAds
 
 from airbyte_cdk.models import AirbyteStateMessage
