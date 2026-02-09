@@ -8,11 +8,6 @@ from source_google_ads.source import SourceGoogleAds
 from airbyte_cdk.models import AirbyteStateMessage
 
 
-@pytest.fixture(autouse=True)
-def mock_oauth_call():
-    yield
-
-
 def create_source(
     config: Mapping[str, Any],
     catalog: Any = None,

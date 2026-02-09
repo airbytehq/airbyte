@@ -647,7 +647,8 @@ definitions:
       requester:
         type: CustomRequester
         class_name: "source_google_ads.components.ClickViewHttpRequester"
-        name: "placeholder"
+        # Name is required by CDK for CustomRequester; actual stream name propagated at runtime
+        name: "custom_requester"
         schema_loader:
           type: InlineSchemaLoader
           schema:

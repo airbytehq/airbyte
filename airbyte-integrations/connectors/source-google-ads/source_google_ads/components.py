@@ -451,7 +451,7 @@ class CriterionRetriever(SimpleRetriever):
     Retrieves Criterion records based on ChangeStatus updates.
 
     For each parent_slice:
-      1) Emits a “deleted” record for any REMOVED status.
+      1) Emits a "deleted" record for any REMOVED status.
       2) Batches the remaining IDs into a single fetch.
       3) Attaches the original ChangeStatus timestamp to each returned record.
     """
@@ -460,6 +460,8 @@ class CriterionRetriever(SimpleRetriever):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
+        # CustomRequester requires a name at init time but the real stream name is only
+        # available after the retriever is fully constructed; propagate it here.
         if hasattr(self.requester, "name"):
             self.requester.name = self.name
 
@@ -543,6 +545,8 @@ class GoogleAdsRetriever(SimpleRetriever):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
+        # CustomRequester requires a name at init time but the real stream name is only
+        # available after the retriever is fully constructed; propagate it here.
         if hasattr(self.requester, "name"):
             self.requester.name = self.name
 
@@ -566,6 +570,10 @@ class GoogleAdsRetriever(SimpleRetriever):
         - For incremental streams with date boundaries: split the slice in half and retry each sub-slice
         - For full refresh streams without date boundaries: retry the same slice up to MAX_RETRIES times
         - For incremental streams at minimum slice size (1 day): retry up to MAX_RETRIES times
+
+        Note: if the error occurs after some records have already been yielded, those records
+        may be re-emitted on retry. This is acceptable because all Google Ads streams have
+        primary keys and destinations deduplicate accordingly.
         """
         try:
             yield from super()._read_pages(records_generator_fn, stream_slice)
