@@ -264,4 +264,4 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
 | `selected_connection_template_tags` | Tags to filter which connection templates are used. |
 | `selected_connection_template_tags_mode` | `any` or `all`. |
 
-You can manage tags through the Agent Engine UI or the [API](https://api.airbyte.ai/api/v1/docs). -->
+You can manage tags through the Agent Engine UI or the [API](/ai-agents/api). -->
