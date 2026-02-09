@@ -77,6 +77,14 @@ To authenticate with Apache Polaris, follow these steps:
 
 4. Ensure that your Polaris catalog has been configured with the appropriate storage credentials to access your GCS bucket.
 
+## Supported sync modes
+
+| Sync mode                  | Supported |
+|----------------------------|-----------|
+| Full Refresh - Overwrite   | Yes       |
+| Incremental - Append       | Yes       |
+| Incremental - Append+Dedup | Yes       |
+
 ## Configuration
 
 In Airbyte, configure the following fields:
@@ -88,11 +96,17 @@ In Airbyte, configure the following fields:
 | **GCS Bucket Name**      | Yes        | The name of your GCS bucket (for example: `my-data-lake`)                    |
 | **Service Account JSON** | Yes        | The complete JSON content from your service account key file                 |
 | **GCP Project ID**       | No         | The GCP project ID. If not specified, extracted from service account         |
-| **GCP Location**         | Yes        | The GCP location/region (for example: `us`, `us-central1`, `eu`)             |
+| **GCP Location**         | Yes        | The GCP location/region for BigLake metastore resources (for example: `us`)  |
 | **Warehouse Location**   | Yes        | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`)  |
 | **Catalog Type**         | Yes        | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`            |
 | **Main Branch Name**     | No         | Iceberg branch name (default: `main`)                                        |
 | **Default Namespace**    | No         | Default namespace for tables (for example: `default`, `airbyte_data`)        |
+
+**GCP Location** is used for BigLake metastore resources. See [BigLake locations](https://cloud.google.com/biglake/docs/locations) for available regions.
+
+**Warehouse Location** must include the `gs://` storage protocol prefix.
+
+**Default Namespace** is only used when the **Destination Namespace** setting is set to **Destination-defined** or **Source-defined**.
 
 ### BigLake-specific fields
 
@@ -137,6 +151,19 @@ This is the full mapping between Airbyte types and Iceberg types.
 | Union                      | String (JSON-serialized value) |
 
 *Airbyte converts the `time with timezone` and `timestamp with timezone` types to Coordinated Universal Time (UTC) before writing to the Iceberg file.
+
+### Column name sanitization
+
+BigLake external tables require column names to contain only alphanumeric characters and underscores. The connector automatically transforms column names that contain special characters to meet this requirement. For example, a source column named `user-email` becomes `user_email` in Iceberg.
+
+If two streams produce identical table names after sanitization, the connector reports a naming conflict error and the sync fails. Rename the conflicting streams in your source to resolve this.
+
+### Data range limitations
+
+The connector maps Airbyte integers to Iceberg Long and Airbyte numbers to Iceberg Double. Values outside the supported ranges are replaced with `null`, and these changes are recorded in the `_airbyte_meta` column:
+
+- **Integer**: values outside the range of -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 (Long) are nulled.
+- **Number**: values outside the range of Double (-1.7976931348623157 &times; 10<sup>308</sup> to 1.7976931348623157 &times; 10<sup>308</sup>) are nulled.
 
 ### Managing schema evolution
 
@@ -204,7 +231,7 @@ If compaction runs simultaneously with the sync, it would delete files from the 
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.0.7   | 2026-02-04 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
+| 1.0.7   | 2026-02-09 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
 | 1.0.6   | 2026-01-23 | [72300](https://github.com/airbytehq/airbyte/pull/72300)     | Upgrade CDK to 0.2.0                                                                  |
 | 1.0.5   | 2026-01-14 | [71760](https://github.com/airbytehq/airbyte/pull/71760)     | Restore integration tests in CI. Workaround DI error.                                 |
 | 1.0.4   | 2026-01-12 | [71227](https://github.com/airbytehq/airbyte/pull/71227)     | Add speed mode support with PROTOBUF serialization                                    |
