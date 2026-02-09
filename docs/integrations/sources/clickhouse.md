@@ -80,6 +80,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                   |
 |:--------|:-----------|:------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.3.0-rc.2 | 2026-02-09 | [72970](https://github.com/airbytehq/airbyte/pull/72970) | Re-publish rc.1 as rc.2 to fix strict-encrypt variant publishing |
 | 0.3.0-rc.1 | 2026-02-03 | [72395](https://github.com/airbytehq/airbyte/pull/72395) | Upgrade ClickHouse JDBC driver to 0.9.5 with custom type mapping |
 | 0.2.6 | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714) | Revert JDBC driver upgrade |
 | 0.2.5 | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66482) | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0 |
@@ -111,6 +112,8 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                   |
 | :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.3.0-rc.2 | 2026-02-09 | [72970](https://github.com/airbytehq/airbyte/pull/72970) | Re-publish rc.1 as rc.2 to fix strict-encrypt variant publishing |
+| 0.3.0-rc.1 | 2026-02-03 | [72395](https://github.com/airbytehq/airbyte/pull/72395) | Upgrade ClickHouse JDBC driver to 0.9.5 with custom type mapping |
 | 0.2.6   | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714)    | Revert JDBC driver upgrade                                                                                |
 | 0.2.5 | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66482) | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0 |
 | 0.2.4 | 2025-07-10 | [62913](https://github.com/airbytehq/airbyte/pull/62913) | Convert to new gradle build flow |
