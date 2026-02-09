@@ -608,14 +608,10 @@ class GoogleAdsRetriever(SimpleRetriever):
                             failure_type=FailureType.transient_error,
                         )
             else:
-                first_slice, second_slice = sub_slices
-                logger.warning(
-                    f"ChunkedEncodingError occurred. Splitting slice into smaller ranges: "
-                    f"[{first_slice.cursor_slice.get('start_time')} - {first_slice.cursor_slice.get('end_time')}] and "
-                    f"[{second_slice.cursor_slice.get('start_time')} - {second_slice.cursor_slice.get('end_time')}]"
-                )
-                yield from self._read_pages_with_slice_splitting(records_generator_fn, first_slice, retry_count=0)
-                yield from self._read_pages_with_slice_splitting(records_generator_fn, second_slice, retry_count=0)
+                slice_ranges = [f"[{s.cursor_slice.get('start_time')} - {s.cursor_slice.get('end_time')}]" for s in sub_slices]
+                logger.warning(f"ChunkedEncodingError occurred. Splitting slice into smaller ranges: {' and '.join(slice_ranges)}")
+                for sub_slice in sub_slices:
+                    yield from self._read_pages_with_slice_splitting(records_generator_fn, sub_slice, retry_count=0)
 
     def _split_slice(self, stream_slice: StreamSlice) -> Optional[Tuple[StreamSlice, StreamSlice]]:
         """
