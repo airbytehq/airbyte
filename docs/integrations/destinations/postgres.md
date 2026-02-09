@@ -34,12 +34,12 @@ You'll need the following information to configure the Postgres destination:
   number (5432).
 - **Username**
 - **Password**
-- **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in
-  the search-path. These schemas will be used to resolve unqualified object names used in statements
-  executed over this connection.
+- **Default Schema** - The schema where tables are written. Defaults to `public` if not specified.
 - **Database** - The database name. The default is to connect to a database with the same name as
   the user name.
 - **JDBC URL Params** (optional)
+- **CDC Deletion Mode** (optional) - Controls how CDC deletions are handled. Choose **Hard delete** to propagate source deletions to the destination, or **Soft delete** to keep a tombstone record. Defaults to hard delete.
+- **Unconstrained Numeric Columns** (optional) - When enabled, creates numeric columns as unconstrained `DECIMAL` instead of `DECIMAL(38, 9)`, allowing increased precision. Disabled by default for backward compatibility, but recommended to enable.
 
 [Refer to this guide for more details](https://jdbc.postgresql.org/documentation/use/#connecting-to-the-database)
 
@@ -118,14 +118,8 @@ When using the legacy "Raw tables only" mode, raw tables and schemas are created
 4. Enter a name for your destination.
 5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
    Postgres database.
-6. List the **Default Schemas**.
-
-   :::note
-
-   The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
-   used at one time. No schemas set explicitly - will sync all of existing.
-
-   :::
+6. For **Default Schema**, enter the schema where tables are written. The `public` schema is
+   used by default if not specified.
 
 7. For **User** and **Password**, enter the username and password you created in
    [Step 1](#step-1-set-up-postgres).
@@ -293,7 +287,7 @@ For vendor-specific limitations and known issues, see the [Postgres Troubleshoot
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.10  | 2026-02-04 | [72858](https://github.com/airbytehq/airbyte/pull/72858)   | Upgrade CDK to 0.2.8                                                                                                                                                                   |
+| 3.0.10  | 2026-02-09 | [72858](https://github.com/airbytehq/airbyte/pull/72858)   | Upgrade CDK to 0.2.8                                                                                                                                                                   |
 | 3.0.9   | 2026-01-28 | [72292](https://github.com/airbytehq/airbyte/pull/72292)   | Upgrade CDK to 0.2.0                                                                                                                                                                   |
 | 3.0.8 | 2026-01-28 | [72412](https://github.com/airbytehq/airbyte/pull/72412) | Promoting release candidate 3.0.8-rc1 to a main version. |
 | 3.0.8-rc1 | 2026-01-22 | [71183](https://github.com/airbytehq/airbyte/pull/71183) | Refactor schema utilities to follow CDK pattern.                                                                                                                                       |
