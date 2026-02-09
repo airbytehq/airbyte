@@ -449,6 +449,15 @@ jobs:
           connector_name=${{ matrix.connector }}
           airbyte-ops local connector qa --name ${connector_name%-strict-encrypt}
 
+      - name: Sonar Replication Compatibility Check
+        if: matrix.connector && startsWith(matrix.connector, 'source-')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          connector_name=${{ matrix.connector }}
+          airbyte-ops local connector sonar-compat-check --name ${connector_name%-strict-encrypt}
+        continue-on-error: true
+
       - name: Detect Python CDK Prerelease Versions
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
