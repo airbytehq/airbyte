@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, List, MutableMapping
 
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
@@ -17,9 +17,11 @@ CLIENT_ID = "test_client_id"
 CLIENT_SECRET = "test_client_secret"
 DATE_FORMAT = "%Y-%m-%d"
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-END_DATE = "2023-01-01T23:59:59Z"
 NOW = ab_datetime_now()
-START_DATE = "2023-01-01T00:00:00Z"
+_start_dt = (NOW - timedelta(days=365)).replace(hour=0, minute=0, second=0, microsecond=0)
+START_DATE = _start_dt.strftime(DATE_TIME_FORMAT)
+END_DATE = _start_dt.replace(hour=23, minute=59, second=59).strftime(DATE_TIME_FORMAT)
+START_DATE_EPOCH = int(_start_dt.timestamp())
 
 
 class ConfigBuilder:
