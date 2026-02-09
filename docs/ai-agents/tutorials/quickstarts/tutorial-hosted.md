@@ -10,24 +10,24 @@ import TabItem from '@theme/TabItem';
 
 When you run connector operations with the [Python SDK](tutorial-python), you store API credentials locally and provide them directly to the API through agent connectors. This approach, while viable at first, reaches limits quickly. You may find yourself dealing with large numbers of customers who have their own environments and credentials. You may not want to manage these credentials and or store them at all.
 
-With hosted execution, sensitive API credentials never leave Airbyte Cloud, multiple end-users can have separate credentials managed centrally, and Airbyte handles credential lifecycle (refresh, rotation) automatically.
+With hosted execution, sensitive API credentials never leave Airbyte, multiple end-users can have separate credentials managed centrally, and Airbyte handles credential lifecycle (refresh, rotation) automatically.
 
 Generally, local mode is most appropriate for development, testing, single-user scenarios, and cases where you need local control over credentials. Hosted mode is most appropriate for production applications, multi-tenant scenarios, when security is a priority, and when you want centralized credential management.
 
 | Aspect                   | Local Mode                         | Hosted Mode                           |
 | ------------------------ | ---------------------------------- | ------------------------------------- |
-| **Credentials provided** | Actual API keys/tokens             | Airbyte Cloud client credentials      |
-| **Credential storage**   | Managed by you locally             | Stored securely in Airbyte Cloud      |
-| **API calls**            | Direct HTTP calls to external APIs | API calls proxy through Airbyte Cloud |
+| **Credentials provided** | Actual API keys/tokens             | Agent Engine client credentials      |
+| **Credential storage**   | Managed by you locally             | Stored securely in Airbyte      |
+| **API calls**            | Direct HTTP calls to external APIs | API calls proxy through Airbyte |
 | **Entity cache**         | Not available                      | Available                             |
 
 ## Prerequisites
 
 Before using hosted execution mode, ensure you have:
 
-1. An Airbyte Cloud account and credentials:
+1. An Agent Engine account and credentials:
 
-2. Airbyte credentials
+2. Agent Engine credentials
 
    - Client ID
    - Client Secret
@@ -36,7 +36,7 @@ Before using hosted execution mode, ensure you have:
 
 If you're using the Python SDK, you also need:
 
-1. Python 3.11 or later
+1. Python 3.13 or later
 
 2. An installed agent connector package. For example:
 
@@ -78,7 +78,7 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
 
 ## Create a connector
 
-Once you have a scoped token, create a connector with your API credentials. Airbyte stores these credentials securely in Airbyte Cloud. You need the following values.
+Once you have a scoped token, create a connector with your API credentials. Airbyte stores these credentials securely in the Agent Engine. You need the following values.
 
 - `connector_type`: The case-insensitive name or ID of the source template for the connector type. For example, `GitHub` or `github`. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token.
 
@@ -116,7 +116,7 @@ Once you create your connector, you can use the connector in hosted mode.
 <Tabs>
 <TabItem value="python" label="Python" default>
 
-Instead of providing API credentials directly, provide your Airbyte Cloud credentials and the connector ID:
+Instead of providing API credentials directly, provide your Agent Engine credentials and the connector ID:
 
 ```python
 from airbyte_agent_github import GithubConnector
