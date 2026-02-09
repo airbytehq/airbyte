@@ -26,6 +26,7 @@ Using this connector we can extract data from products , packages , orders , dis
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.41 | 2026-02-03 | [72551](https://github.com/airbytehq/airbyte/pull/72551) | Update dependencies |
 | 0.0.40 | 2026-01-20 | [72128](https://github.com/airbytehq/airbyte/pull/72128) | Update dependencies |
 | 0.0.39 | 2026-01-14 | [71533](https://github.com/airbytehq/airbyte/pull/71533) | Update dependencies |
 | 0.0.38 | 2025-12-18 | [70733](https://github.com/airbytehq/airbyte/pull/70733) | Update dependencies |

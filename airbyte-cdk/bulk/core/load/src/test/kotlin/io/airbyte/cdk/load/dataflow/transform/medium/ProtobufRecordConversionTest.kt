@@ -37,6 +37,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
@@ -296,7 +297,8 @@ class ProtobufRecordConversionTest {
                 every { this@mockk.stream } returns this@ProtobufRecordConversionTest.stream
             }
 
-        converter = ProtobufConverter(valueCoercer, validationResultHandler)
+        converter =
+            ProtobufConverter(valueCoercer, validationResultHandler, MediumConverterConfig())
     }
 
     @AfterEach fun tearDown() = unmockkAll()

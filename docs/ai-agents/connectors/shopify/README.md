@@ -11,17 +11,17 @@ orders, products, inventory, and more.
 The Shopify connector is optimized to handle prompts like these.
 
 - List all customers in my Shopify store
-- Show me orders from the last 30 days
-- Get details for customer \{customer_id\}
+- Show me details for a recent customer
 - What products do I have in my store?
-- Show me abandoned checkouts from this week
 - List all locations for my store
-- Get inventory levels for location \{location_id\}
+- Show me inventory levels for a recent location
 - Show me all draft orders
-- What price rules are currently active?
 - List all custom collections in my store
-- Get details for order \{order_id\}
-- Show me product variants for product \{product_id\}
+- Show me details for a recent order
+- Show me product variants for a recent product
+- Show me orders from the last 30 days
+- Show me abandoned checkouts from this week
+- What price rules are currently active?
 
 ## Unsupported questions
 
@@ -71,12 +71,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_shopify import ShopifyConnector
+from airbyte_agent_shopify import ShopifyConnector, AirbyteAuthConfig
 
 connector = ShopifyConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -137,7 +139,7 @@ See the official [Shopify API reference](https://shopify.dev/docs/api/admin-rest
 
 ## Version information
 
-- **Package version:** 0.1.31
-- **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.46
+- **Connector version:** 0.1.7
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/shopify/CHANGELOG.md)
