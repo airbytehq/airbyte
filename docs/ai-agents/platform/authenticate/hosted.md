@@ -13,7 +13,7 @@ When you subscribe to the Agent Engine, you authenticate with Airbyte Cloud usin
 
 ## Token types
 
-The Agent Engine uses a hierarchical token system with three token types: Operator Bearer Tokens for organization-level access, scoped tokens for workspace-level end-user operations, and widget tokens for embedding the authentication module with CORS protection.
+The Agent Engine uses a hierarchical token system with three token types: application tokens for organization-level access, scoped tokens for workspace-level end-user operations, and widget tokens for embedding the authentication module with CORS protection.
 
 For complete details on each token type, how to generate them, and security considerations, see [Token types](/ai-agents/api/#token-types) in the API documentation.
 
@@ -23,7 +23,7 @@ The typical authentication flow for hosted mode involves these steps:
 
 1. **Get an Operator Bearer Token** using your Airbyte credentials.
 
-2. **Generate a Scoped Token** for the customer's workspace.
+2. **Generate a Scoped Token** for the customer.
 
 3. **Create a connector** using the end-user's API credentials. Airbyte stores these credentials securely.
 
@@ -79,21 +79,19 @@ You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints 
 
 When using hosted authentication, follow these best practices:
 
-- **Never expose Operator Bearer Tokens in client-side code**. These tokens provide organization-wide access and should only be used in your backend.
+- **Never expose tokens in client-side code**. Only use tokens in your backend and ensure you frontend calls the backend instead of the API's authentication endpoints.
 
-- **Use scoped tokens for end-user operations**. Scoped tokens are limited to a single workspace and are safer to use in contexts closer to end-users.
+- **Handle token expiration**. Application tokens expire after 15 minutes and scoped tokens expire after 20 minutes. The Python SDK handles token refresh automatically, but if you use the API, you must request new tokens manually.
 
-- **Handle token expiration**. Operator Bearer Tokens expire after 15 minutes and scoped tokens expire after 20 minutes. The Python SDK handles token refresh automatically, but API users must request new tokens manually.
-
-- **Validate the `allowed_origin`** when using widget tokens to ensure requests only come from your application.
+- **Validate the `allowed_origin`** when using widget tokens to ensure requests can only come from your application.
 
 ## When to use hosted mode
 
 Hosted authentication is most appropriate when:
 
-- You're building a production B2B application with multiple end-users.
+- You're building a production application with multiple end-users.
 - You want centralized credential management without storing credentials yourself.
 - You need Airbyte to handle credential lifecycle management, including token refresh.
 - Security and compliance are priorities for your application.
 
-For development, testing, or single-user scenarios, consider using [open source authentication](open-source.md) instead.
+For development, testing, or single-user scenarios, you might find it easier to use [open source authentication](open-source.md).

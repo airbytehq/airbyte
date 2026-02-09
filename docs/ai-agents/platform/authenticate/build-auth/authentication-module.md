@@ -2,7 +2,7 @@
 
 The authentication module (also known as Airbyte Embedded) is a pre-built UI component you embed in your application so your end users can connect their data sources without leaving your app. Instead of building a custom credential collection flow, you integrate Airbyte's widget and let it handle connector selection, credential input, and validation.
 
-When a user completes authentication through the module, Airbyte stores their credentials, creates a source in their workspace, and begins syncing data according to your connection templates.
+When a user completes authentication through the module, Airbyte stores their credentials, creates a source in their customer, and begins syncing data according to your connection templates.
 
 ## Prerequisites
 
@@ -231,7 +231,7 @@ const widget = new AirbyteEmbeddedWidget({
 
 Once a user authenticates through the Authentication module, the following happens.
 
-- Airbyte creates that connector in that user's workspace. If a workspace with the given `workspace_name` already exists, Airbyte adds the connector to the others in that workspace.
+- Airbyte creates that connector in that customer. If a customer with the given `workspace_name` already exists, Airbyte adds the connector to the others in that customer.
 
 - If you configured data replication, Airbyte creates a connection between this connector and your configured destination, then replicates data on the schedule you defined.
 

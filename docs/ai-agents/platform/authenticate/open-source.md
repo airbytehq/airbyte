@@ -70,7 +70,7 @@ Each connector has its own authentication requirements. See the [reference docum
 
 When managing credentials locally, follow these best practices:
 
-- **Use environment variables**: Store credentials in environment variables rather than hardcoding them in your source code. Use a library like `python-dotenv` to load them from a `.env` file during development. Add `.env` files to your `.gitignore` to prevent accidentally committing secrets to version control.
+- **Use environment variables**: Store credentials in environment variables rather than hard coding them in your source code. Use a library like `python-dotenv` to load them from a `.env` file during development. Add `.env` files to your `.gitignore` to prevent accidentally committing secrets to version control.
 
 - **Rotate credentials regularly**: Periodically rotate API keys and tokens.
 
@@ -87,4 +87,4 @@ Open source authentication is most appropriate when:
 - You need full control over credential storage and don't want to use a cloud service.
 - You're building a proof of concept before moving to production.
 
-For production B2B applications with multiple end-users, use [hosted authentication](hosted.md) instead, which provides centralized credential management.
+For production applications with multiple end-users, use [hosted authentication](hosted.md) instead, which provides secure credential management in the Agent Engine.

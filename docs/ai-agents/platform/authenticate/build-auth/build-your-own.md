@@ -41,7 +41,7 @@ Before implementing an OAuth flow, ensure you have:
 
 2. **An bearer token**: See [Authentication](./..) for how to obtain one.
 
-3. **A scoped token**: Required for workspace-level operations. Generate one using your operator token.
+3. **A scoped token**: Required for some customer-level operations. Generate one using your application token.
 
 4. **A redirect URL**: A URL in your app that receives the OAuth callback with the `secret_id`.
 
@@ -122,7 +122,7 @@ Requires a bearer token or scoped token.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `external_user_id` | string | Yes | Your user's identifier. Maps to a workspace name in Airbyte. |
+| `external_user_id` | string | Yes | Your user's identifier. Maps to a customer in Airbyte. |
 | `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`, `Intercom`. |
 | `redirect_url` | string | Yes | URL where Airbyte redirects the user after OAuth consent. Airbyte appends `?secret_id=<value>` to this URL. |
 | `oauth_input_configuration` | object | No | Additional OAuth parameters required by some connectors. |
@@ -331,13 +331,13 @@ app.listen(3000);
 
 ## Troubleshooting
 
-**"Workspace not found" error:**
+**"Workspace not found" or "customer not found" error:**
 
-- Ensure the `external_user_id` you provide in the initiate step matches exactly what you use when creating the connector. Airbyte creates the workspace automatically on first use.
+- Ensure the `external_user_id` you provide in the initiate step matches exactly what you use when creating the connector. Airbyte creates the customer automatically on first use.
 
 **OAuth consent URL returns an error:**
 
-- Verify your OAuth credentials are configured correctly (Part 1).
+- Verify you configured your OAuth credentials correctly (Part 1).
 - Check that the connector supports OAuth authentication.
 - Ensure your redirect URL is properly URL-encoded if it contains special characters.
 
