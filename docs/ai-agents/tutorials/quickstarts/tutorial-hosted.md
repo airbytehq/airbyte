@@ -12,7 +12,7 @@ When you run connector operations with the [Python SDK](tutorial-python), you st
 
 With hosted execution, sensitive API credentials never leave Airbyte Cloud, multiple end-users can have separate credentials managed centrally, and Airbyte handles credential lifecycle (refresh, rotation) automatically.
 
-Generally, local mode is most appropriate for development, testing, single-user scenarios, and cases where you need local control over credentials. Hosted mode is most appropriate for production B2B applications, multi-tenant scenarios, when security is a priority, and when you want centralized credential management.
+Generally, local mode is most appropriate for development, testing, single-user scenarios, and cases where you need local control over credentials. Hosted mode is most appropriate for production applications, multi-tenant scenarios, when security is a priority, and when you want centralized credential management.
 
 | Aspect                   | Local Mode                         | Hosted Mode                           |
 | ------------------------ | ---------------------------------- | ------------------------------------- |
