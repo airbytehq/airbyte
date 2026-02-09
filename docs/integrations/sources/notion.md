@@ -45,7 +45,7 @@ You must be the owner of the Notion workspace to create a new integration associ
 If you are authenticating via Access Token, you will need to manually share each page you want to sync with Airbyte.
 
 1. Navigate to the page(s) you want to share with Airbyte. Click the **•••** menu at the top right of the page, select **Add connections**, and choose the integration you created in Step 1.
-2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to [setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
+2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to [setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
 
 <!-- env:oss -->
 
@@ -102,11 +102,11 @@ The Notion source connector supports the following [sync modes](https://docs.air
 
 The Notion source connector supports the following streams:
 
-- [Blocks](https://developers.notion.com/reference/retrieve-a-block)
-- [Comments](https://developers.notion.com/reference/retrieve-a-comment)
-- [Databases](https://developers.notion.com/reference/retrieve-a-database)
-- [Pages](https://developers.notion.com/reference/retrieve-a-page)
-- [Users](https://developers.notion.com/reference/get-users)
+- [Blocks](https://developers.notion.com/reference/retrieve-a-block): Retrieves the content blocks within your pages, including nested child blocks up to 30 levels deep. Block types `child_page`, `child_database`, and `ai_block` are excluded because they are synced as separate pages or databases, or are unsupported by the API.
+- [Comments](https://developers.notion.com/reference/retrieve-a-comment): Retrieves comments on your pages.
+- [Databases](https://developers.notion.com/reference/retrieve-a-database): Retrieves database objects shared with the integration.
+- [Pages](https://developers.notion.com/reference/retrieve-a-page): Retrieves page objects shared with the integration, including their properties.
+- [Users](https://developers.notion.com/reference/get-users): Retrieves user objects for the workspace.
 
 ## Performance considerations
 
@@ -119,7 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.12 | 2026-02-06 | [72925](https://github.com/airbytehq/airbyte/pull/72925) | Add client-side incremental filtering to blocks stream RecordFilter |
+| 3.3.12 | 2026-02-09 | [72925](https://github.com/airbytehq/airbyte/pull/72925) | Add client-side incremental filtering to blocks stream RecordFilter |
 | 3.3.11 | 2026-01-20 | [71943](https://github.com/airbytehq/airbyte/pull/71943) | Update dependencies |
 | 3.3.10 | 2026-01-14 | [71602](https://github.com/airbytehq/airbyte/pull/71602) | Update dependencies |
 | 3.3.9 | 2025-12-18 | [70534](https://github.com/airbytehq/airbyte/pull/70534) | Update dependencies |
@@ -161,7 +161,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 | 2.1.0       | 2024-02-19 | [35409](https://github.com/airbytehq/airbyte/pull/35409) | Update users stream schema with bot type info fields and block schema with mention type info fields.                                                                   |
 | 2.0.9       | 2024-02-12 | [35155](https://github.com/airbytehq/airbyte/pull/35155) | Manage dependencies with Poetry.                                                                                                                                       |
 | 2.0.8       | 2023-11-01 | [31899](https://github.com/airbytehq/airbyte/pull/31899) | Fix `table_row.cells` property in `Blocks` stream                                                                                                                      |
-| 2.0.7       | 2023-10-31 | [32004](https://github.com/airtybehq/airbyte/pull/32004) | Reduce page_size on 504 errors                                                                                                                                         |
+| 2.0.7       | 2023-10-31 | [32004](https://github.com/airbytehq/airbyte/pull/32004) | Reduce page_size on 504 errors                                                                                                                                         |
 | 2.0.6       | 2023-10-25 | [31825](https://github.com/airbytehq/airbyte/pull/31825) | Increase max_retries on retryable errors                                                                                                                               |
 | 2.0.5       | 2023-10-23 | [31742](https://github.com/airbytehq/airbyte/pull/31742) | Add 'synced_block' property to Blocks schema                                                                                                                           |
 | 2.0.4       | 2023-10-19 | [31625](https://github.com/airbytehq/airbyte/pull/31625) | Fix check_connection method                                                                                                                                            |
