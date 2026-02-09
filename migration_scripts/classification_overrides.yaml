@@ -18,6 +18,33 @@ source-github.repository: config  # GitHub repo identifier (owner/repo), not sen
 source-github.repositories: config  # List of repos to sync, not sensitive
 source-github.credentials_api_url: config  # GitHub API URL (public), not sensitive
 
+# Database connectors
+source-postgres.replication_method: config  # CDC/standard replication setting
+source-postgres.ssl_mode: config  # SSL connection mode
+source-postgres.tunnel_method: config  # SSH tunnel configuration metadata
+
+source-mysql.replication_method: config  # CDC/standard replication setting
+source-mysql.ssl_mode: config  # SSL connection mode
+source-mysql.tunnel_method: config  # SSH tunnel configuration metadata
+
+# SaaS connectors
+source-salesforce.is_sandbox: config  # Boolean flag for sandbox/production
+source-salesforce.auth_type: config  # Metadata about which auth method is used
+source-salesforce.credentials_client_id: config  # OAuth client ID (public identifier)
+
+source-hubspot.credentials_client_id: config  # OAuth client ID (public identifier)
+source-hubspot.credentials_credentials_title: config  # Metadata about auth type
+
+source-slack.lookback_window: config  # Time range for syncing messages
+source-slack.join_channels: config  # Boolean flag for channel joining behavior
+source-slack.channel_filter: config  # Channel filter configuration
+
+source-jira.projects: config  # List of Jira projects to sync
+
+source-shopify.shop: config  # Shop domain/name identifier
+source-shopify.bulk_window_in_days: config  # Time range for bulk operations
+source-shopify.fetch_transactions_user_id: config  # Boolean flag for fetching transaction user IDs
+
 
 # Global overrides (apply to all connectors)
 _global:

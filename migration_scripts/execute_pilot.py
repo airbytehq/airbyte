@@ -23,9 +23,19 @@ from pathlib import Path
 
 # Pilot connectors for testing
 PILOT_CONNECTORS = [
-    'source-stripe',      # Simple API key auth
-    'source-github',      # Token-based auth
-    'source-service-now'  # Username + password login
+    # First batch (completed)
+    'source-stripe',       # Simple API key auth
+    'source-github',       # Token-based auth
+    'source-service-now',  # Username + password login
+
+    # Second batch (new)
+    'source-postgres',     # Database credentials
+    'source-mysql',        # Database credentials
+    'source-salesforce',   # OAuth/JWT
+    'source-hubspot',      # API key or OAuth
+    'source-slack',        # OAuth token
+    'source-jira',         # API token/basic auth
+    'source-shopify',      # API key/OAuth
 ]
 
 
