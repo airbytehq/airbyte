@@ -65,7 +65,7 @@ Create a bucket policy.
 
 #### Authenticate {#authentication-s3}
 
-In most cases, you authenticate with an IAM user. If you're using Airbyte Cloud with the Glue catalog, you can authenticate with an IAM role.
+In most cases, you authenticate with an IAM user. If you're using Airbyte Cloud with the Glue catalog, you can authenticate with an IAM role. If you're running Airbyte Self-Managed on an EC2 instance with the Glue catalog, you can authenticate with an instance profile.
 
 <details>
   <summary>Authenticate with an IAM user (Self-Managed or Cloud, with any catalog)</summary>
@@ -130,13 +130,30 @@ To use S3 authentication with an IAM role, an Airbyte team member must enable it
 
 <!-- /env:cloud -->
 
+<details>
+<summary>Authenticate with an instance profile (Self-Managed with Glue catalog only)</summary>
+
+If your Airbyte instance runs on an EC2 instance with an [IAM instance profile](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html), the connector can use the instance's credentials without explicit access keys.
+
+1. Attach the S3 and Glue policy you created earlier to the IAM role associated with your EC2 instance profile.
+
+2. In Airbyte, select **Glue** as the catalog and leave the **AWS Access Key ID** and **AWS Secret Access Key** fields empty. The connector automatically uses the instance profile credentials.
+
+</details>
+
 ### Iceberg catalog setup and permissions
 
 The rest of the setup process differs depending on the catalog you're using.
 
 #### REST
 
-Enter the URI of your REST catalog. You may also need to enter the default namespace.
+To configure a REST catalog:
+
+1. Set the URI of your REST catalog.
+
+2. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
+
+3. If applicable, set the default namespace.
 
 #### AWS Glue
 
@@ -318,7 +335,7 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 - In each sync, each microbatch creates a new snapshot.
 
-- During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch and replaces the `main` branch with the `airbyte_staging` at the end of the sync. Since most query engines target the `main` branch,  people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version.
+- During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch and replaces the `main` branch with the `airbyte_staging` at the end of the sync. Since most query engines target the `main` branch, people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version.
 
 ### Branch replacement
 
@@ -375,9 +392,9 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.44      | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                               |
-| 0.3.43      | 2026-01-29 | [72482](https://github.com/airbytehq/airbyte/pull/72482)   | Release on dataflow.                                                                                                            |
-| 0.3.43-rc.1 | 2026-01-28 | [72443](https://github.com/airbytehq/airbyte/pull/72443)   | Update to dataflow.                                                                                                             |
+| 0.3.44      | 2026-02-09 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                               |
+| 0.3.43      | 2026-01-30 | [72482](https://github.com/airbytehq/airbyte/pull/72482)   | Release on dataflow.                                                                                                            |
+| 0.3.43-rc.1 | 2026-01-29 | [72443](https://github.com/airbytehq/airbyte/pull/72443)   | Update to dataflow.                                                                                                             |
 | 0.3.42  | 2026-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Implement support for scope and OAuth server URI attributes for Polaris catalog                                                 |
 | 0.3.41  | 2025-11-07 | [69232](https://github.com/airbytehq/airbyte/pull/69232) | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns                                                        |
 | 0.3.40  | 2025-11-05 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61.                                                                                                     |
