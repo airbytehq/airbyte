@@ -59,50 +59,31 @@ definitions:
   page_query_properties:
     type: QueryProperties
     property_list:
+      - id
       - about
-      - access_token
       - ad_campaign
-      - ads_posts
       - affiliation
-      - agencies
-      - albums
       - app_id
       - artists_we_like
-      - assigned_users
       - attire
       - awards
       - band_interests
       - band_members
-      - best_page
       - bio
       - birthday
-      - blocked
       - booking_agent
       - built
-      - business
-      - call_to_actions
       - can_checkin
       - can_post
-      - canvas_elements
-      - canvases
       - category
       - category_list
-      - chat_plugin
       - checkins
-      - commerce_orders
       - company_overview
-      - connected_instagram_account
-      - connected_page_backed_instagram_account
       - contact_address
-      - conversations
-      - copyright_whitelisted_ig_partners
       - country_page_likes
       - cover
-      - crosspost_whitelisted_pages
       - culinary_team
       - current_location
-      - custom_labels
-      - custom_user_settings
       - delivery_and_pickup_option_info
       - description
       - description_html
@@ -112,35 +93,25 @@ definitions:
       - displayed_message_response_time
       - emails
       - engagement
-      - events
       - fan_count
       - featured_video
       - features
-      - feed
       - followers_count
       - food_styles
       - founded
       - general_info
       - general_manager
       - genre
-      - global_brand_children
       - global_brand_page_name
       - global_brand_root_id
-      - groups
       - has_added_app
       - has_transitioned_to_new_page_experience
       - has_whatsapp_business_number
       - has_whatsapp_number
       - hometown
       - hours
-      - id
-      - image_copyrights
       - impressum
-      - indexed_videos
       - influences
-      - insights
-      - instagram_accounts
-      - instagram_business_account
       - is_always_open
       - is_chain
       - is_community_page
@@ -152,24 +123,16 @@ definitions:
       - is_published
       - is_unclaimed
       - is_webhooks_subscribed
-      - leadgen_forms
       - leadgen_tos_acceptance_time
       - leadgen_tos_accepted
       - leadgen_tos_accepting_user
-      - likes
       - link
-      - live_videos
       - location
-      - locations
-      - media_fingerprints
       - members
       - merchant_review_status
-      - messaging_feature_review
-      - messaging_feature_status
       - messenger_ads_default_icebreakers
       - messenger_ads_default_quick_replies
       - messenger_ads_quick_replies_type
-      - messenger_profile
       - mission
       - mpg
       - name
@@ -178,49 +141,32 @@ definitions:
       - new_like_count
       - offer_eligible
       - overall_star_rating
-      - page_backed_instagram_accounts
       - page_token
-      - parent_page
       - parking
       - payment_options
       - personal_info
       - personal_interests
-      - personas
       - pharma_safety_info
       - phone
-      - photos
       - pickup_options
-      - picture
       - place_type
       - plot_outline
-      - posts
-      - preferred_audience
       - press_contact
       - price_range
       - privacy_info_url
       - produced_by
-      - product_catalogs
       - products
       - promotion_eligible
       - promotion_ineligible_reason
       - public_transit
-      - published_posts
       - rating_count
-      - ratings
-      - recipient
       - record_label
       - release_date
       - restaurant_services
       - restaurant_specialties
-      - roles
-      - rtb_dynamic_posts
       - schedule
-      - scheduled_posts
       - screenplay_by
       - season
-      - secondary_receivers
-      - settings
-      - shop_setup_status
       - single_line_address
       - starring
       - start_info
@@ -228,56 +174,58 @@ definitions:
       - store_location_descriptor
       - store_number
       - studio
-      - subscribed_apps
       - supports_donate_button_in_live_video
-      - tabs
-      - tagged
       - talking_about_count
       - temporary_status
-      - thread_owner
-      - threads
       - unread_message_count
       - unread_notif_count
       - unseen_message_count
       - username
       - verification_status
-      - video_copyright_rules
-      - video_lists
-      - videos
-      - visitor_posts
       - voip_info
       - website
       - were_here_count
       - whatsapp_number
       - written_by
+      - albums
+      - call_to_actions
+      - canvas_elements
+      - events
+      - feed
+      - global_brand_children
+      - image_copyrights
+      - indexed_videos
+      - likes
+      - live_videos
+      - photos
+      - posts
+      - published_posts
+      - tabs
+      - tagged
+      - rtb_dynamic_posts
+      - video_lists
+      - videos
     property_selector:
       type: JsonSchemaPropertySelector
   post_query_properties:
     type: QueryProperties
     property_list:
+      - id
       - actions
       - admin_creator
       - allowed_advertising_objects
-      - allowed_advertising_objectives
       - application
       - attachments
       - backdated_time
       - call_to_action
       - can_reply_privately
-      - caption
       - child_attachments
-      - comments_mirroring_domain
-      - coordinates
       - created_time
-      - description
       - feed_targeting
       - from
       - full_picture
       - icon
-      - id
-      - insights
       - instagram_eligibility
-      - is_app_share
       - is_eligible_for_promotion
       - is_expired
       - is_hidden
@@ -285,33 +233,27 @@ definitions:
       - is_popular
       - is_published
       - is_spherical
-      - link
       - message
       - message_tags
       - multi_share_end_card
       - multi_share_optimized
-      - name
-      - object_id
       - parent_id
       - permalink_url
-      - picture
       - place
       - privacy
       - promotable_id
       - properties
       - scheduled_publish_time
       - shares
-      - source
-      - sponsor_tags
       - status_type
       - story
       - story_tags
       - subscribed
       - targeting
-      - to
-      - type
       - updated_time
       - video_buying_eligibility
+      - sponsor_tags
+      - to
     property_selector:
       type: JsonSchemaPropertySelector
   page_stream:
