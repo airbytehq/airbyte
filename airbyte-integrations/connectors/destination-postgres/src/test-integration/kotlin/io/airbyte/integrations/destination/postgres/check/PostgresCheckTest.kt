@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.check
@@ -10,7 +10,6 @@ import io.airbyte.integrations.destination.postgres.PostgresConfigUpdater
 import io.airbyte.integrations.destination.postgres.PostgresContainerHelper
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
 import java.util.concurrent.TimeUnit
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -41,12 +40,8 @@ class PostgresCheckTest :
         fun startContainer() {
             PostgresContainerHelper.start()
         }
-
-        @JvmStatic
-        @AfterAll
-        fun stopContainer() {
-            PostgresContainerHelper.stop()
-        }
+        // Note: Don't stop the container here - other tests running in parallel may still need it.
+        // Testcontainers will clean up automatically when the JVM exits.
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse.schema
@@ -29,8 +29,7 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes
-import io.airbyte.integrations.destination.clickhouse.client.isValidVersionColumnType
-import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
+import io.airbyte.integrations.destination.clickhouse.client.isValidVersionColumn
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
 
@@ -100,7 +99,7 @@ class ClickhouseTableSchemaMapper(
             if (cursor != null) {
                 // Check if the cursor column type is valid for ClickHouse ReplacingMergeTree
                 val cursorColumnType = tableSchema.columnSchema.finalSchema[cursor]!!.type
-                if (cursorColumnType.isValidVersionColumnType()) {
+                if (isValidVersionColumn(cursor, cursorColumnType)) {
                     // Cursor column is valid, use it as version column
                     add(cursor) // Make cursor column non-nullable too
                 }

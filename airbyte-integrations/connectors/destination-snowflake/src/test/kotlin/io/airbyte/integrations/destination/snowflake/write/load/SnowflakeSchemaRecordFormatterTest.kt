@@ -1,69 +1,61 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write.load
 
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
-import io.mockk.every
-import io.mockk.mockk
-import java.util.AbstractMap
-import kotlin.collections.component1
-import kotlin.collections.component2
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-
-private val AIRBYTE_COLUMN_TYPES_MAP =
-    linkedMapOf(
-            COLUMN_NAME_AB_RAW_ID to "VARCHAR(16777216)",
-            COLUMN_NAME_AB_EXTRACTED_AT to "TIMESTAMP_TZ(9)",
-            COLUMN_NAME_AB_META to "VARIANT",
-            COLUMN_NAME_AB_GENERATION_ID to "NUMBER(38,0)",
-        )
-        .mapKeys { it.key.toSnowflakeCompatibleName() }
 
 internal class SnowflakeSchemaRecordFormatterTest {
 
-    private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
+    private fun createColumnSchema(userColumns: Map<String, String>): ColumnSchema {
+        val finalSchema = linkedMapOf<String, ColumnType>()
+        val inputToFinalColumnNames = mutableMapOf<String, String>()
+        val inputSchema = mutableMapOf<String, FieldType>()
 
-    @BeforeEach
-    fun setup() {
-        snowflakeColumnUtils = mockk {
-            every { getFormattedDefaultColumnNames(any()) } returns
-                AIRBYTE_COLUMN_TYPES_MAP.keys.toList()
+        // Add user columns
+        userColumns.forEach { (name, type) ->
+            val finalName = name.toSnowflakeCompatibleName()
+            finalSchema[finalName] = ColumnType(type, true)
+            inputToFinalColumnNames[name] = finalName
+            inputSchema[name] = FieldType(StringType, nullable = true)
         }
+
+        return ColumnSchema(
+            inputToFinalColumnNames = inputToFinalColumnNames,
+            finalSchema = finalSchema,
+            inputSchema = inputSchema
+        )
     }
 
     @Test
     fun testFormatting() {
         val columnName = "test-column-name"
         val columnValue = "test-column-value"
-        val columns =
-            (AIRBYTE_COLUMN_TYPES_MAP + linkedMapOf(columnName to "VARCHAR(16777216)")).mapKeys {
-                it.key.toSnowflakeCompatibleName()
-            }
+        val userColumns = mapOf(columnName to "VARCHAR(16777216)")
+        val columnSchema = createColumnSchema(userColumns)
         val record = createRecord(columnName, columnValue)
-        val formatter =
-            SnowflakeSchemaRecordFormatter(
-                columns = columns as LinkedHashMap<String, String>,
-                snowflakeColumnUtils = snowflakeColumnUtils
-            )
-        val formattedValue = formatter.format(record)
+        val formatter = SnowflakeSchemaRecordFormatter()
+        val formattedValue = formatter.format(record, columnSchema)
         val expectedValue =
             createExpected(
                 record = record,
-                columns = columns,
+                columnSchema = columnSchema,
             )
         assertEquals(expectedValue, formattedValue)
     }
@@ -72,21 +64,15 @@ internal class SnowflakeSchemaRecordFormatterTest {
     fun testFormattingVariant() {
         val columnName = "test-column-name"
         val columnValue = "{\"test\": \"test-value\"}"
-        val columns =
-            (AIRBYTE_COLUMN_TYPES_MAP + linkedMapOf(columnName to "VARIANT")).mapKeys {
-                it.key.toSnowflakeCompatibleName()
-            }
+        val userColumns = mapOf(columnName to "VARIANT")
+        val columnSchema = createColumnSchema(userColumns)
         val record = createRecord(columnName, columnValue)
-        val formatter =
-            SnowflakeSchemaRecordFormatter(
-                columns = columns as LinkedHashMap<String, String>,
-                snowflakeColumnUtils = snowflakeColumnUtils
-            )
-        val formattedValue = formatter.format(record)
+        val formatter = SnowflakeSchemaRecordFormatter()
+        val formattedValue = formatter.format(record, columnSchema)
         val expectedValue =
             createExpected(
                 record = record,
-                columns = columns,
+                columnSchema = columnSchema,
             )
         assertEquals(expectedValue, formattedValue)
     }
@@ -95,23 +81,16 @@ internal class SnowflakeSchemaRecordFormatterTest {
     fun testFormattingMissingColumn() {
         val columnName = "test-column-name"
         val columnValue = "test-column-value"
-        val columns =
-            AIRBYTE_COLUMN_TYPES_MAP +
-                linkedMapOf(
-                    columnName to "VARCHAR(16777216)",
-                    "missing-column" to "VARCHAR(16777216)"
-                )
+        val userColumns =
+            mapOf(columnName to "VARCHAR(16777216)", "missing-column" to "VARCHAR(16777216)")
+        val columnSchema = createColumnSchema(userColumns)
         val record = createRecord(columnName, columnValue)
-        val formatter =
-            SnowflakeSchemaRecordFormatter(
-                columns = columns as LinkedHashMap<String, String>,
-                snowflakeColumnUtils = snowflakeColumnUtils
-            )
-        val formattedValue = formatter.format(record)
+        val formatter = SnowflakeSchemaRecordFormatter()
+        val formattedValue = formatter.format(record, columnSchema)
         val expectedValue =
             createExpected(
                 record = record,
-                columns = columns,
+                columnSchema = columnSchema,
                 filterMissing = false,
             )
         assertEquals(expectedValue, formattedValue)
@@ -128,16 +107,37 @@ internal class SnowflakeSchemaRecordFormatterTest {
 
     private fun createExpected(
         record: Map<String, AirbyteValue>,
-        columns: Map<String, String>,
+        columnSchema: ColumnSchema,
         filterMissing: Boolean = true,
-    ) =
-        record.entries
-            .associate { entry -> entry.key.toSnowflakeCompatibleName() to entry.value }
-            .map { entry -> AbstractMap.SimpleEntry(entry.key, entry.value.toCsvValue()) }
-            .sortedBy { entry ->
-                if (columns.keys.indexOf(entry.key) > -1) columns.keys.indexOf(entry.key)
-                else Int.MAX_VALUE
+    ): List<Any> {
+        val columns = columnSchema.finalSchema.keys.toList()
+        val result = mutableListOf<Any>()
+
+        // Add meta columns first in the expected order
+        result.add(record[COLUMN_NAME_AB_RAW_ID]?.toCsvValue() ?: "")
+        result.add(record[COLUMN_NAME_AB_EXTRACTED_AT]?.toCsvValue() ?: "")
+        result.add(record[COLUMN_NAME_AB_META]?.toCsvValue() ?: "")
+        result.add(record[COLUMN_NAME_AB_GENERATION_ID]?.toCsvValue() ?: "")
+
+        // Add user columns
+        val userColumns =
+            columns.filterNot { col ->
+                listOf(
+                        COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName(),
+                        COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName(),
+                        COLUMN_NAME_AB_META.toSnowflakeCompatibleName(),
+                        COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+                    )
+                    .contains(col)
             }
-            .filter { (k, _) -> if (filterMissing) columns.contains(k) else true }
-            .map { it.value }
+
+        userColumns.forEach { columnName ->
+            val value = record[columnName] ?: if (!filterMissing) NullValue else null
+            if (value != null || !filterMissing) {
+                result.add(value?.toCsvValue() ?: "")
+            }
+        }
+
+        return result
+    }
 }
