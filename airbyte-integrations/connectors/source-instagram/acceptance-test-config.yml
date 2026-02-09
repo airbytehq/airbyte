@@ -1,5 +1,6 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
+# sanity check: verifying CI and credentials on master
 connector_image: airbyte/source-instagram:dev
 test_strictness_level: high
 acceptance_tests:
