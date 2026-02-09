@@ -5,16 +5,15 @@ import TabItem from '@theme/TabItem';
 
 If you provide an environment where your users can create connectors, they need to supply their credentials so agents can access their data. Airbyte provides a standard [Embedded widget](./..) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding and UX. In this case, you can implement your own OAuth flow.
 
-This tutorial walks you through implementing a server-side OAuth flow for your users. By the end, you'll be able to initiate OAuth consent, handle the callback, and create connectors using the obtained credentials.
+This tutorial walks you through implementing a server-side OAuth flow for your users. By the end, you'll be able to initiate OAuth consent, handle the callback, and use the automatically created connector.
 
 ## How it works
 
-The server-side OAuth flow involves four main steps:
+The server-side OAuth flow involves three main steps:
 
 1. **Initiate OAuth**: Your backend calls Airbyte's API to get a consent URL for the connector.
 2. **User consent**: You redirect your user to the consent URL where they authorize access to their account.
-3. **Handle callback**: After authorization, Airbyte redirects your user back to your app with a `secret_id`.
-4. **Create connector**: You use that `secret_id` to create a connector without handling raw credentials.
+3. **Handle callback**: After authorization, Airbyte automatically creates the connector and redirects your user back to your app with a `connector_id`.
 
 ```mermaid
 sequenceDiagram
@@ -27,10 +26,9 @@ sequenceDiagram
 
     App->>ThirdParty: Redirect user to consent_url
     Note over ThirdParty: User authorizes access
-    ThirdParty-->>App: Redirect with secret_id
-
-    App->>Airbyte: POST /connectors (with secret_id)
-    Airbyte-->>App: connector created
+    ThirdParty->>Airbyte: Redirect with credentials
+    Note over Airbyte: Connector auto-created
+    Airbyte-->>App: Redirect with connector_id
 ```
 
 ## Prerequisites
@@ -43,7 +41,7 @@ Before implementing an OAuth flow, ensure you have:
 
 3. **A scoped token**: Required for some customer-level operations. Generate one using your application token.
 
-4. **A redirect URL**: A URL in your app that receives the OAuth callback with the `secret_id`.
+4. **A redirect URL**: A URL in your app that receives the OAuth callback with the `connector_id`.
 
 ## Part 1: Configure OAuth overrides (optional)
 
@@ -124,7 +122,10 @@ Requires a bearer token or scoped token.
 |-------|------|----------|-------------|
 | `external_user_id` | string | Yes | Your user's identifier. Maps to a customer in Airbyte. |
 | `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`, `Intercom`. |
-| `redirect_url` | string | Yes | URL where Airbyte redirects the user after OAuth consent. Airbyte appends `?secret_id=<value>` to this URL. |
+| `redirect_url` | string | Yes | Your callback URL. After OAuth consent, Airbyte auto-creates the connector and redirects the user here with `?connector_id=<value>`. |
+| `name` | string | No | Display name for the connector. Auto-generated if not provided. |
+| `replication_config` | object | No | Replication configuration for the source, such as `start_date` or `lookback_window`. Merged with OAuth credentials during source creation. |
+| `source_template_id` | string (UUID) | No | Source template ID. Required when your organization has multiple source templates for this connector type. |
 | `oauth_input_configuration` | object | No | Additional OAuth parameters required by some connectors. |
 
 ### Example
@@ -169,81 +170,47 @@ const { consent_url } = await response.json();
 window.location.href = consent_url;
 ```
 
-## Part 3: Create a connector
+## Part 3: Handle the callback
 
-After the user authorizes access, the third-party authorization flow redirects them to your `redirect_url` with a `secret_id` query parameter. Use this `secret_id` to create a connector.
+After the user authorizes access, Airbyte automatically creates the connector and redirects them to your `redirect_url` with a `connector_id` query parameter. You don't need to make a separate API call to create the connector.
 
-Some connectors require additional configuration options. See the documentation for [your connector](../../../connectors) to learn more.
-
-### Handle the OAuth callback
-
-When the third party redirects your user back to your app, extract the `secret_id` from the URL.
+Extract the `connector_id` from the callback URL and store it for future operations.
 
 ```text
-https://yourapp.com/oauth/callback?secret_id=abc123def456
+https://yourapp.com/oauth/callback?connector_id=f1e2d3c4-b5a6-7890-fe12-dc34ba567890
 ```
 
 ```javascript title="your-app.js"
-// Example: Extract secret_id from callback URL
 const urlParams = new URLSearchParams(window.location.search);
-const secretId = urlParams.get('secret_id'); // Store this securely - you need it to create the connector
+const connectorId = urlParams.get('connector_id');
+
+// Store the connector_id for future operations
+await saveConnectorForUser(userId, connectorId);
 ```
 
-### Create the connector
-
-Use the `secret_id` to create a connector without providing raw credentials.
-
-### Endpoint
+If an error occurs during the OAuth flow, Airbyte redirects to your `redirect_url` with `error` and `error_description` query parameters instead.
 
 ```text
-POST https://api.airbyte.ai/api/v1/integrations/connectors
+https://yourapp.com/oauth/callback?error=creation_failed&error_description=...
 ```
 
-### Authentication
+```javascript title="your-app.js"
+const urlParams = new URLSearchParams(window.location.search);
+const error = urlParams.get('error');
+const connectorId = urlParams.get('connector_id');
 
-Requires a bearer token or scoped token.
-
-### Request body
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `external_user_id` | string | Yes | Your user's identifier. Must match the value used in the initiate step. |
-| `connector_type` | string | Yes* | Connector name (case-insensitive). |
-| `name` | string | No | Display name for the connector. Auto-generated if not provided. |
-| `server_side_oauth_secret_id` | string | Yes** | The `secret_id` from the OAuth callback. |
-
-### Example
-
-```bash title="Request"
-curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
-  -H 'Authorization: Bearer <operator_token>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "external_user_id": "user_12345",
-    "connector_type": "hubspot",
-    "name": "My HubSpot Connection",
-    "server_side_oauth_secret_id": "abc123def456"
-  }'
-```
-
-```json title="Response"
-{
-  "id": "f1e2d3c4-b5a6-7890-fe12-dc34ba567890",
-  "name": "My HubSpot Connection",
-  "source_template": {
-    "id": "a1b2c3d4-e5f6-7890-ab12-cd34ef567890",
-    "name": "HubSpot",
-    "connector_type": "hubspot"
-  },
-  "replication_config": {},
-  "created_at": "2024-01-15T10:30:00Z",
-  "updated_at": "2024-01-15T10:30:00Z"
+if (error) {
+  const errorDescription = urlParams.get('error_description');
+  // Handle the error, e.g. prompt the user to retry
+} else if (connectorId) {
+  // Store the connector_id for future operations
+  await saveConnectorForUser(userId, connectorId);
 }
 ```
 
 ## Part 4: Execute operations
 
-Once you create your connector, you can use the connector in hosted mode to execute operations. See [how to execute operations](../../execute).
+Once the connector is created, you can use it in hosted mode to execute operations. See [how to execute operations](../../execute).
 
 ## Complete example
 
@@ -270,7 +237,7 @@ app.post('/api/connect/:connectorType', async (req, res) => {
     body: JSON.stringify({
       external_user_id: userId,
       connector_type: connectorType,
-      redirect_url: `https://yourapp.com/oauth/callback?user_id=${userId}&connector_type=${connectorType}`
+      redirect_url: `https://yourapp.com/oauth/callback?user_id=${userId}`
     })
   });
 
@@ -278,38 +245,25 @@ app.post('/api/connect/:connectorType', async (req, res) => {
   res.json({ consent_url });
 });
 
-// Step 2: Handle OAuth callback
+// Step 2: Handle OAuth callback - connector is already created
 app.get('/oauth/callback', async (req, res) => {
-  const { secret_id, user_id, connector_type } = req.query;
+  const { connector_id, user_id, error, error_description } = req.query;
 
-  // Step 3: Create the connector using the secret_id
-  const response = await fetch(`${AIRBYTE_API_BASE}/integrations/connectors`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPERATOR_TOKEN}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      external_user_id: user_id,
-      connector_type: connector_type,
-      server_side_oauth_secret_id: secret_id
-    })
-  });
+  if (error) {
+    console.error(`OAuth failed: ${error} - ${error_description}`);
+    return res.redirect(`/connection-error?message=${encodeURIComponent(error_description || error)}`);
+  }
 
-  const connector = await response.json();
+  // Store the connector_id for future operations
+  await saveConnectorForUser(user_id, connector_id);
 
-  // Store connector.id for future operations
-  await saveConnectorForUser(user_id, connector.id);
-
-  // Redirect user to success page
   res.redirect('/connection-success');
 });
 
-// Step 4: Execute operations using the connector
+// Step 3: Execute operations using the connector
 app.post('/api/execute', async (req, res) => {
   const { userId, entity, action, params } = req.body;
 
-  // Get the user's scoped token and connector ID
   const scopedToken = await getScopedTokenForUser(userId);
   const connectorId = await getConnectorIdForUser(userId);
 
@@ -333,20 +287,20 @@ app.listen(3000);
 
 **"Workspace not found" or "customer not found" error:**
 
-- Ensure the `external_user_id` you provide in the initiate step matches exactly what you use when creating the connector. Airbyte creates the customer automatically on first use.
+- Ensure the `external_user_id` you provide in the initiate step is correct. Airbyte creates the customer automatically on first use.
 
 **OAuth consent URL returns an error:**
 
-- Verify you configured your OAuth credentials correctly (Part 1).
+- Verify you configured your OAuth credentials correctly in Part 1.
 - Check that the connector supports OAuth authentication.
 - Ensure your redirect URL is properly URL-encoded if it contains special characters.
 
-**"Invalid secret_id" when creating connector:**
+**Callback returns an `error` parameter instead of `connector_id`:**
 
-- The `secret_id` may have expired. OAuth secrets are short-lived. Initiate a new OAuth flow.
-- Ensure you're using the exact `secret_id` from the callback URL without modification.
+- The `error_description` parameter contains details about what went wrong.
+- Common errors include the user denying consent or the OAuth session expiring. Initiate a new OAuth flow to retry.
 
-**Connector creation succeeds but operations fail:**
+**Connector is created but operations fail:**
 
 - Verify the user completed the OAuth consent flow and granted all required permissions.
 - Check that you properly provided all of that connector's required fields.
