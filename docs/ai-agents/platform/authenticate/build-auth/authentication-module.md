@@ -24,33 +24,6 @@ You can see what your authentication widget looks like before implementing it.
 
 3. Click **Preview your auth module**. This is exactly what users from that customer see when adding a connector.
 
-## Use the demo app
-
-The easiest way to see the widget in action is to deploy Airbyte's Embedded demo app
-
-The [demo app](https://github.com/airbytehq/embedded-demoapp) GitHub repository contains complete working examples in three frameworks.
-
-- **Vanilla JS** with Express server
-- **React** with Vite
-- **Next.js**
-
-All examples share a common Express backend that handles token generation. To run them, use these commands.
-
-```bash
-git clone https://github.com/airbytehq/embedded-demoapp.git
-cd embedded-demoapp
-npm install
-
-cd apps/server
-cp .env.example .env
-# Add your credentials to .env
-
-cd ../..
-npm run dev
-```
-
-This starts all apps simultaneously: the server at `http://localhost:3000`, Next.js at `http://localhost:3001`, and React at `http://localhost:3002`.
-
 ## Implement it into your app
 
 Since you probably want to overlay the Authentication Module on your own app, you can configure it on your backend and frontend. Here's a basic Node.js example.
