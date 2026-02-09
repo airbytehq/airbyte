@@ -23,6 +23,9 @@ data:
       enabled: false
     oss:
       enabled: false
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   releaseStage: alpha
   tags:
     - language:java
