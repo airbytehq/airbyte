@@ -148,8 +148,7 @@ streams:
         request_body:
           type: RequestBodyJsonObject
           value:
-            filters:
-              adSetIds: "{{ stream_slice['AdsetId'] }}"
+            filters: {}
         authenticator:
           type: OAuthAuthenticator
           client_id: "{{ config[\"client_id\"] }}"
@@ -175,19 +174,6 @@ streams:
           type: DpathExtractor
           field_path:
             - data
-      partition_router:
-        type: GroupingPartitionRouter
-        group_size: 50
-        underlying_partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/streams/0"
-              parent_key: AdsetId
-              partition_field: AdsetId
-              lazy_read_pointer: []
-        deduplicate: true
     primary_key: id
     schema_loader:
       type: InlineSchemaLoader
@@ -431,17 +417,23 @@ spec:
       - start_date
       - currency
     properties:
+      currency:
+        type: string
+        description: Currency to be used on the report
+        order: 4
+        title: Currency
+      end_date:
+        type: string
+        description: End date of the report
+        order: 3
+        title: EndDate
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       client_id:
         type: string
         name: client_id
         order: 0
         title: OAuth Client ID
-        airbyte_secret: true
-      client_secret:
-        type: string
-        name: client_secret
-        order: 1
-        title: OAuth Client Secret
         airbyte_secret: true
       start_date:
         type: string
@@ -450,18 +442,12 @@ spec:
         title: StartDate
         format: date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-      end_date:
+      client_secret:
         type: string
-        description: End date of the report
-        order: 3
-        title: EndDate
-        format: date
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-      currency:
-        type: string
-        description: Currency to be used on the report
-        order: 4
-        title: Currency
+        name: client_secret
+        order: 1
+        title: OAuth Client Secret
+        airbyte_secret: true
     additionalProperties: true
 
 metadata:
@@ -473,7 +459,7 @@ metadata:
     adsets:
       isStale: false
       hasRecords: true
-      streamHash: e46973afa9cbc8c4412163c39369f64239e2cee4
+      streamHash: 691edd7ed175eda8345e44d41c090c5b72e2a001
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
