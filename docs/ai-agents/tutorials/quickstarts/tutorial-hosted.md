@@ -96,15 +96,20 @@ This is what the request looks like when you're using a personal access token. S
 curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     -H "Authorization: Bearer <scoped_token>" \
     -H "Content-Type: application/json" \
-    -d '{
+    -d '{      
       "connector_type": "github",
-      "external_user_id": "<external_user_id>",
-      "environment": {"repositories": "airbytehq/airbyte"},
-      "credentials": {"token": "<GitHub personal access token (fine-grained or classic)>"}
+      "external_user_id": "<your_external_user_id",
+      "replication_config": {
+        "repositories": ["airbytehq/airbyte"],
+        "credentials": {
+            "option_title": "PAT Credentials",
+            "personal_access_token": "<GitHub personal access token (fine-grained or classic)>"
+        }
+      }
     }'
 ```
 
-## Run operations in hosted mode
+## Execute operations in hosted mode
 
 Once you create your connector, you can use the connector in hosted mode.
 
@@ -139,7 +144,7 @@ You can execute connector operations directly via the REST API.
 ```bash title="Request"
 curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Content-Type: application/json' \
-  --header 'Authorization: Bearer <SCOPED_TOKEN>' \
+  --header 'Authorization: Bearer <application_token>' \
   --data '{
     "entity": "issues",
     "action": "list",
@@ -150,7 +155,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/<connecto
   }'
 ```
 
-The response contains the operation result:
+The response contains the operation result.
 
 ```json title="Response"
 {
