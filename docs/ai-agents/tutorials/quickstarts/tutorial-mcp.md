@@ -29,7 +29,7 @@ This tutorial is for AI engineers and other technical users who work with data a
 Before you begin this tutorial, ensure you have installed the following software.
 
 - Claude Code or the agent of your choice, and the plan necessary to run it locally
-- [Python](https://www.python.org/downloads/) version 3.13.7 or later
+- [Python](https://www.python.org/downloads/) version 3.13 or later
 - [uv](https://github.com/astral-sh/uv)
 - An account with Stripe, or a different third-party [supported by agent connectors](https://github.com/airbytehq/airbyte-agent-connectors/tree/main/connectors).
 
