@@ -46,7 +46,7 @@ If agentic data isn't what you're looking for and you need complex data aggregat
 
 The promise of AI agents to scale productivity, accelerate insights, and democratize information is without measure. However, most organizations aren't able to realize this promise.
 
-- Large language models can reason, but rely on stale public training data that limits their effectiveness.
+- Large language models can reason, but rely on stale public training data that limits their effectiveness. They lack real-time knowledge, are stateless, and can't act on and verify facts.
 
 - Improving context with real business data is difficult. It forces teams to build infrastructure they don't want to own: storage layers, indexing services, pipelines, and permissions models. All of this is maintenance debt just to acquire missing context.
 
@@ -60,40 +60,35 @@ Organizations trying to build AI face a conundrum:
 
 - Both
 
-The result is that agentic features never scale. They remain fragile prototypes that can't support real operations.
+The result is that agentic features never scale. They remain expensive, fragile prototypes that can't support real-world operations.
 
-### How Airbyte solve that problem
+### How Airbyte solves that problem
 
 Airbyte's Agent Engine solves this problem with three components.
 
-- Storage and management of credentials.
+- Open-source, type-safe connectors designed for AI agents. These connectors allow agents to retrieve information they don't have, perform computations or transformations, interact with external systems, and trigger side-effects, like sending emails, updating databases, and starting workflows
 
-- Open-source, type-safe connectors designed for AI agents
+- Storage and management of end-user credentials.
 
 - Out of the box entity caching to power low-latency search operations.
 
+It's helpful to think of the Agent Engine as a data layer that makes agentic tool use easy. Tools are external capabilities AI agents can invoke. They allow agents to perceive, decide, and act beyond their training data. They're one of the most critical bridges between agents that aren't effective and agents with broad capabilities.
+
 ## Who Agent Engine is for
 
-- B2B2B
+- AI companies building agentic solutions, especially multi-tenant SaaS services.
 
-- Anyone building an AI agent
+- Engineering teams building agents for internal use cases.
 
-- Explorers looking to try new things
+- Hackers, explorers, innovators, and anyone who needs to empower an agent in minutes.
+
+- People tired of expensive agents that aren't helpful.
 
 ## Tools and MCP servers
 
-Tools are external capabilities an AI agent can invoke.
+It's helpful to think of agent connectors as equivalent to sets of tools. Tools are external capabilities AI agents can invoke. They allow agents to perceive, decide, and act beyond their training data. Tools are one of the most critical bridges between agents that aren't effective and agents with broad capabilities.
 
-### Why you need tools
 
-Tools allow agents to perceive, decide, and act beyond their training data. Think of Airbyte's agent connectors as collections of tools that fulfill this purpose.
-
-Large language models, by default, lack real-time knowledge, are stateless, and can't act on and verify facts. This places limits on their capabilities. Tools expand the capabilities of an LLM. Tools are callable functions, services, and interfaces that an AI agent can use to:
-
-- Retrieve information it doesn't have
-- Perform computations or transformations
-- Interact with external systems
-- Trigger side-effects, like sending emails, updating databases, and triggering workflows
 
 ### MCP servers
 
@@ -101,36 +96,3 @@ Large language models, by default, lack real-time knowledge, are stateless, and 
 
 ## Requirements
 
-
-<!-- 
-Airbyte's Agent engine is a set of tools to help you automate, understand, move, and work with your data in coordination with AI agents. Some of these tools are standalone open source solutions, and others are pay solutions built on top of Airbyte Cloud.
-
-The platform is a solution for all types of audiences, from AI engineers who are deploying agents in large enterprises down to individual founders who need real-time context and action in their platforms.
-
-- **Agent connectors**: AI-optimized, type-safe connectors, usable with Airbyte's Connector MCP server or your own Python agents. [View the GitHub repo](https://github.com/airbytehq/airbyte-agent-connectors).
-
-- **Airbyte Embedded**: Add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining data integrations.
-
-:::info New and growing
-The Agent engine is new and growing. Airbyte is actively seeking feedback, design partners, and community involvement. Expect this library of tools to grow and change rapidly.
-:::
-
-## Why Airbyte?
-
-
-
-## Airbyte Embedded
-
-[Airbyte Embedded](embedded) equips product and software teams with the tools needed to move customer data and deliver context to AI applications.
-
-Airbyte Embedded creates isolated workspaces for each of your customers, allowing them to configure their own data sources while keeping their data separate and secure. The Embedded Widget provides a pre-built UI component that handles the entire user onboarding flow from authentication to source configuration.
-
-Once Airbyte enables your organization on Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the Embedded demo app [from GitHub](https://github.com/airbytehq/embedded-demoapp).
-
-## Agent connectors
-
-Airbyte's agent connectors are Python packages that equip AI agents to call third-party APIs through strongly typed, well-documented tools. Each connector is ready to use directly in your Python app, in an agent framework, or exposed through an MCP. [Learn more >](connectors) or [view the GitHub repo](https://github.com/airbytehq/airbyte-agent-connectors).
-
-## Connector MCP
-
-Use [agent connectors](connectors) to interact with your data using natural language. -->
