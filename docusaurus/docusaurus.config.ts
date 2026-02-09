@@ -332,27 +332,8 @@ const config: Config = {
     },
     mermaid: {
       theme: {
-        light: "base",
-        dark: "base",
-      },
-      options: {
-        themeVariables: {
-          primaryColor: "#5F5CFF",
-          primaryTextColor: "#FFFFFF",
-          primaryBorderColor: "#1A194D",
-          secondaryColor: "#FF6A4D",
-          tertiaryColor: "#E8EAF6",
-          tertiaryTextColor: "#000000",
-          tertiaryBorderColor: "#E8EAF6",
-          background: "#FFFFFF",
-          clusterBkg: "#F5F5F5",
-          fontFamily: "var(--ifm-font-family-base)",
-        },
-        flowchart: {
-          rankSpacing: 100,
-          subGraphTitleMargin: 10,
-          nodeSpacing: 100,
-        },
+        light: "default",
+        dark: "dark",
       },
     },
     docs: {
