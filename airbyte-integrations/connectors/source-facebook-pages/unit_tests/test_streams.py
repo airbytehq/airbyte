@@ -33,10 +33,7 @@ def _make_catalog(stream_name, selected_fields):
                     name=stream_name,
                     json_schema={
                         "type": "object",
-                        "properties": {
-                            field: {"type": ["string", "null"]}
-                            for field in selected_fields
-                        },
+                        "properties": {field: {"type": ["string", "null"]} for field in selected_fields},
                     },
                     supported_sync_modes=[SyncMode.full_refresh],
                 ),
@@ -100,9 +97,7 @@ def test_stream_filters_fields_to_configured_catalog(stream_name, selected_field
         raw_fields = _get_fields_from_request(m.request_history, url_path)
         assert raw_fields is not None, f"Expected a request to {url_path} with fields parameter"
         requested_fields = set(raw_fields.split(","))
-        assert requested_fields == set(selected_fields), (
-            f"Expected fields {set(selected_fields)}, got {requested_fields}"
-        )
+        assert requested_fields == set(selected_fields), f"Expected fields {set(selected_fields)}, got {requested_fields}"
 
 
 def test_without_catalog_at_init_requests_all_fields():
@@ -118,6 +113,6 @@ def test_without_catalog_at_init_requests_all_fields():
         raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
         assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
         requested_fields = raw_fields.split(",")
-        assert len(requested_fields) > 3, (
-            f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
-        )
+        assert (
+            len(requested_fields) > 3
+        ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
