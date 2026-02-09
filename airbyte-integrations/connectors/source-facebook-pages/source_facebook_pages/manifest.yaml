@@ -56,6 +56,206 @@ definitions:
     transformations:
       - type: CustomTransformation
         class_name: source_facebook_pages.components.CustomFieldTransformation
+  page_query_properties:
+    type: QueryProperties
+    property_list:
+      - id
+      - about
+      - ad_campaign
+      - affiliation
+      - app_id
+      - artists_we_like
+      - attire
+      - awards
+      - band_interests
+      - band_members
+      - bio
+      - birthday
+      - booking_agent
+      - built
+      - can_checkin
+      - can_post
+      - category
+      - category_list
+      - checkins
+      - company_overview
+      - contact_address
+      - country_page_likes
+      - cover
+      - culinary_team
+      - current_location
+      - delivery_and_pickup_option_info
+      - description
+      - description_html
+      - differently_open_offerings
+      - directed_by
+      - display_subtext
+      - displayed_message_response_time
+      - emails
+      - engagement
+      - fan_count
+      - featured_video
+      - features
+      - followers_count
+      - food_styles
+      - founded
+      - general_info
+      - general_manager
+      - genre
+      - global_brand_page_name
+      - global_brand_root_id
+      - has_added_app
+      - has_transitioned_to_new_page_experience
+      - has_whatsapp_business_number
+      - has_whatsapp_number
+      - hometown
+      - hours
+      - impressum
+      - influences
+      - is_always_open
+      - is_chain
+      - is_community_page
+      - is_eligible_for_branded_content
+      - is_messenger_bot_get_started_enabled
+      - is_messenger_platform_bot
+      - is_owned
+      - is_permanently_closed
+      - is_published
+      - is_unclaimed
+      - is_webhooks_subscribed
+      - leadgen_tos_acceptance_time
+      - leadgen_tos_accepted
+      - leadgen_tos_accepting_user
+      - link
+      - location
+      - members
+      - merchant_review_status
+      - messenger_ads_default_icebreakers
+      - messenger_ads_default_quick_replies
+      - messenger_ads_quick_replies_type
+      - mission
+      - mpg
+      - name
+      - name_with_location_descriptor
+      - network
+      - new_like_count
+      - offer_eligible
+      - overall_star_rating
+      - page_token
+      - parking
+      - payment_options
+      - personal_info
+      - personal_interests
+      - pharma_safety_info
+      - phone
+      - pickup_options
+      - place_type
+      - plot_outline
+      - press_contact
+      - price_range
+      - privacy_info_url
+      - produced_by
+      - products
+      - promotion_eligible
+      - promotion_ineligible_reason
+      - public_transit
+      - rating_count
+      - record_label
+      - release_date
+      - restaurant_services
+      - restaurant_specialties
+      - schedule
+      - screenplay_by
+      - season
+      - single_line_address
+      - starring
+      - start_info
+      - store_code
+      - store_location_descriptor
+      - store_number
+      - studio
+      - supports_donate_button_in_live_video
+      - talking_about_count
+      - temporary_status
+      - unread_message_count
+      - unread_notif_count
+      - unseen_message_count
+      - username
+      - verification_status
+      - voip_info
+      - website
+      - were_here_count
+      - whatsapp_number
+      - written_by
+      - albums
+      - call_to_actions
+      - canvas_elements
+      - events
+      - feed
+      - global_brand_children
+      - image_copyrights
+      - indexed_videos
+      - likes
+      - live_videos
+      - photos
+      - posts
+      - published_posts
+      - tabs
+      - tagged
+      - rtb_dynamic_posts
+      - video_lists
+      - videos
+    property_selector:
+      type: JsonSchemaPropertySelector
+  post_query_properties:
+    type: QueryProperties
+    property_list:
+      - id
+      - actions
+      - admin_creator
+      - allowed_advertising_objects
+      - application
+      - attachments
+      - backdated_time
+      - call_to_action
+      - can_reply_privately
+      - child_attachments
+      - created_time
+      - feed_targeting
+      - from
+      - full_picture
+      - icon
+      - instagram_eligibility
+      - is_eligible_for_promotion
+      - is_expired
+      - is_hidden
+      - is_instagram_eligible
+      - is_popular
+      - is_published
+      - is_spherical
+      - message
+      - message_tags
+      - multi_share_end_card
+      - multi_share_optimized
+      - parent_id
+      - permalink_url
+      - place
+      - privacy
+      - promotable_id
+      - properties
+      - scheduled_publish_time
+      - shares
+      - status_type
+      - story
+      - story_tags
+      - subscribed
+      - targeting
+      - updated_time
+      - video_buying_eligibility
+      - sponsor_tags
+      - to
+    property_selector:
+      type: JsonSchemaPropertySelector
   page_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -70,157 +270,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          fields: |
-            {{ 
-              ','.join([
-              'id',
-              'about',
-              'ad_campaign',
-              'affiliation',
-              'app_id',
-              'artists_we_like',
-              'attire',
-              'awards',
-              'band_interests',
-              'band_members',
-              'bio',
-              'birthday',
-              'booking_agent',
-              'built',
-              'can_checkin',
-              'can_post',
-              'category',
-              'category_list',
-              'checkins',
-              'company_overview',
-              'contact_address',
-              'country_page_likes',
-              'cover',
-              'culinary_team',
-              'current_location',
-              'delivery_and_pickup_option_info',
-              'description',
-              'description_html',
-              'differently_open_offerings',
-              'directed_by',
-              'display_subtext',
-              'displayed_message_response_time',
-              'emails',
-              'engagement',
-              'fan_count',
-              'featured_video',
-              'features',
-              'followers_count',
-              'food_styles',
-              'founded',
-              'general_info',
-              'general_manager',
-              'genre',
-              'global_brand_page_name',
-              'global_brand_root_id',
-              'has_added_app',
-              'has_transitioned_to_new_page_experience',
-              'has_whatsapp_business_number',
-              'has_whatsapp_number',
-              'hometown',
-              'hours',
-              'impressum',
-              'influences',
-              'is_always_open',
-              'is_chain',
-              'is_community_page',
-              'is_eligible_for_branded_content',
-              'is_messenger_bot_get_started_enabled',
-              'is_messenger_platform_bot',
-              'is_owned',
-              'is_permanently_closed',
-              'is_published',
-              'is_unclaimed',
-              'is_webhooks_subscribed',
-              'leadgen_tos_acceptance_time',
-              'leadgen_tos_accepted',
-              'leadgen_tos_accepting_user',
-              'link',
-              'location',
-              'members',
-              'merchant_review_status',
-              'messenger_ads_default_icebreakers',
-              'messenger_ads_default_quick_replies',
-              'messenger_ads_quick_replies_type',
-              'mission',
-              'mpg',
-              'name',
-              'name_with_location_descriptor',
-              'network',
-              'new_like_count',
-              'offer_eligible',
-              'overall_star_rating',
-              'page_token',
-              'parking',
-              'payment_options',
-              'personal_info',
-              'personal_interests',
-              'pharma_safety_info',
-              'phone',
-              'pickup_options',
-              'place_type',
-              'plot_outline',
-              'press_contact',
-              'price_range',
-              'privacy_info_url',
-              'produced_by',
-              'products',
-              'promotion_eligible',
-              'promotion_ineligible_reason',
-              'public_transit',
-              'rating_count',
-              'record_label',
-              'release_date',
-              'restaurant_services',
-              'restaurant_specialties',
-              'schedule',
-              'screenplay_by',
-              'season',
-              'single_line_address',
-              'starring',
-              'start_info',
-              'store_code',
-              'store_location_descriptor',
-              'store_number',
-              'studio',
-              'supports_donate_button_in_live_video',
-              'talking_about_count',
-              'temporary_status',
-              'unread_message_count',
-              'unread_notif_count',
-              'unseen_message_count',
-              'username',
-              'verification_status',
-              'voip_info',
-              'website',
-              'were_here_count',
-              'whatsapp_number',
-              'written_by',
-              'albums',
-              'call_to_actions',
-              'canvas_elements',
-              'events',
-              'feed',
-              'global_brand_children',
-              'image_copyrights',
-              'indexed_videos',
-              'likes',
-              'live_videos',
-              'photos',
-              'posts',
-              'published_posts',
-              'tabs', 
-              'tagged',
-              'rtb_dynamic_posts',
-              'video_lists',
-              'videos',
-              ]) 
-            }}
+          fields: "#/definitions/page_query_properties"
 
   post_stream:
     $ref: "#/definitions/base_stream"
@@ -235,55 +285,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          fields: |
-            {{ 
-              ','.join([
-              'id',
-              'actions',
-              'admin_creator',
-              'allowed_advertising_objects',
-              'application',
-              'attachments',
-              'backdated_time',
-              'call_to_action',
-              'can_reply_privately',
-              'child_attachments',
-              'created_time',
-              'feed_targeting',
-              'from',
-              'full_picture',
-              'icon',
-              'instagram_eligibility',
-              'is_eligible_for_promotion',
-              'is_expired',
-              'is_hidden',
-              'is_instagram_eligible',
-              'is_popular',
-              'is_published',
-              'is_spherical',
-              'message',
-              'message_tags',
-              'multi_share_end_card',
-              'multi_share_optimized',
-              'parent_id',
-              'permalink_url',
-              'place',
-              'privacy',
-              'promotable_id',
-              'properties',
-              'scheduled_publish_time',
-              'shares',
-              'status_type',
-              'story',
-              'story_tags',
-              'subscribed',
-              'targeting',
-              'updated_time',
-              'video_buying_eligibility',
-              'sponsor_tags',
-              'to'
-              ])
-            }}
+          fields: "#/definitions/post_query_properties"
 
   post_insights_stream:
     $ref: "#/definitions/base_stream"
