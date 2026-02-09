@@ -313,7 +313,7 @@ app.post('/api/execute', async (req, res) => {
   const scopedToken = await getScopedTokenForUser(userId);
   const connectorId = await getConnectorIdForUser(userId);
 
-  const response = await fetch(`${AIRBYTE_API_BASE}/connectors/sources/${connectorId}/execute`, {
+  const response = await fetch(`${AIRBYTE_API_BASE}/integrations/connectors/${connectorId}/execute`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${scopedToken}`,

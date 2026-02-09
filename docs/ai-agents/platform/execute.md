@@ -132,7 +132,7 @@ Before making API calls, you need a bearer token. For executing operations on co
 To execute an operation against a connector, send a POST request to the execute endpoint with the entity, action, and any required parameters.
 
 ```bash title="Request"
-curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -155,7 +155,7 @@ The request body contains three fields:
 This example lists users from a Gong connector.
 
 ```bash title="Request"
-curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -169,7 +169,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/ex
 This example retrieves a specific user by ID.
 
 ```bash title="Request"
-curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -186,7 +186,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/ex
 This example searches for records using filter conditions. The search action is available when you have the entity cache enabled.
 
 ```bash title="Request"
-curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -220,7 +220,7 @@ Responses include the requested data along with pagination information when appl
 To retrieve additional pages, include the cursor in subsequent requests.
 
 ```bash title="Request"
-curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_bearer_token>' \
   --header 'Content-Type: application/json' \
   --data '{

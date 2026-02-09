@@ -137,7 +137,7 @@ Once initialized, the connector works the same way as in local mode. The SDK han
 You can execute connector operations directly via the REST API.
 
 ```bash title="Request"
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <SCOPED_TOKEN>' \
   --data '{
