@@ -154,6 +154,10 @@ class CustomRolesRecordBuilder(ZendeskSupportRecordBuilder):
         self._record["id"] = id
         return self
 
+    def with_updated_at(self, updated_at: str) -> "CustomRolesRecordBuilder":
+        self._record["updated_at"] = updated_at
+        return self
+
 
 class SchedulesRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
@@ -163,6 +167,10 @@ class SchedulesRecordBuilder(ZendeskSupportRecordBuilder):
 
     def with_id(self, id: int) -> "SchedulesRecordBuilder":
         self._record["id"] = id
+        return self
+
+    def with_updated_at(self, updated_at: str) -> "SchedulesRecordBuilder":
+        self._record["updated_at"] = updated_at
         return self
 
 
@@ -698,6 +706,10 @@ class TopicsRecordBuilder(ZendeskSupportRecordBuilder):
 
     def with_id(self, id: int) -> "TopicsRecordBuilder":
         self._record["id"] = id
+        return self
+
+    def with_updated_at(self, updated_at: str) -> "TopicsRecordBuilder":
+        self._record["updated_at"] = updated_at
         return self
 
 

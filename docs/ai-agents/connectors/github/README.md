@@ -13,7 +13,7 @@ The Github connector is optimized to handle prompts like these.
 - Show me all open issues in my repositories this month
 - List the top 5 repositories I've starred recently
 - Analyze the commit trends in my main project over the last quarter
-- Find all pull requests created by \{team_member\} in the past two weeks
+- Find all pull requests created in the past two weeks
 - Search for repositories related to machine learning in my organizations
 - Compare the number of contributors across my different team projects
 - Identify the most active branches in my main repository
@@ -39,57 +39,73 @@ uv pip install airbyte-agent-github
 
 ## Usage
 
-This connector supports multiple authentication methods:
+Connectors can run in open source or hosted mode.
 
-### OAuth 2
+### Open source
 
-```python
-from airbyte_agent_github import GithubConnector
-from airbyte_agent_github.models import GithubOauth2AuthConfig
-
-connector = GithubConnector(
-  auth_config=GithubOauth2AuthConfig(
-    access_token="..."
-  )
-)
-result = await connector.repositories.get()
-```
-
-### Personal Access Token
+In open source mode, you provide API credentials directly to the connector.
 
 ```python
 from airbyte_agent_github import GithubConnector
 from airbyte_agent_github.models import GithubPersonalAccessTokenAuthConfig
 
 connector = GithubConnector(
-  auth_config=GithubPersonalAccessTokenAuthConfig(
-    token="..."
-  )
+    auth_config=GithubPersonalAccessTokenAuthConfig(
+        token="<GitHub personal access token (fine-grained or classic)>"
+    )
 )
-result = await connector.repositories.get()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GithubConnector.tool_utils
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_github import GithubConnector, AirbyteAuthConfig
+
+connector = GithubConnector(
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GithubConnector.tool_utils
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [Api_search](./REFERENCE.md#repositories-api_search) |
+| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [API Search](./REFERENCE.md#repositories-api_search) |
 | Org Repositories | [List](./REFERENCE.md#org-repositories-list) |
 | Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get) |
 | Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get) |
 | Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get) |
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Api_search](./REFERENCE.md#issues-api_search) |
-| Pull Requests | [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [Api_search](./REFERENCE.md#pull-requests-api_search) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [API Search](./REFERENCE.md#issues-api_search) |
+| Pull Requests | [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [API Search](./REFERENCE.md#pull-requests-api_search) |
 | Reviews | [List](./REFERENCE.md#reviews-list) |
 | Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get) |
 | Pr Comments | [List](./REFERENCE.md#pr-comments-list), [Get](./REFERENCE.md#pr-comments-get) |
 | Labels | [List](./REFERENCE.md#labels-list), [Get](./REFERENCE.md#labels-get) |
 | Milestones | [List](./REFERENCE.md#milestones-list), [Get](./REFERENCE.md#milestones-get) |
 | Organizations | [Get](./REFERENCE.md#organizations-get), [List](./REFERENCE.md#organizations-list) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Api_search](./REFERENCE.md#users-api_search) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
 | Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get) |
 | Stargazers | [List](./REFERENCE.md#stargazers-list) |
@@ -99,12 +115,17 @@ This connector supports the following entities and actions.
 | Project Items | [List](./REFERENCE.md#project-items-list) |
 
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Authentication and configuration
 
-For the service's official API docs, see the [Github API reference](https://docs.github.com/en/rest).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+
+### Github API docs
+
+See the official [Github API reference](https://docs.github.com/en/rest).
 
 ## Version information
 
-- **Package version:** 0.18.56
-- **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** c713ec4833c2b52dc89926ec68caa343423884cd
+- **Package version:** 0.18.97
+- **Connector version:** 0.1.12
+- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/github/CHANGELOG.md)

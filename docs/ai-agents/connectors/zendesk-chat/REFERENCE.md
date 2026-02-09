@@ -21,22 +21,22 @@ The Zendesk-Chat connector supports the following entities and actions.
 | Skills | [List](#skills-list), [Get](#skills-get) |
 | Triggers | [List](#triggers-list), [Search](#triggers-search) |
 
-### Accounts
+## Accounts
 
-#### Accounts Get
+### Accounts Get
 
 Returns the account information for the authenticated user
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.accounts.get()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -50,7 +50,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -63,22 +63,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Agents
+## Agents
 
-#### Agents List
+### Agents List
 
 List all agents
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.agents.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -88,7 +88,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -99,7 +99,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -122,11 +122,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Agents Get
+### Agents Get
 
 Get an agent
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.agents.get(
@@ -134,10 +134,10 @@ await zendesk_chat.agents.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -150,7 +150,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -160,7 +160,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -183,11 +183,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Agents Search
+### Agents Search
 
 Search and filter agents records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.agents.search(
@@ -195,10 +195,10 @@ await zendesk_chat.agents.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -210,7 +210,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -221,7 +221,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -258,22 +258,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Agent Timeline
+## Agent Timeline
 
-#### Agent Timeline List
+### Agent Timeline List
 
 List agent timeline (incremental export)
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.agent_timeline.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -283,7 +283,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -295,7 +295,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -306,7 +306,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `engagement_count` | `integer \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -315,22 +315,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Bans
+## Bans
 
-#### Bans List
+### Bans List
 
 List all bans
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.bans.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -340,7 +340,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -348,11 +348,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `since_id` | `integer` | No |  |
 
 
-#### Bans Get
+### Bans Get
 
 Get a ban
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.bans.get(
@@ -360,10 +360,10 @@ await zendesk_chat.bans.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -376,7 +376,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -386,7 +386,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -401,22 +401,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Chats
+## Chats
 
-#### Chats List
+### Chats List
 
 List chats (incremental export)
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.chats.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -426,7 +426,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -438,7 +438,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -509,7 +509,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `zendesk_ticket_id` | `integer \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -518,11 +518,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Chats Get
+### Chats Get
 
 Get a chat
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.chats.get(
@@ -530,10 +530,10 @@ await zendesk_chat.chats.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -546,7 +546,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -556,7 +556,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -629,11 +629,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Chats Search
+### Chats Search
 
 Search and filter chats records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.chats.search(
@@ -641,10 +641,10 @@ await zendesk_chat.chats.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -656,7 +656,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -667,7 +667,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -704,22 +704,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Departments
+## Departments
 
-#### Departments List
+### Departments List
 
 List all departments
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.departments.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -733,7 +733,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -747,11 +747,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Departments Get
+### Departments Get
 
 Get a department
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.departments.get(
@@ -759,10 +759,10 @@ await zendesk_chat.departments.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -775,7 +775,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -785,7 +785,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -799,11 +799,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Departments Search
+### Departments Search
 
 Search and filter departments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.departments.search(
@@ -811,10 +811,10 @@ await zendesk_chat.departments.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -826,7 +826,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -837,7 +837,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -864,22 +864,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Goals
+## Goals
 
-#### Goals List
+### Goals List
 
 List all goals
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.goals.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -893,7 +893,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -909,11 +909,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Goals Get
+### Goals Get
 
 Get a goal
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.goals.get(
@@ -921,10 +921,10 @@ await zendesk_chat.goals.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -937,7 +937,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -947,7 +947,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -963,22 +963,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Roles
+## Roles
 
-#### Roles List
+### Roles List
 
 List all roles
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.roles.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -992,7 +992,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1006,11 +1006,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Roles Get
+### Roles Get
 
 Get a role
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.roles.get(
@@ -1018,10 +1018,10 @@ await zendesk_chat.roles.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1034,7 +1034,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1044,7 +1044,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1058,22 +1058,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Routing Settings
+## Routing Settings
 
-#### Routing Settings Get
+### Routing Settings Get
 
 Get routing settings
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.routing_settings.get()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1087,7 +1087,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1101,22 +1101,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Shortcuts
+## Shortcuts
 
-#### Shortcuts List
+### Shortcuts List
 
 List all shortcuts
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.shortcuts.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1130,7 +1130,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1146,11 +1146,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Shortcuts Get
+### Shortcuts Get
 
 Get a shortcut
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.shortcuts.get(
@@ -1158,10 +1158,10 @@ await zendesk_chat.shortcuts.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1174,7 +1174,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1184,7 +1184,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1200,11 +1200,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Shortcuts Search
+### Shortcuts Search
 
 Search and filter shortcuts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.shortcuts.search(
@@ -1212,10 +1212,10 @@ await zendesk_chat.shortcuts.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1227,7 +1227,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1238,7 +1238,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1265,22 +1265,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Skills
+## Skills
 
-#### Skills List
+### Skills List
 
 List all skills
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.skills.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1294,7 +1294,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1307,11 +1307,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Skills Get
+### Skills Get
 
 Get a skill
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.skills.get(
@@ -1319,10 +1319,10 @@ await zendesk_chat.skills.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1335,7 +1335,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1345,7 +1345,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1358,22 +1358,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Triggers
+## Triggers
 
-#### Triggers List
+### Triggers List
 
 List all triggers
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.triggers.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1387,7 +1387,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1404,11 +1404,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Triggers Search
+### Triggers Search
 
 Search and filter triggers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await zendesk_chat.triggers.search(
@@ -1416,10 +1416,10 @@ await zendesk_chat.triggers.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1431,7 +1431,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1442,7 +1442,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1466,54 +1466,4 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `took_ms` | `number` | Query execution time in milliseconds |
 
 </details>
-
-
-
-## Configuration
-
-The Zendesk-Chat connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
-| Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| `subdomain` | `string` | Yes | your-subdomain | Your Zendesk subdomain (the part before .zendesk.com in your Zendesk URL) |
-
-
-## Authentication
-
-The Zendesk-Chat connector supports the following authentication methods.
-
-
-### OAuth 2.0 Access Token
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Your Zendesk Chat OAuth 2.0 access token |
-
-#### Example
-
-**Python SDK**
-
-```python
-ZendeskChatConnector(
-  auth_config=ZendeskChatAuthConfig(
-    access_token="<Your Zendesk Chat OAuth 2.0 access token>"
-  )
-)
-```
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "workspace_id": "{your_workspace_id}",
-  "source_template_id": "{source_template_id}",
-  "auth_config": {
-    "access_token": "<Your Zendesk Chat OAuth 2.0 access token>"
-  },
-  "name": "My Zendesk-Chat Connector"
-}'
-```
 

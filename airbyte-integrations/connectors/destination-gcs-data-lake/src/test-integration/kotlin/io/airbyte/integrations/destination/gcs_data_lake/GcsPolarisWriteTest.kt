@@ -49,14 +49,12 @@ class GcsPolarisWriteTest :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(integerCanBeLarge = false, nestedFloatLosesPrecision = false),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = io.airbyte.cdk.load.data.icerberg.parquet.IcebergConfigUpdater,
-        useDataFlowPipeline = true
     ) {
 
     @Test
@@ -72,13 +70,11 @@ class GcsPolarisWriteTest :
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Append,
-                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
-                syncId,
+                syncId = syncId,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema
+                tableSchema = makeTableSchema(ObjectType(schema), Append),
             )
         val firstStream =
             makeStream(

@@ -8,6 +8,7 @@ The Salesforce connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
+| Sobjects | [List](#sobjects-list) |
 | Accounts | [List](#accounts-list), [Get](#accounts-get), [API Search](#accounts-api-search), [Search](#accounts-search) |
 | Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Search](#contacts-search) |
 | Leads | [List](#leads-list), [Get](#leads-get), [API Search](#leads-api-search), [Search](#leads-search) |
@@ -21,15 +22,65 @@ The Salesforce connector supports the following entities and actions.
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Query | [List](#query-list) |
 
-### Accounts
+## Sobjects
 
-#### Accounts List
+### Sobjects List
+
+Returns a list of all available Salesforce objects (sObjects) in the organization.
+This endpoint is used for health checks to verify authentication and connectivity.
+
+
+#### Python SDK
+
+```python
+await salesforce.sobjects.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "sobjects",
+    "action": "list"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `name` | `string` |  |
+| `label` | `null \| string` |  |
+| `labelPlural` | `null \| string` |  |
+| `keyPrefix` | `null \| string` |  |
+| `custom` | `null \| boolean` |  |
+| `queryable` | `null \| boolean` |  |
+| `searchable` | `null \| boolean` |  |
+| `createable` | `null \| boolean` |  |
+| `updateable` | `null \| boolean` |  |
+| `deletable` | `null \| boolean` |  |
+| `urls` | `null \| object` |  |
+
+
+</details>
+
+## Accounts
+
+### Accounts List
 
 Returns a list of accounts via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.accounts.list(
@@ -37,10 +88,10 @@ await salesforce.accounts.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -53,7 +104,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -66,28 +117,31 @@ Example: "SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LI
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Accounts Get
+### Accounts Get
 
 Get a single account by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.accounts.get(
@@ -95,10 +149,10 @@ await salesforce.accounts.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -111,7 +165,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -124,7 +178,7 @@ Example: "Id,Name,Industry,AnnualRevenue,Website"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -135,14 +189,14 @@ Example: "Id,Name,Industry,AnnualRevenue,Website"
 
 </details>
 
-#### Accounts API Search
+### Accounts API Search
 
 Search for accounts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields and objects.
 Use SOQL (list action) for structured queries with specific field conditions.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.accounts.api_search(
@@ -150,10 +204,10 @@ await salesforce.accounts.api_search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -166,7 +220,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -181,7 +235,7 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -190,11 +244,11 @@ Examples:
 
 </details>
 
-#### Accounts Search
+### Accounts Search
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.accounts.search(
@@ -202,10 +256,10 @@ await salesforce.accounts.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -217,7 +271,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -228,7 +282,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -307,15 +361,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Contacts
+## Contacts
 
-#### Contacts List
+### Contacts List
 
 Returns a list of contacts via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.contacts.list(
@@ -323,10 +377,10 @@ await salesforce.contacts.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -339,7 +393,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -352,28 +406,31 @@ Example: "SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMI
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Contacts Get
+### Contacts Get
 
 Get a single contact by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.contacts.get(
@@ -381,10 +438,10 @@ await salesforce.contacts.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -397,7 +454,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -410,7 +467,7 @@ Example: "Id,FirstName,LastName,Email,Phone,AccountId"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -421,13 +478,13 @@ Example: "Id,FirstName,LastName,Email,Phone,AccountId"
 
 </details>
 
-#### Contacts API Search
+### Contacts API Search
 
 Search for contacts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.contacts.api_search(
@@ -435,10 +492,10 @@ await salesforce.contacts.api_search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -451,7 +508,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -465,7 +522,7 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -474,11 +531,11 @@ Examples:
 
 </details>
 
-#### Contacts Search
+### Contacts Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.contacts.search(
@@ -486,10 +543,10 @@ await salesforce.contacts.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -501,7 +558,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -512,7 +569,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -583,15 +640,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Leads
+## Leads
 
-#### Leads List
+### Leads List
 
 Returns a list of leads via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.leads.list(
@@ -599,10 +656,10 @@ await salesforce.leads.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -615,7 +672,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -628,28 +685,31 @@ Example: "SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Leads Get
+### Leads Get
 
 Get a single lead by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.leads.get(
@@ -657,10 +717,10 @@ await salesforce.leads.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -673,7 +733,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -686,7 +746,7 @@ Example: "Id,FirstName,LastName,Email,Company,Status,LeadSource"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -697,13 +757,13 @@ Example: "Id,FirstName,LastName,Email,Company,Status,LeadSource"
 
 </details>
 
-#### Leads API Search
+### Leads API Search
 
 Search for leads using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.leads.api_search(
@@ -711,10 +771,10 @@ await salesforce.leads.api_search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -727,7 +787,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -741,7 +801,7 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -750,11 +810,11 @@ Examples:
 
 </details>
 
-#### Leads Search
+### Leads Search
 
 Search and filter leads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.leads.search(
@@ -762,10 +822,10 @@ await salesforce.leads.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -777,7 +837,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -788,7 +848,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -875,15 +935,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Opportunities
+## Opportunities
 
-#### Opportunities List
+### Opportunities List
 
 Returns a list of opportunities via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.opportunities.list(
@@ -891,10 +951,10 @@ await salesforce.opportunities.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -907,7 +967,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -920,28 +980,31 @@ Example: "SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Opportunities Get
+### Opportunities Get
 
 Get a single opportunity by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.opportunities.get(
@@ -949,10 +1012,10 @@ await salesforce.opportunities.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -965,7 +1028,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -978,7 +1041,7 @@ Example: "Id,Name,Amount,StageName,CloseDate,AccountId"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -989,13 +1052,13 @@ Example: "Id,Name,Amount,StageName,CloseDate,AccountId"
 
 </details>
 
-#### Opportunities API Search
+### Opportunities API Search
 
 Search for opportunities using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.opportunities.api_search(
@@ -1003,10 +1066,10 @@ await salesforce.opportunities.api_search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1019,7 +1082,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1033,7 +1096,7 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1042,11 +1105,11 @@ Examples:
 
 </details>
 
-#### Opportunities Search
+### Opportunities Search
 
 Search and filter opportunities records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.opportunities.search(
@@ -1054,10 +1117,10 @@ await salesforce.opportunities.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1069,7 +1132,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1080,7 +1143,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1151,15 +1214,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Tasks
+## Tasks
 
-#### Tasks List
+### Tasks List
 
 Returns a list of tasks via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.tasks.list(
@@ -1167,10 +1230,10 @@ await salesforce.tasks.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1183,7 +1246,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1196,28 +1259,31 @@ Example: "SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 1
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Subject` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Subject` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Tasks Get
+### Tasks Get
 
 Get a single task by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.tasks.get(
@@ -1225,10 +1291,10 @@ await salesforce.tasks.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1241,7 +1307,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1254,7 +1320,7 @@ Example: "Id,Subject,Status,Priority,ActivityDate,WhoId,WhatId"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1265,13 +1331,13 @@ Example: "Id,Subject,Status,Priority,ActivityDate,WhoId,WhatId"
 
 </details>
 
-#### Tasks API Search
+### Tasks API Search
 
 Search for tasks using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.tasks.api_search(
@@ -1279,10 +1345,10 @@ await salesforce.tasks.api_search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1295,7 +1361,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1309,7 +1375,7 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1318,11 +1384,11 @@ Examples:
 
 </details>
 
-#### Tasks Search
+### Tasks Search
 
 Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.tasks.search(
@@ -1330,10 +1396,10 @@ await salesforce.tasks.search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1345,7 +1411,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 }'
 ```
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1356,7 +1422,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
 | `fields` | `array` | No | Field paths to include in results |
 
-**Searchable Fields**
+#### Searchable Fields
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1423,15 +1489,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Events
+## Events
 
-#### Events List
+### Events List
 
 Returns a list of events via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.events.list(
@@ -1439,10 +1505,10 @@ await salesforce.events.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1455,7 +1521,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1468,28 +1534,31 @@ Example: "SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime > TODAY LIMIT 5
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Subject` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Subject` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Events Get
+### Events Get
 
 Get a single event by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.events.get(
@@ -1497,10 +1566,10 @@ await salesforce.events.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1513,7 +1582,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1526,7 +1595,7 @@ Example: "Id,Subject,StartDateTime,EndDateTime,Location,WhoId,WhatId"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1537,13 +1606,13 @@ Example: "Id,Subject,StartDateTime,EndDateTime,Location,WhoId,WhatId"
 
 </details>
 
-#### Events API Search
+### Events API Search
 
 Search for events using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.events.api_search(
@@ -1551,10 +1620,10 @@ await salesforce.events.api_search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1567,7 +1636,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1581,7 +1650,7 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1590,15 +1659,15 @@ Examples:
 
 </details>
 
-### Campaigns
+## Campaigns
 
-#### Campaigns List
+### Campaigns List
 
 Returns a list of campaigns via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.campaigns.list(
@@ -1606,10 +1675,10 @@ await salesforce.campaigns.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1622,7 +1691,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1635,28 +1704,31 @@ Example: "SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Campaigns Get
+### Campaigns Get
 
 Get a single campaign by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.campaigns.get(
@@ -1664,10 +1736,10 @@ await salesforce.campaigns.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1680,7 +1752,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1693,7 +1765,7 @@ Example: "Id,Name,Type,Status,StartDate,EndDate,IsActive"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1704,13 +1776,13 @@ Example: "Id,Name,Type,Status,StartDate,EndDate,IsActive"
 
 </details>
 
-#### Campaigns API Search
+### Campaigns API Search
 
 Search for campaigns using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.campaigns.api_search(
@@ -1718,10 +1790,10 @@ await salesforce.campaigns.api_search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1734,7 +1806,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1748,7 +1820,7 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1757,15 +1829,15 @@ Examples:
 
 </details>
 
-### Cases
+## Cases
 
-#### Cases List
+### Cases List
 
 Returns a list of cases via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.cases.list(
@@ -1773,10 +1845,10 @@ await salesforce.cases.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1789,7 +1861,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1802,29 +1874,32 @@ Example: "SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `CaseNumber` | `string` |  |
+| `Subject` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].CaseNumber` | `string` |  |
-| `records[].Subject` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Cases Get
+### Cases Get
 
 Get a single case by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.cases.get(
@@ -1832,10 +1907,10 @@ await salesforce.cases.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1848,7 +1923,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1861,7 +1936,7 @@ Example: "Id,CaseNumber,Subject,Status,Priority,ContactId,AccountId"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1873,13 +1948,13 @@ Example: "Id,CaseNumber,Subject,Status,Priority,ContactId,AccountId"
 
 </details>
 
-#### Cases API Search
+### Cases API Search
 
 Search for cases using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.cases.api_search(
@@ -1887,10 +1962,10 @@ await salesforce.cases.api_search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1903,7 +1978,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1917,7 +1992,7 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1926,15 +2001,15 @@ Examples:
 
 </details>
 
-### Notes
+## Notes
 
-#### Notes List
+### Notes List
 
 Returns a list of notes via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.notes.list(
@@ -1942,10 +2017,10 @@ await salesforce.notes.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1958,7 +2033,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1971,28 +2046,31 @@ Example: "SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Title` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Title` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Notes Get
+### Notes Get
 
 Get a single note by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.notes.get(
@@ -2000,10 +2078,10 @@ await salesforce.notes.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2016,7 +2094,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2029,7 +2107,7 @@ Example: "Id,Title,Body,ParentId,OwnerId"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2040,13 +2118,13 @@ Example: "Id,Title,Body,ParentId,OwnerId"
 
 </details>
 
-#### Notes API Search
+### Notes API Search
 
 Search for notes using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.notes.api_search(
@@ -2054,10 +2132,10 @@ await salesforce.notes.api_search(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2070,7 +2148,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2084,7 +2162,7 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2093,16 +2171,16 @@ Examples:
 
 </details>
 
-### Content Versions
+## Content Versions
 
-#### Content Versions List
+### Content Versions List
 
 Returns a list of content versions (file metadata) via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 Note: ContentVersion does not support FIELDS(STANDARD), so specific fields must be listed.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.content_versions.list(
@@ -2110,10 +2188,10 @@ await salesforce.content_versions.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2126,7 +2204,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2139,33 +2217,36 @@ Example: "SELECT Id, Title, FileExtension, ContentSize FROM ContentVersion WHERE
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Title` | `string` |  |
+| `FileExtension` | `string` |  |
+| `ContentSize` | `integer` |  |
+| `ContentDocumentId` | `string` |  |
+| `VersionNumber` | `string` |  |
+| `IsLatest` | `boolean` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Title` | `string` |  |
-| `records[].FileExtension` | `string` |  |
-| `records[].ContentSize` | `integer` |  |
-| `records[].ContentDocumentId` | `string` |  |
-| `records[].VersionNumber` | `string` |  |
-| `records[].IsLatest` | `boolean` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Content Versions Get
+### Content Versions Get
 
 Get a single content version's metadata by ID. Returns file metadata, not the file content.
 Use the download action to retrieve the actual file binary.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.content_versions.get(
@@ -2173,10 +2254,10 @@ await salesforce.content_versions.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2189,7 +2270,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2202,7 +2283,7 @@ Example: "Id,Title,FileExtension,ContentSize,ContentDocumentId,IsLatest"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2218,7 +2299,7 @@ Example: "Id,Title,FileExtension,ContentSize,ContentDocumentId,IsLatest"
 
 </details>
 
-#### Content Versions Download
+### Content Versions Download
 
 Downloads the binary file content of a content version.
 First use the list or get action to retrieve the ContentVersion ID and file metadata (size, type, etc.),
@@ -2226,7 +2307,7 @@ then use this action to download the actual file content.
 The response is the raw binary file data.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in salesforce.content_versions.download(    id="<str>"):# Process each chunk (e.g., write to file)
@@ -2235,10 +2316,10 @@ async for chunk in salesforce.content_versions.download(    id="<str>"):# Proces
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2251,7 +2332,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2261,16 +2342,16 @@ Obtain this ID from the list or get action.
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Attachments
+## Attachments
 
-#### Attachments List
+### Attachments List
 
 Returns a list of attachments (legacy) via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 Note: Attachments are a legacy feature; consider using ContentVersion (Salesforce Files) for new implementations.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.attachments.list(
@@ -2278,10 +2359,10 @@ await salesforce.attachments.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2294,7 +2375,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2307,32 +2388,35 @@ Example: "SELECT Id, Name, ContentType, BodyLength, ParentId FROM Attachment WHE
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `ContentType` | `string` |  |
+| `BodyLength` | `integer` |  |
+| `ParentId` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-| `records[].Id` | `string` |  |
-| `records[].Name` | `string` |  |
-| `records[].ContentType` | `string` |  |
-| `records[].BodyLength` | `integer` |  |
-| `records[].ParentId` | `string` |  |
-| `records[].attributes` | `object` |  |
-
 
 </details>
 
-#### Attachments Get
+### Attachments Get
 
 Get a single attachment's metadata by ID. Returns file metadata, not the file content.
 Use the download action to retrieve the actual file binary.
 Note: Attachments are a legacy feature; consider using ContentVersion for new implementations.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.attachments.get(
@@ -2340,10 +2424,10 @@ await salesforce.attachments.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2356,7 +2440,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2369,7 +2453,7 @@ Example: "Id,Name,ContentType,BodyLength,ParentId"
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -2383,7 +2467,7 @@ Example: "Id,Name,ContentType,BodyLength,ParentId"
 
 </details>
 
-#### Attachments Download
+### Attachments Download
 
 Downloads the binary file content of an attachment (legacy).
 First use the list or get action to retrieve the Attachment ID and file metadata,
@@ -2391,7 +2475,7 @@ then use this action to download the actual file content.
 Note: Attachments are a legacy feature; consider using ContentVersion for new implementations.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in salesforce.attachments.download(    id="<str>"):# Process each chunk (e.g., write to file)
@@ -2400,10 +2484,10 @@ async for chunk in salesforce.attachments.download(    id="<str>"):# Process eac
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2416,7 +2500,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2426,15 +2510,15 @@ Obtain this ID from the list or get action.
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Query
+## Query
 
-#### Query List
+### Query List
 
 Execute a custom SOQL query and return results. Use this for querying any Salesforce object.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await salesforce.query.list(
@@ -2442,10 +2526,10 @@ await salesforce.query.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2458,7 +2542,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2473,71 +2557,14 @@ Examples:
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+
+
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `totalSize` | `integer` |  |
 | `done` | `boolean` |  |
 | `nextRecordsUrl` | `string` |  |
-| `records` | `array<object>` |  |
-
 
 </details>
-
-
-
-## Configuration
-
-The Salesforce connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
-| Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| `instance_url` | `string` | Yes | https://login.salesforce.com | Your Salesforce instance URL (e.g., https://na1.salesforce.com) |
-
-
-## Authentication
-
-The Salesforce connector supports the following authentication methods.
-
-
-### Salesforce OAuth 2.0
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `refresh_token` | `str` | Yes | OAuth refresh token for automatic token renewal |
-| `client_id` | `str` | Yes | Connected App Consumer Key |
-| `client_secret` | `str` | Yes | Connected App Consumer Secret |
-
-#### Example
-
-**Python SDK**
-
-```python
-SalesforceConnector(
-  auth_config=SalesforceAuthConfig(
-    refresh_token="<OAuth refresh token for automatic token renewal>",
-    client_id="<Connected App Consumer Key>",
-    client_secret="<Connected App Consumer Secret>"
-  )
-)
-```
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "workspace_id": "{your_workspace_id}",
-  "source_template_id": "{source_template_id}",
-  "auth_config": {
-    "refresh_token": "<OAuth refresh token for automatic token renewal>",
-    "client_id": "<Connected App Consumer Key>",
-    "client_secret": "<Connected App Consumer Secret>"
-  },
-  "name": "My Salesforce Connector"
-}'
-```
 

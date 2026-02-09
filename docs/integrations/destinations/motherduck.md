@@ -72,6 +72,7 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.1 | 2025-12-19 | [70999](https://github.com/airbytehq/airbyte/pull/70999) | Fix for empty STRUCTs |
 | 0.2.0 | 2025-12-01 | [70221](https://github.com/airbytehq/airbyte/pull/70221) | Upgrade DuckDB to v1.4.2 and duckdb-engine to v0.17.0 |
 | 0.1.26 | 2025-10-21 | [68338](https://github.com/airbytehq/airbyte/pull/68338) | Update dependencies |
 | 0.1.25 | 2025-10-14 | [67952](https://github.com/airbytehq/airbyte/pull/67952) | Update dependencies |

@@ -19,6 +19,7 @@ mypy = "^1.10.0"
 ruff = "^0.4.3"
 pytest = "^8.2.0"
 pyinstrument = "^4.6.2"
+types-requests = "^2.32.4.20260107"
 
 [tool.ruff]
 line-length = 140

@@ -144,6 +144,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.20 | 2026-02-03 | [72632](https://github.com/airbytehq/airbyte/pull/72632) | Update dependencies |
 | 4.6.19 | 2026-01-20 | [71999](https://github.com/airbytehq/airbyte/pull/71999) | Update dependencies |
 | 4.6.18 | 2026-01-14 | [71506](https://github.com/airbytehq/airbyte/pull/71506) | Update dependencies |
 | 4.6.17 | 2026-01-08 | [70856](https://github.com/airbytehq/airbyte/pull/70856) | Add configurable option to include base_id in stream names for uniqueness |
