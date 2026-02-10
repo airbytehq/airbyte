@@ -253,6 +253,16 @@ Salesforce does not guarantee that recently created or updated records are immed
 
 **Solution:** Increase the **Lookback Window** in the connector configuration. This controls how far back the connector re-reads data from the last cursor position on each incremental sync. The default is `PT10M` (10 minutes). If you observe missing records, try increasing it to `PT30M` (30 minutes) or `PT1H` (1 hour). Because the connector uses append-dedup mode, re-reading overlapping data does not create duplicates in the destination.
 
+The lookback window uses the ISO 8601 duration format. The format is `PT<number><unit>`, where `P` marks the start of the duration and `T` separates date from time components. Common examples:
+
+| Value  | Meaning    |
+|:-------|:-----------|
+| PT10M  | 10 minutes |
+| PT30M  | 30 minutes |
+| PT1H   | 1 hour     |
+| PT2H   | 2 hours    |
+| P1D    | 1 day      |
+
 </details>
 
 ## Changelog
