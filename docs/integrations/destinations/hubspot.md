@@ -44,7 +44,7 @@ If you're using an S3 bucket to store rejected records, you also need the follow
 2. Click Destination and then click + New destination.
 3. On the Set up the destination page, select HubSpot from the Destination tiles.
 4. Enter a name for the HubSpot connector.
-5. From the **Authentication** dropdown, OAuth authentication is available so click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+5. From the **Authentication** dropdown, select OAuth and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
 
    :::note HubSpot Authentication issues
    You may encounter an error during the authentication process in the popup window with the message `An invalid scope name was provided`. To resolve this, close the window and retry authentication.
@@ -57,16 +57,22 @@ If you're using an S3 bucket to store rejected records, you also need the follow
 The HubSpot destination connector supports the following streams:
 
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies): Upsert on unique field
-- [Contacts](https://developers.hubspot.com/docs/methods/contacts): Upsert on email
+- [Contacts](https://developers.hubspot.com/docs/api/crm/contacts): Upsert on email
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals): Upsert on unique field
 - [Products](https://developers.hubspot.com/docs/api/crm/products): Upsert on unique field
 - [Custom Objects](https://developers.hubspot.com/docs/guides/api/crm/objects/custom-objects): Upsert on unique field
 
+## Supported sync modes
+
+The HubSpot destination connector supports the Append sync mode. Records are upserted into HubSpot using the [batch upsert API](https://developers.hubspot.com/docs/guides/crm/using-object-apis#upsert-records). The connector sends records in batches of up to 100.
+
+The connector automatically discovers writable properties for each object from HubSpot. Read-only and calculated properties are excluded.
+
 ## Limitations & Troubleshooting
 
-### Rate Limiting
+### Rate limiting
 
-The connector automatically respects HubSpot's standard API rate limits. If you encounter rate limiting issues, the connector will retry requests with exponential backoff.
+The connector respects HubSpot's [API rate limits](https://developers.hubspot.com/docs/api/usage-details). If you encounter rate limiting issues, the connector retries requests with exponential backoff.
 
 ### Destination Object Not Showing Up
 
@@ -89,11 +95,11 @@ In order to verify our HubSpot application, HubSpot expects some usage i.e. [mor
 
 ### Scopes for Unsupported Streams
 
-During app the app installation, you might see scopes related to objects we don't support. This is expected as changing scopes might require the users to re-authenticate which is quite disruptive. In order to prevent that, we added scopes on objects we intend to support given user demands.
+During the app installation, you might see scopes related to objects the connector doesn't currently support. This is expected because changing scopes requires users to re-authenticate. To avoid that disruption, the connector requests scopes for objects it intends to support in the future.
 
 ### 403 Forbidden Error
 
-Hubspot has **scopes** for each API call. Each stream is tied to a scope and will need access to that scope to sync data. Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+HubSpot has **scopes** for each API call. Each object is tied to a scope and requires access to that scope to sync data. Review the [HubSpot OAuth scope documentation](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
 
 ## Changelog
 
