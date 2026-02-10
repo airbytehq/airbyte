@@ -12,7 +12,7 @@ Before embedding the authentication module, complete the following prerequisites
 
 2. Get your API credentials. Click **Authentication Module** and find your credentials under **Installation**.
 
-3. If you need [data replication](../../data-replication), create a destination. If you don't need data replication, you can skip this step.
+3. If you need data replication, create a destination. If you don't need data replication, you can skip this step.
 
 ## Preview the authentication module widget
 
