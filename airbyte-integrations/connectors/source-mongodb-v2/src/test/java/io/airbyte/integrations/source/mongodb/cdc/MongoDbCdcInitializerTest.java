@@ -23,8 +23,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.mongodb.MongoCommandException;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -295,6 +293,8 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsEmptyInitialStateSingleDB() {
     setupSingleDatabase();
+    // Mock isValidResumeToken since the method now uses Debezium internals that don't work with mocks
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
@@ -308,6 +308,8 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsEmptyInitialStateMultipleDB() {
     setupMultipleDatabases();
+    // Mock isValidResumeToken since the method now uses Debezium internals that don't work with mocks
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, MULTIPLE_DB_CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, MULTIPLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
@@ -322,6 +324,8 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsEmptyInitialStateEmptyCollectionsSingleDB() {
     setupSingleDatabase();
     when(findCursor.hasNext()).thenReturn(false);
+    // Mock isValidResumeToken since the method now uses Debezium internals that don't work with mocks
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
@@ -334,6 +338,8 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsEmptyInitialStateEmptyCollectionsMultipleDB() {
     setupMultipleDatabases();
     when(findCursor.hasNext()).thenReturn(false);
+    // Mock isValidResumeToken since the method now uses Debezium internals that don't work with mocks
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, MULTIPLE_DB_CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, MULTIPLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
@@ -345,6 +351,8 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsFromInitialStateWithInProgressInitialSnapshotSingleDB() {
     setupSingleDatabase();
+    // Mock isValidResumeToken since the method now uses Debezium internals that don't work with mocks
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateSingleDB(InitialSnapshotStatus.IN_PROGRESS), SINGLE_DB_CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
@@ -389,6 +397,8 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsFromInitialStateWithCompletedInitialSnapshotSingleDB() {
     setupSingleDatabase();
     when(findCursor.hasNext()).thenReturn(false);
+    // Mock isValidResumeToken to return true (valid token) since the method now uses Debezium internals
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateSingleDB(InitialSnapshotStatus.COMPLETE), SINGLE_DB_CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
@@ -401,6 +411,8 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsFromInitialStateWithCompletedInitialSnapshotMultipleDB() {
     setupMultipleDatabases();
+    // Mock isValidResumeToken to return true (valid token) since the method now uses Debezium internals
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateMultipleDB(InitialSnapshotStatus.COMPLETE), MULTIPLE_DB_CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
@@ -413,10 +425,8 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetInvalidDefaultBehaviorSingleDB() {
     setupSingleDatabase();
-    when(changeStreamIterable.cursor())
-        .thenReturn(mongoChangeStreamCursor)
-        .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
-        .thenReturn(mongoChangeStreamCursor);
+    // Mock invalid resume token (Debezium internals don't work with mocks)
+    doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateSingleDB(InitialSnapshotStatus.COMPLETE), SINGLE_DB_CONFIG);
     assertThrows(ConfigErrorException.class,
@@ -427,10 +437,8 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetInvalidDefaultBehaviorMultipleDB() {
     setupMultipleDatabases();
-    when(changeStreamIterable.cursor())
-        .thenReturn(mongoChangeStreamCursor)
-        .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
-        .thenReturn(mongoChangeStreamCursor);
+    // Mock invalid resume token (Debezium internals don't work with mocks)
+    doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateMultipleDB(InitialSnapshotStatus.COMPLETE), MULTIPLE_DB_CONFIG);
     assertThrows(ConfigErrorException.class,
@@ -441,10 +449,8 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetFailOptionSingleDb() {
     setupSingleDatabase();
-    when(changeStreamIterable.cursor())
-        .thenReturn(mongoChangeStreamCursor)
-        .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
-        .thenReturn(mongoChangeStreamCursor);
+    // Mock invalid resume token (Debezium internals don't work with mocks)
+    doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateSingleDB(InitialSnapshotStatus.COMPLETE), SINGLE_DB_CONFIG);
     assertThrows(ConfigErrorException.class,
@@ -455,10 +461,8 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetFailOptionMultipleDb() {
     setupMultipleDatabases();
-    when(changeStreamIterable.cursor())
-        .thenReturn(mongoChangeStreamCursor)
-        .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
-        .thenReturn(mongoChangeStreamCursor);
+    // Mock invalid resume token (Debezium internals don't work with mocks)
+    doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateMultipleDB(InitialSnapshotStatus.COMPLETE), MULTIPLE_DB_CONFIG);
     assertThrows(ConfigErrorException.class,
@@ -470,10 +474,8 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetInvalidResyncOptionSingleDB() {
     setupSingleDatabase();
     MongoDbSourceConfig resyncConfig = new MongoDbSourceConfig(createSingleDbConfig(RESYNC_DATA_OPTION));
-    when(changeStreamIterable.cursor())
-        .thenReturn(mongoChangeStreamCursor)
-        .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
-        .thenReturn(mongoChangeStreamCursor);
+    // Mock isValidResumeToken to return false (invalid token) to trigger resync
+    doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateSingleDB(InitialSnapshotStatus.COMPLETE), SINGLE_DB_CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
@@ -489,10 +491,8 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetInvalidResyncOptionMultipleDB() {
     setupMultipleDatabases();
     MongoDbSourceConfig resyncConfig = new MongoDbSourceConfig(createMultipleDbConfig(RESYNC_DATA_OPTION));
-    when(changeStreamIterable.cursor())
-        .thenReturn(mongoChangeStreamCursor)
-        .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
-        .thenReturn(mongoChangeStreamCursor);
+    // Mock isValidResumeToken to return false (invalid token) to trigger resync
+    doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumStateMultipleDB(InitialSnapshotStatus.COMPLETE), MULTIPLE_DB_CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
@@ -558,6 +558,8 @@ class MongoDbCdcInitializerTest {
     when(aggregateCursor.hasNext()).thenReturn(true, false);
     when(aggregateCursor.next()).thenReturn(aggregate);
     doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
+    // Mock isValidResumeToken to return true (valid token) since the method now uses Debezium internals
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
 
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
 
@@ -575,6 +577,8 @@ class MongoDbCdcInitializerTest {
     when(aggregateCursor.hasNext()).thenReturn(true, false);
     when(aggregateCursor.next()).thenReturn(aggregate);
     doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
+    // Mock isValidResumeToken to return true (valid token) since the method now uses Debezium internals
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
 
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, MULTIPLE_DB_CONFIG);
 

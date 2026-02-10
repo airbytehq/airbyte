@@ -40,21 +40,54 @@ uv pip install airbyte-agent-greenhouse
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_greenhouse import GreenhouseConnector, GreenhouseAuthConfig
+from airbyte_agent_greenhouse import GreenhouseConnector
+from airbyte_agent_greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
-  auth_config=GreenhouseAuthConfig(
-    api_key="..."
-  )
+    auth_config=GreenhouseAuthConfig(
+        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+    )
 )
-result = await connector.candidates.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_greenhouse import GreenhouseConnector
+
+connector = GreenhouseConnector(
+    external_user_id="<your_external_user_id>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
@@ -72,12 +105,17 @@ This connector supports the following entities and actions.
 | Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
 
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Authentication and configuration
 
-For the service's official API docs, see the [Greenhouse API reference](https://developers.greenhouse.io/harvest.html).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+
+### Greenhouse API docs
+
+See the official [Greenhouse API reference](https://developers.greenhouse.io/harvest.html).
 
 ## Version information
 
-- **Package version:** 0.17.32
-- **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** e519b73d1e90df7073e48d3ed7e11a9fb1af3953
+- **Package version:** 0.17.70
+- **Connector version:** 0.1.4
+- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/greenhouse/CHANGELOG.md)

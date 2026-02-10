@@ -49,14 +49,12 @@ class GcsPolarisWriteTest :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(integerCanBeLarge = false, nestedFloatLosesPrecision = false),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = io.airbyte.cdk.load.data.icerberg.parquet.IcebergConfigUpdater,
-        useDataFlowPipeline = true
     ) {
 
     @Test

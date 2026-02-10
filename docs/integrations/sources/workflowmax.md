@@ -60,7 +60,9 @@ Then authorize your source with the required information.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.41 | 2025-12-16 | [70680](https://github.com/airbytehq/airbyte/pull/70680) | Update dependencies |
+| 0.0.43 | 2026-01-20 | [72051](https://github.com/airbytehq/airbyte/pull/72051) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71459](https://github.com/airbytehq/airbyte/pull/71459) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70680](https://github.com/airbytehq/airbyte/pull/70680) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [70185](https://github.com/airbytehq/airbyte/pull/70185) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69638](https://github.com/airbytehq/airbyte/pull/69638) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [68976](https://github.com/airbytehq/airbyte/pull/68976) | Update dependencies |
@@ -70,7 +72,7 @@ Then authorize your source with the required information.
 | 0.0.34 | 2025-09-30 | [66446](https://github.com/airbytehq/airbyte/pull/66446) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [65691](https://github.com/airbytehq/airbyte/pull/65691) | Update dependencies |
 | 0.0.32 | 2025-08-24 | [65492](https://github.com/airbytehq/airbyte/pull/65492) | Update dependencies |
-| 0.0.31 | 2025-08-09 | [64857](https://github.com/airbytehq/airbyte/pull/64857) | Update dependencies |
+| 0.0.31 | 2025-08-10 | [64857](https://github.com/airbytehq/airbyte/pull/64857) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64340](https://github.com/airbytehq/airbyte/pull/64340) | Update dependencies |
 | 0.0.29 | 2025-07-26 | [64079](https://github.com/airbytehq/airbyte/pull/64079) | Update dependencies |
 | 0.0.28 | 2025-07-19 | [63627](https://github.com/airbytehq/airbyte/pull/63627) | Update dependencies |

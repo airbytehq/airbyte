@@ -114,6 +114,7 @@ The Zendesk Support source connector supports the following streams:
 - [Article Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Article Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_comments/#list-comments) \(Incremental\)
 - [Article Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
+- [Article Attachments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_attachments/#list-article-attachments) \(Incremental\) \(Supports file transfer\)
 - [Attribute Definitions](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions)
 - [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
 - [Automations](https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations)
@@ -134,6 +135,7 @@ The Zendesk Support source connector supports the following streams:
 - [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
 - [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
+- [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/#list-activities) \(Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
 - [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
 - [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
@@ -189,7 +191,13 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.10.18 | 2025-12-16 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
+| 5.1.1 | 2026-02-03 | [72783](https://github.com/airbytehq/airbyte/pull/72783) | Upgrade CDK version to 7.8.1 |
+| 5.1.0 | 2026-02-02 | [71752](https://github.com/airbytehq/airbyte/pull/71752) | Add user-configurable page_size option for ticket_comments stream |
+| 5.0.3 | 2026-01-28 | [72423](https://github.com/airbytehq/airbyte/pull/72423) | Update breaking change deadline from Jan 31 to Jan 30 |
+| 5.0.2 | 2026-01-27 | [72380](https://github.com/airbytehq/airbyte/pull/72380) | Fix OAuth race condition with concurrent token refresh |
+| 5.0.1 | 2026-01-22 | [71714](https://github.com/airbytehq/airbyte/pull/71714) | Update dependencies |
+| 5.0.0 | 2026-01-21 | [70990](https://github.com/airbytehq/airbyte/pull/70990) | Add OAuth2.0 with refresh token support. Users using OAuth must re-authenticate to use the new flow with rotating refresh tokens. |
+| 4.10.18 | 2025-12-18 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
 | 4.10.17 | 2025-12-02 | [70066](https://github.com/airbytehq/airbyte/pull/70066) | Update dependencies |
 | 4.10.16 | 2025-11-18 | [69538](https://github.com/airbytehq/airbyte/pull/69538) | Update dependencies |
 | 4.10.15 | 2025-10-29 | [68945](https://github.com/airbytehq/airbyte/pull/68945) | Update dependencies |
@@ -199,8 +207,8 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 4.10.11 | 2025-09-24 | [66461](https://github.com/airbytehq/airbyte/pull/66461) | Update dependencies |
 | 4.10.10 | 2025-09-09 | [65729](https://github.com/airbytehq/airbyte/pull/65729) | Update dependencies |
 | 4.10.9 | 2025-08-26 | [65558](https://github.com/airbytehq/airbyte/pull/65558) | Update dependencies |
-| 4.10.8 | 2025-08-23 | [65403](https://github.com/airbytehq/airbyte/pull/65403) | Update dependencies |
-| 4.10.7 | 2025-08-09 | [64867](https://github.com/airbytehq/airbyte/pull/64867) | Update dependencies |
+| 4.10.8 | 2025-08-24 | [65403](https://github.com/airbytehq/airbyte/pull/65403) | Update dependencies |
+| 4.10.7 | 2025-08-10 | [64867](https://github.com/airbytehq/airbyte/pull/64867) | Update dependencies |
 | 4.10.6 | 2025-08-02 | [64366](https://github.com/airbytehq/airbyte/pull/64366) | Update dependencies |
 | 4.10.5 | 2025-07-26 | [64067](https://github.com/airbytehq/airbyte/pull/64067) | Update dependencies |
 | 4.10.4 | 2025-07-20 | [63673](https://github.com/airbytehq/airbyte/pull/63673) | Update dependencies |

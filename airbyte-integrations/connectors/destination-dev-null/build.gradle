@@ -7,7 +7,6 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = []
 }
 
 application {

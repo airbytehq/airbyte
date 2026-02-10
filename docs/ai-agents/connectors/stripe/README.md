@@ -38,43 +38,81 @@ uv pip install airbyte-agent-stripe
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_stripe import StripeConnector, StripeAuthConfig
+from airbyte_agent_stripe import StripeConnector
+from airbyte_agent_stripe.models import StripeAuthConfig
 
 connector = StripeConnector(
-  auth_config=StripeAuthConfig(
-    api_key="..."
-  )
+    auth_config=StripeAuthConfig(
+        api_key="<Your Stripe API Key (starts with sk_test_ or sk_live_)>"
+    )
 )
-result = await connector.customers.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@StripeConnector.tool_utils
+async def stripe_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_stripe import StripeConnector
+
+connector = StripeConnector(
+    external_user_id="<your_external_user_id>",
+    airbyte_client_id="<your-client-id>",
+    airbyte_client_secret="<your-client-secret>"
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@StripeConnector.tool_utils
+async def stripe_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Search](./REFERENCE.md#customers-search) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Search](./REFERENCE.md#invoices-search) |
-| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [Search](./REFERENCE.md#charges-search) |
-| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [Search](./REFERENCE.md#subscriptions-search) |
-| Refunds | [List](./REFERENCE.md#refunds-list), [Get](./REFERENCE.md#refunds-get) |
-| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Search](./REFERENCE.md#products-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [API Search](./REFERENCE.md#customers-api_search) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [API Search](./REFERENCE.md#invoices-api_search) |
+| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [API Search](./REFERENCE.md#charges-api_search) |
+| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [API Search](./REFERENCE.md#subscriptions-api_search) |
+| Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get) |
+| Products | [List](./REFERENCE.md#products-list), [Create](./REFERENCE.md#products-create), [Get](./REFERENCE.md#products-get), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [API Search](./REFERENCE.md#products-api_search) |
 | Balance | [Get](./REFERENCE.md#balance-get) |
 | Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Get](./REFERENCE.md#balance-transactions-get) |
-| Payment Intents | [List](./REFERENCE.md#payment-intents-list), [Get](./REFERENCE.md#payment-intents-get), [Search](./REFERENCE.md#payment-intents-search) |
+| Payment Intents | [List](./REFERENCE.md#payment-intents-list), [Get](./REFERENCE.md#payment-intents-get), [API Search](./REFERENCE.md#payment-intents-api_search) |
 | Disputes | [List](./REFERENCE.md#disputes-list), [Get](./REFERENCE.md#disputes-get) |
 | Payouts | [List](./REFERENCE.md#payouts-list), [Get](./REFERENCE.md#payouts-get) |
 
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Authentication and configuration
 
-For the service's official API docs, see the [Stripe API reference](https://docs.stripe.com/api).
+For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+
+### Stripe API docs
+
+See the official [Stripe API reference](https://docs.stripe.com/api).
 
 ## Version information
 
-- **Package version:** 0.5.33
-- **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** e519b73d1e90df7073e48d3ed7e11a9fb1af3953
+- **Package version:** 0.5.72
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/stripe/CHANGELOG.md)

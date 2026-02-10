@@ -468,6 +468,15 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
             """{"order":7,"enum":[ "While reading Data", "After loading Data in the destination"],"always_show":true}"""
     )
     var lsnCommitBehavior: String = "After loading Data in the destination"
+
+    @JsonProperty("heartbeat_action_query")
+    @JsonSchemaTitle("Debezium heartbeat query (Advanced)")
+    @JsonPropertyDescription(
+        "Specifies a query that the connector executes on the source database when the connector sends a heartbeat message. Please see the <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-wal-disk-consumption-and-heartbeat-action-query\">setup guide</a> for how and when to configure this setting."
+    )
+    @JsonSchemaDefault("")
+    @JsonSchemaInject(json = """{"order":8,"always_show":true}""")
+    var heartbeatActionQuery: String = ""
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.cursor")

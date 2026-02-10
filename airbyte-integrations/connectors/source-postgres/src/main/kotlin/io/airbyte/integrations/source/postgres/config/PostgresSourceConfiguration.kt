@@ -100,10 +100,10 @@ data class CdcIncrementalConfiguration(
     val replicationSlot: String,
     val publication: String,
     val debeziumCommitsLsn: Boolean,
+    val heartbeatActionQuery: String,
 // TODO: Support this configuration:
 //  initial waiting time in seconds
 //  size of the queue
-//  debezium heartbeat query
 ) : IncrementalConfiguration
 
 enum class InvalidCdcCursorPositionBehavior {
@@ -261,6 +261,7 @@ constructor(
                     replicationSlot = incrementalSpec.replicationSlot,
                     publication = incrementalSpec.publication,
                     debeziumCommitsLsn = incrementalSpec.lsnCommitBehavior == "While reading Data",
+                    heartbeatActionQuery = incrementalSpec.heartbeatActionQuery,
                 )
             }
         }

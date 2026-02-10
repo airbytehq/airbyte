@@ -1,0 +1,29 @@
+version: 2
+updates:
+  # Python dependencies - scan from root to test if updates are atomic per-manifest
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps): "
+    open-pull-requests-limit: 10
+    # No grouping - each dependency update should be separate
+
+  # Gradle dependencies - scan from root
+  - package-ecosystem: gradle
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps): "
+    open-pull-requests-limit: 10
+
+  # Docker base images - scan from root
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps): "
+    open-pull-requests-limit: 10
