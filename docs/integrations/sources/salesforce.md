@@ -241,6 +241,18 @@ More information on the differences between various Salesforce APIs can be found
 If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync streams using BULK API.
 :::
 
+### Missing Records (Salesforce API Eventual Consistency)
+
+Salesforce does not guarantee that recently created or updated records are immediately available through its API. A record may have its `SystemModStamp` set, but the underlying transaction may not yet be committed. During an incremental sync, the connector can advance its cursor past such records, causing them to be permanently missed in subsequent syncs.
+
+**Symptoms:**
+
+- Records are missing in the destination but present when queried directly in Salesforce
+- The same source synced to a different destination at a later time does not have missing records
+- No errors appear in sync logs
+
+**Solution:** Increase the **Lookback Window** in the connector configuration. This controls how far back the connector re-reads data from the last cursor position on each incremental sync. The default is `PT10M` (10 minutes). If you observe missing records, try increasing it to `PT30M` (30 minutes) or `PT1H` (1 hour). Because the connector uses append-dedup mode, re-reading overlapping data does not create duplicates in the destination.
+
 </details>
 
 ## Changelog
