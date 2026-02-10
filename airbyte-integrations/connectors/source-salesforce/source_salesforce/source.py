@@ -112,8 +112,13 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                     return
                 raise ParserError(message)
             except ParserError as e:
-                internal_message = "Incorrect lookback window"
-                raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=internal_message, message=e.args[0])
+                internal_message = str(e)
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    internal_message=internal_message,
+                    message="The lookback_window value is invalid. Please provide a valid ISO 8601 duration (e.g., 'PT10M' for 10 minutes, 'PT1H' for 1 hour). "
+                    "Increase this value if you observe missing records due to Salesforce API eventual consistency delays.",
+                )
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         self._validate_stream_slice_step(config.get("stream_slice_step"))
