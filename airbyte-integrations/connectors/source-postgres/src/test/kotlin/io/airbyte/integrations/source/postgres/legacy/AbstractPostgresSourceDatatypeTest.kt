@@ -10,7 +10,7 @@ import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
 import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil
 import io.airbyte.protocol.models.JsonSchemaType
-import java.util.*
+import java.util.Locale
 
 abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTest() {
     protected lateinit var testdb: PostgresTestDatabase
@@ -626,28 +626,12 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
                         // 10:23-08 == 18:23Z
                         "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:00-08'",
                         "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54.123456-08'", // A random BCE
-                        // date. Old
-                        // enough that
-                        // converting it
-                        // to/from an
-                        // Instant
-                        // results in
-                        // discrepancies
-                        // from
-                        // inconsistent leap year handling
+                        // date. Old enough that converting it to/from an Instant
+                        // results in discrepancies from inconsistent leap year handling
                         "TIMESTAMP WITH TIME ZONE '3004-10-19 10:23:54.123456-08 BC'", // The
-                        // earliest
-                        // possible
-                        // timestamp
-                        // in CE
-                        // (16:00-08
-                        // == 00:00Z)
+                        // earliest possible timestamp in CE (16:00-08 == 00:00Z)
                         "TIMESTAMP WITH TIME ZONE '0001-12-31 16:00:00.000000-08 BC'", // The last
-                        // possible
-                        // timestamp
-                        // in BCE
-                        // (15:59-08
-                        // == 23:59Z)
+                        // possible timestamp in BCE (15:59-08 == 23:59Z)
                         "TIMESTAMP WITH TIME ZONE '0001-12-31 15:59:59.999999-08 BC'",
                         "null", /*"'-InFinITy'", "'InFinITy'",*/
                     )

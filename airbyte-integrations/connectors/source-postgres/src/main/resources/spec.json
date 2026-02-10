@@ -288,13 +288,22 @@
                   "After loading Data in the destination"
                 ],
                 "always_show": true
+              },
+              "heartbeat_action_query": {
+                "type": "string",
+                "default": "",
+                "description": "Specifies a query that the connector executes on the source database when the connector sends a heartbeat message. Please see the <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-wal-disk-consumption-and-heartbeat-action-query\">setup guide</a> for how and when to configure this setting.",
+                "title": "Debezium heartbeat query (Advanced)",
+                "order": 8,
+                "always_show": true
               }
             },
             "required": [
               "method",
               "replication_slot",
               "publication",
-              "lsn_commit_behavior"
+              "lsn_commit_behavior",
+              "heartbeat_action_query"
             ]
           }
         ],
@@ -303,6 +312,14 @@
         "order": 12,
         "display_type": "radio",
         "type": "object"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {}
+        }
       },
       "database": {
         "type": "string",
@@ -487,6 +504,7 @@
       "entra_service_principal_auth",
       "tunnel_method",
       "replication_method",
+      "additionalProperties",
       "database"
     ]
   },

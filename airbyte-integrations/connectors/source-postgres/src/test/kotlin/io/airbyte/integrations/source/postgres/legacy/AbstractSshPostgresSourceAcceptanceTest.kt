@@ -94,7 +94,6 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
                 return testdb
                     .integrationTestConfigBuilder()
                     .withSchemas("public")
-                    //                    .withoutSsl()
                     .withSsl(mutableMapOf(MODE_KEY to "disable"))
                     .with("tunnel_method", bastion.getTunnelMethod(this.tunnelMethod, true)!!)
                     .build()

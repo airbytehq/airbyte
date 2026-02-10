@@ -67,15 +67,8 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
     @get:Throws(Exception::class)
     override val spec: ConnectorSpecification?
         get() =
-            SshHelpers.injectSshIntoSpec(
-                Jsons.deserialize<ConnectorSpecification>(
-                    MoreResources.readResource(
-                        "expected_cloud_deployment_spec.json",
-                    ),
-                    ConnectorSpecification::class.java,
-                ),
-                Optional.of<String?>("security"),
-            )
+            SshHelpers.getSpecAndInjectSsh(
+                Optional.empty())
 
     override val config: JsonNode
         get() {

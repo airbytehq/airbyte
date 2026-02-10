@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.postgres.legacy
 import io.airbyte.cdk.test.fixtures.legacy.SourceAcceptanceTest
 import io.airbyte.cdk.test.fixtures.legacy.SshHelpers
 import io.airbyte.protocol.models.v0.ConnectorSpecification
-import java.util.*
+import java.util.Optional
 
 abstract class AbstractPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
     override val imageName: String
@@ -17,9 +17,5 @@ abstract class AbstractPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
     override val spec: ConnectorSpecification
         get() =
             SshHelpers.getSpecAndInjectSsh(
-                Optional.empty()
-                /*Optional.of<String?>(
-                    "security",
-                ),*/
-                )
+                Optional.empty())
 }

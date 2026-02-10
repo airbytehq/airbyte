@@ -231,7 +231,6 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
     }
 
     override fun close() {
-        //        PostgresDebeziumStateUtil.disposeInitialState() // TODO: check here
         super.close()
     }
 

@@ -96,7 +96,7 @@ class PostgresSourceDebeziumOperations(
         }
     }
 
-    val commonPropertiesBuilder =
+    val commonPropertiesBuilder by lazy {
         DebeziumPropertiesBuilder()
             .withDefault()
             // TODO: could be moved to withDefault()? Seems all connectors need this...
@@ -125,6 +125,7 @@ class PostgresSourceDebeziumOperations(
             }
     // TODO: airbyte.heartbeat.timeout.seconds
     // TODO: SSL support
+        }
 
     override fun startup(offset: DebeziumOffset) {
         // Need to validate replication slot even on cold start.

@@ -4,8 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.legacy.testFixtures
 
-// Constants defined in
-// airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json.
+// Constants defined in PostgresSourceConfigurationSpecification
 object PostgresSpecConstants {
     const val INVALID_CDC_CURSOR_POSITION_PROPERTY: String = "invalid_cdc_cursor_position_behavior"
     const val FAIL_SYNC_OPTION: String = "Fail sync"

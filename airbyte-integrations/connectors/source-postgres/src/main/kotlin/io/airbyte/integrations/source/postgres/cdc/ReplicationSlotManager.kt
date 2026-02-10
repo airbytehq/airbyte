@@ -30,7 +30,7 @@ class ReplicationSlotManager(
         }
         config.cdc as CdcIncrementalConfiguration
     }
-    private val slot = cdcConfig.replicationSlot
+    private val slot by lazy { cdcConfig.replicationSlot }
 
     @Synchronized
     fun advanceLsn(lsn: Lsn) {

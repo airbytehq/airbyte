@@ -292,7 +292,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         val secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState))
         Assertions.assertTrue(
             secondSyncRecords.size <= configuredCatalog.streams.size,
-            "Expected the second incremental sync to produce no records when given the first sync's output state."
+            "Expected the second incremental sync to produce no more than the one record per stream when given the first sync's output state."
         )
     }
 
