@@ -276,7 +276,9 @@ class FBMarketingIncrementalStream(FBMarketingStream, CheckpointMixin, ABC):
         potentially_new_records_in_the_past = self._filter_statuses and (
             set(self._filter_statuses) - set(account_state.get("filter_statuses", []))
         )
-        record_value = latest_record[self.cursor_field]
+        record_value = latest_record.get(self.cursor_field)
+        if record_value is None:
+            return current_stream_state
         state_value = account_state.get(self.cursor_field) or record_value
         max_cursor = max(ab_datetime_parse(state_value), ab_datetime_parse(record_value))
         if potentially_new_records_in_the_past:
@@ -399,7 +401,13 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
             max_cursor_value = None
             for record in records_iter:
-                record_cursor_value = record[self.cursor_field]
+                record_cursor_value = record.get(self.cursor_field)
+                if record_cursor_value is None:
+                    record = record.export_all_data()
+                    self.fix_date_time(record)
+                    self.add_account_id(record, stream_slice["account_id"])
+                    yield record
+                    continue
                 if account_cursor and record_cursor_value < account_cursor:
                     break
 
