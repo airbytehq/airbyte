@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -51,6 +51,9 @@ data class FromSample(
     val namespace: String?,
     val sampleRateInvPow2: Int,
     val sampleSize: Int,
+    val where: WhereNode? =
+        null, // Include where clause because we want to apply all filters to the inner sample
+// query, so we don't do sampling on the whole table all the time.
 ) : FromNode {
     val sampleRatePercentage: BigDecimal
         get() = sampleRate.multiply(BigDecimal.valueOf(100L))

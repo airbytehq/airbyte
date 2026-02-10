@@ -4,6 +4,9 @@ The Bulk CDK is the "new java CDK" that's currently incubating.
 As the name suggests, its purpose is to help develop connectors which extract or load data in bulk.
 The Bulk CDK is written in Kotlin and uses the Micronaut framework for dependency injection.
 
+- **API Reference Docs**: [Kotlin CDK API Reference](https://airbyte-kotlin-cdk.vercel.app/)
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Structure
 
 The Bulk CDK consists of a _core_ and a bunch of _toolkits_.
@@ -38,7 +41,7 @@ instead of relying on the generic JDBC metadata methods.
 ## Dependencies
 
 The Bulk CDK gradle build relies heavily on so-called [BOM dependencies](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#bill-of-materials-bom-poms).
-This pattern is strongly encouraged to keep transitive version conflicts to a minimum.  This is beneficial for many reasons, including reproducible builds and a good security posture. 
+This pattern is strongly encouraged to keep transitive version conflicts to a minimum.  This is beneficial for many reasons, including reproducible builds and a good security posture.
 
 Consider for example the whole Jackson ecosystem.
 Using a BOM allows us to add specific Jackson dependencies without having to figure out which
@@ -93,11 +96,17 @@ Some legacy versions don't follow the SemVer format. Any CDK version with 0.x e.
 Artifact publication happens via a [github workflow](../../.github/workflows/publish-bulk-cdk.yml)
 which gets triggered by any push to the master branch, i.e. after merging a pull request.
 
-The contributor needs to manually bump the version before merging.
+The contributor needs to manually bump the version and populate the [changelog](changelog.md) before merging.
 
 In the build process, we are checking that the version of the bulk CDK doesn't exist already.
 
-There is now a changelog file which needs to be updated. Currently there is no enforcement but it will.
+A utility Gradle task exists to update both of those files:
+```shell
+./gradlew :airbyte-cdk:bulk:bumpVersion --<major|minor|patch> [--changelog 'My cool CDK update']
+```
+If invoked without the `--changelog` flag, it will prompt for a changelog entry via stdin.
+
+This task can also be invoked by commenting on your Github PR: `/bump-bulk-cdk-version bump=<major|minor|patch> changelog="My cool CDK update"`.
 
 ## Licensing
 

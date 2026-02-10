@@ -3,12 +3,52 @@ import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
 import org.w3c.dom.Document
 
+plugins {
+    id 'org.jetbrains.dokka' version '2.0.0'
+}
+
+final var versionFile = file("version.properties")
+final var baseVersionFile = file("core/base/version.properties")
+final var extractVersionFile = file("core/extract/version.properties")
+final var loadVersionFile = file("core/load/version.properties")
+
+final var cdkVersion = {
+    var props = new Properties()
+    versionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+// Base, extract, and load packages have their own independent versions
+final var baseVersion = {
+    var props = new Properties()
+    baseVersionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+final var extractVersion = {
+    var props = new Properties()
+    extractVersionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+final var loadVersion = {
+    var props = new Properties()
+    loadVersionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+
 allprojects {
-    version = "0.1.20"
+    version = cdkVersion
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
+    apply plugin: 'org.jetbrains.dokka'
 
     group 'io.airbyte.bulk-cdk'
 
@@ -21,7 +61,7 @@ allprojects {
         api platform('org.jetbrains.kotlin:kotlin-bom:2.0.10')
         api platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1')
         api platform('com.fasterxml.jackson:jackson-bom:2.17.2')
-        api platform('io.micronaut:micronaut-core-bom:4.6.1')
+        api platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         api platform('org.junit:junit-bom:5.10.2')
         api platform('org.slf4j:slf4j-bom:2.0.13')
         api platform('org.apache.logging.log4j:log4j-bom:2.21.1')
@@ -31,13 +71,13 @@ allprojects {
         api 'com.google.dagger:dagger:2.51.1'
         ksp 'com.google.dagger:dagger-compiler:2.52'
 
-        annotationProcessor platform('io.micronaut:micronaut-core-bom:4.6.1')
+        annotationProcessor platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
         annotationProcessor 'io.micronaut:micronaut-inject-kotlin'
 
-        ksp platform('io.micronaut:micronaut-core-bom:4.6.1')
+        ksp platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         ksp 'io.micronaut:micronaut-inject-kotlin'
-        kspTest platform('io.micronaut:micronaut-core-bom:4.6.1')
+        kspTest platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         kspTest 'io.micronaut:micronaut-inject-kotlin'
 
         testImplementation("io.mockk:mockk:1.13.13")
@@ -66,41 +106,148 @@ allprojects {
     }
 }
 
-tasks.register('checkBuildNumber') {
-    description = "Check that the version doesn't exist"
+// Define extract and load module groups (core + toolkits)
+def extractProjects = [
+    ':airbyte-cdk:bulk:core:bulk-cdk-core-extract',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-cdc',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-trigger',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-source-tests',
+]
+
+def loadProjects = [
+    ':airbyte-cdk:bulk:core:bulk-cdk-core-load',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-aws',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-csv',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-gcp',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-http',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-iceberg-parquet',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-avro',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-azure-blob-storage',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-db',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-dlq',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-gcs',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-low-code',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-parquet',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-s3',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader',
+]
+
+// Override base, extract, and load packages to use their own independent versions
+project(':airbyte-cdk:bulk:core:bulk-cdk-core-base') {
+    version = baseVersion
+}
+extractProjects.each { project(it).version = extractVersion }
+loadProjects.each { project(it).version = loadVersion }
+
+// Configure Dokka for all subprojects
+subprojects {
+    tasks.withType(org.jetbrains.dokka.gradle.DokkaTask.class) {
+        dokkaSourceSets {
+            configureEach {
+                // Only document public APIs
+                includeNonPublic.set(false)
+                skipEmptyPackages.set(true)
+
+                // Report undocumented members
+                reportUndocumented.set(true)
+
+                // Add external documentation links
+                externalDocumentationLinks {
+                    create("kotlin") {
+                        url.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/").toURL())
+                        packageListUrl.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/package-list").toURL())
+                    }
+                    create("kotlinx-coroutines") {
+                        url.set(uri("https://kotlinlang.org/api/kotlinx.coroutines/").toURL())
+                    }
+                    create("micronaut") {
+                        url.set(uri("https://docs.micronaut.io/latest/api/").toURL())
+                    }
+                }
+
+                // Source links back to GitHub
+                sourceLink {
+                    localDirectory.set(file("src/main"))
+                    remoteUrl.set(uri("https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/bulk/${project.name}/src/main").toURL())
+                    remoteLineSuffix.set("#L")
+                }
+            }
+        }
+    }
+}
+
+// Configure the multi-module documentation task
+tasks.named('dokkaHtmlMultiModule') {
+    moduleName.set("Airbyte Kotlin Bulk CDK")
+    outputDirectory.set(layout.buildDirectory.dir("dokka/htmlMultiModule"))
+}
+
+// Convenience task for local development
+tasks.register('docsGenerate') {
+    group = 'documentation'
+    description = 'Generate Dokka documentation for all modules'
+    dependsOn 'dokkaHtmlMultiModule'
 
     doLast {
-        var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
-        var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
-        var artifactUrl = "${groupIdUrl}/bulk"
-        var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
+        println "Documentation generated at: ${layout.buildDirectory.dir("dokka/htmlMultiModule").get()}"
+    }
+}
 
-        var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
-        try {
-            connection.setRequestMethod("GET")
-            connection.setDoInput(true)
-            var responseCode = connection.getResponseCode()
-            if (responseCode != 200) {
-                throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
-            }
-            InputStream responseContent = connection.inputStream
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
-            DocumentBuilder builder = factory.newDocumentBuilder()
-            Document doc = builder.parse(responseContent); // Replace with your XML file path
+// Backwards-compatible alias
+tasks.register('dokkaGenerate') {
+    group = 'documentation'
+    description = 'Generate Dokka documentation for all modules (alias for docsGenerate)'
+    dependsOn 'docsGenerate'
+}
 
-            doc.getDocumentElement().normalize()
+// Helper function to check if a version exists in the Maven repository
+def checkVersionExists(String artifactName, String versionToCheck) {
+    var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+    var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
+    var artifactUrl = "${groupIdUrl}/${artifactName}"
+    var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
 
-            XPath xpath = XPathFactory.newInstance().newXPath()
+    var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
+    try {
+        connection.setRequestMethod("GET")
+        connection.setDoInput(true)
+        var responseCode = connection.getResponseCode()
 
-            String expression = "/metadata/versioning/latest"
-
-            String latestVersion = (String) xpath.compile(expression).evaluate(doc, XPathConstants.STRING)
-            if (version.toString() == latestVersion) {
-                throw new GradleException("Version already exist")
-            }
-        } finally {
-            connection.disconnect()
+        if (responseCode != 200) {
+            throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
         }
+
+        InputStream responseContent = connection.inputStream
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
+        DocumentBuilder builder = factory.newDocumentBuilder()
+        Document doc = builder.parse(responseContent)
+
+        doc.getDocumentElement().normalize()
+
+        XPath xpath = XPathFactory.newInstance().newXPath()
+        String expression = "/metadata/versioning/versions/version"
+
+        var versionNodes = xpath.compile(expression).evaluate(doc, XPathConstants.NODESET)
+        var allVersions = []
+        for (int i = 0; i < versionNodes.length; i++) {
+            allVersions.add(versionNodes.item(i).textContent)
+        }
+
+        if (allVersions.contains(versionToCheck)) {
+            throw new GradleException("${artifactName} version ${versionToCheck} already exists in the repository")
+        }
+    } finally {
+        connection.disconnect()
+    }
+}
+
+tasks.register('checkBuildNumber') {
+    description = "Check that the version doesn't exist"
+    doLast {
+        checkVersionExists('bulk', version.toString())
     }
 }
 
@@ -109,4 +256,162 @@ tasks.register('bulkCdkBuild').configure {
 }
 tasks.register('bulkCdkPublish').configure {
     dependsOn allprojects.collect {it.tasks.named('publish')}
+}
+
+tasks.register('checkBaseVersion') {
+    description = "Check that the base version doesn't exist"
+    doLast {
+        checkVersionExists('bulk-cdk-core-base', baseVersion.toString())
+    }
+}
+
+tasks.register('checkExtractVersion') {
+    description = "Check that the extract version doesn't exist"
+    doLast {
+        checkVersionExists('bulk-cdk-core-extract', extractVersion.toString())
+    }
+}
+
+tasks.register('checkLoadVersion') {
+    description = "Check that the load version doesn't exist"
+    doLast {
+        checkVersionExists('bulk-cdk-core-load', loadVersion.toString())
+    }
+}
+
+// Build and publish tasks for individual packages
+tasks.register('baseCdkBuild') {
+    description = "Build the base CDK package"
+    dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:build'
+}
+tasks.register('baseCdkPublish') {
+    description = "Publish the base CDK package"
+    dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:publish'
+}
+
+tasks.register('extractCdkBuild') {
+    description = "Build the extract CDK package and toolkits (includes base as transitive dependency)"
+    dependsOn extractProjects.collect { "$it:build" }
+}
+tasks.register('extractCdkPublish') {
+    description = "Publish the extract CDK package and toolkits"
+    dependsOn extractProjects.collect { "$it:publish" }
+}
+
+tasks.register('loadCdkBuild') {
+    description = "Build the load CDK package and toolkits (includes base as transitive dependency)"
+    dependsOn loadProjects.collect { "$it:build" }
+}
+tasks.register('loadCdkPublish') {
+    description = "Publish the load CDK package and toolkits"
+    dependsOn loadProjects.collect { "$it:publish" }
+}
+
+class BumpBulkCdkVersionTask extends DefaultTask {
+    private boolean patch = false
+    private boolean minor = false
+    private boolean major = false
+    private String changelogEntry = null
+    private File versionFile
+    private String currentVersion
+
+    BumpBulkCdkVersionTask() {
+        description = 'Bump the bulk CDK version number'
+    }
+
+    void setVersionFile(File versionFile) {
+        this.versionFile = versionFile
+
+        var props = new Properties()
+        versionFile.withInputStream(props::load)
+        currentVersion = props.getProperty('version', 'undefined')
+    }
+
+    @Option(option = "patch", description = "Bump patch version (x.y.Z)")
+    void setPatch(boolean patch) {
+        this.patch = patch
+    }
+
+    @Option(option = "minor", description = "Bump minor version (x.Y.z)")
+    void setMinor(boolean minor) {
+        this.minor = minor
+    }
+
+    @Option(option = "major", description = "Bump major version (X.y.z)")
+    void setMajor(boolean major) {
+        this.major = major
+    }
+
+    @Option(option = "changelog", description = "The changelog entry to populate")
+    void setChangelogEntry(String changelogEntry) {
+        this.changelogEntry = changelogEntry
+    }
+
+    @TaskAction
+    void bumpVersion() {
+        // Parse flags
+        def bumpType = null
+        def flagCount = [patch, minor, major].count { it }
+        if (flagCount == 0) {
+            throw new GradleException("Please specify version bump type: --patch, --minor, or --major")
+        }
+        if (flagCount > 1) {
+            throw new GradleException("Please specify only one version bump type")
+        }
+
+        if (changelogEntry == null) {
+            // Read changelog entry from stdin
+            println "Enter changelog entry (press Ctrl+D when done):"
+            def changelogEntryBuilder = new StringBuilder()
+            System.in.withReader { reader ->
+                def line
+                while ((line = reader.readLine()) != null) {
+                    changelogEntryBuilder.append(line).append('\n')
+                }
+            }
+            if (changelogEntryBuilder.length() == 0) {
+                throw new GradleException("Changelog entry cannot be empty")
+            }
+            changelogEntry = changelogEntryBuilder.toString()
+        }
+
+        // Compute new version number
+        def versionParts = currentVersion.split('\\.')
+        def majorNum = Integer.parseInt(versionParts[0])
+        def minorNum = Integer.parseInt(versionParts[1])
+        // TODO This will break on any `-whatever` suffix, but we're not currently doing that.
+        //   If we ever want to get fancier with how we release the CDK, we should probably handle this better.
+        def patchNum = Integer.parseInt(versionParts[2])
+        def newVersion
+        if (patch) {
+            newVersion = "${majorNum}.${minorNum}.${patchNum + 1}"
+        } else if (minor) {
+            newVersion = "${majorNum}.${minorNum + 1}.0"
+        } else if (major) {
+            newVersion = "${majorNum + 1}.0.0"
+        }
+
+        println "Bumping version from ${currentVersion} to ${newVersion}"
+
+        // Write out the new version number
+        versionFile.text = "version=${newVersion}\n"
+
+        // Update changelog file
+        def changelogFile = project.file("changelog.md")
+        def currentChangelog = changelogFile.text
+        def newChangelog = new StringBuilder()
+        // Add new version entry
+        newChangelog.append("## Version ${newVersion}\n\n")
+        newChangelog.append("${changelogEntry.toString().trim()}\n\n")
+        // Add the rest of the existing changelog
+        newChangelog.append(currentChangelog)
+        // Write back to file
+        changelogFile.text = newChangelog.toString()
+
+        println "Version bumped to ${newVersion} and changelog updated"
+    }
+}
+
+tasks.register('bumpVersion', BumpBulkCdkVersionTask) {
+    it.versionFile = versionFile
 }

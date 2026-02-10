@@ -65,13 +65,6 @@ def _get_specs_secrets_from_registry_entries(entries: list[PolymorphicRegistryEn
 @sentry_sdk.trace
 def _persist_secrets_to_gcs(specs_secrets: Set[str], bucket: storage.Bucket) -> None:
     """Persist the specs secrets to GCS."""
-
-    # TODO: Remove the dev bucket set up once registry artificts have been validated and then add the bucket as a parameter
-    gcs_creds = os.environ.get("GCS_DEV_CREDENTIALS")
-    service_account_info = json.loads(gcs_creds)
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
-    client = storage.Client(credentials=credentials)
-    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service-2")
     specs_secrets_mask_blob = bucket.blob(f"{REGISTRIES_FOLDER}/{SPECS_SECRETS_MASK_FILE_NAME}")
 
     try:

@@ -32,4 +32,8 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: Goldcast API documentation
+      url: https://www.goldcast.io/api-docs
+      type: api_reference
 metadataSpecVersion: "1.0"

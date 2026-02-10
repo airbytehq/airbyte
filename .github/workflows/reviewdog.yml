@@ -1,0 +1,41 @@
+# This workflow runs reviewdog on pull requests.
+# Currently reviewdog is only used to run MarkDownLint and Vale on docs
+# Info: https://docs.airbyte.com/platform/next/contributing-to-airbyte/writing-docs
+# However, this can be expanded later to include all changes in Airbyte
+name: Reviewdog
+
+# Since we're currently only running MarkDownLint, scope this workflow to docs changes only.
+on:
+  pull_request:
+    paths:
+      - "docs/**/*.md"
+
+jobs:
+  markdownlint:
+    name: Docs / MarkDownLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: markdownlint
+        uses: reviewdog/action-markdownlint@3667398db9118d7e78f7a63d10e26ce454ba5f58 # v0.26.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review # Post as annotations on the Changed Files page
+          level: warning # Don't show info, just warnings and errors
+          filter_mode: added # Only check newly added content
+
+  vale:
+    name: Docs / Vale
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # V5
+        with:
+          fetch-depth: 0
+      - uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # Pinned to V2.1.1
+        continue-on-error: true # Always pass, even if reviewdog can't post annotations (e.g., fork PRs with read-only tokens)
+        with:
+          vale_flags: --config=docusaurus/vale.ini --minAlertLevel=warning # Use vale.ini with minAlertLevel overridden to warning for CI
+          files: docs/ # Folder in which to lint
+          filter_mode: added # Only lint things that have changed
+          fail_on_error: false # Don't fail if the linter finds issues (compliance is optional)
+          reporter: local # Output to job logs only, no PR annotations or comments

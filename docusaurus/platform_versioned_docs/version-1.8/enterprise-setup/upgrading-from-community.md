@@ -82,8 +82,8 @@ spec:
         paths:
           - backend:
               service:
-                # format is ${RELEASE_NAME}-airbyte-webapp-svc
-                name: airbyte-enterprise-airbyte-webapp-svc
+                # format is ${RELEASE_NAME}-airbyte-server-svc
+                name: airbyte-enterprise-airbyte-server-svc
                 port:
                   number: 80 # service port, example: 8080
             path: /

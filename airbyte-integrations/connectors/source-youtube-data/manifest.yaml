@@ -10,7 +10,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - video
+    - channels
 
 definitions:
   streams:
@@ -26,7 +26,7 @@ definitions:
           path: videos
           http_method: GET
           request_parameters:
-            part: snippet,contentDetails,statistics
+            part: snippet,contentDetails,statistics,player,status
         record_selector:
           type: RecordSelector
           extractor:
@@ -34,7 +34,6 @@ definitions:
             field_path:
               - items
               - "*"
-              - snippet
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -58,6 +57,10 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/videos"
       transformations:
+        - type: DpathFlattenFields
+          field_path:
+            - "snippet"
+          delete_origin_value: true
         - type: AddFields
           fields:
             - path:
@@ -84,7 +87,7 @@ definitions:
           path: channels
           http_method: GET
           request_parameters:
-            part: snippet,contentDetails,statistics
+            part: snippet,contentDetails,statistics,brandingSettings,topicDetails,status,localizations,contentOwnerDetails
         record_selector:
           type: RecordSelector
           extractor:
@@ -92,7 +95,6 @@ definitions:
             field_path:
               - items
               - "*"
-              - snippet
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -111,12 +113,6 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: id
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - id
-              value: "{{ stream_partition.channel_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -238,16 +234,31 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_comments"
+  api_key_authenticator:
+    type: ApiKeyAuthenticator
+    api_token: '{{ config["credentials"]["api_key"] }}'
+    inject_into:
+      type: RequestOption
+      field_name: key
+      inject_into: request_parameter
+  oauth2_authenticator:
+    type: OAuthAuthenticator
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    scopes:
+      - https://www.googleapis.com/auth/youtube.force-ssl
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+    refresh_request_body: {}
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/youtube/v3/
     authenticator:
-      type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
-      inject_into:
-        type: RequestOption
-        field_name: key
-        inject_into: request_parameter
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "auth_method"]
+      authenticators:
+        api_key: "#/definitions/api_key_authenticator"
+        oauth2.0: "#/definitions/oauth2_authenticator"
 
 streams:
   - $ref: "#/definitions/streams/video"
@@ -262,19 +273,125 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_key
+      - credentials
       - channel_ids
     properties:
-      api_key:
-        type: string
+      credentials:
+        type: object
+        title: Authentication method
+        description: Authentication method
         order: 0
-        title: API Key
-        airbyte_secret: true
+        oneOf:
+          - type: object
+            title: API Key
+            required:
+              - api_key
+            properties:
+              auth_method:
+                type: string
+                const: api_key
+              api_key:
+                type: string
+                order: 0
+                title: API Key
+                airbyte_secret: true
+          - type: object
+            title: Google OAuth 2.0
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_method:
+                type: string
+                const: oauth2.0
+                default: oauth2.0
+                enum:
+                  - oauth2.0
+              client_id:
+                type: string
+                order: 0
+                title: Client ID
+                airbyte_secret: true
+              client_secret:
+                type: string
+                order: 1
+                title: Client Secret
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                order: 2
+                title: Refresh Token
+                airbyte_secret: true
       channel_ids:
         type: array
-        order: 1
         title: Channel IDs
+        order: 1
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_method
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scope: https://www.googleapis.com/auth/youtube.force-ssl
+        consent_url: https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent
+        access_token_url: https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&grant_type=authorization_code&{{redirect_uri_param}}
+        extract_output: ["refresh_token"]
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Remaps the existing config authentication format to a new format
+          OLD: {"api_key": ...}
+          NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_key"]
+                value: "{{ config['api_key'] }}"
+            condition: "{{ config.get('api_key', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_method"]
+                value: "api_key"
+            condition: "{{ config.get('api_key', False) }}"
 
 metadata:
   autoImportSchema:
@@ -328,11 +445,25 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      description:
+      datetime:
         type:
           - string
           - "null"
-      categoryId:
+      videoId:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      publishedAt:
         type:
           - string
           - "null"
@@ -340,40 +471,15 @@ schemas:
         type:
           - string
           - "null"
+      title:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
       channelTitle:
-        type:
-          - string
-          - "null"
-      datetime:
-        type:
-          - string
-          - "null"
-      defaultAudioLanguage:
-        type:
-          - string
-          - "null"
-      defaultLanguage:
-        type:
-          - string
-          - "null"
-      liveBroadcastContent:
-        type:
-          - string
-          - "null"
-      localized:
-        type:
-          - object
-          - "null"
-        properties:
-          description:
-            type:
-              - string
-              - "null"
-          title:
-            type:
-              - string
-              - "null"
-      publishedAt:
         type:
           - string
           - "null"
@@ -385,6 +491,35 @@ schemas:
           type:
             - string
             - "null"
+      categoryId:
+        type:
+          - string
+          - "null"
+      liveBroadcastContent:
+        type:
+          - string
+          - "null"
+      defaultLanguage:
+        type:
+          - string
+          - "null"
+      defaultAudioLanguage:
+        type:
+          - string
+          - "null"
+      localized:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
       thumbnails:
         type:
           - object
@@ -395,10 +530,6 @@ schemas:
               - object
               - "null"
             properties:
-              height:
-                type:
-                  - number
-                  - "null"
               url:
                 type:
                   - string
@@ -407,37 +538,7 @@ schemas:
                 type:
                   - number
                   - "null"
-          high:
-            type:
-              - object
-              - "null"
-            properties:
               height:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              width:
-                type:
-                  - number
-                  - "null"
-          maxres:
-            type:
-              - object
-              - "null"
-            properties:
-              height:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              width:
                 type:
                   - number
                   - "null"
@@ -446,15 +547,32 @@ schemas:
               - object
               - "null"
             properties:
-              height:
-                type:
-                  - number
-                  - "null"
               url:
                 type:
                   - string
                   - "null"
               width:
+                type:
+                  - number
+                  - "null"
+              height:
+                type:
+                  - number
+                  - "null"
+          high:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+              height:
                 type:
                   - number
                   - "null"
@@ -463,10 +581,6 @@ schemas:
               - object
               - "null"
             properties:
-              height:
-                type:
-                  - number
-                  - "null"
               url:
                 type:
                   - string
@@ -475,12 +589,179 @@ schemas:
                 type:
                   - number
                   - "null"
-      title:
+              height:
+                type:
+                  - number
+                  - "null"
+          maxres:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+              height:
+                type:
+                  - number
+                  - "null"
+
+      contentDetails:
         type:
-          - string
+          - object
           - "null"
-      videoId:
-        type: string
+        properties:
+          duration:
+            type:
+              - string
+              - "null"
+          dimension:
+            type:
+              - string
+              - "null"
+          definition:
+            type:
+              - string
+              - "null"
+          caption:
+            type:
+              - string
+              - "null"
+          licensedContent:
+            type:
+              - boolean
+              - "null"
+          projection:
+            type:
+              - string
+              - "null"
+          hasCustomThumbnail:
+            type:
+              - boolean
+              - "null"
+          regionRestriction:
+            type:
+              - object
+              - "null"
+            properties:
+              allowed:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              blocked:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          contentRating:
+            type:
+              - object
+              - "null"
+
+      statistics:
+        type:
+          - object
+          - "null"
+        properties:
+          viewCount:
+            type:
+              - string
+              - "null"
+          likeCount:
+            type:
+              - string
+              - "null"
+          dislikeCount:
+            type:
+              - string
+              - "null"
+          favoriteCount:
+            type:
+              - string
+              - "null"
+          commentCount:
+            type:
+              - string
+              - "null"
+
+      player:
+        type:
+          - object
+          - "null"
+        properties:
+          embedHtml:
+            type:
+              - string
+              - "null"
+          embedHeight:
+            type:
+              - number
+              - "null"
+          embedWidth:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          uploadStatus:
+            type:
+              - string
+              - "null"
+          failureReason:
+            type:
+              - string
+              - "null"
+          rejectionReason:
+            type:
+              - string
+              - "null"
+          privacyStatus:
+            type:
+              - string
+              - "null"
+          publishAt:
+            type:
+              - string
+              - "null"
+          license:
+            type:
+              - string
+              - "null"
+          embeddable:
+            type:
+              - boolean
+              - "null"
+          publicStatsViewable:
+            type:
+              - boolean
+              - "null"
+          madeForKids:
+            type:
+              - boolean
+              - "null"
+          selfDeclaredMadeForKids:
+            type:
+              - boolean
+              - "null"
+          containsSyntheticMedia:
+            type:
+              - boolean
+              - "null"
     required:
       - videoId
   channels:
@@ -499,6 +780,10 @@ schemas:
               - "null"
             properties:
               likes:
+                type:
+                  - string
+                  - "null"
+              favorites:
                 type:
                   - string
                   - "null"
@@ -547,6 +832,10 @@ schemas:
                   - string
                   - "null"
           publishedAt:
+            type:
+              - string
+              - "null"
+          defaultLanguage:
             type:
               - string
               - "null"
@@ -631,6 +920,125 @@ schemas:
             type:
               - string
               - "null"
+      brandingSettings:
+        type:
+          - object
+          - "null"
+        properties:
+          channel:
+            type:
+              - object
+              - "null"
+            properties:
+              title:
+                type:
+                  - string
+                  - "null"
+              description:
+                type:
+                  - string
+                  - "null"
+              keywords:
+                type:
+                  - string
+                  - "null"
+              trackingAnalyticsAccountId:
+                type:
+                  - string
+                  - "null"
+              unsubscribedTrailer:
+                type:
+                  - string
+                  - "null"
+              defaultLanguage:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+          watch:
+            type:
+              - object
+              - "null"
+            properties:
+              textColor:
+                type:
+                  - string
+                  - "null"
+              backgroundColor:
+                type:
+                  - string
+                  - "null"
+              featuredPlaylistId:
+                type:
+                  - string
+                  - "null"
+      topicDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          topicIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          topicCategories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          privacyStatus:
+            type:
+              - string
+              - "null"
+          isLinked:
+            type:
+              - boolean
+              - "null"
+          longUploadsStatus:
+            type:
+              - string
+              - "null"
+          madeForKids:
+            type:
+              - boolean
+              - "null"
+          selfDeclaredMadeForKids:
+            type:
+              - boolean
+              - "null"
+      contentOwnerDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          contentOwner:
+            type:
+              - string
+              - "null"
+          timeLinked:
+            type:
+              - string
+              - "null"
+      localizations:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
     required:
       - id
   comments:

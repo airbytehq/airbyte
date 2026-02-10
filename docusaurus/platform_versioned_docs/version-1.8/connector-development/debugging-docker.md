@@ -61,7 +61,7 @@ $ docker inspect $(docker ps -q ) --format='{{ printf "%-50s" .Name}} {{printf "
 /airbyte-worker                                    airbyte/worker:dev                                 172.18.0.8
 /airbyte-source                                    sha256:5eea76716a190d10fd866f5ac6498c8306382f55c6d910231d37a749ad305960 172.17.0.2
 /airbyte-connector-builder-server                  airbyte/connector-builder-server:dev               172.18.0.6
-/airbyte-webapp                                    airbyte/webapp:dev                                 172.18.0.7
+/airbyte-server                                   airbyte/server:dev                                 172.18.0.7
 /airbyte-cron                                      airbyte/cron:dev                                   172.18.0.5
 /airbyte-temporal                                  airbyte/temporal:dev                               172.18.0.2
 /airbyte-db                                        airbyte/db:dev                                     172.18.0.4172.19.0.3
@@ -125,7 +125,7 @@ $ docker inspect $(docker ps -q ) --format='{{ printf "%-50s" .Name}} {{printf "
 /airbyte-destination                               postgres                                           172.17.0.3
 /airbyte-source                                    sha256:5eea76716a190d10fd866f5ac6498c8306382f55c6d910231d37a749ad305960 172.17.0.2
 /airbyte-connector-builder-server                  airbyte/connector-builder-server:dev               172.18.0.6
-/airbyte-webapp                                    airbyte/webapp:dev                                 172.18.0.7
+/airbyte-server                                   airbyte/server:dev                                 172.18.0.7
 /airbyte-cron                                      airbyte/cron:dev                                   172.18.0.5
 /airbyte-temporal                                  airbyte/temporal:dev                               172.18.0.3
 /airbyte-db                                        airbyte/db:dev                                     172.18.0.2172.19.0.3

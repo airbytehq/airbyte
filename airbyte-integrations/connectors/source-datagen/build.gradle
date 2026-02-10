@@ -1,0 +1,18 @@
+plugins {
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.datagen.DataGenSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = []
+}
+
+dependencies {
+    // testImplementation 'io.mockk:mockk:1.12.0'
+}

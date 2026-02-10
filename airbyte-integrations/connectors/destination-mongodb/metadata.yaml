@@ -28,4 +28,20 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: MongoDB documentation
+      url: https://www.mongodb.com/docs/
+      type: api_reference
+    - title: Release Notes
+      url: https://www.mongodb.com/docs/manual/release-notes/
+      type: api_release_history
+    - title: Authentication
+      url: https://www.mongodb.com/docs/manual/core/authentication/
+      type: authentication_guide
+    - title: Role-based access control
+      url: https://www.mongodb.com/docs/manual/core/authorization/
+      type: permissions_scopes
+    - title: MongoDB Status
+      url: https://status.mongodb.com/
+      type: status_page
 metadataSpecVersion: "1.0"

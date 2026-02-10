@@ -1,61 +1,37 @@
 # Zendesk Support Migration Guide
 
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
+## Upgrading to 5.0.0
+
+This version adds OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens.
+
+### What changed
+
+The OAuth authentication flow has been updated to support Zendesk's new grant-type tokens with rotating refresh tokens. The legacy OAuth2.0 option has been renamed to "OAuth2.0 (Legacy)" and a new "OAuth2.0 with Refresh Token" option has been added.
+
+### Why this change is required
+
+Zendesk announced support for OAuth refresh token grant type on April 30, 2025. According to [Zendesk's announcement](https://support.zendesk.com/hc/en-us/articles/9182123625370-Announcing-support-for-OAuth-refresh-token-grant-type-and-OAuth-access-and-refresh-token-expirations), all customers are required to adopt the OAuth refresh token flow by April 30, 2026. This connector update ensures compatibility with Zendesk's new authentication requirements.
+
+### Migration steps
+
+1. Go to your Zendesk Support connection settings in Airbyte
+2. If you are using OAuth authentication, you will need to re-authenticate
+3. Select "OAuth2.0 with Refresh Token" as the authentication method
+4. Complete the OAuth flow to authorize the connector
+
+### Connector upgrade guide
+
+<MigrationGuide />
+
 ## Upgrading to 4.0.0
 
 The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is necessary to reset the stream.
 
-### For Airbyte Open Source: Update the local connector image
+### Connector upgrade guide
 
-Airbyte Open Source users must manually update the connector image in their local registry before proceeding with the migration. To do so:
-
-1. Select **Settings** in the main navbar.
-    - Select **Sources**.
-2. Find Zendesk Support in the list of connectors.
-
-:::note
-You will see two versions listed, the current in-use version and the latest version available.
-:::
-
-3. Select **Change** to update your OSS version to the latest available version.
-
-### For Airbyte Cloud: Update the connector version
-
-1. Select **Sources** in the main navbar.
-2. Select the instance of the connector you wish to upgrade.
-
-:::note
-Each instance of the connector must be updated separately. If you have created multiple instances of a connector, updating one will not affect the others.
-:::
-
-3. Select **Upgrade**
-    - Follow the prompt to confirm you are ready to upgrade to the new version.
-
-### Refresh affected schemas and data
-
-1. Select **Connections** in the main nav bar.
-    - Select the connection(s) affected by the update.
-2. Select the **Replication** tab.
-    - Select **Refresh source schema**.
-    - Select **OK**.
-
-:::note
-Any detected schema changes will be listed for your review.
-:::
-
-3. Select **Save changes** at the bottom of the page.
-    - Ensure the **Refresh affected streams** option is checked.
-
-:::note
-Depending on destination type you may not be prompted to refresh your data. See below.
-:::
-
-4. Select **Save connection**.
-
-:::note
-This will refresh the data in your destination and initiate a fresh sync.
-:::
-
-For more information on refreshes your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/refreshes).
+<MigrationGuide />
 
 ## Upgrading to 3.0.0
 
@@ -66,60 +42,6 @@ For more information on refreshes your data in Airbyte, see [this page](https://
 | Stream Name        | Added Fields            |
 | -------------------|------------------------ |
 | `TicketMetrics`    | `generated_timestamp`   |
-
-### For Airbyte Open Source: Update the local connector image
-
-Airbyte Open Source users must manually update the connector image in their local registry before proceeding with the migration. To do so:
-
-1. Select **Settings** in the main navbar.
-    - Select **Sources**.
-2. Find Zendesk Support in the list of connectors.
-
-:::note
-You will see two versions listed, the current in-use version and the latest version available.
-:::
-
-3. Select **Change** to update your OSS version to the latest available version.
-
-### For Airbyte Cloud: Update the connector version
-
-1. Select **Sources** in the main navbar.
-2. Select the instance of the connector you wish to upgrade.
-
-:::note
-Each instance of the connector must be updated separately. If you have created multiple instances of a connector, updating one will not affect the others.
-:::
-
-3. Select **Upgrade**
-    - Follow the prompt to confirm you are ready to upgrade to the new version.
-
-### Refresh affected schemas and data
-
-1. Select **Connections** in the main nav bar.
-    - Select the connection(s) affected by the update.
-2. Select the **Replication** tab.
-    - Select **Refresh source schema**.
-    - Select **OK**.
-
-:::note
-Any detected schema changes will be listed for your review.
-:::
-
-3. Select **Save changes** at the bottom of the page.
-    - Ensure the **Refresh affected streams** option is checked.
-
-:::note
-Depending on destination type you may not be prompted to refresh your data. See below.
-:::
-
-4. Select **Save connection**.
-
-:::note
-This will refresh the data in your destination and initiate a fresh sync.
-:::
-
-For more information on refreshes your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/refreshes).
-
 
 ## Upgrading to 2.0.0
 

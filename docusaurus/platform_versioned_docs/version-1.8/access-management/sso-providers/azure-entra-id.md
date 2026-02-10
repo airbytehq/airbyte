@@ -62,6 +62,10 @@ Create client credentials so Airbyte can talk to your application.
 
 #### Configure SSO in Airbyte
 
+:::info
+Currently, this portion of the setup can only be done by an Airbyte employee. Contact Support to proceed.
+:::
+
 1. In Airbyte, click **Settings**.
 
 2. Under **Organization**, click **General**.
@@ -246,7 +250,7 @@ global:
   auth:
     identityProvider: 
       type: generic-oidc
-      generic-oidc: 
+      genericOidc: 
         clientId: YOUR_CLIENT_ID
         audience: YOUR_AUDIENCE
         extraScopes: YOUR_EXTRA_SCOPES

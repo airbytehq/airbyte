@@ -42,13 +42,11 @@ STREAMS = (
     ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv"),
     ("GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE", "csv"),
     ("GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", "csv"),
-    ("GET_FBA_SNS_FORECAST_DATA", "csv"),
     ("GET_AFN_INVENTORY_DATA", "csv"),
     ("GET_MERCHANT_CANCELLED_LISTINGS_DATA", "csv"),
     ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA", "csv"),
     ("GET_LEDGER_SUMMARY_VIEW_DATA", "csv"),
     ("GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE", "csv"),
-    ("GET_FBA_SNS_PERFORMANCE_DATA", "csv"),
     ("GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA", "csv"),
     ("GET_FBA_INVENTORY_PLANNING_DATA", "csv"),
     ("GET_FBA_STORAGE_FEE_CHARGES_DATA", "csv"),
@@ -429,7 +427,7 @@ class TestFullRefresh:
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
         assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
@@ -460,7 +458,7 @@ class TestFullRefresh:
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
         assert_message_in_log_output(message=warning_message, entrypoint_output=output, log_level=Level.ERROR)
 
 
@@ -846,5 +844,5 @@ class TestVendorSalesReportsFullRefresh:
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
         assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)

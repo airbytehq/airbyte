@@ -1,0 +1,371 @@
+.homePage {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Section 1: Hero */
+.heroSection {
+  background: 
+    linear-gradient(144deg, rgba(97,94,255,1) 45%, rgba(0,0,0,0)),
+    url(/noise.svg);
+  padding: 4rem 0;
+}
+
+/* Dark mode hero background */
+:global(html[data-theme="dark"]) .heroSection {
+  background: var(--color-blue-30);
+}
+
+.heroContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.heroLeft {
+  color: white;
+}
+
+.heroTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  margin-top:3rem;
+  color: white;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 2rem;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  margin: 0;
+  color: white;
+  opacity: 0.95;
+}
+
+.heroRight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popularConnectors {
+  width: 100%;
+}
+
+.popularTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.connectorButtons {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.connectorButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-primary-lightest);
+  background: var(--color-grey-40);
+  transition: all 0.2s ease-out;
+  text-decoration: none;
+}
+
+.connectorButton:hover {
+  background: var(--color-grey-40);
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 4px 12px rgba(97, 94, 255, 0.15);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.connectorIcon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Section 2: Navigation Links */
+.navSection {
+  padding: 4rem 0;
+}
+
+.navGrid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.navCard {
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--ifm-color-primary-lightest);
+  background: var(--color-grey-40);
+  transition: all 0.2s ease-out;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+.navCard:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 4px 12px rgba(97, 94, 255, 0.15);
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: inherit;
+}
+
+.navIcon {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--ifm-color-primary-lightest);
+  border-radius: 12px;
+}
+
+.navIconSvg {
+  fill: var(--ifm-color-primary);
+  width: 32px;
+  height: 32px;
+}
+
+.navTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--ifm-font-color-base);
+}
+
+.navDescription {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+  color: var(--ifm-font-color-base);
+  opacity: 0.85;
+}
+
+/* GitHub Badges Section */
+.badgesSection {
+  padding: 2rem 0 4rem;
+}
+
+.badgesContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.badgesContainer img {
+  height: 20px;
+  border-radius: 0;
+}
+
+/* Section 3: Why Airbyte */
+.whySection {
+  padding: 4rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.whyTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--ifm-font-color-base);
+}
+
+.whyIntro {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  color: var(--ifm-font-color-base);
+}
+
+.whyList {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 2rem;
+}
+
+.whyList li {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+  line-height: 1.7;
+}
+
+.whyList li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--ifm-color-primary);
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+
+.whyList li strong {
+  color: var(--ifm-font-color-base);
+}
+
+.whyList li a {
+  color: var(--ifm-color-primary);
+  text-decoration: underline;
+}
+
+.whyList li a:hover {
+  color: var(--ifm-color-primary-dark);
+}
+
+.whyFooter {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  color: var(--ifm-font-color-base);
+}
+
+.whyFooter a {
+  color: var(--ifm-color-primary);
+  text-decoration: underline;
+}
+
+.whyFooter a:hover {
+  color: var(--ifm-color-primary-dark);
+}
+
+.badges {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.badges img {
+  height: 20px;
+  border-radius: 0;
+}
+
+/* Responsive Design */
+
+/* Tablet */
+@media (max-width: 996px) {
+  .heroContainer {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 0 1.5rem;
+  }
+
+  .heroTitle {
+    font-size: 2rem;
+  }
+
+  .heroDescription {
+    font-size: 1rem;
+  }
+
+  .navGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    padding: 0 1.5rem;
+  }
+
+  .badgesContainer {
+    padding: 0 1.5rem;
+  }
+
+  .heroSection {
+    padding: 3rem 0;
+  }
+
+  .navSection {
+    padding: 3rem 0;
+  }
+
+  .whySection {
+    padding: 3rem 1.5rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .heroContainer {
+    padding: 0 1rem;
+  }
+
+  .heroSection {
+    padding: 2rem 0;
+  }
+
+  .heroTitle {
+    font-size: 1.75rem;
+  }
+
+  .heroDescription {
+    font-size: 0.95rem;
+  }
+
+  .navGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .badgesContainer {
+    padding: 0 1rem;
+  }
+
+  .navCard {
+    padding: 1.5rem;
+  }
+
+  .navTitle {
+    font-size: 1.125rem;
+  }
+
+  .navSection {
+    padding: 2rem 0;
+  }
+
+  .whySection {
+    padding: 2rem 1rem;
+  }
+
+  .whyTitle {
+    font-size: 1.5rem;
+  }
+
+  .whyIntro {
+    font-size: 1rem;
+  }
+
+  .whyList li {
+    font-size: 0.95rem;
+  }
+}

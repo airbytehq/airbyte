@@ -44,9 +44,7 @@ from metadata_service.spec_cache import SpecCache
 
 logger = logging.getLogger(__name__)
 
-DEV_BUCKET = "dev-airbyte-cloud-connector-metadata-service-2"
 PYTHON_CDK_SLUG = "python"
-
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 TaggedRegistryEntry = Tuple[ConnectorTypes, PolymorphicRegistryEntry]
@@ -407,7 +405,7 @@ def _get_registry_blob_information(
 
 
 @sentry_sdk.trace
-def _persist_connector_registry_entry(registry_entry: PolymorphicRegistryEntry, registry_entry_path: str) -> None:
+def _persist_connector_registry_entry(bucket_name: str, registry_entry: PolymorphicRegistryEntry, registry_entry_path: str) -> None:
     """Persist the connector registry entry to the GCS bucket.
 
     Args:
@@ -417,8 +415,8 @@ def _persist_connector_registry_entry(registry_entry: PolymorphicRegistryEntry, 
     """
     try:
         logger.info(f"Persisting connector registry entry to {registry_entry_path}")
-        gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_DEV_CREDENTIALS"))
-        bucket = gcs_client.bucket(DEV_BUCKET)
+        gcs_client = get_gcs_storage_client()
+        bucket = gcs_client.bucket(bucket_name)
         registry_entry_blob = bucket.blob(registry_entry_path)
         registry_entry_blob.upload_from_string(registry_entry.json(exclude_none=True))
     except Exception as e:
@@ -436,7 +434,7 @@ def generate_and_persist_registry_entry(
         bucket_name (str): The name of the GCS bucket.
         repo_metadata_file_path (pathlib.Path): The path to the spec file.
         registry_type (str): The registry type.
-        docker_image_tag (str): The docker image tag associated with this release. Typically a semver string (e.g. '1.2.3'), possibly with a suffix (e.g. '1.2.3-dev.abcde12345')
+        docker_image_tag (str): The docker image tag associated with this release. Typically a semver string (e.g. '1.2.3'), possibly with a suffix (e.g. '1.2.3-preview.abcde12')
         is_prerelease (bool): Whether this is a prerelease, or a main release.
     """
     # Read the repo metadata dict to bootstrap ourselves. We need the docker repository,
@@ -446,7 +444,7 @@ def generate_and_persist_registry_entry(
 
     try:
         # Now that we have the docker repo, read the appropriate versioned metadata from GCS.
-        # This metadata will differ in a few fields (e.g. in prerelease mode, dockerImageTag will contain the actual prerelease tag `1.2.3-dev.abcde12345`),
+        # This metadata will differ in a few fields (e.g. in prerelease mode, dockerImageTag will contain the actual prerelease tag `1.2.3-preview.abcde12`),
         # so we'll treat this as the source of truth (ish. See below for how we handle the registryOverrides field.)
         gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
         bucket = gcs_client.bucket(bucket_name)
@@ -508,7 +506,7 @@ def generate_and_persist_registry_entry(
                     source_file_info: Optional[SourceFileInfo] = generated_fields.source_file_info
                     if source_file_info is not None:
                         source_file_info.metadata_file_path = metadata_blob_path
-                _persist_connector_registry_entry(registry_entry_model, registry_entry_blob_path)
+                _persist_connector_registry_entry(bucket_name, registry_entry_model, registry_entry_blob_path)
 
                 message = f"*🤖 🟢 _Registry Entry Generation_ SUCCESS*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
                 send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
@@ -522,7 +520,6 @@ def generate_and_persist_registry_entry(
                 send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
 
                 try:
-                    bucket = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_DEV_CREDENTIALS")).bucket(DEV_BUCKET)
                     bucket.delete_blob(registry_entry_blob_path)
                 except Exception as cleanup_error:
                     logger.warning(f"Failed to clean up {registry_entry_blob_path}: {cleanup_error}")
@@ -536,7 +533,9 @@ def generate_and_persist_registry_entry(
 
     # For latest versions that are disabled, delete any existing registry entry to remove it from the registry
     if (
-        "-rc" not in metadata_dict["data"]["dockerImageTag"] and "-dev" not in metadata_dict["data"]["dockerImageTag"]
+        "-rc" not in metadata_dict["data"]["dockerImageTag"]
+        and "-dev" not in metadata_dict["data"]["dockerImageTag"]
+        and "-preview" not in metadata_dict["data"]["dockerImageTag"]
     ) and not metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
         logger.info(
             f"{registry_type} is not enabled: deleting existing {registry_type} registry entry for {metadata_dict['data']['dockerRepository']} at latest path."
@@ -544,7 +543,6 @@ def generate_and_persist_registry_entry(
 
         latest_registry_entry_path = f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/latest/{registry_type}.json"
 
-        bucket = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_DEV_CREDENTIALS")).bucket(DEV_BUCKET)
         existing_registry_entry = bucket.blob(latest_registry_entry_path)
         if existing_registry_entry.exists():
             bucket.delete_blob(latest_registry_entry_path)

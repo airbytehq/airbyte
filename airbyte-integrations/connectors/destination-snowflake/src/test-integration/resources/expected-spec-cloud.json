@@ -1,0 +1,170 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/snowflake",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Snowflake Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "host" : {
+        "type" : "string",
+        "description" : "Enter your Snowflake account's <a href=\"https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#using-an-account-locator-as-an-identifier\">locator</a> (in the format <account_locator>.<region>.<cloud>.snowflakecomputing.com)",
+        "title" : "Host",
+        "group" : "connection",
+        "order" : 0,
+        "examples" : [ "accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com" ],
+        "pattern" : "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.com|localstack\\.cloud))$",
+        "pattern_descriptor" : "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com"
+      },
+      "role" : {
+        "type" : "string",
+        "description" : "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles\">role</a> that you want to use to access Snowflake",
+        "title" : "Role",
+        "group" : "connection",
+        "order" : 1,
+        "examples" : [ "AIRBYTE_ROLE" ]
+      },
+      "warehouse" : {
+        "type" : "string",
+        "description" : "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to use as a compute cluster",
+        "title" : "Warehouse",
+        "group" : "connection",
+        "order" : 2,
+        "examples" : [ "AIRBYTE_WAREHOUSE" ]
+      },
+      "database" : {
+        "type" : "string",
+        "description" : "Enter the name of the <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">database</a> you want to sync data into",
+        "title" : "Database",
+        "group" : "connection",
+        "order" : 3,
+        "examples" : [ "AIRBYTE_DATABASE" ]
+      },
+      "schema" : {
+        "type" : "string",
+        "description" : "Enter the name of the default <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">schema</a>",
+        "title" : "Default Schema",
+        "group" : "connection",
+        "order" : 4,
+        "examples" : [ "AIRBYTE_SCHEMA" ]
+      },
+      "username" : {
+        "type" : "string",
+        "description" : "Enter the name of the user you want to use to access the database",
+        "title" : "Username",
+        "group" : "connection",
+        "order" : 5,
+        "examples" : [ "AIRBYTE_USER" ]
+      },
+      "credentials" : {
+        "oneOf" : [ {
+          "title" : "Key Pair Authentication",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for the Key Pair Authentication.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "Key Pair Authentication" ],
+              "default" : "Key Pair Authentication"
+            },
+            "private_key" : {
+              "type" : "string",
+              "description" : "RSA Private key to use for Snowflake connection. See the <a\n href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more\n information on how to obtain this key.",
+              "title" : "Private Key",
+              "order" : 0,
+              "multiline" : true,
+              "airbyte_secret" : true
+            },
+            "private_key_password" : {
+              "type" : "string",
+              "description" : "Passphrase for private key",
+              "title" : "Passphrase",
+              "order" : 0,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "auth_type", "private_key" ]
+        }, {
+          "title" : "Username and Password",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for the Username and Password Authentication.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "Username and Password" ],
+              "default" : "Username and Password"
+            },
+            "password" : {
+              "type" : "string",
+              "description" : "Enter the password associated with the username.",
+              "title" : "Password",
+              "order" : 0,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "auth_type", "password" ]
+        } ],
+        "description" : "Determines the type of authentication that should be used.",
+        "title" : "Authorization Method",
+        "group" : "connection",
+        "order" : 6,
+        "type" : "object"
+      },
+      "cdc_deletion_mode" : {
+        "type" : "string",
+        "default" : "Hard delete",
+        "enum" : [ "Hard delete", "Soft delete" ],
+        "description" : "Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.",
+        "title" : "CDC deletion mode",
+        "group" : "sync_behavior",
+        "order" : 5,
+        "always_show" : true
+      },
+      "disable_type_dedupe" : {
+        "type" : "boolean",
+        "description" : "Write the legacy \"raw tables\" format, to enable backwards compatibility with older versions of this connector.",
+        "title" : "Legacy raw tables",
+        "group" : "advanced",
+        "order" : 7
+      },
+      "raw_data_schema" : {
+        "type" : "string",
+        "description" : "Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to \"airbyte_internal\".",
+        "title" : "Airbyte Internal Table Dataset Name",
+        "group" : "advanced",
+        "order" : 8
+      },
+      "jdbc_url_params" : {
+        "type" : "string",
+        "description" : "Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3",
+        "title" : "JDBC URL Params",
+        "group" : "advanced",
+        "order" : 9
+      },
+      "retention_period_days" : {
+        "type" : "integer",
+        "description" : "The number of days of Snowflake Time Travel to enable on the tables. See <a href=\"https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period\">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.",
+        "title" : "Data Retention Period (days)",
+        "group" : "advanced",
+        "order" : 10
+      }
+    },
+    "required" : [ "host", "role", "warehouse", "database", "schema", "username" ],
+    "groups" : [ {
+      "id" : "connection",
+      "title" : "Connection"
+    }, {
+      "id" : "sync_behavior",
+      "title" : "Sync Behavior"
+    }, {
+      "id" : "advanced",
+      "title" : "Advanced"
+    } ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}

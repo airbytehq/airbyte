@@ -3,18 +3,29 @@ An Airbyte source for the Track Property Management System (PMS)
 Enterprise-class property management solutions for vacation rental companies  
 
 Website: https://tnsinc.com/  
-API Docs: hhttps://developer.trackhs.com  
+API Docs: https://developer.trackhs.com  
 Authentication Docs: https://developer.trackhs.com/docs/authentication#authentication  
+
+## Prerequisites
+
+To use this connector, you need API credentials from your Track PMS account. Contact your Track PMS administrator or Track support to obtain your API key and secret. For more information, see the [Track authentication documentation](https://developer.trackhs.com/docs/authentication#authentication).
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `customer_domain` | `string` | Customer Domain.  |  |
-| `api_key` | `string` | API Key.  |  |
-| `api_secret` | `string` | API Secret.  |  |
+| `customer_domain` | `string` | Your Track PMS domain. Enter the domain only, without `https://` or trailing paths. For example: `api.trackhs.com` or your customer-specific subdomain. |  |
+| `api_key` | `string` | Your Track API key, used as the username for authentication. |  |
+| `api_secret` | `string` | Your Track API secret, used as the password for authentication. |  |
+
+The connector uses HTTP Basic authentication, sending `api_key` as the username and `api_secret` as the password. If authentication fails, verify that you have provided both values correctly.
+
+## Sync behavior
+
+The connector handles Track's API rate limit of 10,000 requests per 5 minutes. When the rate limit is reached, the connector waits approximately 5 minutes before retrying.
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental | API Docs |
 |-------------|-------------|------------|---------------------|----------------------|----------------------|
 | accounting_accounts | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getledgeraccounts) |
@@ -39,6 +50,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | folios | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getfolioscollection) |
 | folios_logs | folio_id.id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | folios_rules | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getfoliorulescollection) |
+| folios_transactions | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getfolioidtransactionscollection) |
 | fractionals | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-fractionals) |
 | fractionals_inventory | fraction_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-fractionals-fractionalid-invetories) |
 | fractionals_owners | fraction_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-fractionals-owners) |
@@ -63,13 +75,13 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | promo_codes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getpromocodesv2) |
 | quotes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getquotescollectionv2) |
 | rate_types | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
-| reservations | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations) |
+| reservations | id | Elastic Search PIT | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations) |
 | reservations_cancellation_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcancellationpolicies) |
 | reservations_cancellation_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcancellationreasons) |
 | reservations_discount_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getdiscountreasons) |
 | reservations_guarantee_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-reservations-policies-guaranties) |
 | reservations_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreservationtypes) |
-| reservations_v2 | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations-1) |
+| reservations_v2 | id | Elastic Search PIT | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations-1) |
 | reviews | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreviewscollection) |
 | roles | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | suspend_code_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getsuspendcodereasons) |
@@ -84,14 +96,13 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | units_bed_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getbedtypescollection) |
 | units_blocks | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitblockscollection) |
 | units_channel | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchannelunitcollection) |
-| units_charge_pricing_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getchargescollection) |
 | units_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unitdailypricing) |
-| units_pricing_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
+| units_daily_pricing_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
 | units_taxes | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchanneltaxcollection) |
 | units_taxes_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
-| units_type_daily_pricing_v2 | unit_type_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unittypedailypricing) |
 | units_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypes-2) |
-| units_types_pricing_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypes-2) |
+| units_types_daily_pricing_v2 | unit_type_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unittypedailypricing) |
+| units_types_daily_pricing_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypes-2) |
 | users | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | users_pii_redacted | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 
@@ -102,6 +113,9 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
+| 4.3.1 | 2025-11-30 | Fix travel insurance products record selector path |
+| 4.3.0 | 2025-09-30 | Improve 404 err handling for units pricing, drop unneeded parent streams, rename units pricing parent streams |
+| 4.2.0 | 2025-07-20 | Improved reservations & reservations_v2 scroll index handling; add folios_transactions stream |
 | 4.1.0 | 2025-06-30 | Fix error handler, add scroll parameter for reservations endpoints, add booking fees endpoint, schema updates |
 | 4.0.0 | 2025-03-30 | Prune units schema; fix docs; update error handler; diable connector auto schema determination |
 | 3.0.0 | 2025-02-26 | Drop redundant streams & omit unneeded sensitive fields from accounting_* streams |

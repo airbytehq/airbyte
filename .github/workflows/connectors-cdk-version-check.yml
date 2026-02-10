@@ -1,0 +1,57 @@
+name: Connectors CDK Version Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_call:
+
+jobs:
+  detect-changes:
+    name: Detect Connector CDK Version Changes
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Detect Connector CDK Version Changes
+        id: connector-cdk-version-changes
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 #v3.0.2
+        with:
+          filters: |
+            cdk-version:
+              - "airbyte-integrations/connectors/*/gradle.properties"
+    outputs:
+      changed: ${{ steps.connector-cdk-version-changes.outputs.cdk-version }}
+
+  connectors-cdk-version-check:
+    name: Connectors CDK Version Check
+    runs-on: ubuntu-24.04
+    needs: detect-changes
+    if: needs.detect-changes.outputs.changed == 'true'
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
+        with:
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+
+      - name: Setup Java
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 #v5.0.0
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 #v4.4.4
+        with:
+          gradle-version: "8.14"
+
+      - name: Check no connectors set CDK version to 'local'
+        run: |
+          set -euo pipefail
+          # connectors that set cdk version to 'local' (should be none)
+          connectors="$(./gradlew getCdkVersion | awk '/local/ {print prev} {prev=$0}' | cut -d: -f4)"
+          if [[ -z "$connectors" ]]; then
+            echo "No connectors are setting CDK version to 'local'."
+            exit 0
+          else
+            echo "ERROR: Invalid CDK version. One or more connectors set CDK version to 'local' (should be none). See the list below:"
+            printf '%s\n' "$connectors"
+            exit 1
+          fi

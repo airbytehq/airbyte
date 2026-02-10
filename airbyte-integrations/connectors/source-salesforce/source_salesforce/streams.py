@@ -43,7 +43,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData

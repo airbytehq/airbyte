@@ -44,4 +44,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Management API
+      url: https://auth0.com/docs/api/management/v2
+      type: api_reference
+    - title: Authentication
+      url: https://auth0.com/docs/secure/tokens/access-tokens/management-api-access-tokens
+      type: authentication_guide
+    - title: Rate limits
+      url: https://auth0.com/docs/troubleshoot/customer-support/operational-policies/rate-limit-policy
+      type: rate_limits
+    - title: Auth0 Status
+      url: https://status.auth0.com/
+      type: status_page
 metadataSpecVersion: "1.0"
