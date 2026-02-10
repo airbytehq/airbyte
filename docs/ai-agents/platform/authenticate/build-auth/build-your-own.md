@@ -221,6 +221,7 @@ Here's a complete Node.js example implementing the server-side OAuth flow:
 ```javascript title="your-app.js"
 const express = require('express');
 const app = express();
+app.use(express.json());
 
 const AIRBYTE_API_BASE = 'https://api.airbyte.ai/api/v1';
 const OPERATOR_TOKEN = process.env.AIRBYTE_OPERATOR_TOKEN;
@@ -229,6 +230,9 @@ const OPERATOR_TOKEN = process.env.AIRBYTE_OPERATOR_TOKEN;
 app.post('/api/connect/:connectorType', async (req, res) => {
   const { connectorType } = req.params;
   const { userId } = req.body;
+
+  const redirectUrl = new URL('https://yourapp.com/oauth/callback');
+  redirectUrl.searchParams.set('user_id', userId);
 
   const response = await fetch(`${AIRBYTE_API_BASE}/integrations/connectors/oauth/initiate`, {
     method: 'POST',
@@ -239,9 +243,14 @@ app.post('/api/connect/:connectorType', async (req, res) => {
     body: JSON.stringify({
       external_user_id: userId,
       connector_type: connectorType,
-      redirect_url: `https://yourapp.com/oauth/callback?user_id=${userId}`
+      redirect_url: redirectUrl.toString()
     })
   });
+
+  if (!response.ok) {
+    const error = await response.json();
+    return res.status(response.status).json(error);
+  }
 
   const { consent_url } = await response.json();
   res.json({ consent_url });
@@ -277,6 +286,11 @@ app.post('/api/execute', async (req, res) => {
     },
     body: JSON.stringify({ entity, action, params })
   });
+
+  if (!response.ok) {
+    const error = await response.json();
+    return res.status(response.status).json(error);
+  }
 
   const result = await response.json();
   res.json(result);
