@@ -3,7 +3,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-If you provide an environment where your users can create connectors, they need to supply their credentials so agents can access their data. Airbyte provides a standard [Embedded widget](./..) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding and UX. In this case, you can implement your own OAuth flow.
+If you provide an environment where your users can create connectors on their own, they need to supply their credentials so agents can access their data. Airbyte provides an [Authentication module](./..) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding, UX, and OAuth app. In this case, you can implement your own OAuth flow.
 
 This tutorial walks you through implementing a server-side OAuth flow for your users. By the end, you'll be able to initiate OAuth consent, handle the callback, and use the automatically created connector.
 
@@ -12,7 +12,9 @@ This tutorial walks you through implementing a server-side OAuth flow for your u
 The server-side OAuth flow involves three main steps:
 
 1. **Initiate OAuth**: Your backend calls Airbyte's API to get a consent URL for the connector.
+
 2. **User consent**: You redirect your user to the consent URL where they authorize access to their account.
+
 3. **Handle callback**: After authorization, Airbyte automatically creates the connector and redirects your user back to your app with a `connector_id`.
 
 ```mermaid
@@ -37,7 +39,7 @@ Before implementing an OAuth flow, ensure you have:
 
 1. **Agent Engine credentials**: Your `client_id` and `client_secret` from the Agent Engine under **Authentication Module**.
 
-2. **An bearer token**: See [Authentication](./..) for how to obtain one.
+2. **A bearer token**: See [Authentication](./..) for how to obtain one.
 
 3. **A scoped token**: Required for some customer-level operations. Generate one using your application token.
 
@@ -45,13 +47,16 @@ Before implementing an OAuth flow, ensure you have:
 
 ## Part 1: Configure OAuth overrides (optional)
 
-By default, Airbyte uses its own OAuth app credentials for each connector. If you skip this step, the OAuth consent screen will show "Airbyte" as the requesting application.
+By default, Airbyte uses its own OAuth app credentials for each connector. If you skip this step, the OAuth consent screen shows "Airbyte" as the requesting application.
 
 You only need to configure OAuth overrides if you want to:
 
-- **Custom branding**: Show your company's name and logo on the OAuth consent screen instead of "Airbyte"
+- **Custom branding**: Show your company's name and logo on the OAuth consent screen instead of Airbyte
+
 - **Custom scopes**: Request different OAuth permissions than Airbyte's default app
+
 - **Compliance requirements**: Use your own OAuth credentials for audit or security purposes
+
 - **Rate limits**: Avoid shared rate limits on Airbyte's OAuth app for high-volume usage
 
 If none of these apply, skip to [Part 2](#part-2-initiate-the-oauth-flow).
@@ -120,7 +125,7 @@ Requires a bearer token or scoped token.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `external_user_id` | string | Yes | Your user's identifier. Maps to a customer in Airbyte. |
+| `external_user_id` | string | Yes | Your customer identifier. Maps to a customer in Airbyte. |
 | `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`, `Intercom`. |
 | `redirect_url` | string | Yes | Your callback URL. After OAuth consent, Airbyte auto-creates the connector and redirects the user here with `?connector_id=<value>`. |
 | `name` | string | No | Display name for the connector. Auto-generated if not provided. |
@@ -196,11 +201,15 @@ If an error occurs during the OAuth flow, Airbyte redirects to your `redirect_ur
 https://yourapp.com/oauth/callback?error=creation_failed&error_description=...
 ```
 
+Handle the error and show a descriptive message to your user.
+
 ```javascript title="your-app.js"
 const urlParams = new URLSearchParams(window.location.search);
+// highlight-next-line
 const error = urlParams.get('error');
 const connectorId = urlParams.get('connector_id');
 
+// highlight-start
 if (error) {
   const errorDescription = urlParams.get('error_description');
   // Handle the error, e.g. prompt the user to retry
@@ -208,6 +217,7 @@ if (error) {
   // Store the connector_id for future operations
   await saveConnectorForUser(userId, connectorId);
 }
+// highlight-end
 ```
 
 ## Part 4: Execute operations
