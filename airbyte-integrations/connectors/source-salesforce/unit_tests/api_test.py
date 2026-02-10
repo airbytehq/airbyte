@@ -98,6 +98,7 @@ def test_lookback_window_validation(lookback_window: str, expected_internal_mess
         source.check_connection(logger, config)
     assert expected_internal_message in e.value.internal_message
     assert "The lookback_window value is invalid" in e.value.message
+    assert expected_internal_message in e.value.message
 
 
 @pytest.mark.parametrize(

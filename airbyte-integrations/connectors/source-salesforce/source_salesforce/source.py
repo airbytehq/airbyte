@@ -116,7 +116,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 raise AirbyteTracedException(
                     failure_type=FailureType.config_error,
                     internal_message=internal_message,
-                    message="The lookback_window value is invalid. Please provide a valid ISO 8601 duration (e.g., 'PT10M' for 10 minutes, 'PT1H' for 1 hour).",
+                    message=f"The lookback_window value is invalid: {e}. Please provide a valid ISO 8601 duration (e.g., 'PT10M' for 10 minutes, 'PT1H' for 1 hour).",
                 )
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
