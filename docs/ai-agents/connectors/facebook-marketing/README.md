@@ -16,6 +16,13 @@ The Facebook-Marketing connector is optimized to handle prompts like these.
 - List all custom conversion events in my account
 - Show me all ad images in my account
 - What videos are available in my ad account?
+- Create a new campaign called 'Summer Sale 2026' with traffic objective
+- Pause my most recent campaign
+- Create a new ad set with a $50 daily budget in my latest campaign
+- Update the daily budget of my top performing ad set to $100
+- Rename my most recent ad set to 'Holiday Promo'
+- Create a new ad in my latest ad set
+- Pause all ads in my most recent ad set
 - Show me the ad sets with the highest daily budget
 - Show me the performance insights for the last 7 days
 - Which campaigns have the most spend this month?
@@ -25,10 +32,10 @@ The Facebook-Marketing connector is optimized to handle prompts like these.
 
 The Facebook-Marketing connector isn't currently able to handle prompts like these.
 
-- Create a new campaign
-- Update the budget for this ad set
-- Pause all ads in this campaign
 - Delete this ad creative
+- Delete this campaign
+- Delete this ad set
+- Delete this ad
 
 ## Installation
 
@@ -93,9 +100,9 @@ This connector supports the following entities and actions. For more details, se
 |--------|---------|
 | Current User | [Get](./REFERENCE.md#current-user-get) |
 | Ad Accounts | [List](./REFERENCE.md#ad-accounts-list), [Search](./REFERENCE.md#ad-accounts-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Search](./REFERENCE.md#campaigns-search) |
-| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Get](./REFERENCE.md#ad-sets-get), [Search](./REFERENCE.md#ad-sets-search) |
-| Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get), [Search](./REFERENCE.md#ads-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Search](./REFERENCE.md#campaigns-search) |
+| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Create](./REFERENCE.md#ad-sets-create), [Get](./REFERENCE.md#ad-sets-get), [Update](./REFERENCE.md#ad-sets-update), [Search](./REFERENCE.md#ad-sets-search) |
+| Ads | [List](./REFERENCE.md#ads-list), [Create](./REFERENCE.md#ads-create), [Get](./REFERENCE.md#ads-get), [Update](./REFERENCE.md#ads-update), [Search](./REFERENCE.md#ads-search) |
 | Ad Creatives | [List](./REFERENCE.md#ad-creatives-list), [Search](./REFERENCE.md#ad-creatives-search) |
 | Ads Insights | [List](./REFERENCE.md#ads-insights-list), [Search](./REFERENCE.md#ads-insights-search) |
 | Ad Account | [Get](./REFERENCE.md#ad-account-get), [Search](./REFERENCE.md#ad-account-search) |
@@ -114,7 +121,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.30
-- **Connector version:** 1.0.15
-- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Package version:** 0.1.31
+- **Connector version:** 1.0.16
+- **Generated with Connector SDK commit SHA:** 450a5458564a3e578f8590134ec3a2b00b2abe88
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)
