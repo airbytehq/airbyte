@@ -603,12 +603,22 @@
     },
     {
       "source": "/embedded-api/sonar",
-      "destination": "/ai-agents/embedded/api-reference/sonar",
+      "destination": "/ai-agents/api/api-reference/agent-engine",
       "statusCode": 301
     },
     {
       "source": "/embedded-api/:path*",
-      "destination": "/ai-agents/embedded/api-reference/:path*",
+      "destination": "/ai-agents/api/api-reference/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/embedded/api-reference/sonar",
+      "destination": "/ai-agents/api/api-reference/agent-engine",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/embedded/api-reference/:path*",
+      "destination": "/ai-agents/api/api-reference/:path*",
       "statusCode": 301
     }
   ]

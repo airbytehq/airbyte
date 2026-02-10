@@ -1,0 +1,149 @@
+---
+sidebar_position: 1
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Enable a connector
+
+Before your AI agents can interact with external data sources, you need to enable connectors in the Agent Engine. Enabling a connector makes it available for your end users to authenticate and use with their own credentials.
+
+## What enabling a connector does
+
+When you enable a connector in Agent Engine, you're configuring which data sources your app supports. This is separate from authentication, which happens when individual users connect their accounts.
+
+Enabling a connector does the following.
+
+- Makes the connector available in your organization's connector catalog
+- Allows your end users to authenticate with their own credentials for that data source
+- Configures which modes the connector operates in: direct, replication, or both
+
+## Connector modes
+
+Agent Engine connectors can operate in two modes:
+
+- **Direct mode** allows AI agents to execute real-time queries against connected data sources. When a user asks a question, the agent calls the third-party API directly to fetch fresh data. This mode is ideal for operational queries, real-time lookups, and actions that need current information.
+
+- **Replication mode** syncs data from connected sources to object storage like S3, GCS, or Azure Blob Storage. This mode is useful for analytics, RAG pipelines, and scenarios where you need to process large volumes of historical data.
+
+Some connectors support both modes, while others support only one. When enabling a connector, you can choose which modes to activate based on your application's needs.
+
+## With the UI
+
+### Enable a new connector
+
+Enable a connector through the Agent Engine dashboard.
+
+1. Click **Connectors**.
+
+2. Click **Manage Connectors** (or **Enable Connector** if you haven't enabled any connectors yet).
+
+3. In the slide-out panel, browse or search for the connector you want to enable.
+
+4. Click the **Existing Connectors** tab and select the modes you want to enable for the connector:
+
+   - Check **Direct** to enable real-time agent queries
+
+   - Check **Replication** to enable replicating data to object storage
+
+5. Click **Done**.
+
+The connector appears in your active connectors list. Your end users can authenticate with this connector and use it in the modes you defined.
+
+![Managing connectors in the user interface](img/managing-connectors.png)
+
+### Update connectors
+
+To modify or delete connectors you've already enabled, follow these steps.
+
+1. Click **Connectors** > **Manage Connectors** > **Existing Connectors**.
+
+2. For each connector, you can:
+
+   - Toggle Direct mode on or off
+
+   - Toggle Replication mode on or off, if data replication is enabled
+
+   - Remove the connector entirely by clicking the trash icon
+
+At least one mode must remain enabled for each active connector.
+
+## With the API
+
+You can also enable connectors programmatically using the Agent Engine API. This approach is useful for automation, infrastructure-as-code workflows, or when building custom admin interfaces.
+
+### Get an application token
+
+Request an application token using your Airbyte client credentials.
+
+```bash title="Request"
+curl --location 'https://cloud.airbyte.com/api/v1/applications/token' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "client_id": "<your_client_id>",
+    "client_secret": "<your_client_secret>"
+  }'
+```
+
+Save the returned access token for subsequent API calls.
+
+### List enabled connectors
+
+To see which connectors are enabled for your organization:
+
+```bash title="Request"
+curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
+  --header 'Authorization: Bearer <APPLICATION_TOKEN>'
+```
+
+This returns both connectors you've created and standard connectors available to all Agent Engine users.
+
+### Enable the connector
+
+If you don't see the connector you need, enable that connector.
+
+```bash title="Request"
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
+  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "organization_id": "<your_organization_id>",
+    "actor_definition_id": "<connector_definition_id>",
+    "partial_default_config": {}
+  }'
+```
+
+The `actor_definition_id` identifies the specific connector type. You can find connector definition IDs in the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
+
+The `partial_default_config` object lets you pre-configure default values for the connector, so your users don't need to provide them during authentication.
+
+### Update a connector
+
+To modify an existing connector.
+
+```bash title="Request"
+curl -X PATCH 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<template_id>' \
+  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "partial_default_config": {
+      "some_field": "new_default_value"
+    }
+  }'
+```
+
+When you update a connector, all instances of that connector are also updated.
+
+### Delete a connector
+
+To delete a connector, follow these steps. Once you do this, this connector is no longer available for people to authenticate with.
+
+```bash title="Request"
+curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<template_id>' \
+  --header 'Authorization: Bearer <APPLICATION_TOKEN>'
+```
+
+## Next steps
+
+After enabling connectors, set up [authentication](authenticate) to let users connect their accounts.
