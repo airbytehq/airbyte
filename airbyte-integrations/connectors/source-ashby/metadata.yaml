@@ -25,6 +25,14 @@ data:
   ab_internal:
     sl: 100
     ql: 100
+  suggestedStreams:
+    streams:
+      - applications
+      - candidates
+      - jobs
+      - job_postings
+      - users
+      - interview_schedules
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
