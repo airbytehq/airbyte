@@ -89,7 +89,7 @@ connectionSpecification:
         - PT1H
     streams_criteria:
       type: array
-      order: 8
+      order: 9
       items:
         type: object
         required:
