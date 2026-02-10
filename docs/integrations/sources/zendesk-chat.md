@@ -83,6 +83,7 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.2 | 2026-02-10 | [73151](https://github.com/airbytehq/airbyte/pull/73151) | Update dependencies |
 | 1.3.1 | 2026-02-03 | [72611](https://github.com/airbytehq/airbyte/pull/72611) | Update dependencies |
 | 1.3.0 | 2026-01-17 | [71829](https://github.com/airbytehq/airbyte/pull/71829) | Add OAuth2.0 support for Airbyte Cloud |
 | 1.2.31 | 2026-01-20 | [72091](https://github.com/airbytehq/airbyte/pull/72091) | Update dependencies |

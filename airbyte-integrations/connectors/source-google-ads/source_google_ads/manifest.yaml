@@ -32,6 +32,9 @@ definitions:
   stream_requester:
     type: CustomRequester
     class_name: "source_google_ads.components.GoogleAdsHttpRequester"
+    # Name is required by CDK for CustomRequester but the actual stream name is propagated
+    # at runtime by the retriever's __post_init__ method (GoogleAdsRetriever/CriterionRetriever)
+    name: "custom_requester"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -66,7 +69,8 @@ definitions:
         - results
 
   base_retriever:
-    type: SimpleRetriever
+    type: CustomRetriever
+    class_name: "source_google_ads.components.GoogleAdsRetriever"
     requester:
       $ref: "#/definitions/stream_requester"
     record_selector:
@@ -89,6 +93,7 @@ definitions:
       requester:
         $ref: "#/definitions/stream_requester"
       record_selector:
+        type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
@@ -120,6 +125,7 @@ definitions:
       requester:
         $ref: "#/definitions/stream_requester"
       record_selector:
+        type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
@@ -181,6 +187,8 @@ definitions:
         requester:
           type: CustomRequester
           class_name: "source_google_ads.components.CriterionFullRefreshRequester"
+          # Name is required by CDK for CustomRequester; actual stream name propagated at runtime
+          name: "custom_requester"
           schema_loader:
             type: InlineSchemaLoader
             schema:
@@ -219,6 +227,8 @@ definitions:
         requester:
           type: CustomRequester
           class_name: "source_google_ads.components.CriterionIncrementalRequester"
+          # Name is required by CDK for CustomRequester; actual stream name propagated at runtime
+          name: "custom_requester"
           schema_loader:
             type: InlineSchemaLoader
             schema:
@@ -284,6 +294,7 @@ definitions:
         url_base: "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers"
         http_method: GET
       record_selector:
+        type: RecordSelector
         extractor:
           type: CustomRecordExtractor
           class_name: "source_google_ads.components.AccessibleAccountsExtractor"
@@ -311,6 +322,7 @@ definitions:
               FROM
                 customer_client
       record_selector:
+        type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: ["results", "*", "customerClient"]
@@ -350,6 +362,7 @@ definitions:
               WHERE
                 customer_client.manager = FALSE
       record_selector:
+        type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: ["results", "*", "customerClient"]
@@ -385,6 +398,8 @@ definitions:
       requester:
         type: CustomRequester
         class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
+        # Name is required by CDK for CustomRequester; actual stream name propagated at runtime
+        name: "custom_requester"
         authenticator:
           $ref: "#/definitions/authenticator"
         url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
@@ -392,6 +407,7 @@ definitions:
         error_handler:
           $ref: "#/definitions/base_error_handler"
       record_selector:
+        type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
@@ -631,6 +647,8 @@ definitions:
       requester:
         type: CustomRequester
         class_name: "source_google_ads.components.ClickViewHttpRequester"
+        # Name is required by CDK for CustomRequester; actual stream name propagated at runtime
+        name: "custom_requester"
         schema_loader:
           type: InlineSchemaLoader
           schema:
