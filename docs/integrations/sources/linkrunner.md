@@ -21,7 +21,17 @@ Linkrunner is a Mobile Measurement Partner (MMP) that helps track user journeys 
 ## Changelog
 
 <details>
-  <summary>Expand to review</summary>
+  <summary>
+    The Linkrunner Airbyte Source Connector extracts campaign data and attributed user analytics from Linkrunner’s Data API, enabling end-to-end mobile attribution analysis from first click to user attribution events.
+    It supports:
+    Campaign-level filtering by status (ALL, ACTIVE, INACTIVE)
+    Filtering by advertising channels (Google, Meta, TikTok)
+    Attributed user data linked to campaigns via parent–child streams
+    Time-based attribution windows with timezone support
+    Automatic pagination for large datasets
+    Reliable full-refresh syncs using Airbyte’s Declarative (low-code) framework
+    This connector is ideal for building comprehensive mobile marketing and attribution analytics pipelines in Airbyte.
+  </summary>
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
