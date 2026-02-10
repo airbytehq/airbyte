@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.s3_data_lake.dataflow
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
@@ -38,7 +37,7 @@ class S3DataLakeAggregate(
         val wrappedRecord =
             RecordWrapper(
                 delegate = icebergUtil.toIcebergRecord(record.fields, schema),
-                operation = icebergUtil.getOperation(record.fields, stream.importType)
+                operation = icebergUtil.getOperation(record.fields, stream.tableSchema.importType)
             )
 
         writer.write(wrappedRecord)

@@ -104,6 +104,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.28 | 2026-02-10 | [72990](https://github.com/airbytehq/airbyte/pull/72990) | Update dependencies |
 | 0.10.27 | 2026-01-20 | [72117](https://github.com/airbytehq/airbyte/pull/72117) | Update dependencies |
 | 0.10.26 | 2026-01-14 | [71716](https://github.com/airbytehq/airbyte/pull/71716) | Update dependencies |
 | 0.10.25 | 2025-12-18 | [70665](https://github.com/airbytehq/airbyte/pull/70665) | Update dependencies |

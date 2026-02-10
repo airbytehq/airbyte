@@ -47,6 +47,7 @@ abstract class S3DataLakeWriteTest(
         (io.airbyte.cdk.command.ConfigurationSpecification) -> org.apache.iceberg.catalog.Catalog,
     cleaner: DestinationCleaner = io.airbyte.cdk.load.test.util.NoopDestinationCleaner,
     micronautProperties: Map<Property, String> = emptyMap(),
+    enableSpeed: Boolean = false,
 ) :
     IcebergWriteTest(
         configContents,
@@ -56,6 +57,7 @@ abstract class S3DataLakeWriteTest(
         tableIdGenerator,
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
         micronautProperties = micronautProperties,
+        enableSpeed = enableSpeed,
     )
 
 class GlueWriteTest :
@@ -83,13 +85,11 @@ class GlueWriteTest :
             DestinationStream(
                 unmappedNamespace = randomizedNamespace + namespaceSuffix,
                 unmappedName = name,
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
+                tableSchema = makeTableSchema(ObjectType(linkedMapOf("id" to intType)), Append),
             )
         // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
         // So these two streams will collide.
@@ -116,26 +116,26 @@ class GlueWriteTest :
      */
     @Test
     fun testNestedArrayCoercion() {
+        val nestedArraySchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to intType,
+                    "array" to
+                        FieldType(
+                            ArrayType(FieldType(NumberType, nullable = true)),
+                            nullable = true,
+                        ),
+                ),
+            )
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Append,
-                ObjectType(
-                    linkedMapOf(
-                        "id" to intType,
-                        "array" to
-                            FieldType(
-                                ArrayType(FieldType(NumberType, nullable = true)),
-                                nullable = true,
-                            ),
-                    ),
-                ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema,
+                tableSchema = makeTableSchema(nestedArraySchema, Append),
             )
 
         runSync(
@@ -367,5 +367,30 @@ class PolarisWriteTest :
         fun stop() {
             PolarisEnvironment.stopServices()
         }
+    }
+}
+
+class GlueWriteTestProtoSocket :
+    S3DataLakeWriteTest(
+        configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
+        tableIdGenerator = GlueTableIdGenerator(null),
+        getCatalog = { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+            )
+        },
+        cleaner = S3DataLakeCleaner,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
+        enableSpeed = true,
+    ) {
+    // Use single socket for dedup tests to preserve record ordering in proto socket mode
+    override val useSingleSocketForDedup: Boolean = true
+
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15495")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
     }
 }

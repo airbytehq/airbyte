@@ -95,6 +95,7 @@ To generate a legacy access token, follow Zendesk's [OAuth documentation](https:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.1 | 2026-02-10 | [72608](https://github.com/airbytehq/airbyte/pull/72608) | Update dependencies |
 | 0.4.0 | 2026-02-03 | [71856](https://github.com/airbytehq/airbyte/pull/71856) | Add OAuth2.0 with refresh token support; Upgrade CDK version to 7.8.1 |
 | 0.3.41 | 2026-01-20 | [72044](https://github.com/airbytehq/airbyte/pull/72044) | Update dependencies |
 | 0.3.40 | 2026-01-14 | [71709](https://github.com/airbytehq/airbyte/pull/71709) | Update dependencies |
