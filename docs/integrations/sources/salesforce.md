@@ -104,7 +104,8 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -121,7 +122,8 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
