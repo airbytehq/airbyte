@@ -45,7 +45,7 @@ module.exports = {
           items: [
             'mcp-servers/airbyte-knowledge-mcp',
             'mcp-servers/pyairbyte-mcp',
-            // 'mcp-servers/connector-builder-mcp',
+            'mcp-servers/connector-builder-mcp',
           ],
         },
       ],

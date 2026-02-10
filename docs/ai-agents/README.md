@@ -10,6 +10,8 @@ Airbyte provides a set of tools to help you automate, understand, move, and work
 
 - **Airbyte Embedded**: Add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining data integrations.
 
+- **Connector Builder MCP**: Let AI agents autonomously build new Airbyte source connectors using the [Connector Builder MCP server](/developers/mcp-servers/connector-builder-mcp). Install via `uvx airbyte-connector-builder-mcp` or [view the GitHub repo](https://github.com/airbytehq/connector-builder-mcp).
+
 <!-- import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 
 Airbyte's Agent engine is a set of tools to help you automate, understand, move, and work with your data in coordination with AI agents. Some of these tools are standalone open source solutions, and others are pay solutions built on top of Airbyte Cloud.
