@@ -81,6 +81,7 @@ connectionSpecification:
         due to eventual consistency delays.
         The connector will re-query this amount of time before the last cursor position on each sync.
         Increase this value if you observe missing records in your destination.
+        See <a href="https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting">Limitations & Troubleshooting</a> for details.
       default: PT10M
       order: 8
       examples:
