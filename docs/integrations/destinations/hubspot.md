@@ -66,7 +66,7 @@ The HubSpot destination connector supports the following streams:
 
 The HubSpot destination connector supports the Append sync mode. Records are upserted into HubSpot using the [batch upsert API](https://developers.hubspot.com/docs/guides/crm/using-object-apis#upsert-records). The connector sends records in batches of up to 100.
 
-The connector automatically discovers writable properties for each object from HubSpot. Read-only and calculated properties are excluded.
+The connector automatically discovers writable properties for each object from HubSpot and excludes read-only and calculated properties.
 
 ## Limitations & Troubleshooting
 
