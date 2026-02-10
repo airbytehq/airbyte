@@ -132,8 +132,8 @@ The Google Ads source connector supports the following [sync modes](https://docs
 
 List of streams:
 
-- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
-- [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [ad_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
 - [campaign_criterion](https://developers.google.com/google-ads/api/fields/v20/campaign_criterion)
 
 These streams support incremental updates, including deletions, leveraging the Change Status stream. However, they only capture updates from the most recent three months.
@@ -141,7 +141,7 @@ These streams support incremental updates, including deletions, leveraging the C
 The initial sync operates as a full refresh. Subsequent syncs begin by reading updates from the Change Status stream, followed by syncing records based on their IDs.
 
 :::warning
-It's important to note that the Google Ads API resource ChangeStatus has a limit of 10,000 records per request. That's why you cannot sync stream with more than 10,000 updates in a single microsecond. In such cases, it's recommended to use a full refresh sync to ensure all updates are captured.
+The Google Ads API returns a maximum of 10,000 ChangeStatus records per request. If more than 10,000 changes share the same microsecond timestamp, some updates may not be captured during an incremental sync. If this happens, run a full refresh sync to ensure all data is up to date.
 :::
 
 ## Supported Streams
@@ -253,7 +253,7 @@ Due to Google Ads API constraints, the `click_view` stream retrieves data one da
 
 :::warning
 Google Ads doesn't support `PERFORMANCE_MAX` campaigns on `ad_group` or `ad` stream level, only on `campaign` level.
-If you have this type of campaign Google will remove them from the results for the `ads` reports.
+If you have this type of campaign, Google will remove them from the results for the `ads` reports.
 More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
 :::
 
@@ -327,7 +327,9 @@ In the case of configuring the Google Ads source connector, each time a sync is 
 
 ## Performance considerations
 
-This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
+This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas).
+
+When syncing large result sets, the connector automatically handles intermittent connection interruptions during response streaming. If the connection is interrupted, the connector splits the date range into smaller intervals and retries each interval separately. This process is automatic and requires no user action, but you may notice retry-related warnings in your sync logs.
 
 Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
 </HideInUI>
