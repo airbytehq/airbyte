@@ -9,6 +9,12 @@ access to customers for payment analytics and customer management.
 
 The Stripe connector is optimized to handle prompts like these.
 
+- List customers created in the last 7 days
+- Show me details for a recent customer
+- List recent charges
+- Show me details for a recent charge
+- List recent invoices
+- List active subscriptions
 - Show me my top 10 customers by total revenue this month
 - List all customers who have spent over $5,000 in the last quarter
 - Analyze payment trends for my Stripe customers
@@ -67,12 +73,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_stripe import StripeConnector
+from airbyte_agent_stripe import StripeConnector, AirbyteAuthConfig
 
 connector = StripeConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -89,11 +97,11 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [API Search](./REFERENCE.md#customers-api_search) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [API Search](./REFERENCE.md#invoices-api_search) |
-| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [API Search](./REFERENCE.md#charges-api_search) |
-| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [API Search](./REFERENCE.md#subscriptions-api_search) |
-| Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get) |
+| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [API Search](./REFERENCE.md#customers-api_search), [Search](./REFERENCE.md#customers-search) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [API Search](./REFERENCE.md#invoices-api_search), [Search](./REFERENCE.md#invoices-search) |
+| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [API Search](./REFERENCE.md#charges-api_search), [Search](./REFERENCE.md#charges-search) |
+| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [API Search](./REFERENCE.md#subscriptions-api_search), [Search](./REFERENCE.md#subscriptions-search) |
+| Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get), [Search](./REFERENCE.md#refunds-search) |
 | Products | [List](./REFERENCE.md#products-list), [Create](./REFERENCE.md#products-create), [Get](./REFERENCE.md#products-get), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [API Search](./REFERENCE.md#products-api_search) |
 | Balance | [Get](./REFERENCE.md#balance-get) |
 | Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Get](./REFERENCE.md#balance-transactions-get) |
@@ -112,7 +120,7 @@ See the official [Stripe API reference](https://docs.stripe.com/api).
 
 ## Version information
 
-- **Package version:** 0.5.72
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.5.95
+- **Connector version:** 0.1.9
+- **Generated with Connector SDK commit SHA:** 04691d063af9e36703f1d2a66e2a1df8e9e52dbe
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/stripe/CHANGELOG.md)

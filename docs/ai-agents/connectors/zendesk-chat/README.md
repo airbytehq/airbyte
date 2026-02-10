@@ -27,14 +27,14 @@ The connector handles this automatically.
 
 The Zendesk-Chat connector is optimized to handle prompts like these.
 
+- List all banned visitors
+- List all departments with their settings
 - Show me all chats from last week
 - List all agents in the support department
 - What are the most used chat shortcuts?
 - Show chat volume by department
-- List all banned visitors
 - What triggers are currently active?
 - Show agent activity timeline for today
-- List all departments with their settings
 
 ## Unsupported questions
 
@@ -61,7 +61,7 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_zendesk-chat import ZendeskChatConnector
+from airbyte_agent_zendesk_chat import ZendeskChatConnector
 from airbyte_agent_zendesk_chat.models import ZendeskChatAuthConfig
 
 connector = ZendeskChatConnector(
@@ -72,7 +72,7 @@ connector = ZendeskChatConnector(
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @ZendeskChatConnector.tool_utils
-async def zendesk-chat_execute(entity: str, action: str, params: dict | None = None):
+async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -83,17 +83,19 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_zendesk-chat import ZendeskChatConnector
+from airbyte_agent_zendesk_chat import ZendeskChatConnector, AirbyteAuthConfig
 
 connector = ZendeskChatConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @ZendeskChatConnector.tool_utils
-async def zendesk-chat_execute(entity: str, action: str, params: dict | None = None):
+async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -106,17 +108,17 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Accounts | [Get](./REFERENCE.md#accounts-get) |
-| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get) |
+| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Search](./REFERENCE.md#agents-search) |
 | Agent Timeline | [List](./REFERENCE.md#agent-timeline-list) |
 | Bans | [List](./REFERENCE.md#bans-list), [Get](./REFERENCE.md#bans-get) |
-| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get) |
-| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get) |
+| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get), [Search](./REFERENCE.md#chats-search) |
+| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Search](./REFERENCE.md#departments-search) |
 | Goals | [List](./REFERENCE.md#goals-list), [Get](./REFERENCE.md#goals-get) |
 | Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get) |
 | Routing Settings | [Get](./REFERENCE.md#routing-settings-get) |
-| Shortcuts | [List](./REFERENCE.md#shortcuts-list), [Get](./REFERENCE.md#shortcuts-get) |
+| Shortcuts | [List](./REFERENCE.md#shortcuts-list), [Get](./REFERENCE.md#shortcuts-get), [Search](./REFERENCE.md#shortcuts-search) |
 | Skills | [List](./REFERENCE.md#skills-list), [Get](./REFERENCE.md#skills-get) |
-| Triggers | [List](./REFERENCE.md#triggers-list) |
+| Triggers | [List](./REFERENCE.md#triggers-list), [Search](./REFERENCE.md#triggers-search) |
 
 
 ### Authentication and configuration
@@ -129,7 +131,7 @@ See the official [Zendesk-Chat API reference](https://developer.zendesk.com/api-
 
 ## Version information
 
-- **Package version:** 0.1.25
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.1.47
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** 04691d063af9e36703f1d2a66e2a1df8e9e52dbe
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-chat/CHANGELOG.md)

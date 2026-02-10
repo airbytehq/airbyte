@@ -8,6 +8,7 @@ import logging
 import re
 import threading
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from itertools import groupby
 from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -450,12 +451,19 @@ class CriterionRetriever(SimpleRetriever):
     Retrieves Criterion records based on ChangeStatus updates.
 
     For each parent_slice:
-      1) Emits a “deleted” record for any REMOVED status.
+      1) Emits a "deleted" record for any REMOVED status.
       2) Batches the remaining IDs into a single fetch.
       3) Attaches the original ChangeStatus timestamp to each returned record.
     """
 
     cursor_field: str = "change_status.last_change_date_time"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        # CustomRequester requires a name at init time but the real stream name is only
+        # available after the retriever is fully constructed; propagate it here.
+        if hasattr(self.requester, "name"):
+            self.requester.name = self.name
 
     def _read_pages(
         self,
@@ -514,6 +522,137 @@ class CriterionRetriever(SimpleRetriever):
                 # attach timestamp from ChangeStatus
                 rec.data[self.cursor_field] = time_map.get(rec.data.get(self.primary_key[0]))
                 yield rec
+
+
+@dataclass
+class GoogleAdsRetriever(SimpleRetriever):
+    """
+    Custom retriever for Google Ads that implements connector-level retry with slice splitting
+    for ChunkedEncodingError.
+
+    When streaming large responses from the Google Ads API, the connection may be interrupted
+    causing a ChunkedEncodingError. This retriever handles such errors by:
+    1. Splitting the date range slice in half to reduce response size
+    2. Processing each sub-slice separately
+    3. Continuing to split until reaching minimum slice size (1 day)
+    4. Failing with AirbyteTracedException if error persists on minimum slice
+
+    This approach is similar to the Iterable connector's IterableExportStreamAdjustableRange.
+    """
+
+    MAX_RETRIES: int = 3
+    DATE_FORMAT: str = "%Y-%m-%d"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        # CustomRequester requires a name at init time but the real stream name is only
+        # available after the retriever is fully constructed; propagate it here.
+        if hasattr(self.requester, "name"):
+            self.requester.name = self.name
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
+        stream_slice: StreamSlice,
+    ) -> Iterable[Record]:
+        yield from self._read_pages_with_slice_splitting(records_generator_fn, stream_slice, retry_count=0)
+
+    def _read_pages_with_slice_splitting(
+        self,
+        records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
+        stream_slice: StreamSlice,
+        retry_count: int,
+    ) -> Iterable[Record]:
+        """
+        Read pages with automatic slice splitting on ChunkedEncodingError.
+
+        When a ChunkedEncodingError occurs:
+        - For incremental streams with date boundaries: split the slice in half and retry each sub-slice
+        - For full refresh streams without date boundaries: retry the same slice up to MAX_RETRIES times
+        - For incremental streams at minimum slice size (1 day): retry up to MAX_RETRIES times
+
+        Note: if the error occurs after some records have already been yielded, those records
+        may be re-emitted on retry. This is acceptable because all Google Ads streams have
+        primary keys and destinations deduplicate accordingly.
+        """
+        try:
+            yield from super()._read_pages(records_generator_fn, stream_slice)
+        except requests.exceptions.ChunkedEncodingError:
+            sub_slices = self._split_slice(stream_slice)
+
+            if sub_slices is None:
+                # Determine if this is a non-date slice (full refresh) or minimum date slice (1 day)
+                has_date_boundaries = bool(stream_slice.cursor_slice.get("start_time") and stream_slice.cursor_slice.get("end_time"))
+
+                if retry_count < self.MAX_RETRIES:
+                    if has_date_boundaries:
+                        logger.warning(f"ChunkedEncodingError on minimum slice size (1 day). Retry {retry_count + 1}/{self.MAX_RETRIES}...")
+                    else:
+                        logger.warning(
+                            f"ChunkedEncodingError on slice without date boundaries (full refresh stream). "
+                            f"Retry {retry_count + 1}/{self.MAX_RETRIES}..."
+                        )
+                    yield from self._read_pages_with_slice_splitting(records_generator_fn, stream_slice, retry_count + 1)
+                else:
+                    if has_date_boundaries:
+                        raise AirbyteTracedException(
+                            message="Response stream was interrupted. The slice is already at minimum size (1 day) "
+                            f"and {self.MAX_RETRIES} retries were exhausted.",
+                            internal_message=f"ChunkedEncodingError persisted after {self.MAX_RETRIES} retries on minimum slice.",
+                            failure_type=FailureType.transient_error,
+                        )
+                    else:
+                        raise AirbyteTracedException(
+                            message=f"Response stream was interrupted. {self.MAX_RETRIES} retries were exhausted.",
+                            internal_message=f"ChunkedEncodingError persisted after {self.MAX_RETRIES} retries on full refresh slice.",
+                            failure_type=FailureType.transient_error,
+                        )
+            else:
+                slice_ranges = [f"[{s.cursor_slice.get('start_time')} - {s.cursor_slice.get('end_time')}]" for s in sub_slices]
+                logger.warning(f"ChunkedEncodingError occurred. Splitting slice into smaller ranges: {' and '.join(slice_ranges)}")
+                for sub_slice in sub_slices:
+                    yield from self._read_pages_with_slice_splitting(records_generator_fn, sub_slice, retry_count=0)
+
+    def _split_slice(self, stream_slice: StreamSlice) -> Optional[Tuple[StreamSlice, StreamSlice]]:
+        """
+        Split a stream slice into two halves based on date range.
+
+        Returns None if the slice cannot be split further (already at 1 day or less),
+        or if the slice doesn't have date-based cursor fields (e.g., full refresh streams).
+        """
+        start_time_str = stream_slice.cursor_slice.get("start_time")
+        end_time_str = stream_slice.cursor_slice.get("end_time")
+
+        if not start_time_str or not end_time_str:
+            return None
+
+        start_date = datetime.strptime(start_time_str, self.DATE_FORMAT)
+        end_date = datetime.strptime(end_time_str, self.DATE_FORMAT)
+
+        days_diff = (end_date - start_date).days
+        if days_diff <= 0:
+            return None
+
+        mid_date = start_date + timedelta(days=days_diff // 2)
+
+        first_slice = StreamSlice(
+            partition=stream_slice.partition,
+            cursor_slice={
+                "start_time": start_time_str,
+                "end_time": mid_date.strftime(self.DATE_FORMAT),
+            },
+            extra_fields=stream_slice.extra_fields,
+        )
+        second_slice = StreamSlice(
+            partition=stream_slice.partition,
+            cursor_slice={
+                "start_time": (mid_date + timedelta(days=1)).strftime(self.DATE_FORMAT),
+                "end_time": end_time_str,
+            },
+            extra_fields=stream_slice.extra_fields,
+        )
+
+        return first_slice, second_slice
 
 
 @dataclass

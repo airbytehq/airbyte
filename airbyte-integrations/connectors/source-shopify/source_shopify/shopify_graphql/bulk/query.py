@@ -2791,7 +2791,13 @@ class ProductVariant(ShopifyBulkQuery):
             Field(name="selectedOptions", alias="options", fields=option_fields),
             Field(name="image", fields=image_fields),
             Field(name="inventoryQuantity", alias="old_inventory_quantity"),
-            Field(name="product", fields=[Field(name="id", alias="product_id")]),
+            Field(
+                name="product",
+                fields=[
+                    Field(name="id", alias="product_id"),
+                    Field(name="options", alias="product_options", fields=["id", "name", "position"]),
+                ],
+            ),
             Field(name="inventoryItem", fields=inventory_item_fields),
         ] + presentment_prices
 
@@ -2838,6 +2844,34 @@ class ProductVariant(ShopifyBulkQuery):
         entity = record.get(from_property, {})
         return self.tools.resolve_str_id(entity.get(id_field)) if entity else None
 
+    def _enrich_options_with_product_options(self, record: MutableMapping[str, Any]) -> None:
+        """
+        Enriches the variant's options with id and position from the product's options.
+        Matches options by name and adds the corresponding ProductOption id and position.
+        """
+        options = record.get("options") or []
+        product = record.get("product") or {}
+        product_options = product.get("product_options") or []
+
+        # Build a lookup map from option name to ProductOption data
+        product_options_map = {}
+        for product_option in product_options:
+            if product_option:
+                name = product_option.get("name")
+                if name:
+                    product_options_map[name] = {
+                        "id": self.tools.resolve_str_id(product_option.get("id")),
+                        "position": product_option.get("position"),
+                    }
+
+        # Enrich each option with id and position from the matching ProductOption
+        for option in options:
+            if option:
+                option_name = option.get("name")
+                if option_name and option_name in product_options_map:
+                    option["id"] = product_options_map[option_name]["id"]
+                    option["position"] = product_options_map[option_name]["position"]
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
@@ -2849,6 +2883,9 @@ class ProductVariant(ShopifyBulkQuery):
         if record_components:
             record["presentment_prices"] = self._process_presentment_prices(record_components.get("ProductVariantPricePair", []))
             record.pop("record_components")
+
+        # enrich options with id and position from product options (must be done before product is removed)
+        self._enrich_options_with_product_options(record)
 
         # unnest mandatory fields from their placeholders
         record["product_id"] = self._unnest_and_resolve_id(record, "product", "product_id")

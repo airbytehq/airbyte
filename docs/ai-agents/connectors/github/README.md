@@ -13,7 +13,7 @@ The Github connector is optimized to handle prompts like these.
 - Show me all open issues in my repositories this month
 - List the top 5 repositories I've starred recently
 - Analyze the commit trends in my main project over the last quarter
-- Find all pull requests created by \{team_member\} in the past two weeks
+- Find all pull requests created in the past two weeks
 - Search for repositories related to machine learning in my organizations
 - Compare the number of contributors across my different team projects
 - Identify the most active branches in my main repository
@@ -68,12 +68,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_github import GithubConnector
+from airbyte_agent_github import GithubConnector, AirbyteAuthConfig
 
 connector = GithubConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -123,7 +125,7 @@ See the official [Github API reference](https://docs.github.com/en/rest).
 
 ## Version information
 
-- **Package version:** 0.18.75
-- **Connector version:** 0.1.9
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.18.98
+- **Connector version:** 0.1.12
+- **Generated with Connector SDK commit SHA:** 04691d063af9e36703f1d2a66e2a1df8e9e52dbe
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/github/CHANGELOG.md)
