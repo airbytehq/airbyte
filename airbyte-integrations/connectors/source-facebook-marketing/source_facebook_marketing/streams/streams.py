@@ -139,7 +139,8 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
         try:
             creative = FBAdCreative(creative_id)
             creative_data = creative.api_get(fields=self._get_creative_fields())
-            return dict(creative_data)
+            # Use export_all_data() to properly convert nested FB objects to dicts
+            return creative_data.export_all_data()
         except FacebookRequestError as e:
             logger.warning(f"Failed to fetch creative {creative_id}: {e}")
             return None
@@ -170,6 +171,9 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
             creative_data = self._fetch_creative_details(creative_id)
             if not creative_data:
                 continue
+
+            # Fix date/time formatting to match expected schema
+            self.fix_date_time(creative_data)
 
             if self._fetch_thumbnail_images:
                 thumbnail_url = creative_data.get("thumbnail_url")
