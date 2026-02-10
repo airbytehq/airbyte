@@ -35,7 +35,7 @@ await stripe.customers.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -120,7 +120,7 @@ await stripe.customers.create()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -187,7 +187,7 @@ await stripe.customers.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -263,7 +263,7 @@ await stripe.customers.update(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -339,7 +339,7 @@ await stripe.customers.delete(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -388,7 +388,7 @@ await stripe.customers.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -472,7 +472,7 @@ await stripe.customers.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -591,7 +591,7 @@ await stripe.invoices.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -742,7 +742,7 @@ await stripe.invoices.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -878,7 +878,7 @@ await stripe.invoices.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1021,7 +1021,7 @@ await stripe.invoices.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1258,7 +1258,7 @@ await stripe.charges.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1366,7 +1366,7 @@ await stripe.charges.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1462,7 +1462,7 @@ await stripe.charges.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1565,7 +1565,7 @@ await stripe.charges.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1724,7 +1724,7 @@ await stripe.subscriptions.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1847,7 +1847,7 @@ await stripe.subscriptions.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1943,7 +1943,7 @@ await stripe.subscriptions.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2046,7 +2046,7 @@ await stripe.subscriptions.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2205,7 +2205,7 @@ await stripe.refunds.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2282,7 +2282,7 @@ await stripe.refunds.create()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2340,7 +2340,7 @@ await stripe.refunds.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2407,7 +2407,7 @@ await stripe.refunds.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2496,7 +2496,7 @@ await stripe.products.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2575,7 +2575,7 @@ await stripe.products.create()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2633,7 +2633,7 @@ await stripe.products.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2700,7 +2700,7 @@ await stripe.products.update(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2767,7 +2767,7 @@ await stripe.products.delete(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2816,7 +2816,7 @@ await stripe.products.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2891,7 +2891,7 @@ await stripe.balance.get()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2936,7 +2936,7 @@ await stripe.balance_transactions.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -3012,7 +3012,7 @@ await stripe.balance_transactions.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -3074,7 +3074,7 @@ await stripe.payment_intents.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -3151,7 +3151,7 @@ await stripe.payment_intents.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -3216,7 +3216,7 @@ await stripe.payment_intents.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -3289,7 +3289,7 @@ await stripe.disputes.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -3364,7 +3364,7 @@ await stripe.disputes.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -3427,7 +3427,7 @@ await stripe.payouts.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -3518,7 +3518,7 @@ await stripe.payouts.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{

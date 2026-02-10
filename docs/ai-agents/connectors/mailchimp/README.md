@@ -10,16 +10,16 @@ for marketing analytics and audience management.
 
 The Mailchimp connector is optimized to handle prompts like these.
 
-- Show me all my email campaigns from the last month
 - List all subscribers in my main mailing list
-- What are the open rates for my recent campaigns?
-- Show me the performance report for campaign \{campaign_id\}
 - List all automation workflows in my account
-- Who unsubscribed from list \{list_id\} this week?
 - Show me all segments for my primary audience
+- List all interest categories for my primary audience
+- Show me email activity for a recent campaign
+- Show me the performance report for a recent campaign
+- Show me all my email campaigns from the last month
+- What are the open rates for my recent campaigns?
+- Who unsubscribed from list \{list_id\} this week?
 - What tags are applied to my subscribers?
-- List all interest categories for list \{list_id\}
-- Show me email activity for campaign \{campaign_id\}
 - How many subscribers do I have in each list?
 - What are my top performing campaigns by click rate?
 
@@ -71,12 +71,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_mailchimp import MailchimpConnector
+from airbyte_agent_mailchimp import MailchimpConnector, AirbyteAuthConfig
 
 connector = MailchimpConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -93,11 +95,11 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get) |
-| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Search](./REFERENCE.md#campaigns-search) |
+| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Search](./REFERENCE.md#lists-search) |
 | List Members | [List](./REFERENCE.md#list-members-list), [Get](./REFERENCE.md#list-members-get) |
-| Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get) |
-| Email Activity | [List](./REFERENCE.md#email-activity-list) |
+| Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get), [Search](./REFERENCE.md#reports-search) |
+| Email Activity | [List](./REFERENCE.md#email-activity-list), [Search](./REFERENCE.md#email-activity-search) |
 | Automations | [List](./REFERENCE.md#automations-list) |
 | Tags | [List](./REFERENCE.md#tags-list) |
 | Interest Categories | [List](./REFERENCE.md#interest-categories-list), [Get](./REFERENCE.md#interest-categories-get) |
@@ -117,7 +119,7 @@ See the official [Mailchimp API reference](https://mailchimp.com/developer/marke
 
 ## Version information
 
-- **Package version:** 0.1.37
-- **Connector version:** 1.0.5
-- **Generated with Connector SDK commit SHA:** 30d23e05ea640689df95fa82153916c6f67fa916
+- **Package version:** 0.1.53
+- **Connector version:** 1.0.7
+- **Generated with Connector SDK commit SHA:** 04691d063af9e36703f1d2a66e2a1df8e9e52dbe
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/mailchimp/CHANGELOG.md)
