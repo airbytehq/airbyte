@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.component
@@ -28,6 +28,8 @@ object PostgresComponentTestFixtures {
                 "time_ntz" to ColumnType("time", true),
                 "array" to ColumnType("jsonb", true),
                 "object" to ColumnType("jsonb", true),
+                "union" to ColumnType("jsonb", true),
+                "legacy_union" to ColumnType("jsonb", true),
                 "unknown" to ColumnType("jsonb", true),
             )
         )

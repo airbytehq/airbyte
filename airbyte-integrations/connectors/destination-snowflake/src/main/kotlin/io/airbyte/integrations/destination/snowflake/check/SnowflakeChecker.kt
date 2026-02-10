@@ -1,16 +1,15 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.check
 
-import io.airbyte.cdk.load.check.DestinationCheckerV2
+import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.ColumnSchema
@@ -23,7 +22,7 @@ import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManag
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
-import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -36,7 +35,8 @@ class SnowflakeChecker(
     private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val columnManager: SnowflakeColumnManager,
-) : DestinationCheckerV2 {
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
+) : DestinationChecker {
 
     override fun check() {
         val data =
@@ -45,6 +45,7 @@ class SnowflakeChecker(
                     AirbyteValue.from(UUID.randomUUID().toString()),
                 Meta.AirbyteMetaFields.EXTRACTED_AT.fieldName to
                     AirbyteValue.from(OffsetDateTime.now()),
+                Meta.COLUMN_NAME_AB_LOADED_AT to AirbyteValue.from(OffsetDateTime.now()),
                 Meta.AirbyteMetaFields.META.fieldName to
                     AirbyteValue.from(emptyMap<String, String>()),
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
@@ -88,11 +89,6 @@ class SnowflakeChecker(
             DestinationStream(
                 unmappedNamespace = outputSchema,
                 unmappedName = tableName,
-                importType = Append,
-                schema =
-                    ObjectType(
-                        linkedMapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false))
-                    ),
                 generationId = 0L,
                 minimumGenerationId = 0L,
                 syncId = 0L,
@@ -116,7 +112,7 @@ class SnowflakeChecker(
                         snowflakeConfiguration = snowflakeConfiguration,
                         columnSchema = tableSchema.columnSchema,
                         columnManager = columnManager,
-                        snowflakeRecordFormatter = SnowflakeSchemaRecordFormatter(),
+                        snowflakeRecordFormatter = snowflakeRecordFormatter,
                     )
 
                 snowflakeInsertBuffer.accumulate(data)

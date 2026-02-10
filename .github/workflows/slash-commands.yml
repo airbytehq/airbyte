@@ -62,12 +62,13 @@ jobs:
             ai-create-docs-pr
             ai-prove-fix
             ai-release-watch
+            ai-review
             approve-regression-tests
             bump-bulk-cdk-version
             bump-progressive-rollout-version
             bump-version
             build-connector-images
-            connector-performance
+            force-merge
             format-fix
             poe
             publish-connectors-prerelease

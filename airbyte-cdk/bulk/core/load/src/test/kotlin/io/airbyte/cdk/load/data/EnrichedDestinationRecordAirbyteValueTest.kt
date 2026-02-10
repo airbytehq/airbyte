@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data
@@ -21,8 +21,6 @@ class EnrichedDestinationRecordAirbyteValueTest {
         DestinationStream(
             unmappedNamespace = "test_namespace",
             unmappedName = "test_stream",
-            importType = Append,
-            schema = ObjectTypeWithoutSchema,
             generationId = 42L,
             minimumGenerationId = 10L,
             syncId = 100L,

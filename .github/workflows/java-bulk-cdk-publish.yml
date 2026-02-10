@@ -2,11 +2,6 @@
 
 name: Publish Bulk CDK
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - "airbyte-cdk/bulk/**"
   workflow_dispatch:
     inputs:
       build-number:
@@ -14,6 +9,9 @@ on:
         required: false
         type: number
   workflow_call:
+
+permissions:
+  contents: read
 
 concurrency:
   group: publish-bulk-cdk
