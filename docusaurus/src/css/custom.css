@@ -459,3 +459,8 @@ html:not([data-theme="dark"]) .mermaid .messageLine1 {
 html:not([data-theme="dark"]) .mermaid marker path {
   fill: var(--ifm-font-color-base) !important;
 }
+
+/* Hide announcement bar on AI Agents pages */
+html.plugin-id-ai-agents div[class*="announcementBar"] {
+  display: none;
+}
