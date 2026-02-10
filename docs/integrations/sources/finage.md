@@ -44,6 +44,7 @@ This connector can be used to extract data from various APIs such as symbol-list
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-02-10 | [73145](https://github.com/airbytehq/airbyte/pull/73145) | Update dependencies |
 | 0.0.44 | 2026-02-03 | [72562](https://github.com/airbytehq/airbyte/pull/72562) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [71985](https://github.com/airbytehq/airbyte/pull/71985) | Update dependencies |
 | 0.0.42 | 2026-01-14 | [71645](https://github.com/airbytehq/airbyte/pull/71645) | Update dependencies |
