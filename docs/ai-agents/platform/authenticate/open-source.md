@@ -9,7 +9,7 @@ When you use agent connectors as open source Python packages, you provide user c
 - You provide actual API credentials (tokens, keys, OAuth tokens) directly to the connector.
 - Connectors make direct HTTP calls to external APIs.
 - You are responsible for credential security, rotation, and lifecycle management.
-- You can't use the [entity cache](../entity-cache).
+- You can't use the [context store](../context-store).
 
 ## Authentication methods
 

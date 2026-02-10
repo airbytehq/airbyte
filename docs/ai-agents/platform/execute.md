@@ -183,7 +183,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 
 ### Example: Search with filters
 
-This example searches for records using filter conditions. The search action is available when you have the entity cache enabled.
+This example searches for records using filter conditions. The search action is available when you have the context store enabled.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \

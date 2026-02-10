@@ -19,7 +19,7 @@ Generally, local mode is most appropriate for development, testing, single-user 
 | **Credentials provided** | Actual API keys/tokens             | Agent Engine client credentials      |
 | **Credential storage**   | Managed by you locally             | Stored securely in Airbyte      |
 | **API calls**            | Direct HTTP calls to external APIs | API calls proxy through Airbyte |
-| **Entity cache**         | Not available                      | Available                             |
+| **Context store**         | Not available                      | Available                             |
 
 ## Prerequisites
 
