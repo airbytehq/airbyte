@@ -150,7 +150,9 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiat
 In your app, redirect your user to the `consent_url` from the response. This takes them to the third-party service's authorization page where they grant access to their account.
 
 ```javascript title="your-app.js"
-// Request a consent URL
+const token = 'your_bearer_or_scoped_token';
+const userId = 'user_12345';
+
 const response = await fetch('https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate', {
   method: 'POST',
   headers: {
