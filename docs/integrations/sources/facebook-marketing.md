@@ -398,6 +398,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0 | 2026-02-10 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
 | 4.2.1 | 2026-02-09 | [72952](https://github.com/airbytehq/airbyte/pull/72952) | fix(source-facebook-marketing): classify 'Invalid OAuth access token' as config_error (AI-Triage PR) |
 | 4.2.0 | 2026-01-07 | [71029](https://github.com/airbytehq/airbyte/pull/71029) | Add 98 missing fields for custom insights streams including objective_results transformation |
 | 4.1.3 | 2026-01-06 | [70349](https://github.com/airbytehq/airbyte/pull/70349) | Remove deprecated `7d_view` and `28d_view` attribution windows (Facebook API deprecation effective January 12, 2026) |
