@@ -42,6 +42,7 @@ definitions:
       request_parameters:
         filter: "{{ config.get('filter', 'ALL') }}"
         channel: "{{ config.get('channel', '') }}"
+
     SimpleRetriever:
       paginator:
         type: DefaultPaginator
@@ -84,6 +85,7 @@ streams:
             - campaigns
       paginator:
         $ref: "#/definitions/linked/SimpleRetriever/paginator"
+
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -92,80 +94,88 @@ streams:
         properties:
           display_id:
             type: string
+
           name:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           created_at:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           update_at:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           google:
-            type:
-              - boolean
-              - "null"
+            type: [boolean, "null"]
+
           meta:
-            type:
-              - boolean
-              - "null"
+            type: [boolean, "null"]
+
           meta_campaign_id:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           meta_web_to_app:
-            type:
-              - boolean
-              - "null"
+            type: [boolean, "null"]
+
           active:
-            type:
-              - boolean
-              - "null"
+            type: [boolean, "null"]
+
           default_link:
-            type:
-              - boolean
-              - "null"
+            type: [boolean, "null"]
+
           attributed_users:
-            type:
-              - number
-              - "null"
+            type: [number, "null"]
+
           link:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           shareable_link:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           website:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
+          domain:
+            type: [string, "null"]
+            description: Domain used to generate campaign links
+
+          android_web_redirect:
+            type: [string, "null"]
+            description: Android-specific web redirect URL
+
+          ios_web_redirect:
+            type: [string, "null"]
+            description: iOS-specific web redirect URL
+
+          store_listings:
+            type: [array, "null"]
+            description: Store listings associated with this campaign
+            items:
+              type: object
+              properties:
+                store_listing_id:
+                  type: string
+                name:
+                  type: string
+                platform:
+                  type: string
+                  enum:
+                    - IOS
+                    - ANDROID
+
           network_account:
-            type:
-              - object
-              - "null"
+            type: [object, "null"]
             properties:
               id:
-                type:
-                  - number
-                  - "null"
+                type: [number, "null"]
               name:
-                type:
-                  - string
-                  - "null"
+                type: [string, "null"]
               status:
-                type:
-                  - string
-                  - "null"
+                type: [string, "null"]
               capi_configured:
-                type:
-                  - boolean
-                  - "null"
+                type: [boolean, "null"]
+
         additionalProperties: true
+
   - type: DeclarativeStream
     name: attributed_users
     retriever:
@@ -212,30 +222,8 @@ streams:
             parent_key: display_id
             partition_field: display_id
             stream:
-              type: DeclarativeStream
-              name: campaigns
-              primary_key: display_id
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  type: HttpRequester
-                  http_method: GET
-                  authenticator:
-                    $ref: "#/definitions/linked/HttpRequester/authenticator"
-                  error_handler:
-                    $ref: "#/definitions/linked/HttpRequester/error_handler"
-                  request_parameters:
-                    $ref: "#/definitions/linked/HttpRequester/request_parameters"
-                  url: https://api.linkrunner.io/api/v1/campaigns
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path:
-                      - data
-                      - campaigns
-                paginator:
-                  $ref: "#/definitions/linked/SimpleRetriever/paginator"
+              $ref: "#/streams/0"
+
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -243,104 +231,64 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           attributed_at:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           campaign_display_id:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           campaign_name:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           link:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           installed_at:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           store_click_at:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           ad_set_id:
-            type:
-              - string
-              - "null"
+            type: [string, "null"]
+
           user_data:
-            type:
-              - object
-              - "null"
+            type: [object, "null"]
             properties:
               id:
-                type:
-                  - string
-                  - "null"
+                type: [string, "null"]
               email:
-                type:
-                  - string
-                  - "null"
+                type: [string, "null"]
               device_data:
-                type:
-                  - object
-                  - "null"
+                type: [object, "null"]
                 properties:
                   idfv:
-                    type:
-                      - string
-                      - "null"
+                    type: [string, "null"]
                   locale:
-                    type:
-                      - string
-                      - "null"
+                    type: [string, "null"]
                   country:
-                    type:
-                      - string
-                      - "null"
+                    type: [string, "null"]
                   language:
-                    type:
-                      - string
-                      - "null"
+                    type: [string, "null"]
                   timezone:
-                    type:
-                      - string
-                      - "null"
+                    type: [string, "null"]
                   device_display:
-                    type:
-                      - object
-                      - "null"
+                    type: [object, "null"]
                     properties:
                       scale:
-                        type:
-                          - number
-                          - "null"
+                        type: [number, "null"]
                       width:
-                        type:
-                          - number
-                          - "null"
+                        type: [number, "null"]
                       height:
-                        type:
-                          - number
-                          - "null"
+                        type: [number, "null"]
                   timezone_offset:
-                    type:
-                      - number
-                      - "null"
+                    type: [number, "null"]
                   install_instance_id:
-                    type:
-                      - string
-                      - "null"
+                    type: [string, "null"]
                   adservices_attribution_token:
-                    type:
-                      - string
-                      - "null"
+                    type: [string, "null"]
                   idfa:
-                    type:
-                      - string
-                      - "null"
+                    type: [string, "null"]
+
         additionalProperties: true
 
 spec:
@@ -352,73 +300,43 @@ spec:
     properties:
       linkrunner-key:
         type: string
-        description: >-
-          Your LinkRunner API key for authentication. Find this in your
-          LinkRunner dashboard.
         title: LinkRunner API Key
+        description: Your LinkRunner API key from the dashboard
         airbyte_secret: true
         order: 0
+
       filter:
         type: string
-        description: Filter campaigns by status (ALL, ACTIVE, or INACTIVE)
         title: Campaign Filter
-        enum:
-          - ALL
-          - ACTIVE
-          - INACTIVE
+        enum: [ALL, ACTIVE, INACTIVE]
         default: ALL
         order: 1
+
       channel:
         type: string
-        description: Filter campaigns by marketing channel (leave empty for all channels)
         title: Channel Filter
-        enum:
-          - ""
-          - GOOGLE
-          - META
-          - TIKTOK
+        enum: ["", GOOGLE, META, TIKTOK]
         order: 2
+
       start_timestamp:
         type: string
-        description: >-
-          Start date for fetching attributed users in ISO 8601 format (e.g.,
-          2024-01-01T00:00:00Z)
-        title: Start Date
+        title: Start Timestamp
         format: date-time
-        examples:
-          - "2024-01-01T00:00:00Z"
         order: 3
+
       end_timestamp:
         type: string
-        description: >-
-          End date for fetching attributed users in ISO 8601 format. Leave empty
-          for current date.
-        title: End Date
+        title: End Timestamp
         format: date-time
-        examples:
-          - "2024-12-31T23:59:59Z"
         order: 4
+
       timezone:
         type: string
-        description: Timezone for date filtering (default is UTC)
         title: Timezone
         default: UTC
-        examples:
-          - UTC
-          - America/New_York
-          - Europe/London
         order: 5
 
 metadata:
   autoImportSchema:
     campaigns: true
     attributed_users: true
-  applied_migrations:
-    - from_version: 0.29.0
-      to_version: "*"
-      migration: HttpRequesterUrlBaseToUrl
-      migrated_at: "2026-02-06T15:01:42.458297+00:00"
-    - from_version: 0.29.0
-      to_version: "*"
-      migration: HttpRequesterPathToUrl
-      migrated_at: "2026-02-06T15:01:42.458672+00:00"
