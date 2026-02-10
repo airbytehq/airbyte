@@ -106,6 +106,6 @@ curl -X DELETE https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
 
 - Use meaningful, consistent naming for `workspace_name`. Your internal customer ID or customer name works well, and makes it easy to correlate Agent Engine customers with your own customer records.
 
-- Handle token expiration appropriately. Operator Bearer Tokens expire after 15 minutes and scoped tokens expire after 20 minutes.
+- Handle token expiration appropriately. Application tokens expire after 15 minutes and scoped tokens expire after 20 minutes.
 
 - Use the customer status to manage customer lifecycle. Setting a customer to `inactive` is a clean way to suspend a customer's access without deleting their data.

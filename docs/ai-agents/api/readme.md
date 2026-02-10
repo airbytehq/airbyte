@@ -14,17 +14,17 @@ If your account belongs to multiple organizations, include the `X-Organization-I
 
 The Agent Engine uses a hierarchical token system. Each token type has a different scope and is designed for specific use cases.
 
-| Token type            | Use case                                                     | Scope                                 |
-| --------------------- | ------------------------------------------------------------ | ------------------------------------- |
-| Operator Bearer Token | Organization management, generating scoped and widget tokens | Organization-wide                     |
-| Scoped Token          | API integration, programmatic workspace access               | Single workspace                      |
-| Widget Token          | Embedding the authentication module in your app              | Single workspace with CORS protection |
+| Token type        | Use case                                                                                     | Scope                                |
+| ----------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
+| Application Token | Organization management, generating scoped and widget tokens, executing connector operations | Organization-wide                    |
+| Scoped Token      | Company-level administration                                                                 | Single customer                      |
+| Widget Token      | Embedding the authentication module in your app                                              | Single customer with CORS protection |
 
-### Operator bearer token
+### Application token
 
-The Operator Bearer Token provides organization-level access. Use it for administrative operations like managing connectors, listing customers, and generating other tokens lower in the hierarchy.
+The application token provides organization-level access. Use it for administrative operations like managing connectors, listing customers, and generating other tokens lower in the hierarchy. Most API endpoints require an application token.
 
-To obtain an Operator Bearer Token, send your app credentials to the token endpoint. Find your credentials in the Agent Engine under **Authentication Module** > **Installation**.
+To obtain an application token, send your app credentials to the token endpoint. Find your credentials in the Agent Engine under **Authentication Module** > **Installation**.
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
@@ -35,7 +35,7 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
   }'
 ```
 
-The response contains your Operator Bearer Token:
+The response contains your application token:
 
 ```json title="Response"
 {
@@ -46,11 +46,11 @@ The response contains your Operator Bearer Token:
 }
 ```
 
-Operator Bearer Tokens expire after 15 minutes. Request a new token when needed.
+application tokens expire after 15 minutes. Request a new token when needed.
 
 ### Scoped token
 
-Scoped tokens provide workspace-level access for end-user operations. Each scoped token is limited to a single customer workspace, ensuring data isolation between customers. Generate a scoped token using your Operator Bearer Token:
+Scoped tokens provide customer-level access for some end-user operations. Each scoped token is limited to a single customer, ensuring data isolation between customers. Generate a scoped token using your application token:
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
@@ -61,7 +61,7 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
   }'
 ```
 
-If the workspace doesn't exist, Airbyte creates it automatically. Scoped tokens expire after 20 minutes.
+If the customer doesn't exist, Airbyte creates it automatically. Scoped tokens expire after 20 minutes.
 
 ### Widget token
 
@@ -81,17 +81,15 @@ For more details on widget tokens and template filtering, see the [authenticatio
 
 ### Security considerations
 
-- **Never expose Operator Bearer Tokens in client-side code.** These tokens provide organization-wide access and should only be used in your backend.
+- **Never expose tokens in client-side code.** These tokens provide organization-wide access and should only be used in your backend.
 
-- **Use scoped tokens for end-user operations.** Scoped tokens are limited to a single workspace and are safer to use in contexts closer to end-users.
-
-- **Handle token expiration.** Operator Bearer Tokens expire after 15 minutes and scoped tokens expire after 20 minutes. The Python SDK handles token refresh automatically, but API users must request new tokens when the current token expires.
+- **Handle token expiration.** Application tokens expire after 15 minutes and scoped tokens expire after 20 minutes. The Python SDK handles token refresh automatically, but API users must request new tokens when the current token expires.
 
 - **Validate the `allowed_origin`** when using widget tokens to ensure requests only come from your app.
 
 ## Make your first request
 
-After you obtain an Operator Bearer Token, you can make your first API call. A good starting point is to list the available source connector definitions. This read-only endpoint returns the catalog of connectors available in Agent Engine, so it returns data even if you haven't configured anything yet.
+After you obtain an application token, you can make your first API call. A good starting point is to list the available source connector definitions. This read-only endpoint returns the catalog of connectors available in Agent Engine, so it returns data even if you haven't configured anything yet.
 
 ```bash title="Request"
 curl https://api.airbyte.ai/api/v1/integrations/definitions/sources \

@@ -21,7 +21,7 @@ For complete details on each token type, how to generate them, and security cons
 
 The typical authentication flow for hosted mode involves these steps:
 
-1. **Get an Operator Bearer Token** using your Airbyte credentials.
+1. **Get an application token** using your Airbyte credentials.
 
 2. **Generate a Scoped Token** for the customer.
 

@@ -6,7 +6,7 @@ sidebar_position: 1
 
 import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 
-## Why Agent Engine
+Airbyte's Agent Engine is a data layer for AI agents. Use the Agent Engine as a cloud platform to manage connectors, credentials, and data replication for your agents. You can also use Airbyte's open source agent connectors as standalone Python packages, import them into your AI agents, and manage storage and credentials yourself.
 
 <!-- - **Agents hallucinate or fail**: Stale and incomplete data erodes agent effectiveness. AI agents need real-time context from multiple business systems to be fully effective.
 
@@ -42,9 +42,9 @@ If agentic data isn't what you're looking for and you need complex data aggregat
 
 <Taxonomy /> -->
 
-### The problem with AI agents
+## The problem with AI agents
 
-The promise of AI agents to scale productivity, accelerate insights, and democratize information is without measure. However, most organizations aren't able to realize this promise.
+AI agents have almost unlimited potential to scale productivity, accelerate insights, and democratize information. However, most organizations struggle to realize this promise.
 
 - Large language models can reason, but rely on stale public training data that limits their effectiveness. They lack real-time knowledge, are stateless, and can't act on and verify facts.
 
@@ -52,7 +52,7 @@ The promise of AI agents to scale productivity, accelerate insights, and democra
 
 - Even if high-quality data is available, agents still perform poorly. They lack real-time access, can't search, can't write, miss key information, and need human intervention.
 
-Organizations trying to build AI face a conundrum:
+Organizations trying to build agents face a problem:
 
 - They need massive upfront investment, or
 
@@ -62,7 +62,7 @@ Organizations trying to build AI face a conundrum:
 
 The result is that agentic features never scale. They remain expensive, fragile prototypes that can't support real-world operations.
 
-### How Airbyte solves that problem
+## How Airbyte solves that problem
 
 Airbyte's Agent Engine solves this problem with three components.
 
@@ -88,11 +88,4 @@ It's helpful to think of the Agent Engine as a data layer that makes agentic too
 
 It's helpful to think of agent connectors as equivalent to sets of tools. Tools are external capabilities AI agents can invoke. They allow agents to perceive, decide, and act beyond their training data. Tools are one of the most critical bridges between agents that aren't effective and agents with broad capabilities.
 
-
-
-### MCP servers
-
-### Entities and actions
-
-## Requirements
-
+<!-- ## Requirements -->
