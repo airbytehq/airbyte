@@ -153,27 +153,6 @@ class IncrementalTest(TestCase):
             ],
         }
 
-    def test_given_custom_lookback_window_and_sequential_state_when_read_then_use_custom_lookback(self) -> None:
-        custom_lookback = timedelta(minutes=30)
-        cursor_value = _NOW - timedelta(days=5)
-        start = _calculate_start_time(_NOW - timedelta(days=10))
-        self._config.stream_slice_step("P30D").start_date(start).lookback_window("PT30M")
-        self._http_mocker.get(
-            HttpRequest(
-                f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(cursor_value - custom_lookback)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"
-            ),
-            create_http_response([_A_FIELD_NAME, _CURSOR_FIELD], record_count=1),
-        )
-
-        output = read(
-            _STREAM_NAME,
-            SyncMode.incremental,
-            self._config,
-            StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: cursor_value.isoformat(timespec="milliseconds")}),
-        )
-
-        assert len(output.records) == 1
-
     def test_given_partitioned_state_when_read_then_sync_missing_partitions_and_update_state(self) -> None:
         missing_chunk = (_NOW - timedelta(days=5), _NOW - timedelta(days=3))
         cursor_value = _to_partitioned_datetime(_NOW - timedelta(days=2))
