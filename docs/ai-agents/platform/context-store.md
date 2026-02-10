@@ -26,7 +26,7 @@ To enable the context store, follow these steps.
 
 1. In Airbyte's Agent Engine, click Connectors.
 
-2. Enable **Cache connected source data for agentic search**.
+2. Enable **Enable Airbyte-managed Context Store for agent search**.
 
 When you enable the context store:
 
