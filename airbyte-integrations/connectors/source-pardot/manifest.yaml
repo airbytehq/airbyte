@@ -2749,13 +2749,6 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2021-07-25T00:00:00Z"
-      v5_page_size:
-        type: integer
-        description: The maximum number of records to return per request
-        order: 5
-        title: Page Size Limit
-        default: 1000
-        airbyte_hidden: true
       is_sandbox:
         type: boolean
         description: >-
