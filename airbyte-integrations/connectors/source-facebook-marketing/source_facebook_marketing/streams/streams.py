@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import requests
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
+from facebook_business.adobjects.adcreative import AdCreative as FBAdCreative
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
@@ -79,9 +80,14 @@ class AdCreatives(FBMarketingStream):
 class AdCreativesFromAds(FBMarketingIncrementalStream):
     """Alternative stream to fetch ad creatives through the ads endpoint.
 
-    This stream fetches creatives by requesting expanded creative fields from the ads endpoint
-    instead of directly querying the adcreatives endpoint. This approach can help avoid the
-    "Please reduce the amount of data you're asking for" error that occurs with large accounts.
+    This stream fetches creatives by first getting ads (which includes creative IDs),
+    then fetching full creative details for each unique creative ID. This approach
+    can help avoid the "Please reduce the amount of data you're asking for" error
+    that occurs with large accounts when using the direct adcreatives endpoint.
+
+    The two-step approach:
+    1. Fetch ads with just the 'creative' field (returns creative ID reference)
+    2. For each unique creative ID, fetch full creative details via AdCreative API
 
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup
     related issue: https://github.com/airbytehq/oncall/issues/11128
@@ -96,6 +102,7 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
         super().__init__(**kwargs)
         self._fetch_thumbnail_images = fetch_thumbnail_images
         self._seen_creative_ids: Set[str] = set()
+        self._creative_fields: Optional[List[str]] = None
 
     @property
     def name(self) -> str:
@@ -107,28 +114,35 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
 
     def _get_creative_fields(self) -> List[str]:
         """Get the list of creative fields to request, excluding computed fields"""
+        if self._creative_fields:
+            return self._creative_fields
+
         json_schema = self.get_json_schema()
         creative_fields = list(json_schema.get("properties", {}).keys())
-        return [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id")]
-
-    def _build_creative_field_expansion(self) -> str:
-        """Build the field expansion string for creative fields.
-
-        Returns a string like 'creative{id,name,body,...}' for use in the API request.
-        """
-        creative_fields = self._get_creative_fields()
-        return "creative{" + ",".join(creative_fields) + "}"
+        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id")]
+        return self._creative_fields
 
     def fields(self, **kwargs) -> List[str]:
-        """Return fields to request from the ads endpoint including expanded creative fields"""
+        """Return fields to request from the ads endpoint - just id, updated_time, and creative reference"""
         if self._fields:
             return self._fields
 
-        self._fields = ["id", "updated_time", self._build_creative_field_expansion()]
+        # Only request the creative field (which returns creative ID), not expanded fields
+        self._fields = ["id", "updated_time", "creative"]
         return self._fields
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
+
+    def _fetch_creative_details(self, creative_id: str) -> Optional[Mapping[str, Any]]:
+        """Fetch full creative details by ID using the AdCreative API"""
+        try:
+            creative = FBAdCreative(creative_id)
+            creative_data = creative.api_get(fields=self._get_creative_fields())
+            return dict(creative_data)
+        except FacebookRequestError as e:
+            logger.warning(f"Failed to fetch creative {creative_id}: {e}")
+            return None
 
     def read_records(
         self,
@@ -137,19 +151,25 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """Read ads and extract creative data, deduplicating by creative ID"""
+        """Read ads, extract unique creative IDs, and fetch full creative details"""
         self._seen_creative_ids = set()
 
         for ad_record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            creative_data = ad_record.get("creative")
-            if not creative_data:
+            creative_ref = ad_record.get("creative")
+            if not creative_ref:
                 continue
 
-            creative_id = creative_data.get("id")
+            # The creative field from ads endpoint returns just the ID reference
+            creative_id = creative_ref.get("id")
             if not creative_id or creative_id in self._seen_creative_ids:
                 continue
 
             self._seen_creative_ids.add(creative_id)
+
+            # Fetch full creative details by ID
+            creative_data = self._fetch_creative_details(creative_id)
+            if not creative_data:
+                continue
 
             if self._fetch_thumbnail_images:
                 thumbnail_url = creative_data.get("thumbnail_url")
