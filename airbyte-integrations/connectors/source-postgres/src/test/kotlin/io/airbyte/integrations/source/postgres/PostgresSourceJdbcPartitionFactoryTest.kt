@@ -31,7 +31,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
                 sharedState = mockk<DefaultJdbcSharedState>(),
                 selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(),
                 config = mockk<PostgresSourceConfiguration>(),
-                handler = mockk<CatalogValidationFailureHandler>()
+                handler = mockk<CatalogValidationFailureHandler>(),
+                connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>()
             )
     }
 

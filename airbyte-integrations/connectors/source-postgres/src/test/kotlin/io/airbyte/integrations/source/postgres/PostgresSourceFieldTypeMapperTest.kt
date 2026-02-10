@@ -13,7 +13,12 @@ import io.airbyte.cdk.test.fixtures.connector.JdbcTestDbExecutor
 import io.airbyte.cdk.test.fixtures.tests.AnsiSql
 import io.airbyte.cdk.test.fixtures.tests.ExtendedSql
 import io.airbyte.cdk.test.fixtures.tests.FieldTypeMapperTest
+import io.airbyte.integrations.source.postgres.config.EncryptionDisable
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationFactory
+import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
+import io.airbyte.integrations.source.postgres.config.StandardReplicationMethodConfigurationSpecification
+import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
+import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase.BaseImage
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.PostgreSQLContainer
@@ -21,7 +26,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
 
     private val schema = TestAssetResourceNamer().getName()
-    override val configSpec = PostgresContainerFactory.config(container, listOf(schema))
+    override val configSpec = config(testdb.container, listOf(schema))
     override val executor = JdbcTestDbExecutor(schema, jdbcConfig)
     private val jdbcConfig: JdbcSourceConfiguration
         get() = PostgresSourceConfigurationFactory().make(configSpec)
@@ -240,15 +245,38 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
     }
 
     companion object {
-        lateinit var container: PostgreSQLContainer<*>
+        private lateinit var testdb: PostgresTestDatabase
+
+        protected val serverImage: BaseImage
+            get() = BaseImage.POSTGRES_17
+
+        fun config(
+            postgresContainer: PostgreSQLContainer<*>,
+            schemas: List<String> = listOf("public"),
+        ): PostgresSourceConfigurationSpecification =
+            PostgresSourceConfigurationSpecification().apply {
+                host = postgresContainer.host
+                port = postgresContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
+                username = postgresContainer.username
+                password = postgresContainer.password
+                jdbcUrlParams = ""
+                encryptionJson = EncryptionDisable
+                database = "test"
+                this.schemas = schemas
+                checkpointTargetIntervalSeconds = 60
+                max_db_connections = 1
+                setIncrementalConfigurationSpecificationValue(
+                    StandardReplicationMethodConfigurationSpecification
+                )
+            }
 
         @JvmStatic
         @BeforeAll
         @Timeout(value = 300)
         fun startAndProvisionTestContainer() {
-            container = PostgresContainerFactory.shared17()
+            testdb = PostgresTestDatabase.`in`(this.serverImage)
             val schema = TestAssetResourceNamer().getName()
-            val configSpec = PostgresContainerFactory.config(container, listOf(schema))
+            val configSpec = config(testdb.container, listOf(schema))
             val jdbcConfig = PostgresSourceConfigurationFactory().make(configSpec)
             val executor = JdbcTestDbExecutor(schema, jdbcConfig)
             executor.executeUpdate("CREATE EXTENSION IF NOT EXISTS hstore;")

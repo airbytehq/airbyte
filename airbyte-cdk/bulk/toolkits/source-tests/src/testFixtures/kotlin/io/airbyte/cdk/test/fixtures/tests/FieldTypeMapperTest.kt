@@ -146,7 +146,7 @@ abstract class FieldTypeMapperTest {
             jdbcStreams = ops.discover()
             jdbcConfiguredCatalog = configuredCatalog(jdbcStreams)
             log.info { "Running JDBC READ operation." }
-            jdbcReadOutput = ops.sync(jdbcConfiguredCatalog)
+            jdbcReadOutput = ops.read(jdbcConfiguredCatalog)
             Assertions.assertNotEquals(emptyList<AirbyteStateMessage>(), jdbcReadOutput.states())
             Assertions.assertNotEquals(emptyList<AirbyteRecordMessage>(), jdbcReadOutput.records())
             Assertions.assertEquals(emptyList<AirbyteLogMessage>(), jdbcReadOutput.logs())

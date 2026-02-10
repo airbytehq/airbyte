@@ -15,7 +15,6 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.EmittedField
-import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
@@ -116,7 +115,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
                         override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
                         override fun accept(
                             recordData: NativeRecordPayload,
-                            changes: Map<Field, FieldValueChange>?
+                            changes: Map<EmittedField, FieldValueChange>?
                         ) {
                             outputConsumer.accept(
                                 AirbyteRecordMessage()

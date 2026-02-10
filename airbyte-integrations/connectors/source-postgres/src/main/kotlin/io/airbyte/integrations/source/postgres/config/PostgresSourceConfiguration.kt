@@ -33,7 +33,8 @@ import java.net.URL
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
@@ -206,6 +207,10 @@ constructor(
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
+        val namespaces: Set<String> =
+            pojo.schemas?.filter { it.isNotBlank() }?.toSet()?.takeUnless { it.isEmpty() }
+                ?: setOf("public")
+
         return PostgresSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -214,7 +219,7 @@ constructor(
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             database = pojo.database,
-            namespaces = pojo.schemas?.toSet() ?: setOf("public"),
+            namespaces = namespaces,
             incrementalConfiguration = incremental,
             maxConcurrency = maxConcurrency,
             checkpointTargetInterval = checkpointTargetInterval,
@@ -298,17 +303,13 @@ constructor(
                 ?: UUID.randomUUID().toString()
 
         extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
-        // Make keystore for CA cert with given password or generate a new password.
-        val caCertKeyStoreUrl: URL =
-            buildKeyStore("trust") {
-                SSLCertificateUtils.keyStoreFromCertificate(
-                    sslData.caCertificate,
-                    password,
-                    FileSystems.getDefault(),
-                    directory = "",
-                )
-            }
-        extraJdbcProperties[TRUST_KEY_STORE_URL] = Paths.get(caCertKeyStoreUrl.toURI()).toString()
+        // Save CA certificate to a temporary file
+        val caCertFileURI: URI = saveCACertificate {
+            val caCertFile = Files.createTempFile(null, null)
+            Files.write(caCertFile, sslData.caCertificate.toByteArray(StandardCharsets.UTF_8))
+                .also { it.toFile().deleteOnExit() }
+        }
+        extraJdbcProperties[TRUST_KEY_STORE_URL] = Paths.get(caCertFileURI).toString()
 
         if (sslData.clientCertificate.isNullOrBlank() || sslData.clientKey.isNullOrBlank()) {
             // if Client cert is not available - done
@@ -352,6 +353,23 @@ constructor(
             }
         log.debug { "URL for $kind certificate keystore is $keyStoreUrl" }
         return keyStoreUrl
+    }
+
+    private fun saveCACertificate(uriSupplier: () -> Path): URI {
+        val caCertPath: Path =
+            try {
+                uriSupplier()
+            } catch (ex: Exception) {
+                throw ConfigErrorException("Failed to create CA certificate file", ex)
+            }
+        val caCertUrl: URI =
+            try {
+                caCertPath.toUri()
+            } catch (ex: MalformedURLException) {
+                throw ConfigErrorException("Unable to get a URI for certificate file", ex)
+            }
+        log.debug { "URI for certificate file is $caCertUrl" }
+        return caCertUrl
     }
 
     companion object {

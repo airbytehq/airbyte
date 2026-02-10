@@ -232,7 +232,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         for (test in testDataHolders) {
             database!!.query<Any?> { ctx: DSLContext ->
                 ctx.fetch(test.createSqlQuery)
-                LOGGER.info("Table {} is created.", test.nameWithTestPrefix)
+                LOGGER.info { "Table ${test.nameSpace}.${test.nameWithTestPrefix} is created." }
                 null
             }
         }
@@ -244,7 +244,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             database!!.query<Any?> { ctx: DSLContext ->
                 test.insertSqlQueries.forEach(Consumer { sql: String -> ctx.fetch(sql) })
                 LOGGER.info(
-                    "Inserted {} rows in Ttable {}",
+                    "Inserted {} rows in table {}",
                     test.insertSqlQueries.size,
                     test.nameWithTestPrefix
                 )
