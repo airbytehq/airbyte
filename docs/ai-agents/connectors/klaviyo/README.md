@@ -115,7 +115,7 @@ See the official [Klaviyo API reference](https://developers.klaviyo.com/en/refer
 
 ## Version information
 
-- **Package version:** 0.1.23
+- **Package version:** 0.1.24
 - **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Generated with Connector SDK commit SHA:** 04691d063af9e36703f1d2a66e2a1df8e9e52dbe
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/klaviyo/CHANGELOG.md)

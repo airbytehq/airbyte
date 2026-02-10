@@ -10,9 +10,9 @@ The Facebook-Marketing connector supports the following entities and actions.
 |--------|---------|
 | Current User | [Get](#current-user-get) |
 | Ad Accounts | [List](#ad-accounts-list), [Search](#ad-accounts-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Ad Sets | [List](#ad-sets-list), [Get](#ad-sets-get), [Search](#ad-sets-search) |
-| Ads | [List](#ads-list), [Get](#ads-get), [Search](#ads-search) |
+| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Search](#campaigns-search) |
+| Ad Sets | [List](#ad-sets-list), [Create](#ad-sets-create), [Get](#ad-sets-get), [Update](#ad-sets-update), [Search](#ad-sets-search) |
+| Ads | [List](#ads-list), [Create](#ads-create), [Get](#ads-get), [Update](#ads-update), [Search](#ads-search) |
 | Ad Creatives | [List](#ad-creatives-list), [Search](#ad-creatives-search) |
 | Ads Insights | [List](#ads-insights-list), [Search](#ads-insights-search) |
 | Ad Account | [Get](#ad-account-get), [Search](#ad-account-search) |
@@ -301,6 +301,53 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Campaigns Create
+
+Creates a new ad campaign in the specified ad account
+
+#### Python SDK
+
+```python
+await facebook_marketing.campaigns.create(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns",
+    "action": "create",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+
+
+</details>
+
 ### Campaigns Get
 
 Returns a single campaign by ID
@@ -378,6 +425,53 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `status` | `string \| null` |  |
 | `stop_time` | `string \| null` |  |
 | `updated_time` | `string \| null` |  |
+
+
+</details>
+
+### Campaigns Update
+
+Updates an existing ad campaign
+
+#### Python SDK
+
+```python
+await facebook_marketing.campaigns.update(
+    campaign_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns",
+    "action": "update",
+    "params": {
+        "campaign_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `campaign_id` | `string` | Yes | The campaign ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `success` | `boolean` |  |
 
 
 </details>
@@ -546,6 +640,53 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Ad Sets Create
+
+Creates a new ad set in the specified ad account
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_sets.create(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_sets",
+    "action": "create",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+
+
+</details>
+
 ### Ad Sets Get
 
 Returns a single ad set by ID
@@ -613,6 +754,53 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `start_time` | `string \| null` |  |
 | `targeting` | `object \| null` |  |
 | `updated_time` | `string \| null` |  |
+
+
+</details>
+
+### Ad Sets Update
+
+Updates an existing ad set
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_sets.update(
+    adset_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_sets",
+    "action": "update",
+    "params": {
+        "adset_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `adset_id` | `string` | Yes | The ad set ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `success` | `boolean` |  |
 
 
 </details>
@@ -789,6 +977,53 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Ads Create
+
+Creates a new ad in the specified ad account. Note - requires a Facebook Page to be connected to the ad account.
+
+#### Python SDK
+
+```python
+await facebook_marketing.ads.create(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads",
+    "action": "create",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+
+
+</details>
+
 ### Ads Get
 
 Returns a single ad by ID
@@ -862,6 +1097,53 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `status` | `string \| null` |  |
 | `tracking_specs` | `array \| null` |  |
 | `updated_time` | `string \| null` |  |
+
+
+</details>
+
+### Ads Update
+
+Updates an existing ad
+
+#### Python SDK
+
+```python
+await facebook_marketing.ads.update(
+    ad_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads",
+    "action": "update",
+    "params": {
+        "ad_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `ad_id` | `string` | Yes | The ad ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `success` | `boolean` |  |
 
 
 </details>

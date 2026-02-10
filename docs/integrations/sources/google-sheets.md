@@ -309,6 +309,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.20 | 2026-02-10 | [73078](https://github.com/airbytehq/airbyte/pull/73078) | Update dependencies |
 | 0.12.19 | 2026-02-03 | [72644](https://github.com/airbytehq/airbyte/pull/72644) | Update dependencies |
 | 0.12.18 | 2026-01-20 | [71904](https://github.com/airbytehq/airbyte/pull/71904) | Update dependencies |
 | 0.12.17 | 2026-01-14 | [71703](https://github.com/airbytehq/airbyte/pull/71703) | Update dependencies |
