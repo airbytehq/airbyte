@@ -1,4 +1,4 @@
-version: 6.48.10
+version: 4.3.0
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -1021,9 +1021,7 @@ streams:
             - results
         record_filter:
           type: RecordFilter
-          condition: >-
-            {{ not config.get('current_applications_only', false) or
-            record.get('status') not in ['Archived', 'Hired'] }}
+          condition: "{{ not config.get('current_applications_only', false) or record.get('status') not in ['Archived', 'Hired'] }}"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -2192,10 +2190,7 @@ streams:
                       - results
                   record_filter:
                     type: RecordFilter
-                    condition: >-
-                      {{ record.get('currentInterviewStage', {}).get('type') == 'PreInterviewScreen'
-                      and record.get('status') != 'Archived'
-                      and record.get('status') != 'Hired' }}
+                    condition: "{{ (record.get('currentInterviewStage') or {}).get('type') == 'PreInterviewScreen' and record.get('status') not in ['Archived', 'Hired'] }}"
                 paginator:
                   type: DefaultPaginator
                   page_token_option:
