@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-import DocCardList from '@theme/DocCardList';
+import AgentConnectorRegistry from '@site/src/components/AgentConnectorRegistry';
 
 # Agent connectors
 
@@ -64,4 +64,4 @@ To get started with agent connectors, follow the [Python SDK tutorial](../tutori
 
 ## All agent connectors
 
-<DocCardList />
+<AgentConnectorRegistry />
