@@ -1,0 +1,148 @@
+version: 6.33.0
+
+type: DeclarativeSource
+
+description: >-
+  Granola is an AI-powered meeting notes tool. This connector reads meeting
+  notes from your Granola workspace using the Granola Enterprise API.
+
+check:
+  type: CheckStream
+  stream_names:
+    - notes
+
+streams:
+    - type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url: https://public-api.granola.ai/v1/notes
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          http_method: GET
+          request_parameters:
+            page_size: "1"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - notes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('cursor', '') }}"
+            stop_condition: "{{ not response.get('hasMore', False) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_after
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_before
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        step: P30D
+        cursor_granularity: P1D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Your Granola Enterprise API key. Generate one from Settings >
+          Workspaces > API in your Granola workspace.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          The earliest date from which to start replicating notes, in YYYY-MM-DD
+          format.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        pattern_descriptor: "YYYY-MM-DD"
+        examples:
+          - "2024-01-01"
+        format: date
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    notes: false
+
+schemas:
+  notes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type: string
+        description: The unique identifier of the note.
+      object:
+        type: string
+        description: The object type, always "note".
+      title:
+        type:
+          - "null"
+          - string
+        description: The title of the note.
+      owner:
+        type:
+          - "null"
+          - object
+        description: The owner of the note.
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the note owner.
+          email:
+            type:
+              - "null"
+              - string
+            description: The email address of the note owner.
+      created_at:
+        type: string
+        description: The creation time of the note in ISO 8601 format.
+        format: date-time
+    additionalProperties: true
+    required:
+      - id

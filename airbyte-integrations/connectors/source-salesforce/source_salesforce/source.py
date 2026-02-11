@@ -37,7 +37,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import (
-    LOOKBACK_SECONDS,
+    DEFAULT_LOOKBACK_SECONDS,
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
     BulkSalesforceSubStream,
@@ -99,8 +99,29 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 internal_message = "Incorrect stream slice step"
                 raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=internal_message, message=e.args[0])
 
+    @staticmethod
+    def _validate_lookback_window(lookback_window: str):
+        if lookback_window:
+            try:
+                duration = pendulum.parse(lookback_window)
+                if not isinstance(duration, pendulum.Duration):
+                    message = "Lookback window should be provided in ISO 8601 duration format."
+                elif duration < pendulum.Duration(seconds=0):
+                    message = "Lookback window must not be negative."
+                else:
+                    return
+                raise ParserError(message)
+            except ParserError as e:
+                internal_message = str(e)
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    internal_message=internal_message,
+                    message=f"The lookback_window value is invalid: {internal_message.rstrip('.')}. Please provide a valid ISO 8601 duration (e.g., 'PT10M' for 10 minutes, 'PT1H' for 1 hour). See https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting for more details.",
+                )
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         self._validate_stream_slice_step(config.get("stream_slice_step"))
+        self._validate_lookback_window(config.get("lookback_window"))
         salesforce = self._get_sf_object(config)
         salesforce.describe()
         return True, None
@@ -258,7 +279,9 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             self._get_slice_boundary_fields(stream, state_manager),
             datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc),
             stream.state_converter.get_end_provider(),
-            timedelta(seconds=LOOKBACK_SECONDS),
+            isodate.parse_duration(config["lookback_window"])
+            if "lookback_window" in config
+            else timedelta(seconds=DEFAULT_LOOKBACK_SECONDS),
             isodate.parse_duration(config["stream_slice_step"]) if "stream_slice_step" in config else timedelta(days=30),
         )
 

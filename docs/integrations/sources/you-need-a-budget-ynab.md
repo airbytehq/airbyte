@@ -24,6 +24,7 @@ Replicates the budgets, accounts, categories, payees, transactions, and category
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.48 | 2026-02-03 | [72610](https://github.com/airbytehq/airbyte/pull/72610) | Update dependencies |
 | 0.0.47 | 2026-01-20 | [72064](https://github.com/airbytehq/airbyte/pull/72064) | Update dependencies |
 | 0.0.46 | 2026-01-14 | [71698](https://github.com/airbytehq/airbyte/pull/71698) | Update dependencies |
 | 0.0.45 | 2025-12-18 | [70709](https://github.com/airbytehq/airbyte/pull/70709) | Update dependencies |
