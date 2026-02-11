@@ -47,6 +47,9 @@ export default function AgentConnectorRegistry({ connectors: connectorJson }) {
                     style={iconStyle}
                     alt=""
                     loading="lazy"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                    }}
                   />
                 </div>
                 <a href={connector.href}>{connector.name}</a>
