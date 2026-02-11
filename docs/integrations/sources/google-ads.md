@@ -132,8 +132,8 @@ The Google Ads source connector supports the following [sync modes](https://docs
 
 List of streams:
 
-- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
-- [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [ad_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
 - [campaign_criterion](https://developers.google.com/google-ads/api/fields/v20/campaign_criterion)
 
 These streams support incremental updates, including deletions, leveraging the Change Status stream. However, they only capture updates from the most recent three months.
@@ -141,7 +141,7 @@ These streams support incremental updates, including deletions, leveraging the C
 The initial sync operates as a full refresh. Subsequent syncs begin by reading updates from the Change Status stream, followed by syncing records based on their IDs.
 
 :::warning
-It's important to note that the Google Ads API resource ChangeStatus has a limit of 10,000 records per request. That's why you cannot sync stream with more than 10,000 updates in a single microsecond. In such cases, it's recommended to use a full refresh sync to ensure all updates are captured.
+It's important to note that the Google Ads API resource ChangeStatus has a limit of 10,000 records per request. That's why you cannot sync a stream with more than 10,000 updates in a single microsecond. In such cases, it's recommended to use a full refresh sync to ensure all updates are captured.
 :::
 
 ## Supported Streams
