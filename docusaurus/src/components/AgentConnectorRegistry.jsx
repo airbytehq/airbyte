@@ -1,4 +1,3 @@
-import { useDocsSidebar } from "@docusaurus/plugin-content-docs/client";
 import styles from "./AgentConnectorRegistry.module.css";
 
 const ICON_BASE_URL =
@@ -8,11 +7,6 @@ const CHANGELOG_BASE_URL =
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
 
-function extractConnectorSlug(href) {
-  const match = href.match(/connectors\/([^/]+)/);
-  return match ? match[1] : null;
-}
-
 function formatConnectorName(slug) {
   return slug
     .split("-")
@@ -20,40 +14,15 @@ function formatConnectorName(slug) {
     .join(" ");
 }
 
-function collectConnectorItems(items, result) {
-  for (const item of items) {
-    const href = item.href || "";
-    if (
-      href.includes("/connectors/") &&
-      href !== "/ai-agents/connectors/" &&
-      !href.endsWith("/connectors")
-    ) {
-      const slug = extractConnectorSlug(href);
-      if (slug) {
-        result.push({
-          slug,
-          name: formatConnectorName(slug),
-          href,
-          iconUrl: `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`,
-        });
-      }
-    }
-    if (item.items) {
-      collectConnectorItems(item.items, result);
-    }
-  }
-}
-
-function getConnectorItems(sidebar) {
-  if (!sidebar || !sidebar.items) return [];
-  const result = [];
-  collectConnectorItems(sidebar.items, result);
-  return result.sort((a, b) => a.name.localeCompare(b.name));
-}
-
-export default function AgentConnectorRegistry() {
-  const sidebar = useDocsSidebar();
-  const connectors = getConnectorItems(sidebar);
+export default function AgentConnectorRegistry({ connectors: connectorJson }) {
+  const connectors = JSON.parse(connectorJson)
+    .map((slug) => ({
+      slug,
+      name: formatConnectorName(slug),
+      href: `/ai-agents/connectors/${slug}/`,
+      iconUrl: `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   if (connectors.length === 0) {
     return <div>Loading agent connectors...</div>;
