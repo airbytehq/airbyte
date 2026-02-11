@@ -44,11 +44,6 @@ class AdCreatives(FBMarketingStream):
     """
 
     entity_prefix = "adcreative"
-    # The `asset_feed_spec` field is excluded because it causes the Facebook API to return
-    # "Please reduce the amount of data you're asking for" (HTTP 500, error code 1) for accounts
-    # with rich creatives. Same pattern as CustomAudiences excluding `rule`.
-    # https://github.com/airbytehq/airbyte/issues/38025
-    fields_exceptions = ["asset_feed_spec"]
 
     def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
         super().__init__(**kwargs)

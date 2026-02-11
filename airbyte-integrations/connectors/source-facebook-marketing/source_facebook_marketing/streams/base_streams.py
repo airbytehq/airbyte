@@ -73,7 +73,7 @@ class FBMarketingStream(Stream, ABC):
             if self.configured_json_schema and self.configured_json_schema.get("properties")
             else self.get_json_schema()
         )
-        self._saved_fields = [f for f in json_schema.get("properties", {}).keys() if f not in self.fields_exceptions]
+        self._saved_fields = list(json_schema.get("properties", {}).keys())
         return self._saved_fields
 
     @classmethod
