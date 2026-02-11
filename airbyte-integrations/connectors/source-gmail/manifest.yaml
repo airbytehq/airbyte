@@ -253,10 +253,10 @@ definitions:
     url_base: https://gmail.googleapis.com/gmail/v1/users/me/
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
+      client_id: "{{ config['credentials']['client_id'] if config.get('credentials') else config['client_id'] }}"
       grant_type: refresh_token
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      client_secret: "{{ config['credentials']['client_secret'] if config.get('credentials') else config['client_secret'] }}"
+      refresh_token: "{{ config['credentials']['refresh_token'] if config.get('credentials') else config['client_refresh_token'] }}"
       expires_in_name: expires_in
       access_token_name: access_token
       refresh_request_body: {}
@@ -277,28 +277,84 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - client_id
-      - client_secret
-      - client_refresh_token
+    required: []
     properties:
-      client_id:
-        type: string
-        name: client_id
+      credentials:
+        type: object
+        title: Authentication
+        description: Credentials for connecting to the Gmail API
         order: 0
-        title: OAuth Client ID
-        airbyte_secret: true
-      client_secret:
-        type: string
-        name: client_secret
-        order: 1
-        title: OAuth Client Secret
-        airbyte_secret: true
-      client_refresh_token:
-        type: string
-        order: 2
-        title: Refresh token
-        airbyte_secret: true
+        oneOf:
+          - title: Authenticate via Google (OAuth)
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Client
+              client_id:
+                title: Client ID
+                type: string
+                description: >-
+                  Enter your Google application's Client ID. See <a
+                  href='https://developers.google.com/identity/protocols/oauth2'>Google's
+                  documentation</a> for more information.
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: >-
+                  Enter your Google application's Client Secret. See <a
+                  href='https://developers.google.com/identity/protocols/oauth2'>Google's
+                  documentation</a> for more information.
+                airbyte_secret: true
+              refresh_token:
+                title: Refresh Token
+                type: string
+                description: >-
+                  Enter your Google application's refresh token. See <a
+                  href='https://developers.google.com/identity/protocols/oauth2'>Google's
+                  documentation</a> for more information.
+                airbyte_secret: true
+          - title: Enter credentials manually
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Manual
+              client_id:
+                title: Client ID
+                type: string
+                description: >-
+                  Enter your Google application's Client ID. See <a
+                  href='https://developers.google.com/identity/protocols/oauth2'>Google's
+                  documentation</a> for more information.
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: >-
+                  Enter your Google application's Client Secret. See <a
+                  href='https://developers.google.com/identity/protocols/oauth2'>Google's
+                  documentation</a> for more information.
+                airbyte_secret: true
+              refresh_token:
+                title: Refresh Token
+                type: string
+                description: >-
+                  Enter your Google application's refresh token. See <a
+                  href='https://developers.google.com/identity/protocols/oauth2'>Google's
+                  documentation</a> for more information.
+                airbyte_secret: true
       include_spam_and_trash:
         type: boolean
         description: >-
@@ -306,8 +362,54 @@ spec:
           to false.
         title: Include Spam & Trash
         default: false
-        order: 3
+        order: 1
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: Client
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: >-
+          https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent
+        scope: https://www.googleapis.com/auth/gmail.readonly
+        access_token_url: >-
+          https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&grant_type=authorization_code&{{redirect_uri_param}}
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
 
 metadata:
   autoImportSchema:

@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f7833dac-fc18-4feb-a2a9-94b22001edc6
-  dockerImageTag: 0.0.45
+  dockerImageTag: 0.0.46
   dockerRepository: airbyte/source-gmail
   githubIssueLabel: source-gmail
   icon: icon.svg
