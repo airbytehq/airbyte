@@ -60,7 +60,7 @@ CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 DEFAULT_ENCODING = "utf-8"
-LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
+DEFAULT_LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
 _JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
 
 
