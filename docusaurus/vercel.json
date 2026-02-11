@@ -603,7 +603,7 @@
     },
     {
       "source": "/embedded-api/sonar",
-      "destination": "/ai-agents/api/api-reference/agent-engine",
+      "destination": "/ai-agents/api/api-reference/sonar",
       "statusCode": 301
     },
     {
@@ -613,12 +613,72 @@
     },
     {
       "source": "/ai-agents/embedded/api-reference/sonar",
-      "destination": "/ai-agents/api/api-reference/agent-engine",
+      "destination": "/ai-agents/api/api-reference/sonar",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/embedded/api-reference/:path*",
       "destination": "/ai-agents/api/api-reference/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/embedded",
+      "destination": "/ai-agents/platform/authenticate/build-auth/authentication-module",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/embedded/:path*",
+      "destination": "/ai-agents/platform/authenticate/build-auth/authentication-module",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/quickstarts/tutorial-server-side-oauth",
+      "destination": "/ai-agents/platform/authenticate/build-auth/build-your-own",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/quickstarts/tutorial-hosted",
+      "destination": "/ai-agents/tutorials/quickstarts/tutorial-hosted",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/quickstarts/tutorial-mcp",
+      "destination": "/ai-agents/tutorials/quickstarts/tutorial-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/quickstarts/tutorial-python",
+      "destination": "/ai-agents/tutorials/quickstarts/tutorial-python",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/quickstarts",
+      "destination": "/ai-agents/tutorials/quickstarts",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/quickstarts/:path*",
+      "destination": "/ai-agents/tutorials/quickstarts/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/entity-cache",
+      "destination": "/ai-agents/platform/context-store",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/entity-cache/:path*",
+      "destination": "/ai-agents/platform/context-store",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/tools",
+      "destination": "/ai-agents/platform/execute",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/tools/:path*",
+      "destination": "/ai-agents/platform/execute",
       "statusCode": 301
     }
   ]
