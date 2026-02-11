@@ -337,7 +337,7 @@ dynamic_streams:
             - $parameters
             - row_count
           type: ComponentMappingDefinition
-          value: "{{ config.get('batch_size', 1000000) }}"
+          value: "10000000"
         - field_path:
             - retriever
             - partition_router

@@ -549,14 +549,6 @@ class GridDataErrorHandler(DefaultErrorHandler):
         return None
 
 
-def extract_spreadsheet_id_from_url(raw_id: str) -> str:
-    if re.match(r"^https://", raw_id):
-        match = re.search(r"/([-\w]{20,})([/]?)", raw_id)
-        if match:
-            return match.group(1)
-    return raw_id
-
-
 @dataclass
 class SelfDiscoveringSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
     """
