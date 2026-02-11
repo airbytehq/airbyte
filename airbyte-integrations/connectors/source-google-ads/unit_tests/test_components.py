@@ -825,19 +825,13 @@ def test_custom_retriever_streams_have_expected_date_format(stream_name, datetim
 
 @pytest.mark.parametrize(
     "stream_name,retriever",
-    [
-        pytest.param(name, ret, id=name)
-        for name, ret in _get_built_streams_with_google_ads_retriever(_DEFAULT_CONFIG)
-    ],
+    [pytest.param(name, ret, id=name) for name, ret in _get_built_streams_with_google_ads_retriever(_DEFAULT_CONFIG)],
 )
 def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
-    assert isinstance(extractor, DpathExtractor), (
-        f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    )
+    assert isinstance(extractor, DpathExtractor), f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
     assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, "
-        f"got {type(extractor.decoder).__name__}"
+        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
     )
 
 
@@ -851,10 +845,7 @@ def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriev
 )
 def test_dynamic_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
-    assert isinstance(extractor, DpathExtractor), (
-        f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    )
+    assert isinstance(extractor, DpathExtractor), f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
     assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, "
-        f"got {type(extractor.decoder).__name__}"
+        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
     )
