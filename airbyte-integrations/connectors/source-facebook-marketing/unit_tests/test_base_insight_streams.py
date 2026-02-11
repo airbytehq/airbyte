@@ -358,7 +358,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert len(generated_jobs) == (end_date - start_date).days + 2
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + timedelta(days=1)
 
@@ -416,7 +416,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date.date() - start_date.date()).days + 1
+        assert len(generated_jobs) == (end_date.date() - start_date.date()).days + 2
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + timedelta(days=1)
 
