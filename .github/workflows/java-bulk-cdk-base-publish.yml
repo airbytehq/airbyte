@@ -6,7 +6,7 @@ on:
     branches:
       - master
     paths:
-      - "airbyte-cdk/bulk/core/base/**"
+      - "airbyte-cdk/bulk/core/base/version.properties"
   workflow_dispatch:
 
 permissions:
