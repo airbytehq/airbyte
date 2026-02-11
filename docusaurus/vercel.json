@@ -603,7 +603,7 @@
     },
     {
       "source": "/embedded-api/sonar",
-      "destination": "/ai-agents/api/api-reference/agent-engine",
+      "destination": "/ai-agents/api/api-reference/agent-engine-api",
       "statusCode": 301
     },
     {
@@ -613,7 +613,7 @@
     },
     {
       "source": "/ai-agents/embedded/api-reference/sonar",
-      "destination": "/ai-agents/api/api-reference/agent-engine",
+      "destination": "/ai-agents/api/api-reference/agent-engine-api",
       "statusCode": 301
     },
     {
@@ -683,12 +683,12 @@
     },
     {
       "source": "/ai-agents/api/api-reference/sonar",
-      "destination": "/ai-agents/api/api-reference/agent-engine",
+      "destination": "/ai-agents/api/api-reference/agent-engine-api",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/api/api-reference/sonar/:path*",
-      "destination": "/ai-agents/api/api-reference/agent-engine/:path*",
+      "destination": "/ai-agents/api/api-reference/agent-engine-api/:path*",
       "statusCode": 301
     }
   ]
