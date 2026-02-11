@@ -580,7 +580,8 @@ class SelfDiscoveringSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
             auth_headers["Authorization"] = response.request.headers["Authorization"]
 
         from urllib.parse import quote as urlencode_fn
-        encoded_sheet = urlencode_fn(self._sheet_id, safe="")
+
+        encoded_sheet= urlencode_fn(self._sheet_id, safe="")
         url = (
             f"https://sheets.googleapis.com/v4/spreadsheets/"
             f"{self._spreadsheet_url_id}"
@@ -597,9 +598,7 @@ class SelfDiscoveringSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
                     names_conversion = self.config.get("names_conversion", False)
                     schema_pointer = self._schema_type_identifier.get("schema_pointer")
                     key_pointer = self._schema_type_identifier["key_pointer"]
-                    for prop_index, prop_value, _ in self.parse_raw_schema_values(
-                        row_data, schema_pointer, key_pointer, names_conversion
-                    ):
+                    for prop_index, prop_value, _ in self.parse_raw_schema_values(row_data, schema_pointer, key_pointer, names_conversion):
                         self._indexed_properties_to_match[prop_index] = prop_value
             else:
                 logger.warning(
@@ -608,9 +607,7 @@ class SelfDiscoveringSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
                     f"HTTP {header_response.status_code}"
                 )
         except requests.RequestException as e:
-            logger.warning(
-                f"Error fetching headers for sheet '{self._sheet_id}': {e}"
-            )
+            logger.warning(f"Error fetching headers for sheet '{self._sheet_id}': {e}")
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
         self._ensure_headers(response)
@@ -621,9 +618,7 @@ class SelfDiscoveringSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
             for unmatched_values in unmatched_values_collection:
                 if not DpathSchemaMatchingExtractor.is_row_empty(
                     unmatched_values
-                ) and DpathSchemaMatchingExtractor.row_contains_relevant_data(
-                    unmatched_values, self._indexed_properties_to_match.keys()
-                ):
+                ) and DpathSchemaMatchingExtractor.row_contains_relevant_data(unmatched_values, self._indexed_properties_to_match.keys()):
                     yield from DpathSchemaMatchingExtractor.match_properties_with_values(
                         unmatched_values, self._indexed_properties_to_match, include_empty_values
                     )
