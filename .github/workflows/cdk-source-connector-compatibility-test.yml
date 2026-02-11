@@ -19,7 +19,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
-          submodules: true
+          submodules: true # Needed for when airbyte-enterprise calls this workflow
 
       - name: Install yq
         run: sudo snap install yq
@@ -49,7 +49,7 @@ jobs:
         if: matrix.connector
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
-          submodules: true
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
 
       - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         if: matrix.connector
