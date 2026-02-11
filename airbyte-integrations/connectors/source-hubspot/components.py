@@ -858,6 +858,82 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
         return self._schema
 
 
+@dataclass
+class HubspotAssociationStreamExtractor(RecordExtractor):
+    """
+    Flattens HubSpot association batch/read responses into individual records.
+
+    Transforms nested structure:
+    {
+      "results": [
+        {
+          "from": {"id": "123"},
+          "to": [
+            {
+              "toObjectId": 456,
+              "associationTypes": [
+                {"typeId": 3, "category": "HUBSPOT_DEFINED", "label": null}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    Into flat records:
+    {"from_id": "123", "to_id": "456", "association_type_id": 3, "category": "HUBSPOT_DEFINED", "label": null}
+    """
+
+    from_object: Union[InterpolatedString, str]
+    to_object: Union[InterpolatedString, str]
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        if isinstance(self.from_object, str):
+            self._from_object = InterpolatedString.create(self.from_object, parameters=parameters)
+        else:
+            self._from_object = self.from_object
+
+        if isinstance(self.to_object, str):
+            self._to_object = InterpolatedString.create(self.to_object, parameters=parameters)
+        else:
+            self._to_object = self.to_object
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        """
+        Extract and flatten association records from HubSpot batch/read API response.
+
+        Yields one record per association type (not per to_object).
+        Handles empty responses gracefully.
+        Ensures string IDs for schema consistency.
+        """
+        # Parse response JSON directly
+        body = response.json()
+        results = body.get("results", [])
+
+        for result in results:
+            from_obj = result.get("from", {})
+            from_id = str(from_obj.get("id", ""))
+
+            to_list = result.get("to", [])
+
+            for to_obj in to_list:
+                to_id = str(to_obj.get("toObjectId", ""))
+                association_types = to_obj.get("associationTypes", [])
+
+                # Emit one record per association type
+                for assoc_type in association_types:
+                    yield {
+                        "from_id": from_id,
+                        "to_id": to_id,
+                        "association_type_id": assoc_type.get("typeId"),
+                        "category": assoc_type.get("category"),
+                        "label": assoc_type.get("label"),
+                    }
+
+
 _TRUTHY_STRINGS = ("y", "yes", "t", "true", "on", "1")
 _FALSEY_STRINGS = ("n", "no", "f", "false", "off", "0")
 
