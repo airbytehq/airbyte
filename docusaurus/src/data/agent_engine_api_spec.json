@@ -198,7 +198,7 @@
     },
     "/api/v1/embedded/scoped-token/info": {
       "get": {
-        "tags": ["Advanced authentication endpoints"],
+        "tags": ["Authentication (Advanced)"],
         "summary": "Get Scoped Token Info",
         "description": "Get the organization, workspace id, and external user id for a scoped token.",
         "operationId": "get_embedded_scoped_token_info",
@@ -466,14 +466,58 @@
           {
             "name": "workspace_id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
-              "format": "uuid",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "The workspace ID to list sources for.",
               "title": "Workspace Id"
             },
             "description": "The workspace ID to list sources for."
+          },
+          {
+            "name": "external_user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The external user ID to list sources for.",
+              "title": "External User Id"
+            },
+            "description": "The external user ID to list sources for."
+          },
+          {
+            "name": "definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by connector definition ID.",
+              "title": "Definition Id"
+            },
+            "description": "Filter by connector definition ID."
           },
           {
             "name": "x-organization-id",
@@ -544,7 +588,7 @@
     },
     "/api/v1/integrations/connectors/check": {
       "post": {
-        "tags": ["Advanced connector endpoints"],
+        "tags": ["Connectors (Advanced)"],
         "summary": "Check config when creating a connector",
         "description": "**Requires an Access Token as the bearer token.**\n\nCreate a connector configuration check.",
         "operationId": "create_integrations_connectors_check",
@@ -906,7 +950,7 @@
     },
     "/api/v1/integrations/connectors/{id}/check": {
       "post": {
-        "tags": ["Advanced connector endpoints"],
+        "tags": ["Connectors (Advanced)"],
         "summary": "Check config when updating a connector",
         "description": "Check source configuration before updating an existing source.",
         "operationId": "create_integrations_connectors_id_check",
@@ -1287,7 +1331,7 @@
     },
     "/api/v1/integrations/definitions/sources": {
       "get": {
-        "tags": ["Advanced connector endpoints"],
+        "tags": ["Connectors (Advanced)"],
         "summary": "List connector definitions",
         "description": "**Requires an Access Token as the bearer token.**\n\nList source connector specifications.",
         "operationId": "list_integrations_definitions_sources",
@@ -1384,7 +1428,7 @@
     },
     "/api/v1/integrations/definitions/sources/{id}": {
       "get": {
-        "tags": ["Advanced connector endpoints"],
+        "tags": ["Connectors (Advanced)"],
         "summary": "Get a connector definition",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a source connector specification.",
         "operationId": "get_integrations_definitions_sources_id",
@@ -2080,7 +2124,7 @@
     },
     "/api/v1/integrations/templates/sources": {
       "post": {
-        "tags": ["Advanced connector endpoints"],
+        "tags": ["Connectors (Advanced)"],
         "summary": "Enable a connector",
         "description": "**Requires an Access Token as the bearer token.**\n\nCreate a source_template.\n\nEnd users can complete this template to create a source connector.",
         "operationId": "create_integrations_templates_sources",
@@ -2175,7 +2219,7 @@
         }
       },
       "get": {
-        "tags": ["Advanced connector endpoints"],
+        "tags": ["Connectors (Advanced)"],
         "summary": "List enabled connectors",
         "description": "**Requires an Access Token as the bearer token.**\n\nList source templates.",
         "operationId": "list_integrations_templates_sources",
@@ -2292,7 +2336,7 @@
     },
     "/api/v1/integrations/templates/sources/{id}": {
       "patch": {
-        "tags": ["Advanced connector endpoints"],
+        "tags": ["Connectors (Advanced)"],
         "summary": "Update an enabled connector",
         "description": "**Requires an Access Token as the bearer token.**\n\nUpdate a source template.",
         "operationId": "update_integrations_templates_sources_id",
@@ -2389,7 +2433,7 @@
         }
       },
       "get": {
-        "tags": ["Advanced connector endpoints"],
+        "tags": ["Connectors (Advanced)"],
         "summary": "Get an enabled connector",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a source template.",
         "operationId": "get_integrations_templates_sources_id",
@@ -2476,7 +2520,7 @@
         }
       },
       "delete": {
-        "tags": ["Advanced connector endpoints"],
+        "tags": ["Connectors (Advanced)"],
         "summary": "Disable a connector",
         "description": "**Requires an Access Token as the bearer token.**\n\nDelete a source template.",
         "operationId": "delete_integrations_templates_sources_id",
@@ -2565,7 +2609,7 @@
     },
     "/api/v1/oauth/credentials": {
       "put": {
-        "tags": ["Advanced authentication endpoints"],
+        "tags": ["Authentication (Advanced)"],
         "summary": "Configure connector OAuth",
         "description": "Create or update OAuth credentials for the user's organization.\n\nThis endpoint:\n1. Extracts organization_id from the user's token\n2. Validates the configuration against the connector's OAuth spec\n3. Stores secrets and replaces them with secret coordinates\n4. Proxies the credentials to Coral's organization OAuth endpoint\n5. Saves the record to Sonar's database",
         "operationId": "update_oauth_credentials",
@@ -4611,6 +4655,28 @@
         "title": "EncryptionMapperConfig",
         "description": "Configuration for encryption mapper - uses snake_case.\n\nEncrypts a specified field using RSA (OAEP-SHA256). The encrypted value\nreplaces the original field value or is emitted with the configured suffix.\n\nNOTE: Symmetric AES is NOT supported in this API.\n\nWhy we don't support AES:\n- Secrets hydration for AES mappers is not currently supported in the platform\n- AES requires symmetric key management which doesn't align well with\n  Sonar's secrets management architecture\n- RSA with public keys is more appropriate for this use case as it\n  allows encryption without exposing private keys in the configuration\n\nIf you need AES encryption, this must be resolved at the platform level\nwith proper secrets storage and hydration support before we can add it here."
       },
+      "ExampleQuestionsByType": {
+        "properties": {
+          "direct": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Direct",
+            "description": "Questions answerable via direct API operations (list, get, download)"
+          },
+          "search": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Search",
+            "description": "Questions requiring cached search operations"
+          }
+        },
+        "type": "object",
+        "title": "ExampleQuestionsByType"
+      },
       "ExecutionMetadata": {
         "properties": {
           "connector_instance_id": {
@@ -5188,12 +5254,8 @@
             "$ref": "#/components/schemas/ConnectorDefinition"
           },
           "example_questions": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Example Questions",
-            "description": "Example questions that can be asked about data from this connector (max 3)"
+            "$ref": "#/components/schemas/ExampleQuestionsByType",
+            "description": "Example questions grouped by direct vs search availability"
           }
         },
         "type": "object",
@@ -6640,11 +6702,11 @@
       "description": "Create, manage, and check configuration for end-user connectors."
     },
     {
-      "name": "Advanced connector endpoints",
+      "name": "Connectors (Advanced)",
       "description": "Enable, configure, and disable connector templates for your organization."
     },
     {
-      "name": "Advanced authentication endpoints",
+      "name": "Authentication (Advanced)",
       "description": "Retrieve scoped token details and manage organization OAuth credentials."
     },
     {
