@@ -187,8 +187,6 @@ class SourceFacebookMarketing(AbstractSource):
             AdCreativesFromAds(
                 api=api,
                 account_ids=config.account_ids,
-                start_date=config.start_date,
-                end_date=config.end_date,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 filter_statuses=config.ad_statuses,
                 page_size=config.page_size,

@@ -77,7 +77,7 @@ class AdCreatives(FBMarketingStream):
         return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
 
 
-class AdCreativesFromAds(FBMarketingIncrementalStream):
+class AdCreativesFromAds(FBMarketingStream):
     """Alternative stream to fetch ad creatives through the ads endpoint.
 
     This stream fetches creatives by first getting ads (which includes creative IDs),
@@ -94,7 +94,6 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
     """
 
     entity_prefix = "ad"
-    cursor_field = "updated_time"
     status_field = "effective_status"
     valid_statuses = [status.value for status in ValidAdStatuses]
 
@@ -123,12 +122,11 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
         return self._creative_fields
 
     def fields(self, **kwargs) -> List[str]:
-        """Return fields to request from the ads endpoint - just id, updated_time, and creative reference"""
+        """Return fields to request from the ads endpoint - just id and creative reference"""
         if self._fields:
             return self._fields
 
-        # Only request the creative field (which returns creative ID), not expanded fields
-        self._fields = ["id", "updated_time", "creative"]
+        self._fields = ["id", "creative"]
         return self._fields
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
@@ -160,19 +158,16 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
             if not creative_ref:
                 continue
 
-            # The creative field from ads endpoint returns just the ID reference
             creative_id = creative_ref.get("id")
             if not creative_id or creative_id in self._seen_creative_ids:
                 continue
 
             self._seen_creative_ids.add(creative_id)
 
-            # Fetch full creative details by ID
             creative_data = self._fetch_creative_details(creative_id)
             if not creative_data:
                 continue
 
-            # Fix date/time formatting to match expected schema
             self.fix_date_time(creative_data)
 
             if self._fetch_thumbnail_images:
