@@ -1,4 +1,4 @@
-# Ashby authentication and configuration
+# Ashby authentication
 
 This page documents the authentication and configuration options for the Ashby agent connector.
 
