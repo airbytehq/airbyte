@@ -3,10 +3,8 @@ name: CDK Destination Connector Compatibility Test
 on:
   pull_request:
     paths:
-      - "airbyte-cdk/bulk/core/base/**"
-      - "airbyte-cdk/bulk/core/load/**"
-      - "airbyte-cdk/bulk/toolkits/load-*/**"
-      - "airbyte-cdk/bulk/toolkits/legacy-task-load*/**"
+      - "airbyte-cdk/bulk/core/base/version.properties"
+      - "airbyte-cdk/bulk/core/load/version.properties"
   schedule:
     - cron: "0 12 * * *"
   workflow_dispatch:

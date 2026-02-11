@@ -3,11 +3,8 @@ name: CDK Source Connector Compatibility Test
 on:
   pull_request:
     paths:
-      - "airbyte-cdk/bulk/core/base/**"
-      - "airbyte-cdk/bulk/core/extract/**"
-      - "airbyte-cdk/bulk/toolkits/extract-*/**"
-      - "airbyte-cdk/bulk/toolkits/legacy-source-integration-tests/**"
-      - "airbyte-cdk/bulk/toolkits/source-tests/**"
+      - "airbyte-cdk/bulk/core/base/version.properties"
+      - "airbyte-cdk/bulk/core/extract/version.properties"
   schedule:
     - cron: "0 12 * * *"
   workflow_dispatch:
