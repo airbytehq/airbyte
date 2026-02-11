@@ -358,8 +358,8 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_multiple_days_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        start_date = NOW - timedelta(days=1)
-        end_date = NOW
+        start_date = NOW - timedelta(days=3)
+        end_date = NOW - timedelta(days=2)
         report_run_id_1 = "1571860060019500"
         report_run_id_2 = "4571860060019599"
         job_id_1 = "1049937379601600"
@@ -455,8 +455,9 @@ class TestIncremental(TestCase):
     @HttpMocker()
     def test_when_read_then_state_message_produced_and_state_match_start_interval(self, http_mocker: HttpMocker) -> None:
         account_id = "123123123"
-        start_date = NOW.replace(hour=0, minute=0, second=0)
-        end_date = NOW.replace(hour=23, minute=59, second=59)
+        past = NOW - timedelta(days=3)
+        start_date = past.replace(hour=0, minute=0, second=0)
+        end_date = past.replace(hour=23, minute=59, second=59)
 
         http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
         http_mocker.get(
@@ -486,8 +487,9 @@ class TestIncremental(TestCase):
     ) -> None:
         account_id_1 = "123123123"
         account_id_2 = "321321321"
-        start_date = NOW.replace(hour=0, minute=0, second=0)
-        end_date = NOW.replace(hour=23, minute=59, second=59)
+        past = NOW - timedelta(days=3)
+        start_date = past.replace(hour=0, minute=0, second=0)
+        end_date = past.replace(hour=23, minute=59, second=59)
         report_run_id_1 = "1571860060019500"
         report_run_id_2 = "4571860060019599"
         job_id_1 = "1049937379601600"
