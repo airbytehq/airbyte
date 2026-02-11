@@ -89,7 +89,7 @@ class PostgresSourceCursorBasedIntegrationTest {
                 database = "test"
                 this.schemas = schemas
                 checkpointTargetIntervalSeconds = 60
-                max_db_connections = 1
+                maxDbConnections = 1
                 setIncrementalConfigurationSpecificationValue(
                     StandardReplicationMethodConfigurationSpecification
                 )

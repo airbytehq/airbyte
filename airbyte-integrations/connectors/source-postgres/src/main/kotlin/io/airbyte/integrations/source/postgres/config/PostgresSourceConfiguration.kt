@@ -194,7 +194,7 @@ constructor(
 
         // TODO: only use username from <username>@azure.com when checking privileges
 
-        val maxDBConnections: Int? = pojo.max_db_connections
+        val maxDBConnections: Int? = pojo.maxDbConnections
 
         log.info { "maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}" }
 
@@ -387,9 +387,9 @@ constructor(
         if (pojo.servicePrincipalAuth) {
             val credential =
                 ClientSecretCredentialBuilder()
-                    .clientId(pojo.clientId)
+                    .clientId(pojo.entraClientId)
                     .clientSecret(pojo.password)
-                    .tenantId(pojo.tenantId)
+                    .tenantId(pojo.entraTenantId)
                     .build()
 
             val tokenRequestContext =

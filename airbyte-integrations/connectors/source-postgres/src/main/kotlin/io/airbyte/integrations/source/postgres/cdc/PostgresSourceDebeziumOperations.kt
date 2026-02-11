@@ -124,7 +124,6 @@ class PostgresSourceDebeziumOperations(
                 }
             }
             .withHeartbeatTimeout(cdcConfig.airbyteHeartbeatTimeout)
-        // TODO: SSL support
     }
 
     override fun startup(offset: DebeziumOffset) {
