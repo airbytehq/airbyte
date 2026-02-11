@@ -253,10 +253,10 @@ definitions:
     url_base: https://gmail.googleapis.com/gmail/v1/users/me/
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config['credentials']['client_id'] }}"
+      client_id: "{{ config['credentials']['client_id'] if config.get('credentials') else config['client_id'] }}"
       grant_type: refresh_token
-      client_secret: "{{ config['credentials']['client_secret'] }}"
-      refresh_token: "{{ config['credentials']['refresh_token'] }}"
+      client_secret: "{{ config['credentials']['client_secret'] if config.get('credentials') else config['client_secret'] }}"
+      refresh_token: "{{ config['credentials']['refresh_token'] if config.get('credentials') else config['client_refresh_token'] }}"
       expires_in_name: expires_in
       access_token_name: access_token
       refresh_request_body: {}
@@ -277,8 +277,7 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - credentials
+    required: []
     properties:
       credentials:
         type: object
