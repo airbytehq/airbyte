@@ -320,6 +320,41 @@ spec:
                   href='https://developers.google.com/identity/protocols/oauth2'>Google's
                   documentation</a> for more information.
                 airbyte_secret: true
+          - title: Enter credentials manually
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Manual
+              client_id:
+                title: Client ID
+                type: string
+                description: >-
+                  Enter your Google application's Client ID. See <a
+                  href='https://developers.google.com/identity/protocols/oauth2'>Google's
+                  documentation</a> for more information.
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: >-
+                  Enter your Google application's Client Secret. See <a
+                  href='https://developers.google.com/identity/protocols/oauth2'>Google's
+                  documentation</a> for more information.
+                airbyte_secret: true
+              refresh_token:
+                title: Refresh Token
+                type: string
+                description: >-
+                  Enter your Google application's refresh token. See <a
+                  href='https://developers.google.com/identity/protocols/oauth2'>Google's
+                  documentation</a> for more information.
+                airbyte_secret: true
       include_spam_and_trash:
         type: boolean
         description: >-
