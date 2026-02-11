@@ -14,15 +14,39 @@ jobs:
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 #v3.0.2
         with:
           filters: |
-            version:
-              - 'airbyte-cdk/bulk/version.properties'
-            changelog:
-              - 'airbyte-cdk/bulk/changelog.md'
+            base_version:
+              - 'airbyte-cdk/bulk/core/base/version.properties'
+            base_changelog:
+              - 'airbyte-cdk/bulk/core/base/changelog.md'
+            extract_version:
+              - 'airbyte-cdk/bulk/core/extract/version.properties'
+            extract_changelog:
+              - 'airbyte-cdk/bulk/core/extract/changelog.md'
+            load_version:
+              - 'airbyte-cdk/bulk/core/load/version.properties'
+            load_changelog:
+              - 'airbyte-cdk/bulk/core/load/changelog.md'
 
-      - name: Ensure Changelog Updated
-        if: steps.cdk-changes.outputs.version == 'true'
+      - name: Ensure Base Changelog Updated
+        if: steps.cdk-changes.outputs.base_version == 'true'
         run: |
-          if [ "${{ steps.cdk-changes.outputs.changelog }}" != "true" ]; then
-            echo "ERROR: The changelog must be updated when the version.properties file is changed."
+          if [ "${{ steps.cdk-changes.outputs.base_changelog }}" != "true" ]; then
+            echo "ERROR: airbyte-cdk/bulk/core/base/changelog.md must be updated when airbyte-cdk/bulk/core/base/version.properties is changed."
+            exit 1
+          fi
+
+      - name: Ensure Extract Changelog Updated
+        if: steps.cdk-changes.outputs.extract_version == 'true'
+        run: |
+          if [ "${{ steps.cdk-changes.outputs.extract_changelog }}" != "true" ]; then
+            echo "ERROR: airbyte-cdk/bulk/core/extract/changelog.md must be updated when airbyte-cdk/bulk/core/extract/version.properties is changed."
+            exit 1
+          fi
+
+      - name: Ensure Load Changelog Updated
+        if: steps.cdk-changes.outputs.load_version == 'true'
+        run: |
+          if [ "${{ steps.cdk-changes.outputs.load_changelog }}" != "true" ]; then
+            echo "ERROR: airbyte-cdk/bulk/core/load/changelog.md must be updated when airbyte-cdk/bulk/core/load/version.properties is changed."
             exit 1
           fi
