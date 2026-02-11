@@ -9,6 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                           |
 |---------|------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2   | 2026-02-10 | [#73256](https://github.com/airbytehq/airbyte/pull/73256) | Test changelog entry (delete after testing). |
 | 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376) | Initial independent release of bulk-cdk-core-load. Separate versioning for load package begins. |
 
 </details>
