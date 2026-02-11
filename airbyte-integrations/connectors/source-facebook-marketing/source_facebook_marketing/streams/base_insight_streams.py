@@ -82,6 +82,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         super().__init__(**kwargs)
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
+        today_utc = ab_datetime_now().date()
+        if self._end_date >= today_utc:
+            self._end_date = today_utc + timedelta(days=1)
         self._custom_fields = fields
         if action_breakdowns_allow_empty:
             if action_breakdowns is not None:
