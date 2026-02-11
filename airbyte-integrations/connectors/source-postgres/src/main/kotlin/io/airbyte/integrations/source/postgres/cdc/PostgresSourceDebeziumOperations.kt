@@ -124,8 +124,8 @@ class PostgresSourceDebeziumOperations(
                 }
             }
             .withHeartbeatTimeout(cdcConfig.airbyteHeartbeatTimeout)
-    // TODO: SSL support
-        }
+        // TODO: SSL support
+    }
 
     override fun startup(offset: DebeziumOffset) {
         // Need to validate replication slot even on cold start.
