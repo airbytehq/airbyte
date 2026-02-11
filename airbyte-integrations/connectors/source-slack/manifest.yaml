@@ -176,6 +176,26 @@ definitions:
       - channel_id
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 10
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
+          response_filters:
+            - error_message_contains: "invalid_auth"
+              action: FAIL
+              error_message: Authentication has failed, please update your credentials.
+            - http_codes: [429]
+              action: RETRY
+              error_message: Failed to perform a request due to rate limits.
+            - http_codes: [500, 503]
+              action: RETRY
+              error_message: Failed to perform a request due to internal server error.
       partition_router:
         $ref: "#/definitions/channels_partition_router"
       record_selector:
