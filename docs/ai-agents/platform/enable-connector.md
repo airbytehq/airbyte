@@ -13,7 +13,13 @@ Before your AI agents can interact with external data sources, you need to enabl
 
 When you enable a connector in Agent Engine, you're configuring which data sources your app supports. This is separate from authentication, which happens when individual users connect their accounts.
 
-Enabling a connector does the following.
+Enabling a connector creates a **source template** in the API, which is the organization-level configuration for a connector type. The Agent Engine uses three layers:
+
+- **Definition**: A connector type available in the Airbyte catalog (for example, GitHub or Salesforce), identified by a `sourceDefinitionId`. List definitions with `GET /api/v1/integrations/definitions/sources`.
+- **Source template**: Your organization's configuration of a definition, including default settings and enabled modes. Managed through `GET/POST/PATCH/DELETE /api/v1/integrations/templates/sources`.
+- **Connector**: A per-user instance with actual credentials, created when an end user authenticates. Managed through `/api/v1/integrations/connectors`.
+
+Enabling a connector (creating a source template) does the following.
 
 - Makes the connector available in your organization's connector catalog
 - Allows your end users to authenticate with their own credentials for that data source
@@ -39,7 +45,7 @@ Enable a connector through the Agent Engine dashboard.
 
 2. Click **Manage Connectors** (or **Enable Connector** if you haven't enabled any connectors yet).
 
-3. In the slide-out panel, browse or search for the connector you want to enable.
+3. In the slide-out panel, browse or search for the connector you want to enable, and click it.
 
 4. Click the **Existing Connectors** tab and select the modes you want to enable for the connector:
 
@@ -88,20 +94,20 @@ curl --location 'https://cloud.airbyte.com/api/v1/applications/token' \
 
 Save the returned access token for subsequent API calls.
 
-### List enabled connectors
+### List source templates
 
-To see which connectors are enabled for your organization:
+To see which connectors are enabled (as source templates) for your organization:
 
 ```bash title="Request"
 curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>'
 ```
 
-This returns both connectors you've created and standard connectors available to all Agent Engine users.
+This returns both source templates you've created and standard source templates available to all Agent Engine users.
 
-### Enable the connector
+### Create a source template
 
-If you don't see the connector you need, enable that connector.
+If you don't see the connector you need, create a source template for it.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
@@ -114,13 +120,13 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
   }'
 ```
 
-The `actor_definition_id` identifies the specific connector type. You can find connector definition IDs in the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
+The `actor_definition_id` is the identifier for the connector type. This corresponds to the `sourceDefinitionId` returned by the [definitions endpoint](/ai-agents/api/#make-your-first-request). You can also find these IDs in the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
 
-The `partial_default_config` object lets you pre-configure default values for the connector, so your users don't need to provide them during authentication.
+The `partial_default_config` object lets you pre-configure default values for the source template, so your users don't need to provide them during authentication.
 
-### Update a connector
+### Update a source template
 
-To modify an existing connector.
+To modify an existing source template.
 
 ```bash title="Request"
 curl -X PATCH 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<template_id>' \
@@ -133,11 +139,11 @@ curl -X PATCH 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<tem
   }'
 ```
 
-When you update a connector, all instances of that connector are also updated.
+When you update a source template, the changes apply to all connectors created from it.
 
-### Delete a connector
+### Delete a source template
 
-To delete a connector, follow these steps. Once you do this, this connector is no longer available for people to authenticate with.
+To delete a source template, follow these steps. Once you do this, the connector type is no longer available for end users to authenticate with.
 
 ```bash title="Request"
 curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<template_id>' \
