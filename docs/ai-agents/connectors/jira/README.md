@@ -1,4 +1,6 @@
-# Jira agent connector
+# Jira
+
+The Jira agent connector is a Python package that equips AI agents to interact with Jira through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Connector for Jira API
 
@@ -107,9 +109,9 @@ This connector supports the following entities and actions. For more details, se
 | Issues Assignee | [Update](./REFERENCE.md#issues-assignee-update) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Jira API docs
 
@@ -117,7 +119,7 @@ See the official [Jira API reference](https://developer.atlassian.com/cloud/jira
 
 ## Version information
 
-- **Package version:** 0.1.91
+- **Package version:** 0.1.92
 - **Connector version:** 1.1.6
-- **Generated with Connector SDK commit SHA:** 7ead04484bebf22f12d0de02a2ede8c09c89e639
+- **Generated with Connector SDK commit SHA:** 64ac3a66e77864c942825e7f9491a0a46e704d21
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/jira/CHANGELOG.md)

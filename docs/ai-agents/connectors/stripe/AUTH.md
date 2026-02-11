@@ -1,4 +1,4 @@
-# Stripe authentication and configuration
+# Stripe authentication
 
 This page documents the authentication and configuration options for the Stripe agent connector.
 

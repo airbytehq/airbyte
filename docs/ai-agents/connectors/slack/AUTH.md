@@ -1,4 +1,4 @@
-# Slack authentication and configuration
+# Slack authentication
 
 This page documents the authentication and configuration options for the Slack agent connector.
 

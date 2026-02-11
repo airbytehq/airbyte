@@ -1,4 +1,4 @@
-# Mailchimp authentication and configuration
+# Mailchimp authentication
 
 This page documents the authentication and configuration options for the Mailchimp agent connector.
 

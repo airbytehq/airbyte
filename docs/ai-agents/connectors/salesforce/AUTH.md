@@ -1,4 +1,4 @@
-# Salesforce authentication and configuration
+# Salesforce authentication
 
 This page documents the authentication and configuration options for the Salesforce agent connector.
 

@@ -1,4 +1,4 @@
-# Hubspot authentication and configuration
+# Hubspot authentication
 
 This page documents the authentication and configuration options for the Hubspot agent connector.
 
