@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Sonar",
-    "summary": "Airbyte's API retrieves data on behalf of your customers and feeds it to your agentic workflows.",
-    "description": "\nThe API contains 3 types of endpoints:\n- `/api/v1/embedded`: end-user-facing API to collect credentials.\n- `/api/v1/sonar`: operator endpoints to fetch data from end-user data sources (apis & drives) with their configured credentials.\n- `/api/v1/integrations`: all the operator endpoints to manage configurations.\n\nIt is recommended to specify the following header in all your http requests:\n```yaml\nX-Organization-Id: organization's uuid\n```\nIt will ensure that the right organization is used for all the requests in case your user is a member of multiple organizations.\nIf you only have one organization, it will default to that one, otherwise the call will fail.\n",
+    "title": "Agent Engine API",
+    "summary": "Airbyte's Agent Engine API retrieves data on behalf of your customers and feeds it to your agentic workflows.",
+    "description": "\nThis is the public API documentation for Airbyte's Agent Engine. Use the API to manage authentication, connectors, and customers, and power their agentic workflows.\n\nIf you are a member of multiple Agent Engine organizations, add the `X-Organization-Id: organization's UUID` header to your requests. It specifies which organization you are making requests to. If you only belong to one organization, you don't need to set this header.\n\nThe API contains several types of endpoints.\n\n- Authentication: Generate tokens to make other API requests.\n- Connectors: Create and manage end-user connectors, and execute operations with connectors.\n- Customers: manage customer workspaces and retrieve workspace statistics.\n- Data replication: configure connection templates and destination definitions for data replication use cases.\n\nSome endpoints are separated into Advanced categories. These endpoints are more specialized and should not be required for day-to-day use of the API.\n",
     "version": "0.9.0",
     "x-logo": {
       "url": "https://cdn.prod.website-files.com/605e01bc25f7e19a82e74788/6335a39da8c96ba75520b156_Logo.svg"
@@ -12,7 +12,7 @@
   "servers": [
     {
       "url": "https://api.airbyte.ai",
-      "description": "Airbyte Sonar API"
+      "description": "Agent Engine API"
     }
   ],
   "paths": {
@@ -2696,11 +2696,92 @@
         }
       }
     },
+    "/api/v1/oauth/credentials/connector_type/{connector_type}": {
+      "delete": {
+        "tags": ["Authentication (Advanced)"],
+        "summary": "Delete connector OAuth",
+        "description": "Delete OAuth credentials for the user's organization.\n\nDeletes from Airbyte first, then soft-deletes the local record.\nIdempotent: returns 204 even if no record exists.",
+        "operationId": "delete_oauth_credentials_connector_type_connector_type",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connector_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connector Type"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/workspaces": {
       "get": {
         "tags": ["Customers"],
         "summary": "List Workspaces",
-        "description": "List workspaces for the authenticated organization with cursor-based pagination.\n\n- **name_contains**: Optional filter by workspace name (case-insensitive partial match)\n- **status**: Optional filter by workspace status (active or inactive). If not specified, returns all workspaces.\n- **limit**: Maximum number of workspaces to return (default: 20, max: 100)\n- **cursor**: Pagination cursor from previous response's `next` URL\n- **next**: URL for next page (null if no more results)",
+        "description": "List external users for the authenticated organization with cursor-based pagination.\n\n- **name_contains**: Optional filter by external user name (case-insensitive partial match)\n- **status**: Optional filter by external user status (active or inactive). If not specified, returns all external users.\n- **limit**: Maximum number of external users to return (default: 20, max: 100)\n- **cursor**: Pagination cursor from previous response's `next` URL\n- **next**: URL for next page (null if no more results)",
         "operationId": "list_workspaces",
         "security": [
           {
@@ -2721,10 +2802,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter workspaces by name (case-insensitive partial match)",
+              "description": "Filter external users by name (case-insensitive partial match)",
               "title": "Name Contains"
             },
-            "description": "Filter workspaces by name (case-insensitive partial match)"
+            "description": "Filter external users by name (case-insensitive partial match)"
           },
           {
             "name": "status",
@@ -2739,10 +2820,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter workspaces by status (active or inactive). Returns all if not specified.",
+              "description": "Filter external users by status (active or inactive). Returns all if not specified.",
               "title": "Status"
             },
-            "description": "Filter workspaces by status (active or inactive). Returns all if not specified."
+            "description": "Filter external users by status (active or inactive). Returns all if not specified."
           },
           {
             "name": "limit",
@@ -2752,11 +2833,11 @@
               "type": "integer",
               "maximum": 100,
               "minimum": 1,
-              "description": "Maximum number of workspaces to return",
+              "description": "Maximum number of external users to return",
               "default": 20,
               "title": "Limit"
             },
-            "description": "Maximum number of workspaces to return"
+            "description": "Maximum number of external users to return"
           },
           {
             "name": "cursor",
@@ -2847,7 +2928,7 @@
       "get": {
         "tags": ["Customers"],
         "summary": "Get Workspace Stats",
-        "description": "Get workspace statistics for the authenticated organization.\n\nReturns the count of active and inactive workspaces.",
+        "description": "Get external user statistics for the authenticated organization.\n\nReturns the count of active and inactive external users.",
         "operationId": "get_workspaces_stats",
         "security": [
           {
@@ -2926,7 +3007,7 @@
       "get": {
         "tags": ["Customers"],
         "summary": "Get Workspace",
-        "description": "Get a single workspace by ID.",
+        "description": "Get a single external user by ID.",
         "operationId": "get_workspaces_workspace_id",
         "security": [
           {
@@ -3013,7 +3094,7 @@
       "put": {
         "tags": ["Customers"],
         "summary": "Update Workspace",
-        "description": "Update a workspace's name and/or status.\n- Set `name` to update the workspace name\n- Set `status` to 'active' or 'inactive' to change the workspace status\n- When setting status to 'inactive', all active connections in the workspace will be automatically disabled",
+        "description": "Update an external user's name and/or status.\n- Set `name` to update the external user name\n- Set `status` to 'active' or 'inactive' to change the external user status\n- When setting status to 'inactive', all active connections for the external user will be automatically disabled",
         "operationId": "update_workspaces_workspace_id",
         "security": [
           {
@@ -3110,7 +3191,7 @@
       "delete": {
         "tags": ["Customers"],
         "summary": "Delete Workspace",
-        "description": "Delete a workspace in both Coral and Sonar (soft delete in Sonar).\nThis will delete the workspace from Coral and mark it as deleted in Sonar.",
+        "description": "Delete an external user. Removes the external user from the Data Replication Platform and soft-deletes locally.",
         "operationId": "delete_workspaces_workspace_id",
         "security": [
           {
@@ -6447,13 +6528,13 @@
             "type": "string",
             "format": "uuid",
             "title": "Id",
-            "description": "Unique identifier of the deleted workspace"
+            "description": "Unique identifier of the deleted external user"
           },
           "deleted_at": {
             "type": "string",
             "format": "date-time",
             "title": "Deleted At",
-            "description": "Timestamp when the workspace was deleted"
+            "description": "Timestamp when the external user was deleted"
           }
         },
         "type": "object",
@@ -6466,34 +6547,34 @@
             "type": "string",
             "format": "uuid",
             "title": "Id",
-            "description": "Unique identifier for the workspace"
+            "description": "Unique identifier for the external user"
           },
           "name": {
             "type": "string",
             "title": "Name",
-            "description": "Name of the workspace"
+            "description": "Name of the external user"
           },
           "organization_id": {
             "type": "string",
             "format": "uuid",
             "title": "Organization Id",
-            "description": "Organization that owns this workspace"
+            "description": "Organization that owns this external user"
           },
           "status": {
             "$ref": "#/components/schemas/WorkspaceStatus",
-            "description": "The status of the workspace (active or inactive)"
+            "description": "The status of the external user (active or inactive)"
           },
           "created_at": {
             "type": "string",
             "format": "date-time",
             "title": "Created At",
-            "description": "Timestamp when the workspace was created"
+            "description": "Timestamp when the external user was created"
           },
           "updated_at": {
             "type": "string",
             "format": "date-time",
             "title": "Updated At",
-            "description": "Timestamp when the workspace was last updated"
+            "description": "Timestamp when the external user was last updated"
           }
         },
         "type": "object",
@@ -6513,34 +6594,34 @@
             "type": "string",
             "format": "uuid",
             "title": "Id",
-            "description": "Unique identifier for the workspace"
+            "description": "Unique identifier for the external user"
           },
           "name": {
             "type": "string",
             "title": "Name",
-            "description": "Name of the workspace"
+            "description": "Name of the external user"
           },
           "organization_id": {
             "type": "string",
             "format": "uuid",
             "title": "Organization Id",
-            "description": "Organization that owns this workspace"
+            "description": "Organization that owns this external user"
           },
           "status": {
             "$ref": "#/components/schemas/WorkspaceStatus",
-            "description": "The status of the workspace (active or inactive)"
+            "description": "The status of the external user (active or inactive)"
           },
           "created_at": {
             "type": "string",
             "format": "date-time",
             "title": "Created At",
-            "description": "Timestamp when the workspace was created"
+            "description": "Timestamp when the external user was created"
           },
           "updated_at": {
             "type": "string",
             "format": "date-time",
             "title": "Updated At",
-            "description": "Timestamp when the workspace was last updated"
+            "description": "Timestamp when the external user was last updated"
           }
         },
         "type": "object",
@@ -6586,17 +6667,17 @@
           "active_count": {
             "type": "integer",
             "title": "Active Count",
-            "description": "Number of active workspaces"
+            "description": "Number of active external users"
           },
           "inactive_count": {
             "type": "integer",
             "title": "Inactive Count",
-            "description": "Number of inactive workspaces"
+            "description": "Number of inactive external users"
           },
           "total_count": {
             "type": "integer",
             "title": "Total Count",
-            "description": "Total number of workspaces"
+            "description": "Total number of external users"
           }
         },
         "type": "object",
@@ -6620,7 +6701,7 @@
               }
             ],
             "title": "Name",
-            "description": "New name for the workspace"
+            "description": "New name for the external user"
           },
           "status": {
             "anyOf": [
@@ -6643,34 +6724,34 @@
             "type": "string",
             "format": "uuid",
             "title": "Id",
-            "description": "Unique identifier for the workspace"
+            "description": "Unique identifier for the external user"
           },
           "name": {
             "type": "string",
             "title": "Name",
-            "description": "Name of the workspace"
+            "description": "Name of the external user"
           },
           "organization_id": {
             "type": "string",
             "format": "uuid",
             "title": "Organization Id",
-            "description": "Organization that owns this workspace"
+            "description": "Organization that owns this external user"
           },
           "status": {
             "$ref": "#/components/schemas/WorkspaceStatus",
-            "description": "The status of the workspace (active or inactive)"
+            "description": "The status of the external user (active or inactive)"
           },
           "created_at": {
             "type": "string",
             "format": "date-time",
             "title": "Created At",
-            "description": "Timestamp when the workspace was created"
+            "description": "Timestamp when the external user was created"
           },
           "updated_at": {
             "type": "string",
             "format": "date-time",
             "title": "Updated At",
-            "description": "Timestamp when the workspace was last updated"
+            "description": "Timestamp when the external user was last updated"
           }
         },
         "type": "object",
@@ -6711,7 +6792,7 @@
     },
     {
       "name": "Customers",
-      "description": "List, retrieve, update, and delete customer workspaces; get workspace statistics."
+      "description": "List, retrieve, update, and delete external users; get external user statistics."
     },
     {
       "name": "Data replication",

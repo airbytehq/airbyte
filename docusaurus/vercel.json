@@ -603,7 +603,7 @@
     },
     {
       "source": "/embedded-api/sonar",
-      "destination": "/ai-agents/api/api-reference/sonar",
+      "destination": "/ai-agents/api/api-reference/agent-engine",
       "statusCode": 301
     },
     {
@@ -613,7 +613,7 @@
     },
     {
       "source": "/ai-agents/embedded/api-reference/sonar",
-      "destination": "/ai-agents/api/api-reference/sonar",
+      "destination": "/ai-agents/api/api-reference/agent-engine",
       "statusCode": 301
     },
     {
@@ -679,6 +679,16 @@
     {
       "source": "/ai-agents/tools/:path*",
       "destination": "/ai-agents/platform/execute",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/api/api-reference/sonar",
+      "destination": "/ai-agents/api/api-reference/agent-engine",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/api/api-reference/sonar/:path*",
+      "destination": "/ai-agents/api/api-reference/agent-engine/:path*",
       "statusCode": 301
     }
   ]
