@@ -1,3 +1,7 @@
+## Version 1.0.1
+
+Test: base version bump should trigger BOTH source and destination compatibility tests.
+
 ## Version 1.0.0
 
 Initial independent release of bulk-cdk-core-base.
