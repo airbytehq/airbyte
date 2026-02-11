@@ -22,8 +22,8 @@ Note that this connector uses the Google API OAuth2.0 for authentication. To get
 | labels | id | No pagination | ✅ |  ❌  |
 | labels_details | id | No pagination | ✅ |  ❌  |
 | messages | id | DefaultPaginator | ✅ |  ❌  |
-| messages_details | id | No pagination | ✅ |  ❌  |
-| threads | id | DefaultPaginator | ✅ |  ❌  |
+| messages_details | id | No pagination | ✅ |  ✅  |
+| threads | id | DefaultPaginator | ✅ |  ✅  |
 | threads_details | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
@@ -33,6 +33,7 @@ Note that this connector uses the Google API OAuth2.0 for authentication. To get
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-02-11 | | Enable incremental sync for messages_details and threads streams |
 | 0.0.46 | 2026-02-11 | [73273](https://github.com/airbytehq/airbyte/pull/73273) | Add OAuth authentication support (Authenticate with Airbyte button) |
 | 0.0.45 | 2026-02-10 | [72593](https://github.com/airbytehq/airbyte/pull/72593) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [71967](https://github.com/airbytehq/airbyte/pull/71967) | Update dependencies |
