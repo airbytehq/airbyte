@@ -266,8 +266,8 @@ const config: Config = {
             sidebarOptions: {
               groupPathsBy: "tag",
               categoryLinkSource: "tag",
-              sidebarCollapsed: false,
-              sidebarCollapsible: false,
+              sidebarCollapsed: true,
+              sidebarCollapsible: true,
             },
           },
         },
