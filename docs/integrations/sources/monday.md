@@ -30,11 +30,11 @@ To use OAuth 2.0, you need a Monday.com OAuth application. Open your profile pic
 
 #### Connect using OAuth 2.0
 
-1. Select **OAuth2.0** in **Authorization Method**.
+1. Select **OAuth 2.0** in **Authorization Method**.
 2. Click **Authenticate your Monday account**.
 3. Complete the authentication flow using your Monday.com credentials.
 
-#### Connect using API Token
+#### Connect using API token
 
 1. Select **API Token** in **Authorization Method**.
 2. Enter your personal API token. To find it, see the Monday.com [authentication guide](https://developer.monday.com/api-reference/docs/authentication).
