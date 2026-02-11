@@ -243,7 +243,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -296,52 +296,51 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.allow_attachments` | `boolean` | Boolean indicating whether attachments are allowed on the ticket |
-| `hits[].data.allow_channelback` | `boolean` | Boolean indicating whether agents can reply to the ticket through the original channel |
-| `hits[].data.assignee_id` | `integer` | Unique identifier of the agent currently assigned to the ticket |
-| `hits[].data.brand_id` | `integer` | Unique identifier of the brand associated with the ticket in multi-brand accounts |
-| `hits[].data.collaborator_ids` | `array` | Array of user identifiers who are collaborating on the ticket |
-| `hits[].data.created_at` | `string` | Timestamp indicating when the ticket was created |
-| `hits[].data.custom_fields` | `array` | Array of custom field values specific to the account's ticket configuration |
-| `hits[].data.custom_status_id` | `integer` | Unique identifier of the custom status applied to the ticket |
-| `hits[].data.deleted_ticket_form_id` | `integer` | The ID of the ticket form that was previously associated with this ticket but has since been deleted |
-| `hits[].data.description` | `string` | Initial description or content of the ticket when it was created |
-| `hits[].data.due_at` | `string` | Timestamp indicating when the ticket is due for completion or resolution |
-| `hits[].data.email_cc_ids` | `array` | Array of user identifiers who are CC'd on ticket email notifications |
-| `hits[].data.external_id` | `string` | External identifier for the ticket, used for integrations with other systems |
-| `hits[].data.fields` | `array` | Array of ticket field values including both system and custom fields |
-| `hits[].data.follower_ids` | `array` | Array of user identifiers who are following the ticket for updates |
-| `hits[].data.followup_ids` | `array` | Array of identifiers for follow-up tickets related to this ticket |
-| `hits[].data.forum_topic_id` | `integer` | Unique identifier linking the ticket to a forum topic if applicable |
-| `hits[].data.from_messaging_channel` | `boolean` | Boolean indicating whether the ticket originated from a messaging channel |
-| `hits[].data.generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export |
-| `hits[].data.group_id` | `integer` | Unique identifier of the agent group assigned to handle the ticket |
-| `hits[].data.has_incidents` | `boolean` | Boolean indicating whether this problem ticket has related incident tickets |
-| `hits[].data.id` | `integer` | Unique identifier for the ticket |
-| `hits[].data.is_public` | `boolean` | Boolean indicating whether the ticket is publicly visible |
-| `hits[].data.organization_id` | `integer` | Unique identifier of the organization associated with the ticket |
-| `hits[].data.priority` | `string` | Priority level assigned to the ticket (e.g., urgent, high, normal, low) |
-| `hits[].data.problem_id` | `integer` | Unique identifier of the problem ticket if this is an incident ticket |
-| `hits[].data.raw_subject` | `string` | Original unprocessed subject line before any system modifications |
-| `hits[].data.recipient` | `string` | Email address or identifier of the ticket recipient |
-| `hits[].data.requester_id` | `integer` | Unique identifier of the user who requested or created the ticket |
-| `hits[].data.satisfaction_rating` | `object | string` | Object containing customer satisfaction rating data for the ticket |
-| `hits[].data.sharing_agreement_ids` | `array` | Array of sharing agreement identifiers if the ticket is shared across Zendesk instances |
-| `hits[].data.status` | `string` | Current status of the ticket (e.g., new, open, pending, solved, closed) |
-| `hits[].data.subject` | `string` | Subject line of the ticket describing the issue or request |
-| `hits[].data.submitter_id` | `integer` | Unique identifier of the user who submitted the ticket on behalf of the requester |
-| `hits[].data.tags` | `array` | Array of tags applied to the ticket for categorization and filtering |
-| `hits[].data.ticket_form_id` | `integer` | Unique identifier of the ticket form used when creating the ticket |
-| `hits[].data.type` | `string` | Type of ticket (e.g., problem, incident, question, task) |
-| `hits[].data.updated_at` | `string` | Timestamp indicating when the ticket was last updated with a ticket event |
-| `hits[].data.url` | `string` | API URL to access the full ticket resource |
-| `hits[].data.via` | `object` | Object describing the channel and method through which the ticket was created |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].allow_attachments` | `boolean` | Boolean indicating whether attachments are allowed on the ticket |
+| `data[].allow_channelback` | `boolean` | Boolean indicating whether agents can reply to the ticket through the original channel |
+| `data[].assignee_id` | `integer` | Unique identifier of the agent currently assigned to the ticket |
+| `data[].brand_id` | `integer` | Unique identifier of the brand associated with the ticket in multi-brand accounts |
+| `data[].collaborator_ids` | `array` | Array of user identifiers who are collaborating on the ticket |
+| `data[].created_at` | `string` | Timestamp indicating when the ticket was created |
+| `data[].custom_fields` | `array` | Array of custom field values specific to the account's ticket configuration |
+| `data[].custom_status_id` | `integer` | Unique identifier of the custom status applied to the ticket |
+| `data[].deleted_ticket_form_id` | `integer` | The ID of the ticket form that was previously associated with this ticket but has since been deleted |
+| `data[].description` | `string` | Initial description or content of the ticket when it was created |
+| `data[].due_at` | `string` | Timestamp indicating when the ticket is due for completion or resolution |
+| `data[].email_cc_ids` | `array` | Array of user identifiers who are CC'd on ticket email notifications |
+| `data[].external_id` | `string` | External identifier for the ticket, used for integrations with other systems |
+| `data[].fields` | `array` | Array of ticket field values including both system and custom fields |
+| `data[].follower_ids` | `array` | Array of user identifiers who are following the ticket for updates |
+| `data[].followup_ids` | `array` | Array of identifiers for follow-up tickets related to this ticket |
+| `data[].forum_topic_id` | `integer` | Unique identifier linking the ticket to a forum topic if applicable |
+| `data[].from_messaging_channel` | `boolean` | Boolean indicating whether the ticket originated from a messaging channel |
+| `data[].generated_timestamp` | `integer` | Timestamp updated for all ticket updates including system changes, used for incremental export |
+| `data[].group_id` | `integer` | Unique identifier of the agent group assigned to handle the ticket |
+| `data[].has_incidents` | `boolean` | Boolean indicating whether this problem ticket has related incident tickets |
+| `data[].id` | `integer` | Unique identifier for the ticket |
+| `data[].is_public` | `boolean` | Boolean indicating whether the ticket is publicly visible |
+| `data[].organization_id` | `integer` | Unique identifier of the organization associated with the ticket |
+| `data[].priority` | `string` | Priority level assigned to the ticket (e.g., urgent, high, normal, low) |
+| `data[].problem_id` | `integer` | Unique identifier of the problem ticket if this is an incident ticket |
+| `data[].raw_subject` | `string` | Original unprocessed subject line before any system modifications |
+| `data[].recipient` | `string` | Email address or identifier of the ticket recipient |
+| `data[].requester_id` | `integer` | Unique identifier of the user who requested or created the ticket |
+| `data[].satisfaction_rating` | `object | string` | Object containing customer satisfaction rating data for the ticket |
+| `data[].sharing_agreement_ids` | `array` | Array of sharing agreement identifiers if the ticket is shared across Zendesk instances |
+| `data[].status` | `string` | Current status of the ticket (e.g., new, open, pending, solved, closed) |
+| `data[].subject` | `string` | Subject line of the ticket describing the issue or request |
+| `data[].submitter_id` | `integer` | Unique identifier of the user who submitted the ticket on behalf of the requester |
+| `data[].tags` | `array` | Array of tags applied to the ticket for categorization and filtering |
+| `data[].ticket_form_id` | `integer` | Unique identifier of the ticket form used when creating the ticket |
+| `data[].type` | `string` | Type of ticket (e.g., problem, incident, question, task) |
+| `data[].updated_at` | `string` | Timestamp indicating when the ticket was last updated with a ticket event |
+| `data[].url` | `string` | API URL to access the full ticket resource |
+| `data[].via` | `object` | Object describing the channel and method through which the ticket was created |
 
 </details>
 
@@ -555,7 +554,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -607,51 +606,50 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.active` | `boolean` | Indicates if the user account is currently active |
-| `hits[].data.alias` | `string` | Alternative name or nickname for the user |
-| `hits[].data.chat_only` | `boolean` | Indicates if the user can only interact via chat |
-| `hits[].data.created_at` | `string` | Timestamp indicating when the user was created |
-| `hits[].data.custom_role_id` | `integer` | Identifier for a custom role assigned to the user |
-| `hits[].data.default_group_id` | `integer` | Identifier of the default group assigned to the user |
-| `hits[].data.details` | `string` | Additional descriptive information about the user |
-| `hits[].data.email` | `string` | Email address of the user |
-| `hits[].data.external_id` | `string` | External system identifier for the user, used for integrations |
-| `hits[].data.iana_time_zone` | `string` | IANA standard time zone identifier for the user |
-| `hits[].data.id` | `integer` | Unique identifier for the user |
-| `hits[].data.last_login_at` | `string` | Timestamp of the user's most recent login |
-| `hits[].data.locale` | `string` | Locale setting determining language and regional format preferences |
-| `hits[].data.locale_id` | `integer` | Identifier for the user's locale preference |
-| `hits[].data.moderator` | `boolean` | Indicates if the user has moderator privileges |
-| `hits[].data.name` | `string` | Display name of the user |
-| `hits[].data.notes` | `string` | Internal notes about the user, visible only to agents |
-| `hits[].data.only_private_comments` | `boolean` | Indicates if the user can only make private comments on tickets |
-| `hits[].data.organization_id` | `integer` | Identifier of the organization the user belongs to |
-| `hits[].data.permanently_deleted` | `boolean` | Indicates if the user has been permanently deleted from the system |
-| `hits[].data.phone` | `string` | Phone number of the user |
-| `hits[].data.photo` | `object` | Profile photo or avatar of the user |
-| `hits[].data.report_csv` | `boolean` | Indicates if the user receives reports in CSV format |
-| `hits[].data.restricted_agent` | `boolean` | Indicates if the agent has restricted access permissions |
-| `hits[].data.role` | `string` | Role assigned to the user defining their permissions level |
-| `hits[].data.role_type` | `integer` | Type classification of the user's role |
-| `hits[].data.shared` | `boolean` | Indicates if the user is shared across multiple accounts |
-| `hits[].data.shared_agent` | `boolean` | Indicates if the user is a shared agent across multiple brands or accounts |
-| `hits[].data.shared_phone_number` | `boolean` | Indicates if the phone number is shared with other users |
-| `hits[].data.signature` | `string` | Email signature text for the user |
-| `hits[].data.suspended` | `boolean` | Indicates if the user account is suspended |
-| `hits[].data.tags` | `array` | Labels or tags associated with the user for categorization |
-| `hits[].data.ticket_restriction` | `string` | Defines which tickets the user can access based on restrictions |
-| `hits[].data.time_zone` | `string` | Time zone setting for the user |
-| `hits[].data.two_factor_auth_enabled` | `boolean` | Indicates if two-factor authentication is enabled for the user |
-| `hits[].data.updated_at` | `string` | Timestamp indicating when the user was last updated |
-| `hits[].data.url` | `string` | API endpoint URL for accessing the user's detailed information |
-| `hits[].data.user_fields` | `object` | Custom field values specific to the user, stored as key-value pairs |
-| `hits[].data.verified` | `boolean` | Indicates if the user's identity has been verified |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].active` | `boolean` | Indicates if the user account is currently active |
+| `data[].alias` | `string` | Alternative name or nickname for the user |
+| `data[].chat_only` | `boolean` | Indicates if the user can only interact via chat |
+| `data[].created_at` | `string` | Timestamp indicating when the user was created |
+| `data[].custom_role_id` | `integer` | Identifier for a custom role assigned to the user |
+| `data[].default_group_id` | `integer` | Identifier of the default group assigned to the user |
+| `data[].details` | `string` | Additional descriptive information about the user |
+| `data[].email` | `string` | Email address of the user |
+| `data[].external_id` | `string` | External system identifier for the user, used for integrations |
+| `data[].iana_time_zone` | `string` | IANA standard time zone identifier for the user |
+| `data[].id` | `integer` | Unique identifier for the user |
+| `data[].last_login_at` | `string` | Timestamp of the user's most recent login |
+| `data[].locale` | `string` | Locale setting determining language and regional format preferences |
+| `data[].locale_id` | `integer` | Identifier for the user's locale preference |
+| `data[].moderator` | `boolean` | Indicates if the user has moderator privileges |
+| `data[].name` | `string` | Display name of the user |
+| `data[].notes` | `string` | Internal notes about the user, visible only to agents |
+| `data[].only_private_comments` | `boolean` | Indicates if the user can only make private comments on tickets |
+| `data[].organization_id` | `integer` | Identifier of the organization the user belongs to |
+| `data[].permanently_deleted` | `boolean` | Indicates if the user has been permanently deleted from the system |
+| `data[].phone` | `string` | Phone number of the user |
+| `data[].photo` | `object` | Profile photo or avatar of the user |
+| `data[].report_csv` | `boolean` | Indicates if the user receives reports in CSV format |
+| `data[].restricted_agent` | `boolean` | Indicates if the agent has restricted access permissions |
+| `data[].role` | `string` | Role assigned to the user defining their permissions level |
+| `data[].role_type` | `integer` | Type classification of the user's role |
+| `data[].shared` | `boolean` | Indicates if the user is shared across multiple accounts |
+| `data[].shared_agent` | `boolean` | Indicates if the user is a shared agent across multiple brands or accounts |
+| `data[].shared_phone_number` | `boolean` | Indicates if the phone number is shared with other users |
+| `data[].signature` | `string` | Email signature text for the user |
+| `data[].suspended` | `boolean` | Indicates if the user account is suspended |
+| `data[].tags` | `array` | Labels or tags associated with the user for categorization |
+| `data[].ticket_restriction` | `string` | Defines which tickets the user can access based on restrictions |
+| `data[].time_zone` | `string` | Time zone setting for the user |
+| `data[].two_factor_auth_enabled` | `boolean` | Indicates if two-factor authentication is enabled for the user |
+| `data[].updated_at` | `string` | Timestamp indicating when the user was last updated |
+| `data[].url` | `string` | API endpoint URL for accessing the user's detailed information |
+| `data[].user_fields` | `object` | Custom field values specific to the user, stored as key-value pairs |
+| `data[].verified` | `boolean` | Indicates if the user's identity has been verified |
 
 </details>
 
@@ -815,7 +813,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -843,27 +841,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.created_at` | `string` | Timestamp when the organization was created |
-| `hits[].data.deleted_at` | `string` | Timestamp when the organization was deleted |
-| `hits[].data.details` | `string` | Details about the organization, such as the address |
-| `hits[].data.domain_names` | `array` | Array of domain names associated with this organization for automatic user assignment |
-| `hits[].data.external_id` | `string` | Unique external identifier to associate the organization to an external record (case-insensitive) |
-| `hits[].data.group_id` | `integer` | ID of the group where new tickets from users in this organization are automatically assigned |
-| `hits[].data.id` | `integer` | Unique identifier automatically assigned when the organization is created |
-| `hits[].data.name` | `string` | Unique name for the organization (mandatory field) |
-| `hits[].data.notes` | `string` | Notes about the organization |
-| `hits[].data.organization_fields` | `object` | Key-value object for custom organization fields |
-| `hits[].data.shared_comments` | `boolean` | Boolean indicating whether end users in this organization can comment on each other's tickets |
-| `hits[].data.shared_tickets` | `boolean` | Boolean indicating whether end users in this organization can see each other's tickets |
-| `hits[].data.tags` | `array` | Array of tags associated with the organization |
-| `hits[].data.updated_at` | `string` | Timestamp of the last update to the organization |
-| `hits[].data.url` | `string` | The API URL of this organization |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].created_at` | `string` | Timestamp when the organization was created |
+| `data[].deleted_at` | `string` | Timestamp when the organization was deleted |
+| `data[].details` | `string` | Details about the organization, such as the address |
+| `data[].domain_names` | `array` | Array of domain names associated with this organization for automatic user assignment |
+| `data[].external_id` | `string` | Unique external identifier to associate the organization to an external record (case-insensitive) |
+| `data[].group_id` | `integer` | ID of the group where new tickets from users in this organization are automatically assigned |
+| `data[].id` | `integer` | Unique identifier automatically assigned when the organization is created |
+| `data[].name` | `string` | Unique name for the organization (mandatory field) |
+| `data[].notes` | `string` | Notes about the organization |
+| `data[].organization_fields` | `object` | Key-value object for custom organization fields |
+| `data[].shared_comments` | `boolean` | Boolean indicating whether end users in this organization can comment on each other's tickets |
+| `data[].shared_tickets` | `boolean` | Boolean indicating whether end users in this organization can see each other's tickets |
+| `data[].tags` | `array` | Array of tags associated with the organization |
+| `data[].updated_at` | `string` | Timestamp of the last update to the organization |
+| `data[].url` | `string` | The API URL of this organization |
 
 </details>
 
@@ -1018,7 +1015,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1040,21 +1037,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.created_at` | `string` | Timestamp indicating when the group was created |
-| `hits[].data.default` | `boolean` | Indicates if the group is the default one for the account |
-| `hits[].data.deleted` | `boolean` | Indicates whether the group has been deleted |
-| `hits[].data.description` | `string` | The description of the group |
-| `hits[].data.id` | `integer` | Unique identifier automatically assigned when creating groups |
-| `hits[].data.is_public` | `boolean` | Indicates if the group is public (true) or private (false) |
-| `hits[].data.name` | `string` | The name of the group |
-| `hits[].data.updated_at` | `string` | Timestamp indicating when the group was last updated |
-| `hits[].data.url` | `string` | The API URL of the group |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].created_at` | `string` | Timestamp indicating when the group was created |
+| `data[].default` | `boolean` | Indicates if the group is the default one for the account |
+| `data[].deleted` | `boolean` | Indicates whether the group has been deleted |
+| `data[].description` | `string` | The description of the group |
+| `data[].id` | `integer` | Unique identifier automatically assigned when creating groups |
+| `data[].is_public` | `boolean` | Indicates if the group is public (true) or private (false) |
+| `data[].name` | `string` | The name of the group |
+| `data[].updated_at` | `string` | Timestamp indicating when the group was last updated |
+| `data[].url` | `string` | The API URL of the group |
 
 </details>
 
@@ -1164,7 +1160,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1194,29 +1190,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attachments` | `array` | List of files or media attached to the comment |
-| `hits[].data.audit_id` | `integer` | Identifier of the audit record associated with this comment event |
-| `hits[].data.author_id` | `integer` | Identifier of the user who created the comment |
-| `hits[].data.body` | `string` | Content of the comment in its original format |
-| `hits[].data.created_at` | `string` | Timestamp when the comment was created |
-| `hits[].data.event_type` | `string` | Specific classification of the event within the ticket event stream |
-| `hits[].data.html_body` | `string` | HTML-formatted content of the comment |
-| `hits[].data.id` | `integer` | Unique identifier for the comment event |
-| `hits[].data.metadata` | `object` | Additional structured information about the comment not covered by standard fields |
-| `hits[].data.plain_body` | `string` | Plain text content of the comment without formatting |
-| `hits[].data.public` | `boolean` | Boolean indicating whether the comment is visible to end users or is an internal note |
-| `hits[].data.ticket_id` | `integer` | Identifier of the ticket to which this comment belongs |
-| `hits[].data.timestamp` | `integer` | Timestamp of when the event occurred in the incremental export stream |
-| `hits[].data.type` | `string` | Type of event, typically indicating this is a comment event |
-| `hits[].data.uploads` | `array` | Array of upload tokens or identifiers for files being attached to the comment |
-| `hits[].data.via` | `object` | Channel or method through which the comment was submitted |
-| `hits[].data.via_reference_id` | `integer` | Reference identifier for the channel through which the comment was created |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attachments` | `array` | List of files or media attached to the comment |
+| `data[].audit_id` | `integer` | Identifier of the audit record associated with this comment event |
+| `data[].author_id` | `integer` | Identifier of the user who created the comment |
+| `data[].body` | `string` | Content of the comment in its original format |
+| `data[].created_at` | `string` | Timestamp when the comment was created |
+| `data[].event_type` | `string` | Specific classification of the event within the ticket event stream |
+| `data[].html_body` | `string` | HTML-formatted content of the comment |
+| `data[].id` | `integer` | Unique identifier for the comment event |
+| `data[].metadata` | `object` | Additional structured information about the comment not covered by standard fields |
+| `data[].plain_body` | `string` | Plain text content of the comment without formatting |
+| `data[].public` | `boolean` | Boolean indicating whether the comment is visible to end users or is an internal note |
+| `data[].ticket_id` | `integer` | Identifier of the ticket to which this comment belongs |
+| `data[].timestamp` | `integer` | Timestamp of when the event occurred in the incremental export stream |
+| `data[].type` | `string` | Type of event, typically indicating this is a comment event |
+| `data[].uploads` | `array` | Array of upload tokens or identifiers for files being attached to the comment |
+| `data[].via` | `object` | Channel or method through which the comment was submitted |
+| `data[].via_reference_id` | `integer` | Reference identifier for the channel through which the comment was created |
 
 </details>
 
@@ -1474,7 +1469,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1495,20 +1490,19 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attachments` | `array` | Files or documents attached to the audit |
-| `hits[].data.author_id` | `integer` | The unique identifier of the user who created the audit |
-| `hits[].data.created_at` | `string` | Timestamp indicating when the audit was created |
-| `hits[].data.events` | `array` | Array of events that occurred in this audit, such as field changes, comments, or tag updates |
-| `hits[].data.id` | `integer` | Unique identifier for the audit record, automatically assigned when the audit is created |
-| `hits[].data.metadata` | `object` | Custom and system data associated with the audit |
-| `hits[].data.ticket_id` | `integer` | The unique identifier of the ticket associated with this audit |
-| `hits[].data.via` | `object` | Describes how the audit was created, providing context about the creation source |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attachments` | `array` | Files or documents attached to the audit |
+| `data[].author_id` | `integer` | The unique identifier of the user who created the audit |
+| `data[].created_at` | `string` | Timestamp indicating when the audit was created |
+| `data[].events` | `array` | Array of events that occurred in this audit, such as field changes, comments, or tag updates |
+| `data[].id` | `integer` | Unique identifier for the audit record, automatically assigned when the audit is created |
+| `data[].metadata` | `object` | Custom and system data associated with the audit |
+| `data[].ticket_id` | `integer` | The unique identifier of the ticket associated with this audit |
+| `data[].via` | `object` | Describes how the audit was created, providing context about the creation source |
 
 </details>
 
@@ -1620,7 +1614,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1663,42 +1657,41 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.agent_wait_time_in_minutes` | `object` | Number of minutes the agent spent waiting during calendar and business hours |
-| `hits[].data.assigned_at` | `string` | Timestamp when the ticket was assigned |
-| `hits[].data.assignee_stations` | `integer` | Number of assignees the ticket had |
-| `hits[].data.assignee_updated_at` | `string` | Timestamp when the assignee last updated the ticket |
-| `hits[].data.created_at` | `string` | Timestamp when the metric record was created |
-| `hits[].data.custom_status_updated_at` | `string` | Timestamp when the ticket's custom status was last updated |
-| `hits[].data.first_resolution_time_in_minutes` | `object` | Number of minutes to the first resolution time during calendar and business hours |
-| `hits[].data.full_resolution_time_in_minutes` | `object` | Number of minutes to the full resolution during calendar and business hours |
-| `hits[].data.generated_timestamp` | `integer` | Timestamp of when record was last updated |
-| `hits[].data.group_stations` | `integer` | Number of groups the ticket passed through |
-| `hits[].data.id` | `integer` | Unique identifier for the ticket metric record |
-| `hits[].data.initially_assigned_at` | `string` | Timestamp when the ticket was initially assigned |
-| `hits[].data.instance_id` | `integer` | ID of the Zendesk instance associated with the ticket |
-| `hits[].data.latest_comment_added_at` | `string` | Timestamp when the latest comment was added |
-| `hits[].data.metric` | `string` | Ticket metrics data |
-| `hits[].data.on_hold_time_in_minutes` | `object` | Number of minutes on hold |
-| `hits[].data.reopens` | `integer` | Total number of times the ticket was reopened |
-| `hits[].data.replies` | `integer` | The number of public replies added to a ticket by an agent |
-| `hits[].data.reply_time_in_minutes` | `object` | Number of minutes to the first reply during calendar and business hours |
-| `hits[].data.reply_time_in_seconds` | `object` | Number of seconds to the first reply during calendar hours, only available for Messaging tickets |
-| `hits[].data.requester_updated_at` | `string` | Timestamp when the requester last updated the ticket |
-| `hits[].data.requester_wait_time_in_minutes` | `object` | Number of minutes the requester spent waiting during calendar and business hours |
-| `hits[].data.solved_at` | `string` | Timestamp when the ticket was solved |
-| `hits[].data.status` | `object` | The current status of the ticket (open, pending, solved, etc.). |
-| `hits[].data.status_updated_at` | `string` | Timestamp when the status of the ticket was last updated |
-| `hits[].data.ticket_id` | `integer` | Identifier of the associated ticket |
-| `hits[].data.time` | `string` | Time related to the ticket |
-| `hits[].data.type` | `string` | Type of ticket |
-| `hits[].data.updated_at` | `string` | Timestamp when the metric record was last updated |
-| `hits[].data.url` | `string` | The API url of the ticket metric |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].agent_wait_time_in_minutes` | `object` | Number of minutes the agent spent waiting during calendar and business hours |
+| `data[].assigned_at` | `string` | Timestamp when the ticket was assigned |
+| `data[].assignee_stations` | `integer` | Number of assignees the ticket had |
+| `data[].assignee_updated_at` | `string` | Timestamp when the assignee last updated the ticket |
+| `data[].created_at` | `string` | Timestamp when the metric record was created |
+| `data[].custom_status_updated_at` | `string` | Timestamp when the ticket's custom status was last updated |
+| `data[].first_resolution_time_in_minutes` | `object` | Number of minutes to the first resolution time during calendar and business hours |
+| `data[].full_resolution_time_in_minutes` | `object` | Number of minutes to the full resolution during calendar and business hours |
+| `data[].generated_timestamp` | `integer` | Timestamp of when record was last updated |
+| `data[].group_stations` | `integer` | Number of groups the ticket passed through |
+| `data[].id` | `integer` | Unique identifier for the ticket metric record |
+| `data[].initially_assigned_at` | `string` | Timestamp when the ticket was initially assigned |
+| `data[].instance_id` | `integer` | ID of the Zendesk instance associated with the ticket |
+| `data[].latest_comment_added_at` | `string` | Timestamp when the latest comment was added |
+| `data[].metric` | `string` | Ticket metrics data |
+| `data[].on_hold_time_in_minutes` | `object` | Number of minutes on hold |
+| `data[].reopens` | `integer` | Total number of times the ticket was reopened |
+| `data[].replies` | `integer` | The number of public replies added to a ticket by an agent |
+| `data[].reply_time_in_minutes` | `object` | Number of minutes to the first reply during calendar and business hours |
+| `data[].reply_time_in_seconds` | `object` | Number of seconds to the first reply during calendar hours, only available for Messaging tickets |
+| `data[].requester_updated_at` | `string` | Timestamp when the requester last updated the ticket |
+| `data[].requester_wait_time_in_minutes` | `object` | Number of minutes the requester spent waiting during calendar and business hours |
+| `data[].solved_at` | `string` | Timestamp when the ticket was solved |
+| `data[].status` | `object` | The current status of the ticket (open, pending, solved, etc.). |
+| `data[].status_updated_at` | `string` | Timestamp when the status of the ticket was last updated |
+| `data[].ticket_id` | `integer` | Identifier of the associated ticket |
+| `data[].time` | `string` | Time related to the ticket |
+| `data[].type` | `string` | Type of ticket |
+| `data[].updated_at` | `string` | Timestamp when the metric record was last updated |
+| `data[].url` | `string` | The API url of the ticket metric |
 
 </details>
 
@@ -1885,7 +1878,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1925,39 +1918,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.active` | `boolean` | Whether this field is currently available for use |
-| `hits[].data.agent_description` | `string` | A description of the ticket field that only agents can see |
-| `hits[].data.collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently used fields |
-| `hits[].data.created_at` | `string` | Timestamp when the custom ticket field was created |
-| `hits[].data.custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger |
-| `hits[].data.custom_statuses` | `array` | List of customized ticket statuses, only present for system ticket fields of type custom_status |
-| `hits[].data.description` | `string` | Text describing the purpose of the ticket field to users |
-| `hits[].data.editable_in_portal` | `boolean` | Whether this field is editable by end users in Help Center |
-| `hits[].data.id` | `integer` | Unique identifier for the ticket field, automatically assigned when created |
-| `hits[].data.key` | `string` | Internal identifier or reference key for the field |
-| `hits[].data.position` | `integer` | The relative position of the ticket field on a ticket, controlling display order |
-| `hits[].data.raw_description` | `string` | The dynamic content placeholder if present, or the description value if not |
-| `hits[].data.raw_title` | `string` | The dynamic content placeholder if present, or the title value if not |
-| `hits[].data.raw_title_in_portal` | `string` | The dynamic content placeholder if present, or the title_in_portal value if not |
-| `hits[].data.regexp_for_validation` | `string` | For regexp fields only, the validation pattern for a field value to be deemed valid |
-| `hits[].data.removable` | `boolean` | If false, this field is a system field that must be present on all tickets |
-| `hits[].data.required` | `boolean` | If true, agents must enter a value in the field to change the ticket status to solved |
-| `hits[].data.required_in_portal` | `boolean` | If true, end users must enter a value in the field to create a request |
-| `hits[].data.sub_type_id` | `integer` | For system ticket fields of type priority and status, controlling available options |
-| `hits[].data.system_field_options` | `array` | Array of options for system ticket fields of type tickettype, priority, or status |
-| `hits[].data.tag` | `string` | For checkbox fields only, a tag added to tickets when the checkbox field is selected |
-| `hits[].data.title` | `string` | The title of the ticket field displayed to agents |
-| `hits[].data.title_in_portal` | `string` | The title of the ticket field displayed to end users in Help Center |
-| `hits[].data.type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, or tagger |
-| `hits[].data.updated_at` | `string` | Timestamp when the custom ticket field was last updated |
-| `hits[].data.url` | `string` | The API URL for this ticket field resource |
-| `hits[].data.visible_in_portal` | `boolean` | Whether this field is visible to end users in Help Center |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].active` | `boolean` | Whether this field is currently available for use |
+| `data[].agent_description` | `string` | A description of the ticket field that only agents can see |
+| `data[].collapsed_for_agents` | `boolean` | If true, the field is shown to agents by default; if false, it is hidden alongside infrequently used fields |
+| `data[].created_at` | `string` | Timestamp when the custom ticket field was created |
+| `data[].custom_field_options` | `array` | Array of option objects for custom ticket fields of type multiselect or tagger |
+| `data[].custom_statuses` | `array` | List of customized ticket statuses, only present for system ticket fields of type custom_status |
+| `data[].description` | `string` | Text describing the purpose of the ticket field to users |
+| `data[].editable_in_portal` | `boolean` | Whether this field is editable by end users in Help Center |
+| `data[].id` | `integer` | Unique identifier for the ticket field, automatically assigned when created |
+| `data[].key` | `string` | Internal identifier or reference key for the field |
+| `data[].position` | `integer` | The relative position of the ticket field on a ticket, controlling display order |
+| `data[].raw_description` | `string` | The dynamic content placeholder if present, or the description value if not |
+| `data[].raw_title` | `string` | The dynamic content placeholder if present, or the title value if not |
+| `data[].raw_title_in_portal` | `string` | The dynamic content placeholder if present, or the title_in_portal value if not |
+| `data[].regexp_for_validation` | `string` | For regexp fields only, the validation pattern for a field value to be deemed valid |
+| `data[].removable` | `boolean` | If false, this field is a system field that must be present on all tickets |
+| `data[].required` | `boolean` | If true, agents must enter a value in the field to change the ticket status to solved |
+| `data[].required_in_portal` | `boolean` | If true, end users must enter a value in the field to create a request |
+| `data[].sub_type_id` | `integer` | For system ticket fields of type priority and status, controlling available options |
+| `data[].system_field_options` | `array` | Array of options for system ticket fields of type tickettype, priority, or status |
+| `data[].tag` | `string` | For checkbox fields only, a tag added to tickets when the checkbox field is selected |
+| `data[].title` | `string` | The title of the ticket field displayed to agents |
+| `data[].title_in_portal` | `string` | The title of the ticket field displayed to end users in Help Center |
+| `data[].type` | `string` | Field type such as text, textarea, checkbox, date, integer, decimal, regexp, multiselect, or tagger |
+| `data[].updated_at` | `string` | Timestamp when the custom ticket field was last updated |
+| `data[].url` | `string` | The API URL for this ticket field resource |
+| `data[].visible_in_portal` | `boolean` | Whether this field is visible to end users in Help Center |
 
 </details>
 
@@ -2125,7 +2117,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -2154,28 +2146,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.active` | `boolean` | Indicates whether the brand is set as active |
-| `hits[].data.brand_url` | `string` | The public URL of the brand |
-| `hits[].data.created_at` | `string` | Timestamp when the brand was created |
-| `hits[].data.default` | `boolean` | Indicates whether the brand is the default brand for tickets generated from non-branded channels |
-| `hits[].data.has_help_center` | `boolean` | Indicates whether the brand has a Help Center enabled |
-| `hits[].data.help_center_state` | `string` | The state of the Help Center, with allowed values of enabled, disabled, or restricted |
-| `hits[].data.host_mapping` | `string` | The host mapping configuration for the brand, visible only to administrators |
-| `hits[].data.id` | `integer` | Unique identifier automatically assigned when the brand is created |
-| `hits[].data.is_deleted` | `boolean` | Indicates whether the brand has been deleted |
-| `hits[].data.logo` | `string` | Brand logo image file represented as an Attachment object |
-| `hits[].data.name` | `string` | The name of the brand |
-| `hits[].data.signature_template` | `string` | The signature template used for the brand |
-| `hits[].data.subdomain` | `string` | The subdomain associated with the brand |
-| `hits[].data.ticket_form_ids` | `array` | Array of ticket form IDs that are available for use by this brand |
-| `hits[].data.updated_at` | `string` | Timestamp when the brand was last updated |
-| `hits[].data.url` | `string` | The API URL for accessing this brand resource |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].active` | `boolean` | Indicates whether the brand is set as active |
+| `data[].brand_url` | `string` | The public URL of the brand |
+| `data[].created_at` | `string` | Timestamp when the brand was created |
+| `data[].default` | `boolean` | Indicates whether the brand is the default brand for tickets generated from non-branded channels |
+| `data[].has_help_center` | `boolean` | Indicates whether the brand has a Help Center enabled |
+| `data[].help_center_state` | `string` | The state of the Help Center, with allowed values of enabled, disabled, or restricted |
+| `data[].host_mapping` | `string` | The host mapping configuration for the brand, visible only to administrators |
+| `data[].id` | `integer` | Unique identifier automatically assigned when the brand is created |
+| `data[].is_deleted` | `boolean` | Indicates whether the brand has been deleted |
+| `data[].logo` | `string` | Brand logo image file represented as an Attachment object |
+| `data[].name` | `string` | The name of the brand |
+| `data[].signature_template` | `string` | The signature template used for the brand |
+| `data[].subdomain` | `string` | The subdomain associated with the brand |
+| `data[].ticket_form_ids` | `array` | Array of ticket form IDs that are available for use by this brand |
+| `data[].updated_at` | `string` | Timestamp when the brand was last updated |
+| `data[].url` | `string` | The API URL for accessing this brand resource |
 
 </details>
 
@@ -2762,7 +2753,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -2777,14 +2768,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.count` | `integer` | The number of times this tag has been used across resources |
-| `hits[].data.name` | `string` | The tag name string used to label and categorize resources |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].count` | `integer` | The number of times this tag has been used across resources |
+| `data[].name` | `string` | The tag name string used to label and categorize resources |
 
 </details>
 
@@ -2949,7 +2939,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -2974,24 +2964,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.assignee_id` | `integer` | The identifier of the agent assigned to the ticket at the time the rating was submitted |
-| `hits[].data.comment` | `string` | Optional comment provided by the requester with the rating |
-| `hits[].data.created_at` | `string` | Timestamp indicating when the satisfaction rating was created |
-| `hits[].data.group_id` | `integer` | The identifier of the group assigned to the ticket at the time the rating was submitted |
-| `hits[].data.id` | `integer` | Unique identifier for the satisfaction rating, automatically assigned upon creation |
-| `hits[].data.reason` | `string` | Free-text reason for a bad rating provided by the requester in a follow-up question |
-| `hits[].data.reason_id` | `integer` | Identifier for the predefined reason given for a negative rating |
-| `hits[].data.requester_id` | `integer` | The identifier of the ticket requester who submitted the satisfaction rating |
-| `hits[].data.score` | `string` | The satisfaction rating value: 'offered', 'unoffered', 'good', or 'bad' |
-| `hits[].data.ticket_id` | `integer` | The identifier of the ticket being rated |
-| `hits[].data.updated_at` | `string` | Timestamp indicating when the satisfaction rating was last updated |
-| `hits[].data.url` | `string` | The API URL of this satisfaction rating resource |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].assignee_id` | `integer` | The identifier of the agent assigned to the ticket at the time the rating was submitted |
+| `data[].comment` | `string` | Optional comment provided by the requester with the rating |
+| `data[].created_at` | `string` | Timestamp indicating when the satisfaction rating was created |
+| `data[].group_id` | `integer` | The identifier of the group assigned to the ticket at the time the rating was submitted |
+| `data[].id` | `integer` | Unique identifier for the satisfaction rating, automatically assigned upon creation |
+| `data[].reason` | `string` | Free-text reason for a bad rating provided by the requester in a follow-up question |
+| `data[].reason_id` | `integer` | Identifier for the predefined reason given for a negative rating |
+| `data[].requester_id` | `integer` | The identifier of the ticket requester who submitted the satisfaction rating |
+| `data[].score` | `string` | The satisfaction rating value: 'offered', 'unoffered', 'good', or 'bad' |
+| `data[].ticket_id` | `integer` | The identifier of the ticket being rated |
+| `data[].updated_at` | `string` | Timestamp indicating when the satisfaction rating was last updated |
+| `data[].url` | `string` | The API URL of this satisfaction rating resource |
 
 </details>
 
@@ -3396,7 +3385,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -3426,29 +3415,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.active` | `boolean` | Indicates if the form is set as active |
-| `hits[].data.agent_conditions` | `array` | Array of condition sets for agent workspaces |
-| `hits[].data.created_at` | `string` | Timestamp when the ticket form was created |
-| `hits[].data.default` | `boolean` | Indicates if the form is the default form for this account |
-| `hits[].data.display_name` | `string` | The name of the form that is displayed to an end user |
-| `hits[].data.end_user_conditions` | `array` | Array of condition sets for end user products |
-| `hits[].data.end_user_visible` | `boolean` | Indicates if the form is visible to the end user |
-| `hits[].data.id` | `integer` | Unique identifier for the ticket form, automatically assigned when creating the form |
-| `hits[].data.in_all_brands` | `boolean` | Indicates if the form is available for use in all brands on this account |
-| `hits[].data.name` | `string` | The name of the ticket form |
-| `hits[].data.position` | `integer` | The position of this form among other forms in the account, such as in a dropdown |
-| `hits[].data.raw_display_name` | `string` | The dynamic content placeholder if present, or the display_name value if not |
-| `hits[].data.raw_name` | `string` | The dynamic content placeholder if present, or the name value if not |
-| `hits[].data.restricted_brand_ids` | `array` | IDs of all brands that this ticket form is restricted to |
-| `hits[].data.ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form |
-| `hits[].data.updated_at` | `string` | Timestamp of the last update to the ticket form |
-| `hits[].data.url` | `string` | URL of the ticket form |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].active` | `boolean` | Indicates if the form is set as active |
+| `data[].agent_conditions` | `array` | Array of condition sets for agent workspaces |
+| `data[].created_at` | `string` | Timestamp when the ticket form was created |
+| `data[].default` | `boolean` | Indicates if the form is the default form for this account |
+| `data[].display_name` | `string` | The name of the form that is displayed to an end user |
+| `data[].end_user_conditions` | `array` | Array of condition sets for end user products |
+| `data[].end_user_visible` | `boolean` | Indicates if the form is visible to the end user |
+| `data[].id` | `integer` | Unique identifier for the ticket form, automatically assigned when creating the form |
+| `data[].in_all_brands` | `boolean` | Indicates if the form is available for use in all brands on this account |
+| `data[].name` | `string` | The name of the ticket form |
+| `data[].position` | `integer` | The position of this form among other forms in the account, such as in a dropdown |
+| `data[].raw_display_name` | `string` | The dynamic content placeholder if present, or the display_name value if not |
+| `data[].raw_name` | `string` | The dynamic content placeholder if present, or the name value if not |
+| `data[].restricted_brand_ids` | `array` | IDs of all brands that this ticket form is restricted to |
+| `data[].ticket_field_ids` | `array` | IDs of all ticket fields included in this ticket form |
+| `data[].updated_at` | `string` | Timestamp of the last update to the ticket form |
+| `data[].url` | `string` | URL of the ticket form |
 
 </details>
 
