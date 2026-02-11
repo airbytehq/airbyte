@@ -20,31 +20,35 @@ function formatConnectorName(slug) {
     .join(" ");
 }
 
+function collectConnectorItems(items, result) {
+  for (const item of items) {
+    const href = item.href || "";
+    if (
+      href.includes("/connectors/") &&
+      href !== "/ai-agents/connectors/" &&
+      !href.endsWith("/connectors")
+    ) {
+      const slug = extractConnectorSlug(href);
+      if (slug) {
+        result.push({
+          slug,
+          name: formatConnectorName(slug),
+          href,
+          iconUrl: `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`,
+        });
+      }
+    }
+    if (item.items) {
+      collectConnectorItems(item.items, result);
+    }
+  }
+}
+
 function getConnectorItems(sidebar) {
   if (!sidebar || !sidebar.items) return [];
-
-  return sidebar.items
-    .filter((item) => {
-      const href = item.href || "";
-      return (
-        href.includes("/connectors/") &&
-        href !== "/ai-agents/connectors/" &&
-        !href.endsWith("/connectors")
-      );
-    })
-    .map((item) => {
-      const slug = extractConnectorSlug(item.href);
-      if (!slug) return null;
-
-      return {
-        slug,
-        name: formatConnectorName(slug),
-        href: item.href,
-        iconUrl: `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`,
-      };
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const result = [];
+  collectConnectorItems(sidebar.items, result);
+  return result.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export default function AgentConnectorRegistry() {
