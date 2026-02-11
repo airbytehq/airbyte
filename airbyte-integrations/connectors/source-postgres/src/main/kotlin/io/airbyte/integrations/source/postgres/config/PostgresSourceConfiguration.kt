@@ -101,7 +101,7 @@ data class CdcIncrementalConfiguration(
     val publication: String,
     val debeziumCommitsLsn: Boolean,
     val heartbeatActionQuery: String,
-    val airbyteHeartbeatTimeout: Duration = Duration.ofSeconds(60),
+    val airbyteHeartbeatTimeout: Duration,
 // TODO: Support this configuration:
 //  initial waiting time in seconds
 //  size of the queue
@@ -253,6 +253,8 @@ constructor(
                     } else {
                         InvalidCdcCursorPositionBehavior.RESET_SYNC
                     }
+                val initialWaitingDuration =
+                    Duration.ofSeconds(incrementalSpec.initialWaitingSeconds.toLong())
                 val shutdownTimeout: Duration =
                     Duration.ofSeconds(incrementalSpec.debeziumShutdownTimeoutSeconds!!.toLong())
                 CdcIncrementalConfiguration(
@@ -263,6 +265,7 @@ constructor(
                     publication = incrementalSpec.publication,
                     debeziumCommitsLsn = incrementalSpec.lsnCommitBehavior == "While reading Data",
                     heartbeatActionQuery = incrementalSpec.heartbeatActionQuery,
+                    airbyteHeartbeatTimeout = initialWaitingDuration,
                 )
             }
         }
