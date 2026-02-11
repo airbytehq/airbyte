@@ -11,7 +11,6 @@ import io.airbyte.cdk.test.fixtures.legacy.AdaptiveSourceRunner
 import io.airbyte.cdk.test.fixtures.legacy.FeatureFlags
 import io.airbyte.cdk.test.fixtures.legacy.FeatureFlagsWrapper
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
-import io.airbyte.cdk.test.fixtures.legacy.MoreResources
 import io.airbyte.cdk.test.fixtures.legacy.SourceAcceptanceTest
 import io.airbyte.cdk.test.fixtures.legacy.SshHelpers
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
@@ -66,9 +65,7 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
 
     @get:Throws(Exception::class)
     override val spec: ConnectorSpecification?
-        get() =
-            SshHelpers.getSpecAndInjectSsh(
-                Optional.empty())
+        get() = SshHelpers.getSpecAndInjectSsh(Optional.empty())
 
     override val config: JsonNode
         get() {

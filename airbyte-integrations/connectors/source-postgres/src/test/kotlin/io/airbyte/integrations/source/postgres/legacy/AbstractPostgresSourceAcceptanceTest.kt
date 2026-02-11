@@ -15,7 +15,5 @@ abstract class AbstractPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
 
     @get:Throws(Exception::class)
     override val spec: ConnectorSpecification
-        get() =
-            SshHelpers.getSpecAndInjectSsh(
-                Optional.empty())
+        get() = SshHelpers.getSpecAndInjectSsh(Optional.empty())
 }
