@@ -30,19 +30,21 @@ definitions:
       error_handlers:
         - type: "DefaultErrorHandler"
           response_filters:
-            - predicate: "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
+            # New unified error format (API version 2025-01+): errors are in response['errors'][0]['extensions']['code']
+            # Complexity budget exhausted - retry with backoff
+            - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'COMPLEXITY_BUDGET_EXHAUSTED' }}"
               action: RETRY
-            - predicate: "{{ 'error_code' in response and response['error_code'] == 'complexityBudgetExhausted' }}"
-              action: RETRY
-              #Doc: https://developer.monday.com/api-reference/docs/error-handling
-              #Monday returns 200 status code even if there is an error, so we need to check the response body for error_code and fail so we can surface the actual error to the user.
-              #Otherwise, we would get a misleading 'data' key not found error.
-            - predicate: "{{ 'error_code' in response and response['error_code'] == 'CursorException' and response.get('error_message', '').startswith('CursorExpiredError') }}"
+            # Cursor expired error - reset pagination (new format)
+            - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'CursorExpiredError' }}"
               action: RESET_PAGINATION
-            - predicate: "{{ 'error_code' in response and response['error_code'] is not none }}"
+            # Field limit exceeded (e.g., subitems concurrency) - retry with backoff
+            - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'FIELD_LIMIT_EXCEEDED' }}"
+              action: RETRY
+            # Generic error handling for new format - fail with descriptive message
+            - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') is not none }}"
               action: FAIL
               failure_type: config_error
-              error_message: "{{ response.get('error_message', 'Unknown API error') }} (Error code: {{ response.get('error_code', 'unknown') }}). Request ID: {{ response.get('extensions', {}).get('request_id', 'unknown') }}. For more information about Monday.com API errors, please visit: https://developer.monday.com/api-reference/docs/error-handling"
+              error_message: "{{ response['errors'][0].get('message', 'Unknown API error') }} (Error code: {{ response['errors'][0].get('extensions', {}).get('code', 'unknown') }}). For more information about Monday.com API errors, please visit: https://developer.monday.com/api-reference/docs/error-handling"
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: retry-after
