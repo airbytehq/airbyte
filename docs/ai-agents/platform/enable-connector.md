@@ -45,15 +45,15 @@ Enable a connector through the Agent Engine dashboard.
 
 2. Click **Manage Connectors** (or **Enable Connector** if you haven't enabled any connectors yet).
 
-3. In the slide-out panel, browse or search for the connector you want to enable.
+3. In the slide-out panel, browse or search for the connector you want to enable, and click it.
 
-4. On the **Add Connector** tab, select the modes you want to enable for the connector:
+4. Click the **Existing Connectors** tab and select the modes you want to enable for the connector:
 
    - Check **Direct** to enable real-time agent queries
 
    - Check **Replication** to enable replicating data to object storage
 
-5. Click the connector card to add it, then click **Done**.
+5. Click **Done**.
 
 The connector appears in your active connectors list. Your end users can authenticate with this connector and use it in the modes you defined.
 
