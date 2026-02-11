@@ -69,7 +69,7 @@ There are three options for scheduling a sync to run:
 - [CRON schedule](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
 - Manual \(i.e: clicking the "Sync Now" button in the UI or through the API\)
 
-For more details, see our [Sync Schedules documentation](sync-schedules).
+For more details, see our [Sync Schedules documentation](/platform/using-airbyte/core-concepts/sync-schedules).
 
 ## Destination Namespace
 
@@ -77,11 +77,11 @@ A namespace defines where the data will be written to your destination. You can 
 
 Depending on your destination, you may know this more commonly as the "Dataset", "Schema" or "Bucket Path". The term "Namespace" is used to generalize the concept across various destinations.
 
-For more details, see our [Namespace documentation](namespaces).
+For more details, see our [Namespace documentation](/platform/using-airbyte/core-concepts/namespaces).
 
 ## Delivery Method
 
-You can move data from a source to a destination in one of two ways, depending on whether your data is structured or unstructured. When you replicate records, you extract and load structured records, allowing for blocking and hashing individual fields, typing, and deduping. You can also copy raw files without processing them, which is appropriate for unstructured data. Read more about the difference in [Delivery methods](../delivery-methods).
+You can move data from a source to a destination in one of two ways, depending on whether your data is structured or unstructured. When you replicate records, you extract and load structured records, allowing for blocking and hashing individual fields, typing, and deduping. You can also copy raw files without processing them, which is appropriate for unstructured data. Read more about the difference in [Delivery methods](/platform/using-airbyte/delivery-methods).
 
 ## Sync Mode
 

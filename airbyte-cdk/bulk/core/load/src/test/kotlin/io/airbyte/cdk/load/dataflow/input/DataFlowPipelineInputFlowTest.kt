@@ -59,11 +59,11 @@ class DataFlowPipelineInputFlowTest {
         // Given
         val stream = mockk<DestinationStream>()
         val desc = DestinationStream.Descriptor("namespace", "name")
-        every { stream.schema } returns mockk()
         every { stream.airbyteValueProxyFieldAccessors } returns emptyArray()
         every { stream.unmappedDescriptor } returns desc
+        every { stream.tableSchema } returns
+            mockk { every { columnSchema } returns mockk { every { inputSchema } returns mapOf() } }
         val message = mockk<DestinationRecordSource>()
-        every { message.fileReference } returns null
         val serializedBytes = 151251L
         val destinationRecord =
             DestinationRecord(
@@ -108,10 +108,9 @@ class DataFlowPipelineInputFlowTest {
     fun `stream complete`() = runBlocking {
         // Given
         val stream = mockk<DestinationStream>()
-        every { stream.schema } returns mockk()
         every { stream.airbyteValueProxyFieldAccessors } returns emptyArray()
-        val message = mockk<DestinationRecordSource>()
-        every { message.fileReference } returns null
+        every { stream.tableSchema } returns
+            mockk { every { columnSchema } returns mockk { every { inputSchema } returns mapOf() } }
         val streamComplete =
             DestinationRecordStreamComplete(
                 stream,

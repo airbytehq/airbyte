@@ -6,8 +6,11 @@ package io.airbyte.integrations.destination.gcs_data_lake
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
-import io.airbyte.cdk.load.dataflow.config.DataFlowSocketConfig
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -20,6 +23,8 @@ class GcsDataLakeBeanFactory {
 
     @Singleton
     fun aggregatePublishingConfig(): AggregatePublishingConfig {
+        log.info { "NOOP code change for CI to pick up" }
+
         // NOT speed mode
         return AggregatePublishingConfig(
             maxRecordsPerAgg = 10_000_000_000L,
@@ -28,6 +33,18 @@ class GcsDataLakeBeanFactory {
             maxBufferedAggregates = 5,
         )
     }
+
+    // TODO: There's a bug preventing the DefaultTempTableNameGenerator Singleton in the CDK
+    // from being loaded. So this is necessary for now.
+    @Singleton
+    fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
+
+    /** Iceberg has specific timestamp requirements */
+    @Singleton
+    fun mediumConverterConfig() =
+        MediumConverterConfig(
+            extractedAtAsTimestampWithTimezone = false,
+        )
 
     /**
      * Socket configuration for GCS Data Lake destination.
@@ -38,7 +55,7 @@ class GcsDataLakeBeanFactory {
     @Singleton
     @Requires(notEnv = [Environment.TEST])
     fun dataFlowSocketConfig(catalog: DestinationCatalog): DataFlowSocketConfig {
-        val hasDedupStreams = catalog.streams.any { it.importType is Dedupe }
+        val hasDedupStreams = catalog.streams.any { it.tableSchema.importType is Dedupe }
         return if (hasDedupStreams) {
             log.info { "Dedup streams detected, limiting to 1 socket for data consistency" }
             object : DataFlowSocketConfig {

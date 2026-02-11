@@ -1,4 +1,6 @@
-# Hubspot agent connector
+# Hubspot
+
+The Hubspot agent connector is a Python package that equips AI agents to interact with Hubspot through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 HubSpot is a CRM platform that provides tools for marketing, sales, customer service,
 and content management. This connector provides access to contacts, companies, deals,
@@ -9,9 +11,12 @@ tickets, and custom objects for customer relationship management and sales analy
 
 The Hubspot connector is optimized to handle prompts like these.
 
+- List recent deals
+- List recent tickets
+- List companies in my CRM
+- List contacts in my CRM
 - Show me all deals from \{company\} this quarter
 - What are the top 5 most valuable deals in my pipeline right now?
-- List recent tickets from \{customer\} and analyze their support trends
 - Search for contacts in the marketing department at \{company\}
 - Give me an overview of my sales team's deals in the last 30 days
 - Identify the most active companies in our CRM this month
@@ -36,41 +41,81 @@ uv pip install airbyte-agent-hubspot
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_hubspot import HubspotConnector, HubspotAuthConfig
+from airbyte_agent_hubspot import HubspotConnector
+from airbyte_agent_hubspot.models import HubspotAuthConfig
 
 connector = HubspotConnector(
-  auth_config=HubspotAuthConfig(
-    client_id="...",
-    client_secret="...",
-    refresh_token="...",
-    access_token="..."
-  )
+    auth_config=HubspotAuthConfig(
+        client_id="<Your HubSpot OAuth2 Client ID>",
+        client_secret="<Your HubSpot OAuth2 Client Secret>",
+        refresh_token="<Your HubSpot OAuth2 Refresh Token>",
+        access_token="<Your HubSpot OAuth2 Access Token (optional if refresh_token is provided)>"
+    )
 )
-result = await connector.contacts.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@HubspotConnector.tool_utils
+async def hubspot_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_hubspot import HubspotConnector, AirbyteAuthConfig
+
+connector = HubspotConnector(
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@HubspotConnector.tool_utils
+async def hubspot_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Search](./REFERENCE.md#contacts-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [Search](./REFERENCE.md#companies-search) |
-| Deals | [List](./REFERENCE.md#deals-list), [Get](./REFERENCE.md#deals-get), [Search](./REFERENCE.md#deals-search) |
-| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Search](./REFERENCE.md#tickets-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [API Search](./REFERENCE.md#contacts-api_search), [Search](./REFERENCE.md#contacts-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [API Search](./REFERENCE.md#companies-api_search), [Search](./REFERENCE.md#companies-search) |
+| Deals | [List](./REFERENCE.md#deals-list), [Get](./REFERENCE.md#deals-get), [API Search](./REFERENCE.md#deals-api_search), [Search](./REFERENCE.md#deals-search) |
+| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [API Search](./REFERENCE.md#tickets-api_search) |
 | Schemas | [List](./REFERENCE.md#schemas-list), [Get](./REFERENCE.md#schemas-get) |
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
 
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Authentication
 
-For the service's official API docs, see the [Hubspot API reference](https://developers.hubspot.com/docs/api/crm/understanding-the-crm).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
+### Hubspot API docs
+
+See the official [Hubspot API reference](https://developers.hubspot.com/docs/api/crm/understanding-the-crm).
 
 ## Version information
 
-- **Package version:** 0.15.33
-- **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** e519b73d1e90df7073e48d3ed7e11a9fb1af3953
+- **Package version:** 0.15.102
+- **Connector version:** 0.1.12
+- **Generated with Connector SDK commit SHA:** 64ac3a66e77864c942825e7f9491a0a46e704d21
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/hubspot/CHANGELOG.md)

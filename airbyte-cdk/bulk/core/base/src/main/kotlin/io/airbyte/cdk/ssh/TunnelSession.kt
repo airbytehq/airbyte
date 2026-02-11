@@ -45,6 +45,23 @@ internal constructor(
     }
 }
 
+fun startTunnelAndGetEndpoint(
+    ssh: SshTunnelMethodConfiguration,
+    hostname: String,
+    port: Int,
+): String =
+    when (ssh) {
+        is SshKeyAuthTunnelMethod,
+        is SshPasswordAuthTunnelMethod -> {
+            val remote = SshdSocketAddress(hostname, port)
+            val sshConnectionOptions: SshConnectionOptions =
+                SshConnectionOptions.fromAdditionalProperties(emptyMap())
+            val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
+            "${tunnel.address.hostName}:${tunnel.address.port}"
+        }
+        is SshNoTunnelMethod -> "$hostname:$port"
+    }
+
 /** Creates an open [TunnelSession]. */
 fun createTunnelSession(
     remote: SshdSocketAddress,
