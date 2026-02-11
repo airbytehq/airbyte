@@ -547,3 +547,91 @@ class GridDataErrorHandler(DefaultErrorHandler):
 
         # Return None to pass response to next handler in the composite chain (DefaultErrorHandler)
         return None
+
+
+def extract_spreadsheet_id_from_url(raw_id: str) -> str:
+    if re.match(r"^https://", raw_id):
+        match = re.search(r"/([-\w]{20,})([/]?)", raw_id)
+        if match:
+            return match.group(1)
+    return raw_id
+
+
+@dataclass
+class SelfDiscoveringSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
+    """
+    Like DpathSchemaMatchingExtractor but dynamically fetches the header row
+    from the Google Sheets API on first use, rather than requiring pre-resolved
+    properties_to_match from an HttpComponentsResolver.
+
+    This is used by config-based streams where the headers are not known at
+    config resolution time.
+    """
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self.decoder = JsonDecoder(parameters={})
+        self._values_to_match_key = parameters["values_to_match_key"]
+        self._schema_type_identifier = parameters["schema_type_identifier"]
+        self._spreadsheet_url_id = parameters.get("spreadsheet_url_id", "")
+        self._sheet_id = parameters.get("sheet_id", "")
+        self._indexed_properties_to_match: Dict[int, str] = {}
+        self._headers_fetched = False
+
+    def _ensure_headers(self, response: requests.Response) -> None:
+        if self._headers_fetched:
+            return
+        self._headers_fetched = True
+
+        auth_headers = {}
+        if response.request.headers.get("Authorization"):
+            auth_headers["Authorization"] = response.request.headers["Authorization"]
+
+        from urllib.parse import quote as urlencode_fn
+        encoded_sheet = urlencode_fn(self._sheet_id, safe="")
+        url = (
+            f"https://sheets.googleapis.com/v4/spreadsheets/"
+            f"{self._spreadsheet_url_id}"
+            f"?includeGridData=true&ranges={encoded_sheet}!1:1&alt=json"
+        )
+
+        try:
+            header_response = requests.get(url, headers=auth_headers, timeout=30)
+            if header_response.status_code == 200:
+                data = header_response.json()
+                sheets = data.get("sheets", [])
+                if sheets:
+                    row_data = sheets[0].get("data", [{}])[0].get("rowData", [{}])[0]
+                    names_conversion = self.config.get("names_conversion", False)
+                    schema_pointer = self._schema_type_identifier.get("schema_pointer")
+                    key_pointer = self._schema_type_identifier["key_pointer"]
+                    for prop_index, prop_value, _ in self.parse_raw_schema_values(
+                        row_data, schema_pointer, key_pointer, names_conversion
+                    ):
+                        self._indexed_properties_to_match[prop_index] = prop_value
+            else:
+                logger.warning(
+                    f"Failed to fetch headers for sheet '{self._sheet_id}' "
+                    f"from spreadsheet '{self._spreadsheet_url_id}': "
+                    f"HTTP {header_response.status_code}"
+                )
+        except requests.RequestException as e:
+            logger.warning(
+                f"Error fetching headers for sheet '{self._sheet_id}': {e}"
+            )
+
+    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
+        self._ensure_headers(response)
+        raw_records_extracted = DpathExtractor.extract_records(self, response=response)
+        include_empty_values = self.config.get("read_empty_header_columns", False)
+        for raw_record in raw_records_extracted:
+            unmatched_values_collection = raw_record.get(self._values_to_match_key, [])
+            for unmatched_values in unmatched_values_collection:
+                if not DpathSchemaMatchingExtractor.is_row_empty(
+                    unmatched_values
+                ) and DpathSchemaMatchingExtractor.row_contains_relevant_data(
+                    unmatched_values, self._indexed_properties_to_match.keys()
+                ):
+                    yield from DpathSchemaMatchingExtractor.match_properties_with_values(
+                        unmatched_values, self._indexed_properties_to_match, include_empty_values
+                    )
