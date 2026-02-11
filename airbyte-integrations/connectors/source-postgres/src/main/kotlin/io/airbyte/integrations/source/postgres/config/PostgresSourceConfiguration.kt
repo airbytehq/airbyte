@@ -37,7 +37,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
-import java.util.*
+import java.util.UUID
 import org.postgresql.PGProperty.CONNECT_TIMEOUT
 import org.postgresql.PGProperty.PREPARE_THRESHOLD
 import org.postgresql.PGProperty.TCP_KEEP_ALIVE
@@ -101,6 +101,7 @@ data class CdcIncrementalConfiguration(
     val publication: String,
     val debeziumCommitsLsn: Boolean,
     val heartbeatActionQuery: String,
+    val airbyteHeartbeatTimeout: Duration,
 // TODO: Support this configuration:
 //  initial waiting time in seconds
 //  size of the queue
@@ -252,6 +253,8 @@ constructor(
                     } else {
                         InvalidCdcCursorPositionBehavior.RESET_SYNC
                     }
+                val initialWaitingDuration =
+                    Duration.ofSeconds(incrementalSpec.initialWaitingSeconds.toLong())
                 val shutdownTimeout: Duration =
                     Duration.ofSeconds(incrementalSpec.debeziumShutdownTimeoutSeconds!!.toLong())
                 CdcIncrementalConfiguration(
@@ -262,6 +265,7 @@ constructor(
                     publication = incrementalSpec.publication,
                     debeziumCommitsLsn = incrementalSpec.lsnCommitBehavior == "While reading Data",
                     heartbeatActionQuery = incrementalSpec.heartbeatActionQuery,
+                    airbyteHeartbeatTimeout = initialWaitingDuration,
                 )
             }
         }

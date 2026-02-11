@@ -457,6 +457,15 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
     @JsonSchemaInject(json = """{"order":5,"always_show":true, "minLength":1}""")
     lateinit var publication: String
 
+    @JsonProperty("initial_waiting_seconds")
+    @JsonSchemaTitle("Initial Waiting Time in Seconds (Advanced)")
+    @JsonPropertyDescription(
+        "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 1200 seconds. Valid range: 120 seconds to 2400 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-setting-up-initial-cdc-waiting-time\">initial waiting time</a>."
+    )
+    @JsonSchemaDefault("1200")
+    @JsonSchemaInject(json = """{"order":6,"min":120,"max":2400,"always_show":true}""")
+    var initialWaitingSeconds: Int = 1200
+
     @JsonProperty("lsn_commit_behavior")
     @JsonSchemaTitle("LSN commit behavior")
     @JsonPropertyDescription(

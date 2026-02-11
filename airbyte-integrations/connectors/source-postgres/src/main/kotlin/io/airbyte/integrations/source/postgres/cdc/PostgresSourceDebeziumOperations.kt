@@ -123,7 +123,7 @@ class PostgresSourceDebeziumOperations(
                     this.with("heartbeat.action.query", cdcConfig.heartbeatActionQuery)
                 }
             }
-    // TODO: airbyte.heartbeat.timeout.seconds
+            .withHeartbeatTimeout(cdcConfig.airbyteHeartbeatTimeout)
     // TODO: SSL support
         }
 
