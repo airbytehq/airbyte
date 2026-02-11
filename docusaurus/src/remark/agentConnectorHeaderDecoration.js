@@ -1,7 +1,6 @@
 const visit = require("unist-util-visit").visit;
 const { toAttributes } = require("../helpers/objects");
 const fs = require("fs");
-const path = require("path");
 
 const ICON_BASE_URL =
   "https://connectors.airbyte.com/files/metadata/airbyte";
