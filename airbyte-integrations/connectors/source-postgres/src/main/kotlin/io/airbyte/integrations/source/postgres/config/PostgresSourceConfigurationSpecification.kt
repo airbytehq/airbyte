@@ -104,7 +104,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Azure Entra Tenant Id")
     @JsonPropertyDescription("If using Entra service principal, the ID of the tenant")
     @JsonSchemaInject(json = """{"order":7}""")
-    var tenantId: String? = null
+    var entraTenantId: String? = null
 
     // TODO: hide when not service principal auth
     @JsonProperty("entra_client_id")
@@ -113,7 +113,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
         "If using Entra service principal, the application ID of the service principal"
     )
     @JsonSchemaInject(json = """{"order":8}""")
-    var clientId: String? = null
+    var entraClientId: String? = null
 
     @JsonProperty("schemas")
     @JsonSchemaTitle("Schemas")
@@ -207,7 +207,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
     )
-    var max_db_connections: Int? = null
+    var maxDbConnections: Int? = null
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
