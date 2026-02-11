@@ -581,7 +581,7 @@ class SelfDiscoveringSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
 
         from urllib.parse import quote as urlencode_fn
 
-        encoded_sheet= urlencode_fn(self._sheet_id, safe="")
+        encoded_sheet = urlencode_fn(self._sheet_id, safe="")
         url = (
             f"https://sheets.googleapis.com/v4/spreadsheets/"
             f"{self._spreadsheet_url_id}"
