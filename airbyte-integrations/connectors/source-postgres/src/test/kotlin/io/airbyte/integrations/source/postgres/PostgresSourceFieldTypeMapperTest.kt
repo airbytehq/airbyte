@@ -147,6 +147,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "hstore('color','red')" to "\"{\\\"color\\\":\\\"red\\\"}\"",
                 "hstore('addr','123 Main St, Suite 5')" to
                     "\"{\\\"addr\\\":\\\"123 Main St, Suite 5\\\"}\"",
+                // Requires ObjectMapper with SerializationFeature.WRITE_NULL_MAP_VALUES
                 "hstore('size', NULL)" to "\"{\\\"size\\\":null}\""
             )
         )
