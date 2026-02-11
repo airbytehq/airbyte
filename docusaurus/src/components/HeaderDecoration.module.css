@@ -9,6 +9,10 @@
   margin-bottom: 12px;
 }
 
+.connectorHeader > :last-child {
+  margin-top: 1.5rem;
+}
+
 .connectorIcon {
   max-height: 40px;
   max-width: 40px;
