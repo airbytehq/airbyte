@@ -18,6 +18,7 @@ const getRemarkPlugins = () => ({
   docMetaTags: require("./src/remark/docMetaTags"),
   addButtonToTitle: require("./src/remark/addButtonToTitle"),
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
+  agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
 });
 
 const plugins = getRemarkPlugins();
@@ -183,6 +184,7 @@ const config: Config = {
           return replaceApiReferenceCategory(sidebarItems, agentEngineApiItems);
         },
         remarkPlugins: [
+          plugins.agentConnectorHeaderDecoration,
           plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],
         ],
