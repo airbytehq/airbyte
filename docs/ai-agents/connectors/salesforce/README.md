@@ -1,4 +1,6 @@
-# Salesforce agent connector
+# Salesforce
+
+The Salesforce agent connector is a Python package that equips AI agents to interact with Salesforce through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Salesforce is a cloud-based CRM platform that helps businesses manage customer
 relationships, sales pipelines, and business operations. This connector provides
@@ -110,9 +112,9 @@ This connector supports the following entities and actions. For more details, se
 | Query | [List](./REFERENCE.md#query-list) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Salesforce API docs
 
@@ -120,7 +122,7 @@ See the official [Salesforce API reference](https://developer.salesforce.com/doc
 
 ## Version information
 
-- **Package version:** 0.1.93
+- **Package version:** 0.1.94
 - **Connector version:** 1.0.13
-- **Generated with Connector SDK commit SHA:** 7ead04484bebf22f12d0de02a2ede8c09c89e639
+- **Generated with Connector SDK commit SHA:** 64ac3a66e77864c942825e7f9491a0a46e704d21
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/salesforce/CHANGELOG.md)

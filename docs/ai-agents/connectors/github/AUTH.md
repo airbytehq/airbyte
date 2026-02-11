@@ -1,4 +1,4 @@
-# Github authentication and configuration
+# Github authentication
 
 This page documents the authentication and configuration options for the Github agent connector.
 

@@ -1,4 +1,4 @@
-# Linear authentication and configuration
+# Linear authentication
 
 This page documents the authentication and configuration options for the Linear agent connector.
 
