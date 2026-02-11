@@ -77,6 +77,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
+| `properties`                | Object-specific read scopes, for example `crm.objects.contacts.read` and `crm.objects.companies.read`        |
 | `property_history`          | `crm.objects.contacts.read`                                                                                  |
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
@@ -198,10 +199,19 @@ The HubSpot source connector supports the following streams:
 - [EngagementsTasksWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [GoalsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
+- [Properties](https://developers.hubspot.com/docs/api-reference/crm-properties-v3/guide) \(Full Refresh\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
+
+### Notes on the `properties` stream
+
+The `properties` stream retrieves property definitions for the following default CRM object types: company, contact, deal, ticket, call, communication, email, lead, meeting, note, order, product, quote, service, subscription, task, and user. Each record includes the property name, label, type, field type, group, and enumeration options. An `objectType` field is added to each record to identify which object type the property belongs to.
+
+This stream does not include properties for custom object types. Custom object properties are available through the custom CRM object streams.
+
+If the authenticated user does not have permission to access properties for a specific object type, the connector skips that object type and continues syncing the remaining types.
 
 ### Notes on the `property_history` streams
 
@@ -341,7 +351,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.2.0 | 2026-02-10 | [61704](https://github.com/airbytehq/airbyte/pull/61704) | Add new `properties` stream |
+| 6.2.0 | 2026-02-11 | [73236](https://github.com/airbytehq/airbyte/pull/73236) | Add new `properties` stream |
 | 6.1.1 | 2026-02-10 | [70486](https://github.com/airbytehq/airbyte/pull/70486) | Update dependencies |
 | 6.1.0 | 2026-02-05 | [72906](https://github.com/airbytehq/airbyte/pull/72906) | Promoting release candidate 6.1.0-rc.2 to a main version. |
 | 6.1.0-rc.2  | 2026-02-03 | [72799](https://github.com/airbytehq/airbyte/pull/72799)     | Bump the CDK version which fixed a bug where streams without incremental showed a cursor                                                                                                                                     |
