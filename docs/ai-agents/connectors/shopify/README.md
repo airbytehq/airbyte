@@ -1,4 +1,6 @@
-# Shopify agent connector
+# Shopify
+
+The Shopify agent connector is a Python package that equips AI agents to interact with Shopify through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Shopify is an e-commerce platform that enables businesses to create online stores,
 manage products, process orders, and handle customer relationships. This connector
@@ -129,9 +131,9 @@ This connector supports the following entities and actions. For more details, se
 | Fulfillment Orders | [List](./REFERENCE.md#fulfillment-orders-list), [Get](./REFERENCE.md#fulfillment-orders-get) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Shopify API docs
 
@@ -139,7 +141,7 @@ See the official [Shopify API reference](https://shopify.dev/docs/api/admin-rest
 
 ## Version information
 
-- **Package version:** 0.1.51
+- **Package version:** 0.1.52
 - **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** 7ead04484bebf22f12d0de02a2ede8c09c89e639
+- **Generated with Connector SDK commit SHA:** 64ac3a66e77864c942825e7f9491a0a46e704d21
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/shopify/CHANGELOG.md)

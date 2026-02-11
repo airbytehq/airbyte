@@ -1,4 +1,4 @@
-# Klaviyo authentication and configuration
+# Klaviyo authentication
 
 This page documents the authentication and configuration options for the Klaviyo agent connector.
 
