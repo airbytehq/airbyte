@@ -119,12 +119,14 @@ Once you create your connector, you can use the connector in hosted mode.
 Instead of providing API credentials directly, provide your Agent Engine credentials and the connector ID:
 
 ```python
-from airbyte_agent_github import GithubConnector
+from airbyte_agent_github import GithubConnector, AirbyteAuthConfig
 
 connector = GithubConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your_client_id>",
-    airbyte_client_secret="<your_client_secret>",
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your_client_id>",
+        airbyte_client_secret="<your_client_secret>",
+    )
 )
 
 # Execute connector operations
