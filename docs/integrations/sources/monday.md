@@ -4,29 +4,48 @@ This page contains the setup guide and reference information for the [Monday](ht
 
 ## Prerequisites
 
-- Monday API Token / Monday Access Token
+To set up the Monday source connector, you need one of the following:
 
-You can find your Oauth application in Monday main page -> Profile picture (bottom left corner) -> Developers -> My Apps -> Select your app.
+- A **Personal API Token** from your Monday.com account, or
+- **OAuth 2.0** credentials (Client ID, Client Secret, and Access Token) from a Monday.com OAuth application
 
-You can get the API token for Monday by going to Profile picture (bottom left corner) -> Admin -> API.
+To find your personal API token, open your Monday.com account and click your profile picture. Select **Developers** to open the Developer Center, then click **API token** > **Show**. Account admins can also access their token by selecting **Administration** > **API** from the profile menu. For more details, see the [Monday.com authentication guide](https://developer.monday.com/api-reference/docs/authentication).
+
+To use OAuth 2.0, you need a Monday.com OAuth application. Open your profile picture, select **Developers** > **My Apps**, and select your app to find the Client ID and Client Secret.
 
 ## Setup guide
 
+### Step 1: Create the source in Airbyte
+
+<!-- env:cloud -->
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Monday connector and select **Monday** from the Source type dropdown.
-4. Fill in your API Key or authenticate using OAuth and then click **Set up source**.
+<!-- /env:cloud -->
+<!-- env:oss -->
+1. Log into your Airbyte Self-Managed instance.
+<!-- /env:oss -->
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Monday** from the list of available sources.
 
-### Connect using `OAuth 2.0` option
+### Step 2: Authenticate
 
-1. Select `OAuth2.0` in `Authorization Method`.
-2. Click on `authenticate your Monday account`.
-3. Proceed with the authentication using the credentials for your Monday account.
+#### Connect using OAuth 2.0
 
-### Connect using `API Token` option
+1. Select **OAuth2.0** in **Authorization Method**.
+2. Click **Authenticate your Monday account**.
+3. Complete the authentication flow using your Monday.com credentials.
 
-1. Generate an API Token as described [here](https://developer.monday.com/api-reference/docs/authentication).
-2. Use the generated `api_token` in the Airbyte connection.
+#### Connect using API Token
+
+1. Select **API Token** in **Authorization Method**.
+2. Enter your personal API token. To find it, see the Monday.com [authentication guide](https://developer.monday.com/api-reference/docs/authentication).
+
+### Step 3: Configure optional settings
+
+<FieldAnchor field="board_ids">
+
+Optionally, enter specific **Board IDs** to limit the Items and Boards streams to specific boards. When left empty, the connector syncs all boards in your account.
+
+</FieldAnchor>
 
 ## Supported sync modes
 
@@ -45,30 +64,28 @@ Several output streams are available from this source:
 
 - [Activity logs](https://developer.monday.com/api-reference/docs/activity-logs)
 - [Items](https://developer.monday.com/api-reference/docs/items-queries)
-- [Boards](https://developer.monday.com/api-reference/docs/groups-queries#groups-queries)
+- [Boards](https://developer.monday.com/api-reference/docs/boards)
 - [Teams](https://developer.monday.com/api-reference/docs/teams-queries)
 - [Updates](https://developer.monday.com/api-reference/docs/updates-queries)
 - [Users](https://developer.monday.com/api-reference/docs/users-queries-1)
 - [Tags](https://developer.monday.com/api-reference/docs/tags-queries)
 - [Workspaces](https://developer.monday.com/api-reference/docs/workspaces)
 
-Important Notes:
+### Notes on streams
 
-- `Columns` are available from the `Boards` stream. By syncing the `Boards` stream you will get the `Columns` for each `Board` synced in the database
-  The typical name of the table depends on the `destination` you use like `boards.columns`, for instance.
+- The `Boards` stream includes `Columns` data for each board. In your destination, this data typically appears as a nested table such as `boards.columns`.
 
-- `Column Values` are available from the `Items` stream. By syncing the `Items` stream you will get the `Column Values` for each `Item` (row) of the board.
-  The typical name of the table depends on the `destination` you use like `items.column_values`, for instance.
-  If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+- The `Items` stream includes `Column Values` for each item (row) on a board. In your destination, this data typically appears as a nested table such as `items.column_values`. The `display_value` field is available for Mirror, Dependency, and Connect Board column types.
 
-- Incremental sync for `Items` and `Boards` streams is done using the `Activity logs` stream.
-  Ids of boards and items are extracted from activity logs events and used to selectively sync boards and items.
-  Some data may be lost if the time between incremental syncs is longer than the activity logs retention time for your plan.
-  Check your Monday plan at https://monday.com/pricing.
+- Incremental sync for the `Items` and `Boards` streams uses the `Activity logs` stream. Board and item IDs are extracted from activity log events and used to selectively sync updated boards and items. If the time between incremental syncs is longer than the activity logs retention period for your Monday.com plan, some data may not be captured. Check your plan's retention period at [monday.com/pricing](https://monday.com/pricing).
+
+If there are additional endpoints you'd like Airbyte to support, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ## Performance considerations
 
-The Monday connector should not run into Monday API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Monday connector should not run into Monday.com API limitations under normal usage. The connector automatically retries requests when it encounters complexity budget or rate limit errors.
+
+Monday.com's API uses a [complexity-based rate limiting system](https://developer.monday.com/api-reference/docs/rate-limits). Each query consumes complexity points, and your account has a per-minute complexity budget that varies by plan. If you experience rate limit issues that are not automatically retried successfully, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
 ## Changelog
 
@@ -77,7 +94,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.5.0 | 2026-02-04 | [72832](https://github.com/airbytehq/airbyte/pull/72832) | Upgrade to Monday.com API version 2026-01 |
+| 2.5.0 | 2026-02-11 | [72832](https://github.com/airbytehq/airbyte/pull/72832) | Upgrade to Monday.com API version 2026-01 |
 | 2.4.21 | 2026-02-10 | [73038](https://github.com/airbytehq/airbyte/pull/73038) | Update dependencies |
 | 2.4.20 | 2026-02-03 | [72577](https://github.com/airbytehq/airbyte/pull/72577) | Update dependencies |
 | 2.4.19 | 2026-01-20 | [71994](https://github.com/airbytehq/airbyte/pull/71994) | Update dependencies |
