@@ -33,6 +33,7 @@ Note that this connector uses the Google API OAuth2.0 for authentication. To get
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-02-11 | [73280](https://github.com/airbytehq/airbyte/pull/73280) | Use current Google OAuth2 token refresh endpoint |
 | 0.0.46 | 2026-02-11 | [73273](https://github.com/airbytehq/airbyte/pull/73273) | Add OAuth authentication support (Authenticate with Airbyte button) |
 | 0.0.45 | 2026-02-10 | [72593](https://github.com/airbytehq/airbyte/pull/72593) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [71967](https://github.com/airbytehq/airbyte/pull/71967) | Update dependencies |

@@ -260,7 +260,7 @@ definitions:
       expires_in_name: expires_in
       access_token_name: access_token
       refresh_request_body: {}
-      token_refresh_endpoint: https://accounts.google.com/o/oauth2/token
+      token_refresh_endpoint: https://oauth2.googleapis.com/token
 
 streams:
   - $ref: "#/definitions/streams/profile"
