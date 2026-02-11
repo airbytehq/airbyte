@@ -72,9 +72,25 @@ connectionSpecification:
         - P30D
         - P1M
         - P1Y
+    lookback_window:
+      title: Lookback Window for Incremental sync
+      type: string
+      description: >-
+        The duration (ISO8601 duration) to re-read data from the source when running incremental syncs.
+        This compensates for records that may not be immediately available when querying the Salesforce API
+        due to eventual consistency delays.
+        The connector will re-query this amount of time before the last cursor position on each sync.
+        Increase this value if you observe missing records in your destination.
+        See <a href="https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting">Limitations & Troubleshooting</a> for details.
+      default: PT10M
+      order: 8
+      examples:
+        - PT10M
+        - PT30M
+        - PT1H
     streams_criteria:
       type: array
-      order: 8
+      order: 9
       items:
         type: object
         required:

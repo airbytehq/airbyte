@@ -1,4 +1,6 @@
-# Orb agent connector
+# Orb
+
+The Orb agent connector is a Python package that equips AI agents to interact with Orb through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Orb is a usage-based billing platform that enables businesses to implement flexible pricing models,
 track customer usage, and manage subscriptions. This connector provides access to customers,
@@ -106,9 +108,9 @@ This connector supports the following entities and actions. For more details, se
 | Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Search](./REFERENCE.md#invoices-search) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Orb API docs
 
@@ -116,7 +118,7 @@ See the official [Orb API reference](https://docs.withorb.com/api-reference).
 
 ## Version information
 
-- **Package version:** 0.1.27
+- **Package version:** 0.1.31
 - **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** 04691d063af9e36703f1d2a66e2a1df8e9e52dbe
+- **Generated with Connector SDK commit SHA:** 64ac3a66e77864c942825e7f9491a0a46e704d21
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/orb/CHANGELOG.md)
