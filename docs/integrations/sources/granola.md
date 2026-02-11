@@ -2,7 +2,7 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Granola](https://www.granola.ai/) source connector.
+This page contains the setup guide and reference information for the [Granola](https://www.granola.ai/) source connector. Granola is an AI-powered meeting notes tool. This connector reads meeting notes from a Granola workspace using the [Granola Enterprise API](https://docs.granola.ai/introduction).
 
 </HideInUI>
 
@@ -25,7 +25,7 @@ This page contains the setup guide and reference information for the [Granola](h
 
 1. Enter a **Name** for the Granola source connector.
 2. Enter your **API Key**.
-3. Enter a **Start Date** in `YYYY-MM-DD` format. The connector replicates notes created on or after this date.
+3. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. The connector replicates notes created on or after this date. If you leave this field empty, the connector defaults to replicating notes from the last two years.
 4. Click **Set up source** and wait for the connection test to complete.
 
 ## Supported sync modes
@@ -49,13 +49,11 @@ The Granola source connector supports the following stream:
 
 ### Notes
 
-The `notes` stream retrieves meeting notes from your Granola workspace. Each record includes:
+The `notes` stream retrieves meeting notes from your Granola workspace using the `GET /v1/notes` endpoint. Each record includes the note ID, title, object type, owner (name and email), and creation timestamp.
 
-- Note ID and title
-- Owner name and email
-- Creation timestamp
+The Granola Enterprise API only provides access to notes that have been shared in workspace-wide folders. Private notes are not accessible through the API. For more information, refer to the [Granola Enterprise API documentation](https://docs.granola.ai/help-center/sharing/integrations/enterprise-api).
 
-API keys provide read access to publicly accessible notes within your workspace, including notes shared in workspace-wide folders.
+This connector does not use the single-note detail endpoint, so fields available only on that endpoint (such as summaries, transcripts, attendees, calendar events, and folder membership) are not included.
 
 ## Performance considerations
 
@@ -76,6 +74,6 @@ The connector handles rate limiting automatically by retrying requests when a `4
 
 | Version | Date       | Pull Request | Subject         |
 | :------ | :--------- | :----------- | :-------------- |
-| 0.0.1   | 2026-02-10 | TBD          | Initial release |
+| 0.0.1   | 2026-02-11 | [73238](https://github.com/airbytehq/airbyte/pull/73238) | Initial release |
 
 </details>
