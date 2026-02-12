@@ -74,7 +74,6 @@ The connector handles rate limiting automatically by retrying requests when a `4
 
 | Version | Date       | Pull Request | Subject         |
 | :------ | :--------- | :----------- | :-------------- |
-| 0.0.2   | 2026-02-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix pagination: set page_size to API maximum of 30 and improve stop condition for empty results |
 | 0.0.1   | 2026-02-11 | [73238](https://github.com/airbytehq/airbyte/pull/73238) | Initial release |
 
 </details>
