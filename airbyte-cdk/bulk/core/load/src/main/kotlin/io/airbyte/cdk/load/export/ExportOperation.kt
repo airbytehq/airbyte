@@ -25,9 +25,7 @@ class ExportOperation(
         for (stream in catalog.streams) {
             log.info { "Exporting records for stream: ${stream.descriptor}" }
             val records = dataExporter.exportRecords(spec, stream)
-            records.forEach { record ->
-                println(record.toJsonLine())
-            }
+            records.forEach { record -> println(record.toJsonLine()) }
         }
         log.info { "Destination data export complete." }
     }

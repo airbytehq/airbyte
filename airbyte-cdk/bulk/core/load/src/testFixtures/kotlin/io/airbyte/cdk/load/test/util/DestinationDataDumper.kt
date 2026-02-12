@@ -48,5 +48,4 @@ class DestinationDataDumperAdapter(
     ): Map<String, String> = dumper.dumpFile(spec, stream)
 }
 
-fun DestinationDataDumper.asExporter(): DestinationDataExporter =
-    DestinationDataDumperAdapter(this)
+fun DestinationDataDumper.asExporter(): DestinationDataExporter = DestinationDataDumperAdapter(this)

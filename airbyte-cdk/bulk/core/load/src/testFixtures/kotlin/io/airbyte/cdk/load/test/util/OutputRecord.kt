@@ -94,12 +94,13 @@ data class OutputRecord(
             loadedAt = loadedAt,
             generationId = generationId,
             data = data,
-            airbyteMeta = airbyteMeta?.let {
-                ExportedRecord.Meta(
-                    changes = it.changes,
-                    syncId = it.syncId,
-                )
-            },
+            airbyteMeta =
+                airbyteMeta?.let {
+                    ExportedRecord.Meta(
+                        changes = it.changes,
+                        syncId = it.syncId,
+                    )
+                },
         )
 }
 
@@ -110,10 +111,11 @@ fun ExportedRecord.toOutputRecord(): OutputRecord =
         loadedAt = loadedAt,
         generationId = generationId,
         data = data,
-        airbyteMeta = airbyteMeta?.let {
-            OutputRecord.Meta(
-                changes = it.changes,
-                syncId = it.syncId,
-            )
-        },
+        airbyteMeta =
+            airbyteMeta?.let {
+                OutputRecord.Meta(
+                    changes = it.changes,
+                    syncId = it.syncId,
+                )
+            },
     )
