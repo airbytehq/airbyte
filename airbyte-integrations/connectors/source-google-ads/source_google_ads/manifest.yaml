@@ -750,14 +750,6 @@ definitions:
       - geographic_view.country_criterion_id
       - geographic_view.location_type
       - segments.date
-    transformations:
-      - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
-      - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
