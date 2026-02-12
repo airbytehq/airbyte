@@ -115,6 +115,8 @@ This connector supports the following entities and actions. For more details, se
 | Viewer Repositories | [List](./REFERENCE.md#viewer-repositories-list) |
 | Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
 | Project Items | [List](./REFERENCE.md#project-items-list) |
+| File Content | [Get](./REFERENCE.md#file-content-get) |
+| Directory Content | [List](./REFERENCE.md#directory-content-list) |
 
 
 ### Authentication
@@ -127,7 +129,7 @@ See the official [Github API reference](https://docs.github.com/en/rest).
 
 ## Version information
 
-- **Package version:** 0.18.102
-- **Connector version:** 0.1.12
-- **Generated with Connector SDK commit SHA:** 64ac3a66e77864c942825e7f9491a0a46e704d21
+- **Package version:** 0.18.105
+- **Connector version:** 0.1.14
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/github/CHANGELOG.md)
