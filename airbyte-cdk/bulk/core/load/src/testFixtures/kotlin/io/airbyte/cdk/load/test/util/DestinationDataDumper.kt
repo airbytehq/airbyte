@@ -40,7 +40,8 @@ class DestinationDataDumperAdapter(
     override fun exportRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream,
-    ): List<ExportedRecord> = dumper.dumpRecords(spec, stream).map { it.toExportedRecord() }
+    ): Sequence<ExportedRecord> =
+        dumper.dumpRecords(spec, stream).asSequence().map { it.toExportedRecord() }
 
     override fun exportFile(
         spec: ConfigurationSpecification,

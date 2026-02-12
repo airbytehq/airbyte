@@ -187,6 +187,11 @@ class PicocliCommandLineFactory(
     val write: OptionSpec = command("write", "writes messages from STDIN to the integration")
     val exportData: OptionSpec =
         command("export-data", "exports data and schema from the destination in JSONL format")
+    val discoverWritten: OptionSpec =
+        command(
+            "discover-written",
+            "discovers the schema of tables written by this destination, outputting a catalog JSON",
+        )
 
     val commands: ArgGroupSpec =
         ArgGroupSpec.builder()
@@ -201,6 +206,7 @@ class PicocliCommandLineFactory(
                     is AirbyteDestinationRunner -> {
                         addArg(write)
                         addArg(exportData)
+                        addArg(discoverWritten)
                     }
                 }
             }
@@ -220,13 +226,13 @@ class PicocliCommandLineFactory(
         fileOption(
             "config",
             "path to the json configuration file",
-            "Required by the following commands: check, discover, read, write, export-data",
+            "Required by the following commands: check, discover, read, write, export-data, discover-written",
         )
     val catalog: OptionSpec =
         fileOption(
             "catalog",
             "input path for the catalog",
-            "Required by the following commands: read, write, export-data",
+            "Required by the following commands: read, write, export-data, discover-written",
         )
     val state: OptionSpec =
         fileOption(

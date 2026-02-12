@@ -11,7 +11,7 @@ interface DestinationDataExporter {
     fun exportRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream,
-    ): List<ExportedRecord>
+    ): Sequence<ExportedRecord>
 
     fun exportFile(
         spec: ConfigurationSpecification,
