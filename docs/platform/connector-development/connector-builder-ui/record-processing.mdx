@@ -856,3 +856,61 @@ The `subject` field was detected as `string`, but is configured to be a `number`
 - If the API is sometimes returning subject as number of string depending on the record, the declared schema should be updated to allow both data types: `"subject": { "type": ["string","number"] }`
 
 A common situation is that certain record fields do not have any any values for the test read data, so they are set to `null`. In the detected schema, these field are of type `"null"` which is most likely not correct for all cases. In these situations, the declared schema should be manually corrected.
+
+### APIs with variable schemas
+
+Many APIs return different fields depending on the account, customer configuration, or data model. Common examples include:
+
+- **CRMs with custom fields** -- Platforms like HubSpot or Salesforce let users define custom properties on contacts, deals, or other objects. Each account's API responses include a different set of custom fields.
+- **Configurable SaaS platforms** -- Project management, e-commerce, or enterprise resource planning tools where administrators add custom attributes, tags, or metadata fields that appear in API responses.
+- **Multi-tenant APIs** -- APIs where the response schema varies by tenant, workspace, or organization because each has configured the underlying data model differently.
+- **Versioned or feature-gated APIs** -- APIs where the set of fields depends on the customer's subscription tier or enabled features.
+
+For example, one account's API might return:
+
+```json
+{
+  "id": "1",
+  "name": "Acme Corp",
+  "custom_priority": "high"
+}
+```
+
+while another account returns:
+
+```json
+{
+  "id": "2",
+  "name": "Globex Inc",
+  "custom_region": "EMEA",
+  "custom_score": 42
+}
+```
+
+You can't know all possible fields ahead of time when building the connector. The Connector Builder handles this through schema detection at connection setup time.
+
+#### How schema detection works for variable APIs
+
+When a user sets up a connection using your connector, Airbyte runs a **discover** step that determines the schema for each stream. For Connector Builder connectors, the schema used during discover is the declared schema configured at build time.
+
+Airbyte then detects schema changes over time. If the API starts returning new fields, Airbyte can detect and propagate those changes depending on the connection's [schema change management](/platform/using-airbyte/schema-change-management) settings.
+
+#### Recommended approach
+
+For most connectors targeting APIs with variable schemas, the `Automatically import detected schema` toggle is the right starting point:
+
+1. **During development**, connect the Builder to a test account and run a test read. The Builder infers the schema from the returned records and auto-imports it as the declared schema.
+2. **At connection setup**, when a user configures a connection with their own credentials, Airbyte runs discover using the declared schema. The fields present in the declared schema are available for column selection and destination table creation.
+3. **Schema change detection** handles field drift over time. If the API starts returning additional fields for a user's account, Airbyte detects the change and either propagates it automatically or flags it for review, depending on the connection's schema change management settings.
+
+If your test account has a representative set of fields, this approach works well. The declared schema serves as a baseline, and Airbyte's schema change management handles variations from there.
+
+#### When the detected schema is not enough
+
+In some cases, the auto-detected schema might not cover all scenarios:
+
+- **The test account has few custom fields.** If the test account doesn't represent typical usage, the declared schema misses fields that most users have. Those fields won't appear in syncs until Airbyte detects a schema change.
+- **The API has a metadata endpoint.** Some APIs expose endpoints that list all available fields and their types, such as `GET /custom-fields` or `GET /properties`. If such an endpoint exists, switching to the YAML editor and using a `DynamicSchemaLoader` component lets the connector query that endpoint at discover time and build the schema dynamically. This is the most robust approach for APIs with highly variable schemas.
+- **Fields have inconsistent types.** If the same field appears as a string for one record and a number for another, the auto-detected schema may choose too narrow a type. In these cases, manually edit the declared schema to use a broader type such as `["string", "number"]`.
+
+For the common case where the API returns a mix of known and unknown fields, the auto-detected schema combined with Airbyte's schema change management provides the right balance between structured typing and flexibility.
