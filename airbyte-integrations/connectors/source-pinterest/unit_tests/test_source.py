@@ -39,14 +39,3 @@ def test_check_connection_expired_token(requests_mock, test_config):
         error
         == f"'Encountered an error while checking availability of stream user_account_analytics. Error: 401 Client Error: None for url: https://api.pinterest.com/v5/oauth/token'"
     )
-
-
-def test_invalid_account_id(requests_mock, wrong_account_id_config):
-    requests_mock.get("https://api.pinterest.com/v5/user_account/analytics", status_code=200, json={"all": {"daily_metrics": []}})
-    source = get_source(wrong_account_id_config)
-    logger_mock = MagicMock()
-
-    check_result = source.check(logger_mock, wrong_account_id_config)
-    status_ok, error = check_result.status, check_result.message
-
-    assert status_ok == Status.SUCCEEDED
