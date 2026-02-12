@@ -107,15 +107,24 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
 
                 var extractedValue: Field<*> = extractColumnAsJson(column.key)
                 if (!(isStruct || isArray || (type === AirbyteProtocolType.UNKNOWN))) {
-                    // Primitive types need to use JSON_VALUE to (a) strip quotes from strings, and
-                    // (b) cast json null to sql null.
-                    extractedValue =
-                        DSL.function(
-                            "JSON_VALUE",
-                            String::class.java,
-                            extractedValue,
-                            DSL.`val`("$"),
-                        )
+                    if (type == AirbyteProtocolType.STRING) {
+                        extractedValue =
+                            field(
+                                sql(
+                                    "JSON_VALUE({0}, {1} RETURNING CHAR)",
+                                    extractedValue,
+                                    DSL.inline("$"),
+                                ),
+                            )
+                    } else {
+                        extractedValue =
+                            DSL.function(
+                                "JSON_VALUE",
+                                String::class.java,
+                                extractedValue,
+                                DSL.`val`("$"),
+                            )
+                    }
                 }
                 if (isStruct) {
                     return@map DSL.case_()
