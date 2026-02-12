@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs_data_lake
@@ -49,14 +49,12 @@ class GcsPolarisWriteTest :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(integerCanBeLarge = false, nestedFloatLosesPrecision = false),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = io.airbyte.cdk.load.data.icerberg.parquet.IcebergConfigUpdater,
-        useDataFlowPipeline = true
     ) {
 
     @Test
@@ -72,12 +70,11 @@ class GcsPolarisWriteTest :
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Append,
-                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
-                syncId,
-                namespaceMapper = NamespaceMapper()
+                syncId = syncId,
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = makeTableSchema(ObjectType(schema), Append),
             )
         val firstStream =
             makeStream(

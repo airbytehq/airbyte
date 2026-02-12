@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.state.stats.socket
@@ -233,8 +233,6 @@ class EmittedStatsStoreImplTest {
             return DestinationStream(
                 unmappedNamespace = namespace,
                 unmappedName = name,
-                importType = Append,
-                schema = io.airbyte.cdk.load.data.ObjectType(linkedMapOf()),
                 generationId = 1L,
                 minimumGenerationId = 1L,
                 syncId = 1L,

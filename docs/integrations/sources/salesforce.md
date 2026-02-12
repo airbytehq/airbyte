@@ -104,7 +104,8 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -121,7 +122,8 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
@@ -239,6 +241,28 @@ More information on the differences between various Salesforce APIs can be found
 If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync streams using BULK API.
 :::
 
+### Missing Records (Salesforce API Eventual Consistency)
+
+Salesforce does not guarantee that recently created or updated records are immediately available through its API. A record may have its `SystemModStamp` set, but the underlying transaction may not yet be committed. During an incremental sync, the connector can advance its cursor past such records, causing them to be permanently missed in subsequent syncs.
+
+**Symptoms:**
+
+- Records are missing in the destination but present when queried directly in Salesforce
+- The same source synced to a different destination at a later time does not have missing records
+- No errors appear in sync logs
+
+**Solution:** Increase the **Lookback Window** in the connector configuration. This controls how far back the connector re-reads data from the last cursor position on each incremental sync. The default is `PT10M` (10 minutes). If you observe missing records, try increasing it to `PT30M` (30 minutes) or `PT1H` (1 hour). Because the connector uses append-dedup mode, re-reading overlapping data does not create duplicates in the destination.
+
+The lookback window uses the ISO 8601 duration format. The format is `PT<number><unit>`, where `P` marks the start of the duration and `T` separates date from time components. Common examples:
+
+| Value  | Meaning    |
+|:-------|:-----------|
+| PT10M  | 10 minutes |
+| PT30M  | 30 minutes |
+| PT1H   | 1 hour     |
+| PT2H   | 2 hours    |
+| P1D    | 1 day      |
+
 </details>
 
 ## Changelog
@@ -248,12 +272,13 @@ If you set the `Force Use Bulk API` option to `true`, the connector will ignore 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.17 | 2026-02-10 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
 | 2.7.16-rc.1 | 2025-10-27 | [66136](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning|
 | 2.7.15      | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records|
 | 2.7.14      | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
 | 2.7.13      | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
-| 2.7.12      | 2025-09-10 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
+| 2.7.12      | 2025-09-15 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
 | 2.7.11      | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
 | 2.7.10      | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
 | 2.7.9       | 2025-05-04 | [59644](https://github.com/airbytehq/airbyte/pull/59644) | Update dependencies |
@@ -303,7 +328,7 @@ If you set the `Force Use Bulk API` option to `true`, the connector will ignore 
 | 2.5.8       | 2024-04-30 | [37340](https://github.com/airbytehq/airbyte/pull/37340) | Source Salesforce: reduce info logs                                                                                                                                    |
 | 2.5.7       | 2024-04-24 | [36657](https://github.com/airbytehq/airbyte/pull/36657) | Schema descriptions                                                                                                                                                    |
 | 2.5.6       | 2024-04-19 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type                                                                                        |
-| 2.5.5       | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                                                        |
+| 2.5.5       | 2024-04-18 | [37419](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                                                        |
 | 2.5.4       | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37392) | Update CDK version to have partitioned state fix                                                                                                                       |
 | 2.5.3       | 2024-04-17 | [37376](https://github.com/airbytehq/airbyte/pull/37376) | Improve rate limit error message during check command                                                                                                                  |
 | 2.5.2       | 2024-04-15 | [37105](https://github.com/airbytehq/airbyte/pull/37105) | Raise error when schema generation fails                                                                                                                               |

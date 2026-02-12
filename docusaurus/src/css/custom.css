@@ -90,8 +90,6 @@ html[data-theme="dark"] {
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
-  --markprompt-background: var(--ifm-background-color) !important;
-  --markprompt-background-accent: var(--ifm-background-color) !important;
 }
 
 /* Hide sidebar on the homepage */
@@ -229,6 +227,7 @@ ul.table-of-contents li {
 
 nav.theme-doc-breadcrumbs {
   margin-top: 8px !important;
+  margin-bottom: 0px !important;
 }
 
 ul.breadcrumbs > li.breadcrumbs__item > a.breadcrumbs__link {
@@ -364,49 +363,9 @@ nav a.navbar__link--active {
   border-bottom: 3px solid var(--ifm-color-primary);
 }
 
-.MarkpromptContentDialog[data-variant="sheet"] {
-  z-index: 201 !important; /* This needs to be greater than var(--ifm-z-index-fixed) */
-}
-.MarkpromptBranding {
+/* Hide Ask AI button until Osano consent is granted */
+.kapa-ai-hidden {
   display: none !important;
-}
-
-.MarkpromptDefaultViewExamplePromptButton {
-  color: var(--color-gray-40) !important;
-  border: 1px solid var(--color-dark-blue-40) !important;
-  border-radius: 4px !important;
-}
-
-.MarkpromptOverlay {
-  z-index: 201 !important;
-}
-
-.MarkpromptContentDialog[data-variant="sheet"] {
-  max-width: 580px !important;
-}
-
-.MarkpromptMessageAvatarContainer {
-  width: 48px !important;
-  height: 48px !important;
-}
-
-.MarkpromptMessageAvatarImage {
-  width: 48px !important;
-  height: 48px !important;
-}
-
-.MarkpromptMessageAvatar {
-  width: 48px !important;
-  height: 48px !important;
-}
-
-.MarkpromptContentDialog {
-  --markprompt-text-size: 1em !important;
-  --markprompt-text-size-code: 1em !important;
-}
-
-.MarkpromptPrompt {
-  padding-block: 0.35rem !important;
 }
 
 /* Header with button styling */
@@ -417,12 +376,18 @@ nav a.navbar__link--active {
 }
 
 .header-with-button h1 {
-  margin-bottom: 0;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
 }
 
-/* Force no margin on the bottom when inside a flex container */
 header h1 {
-  margin-bottom: 0;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+h1.openapi__heading {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem !important;
 }
 
 article span.theme-doc-version-badge {
@@ -484,4 +449,9 @@ li.api-method.put .menu__link::before {
 li.api-method.patch .menu__link::before {
   content: "patch";
   background-color: var(--openapi-code-orange);
+}
+
+/* Hide announcement bar on AI Agents pages */
+html.plugin-id-ai-agents div[class*="announcementBar"] {
+  display: none;
 }

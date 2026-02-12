@@ -57,7 +57,7 @@ Many people think of Airbyte and its connectors as infrastructure. Our [Terrafor
 
 ### PyAirbyte
 
-If you want to use Python to move data, our Python library, [PyAirbyte](/developers/using-pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server.
+If you want to use Python to move data, our Python library, [PyAirbyte](/developers/pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server.
 
 :::note
 PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
