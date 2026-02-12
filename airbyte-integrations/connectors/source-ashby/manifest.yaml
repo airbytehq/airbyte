@@ -1019,9 +1019,6 @@ streams:
           type: DpathExtractor
           field_path:
             - results
-        record_filter:
-          type: RecordFilter
-          condition: "{{ not config.get('current_applications_only', false) or record.get('status') not in ['Archived', 'Hired'] }}"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -2281,15 +2278,6 @@ spec:
         examples:
           - "2017-01-25T00:00:00Z"
         order: 1
-      current_applications_only:
-        type: boolean
-        title: Current Applications Only
-        description: >-
-          When enabled, excludes hired and archived applications from the
-          applications stream. Only active/in-progress applications will be
-          synced.
-        default: false
-        order: 2
     additionalProperties: true
 metadata:
   autoImportSchema:
