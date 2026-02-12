@@ -354,7 +354,9 @@ class MarketoExportStatus(MarketoStream):
     def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
         result = response.json().get(self.data_field)
         if not result:
-            raise Exception(f"Unexpected response from export status endpoint: '{self.data_field}' key missing. Response: {response.text[:500]}")
+            raise Exception(
+                f"Unexpected response from export status endpoint: '{self.data_field}' key missing. Response: {response.text[:500]}"
+            )
         return [result[0]["status"]]
 
 
