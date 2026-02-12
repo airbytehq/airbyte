@@ -303,8 +303,10 @@ class MarketoExportCreate(MarketoStream):
             if errors[0].get("code") == "1029" and re.match("Export daily quota \d+MB exceeded", errors[0].get("message")):
                 message = "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
                 raise AirbyteTracedException(internal_message=response.text, message=message, failure_type=FailureType.config_error)
-        result = response.json().get("result")[0]
-        status, export_id = result.get("status", "").lower(), result.get("exportId")
+        result = response.json().get("result")
+        if not result:
+            return True
+        status, export_id = result[0].get("status", "").lower(), result[0].get("exportId")
         if status != "created" or not export_id:
             self.logger.warning(f"Failed to create export job! Status is {status}!")
             return True
