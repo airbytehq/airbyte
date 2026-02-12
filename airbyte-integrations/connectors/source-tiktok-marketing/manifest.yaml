@@ -2120,6 +2120,18 @@ definitions:
         $ref: "#/definitions/requester"
         path: pixel/instant_page/event/
         http_method: GET
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - predicate: "{{ response.get('code') == 40100 }}"
+              action: RATE_LIMITED
+              error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 40002 }}"
+              action: IGNORE
+              error_message: "Unsupported objective_type/optimization_goal combination, skipping. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') != 0 }}"
+              action: FAIL
+              error_message: "{{ response['message'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5525,7 +5537,7 @@ definitions:
                 description: Event corresponding currency.
                 type:
                   - "null"
-                  - boolean
+                  - string
               name:
                 description: Event name.
                 type:
