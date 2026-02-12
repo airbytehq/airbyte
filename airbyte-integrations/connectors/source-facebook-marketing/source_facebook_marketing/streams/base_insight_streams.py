@@ -4,9 +4,9 @@
 
 import logging
 from datetime import date, datetime, timedelta
-from zoneinfo import ZoneInfo
 from functools import cache, cached_property
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from zoneinfo import ZoneInfo
 
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
