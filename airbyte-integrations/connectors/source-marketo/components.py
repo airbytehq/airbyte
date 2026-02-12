@@ -6,17 +6,18 @@ import json
 import logging
 import re
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+from airbyte_cdk.utils.traced_exception import FailureType
+
 
 logger = logging.getLogger("airbyte")
 
@@ -140,9 +141,7 @@ class MarketoBulkExportErrorHandler:
     @staticmethod
     def check_for_quota_error(response: requests.Response) -> None:
         if errors := response.json().get("errors"):
-            if errors[0].get("code") == "1029" and re.match(
-                r"Export daily quota \d+MB exceeded", errors[0].get("message", "")
-            ):
+            if errors[0].get("code") == "1029" and re.match(r"Export daily quota \d+MB exceeded", errors[0].get("message", "")):
                 message = "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
                 raise AirbyteTracedException(
                     internal_message=response.text,
