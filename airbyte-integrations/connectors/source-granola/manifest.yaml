@@ -26,7 +26,7 @@ streams:
             api_token: "{{ config['api_key'] }}"
           http_method: GET
           request_parameters:
-            page_size: "1"
+            page_size: "30"
         record_selector:
           type: RecordSelector
           extractor:
@@ -42,7 +42,7 @@ streams:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('cursor', '') }}"
-            stop_condition: "{{ not response.get('hasMore', False) }}"
+            stop_condition: "{{ not response.get('cursor') or not response.get('hasMore', False) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
