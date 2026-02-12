@@ -23,7 +23,7 @@ class ExportOperation(
     override fun execute() {
         log.info { "Running destination data export..." }
         for (stream in catalog.streams) {
-            log.info { "Exporting records for stream: ${stream.descriptor}" }
+            log.info { "Exporting records for stream: ${stream.mappedDescriptor}" }
             val records = dataExporter.exportRecords(spec, stream)
             records.forEach { record -> println(record.toJsonLine()) }
         }

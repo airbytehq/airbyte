@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.json.toJson
+import io.airbyte.cdk.load.data.json.AirbyteValueToJson
 import io.airbyte.cdk.load.message.Meta.Change
 import java.time.Instant
 import java.util.UUID
@@ -79,7 +79,7 @@ data class ExportedRecord(
         node.put("_airbyte_extracted_at", extractedAt.toEpochMilli())
         loadedAt?.let { node.put("_airbyte_loaded_at", it.toEpochMilli()) }
         generationId?.let { node.put("_airbyte_generation_id", it) }
-        node.set<JsonNode>("_airbyte_data", data.toJson())
+        node.set<JsonNode>("_airbyte_data", AirbyteValueToJson().convert(data))
         airbyteMeta?.let { meta ->
             val metaNode = JsonNodeFactory.instance.objectNode()
             meta.syncId?.let { metaNode.put("sync_id", it) }
