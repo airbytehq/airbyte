@@ -1,4 +1,4 @@
-# Jira authentication and configuration
+# Jira authentication
 
 This page documents the authentication and configuration options for the Jira agent connector.
 

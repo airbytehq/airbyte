@@ -1,4 +1,6 @@
-# Slack agent connector
+# Slack
+
+The Slack agent connector is a Python package that equips AI agents to interact with Slack through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Slack is a business communication platform that offers messaging, file sharing, and integrations
 with other tools. This connector provides read access to users, channels, channel members, channel
@@ -118,9 +120,9 @@ This connector supports the following entities and actions. For more details, se
 | Reactions | [Create](./REFERENCE.md#reactions-create) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Slack API docs
 
@@ -128,7 +130,7 @@ See the official [Slack API reference](https://api.slack.com/methods).
 
 ## Version information
 
-- **Package version:** 0.1.60
+- **Package version:** 0.1.67
 - **Connector version:** 0.1.15
-- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/slack/CHANGELOG.md)

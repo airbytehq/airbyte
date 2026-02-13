@@ -1,4 +1,4 @@
-# Airtable authentication and configuration
+# Airtable authentication
 
 This page documents the authentication and configuration options for the Airtable agent connector.
 

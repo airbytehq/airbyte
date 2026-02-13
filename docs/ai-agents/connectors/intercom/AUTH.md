@@ -1,4 +1,4 @@
-# Intercom authentication and configuration
+# Intercom authentication
 
 This page documents the authentication and configuration options for the Intercom agent connector.
 

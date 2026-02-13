@@ -1,4 +1,6 @@
-# Zendesk-Support agent connector
+# Zendesk-Support
+
+The Zendesk-Support agent connector is a Python package that equips AI agents to interact with Zendesk-Support through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Zendesk Support is a customer service platform that helps businesses manage support
 tickets, customer interactions, and help center content. This connector provides
@@ -116,9 +118,9 @@ This connector supports the following entities and actions. For more details, se
 | Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Zendesk-Support API docs
 
@@ -126,7 +128,7 @@ See the official [Zendesk-Support API reference](https://developer.zendesk.com/a
 
 ## Version information
 
-- **Package version:** 0.18.97
-- **Connector version:** 0.1.13
-- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Package version:** 0.18.105
+- **Connector version:** 0.1.14
+- **Generated with Connector SDK commit SHA:** 9f3ed279381a9e819042620df4f60ea3b31ffb10
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-support/CHANGELOG.md)

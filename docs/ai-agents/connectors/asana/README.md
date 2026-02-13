@@ -1,4 +1,6 @@
-# Asana agent connector
+# Asana
+
+The Asana agent connector is a Python package that equips AI agents to interact with Asana through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Asana is a work management platform that helps teams organize, track, and manage
 projects and tasks. This connector provides access to tasks, projects, workspaces,
@@ -116,9 +118,9 @@ This connector supports the following entities and actions. For more details, se
 | Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Asana API docs
 
@@ -126,7 +128,7 @@ See the official [Asana API reference](https://developers.asana.com/reference/re
 
 ## Version information
 
-- **Package version:** 0.19.97
-- **Connector version:** 0.1.13
-- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Package version:** 0.19.105
+- **Connector version:** 0.1.14
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/asana/CHANGELOG.md)
