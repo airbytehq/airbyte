@@ -585,7 +585,7 @@ class MsSqlServerDebeziumOperations(
     }
 
     override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> {
-        return generateCommonDebeziumProperties(streams) + ("snapshot.mode" to "schema_only")
+        return generateCommonDebeziumProperties(streams) + ("snapshot.mode" to "no_data")
     }
 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> {
