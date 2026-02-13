@@ -47,6 +47,7 @@ Additionally, you can configure:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.5.3 | 2026-02-10 | [73037](https://github.com/airbytehq/airbyte/pull/73037) | Update dependencies |
 | 0.5.2 | 2026-02-03 | [72579](https://github.com/airbytehq/airbyte/pull/72579) | Update dependencies |
 | 0.5.1 | 2026-01-20 | [65382](https://github.com/airbytehq/airbyte/pull/65382) | Update dependencies |
 | 0.5.0 | 2026-01-16 | [71356](https://github.com/airbytehq/airbyte/pull/71356) | Add OAuth 2.0 authentication support with SelectiveAuthenticator |

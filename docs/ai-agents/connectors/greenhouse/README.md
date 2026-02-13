@@ -1,4 +1,6 @@
-# Greenhouse agent connector
+# Greenhouse
+
+The Greenhouse agent connector is a Python package that equips AI agents to interact with Greenhouse through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Greenhouse is an applicant tracking system (ATS) that helps companies manage their
 hiring process. This connector provides access to candidates, applications, jobs,
@@ -108,9 +110,9 @@ This connector supports the following entities and actions. For more details, se
 | Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Greenhouse API docs
 
@@ -118,7 +120,7 @@ See the official [Greenhouse API reference](https://developers.greenhouse.io/har
 
 ## Version information
 
-- **Package version:** 0.17.91
+- **Package version:** 0.17.98
 - **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/greenhouse/CHANGELOG.md)

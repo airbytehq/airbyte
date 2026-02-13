@@ -1,4 +1,6 @@
-# Stripe agent connector
+# Stripe
+
+The Stripe agent connector is a Python package that equips AI agents to interact with Stripe through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Stripe is a payment processing platform that enables businesses to accept payments,
 manage subscriptions, and handle financial transactions. This connector provides
@@ -110,9 +112,9 @@ This connector supports the following entities and actions. For more details, se
 | Payouts | [List](./REFERENCE.md#payouts-list), [Get](./REFERENCE.md#payouts-get) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Stripe API docs
 
@@ -120,7 +122,7 @@ See the official [Stripe API reference](https://docs.stripe.com/api).
 
 ## Version information
 
-- **Package version:** 0.5.94
+- **Package version:** 0.5.101
 - **Connector version:** 0.1.9
-- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/stripe/CHANGELOG.md)

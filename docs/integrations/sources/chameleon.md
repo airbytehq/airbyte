@@ -40,6 +40,7 @@ Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
 
 | Version          | Date       | Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
+| 0.1.42 | 2026-02-10 | [73008](https://github.com/airbytehq/airbyte/pull/73008) | Update dependencies |
 | 0.1.41 | 2026-02-03 | [72700](https://github.com/airbytehq/airbyte/pull/72700) | Update dependencies |
 | 0.1.40 | 2026-01-20 | [72156](https://github.com/airbytehq/airbyte/pull/72156) | Update dependencies |
 | 0.1.39 | 2026-01-14 | [71685](https://github.com/airbytehq/airbyte/pull/71685) | Update dependencies |

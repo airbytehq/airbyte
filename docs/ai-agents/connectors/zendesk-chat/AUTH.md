@@ -1,4 +1,4 @@
-# Zendesk-Chat authentication and configuration
+# Zendesk-Chat authentication
 
 This page documents the authentication and configuration options for the Zendesk-Chat agent connector.
 
