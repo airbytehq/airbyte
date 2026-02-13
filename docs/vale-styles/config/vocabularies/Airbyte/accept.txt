@@ -24,6 +24,7 @@ Self-Managed Enterprise
 Elastic License 2.0
 ELv2
 MIT
+Agent Engine
 
 #
 # Common terms Airbyte uses
@@ -49,6 +50,7 @@ ELT
 [Dd]ata activation
 ID
 [Aa]gent(ic)?
+MCP
 
 # Common acronyms and initialisms that don't need definitions
 
