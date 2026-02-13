@@ -161,7 +161,16 @@ def traced_exception(fb_exception: FacebookRequestError):
     """
     msg = fb_exception.api_error_message() or fb_exception.get_message()
 
-    if "Error validating access token" in msg:
+    if "Invalid OAuth access token" in msg:
+        failure_type = FailureType.config_error
+        friendly_msg = (
+            "The access token for this connection is invalid or corrupted. "
+            "Please re-authenticate your Facebook connection in Airbyte. "
+            "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
+            "remove the Airbyte app, and then re-authenticate again."
+        )
+
+    elif "Error validating access token" in msg:
         failure_type = FailureType.config_error
         friendly_msg = "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
 

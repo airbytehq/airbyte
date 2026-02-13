@@ -84,6 +84,24 @@ def test_stream_slice_step_validation(stream_slice_step: str, expected_error_mes
 
 
 @pytest.mark.parametrize(
+    "lookback_window, expected_internal_message",
+    [
+        pytest.param("2023", "Lookback window should be provided in ISO 8601 duration format.", id="not_a_duration"),
+        pytest.param("invalid", "Unable to parse string", id="invalid_string"),
+    ],
+)
+def test_lookback_window_validation(lookback_window: str, expected_internal_message: str):
+    config = {"lookback_window": lookback_window}
+    source = SourceSalesforce(_ANY_CATALOG, config, _ANY_STATE)
+    logger = logging.getLogger("airbyte")
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check_connection(logger, config)
+    assert expected_internal_message in e.value.internal_message
+    assert "The lookback_window value is invalid" in e.value.message
+    assert expected_internal_message in e.value.message
+
+
+@pytest.mark.parametrize(
     "login_status_code, login_json_resp, expected_error_msg",
     [
         (
