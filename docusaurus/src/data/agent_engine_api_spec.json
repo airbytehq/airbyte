@@ -16,6 +16,174 @@
     }
   ],
   "paths": {
+    "/api/v1/account/applications/scoped-token": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Create Scoped Token",
+        "description": "**Requires an Access Token as the bearer token.**\n\nGenerate a new scoped token.\n\nYou can safely share it with your end users and it will allow them to manage their configured sources.",
+        "operationId": "create_account_applications_scoped_token",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__api__account__applications__schemas__ScopedTokenCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScopedTokenCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/applications/scoped-token/info": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get Scoped Token Info",
+        "description": "**Requires a Scoped Token as the bearer token.**\n\nReturn metadata about a scoped token (workspace, organization...).",
+        "operationId": "get_account_applications_scoped_token_info",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScopedTokenInfoGetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/account/applications/token": {
       "post": {
         "tags": ["Authentication"],
@@ -107,12 +275,12 @@
         }
       }
     },
-    "/api/v1/embedded/scoped-token": {
+    "/api/v1/account/applications/widget-token": {
       "post": {
         "tags": ["Authentication"],
-        "summary": "Create Scoped Token",
-        "description": "**Requires an Access Token as the bearer token.**\n\nGenerate a new scoped token.\n\nYou can safely share it with your end users and it will allow them to manage their configured sources.",
-        "operationId": "create_embedded_scoped_token",
+        "summary": "Create Widget Token",
+        "description": "**Requires an Access Token as the bearer token.**\n\nGenerate a new widget token.\n\nYou can safely pass it to your front-end application to instantiate a widget instance.",
+        "operationId": "create_account_applications_widget_token",
         "security": [
           {
             "HTTPBearer": []
@@ -137,7 +305,97 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ScopedTokenCreateRequest"
+                "$ref": "#/components/schemas/app__api__account__applications__schemas__WidgetTokenCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WidgetTokenCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/embedded/scoped-token": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Create Scoped Token",
+        "description": "**Requires an Access Token as the bearer token.**\n\nGenerate a new scoped token.\n\nYou can safely share it with your end users and it will allow them to manage their configured sources.",
+        "operationId": "deprecated_create_embedded_scoped_token",
+        "deprecated": true,
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__api__embedded__schemas__ScopedTokenCreateRequest"
               }
             }
           }
@@ -198,10 +456,11 @@
     },
     "/api/v1/embedded/scoped-token/info": {
       "get": {
-        "tags": ["Authentication (Advanced)"],
+        "tags": [],
         "summary": "Get Scoped Token Info",
-        "description": "Get the organization, workspace id, and external user id for a scoped token.",
-        "operationId": "get_embedded_scoped_token_info",
+        "description": "**Requires a Scoped Token as the bearer token.**\n\nReturn metadata about a scoped token (workspace, organization...).",
+        "operationId": "deprecated_get_embedded_scoped_token_info",
+        "deprecated": true,
         "security": [
           {
             "HTTPBearer": []
@@ -280,7 +539,8 @@
         "tags": ["Authentication"],
         "summary": "Create Widget Token",
         "description": "**Requires an Access Token as the bearer token.**\n\nGenerate a new widget token.\n\nYou can safely pass it to your front-end application to instantiate a widget instance.",
-        "operationId": "create_embedded_widget_token",
+        "operationId": "deprecated_create_embedded_widget_token",
+        "deprecated": true,
         "security": [
           {
             "HTTPBearer": []
@@ -305,7 +565,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WidgetTokenCreateRequest"
+                "$ref": "#/components/schemas/app__api__embedded__schemas__WidgetTokenCreateRequest"
               }
             }
           }
@@ -5238,35 +5498,6 @@
         "enum": ["global", "organization"],
         "title": "ScopeType"
       },
-      "ScopedTokenCreateRequest": {
-        "properties": {
-          "workspace_name": {
-            "type": "string",
-            "title": "Workspace Name",
-            "description": "The name of the workspace to create or use."
-          },
-          "region_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Region Id",
-            "description": "The region in which to create the workspace. If not provided, the default US region will be used. US region: 645a183f-b12b-4c6e-8ad3-99e165603450, EU region: b9e48d61-f082-4a14-a8d0-799a907938cb.",
-            "examples": [
-              "645a183f-b12b-4c6e-8ad3-99e165603450",
-              "b9e48d61-f082-4a14-a8d0-799a907938cb"
-            ]
-          }
-        },
-        "type": "object",
-        "required": ["workspace_name"],
-        "title": "ScopedTokenCreateRequest"
-      },
       "ScopedTokenCreateResponse": {
         "properties": {
           "token": {
@@ -6451,66 +6682,6 @@
         "title": "UserHostedConnectionTemplateCreateRequest",
         "description": "Create request for user-hosted connection templates where the user provides destination configuration."
       },
-      "WidgetTokenCreateRequest": {
-        "properties": {
-          "workspace_name": {
-            "type": "string",
-            "title": "Workspace Name",
-            "description": "The name of the workspace to create or use."
-          },
-          "region_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Region Id",
-            "description": "The region in which to create the workspace. If not provided, the default US region will be used. US region: 645a183f-b12b-4c6e-8ad3-99e165603450, EU region: b9e48d61-f082-4a14-a8d0-799a907938cb.",
-            "examples": [
-              "645a183f-b12b-4c6e-8ad3-99e165603450",
-              "b9e48d61-f082-4a14-a8d0-799a907938cb"
-            ]
-          },
-          "allowed_origin": {
-            "type": "string",
-            "title": "Allowed Origin",
-            "description": "The allowed origin for the widget."
-          },
-          "selected_source_template_tags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Selected Source Template Tags",
-            "description": "Optional list of tags to filter which source templates will be available in the widget."
-          },
-          "selected_source_template_tags_mode": {
-            "$ref": "#/components/schemas/TagSelectionMode",
-            "description": "Tag selection mode for source templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
-            "default": "any"
-          },
-          "selected_connection_template_tags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Selected Connection Template Tags",
-            "description": "Optional list of tags to filter which connection templates will be available in the widget."
-          },
-          "selected_connection_template_tags_mode": {
-            "$ref": "#/components/schemas/TagSelectionMode",
-            "description": "Tag selection mode for connection templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
-            "default": "any"
-          }
-        },
-        "type": "object",
-        "required": ["workspace_name", "allowed_origin"],
-        "title": "WidgetTokenCreateRequest"
-      },
       "WidgetTokenCreateResponse": {
         "properties": {
           "token": {
@@ -6764,6 +6935,184 @@
           "updated_at"
         ],
         "title": "WorkspaceUpdateResponse"
+      },
+      "app__api__account__applications__schemas__ScopedTokenCreateRequest": {
+        "properties": {
+          "external_user_id": {
+            "type": "string",
+            "title": "External User Id",
+            "description": "The external user identifier."
+          },
+          "region_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Id",
+            "description": "The region in which to create the workspace. If not provided, the default US region will be used. US region: 645a183f-b12b-4c6e-8ad3-99e165603450, EU region: b9e48d61-f082-4a14-a8d0-799a907938cb.",
+            "examples": [
+              "645a183f-b12b-4c6e-8ad3-99e165603450",
+              "b9e48d61-f082-4a14-a8d0-799a907938cb"
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["external_user_id"],
+        "title": "ScopedTokenCreateRequest"
+      },
+      "app__api__account__applications__schemas__WidgetTokenCreateRequest": {
+        "properties": {
+          "external_user_id": {
+            "type": "string",
+            "title": "External User Id",
+            "description": "The external user identifier."
+          },
+          "region_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Id",
+            "description": "The region in which to create the workspace. If not provided, the default US region will be used. US region: 645a183f-b12b-4c6e-8ad3-99e165603450, EU region: b9e48d61-f082-4a14-a8d0-799a907938cb.",
+            "examples": [
+              "645a183f-b12b-4c6e-8ad3-99e165603450",
+              "b9e48d61-f082-4a14-a8d0-799a907938cb"
+            ]
+          },
+          "allowed_origin": {
+            "type": "string",
+            "title": "Allowed Origin",
+            "description": "The allowed origin for the widget."
+          },
+          "selected_source_template_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Source Template Tags",
+            "description": "Optional list of tags to filter which source templates will be available in the widget."
+          },
+          "selected_source_template_tags_mode": {
+            "$ref": "#/components/schemas/TagSelectionMode",
+            "description": "Tag selection mode for source templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
+            "default": "any"
+          },
+          "selected_connection_template_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Connection Template Tags",
+            "description": "Optional list of tags to filter which connection templates will be available in the widget."
+          },
+          "selected_connection_template_tags_mode": {
+            "$ref": "#/components/schemas/TagSelectionMode",
+            "description": "Tag selection mode for connection templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
+            "default": "any"
+          }
+        },
+        "type": "object",
+        "required": ["external_user_id", "allowed_origin"],
+        "title": "WidgetTokenCreateRequest"
+      },
+      "app__api__embedded__schemas__ScopedTokenCreateRequest": {
+        "properties": {
+          "workspace_name": {
+            "type": "string",
+            "title": "Workspace Name",
+            "description": "The name of the workspace to create or use."
+          },
+          "region_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Id",
+            "description": "The region in which to create the workspace. If not provided, the default US region will be used. US region: 645a183f-b12b-4c6e-8ad3-99e165603450, EU region: b9e48d61-f082-4a14-a8d0-799a907938cb.",
+            "examples": [
+              "645a183f-b12b-4c6e-8ad3-99e165603450",
+              "b9e48d61-f082-4a14-a8d0-799a907938cb"
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["workspace_name"],
+        "title": "ScopedTokenCreateRequest"
+      },
+      "app__api__embedded__schemas__WidgetTokenCreateRequest": {
+        "properties": {
+          "workspace_name": {
+            "type": "string",
+            "title": "Workspace Name",
+            "description": "The name of the workspace to create or use."
+          },
+          "region_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Id",
+            "description": "The region in which to create the workspace. If not provided, the default US region will be used. US region: 645a183f-b12b-4c6e-8ad3-99e165603450, EU region: b9e48d61-f082-4a14-a8d0-799a907938cb.",
+            "examples": [
+              "645a183f-b12b-4c6e-8ad3-99e165603450",
+              "b9e48d61-f082-4a14-a8d0-799a907938cb"
+            ]
+          },
+          "allowed_origin": {
+            "type": "string",
+            "title": "Allowed Origin",
+            "description": "The allowed origin for the widget."
+          },
+          "selected_source_template_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Source Template Tags",
+            "description": "Optional list of tags to filter which source templates will be available in the widget."
+          },
+          "selected_source_template_tags_mode": {
+            "$ref": "#/components/schemas/TagSelectionMode",
+            "description": "Tag selection mode for source templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
+            "default": "any"
+          },
+          "selected_connection_template_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Connection Template Tags",
+            "description": "Optional list of tags to filter which connection templates will be available in the widget."
+          },
+          "selected_connection_template_tags_mode": {
+            "$ref": "#/components/schemas/TagSelectionMode",
+            "description": "Tag selection mode for connection templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
+            "default": "any"
+          }
+        },
+        "type": "object",
+        "required": ["workspace_name", "allowed_origin"],
+        "title": "WidgetTokenCreateRequest"
       }
     },
     "securitySchemes": {
