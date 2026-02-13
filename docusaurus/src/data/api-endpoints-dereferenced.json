@@ -206,21 +206,21 @@
     "hasRequestConfiguration": false,
     "hasResponseConfiguration": true
   },
-  "patch-destination": {
-    "operationId": "patchDestination",
+  "put-destination": {
+    "operationId": "putDestination",
     "path": "https://api.airbyte.com/v1",
-    "method": "PATCH",
+    "method": "PUT",
     "requestBodyProperties": [
       {
         "name": "name",
         "type": "string",
-        "required": false,
+        "required": true,
         "description": ""
       },
       {
         "name": "configuration",
         "type": "string",
-        "required": false,
+        "required": true,
         "description": "The values required to configure the destination."
       },
       {
@@ -232,7 +232,7 @@
     ],
     "responsesByStatus": {
       "200": {
-        "description": "Update a Destination",
+        "description": "Update a Destination and fully overwrite it",
         "examples": [
           {
             "name": "Destination Update Response Example",
@@ -315,21 +315,21 @@
     "hasRequestConfiguration": true,
     "hasResponseConfiguration": true
   },
-  "put-destination": {
-    "operationId": "putDestination",
+  "patch-destination": {
+    "operationId": "patchDestination",
     "path": "https://api.airbyte.com/v1",
-    "method": "PUT",
+    "method": "PATCH",
     "requestBodyProperties": [
       {
         "name": "name",
         "type": "string",
-        "required": true,
+        "required": false,
         "description": ""
       },
       {
         "name": "configuration",
         "type": "string",
-        "required": true,
+        "required": false,
         "description": "The values required to configure the destination."
       },
       {
@@ -341,7 +341,7 @@
     ],
     "responsesByStatus": {
       "200": {
-        "description": "Update a Destination and fully overwrite it",
+        "description": "Update a Destination",
         "examples": [
           {
             "name": "Destination Update Response Example",
@@ -626,34 +626,22 @@
     "hasRequestConfiguration": false,
     "hasResponseConfiguration": true
   },
-  "patch-source": {
-    "operationId": "patchSource",
+  "put-source": {
+    "operationId": "putSource",
     "path": "https://api.airbyte.com/v1",
-    "method": "PATCH",
+    "method": "PUT",
     "requestBodyProperties": [
       {
         "name": "name",
         "type": "string",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "workspaceId",
-        "type": "string",
-        "required": false,
+        "required": true,
         "description": ""
       },
       {
         "name": "configuration",
         "type": "string",
-        "required": false,
+        "required": true,
         "description": "The values required to configure the source."
-      },
-      {
-        "name": "secretId",
-        "type": "string",
-        "required": false,
-        "description": "Optional secretID obtained through the  OAuth redirect flow."
       },
       {
         "name": "resourceAllocation",
@@ -664,7 +652,7 @@
     ],
     "responsesByStatus": {
       "200": {
-        "description": "Update a Source",
+        "description": "Update a source and fully overwrite it",
         "examples": [
           {
             "name": "Source Update Response Example",
@@ -741,22 +729,34 @@
     "hasRequestConfiguration": true,
     "hasResponseConfiguration": true
   },
-  "put-source": {
-    "operationId": "putSource",
+  "patch-source": {
+    "operationId": "patchSource",
     "path": "https://api.airbyte.com/v1",
-    "method": "PUT",
+    "method": "PATCH",
     "requestBodyProperties": [
       {
         "name": "name",
         "type": "string",
-        "required": true,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "workspaceId",
+        "type": "string",
+        "required": false,
         "description": ""
       },
       {
         "name": "configuration",
         "type": "string",
-        "required": true,
+        "required": false,
         "description": "The values required to configure the source."
+      },
+      {
+        "name": "secretId",
+        "type": "string",
+        "required": false,
+        "description": "Optional secretID obtained through the  OAuth redirect flow."
       },
       {
         "name": "resourceAllocation",
@@ -767,7 +767,7 @@
     ],
     "responsesByStatus": {
       "200": {
-        "description": "Update a source and fully overwrite it",
+        "description": "Update a Source",
         "examples": [
           {
             "name": "Source Update Response Example",
