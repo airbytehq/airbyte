@@ -16,7 +16,7 @@ import jakarta.inject.Singleton
 class ExportOperation(
     private val catalog: DestinationCatalog,
     private val spec: ConfigurationSpecification,
-    private val dataExporter: DestinationDataExporter,
+    private val destinationReader: DestinationReader,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -24,7 +24,7 @@ class ExportOperation(
         log.info { "Running destination data export..." }
         for (stream in catalog.streams) {
             log.info { "Exporting records for stream: ${stream.mappedDescriptor}" }
-            val records = dataExporter.exportRecords(spec, stream)
+            val records = destinationReader.exportRecords(spec, stream)
             records.forEach { record -> println(record.toJsonLine()) }
         }
         log.info { "Destination data export complete." }

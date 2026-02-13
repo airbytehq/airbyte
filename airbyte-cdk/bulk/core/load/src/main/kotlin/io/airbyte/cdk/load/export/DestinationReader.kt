@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.export
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 
-interface DestinationDataExporter {
+interface DestinationReader {
     fun exportRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream,

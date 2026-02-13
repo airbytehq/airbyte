@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.export.DestinationDataExporter
+import io.airbyte.cdk.load.export.DestinationReader
 import io.airbyte.cdk.load.export.ExportedRecord
 
 interface DestinationDataDumper {
@@ -36,7 +36,7 @@ object FakeDataDumper : DestinationDataDumper {
 
 class DestinationDataDumperAdapter(
     private val dumper: DestinationDataDumper,
-) : DestinationDataExporter {
+) : DestinationReader {
     override fun exportRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream,
@@ -49,4 +49,4 @@ class DestinationDataDumperAdapter(
     ): Map<String, String> = dumper.dumpFile(spec, stream)
 }
 
-fun DestinationDataDumper.asExporter(): DestinationDataExporter = DestinationDataDumperAdapter(this)
+fun DestinationDataDumper.asReader(): DestinationReader = DestinationDataDumperAdapter(this)

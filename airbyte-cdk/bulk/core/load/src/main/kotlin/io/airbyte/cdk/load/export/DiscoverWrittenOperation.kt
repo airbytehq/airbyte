@@ -22,7 +22,7 @@ import kotlinx.coroutines.runBlocking
 class DiscoverWrittenOperation(
     private val catalog: DestinationCatalog,
     private val schemaEvolutionClient: TableSchemaEvolutionClient,
-    private val dataExporter: DestinationDataExporter,
+    private val destinationReader: DestinationReader,
     private val spec: ConfigurationSpecification,
 ) : Operation {
     private val log = KotlinLogging.logger {}
@@ -71,7 +71,7 @@ class DiscoverWrittenOperation(
         val stats = mutableMapOf<String, MutableColumnStats>()
         var recordCount = 0L
 
-        dataExporter.exportRecords(spec, stream).forEach { record ->
+        destinationReader.exportRecords(spec, stream).forEach { record ->
             for ((columnName, value) in record.data.values) {
                 val columnStat = stats.getOrPut(columnName) { MutableColumnStats() }
                 if (value is NullValue) {
