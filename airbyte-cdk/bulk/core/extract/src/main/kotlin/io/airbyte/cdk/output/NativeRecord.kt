@@ -21,7 +21,9 @@ import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import java.math.BigDecimal
 import java.net.URL
+import java.nio.ByteBuffer
 import java.time.OffsetDateTime
+import java.time.temporal.TemporalAccessor
 
 // A value of a field along with its encoder
 class FieldValueEncoder<R>(val fieldValue: R?, val jsonEncoder: JsonEncoder<in R>) {
@@ -96,7 +98,23 @@ fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
             is CdcOffsetDateTimeCodec ->
                 (value as OffsetDateTime).format(OffsetDateTimeCodec.formatter)
             is ArrayEncoder<*> -> fve.encode().toString()
-            else -> value
+            else ->
+                if (
+                    value is String ||
+                        value is Number ||
+                        value is Boolean ||
+                        value is TemporalAccessor ||
+                        value is java.util.Date ||
+                        value is ByteArray ||
+                        value is ByteBuffer
+                ) {
+                    value
+                } else {
+                    // The native value type is not directly compatible with protobuf encoding.
+                    // Fall back to the JSON encoder to produce a protobuf-compatible value.
+                    // This handles cases like hstore (Map<String, String?> -> STRING).
+                    fve.encode().asText()
+                }
         }
     }
 }

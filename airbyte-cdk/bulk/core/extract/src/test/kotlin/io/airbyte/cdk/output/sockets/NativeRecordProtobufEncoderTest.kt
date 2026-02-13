@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.output.sockets
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
@@ -45,6 +47,17 @@ import org.junit.jupiter.api.DynamicNode
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 
+/** Test encoder that mimics hstore: encodes a Map as a JSON string in a TextNode. */
+object MapAsJsonStringEncoder : JsonEncoder<Map<String, String?>> {
+    override fun encode(decoded: Map<String, String?>): JsonNode {
+        val json =
+            decoded.entries.joinToString(",", "{", "}") { (k, v) ->
+                if (v == null) "\"$k\":null" else "\"$k\":\"$v\""
+            }
+        return TextNode(json)
+    }
+}
+
 class NativeRecordProtobufEncoderTest {
     private val protoDecoder = AirbyteValueProtobufDecoder()
 
@@ -69,6 +82,11 @@ class NativeRecordProtobufEncoderTest {
                         }
                     is Byte -> value.toLong().toBigInteger()
                     is Double -> value.toBigDecimal()
+                    is Map<*, *> ->
+                        MapAsJsonStringEncoder.encode(
+                                @Suppress("UNCHECKED_CAST") (value as Map<String, String?>)
+                            )
+                            .asText()
                     else -> value!!
                 }
     }
@@ -186,6 +204,12 @@ class NativeRecordProtobufEncoderTest {
                 value = OffsetTime.parse(OffsetTime.now().format(OffsetTimeCodec.formatter)),
                 jsonEncoder = OffsetTimeCodec,
                 airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+            ),
+            // Simulates hstore: native value is Map but schema type is STRING.
+            TestCase(
+                value = mapOf("color" to "red", "size" to null),
+                jsonEncoder = MapAsJsonStringEncoder,
+                airbyteSchemaType = LeafAirbyteSchemaType.STRING
             ),
         )
 
