@@ -57,8 +57,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def reduce_request_record_limit(details):
         _, exc, _ = sys.exc_info()
-        # the list of error patterns to track,
-        # in order to reduce the request page size and retry
+        if not isinstance(exc, FacebookRequestError):
+            return
         error_patterns = [
             "Please reduce the amount of data you're asking for, then retry your request",
             "An unknown error occurred",
