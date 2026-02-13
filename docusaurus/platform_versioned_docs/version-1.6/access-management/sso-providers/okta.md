@@ -58,6 +58,15 @@ On the following screen you'll need to configure all parameters for your Okta ap
       <dd>You can control whether everyone in your Okta organization should be able to access Airbyte using their Okta account or limit it only to a subset of your users by selecting specific groups who should get access.</dd>
     </dl>
 
+    (Optional) To allow users to access Airbyte directly from their Okta dashboard, configure IdP-Initiated Login. In the **General** tab of your Airbyte application, scroll to **Login initiated by** and configure the following settings:
+
+    * **Login initiated by**: `Either Okta or App`
+    * **Application visibility**: Check `Display application icon to users`
+    * **Login flow**: `Redirect to app to initiate login (OIDC Compliant)`
+    * **Initiate login URI**: `https://cloud.airbyte.com`
+
+    Click **Save**. After this configuration, users see an Airbyte tile in their Okta dashboard and can click it to sign into Airbyte.
+
     You'll need to pass your Airbyte contact the following information of the created application. After that we'll setup SSO for you and let you know once it's ready.
 
     * Your **Okta domain** (it's not specific to this application, see [Find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
@@ -101,6 +110,15 @@ For security purposes, existing [Applications](https://reference.airbyte.com/ref
       <dt>**Assignments > Controlled Access**</dt>
       <dd>You can control whether everyone in your Okta organization should be able to access Airbyte using their Okta account or limit it only to a subset of your users by selecting specific groups who should get access.</dd>
     </dl>
+
+    (Optional) To allow users to access Airbyte directly from their Okta dashboard, configure IdP-Initiated Login. In the **General** tab of your Airbyte application, scroll to **Login initiated by** and configure the following settings:
+
+    * **Login initiated by**: `Either Okta or App`
+    * **Application visibility**: Check `Display application icon to users`
+    * **Login flow**: `Redirect to app to initiate login (OIDC Compliant)`
+    * **Initiate login URI**: Your Airbyte domain (for example, `https://airbyte.internal.mycompany.com`)
+
+    Click **Save**. After this configuration, users see an Airbyte tile in their Okta dashboard and can click it to sign into Airbyte.
 
     Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
 

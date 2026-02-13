@@ -4,6 +4,9 @@ The Bulk CDK is the "new java CDK" that's currently incubating.
 As the name suggests, its purpose is to help develop connectors which extract or load data in bulk.
 The Bulk CDK is written in Kotlin and uses the Micronaut framework for dependency injection.
 
+- **API Reference Docs**: [Kotlin CDK API Reference](https://airbyte-kotlin-cdk.vercel.app/)
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Structure
 
 The Bulk CDK consists of a _core_ and a bunch of _toolkits_.

@@ -1,0 +1,27 @@
+{
+  "type": ["object", "null"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the deleted product.",
+      "type": ["null", "integer"]
+    },
+    "deleted_at": {
+      "description": "The date and time when the product was deleted.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deleted_message": {
+      "description": "Message related to the deletion of the product.",
+      "type": ["null", "string"]
+    },
+    "deleted_description": {
+      "description": "Description of the reason for deletion.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop where the product was listed.",
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -2,69 +2,72 @@
 
 This page contains the setup guide and reference information for the [Monday](https://monday.com/) source connector.
 
+This connector uses the [Monday.com GraphQL API](https://developer.monday.com/api-reference/docs) (version 2026-01).
+
 ## Prerequisites
 
-- Monday API Token / Monday Access Token
+To set up the Monday source connector, you need either:
 
-You can find your Oauth application in Monday main page -> Profile picture (bottom left corner) -> Developers -> My Apps -> Select your app.
+- A **Personal API Token**, which you can generate from your Monday.com account under **Profile picture** (bottom left corner) > **Admin** > **API**.
+- An **OAuth 2.0 application**, which you can find or create under **Profile picture** (bottom left corner) > **Developers** > **My Apps**.
 
-You can get the API token for Monday by going to Profile picture (bottom left corner) -> Admin -> API.
+For more details, see Monday.com's [authentication documentation](https://developer.monday.com/api-reference/docs/authentication).
 
 ## Setup guide
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Monday connector and select **Monday** from the Source type dropdown.
-4. Fill in your API Key or authenticate using OAuth and then click **Set up source**.
+1. In Airbyte, navigate to **Sources** and click **+ New source**.
+2. Search for and select **Monday**.
+3. Enter a name for the connector.
+4. Choose your authentication method and enter the required credentials.
+5. Optionally, enter one or more **Board IDs** to limit syncing to specific boards. If left empty, the connector syncs data from all boards in your account.
+6. Click **Set up source**.
 
-### Connect using `OAuth 2.0` option
+### Connect using OAuth 2.0
 
-1. Select `OAuth2.0` in `Authorization Method`.
-2. Click on `authenticate your Monday account`.
-3. Proceed with the authentication using the credentials for your Monday account.
+1. Select **OAuth2.0** in **Authorization Method**.
+2. Click **Authenticate your Monday account**.
+3. Complete the authentication flow using your Monday.com credentials.
 
-### Connect using `API Token` option
+### Connect using API Token
 
-1. Generate an API Token as described [here](https://developer.monday.com/api-reference/docs/authentication).
-2. Use the generated `api_token` in the Airbyte connection.
+1. Generate an API token as described in Monday.com's [authentication documentation](https://developer.monday.com/api-reference/docs/authentication).
+2. Select **API Token** in **Authorization Method**.
+3. Enter your token in the **Personal API Token** field.
 
 ## Supported sync modes
 
-The Monday source connector supports the following features:
+The Monday source connector supports the following sync modes:
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
-| SSL connection    | No         |
 | Namespaces        | No         |
 
-## Supported Streams
+## Supported streams
 
-Several output streams are available from this source:
+The following streams are available:
 
-- [Activity logs](https://developer.monday.com/api-reference/docs/activity-logs)
-- [Items](https://developer.monday.com/api-reference/docs/items-queries)
-- [Boards](https://developer.monday.com/api-reference/docs/groups-queries#groups-queries)
-- [Teams](https://developer.monday.com/api-reference/docs/teams-queries)
-- [Updates](https://developer.monday.com/api-reference/docs/updates-queries)
-- [Users](https://developer.monday.com/api-reference/docs/users-queries-1)
-- [Tags](https://developer.monday.com/api-reference/docs/tags-queries)
-- [Workspaces](https://developer.monday.com/api-reference/docs/workspaces)
+| Stream | Sync mode | API documentation |
+| :--- | :--- | :--- |
+| Activity logs | Full Refresh, Incremental | [Activity logs](https://developer.monday.com/api-reference/docs/activity-logs) |
+| Boards | Full Refresh, Incremental | [Boards](https://developer.monday.com/api-reference/docs/boards) |
+| Items | Full Refresh, Incremental | [Items](https://developer.monday.com/api-reference/docs/items-queries) |
+| Tags | Full Refresh | [Tags](https://developer.monday.com/api-reference/docs/tags-queries) |
+| Teams | Full Refresh | [Teams](https://developer.monday.com/api-reference/docs/teams-queries) |
+| Updates | Full Refresh | [Updates](https://developer.monday.com/api-reference/docs/updates-queries) |
+| Users | Full Refresh | [Users](https://developer.monday.com/api-reference/docs/users-queries-1) |
+| Workspaces | Full Refresh | [Workspaces](https://developer.monday.com/api-reference/docs/workspaces) |
 
-Important Notes:
+### Stream notes
 
-- `Columns` are available from the `Boards` stream. By syncing the `Boards` stream you will get the `Columns` for each `Board` synced in the database
-  The typical name of the table depends on the `destination` you use like `boards.columns`, for instance.
+- The Boards stream includes column definitions for each board. In your destination, these appear as nested data, typically named `boards.columns`.
 
-- `Column Values` are available from the `Items` stream. By syncing the `Items` stream you will get the `Column Values` for each `Item` (row) of the board.
-  The typical name of the table depends on the `destination` you use like `items.column_values`, for instance.
-  If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+- The Items stream includes column values for each item. In your destination, these appear as nested data, typically named `items.column_values`.
 
-- Incremental sync for `Items` and `Boards` streams is done using the `Activity logs` stream.
-  Ids of boards and items are extracted from activity logs events and used to selectively sync boards and items.
-  Some data may be lost if the time between incremental syncs is longer than the activity logs retention time for your plan.
-  Check your Monday plan at https://monday.com/pricing.
+- Incremental sync for the Items and Boards streams relies on the Activity logs stream. Board and item IDs are extracted from activity log events and used to selectively sync only the changed records. If the time between syncs exceeds the activity log retention period for your [Monday.com plan](https://monday.com/pricing), some changes may not be captured during incremental syncs.
+
+If there are additional endpoints you'd like Airbyte to support, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ## Performance considerations
 
@@ -77,15 +80,24 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.1 | 2026-02-13 | [72192](https://github.com/airbytehq/airbyte/pull/72192) | Add `user_id` field to `activity_logs` stream |
+| 2.5.0 | 2026-02-11 | [72832](https://github.com/airbytehq/airbyte/pull/72832) | Upgrade to Monday.com API version 2026-01 |
+| 2.4.21 | 2026-02-10 | [73038](https://github.com/airbytehq/airbyte/pull/73038) | Update dependencies |
+| 2.4.20 | 2026-02-03 | [72577](https://github.com/airbytehq/airbyte/pull/72577) | Update dependencies |
+| 2.4.19 | 2026-01-20 | [71994](https://github.com/airbytehq/airbyte/pull/71994) | Update dependencies |
+| 2.4.18 | 2026-01-14 | [71513](https://github.com/airbytehq/airbyte/pull/71513) | Update dependencies |
+| 2.4.17 | 2025-12-18 | [70552](https://github.com/airbytehq/airbyte/pull/70552) | Update dependencies |
+| 2.4.16 | 2025-12-03 | [69718](https://github.com/airbytehq/airbyte/pull/69718) | Add pagination reset handling for Monday CursorExpiredError |
+| 2.4.15 | 2025-11-25 | [69883](https://github.com/airbytehq/airbyte/pull/69883) | Update dependencies |
 | 2.4.14 | 2025-11-18 | [69367](https://github.com/airbytehq/airbyte/pull/69367) | Update dependencies |
 | 2.4.13 | 2025-10-29 | [69048](https://github.com/airbytehq/airbyte/pull/69048) | Update dependencies |
 | 2.4.12 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
 | 2.4.11 | 2025-10-21 | [68416](https://github.com/airbytehq/airbyte/pull/68416) | Update dependencies |
 | 2.4.10 | 2025-10-14 | [67840](https://github.com/airbytehq/airbyte/pull/67840) | Update dependencies |
 | 2.4.9 | 2025-10-07 | [67393](https://github.com/airbytehq/airbyte/pull/67393) | Update dependencies |
-| 2.4.8 | 2025-09-30 | [66938](https://github.com/airbytehq/airbyte/pull/66938) | Surface HTTP 200 Error Messages |
+| 2.4.8 | 2025-10-02 | [66938](https://github.com/airbytehq/airbyte/pull/66938) | Surface HTTP 200 Error Messages |
 | 2.4.7 | 2025-09-30 | [66336](https://github.com/airbytehq/airbyte/pull/66336) | Update dependencies |
-| 2.4.6 | 2025-09-09 | [65884](https://github.com/airbytehq/airbyte/pull/65884) | Update dependencies |
+| 2.4.6 | 2025-09-10 | [65884](https://github.com/airbytehq/airbyte/pull/65884) | Update dependencies |
 | 2.4.5 | 2025-08-23 | [64705](https://github.com/airbytehq/airbyte/pull/64705) | Update dependencies |
 | 2.4.4 | 2025-08-11 | [64878](https://github.com/airbytehq/airbyte/pull/64878) | Pass query in json body of request instead of query params. |
 | 2.4.3 | 2025-08-02 | [64220](https://github.com/airbytehq/airbyte/pull/64220) | Update dependencies |
@@ -99,7 +111,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 | 2.2.0      | 2025-03-14 | [52780](https://github.com/airbytehq/airbyte/pull/52780)  | Add optional config parameter to control which boards are fetched when syncing the `Boards` stream                                                                     |
 | 2.1.13     | 2025-02-01 | [52780](https://github.com/airbytehq/airbyte/pull/52780)  | Update dependencies                                                                                                                                                    |
 | 2.1.12     | 2025-01-25 | [51833](https://github.com/airbytehq/airbyte/pull/51833)  | Update dependencies                                                                                                                                                    |
-| 2.1.11     | 2025-01-14 | [51147](https://github.com/airbytehq/airbyte/pull/10311)  | Update API version to 2024-10                                                                                                                                          |
+| 2.1.11     | 2025-01-14 | [10311](https://github.com/airbytehq/airbyte/pull/10311)  | Update API version to 2024-10                                                                                                                                          |
 | 2.1.10     | 2025-01-11 | [51147](https://github.com/airbytehq/airbyte/pull/51147)  | Update dependencies                                                                                                                                                    |
 | 2.1.9      | 2025-01-08 | [50984](https://github.com/airbytehq/airbyte/pull/50984)  | Update the `spec` to support `Jinja` style variables for `DeclarativeOAuthFlow`                                                                                        |
 | 2.1.8      | 2024-12-28 | [50624](https://github.com/airbytehq/airbyte/pull/50624)  | Update dependencies                                                                                                                                                    |
@@ -123,7 +135,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 | 1.1.0      | 2023-07-05 | [27944](https://github.com/airbytehq/airbyte/pull/27944)  | Add incremental sync for Items and Boards streams                                                                                                                      |
 | 1.0.0      | 2023-06-20 | [27410](https://github.com/airbytehq/airbyte/pull/27410)  | Add new streams: Tags, Workspaces. Add new fields for existing streams.                                                                                                |
 | 0.2.6      | 2023-06-12 | [27244](https://github.com/airbytehq/airbyte/pull/27244)  | Added http error handling for `403` and `500` HTTP errors                                                                                                              |
-| 0.2.5      | 2023-05-22 | [225881](https://github.com/airbytehq/airbyte/pull/25881) | Fix pagination for the items stream                                                                                                                                    |
+| 0.2.5      | 2023-05-22 | [25881](https://github.com/airbytehq/airbyte/pull/25881) | Fix pagination for the items stream                                                                                                                                    |
 | 0.2.4      | 2023-04-26 | [25277](https://github.com/airbytehq/airbyte/pull/25277)  | Increase row limit to 100                                                                                                                                              |
 | 0.2.3      | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231)  | Publish using low-code CDK Beta version                                                                                                                                |
 | 0.2.2      | 2023-01-04 | [20996](https://github.com/airbytehq/airbyte/pull/20996)  | Fix json schema loader                                                                                                                                                 |

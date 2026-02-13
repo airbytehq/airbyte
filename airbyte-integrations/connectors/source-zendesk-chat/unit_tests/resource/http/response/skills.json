@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "name": "Technical Support",
+    "description": "Technical support skill",
+    "enabled": true,
+    "member_count": 10
+  }
+]

@@ -102,7 +102,7 @@ Each stream will be outputted to its dedicated directory according to the config
 
 ### Avro
 
-[Apache Avro](https://avro.apache.org/) serializes data in a compact binary format. Currently, the Airbyte S3 Avro connector always uses the [binary encoding](http://avro.apache.org/docs/current/spec.html#binary_encoding), and assumes that all data records follow the same schema.
+[Apache Avro](https://avro.apache.org/) serializes data in a compact binary format. Currently, the Airbyte S3 Avro connector always uses the [binary encoding](https://avro.apache.org/docs/1.12.0/specification/#binary-encoding), and assumes that all data records follow the same schema.
 
 #### Configuration
 

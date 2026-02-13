@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.stages
@@ -49,12 +49,28 @@ class ParseStageTest {
             DestinationStream(
                 unmappedNamespace = "test-namespace",
                 unmappedName = "test-stream",
-                importType = Append,
-                schema = io.airbyte.cdk.load.data.ObjectType(linkedMapOf()),
                 generationId = 1L,
                 minimumGenerationId = 1L,
                 syncId = 1L,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                        tableNames =
+                            io.airbyte.cdk.load.schema.model.TableNames(
+                                finalTableName =
+                                    io.airbyte.cdk.load.schema.model.TableName(
+                                        "test-namespace",
+                                        "test-stream"
+                                    )
+                            ),
+                        columnSchema =
+                            io.airbyte.cdk.load.schema.model.ColumnSchema(
+                                inputSchema = mapOf(),
+                                inputToFinalColumnNames = mapOf(),
+                                finalSchema = mapOf(),
+                            ),
+                        importType = Append,
+                    )
             )
         rawRecord =
             DestinationRecordRaw(
