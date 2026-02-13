@@ -196,6 +196,103 @@ definitions:
         schema:
           $ref: "#/schemas/campaigns"
 
+    categories:
+      type: DeclarativeStream
+      name: categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/catalogs/v1/organizations/{{ config['organization_id'] }}/catalogs/{{ stream_partition.catalog_id }}/categories
+          http_method: GET
+          request_parameters:
+            siteId: "{{ config['site_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: catalog_id
+                stream:
+                  $ref: "#/definitions/streams/catalogs"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/catalogs/v1/organizations/{{ config['organization_id'] }}/catalogs/{{ stream_partition.parent_slice.catalog_id }}/categories/{{ stream_partition.category_id }}/products
+          http_method: POST
+          request_parameters:
+            siteId: "{{ config['site_id'] }}"
+          request_body_json:
+            query:
+              textQuery:
+                fields:
+                  - "productId"
+                searchPhrase: "*"
+            select: "(**)"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: count
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: category_id
+                stream:
+                  $ref: "#/definitions/streams/categories"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+
   base_requester:
     type: HttpRequester
     url_base: >-
@@ -215,6 +312,8 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/orders"
   - $ref: "#/definitions/streams/catalogs"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/products"
   - $ref: "#/definitions/streams/promotions"
   - $ref: "#/definitions/streams/campaigns"
 
@@ -476,6 +575,88 @@ schemas:
         type:
           - "null"
           - boolean
+
+  categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      parentCategoryId:
+        type:
+          - "null"
+          - string
+      position:
+        type:
+          - "null"
+          - number
+      online:
+        type:
+          - "null"
+          - boolean
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      brand:
+        type:
+          - "null"
+          - string
+      online:
+        type:
+          - "null"
+          - boolean
+      searchable:
+        type:
+          - "null"
+          - boolean
+      primaryCategoryId:
+        type:
+          - "null"
+          - string
+      price:
+        type:
+          - "null"
+          - number
+      creationDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        type:
+          - "null"
+          - string
+        format: date-time
 
   campaigns:
     type: object

@@ -20,7 +20,7 @@ This page contains the setup guide and reference information for the [Salesforce
 2. Navigate to **API Client** and create a new API client or use an existing one.
 3. Ensure the client has the following scopes enabled:
    - `sfcc.orders` (for Orders stream)
-   - `sfcc.products` (for future Products stream)
+   - `sfcc.products` (for Products stream)
    - `sfcc.catalogs` (for Catalogs stream)
    - `sfcc.pricing.promotions` (for Promotions stream)
    - `sfcc.pricing.campaigns` (for Campaigns stream)
@@ -67,6 +67,8 @@ The Salesforce Commerce Cloud source connector supports the following [sync mode
 | :--- | :--- | :--- | :--- |
 | [Orders](https://developer.salesforce.com/docs/commerce/commerce-api/references/orders?meta=getOrders) | GET /checkout/orders/v1/.../orders | Incremental | orderNo |
 | Catalogs | GET /product/catalogs/v1/.../catalogs | Full Refresh | id |
+| Categories | GET /product/catalogs/v1/.../catalogs/{catalogId}/categories | Full Refresh | id |
+| Products | POST /product/catalogs/v1/.../categories/{categoryId}/products | Full Refresh | id |
 | Promotions | POST /pricing/promotions/v1/.../promotions | Full Refresh | id |
 | Campaigns | POST /pricing/campaigns/v1/.../campaigns | Full Refresh | id |
 
@@ -85,7 +87,7 @@ Salesforce Commerce Cloud APIs use throttle windows of 5-60 seconds. The connect
 
 #### Products stream
 
-The SCAPI Admin Products API only exposes single-product endpoints (by product ID). A list/search endpoint is not available, so the Products stream is not yet implemented. Future versions may add this using a SubstreamPartitionRouter from Catalogs.
+The SCAPI Admin Products API only exposes single-product endpoints (by product ID). The connector works around this by using a SubstreamPartitionRouter chain: Catalogs → Categories → Products. This means products are discovered by iterating through each catalog's categories and searching for products assigned to each category.
 
 #### Offset pagination limit
 
@@ -104,7 +106,7 @@ The Orders API caps offset + limit at 10,000. For large datasets, incremental sy
 
 | Version | Date       | Pull Request                                              | Subject                        |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------- |
-| 0.1.0   | 2026-02-13 | [73343](https://github.com/airbytehq/airbyte/pull/73343)  | Initial release with Orders, Catalogs, Promotions, and Campaigns streams |
+| 0.1.0   | 2026-02-13 | [73343](https://github.com/airbytehq/airbyte/pull/73343)  | Initial release with Orders, Catalogs, Categories, Products, Promotions, and Campaigns streams |
 
 </details>
 
