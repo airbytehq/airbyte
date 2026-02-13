@@ -68,7 +68,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
+          datetime: "2011-09-01"
           datetime_format: "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
         cursor_datetime_formats:
@@ -146,7 +146,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
+          datetime: "2011-09-01"
           datetime_format: "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
@@ -215,7 +215,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
+          datetime: "2011-09-01"
           datetime_format: "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
@@ -284,7 +284,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
+          datetime: "2011-09-01"
           datetime_format: "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
@@ -353,7 +353,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
+          datetime: "2011-09-01"
           datetime_format: "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
@@ -422,7 +422,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
+          datetime: "2011-09-01"
           datetime_format: "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
@@ -491,7 +491,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
+          datetime: "2011-09-01"
           datetime_format: "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
@@ -560,7 +560,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
+          datetime: "2011-09-01"
           datetime_format: "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
