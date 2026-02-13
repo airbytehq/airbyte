@@ -28,10 +28,8 @@ class JdbcColumnStatsProvider(
 
         dataSource.connection.use { conn ->
             val quote = conn.metaData.identifierQuoteString ?: "\""
-            val countExprs =
-                columnList.joinToString(", ") { col -> "COUNT($quote$col$quote)" }
-            val qualifiedTable =
-                "$quote${tableName.namespace}$quote.$quote${tableName.name}$quote"
+            val countExprs = columnList.joinToString(", ") { col -> "COUNT($quote$col$quote)" }
+            val qualifiedTable = "$quote${tableName.namespace}$quote.$quote${tableName.name}$quote"
             val sql = "SELECT COUNT(*) AS _total, $countExprs FROM $qualifiedTable"
             log.info { "Running stats query: $sql" }
 
@@ -39,14 +37,16 @@ class JdbcColumnStatsProvider(
                 stmt.executeQuery(sql).use { rs ->
                     if (!rs.next()) return emptyMap()
                     val total = rs.getLong(1)
-                    return columnList.mapIndexed { index, col ->
-                        val nonNullCount = rs.getLong(index + 2)
-                        col to
-                            ColumnStats(
-                                nullCount = total - nonNullCount,
-                                nonNullCount = nonNullCount,
-                            )
-                    }.toMap()
+                    return columnList
+                        .mapIndexed { index, col ->
+                            val nonNullCount = rs.getLong(index + 2)
+                            col to
+                                ColumnStats(
+                                    nullCount = total - nonNullCount,
+                                    nonNullCount = nonNullCount,
+                                )
+                        }
+                        .toMap()
                 }
             }
         }

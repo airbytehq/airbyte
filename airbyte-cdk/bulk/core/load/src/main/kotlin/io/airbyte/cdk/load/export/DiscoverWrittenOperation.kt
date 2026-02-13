@@ -105,8 +105,7 @@ class DiscoverWrittenOperation(
             }
         }
 
-        val output =
-            ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(catalogNode)
+        val output = ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(catalogNode)
         println(output)
         log.info { "Discover-written complete." }
     }

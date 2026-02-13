@@ -85,5 +85,4 @@ data class OutputRecord(
         ObjectValue.from(data),
         airbyteMeta,
     )
-
 }
