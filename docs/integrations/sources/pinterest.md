@@ -31,6 +31,17 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 
 <!-- /env:oss -->
 
+Different streams in this connector require different Pinterest OAuth scopes:
+
+- **Account analytics** (`user_account_analytics`): Requires `user_accounts:read`.
+- **Boards, board sections, and board pins**: Require `boards:read` and `pins:read`.
+- **Ad accounts, campaigns, ad groups, ads, and their analytics**: Require `ads:read`.
+- **Catalogs, catalog feeds, and catalog product groups**: Require `catalogs:read`.
+
+If your Pinterest account has limited permissions, some streams may not return data. The connector
+validates your connection using the `user_account_analytics` stream, which requires only the
+`user_accounts:read` scope. This scope is available to all authenticated Pinterest users.
+
 ## Setup guide
 
 <!-- env:cloud -->
@@ -196,17 +207,6 @@ The connector is restricted by the Pinterest
 enforces rate limits per endpoint category. For example, analytics endpoints allow 300 requests per
 minute with standard access, while general read endpoints allow 1,000 requests per minute. For
 details, see the [Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
-
-Different streams in this connector require different Pinterest OAuth scopes:
-
-- **Account analytics** (`user_account_analytics`): Requires `user_accounts:read`.
-- **Boards, board sections, and board pins**: Require `boards:read` and `pins:read`.
-- **Ad accounts, campaigns, ad groups, ads, and their analytics**: Require `ads:read`.
-- **Catalogs, catalog feeds, and catalog product groups**: Require `catalogs:read`.
-
-If your Pinterest account has limited permissions, some streams may not return data. The connector
-validates your connection using the `user_account_analytics` stream, which requires only the
-`user_accounts:read` scope. This scope is available to all authenticated Pinterest users.
 
 ## Changelog
 
