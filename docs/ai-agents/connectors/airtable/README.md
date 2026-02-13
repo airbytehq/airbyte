@@ -1,4 +1,6 @@
-# Airtable agent connector
+# Airtable
+
+The Airtable agent connector is a Python package that equips AI agents to interact with Airtable through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Airtable is a cloud-based platform that combines the simplicity of a spreadsheet with the 
 power of a database. This connector provides access to bases, tables, and records for 
@@ -66,12 +68,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_airtable import AirtableConnector
+from airbyte_agent_airtable import AirtableConnector, AirbyteAuthConfig
 
 connector = AirtableConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -88,14 +92,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Bases | [List](./REFERENCE.md#bases-list) |
-| Tables | [List](./REFERENCE.md#tables-list) |
+| Bases | [List](./REFERENCE.md#bases-list), [Search](./REFERENCE.md#bases-search) |
+| Tables | [List](./REFERENCE.md#tables-list), [Search](./REFERENCE.md#tables-search) |
 | Records | [List](./REFERENCE.md#records-list), [Get](./REFERENCE.md#records-get) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Airtable API docs
 
@@ -103,7 +107,7 @@ See the official [Airtable API reference](https://airtable.com/developers/web/ap
 
 ## Version information
 
-- **Package version:** 0.1.10
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
+- **Package version:** 0.1.31
+- **Connector version:** 1.0.4
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/airtable/CHANGELOG.md)

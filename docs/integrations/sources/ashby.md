@@ -11,6 +11,7 @@ This source can sync data for the [Ashby API](https://developers.ashbyhq.com/ref
 This Source is capable of syncing the following core Streams:
 
 - [applications](https://developers.ashbyhq.com/reference/applicationlist)
+- [application_criteria_evaluations](https://developers.ashbyhq.com/reference/applicationlistcriteriaevaluations) (substream of applications)
 - [archive_reasons](https://developers.ashbyhq.com/reference/archivereasonlist)
 - [candidate_tags](https://developers.ashbyhq.com/reference/candidatetaglist)
 - [candidates](https://developers.ashbyhq.com/reference/candidatelist)
@@ -18,6 +19,8 @@ This Source is capable of syncing the following core Streams:
 - [departments](https://developers.ashbyhq.com/reference/departmentlist)
 - [feedback_form_definitions](https://developers.ashbyhq.com/reference/feedbackformdefinitionlist)
 - [interview_schedules](https://developers.ashbyhq.com/reference/interviewschedulelist)
+- [interviews](https://developers.ashbyhq.com/reference/interviewlist)
+- [interview_stages](https://developers.ashbyhq.com/reference/interviewstagelist)
 - [job_postings](https://developers.ashbyhq.com/reference/jobpostinglist)
 - [jobs](https://developers.ashbyhq.com/reference/joblist)
 - [locations](https://developers.ashbyhq.com/reference/locationlist)
@@ -48,6 +51,7 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 0.3.0 | 2026-02-11 | [73244](https://github.com/airbytehq/airbyte/pull/73244) | Add interviews, interview_stages, and application_criteria_evaluations streams |
 | 0.2.23 | 2025-05-10 | [59853](https://github.com/airbytehq/airbyte/pull/59853) | Update dependencies |
 | 0.2.22 | 2025-05-03 | [59322](https://github.com/airbytehq/airbyte/pull/59322) | Update dependencies |
 | 0.2.21 | 2025-04-26 | [58746](https://github.com/airbytehq/airbyte/pull/58746) | Update dependencies |

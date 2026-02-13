@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4e8c9fa0-3634-499b-b948-11581b5c3efa
-  dockerImageTag: 0.2.23
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg
@@ -25,6 +25,14 @@ data:
   ab_internal:
     sl: 100
     ql: 100
+  suggestedStreams:
+    streams:
+      - applications
+      - candidates
+      - jobs
+      - job_postings
+      - users
+      - interview_schedules
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests

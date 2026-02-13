@@ -1,4 +1,6 @@
-# Facebook-Marketing agent connector
+# Facebook-Marketing
+
+The Facebook-Marketing agent connector is a Python package that equips AI agents to interact with Facebook-Marketing through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Facebook Marketing API connector for managing ad campaigns, ad sets, ads, creatives,
 and accessing performance insights. This connector provides read access to Facebook
@@ -16,6 +18,13 @@ The Facebook-Marketing connector is optimized to handle prompts like these.
 - List all custom conversion events in my account
 - Show me all ad images in my account
 - What videos are available in my ad account?
+- Create a new campaign called 'Summer Sale 2026' with traffic objective
+- Pause my most recent campaign
+- Create a new ad set with a $50 daily budget in my latest campaign
+- Update the daily budget of my top performing ad set to $100
+- Rename my most recent ad set to 'Holiday Promo'
+- Create a new ad in my latest ad set
+- Pause all ads in my most recent ad set
 - Show me the ad sets with the highest daily budget
 - Show me the performance insights for the last 7 days
 - Which campaigns have the most spend this month?
@@ -25,10 +34,10 @@ The Facebook-Marketing connector is optimized to handle prompts like these.
 
 The Facebook-Marketing connector isn't currently able to handle prompts like these.
 
-- Create a new campaign
-- Update the budget for this ad set
-- Pause all ads in this campaign
 - Delete this ad creative
+- Delete this campaign
+- Delete this ad set
+- Delete this ad
 
 ## Installation
 
@@ -45,7 +54,7 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_facebook-marketing import FacebookMarketingConnector
+from airbyte_agent_facebook_marketing import FacebookMarketingConnector
 from airbyte_agent_facebook_marketing.models import FacebookMarketingServiceAccountKeyAuthenticationAuthConfig
 
 connector = FacebookMarketingConnector(
@@ -56,7 +65,7 @@ connector = FacebookMarketingConnector(
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @FacebookMarketingConnector.tool_utils
-async def facebook-marketing_execute(entity: str, action: str, params: dict | None = None):
+async def facebook_marketing_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -67,17 +76,19 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_facebook-marketing import FacebookMarketingConnector
+from airbyte_agent_facebook_marketing import FacebookMarketingConnector, AirbyteAuthConfig
 
 connector = FacebookMarketingConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
 @FacebookMarketingConnector.tool_utils
-async def facebook-marketing_execute(entity: str, action: str, params: dict | None = None):
+async def facebook_marketing_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -90,21 +101,21 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Current User | [Get](./REFERENCE.md#current-user-get) |
-| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get) |
-| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Get](./REFERENCE.md#ad-sets-get) |
-| Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get) |
-| Ad Creatives | [List](./REFERENCE.md#ad-creatives-list) |
-| Ads Insights | [List](./REFERENCE.md#ads-insights-list) |
-| Ad Account | [Get](./REFERENCE.md#ad-account-get) |
-| Custom Conversions | [List](./REFERENCE.md#custom-conversions-list) |
-| Images | [List](./REFERENCE.md#images-list) |
-| Videos | [List](./REFERENCE.md#videos-list) |
+| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list), [Search](./REFERENCE.md#ad-accounts-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Search](./REFERENCE.md#campaigns-search) |
+| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Create](./REFERENCE.md#ad-sets-create), [Get](./REFERENCE.md#ad-sets-get), [Update](./REFERENCE.md#ad-sets-update), [Search](./REFERENCE.md#ad-sets-search) |
+| Ads | [List](./REFERENCE.md#ads-list), [Create](./REFERENCE.md#ads-create), [Get](./REFERENCE.md#ads-get), [Update](./REFERENCE.md#ads-update), [Search](./REFERENCE.md#ads-search) |
+| Ad Creatives | [List](./REFERENCE.md#ad-creatives-list), [Search](./REFERENCE.md#ad-creatives-search) |
+| Ads Insights | [List](./REFERENCE.md#ads-insights-list), [Search](./REFERENCE.md#ads-insights-search) |
+| Ad Account | [Get](./REFERENCE.md#ad-account-get), [Search](./REFERENCE.md#ad-account-search) |
+| Custom Conversions | [List](./REFERENCE.md#custom-conversions-list), [Search](./REFERENCE.md#custom-conversions-search) |
+| Images | [List](./REFERENCE.md#images-list), [Search](./REFERENCE.md#images-search) |
+| Videos | [List](./REFERENCE.md#videos-list), [Search](./REFERENCE.md#videos-search) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Facebook-Marketing API docs
 
@@ -112,7 +123,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.16
-- **Connector version:** 1.0.14
-- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
+- **Package version:** 0.1.38
+- **Connector version:** 1.0.16
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)

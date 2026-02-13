@@ -15,6 +15,8 @@ plugins {
 
 final var versionFile = file("version.properties")
 final var baseVersionFile = file("core/base/version.properties")
+final var extractVersionFile = file("core/extract/version.properties")
+final var loadVersionFile = file("core/load/version.properties")
 
 final var cdkVersion = {
     var props = new Properties()
@@ -22,10 +24,22 @@ final var cdkVersion = {
     return props.getProperty('version', 'undefined')
 }()
 
-// Base package has its own independent version
+// Base, extract, and load packages have their own independent versions
 final var baseVersion = {
     var props = new Properties()
     baseVersionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+final var extractVersion = {
+    var props = new Properties()
+    extractVersionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+final var loadVersion = {
+    var props = new Properties()
+    loadVersionFile.withInputStream(props::load)
     return props.getProperty('version', 'undefined')
 }()
 
@@ -92,10 +106,41 @@ allprojects {
     }
 }
 
-// Override base package to use its own independent version
+// Define extract and load module groups (core + toolkits)
+def extractProjects = [
+    ':airbyte-cdk:bulk:core:bulk-cdk-core-extract',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-cdc',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-trigger',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-source-tests',
+]
+
+def loadProjects = [
+    ':airbyte-cdk:bulk:core:bulk-cdk-core-load',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-aws',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-csv',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-gcp',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-http',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-iceberg-parquet',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-avro',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-azure-blob-storage',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-db',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-dlq',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-gcs',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-low-code',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-parquet',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-s3',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader',
+]
+
+// Override base, extract, and load packages to use their own independent versions
 project(':airbyte-cdk:bulk:core:bulk-cdk-core-base') {
     version = baseVersion
 }
+extractProjects.each { project(it).version = extractVersion }
+loadProjects.each { project(it).version = loadVersion }
 
 // Configure Dokka for all subprojects
 subprojects {
@@ -220,7 +265,21 @@ tasks.register('checkBaseVersion') {
     }
 }
 
-// Build and publish tasks for base package only
+tasks.register('checkExtractVersion') {
+    description = "Check that the extract version doesn't exist"
+    doLast {
+        checkVersionExists('bulk-cdk-core-extract', extractVersion.toString())
+    }
+}
+
+tasks.register('checkLoadVersion') {
+    description = "Check that the load version doesn't exist"
+    doLast {
+        checkVersionExists('bulk-cdk-core-load', loadVersion.toString())
+    }
+}
+
+// Build and publish tasks for individual packages
 tasks.register('baseCdkBuild') {
     description = "Build the base CDK package"
     dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:build'
@@ -228,6 +287,24 @@ tasks.register('baseCdkBuild') {
 tasks.register('baseCdkPublish') {
     description = "Publish the base CDK package"
     dependsOn ':airbyte-cdk:bulk:core:bulk-cdk-core-base:publish'
+}
+
+tasks.register('extractCdkBuild') {
+    description = "Build the extract CDK package and toolkits (includes base as transitive dependency)"
+    dependsOn extractProjects.collect { "$it:build" }
+}
+tasks.register('extractCdkPublish') {
+    description = "Publish the extract CDK package and toolkits"
+    dependsOn extractProjects.collect { "$it:publish" }
+}
+
+tasks.register('loadCdkBuild') {
+    description = "Build the load CDK package and toolkits (includes base as transitive dependency)"
+    dependsOn loadProjects.collect { "$it:build" }
+}
+tasks.register('loadCdkPublish') {
+    description = "Publish the load CDK package and toolkits"
+    dependsOn loadProjects.collect { "$it:publish" }
 }
 
 class BumpBulkCdkVersionTask extends DefaultTask {
