@@ -67,8 +67,8 @@ The Salesforce Commerce Cloud source connector supports the following [sync mode
 | :--- | :--- | :--- | :--- |
 | [Orders](https://developer.salesforce.com/docs/commerce/commerce-api/references/orders?meta=getOrders) | GET /checkout/orders/v1/.../orders | Incremental | orderNo |
 | Catalogs | GET /product/catalogs/v1/.../catalogs | Full Refresh | id |
-| Categories | GET /product/catalogs/v1/.../catalogs/{catalogId}/categories | Full Refresh | id |
-| Products | POST /product/catalogs/v1/.../categories/{categoryId}/products | Full Refresh | id |
+| Categories | `GET /product/catalogs/v1/.../catalogs/{catalogId}/categories` | Full Refresh | id |
+| Products | `POST /product/catalogs/v1/.../categories/{categoryId}/products` | Full Refresh | id |
 | Promotions | POST /pricing/promotions/v1/.../promotions | Full Refresh | id |
 | Campaigns | POST /pricing/campaigns/v1/.../campaigns | Full Refresh | id |
 
