@@ -155,10 +155,9 @@ class TestTicketAuditsStreamIncremental(TestCase):
 class TestTicketAuditsErrorHandling(TestCase):
     """Test error handling for ticket_audits stream.
 
-    Per manifest.yaml, ticket_audits has FAIL error handlers for:
-    - 504: Gateway timeout
-    - 403, 404: Permission/not found errors
-    Per playbook: FAIL error handlers must assert both error code AND error message.
+    Per manifest.yaml, ticket_audits has:
+    - FAIL error handlers for 403, 404 (permission/not found errors)
+    - RETRY with exponential backoff for 504 (gateway timeout)
     """
 
     @property
@@ -231,13 +230,12 @@ class TestTicketAuditsErrorHandling(TestCase):
         assert any(error_message in msg for msg in error_logs), f"Expected error message '{error_message}' in logs"
 
     @HttpMocker()
-    def test_given_504_error_when_read_ticket_audits_then_fail_with_error_log(self, http_mocker):
-        """Test that 504 gateway timeout errors cause the stream to fail with proper error logging.
+    def test_given_504_error_when_read_ticket_audits_then_retry_and_eventually_fail(self, http_mocker):
+        """Test that 504 gateway timeout errors are retried with backoff before failing.
 
-        Per playbook: FAIL error handlers must assert both error code AND error message.
-        Per manifest.yaml, ticket_audits has:
-        - request_parameters: sort_by=created_at, sort_order=desc
-        - page_size_option.field_name: "limit" with page_size: 200
+        Per manifest.yaml, ticket_audits no longer has an explicit 504 FAIL handler.
+        Instead, 504s are retried by the DefaultErrorHandler with ExponentialBackoffStrategy.
+        After exhausting retries, the stream fails with a retries-exhausted error.
         """
         api_token_authenticator = self._get_authenticator(self._config)
         error_message = "Gateway Timeout - The server did not respond in time"
@@ -256,7 +254,7 @@ class TestTicketAuditsErrorHandling(TestCase):
         assert len(output.records) == 0
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("504" in msg for msg in error_logs), "Expected 504 error code in logs"
-        assert any(error_message in msg for msg in error_logs), f"Expected error message '{error_message}' in logs"
+        assert any("Exhausted" in msg or "exhaust" in msg.lower() for msg in error_logs), "Expected retries-exhausted error in logs"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
