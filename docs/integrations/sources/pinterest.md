@@ -31,6 +31,17 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 
 <!-- /env:oss -->
 
+Different streams in this connector require different Pinterest OAuth scopes:
+
+- **Account analytics** (`user_account_analytics`): Requires `user_accounts:read`.
+- **Boards, board sections, and board pins**: Require `boards:read` and `pins:read`.
+- **Ad accounts, campaigns, ad groups, ads, and their analytics**: Require `ads:read`.
+- **Catalogs, catalog feeds, and catalog product groups**: Require `catalogs:read`.
+
+If your Pinterest account has limited permissions, some streams may not return data. The connector
+validates your connection using the `user_account_analytics` stream, which requires only the
+`user_accounts:read` scope. This scope is available to all authenticated Pinterest users.
+
 ## Setup guide
 
 <!-- env:cloud -->
@@ -41,22 +52,20 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Pinterest** from the Source type dropdown.
 4. Enter the name for the Pinterest connector.
-5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date
-   will be replicated. If this field is blank, Airbyte will replicate all data. As per Pinterest API
-   restriction, the date cannot be more than 90 days in the past.
-6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Pinterest
+5. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Pinterest
    account**. Log in and authorize your Pinterest account.
-7. (Optional) Enter a Start Date using the provided date picker, or by manually entering the date in
-   YYYY-MM-DD format. Data added on and after this date will be replicated. If no date is set, it
-   will default to the latest allowed date by the report API (913 days from today).
-8. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
+6. (Optional) For **Start Date**, enter the date in YYYY-MM-DD format. The connector replicates
+   data on and after this date. If you don't set a date, the connector defaults to the maximum
+   lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
+   streams can look back up to 913 days.
+7. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
    and campaigns streams, specifying a status will filter out records that do not match the
    specified ones. If a status is not specified, the source will default to records with a status of
    either ACTIVE or PAUSED.
-9. (Optional) Add custom reports if needed. For more information, refer to the corresponding
+8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-10. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
-11. Click **Set up source**.
+9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+10. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -67,25 +76,23 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Pinterest** from the Source type dropdown.
 4. Enter the name for the Pinterest connector.
-5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date
-   will be replicated. If this field is blank, Airbyte will replicate all data. As per Pinterest API
-   restriction, the date cannot be more than 90 days in the past.
-6. The **OAuth2.0** authorization method is selected by default. For **Client ID** and **Client
+5. The **OAuth2.0** authorization method is selected by default. For **Client ID** and **Client
    Secret**, enter your Pinterest
    [App ID and secret key](https://developers.pinterest.com/docs/getting-started/set-up-app/). For
    **Refresh Token**, enter your Pinterest
    [Refresh Token](https://developers.pinterest.com/docs/getting-started/authentication/#Refreshing%20an%20access%20token).
-7. (Optional) Enter a Start Date using the provided date picker, or by manually entering the date in
-   YYYY-MM-DD format. Data added on and after this date will be replicated. If no date is set, it
-   will default to the latest allowed date by the report API (913 days from today).
-8. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
+6. (Optional) For **Start Date**, enter the date in YYYY-MM-DD format. The connector replicates
+   data on and after this date. If you don't set a date, the connector defaults to the maximum
+   lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
+   streams can look back up to 913 days.
+7. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups,
    and campaigns streams, specifying a status will filter out records that do not match the
    specified ones. If a status is not specified, the source will default to records with a status of
    either ACTIVE or PAUSED.
-9. (Optional) Add custom reports if needed. For more information, refer to the corresponding
+8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-10. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
-11. Click **Set up source**.
+9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+10. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -196,7 +203,10 @@ For more detailed information and guidelines on creating custom reports, please 
 ## Performance considerations
 
 The connector is restricted by the Pinterest
-[requests limitation](https://developers.pinterest.com/docs/reference/ratelimits/).
+[rate limits](https://developers.pinterest.com/docs/reference/rate-limits/). The Pinterest API
+enforces rate limits per endpoint category. For example, analytics endpoints allow 300 requests per
+minute with standard access, while general read endpoints allow 1,000 requests per minute. For
+details, see the [Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
 
 ## Changelog
 
