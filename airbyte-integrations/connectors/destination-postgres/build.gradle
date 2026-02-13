@@ -5,6 +5,7 @@ plugins {
     id('airbyte-connector-docker-convention')
 }
 
+
 airbyteBulkConnector {
     core = "load"
     toolkits = ["load-csv"]
