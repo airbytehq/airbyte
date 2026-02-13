@@ -65,6 +65,14 @@ const PUBLIC_API_SIDEBAR_PATH = path.join(
   "sidebar.ts",
 );
 
+// Path to the curated public API tags file
+const PUBLIC_API_TAGS_PATH = path.join(
+  PROJECT_ROOT,
+  "src",
+  "data",
+  "public_api_tags.json",
+);
+
 module.exports = {
   PROJECT_ROOT,
   PUBLIC_API_SPEC_CACHE_PATH,
@@ -74,4 +82,5 @@ module.exports = {
   CONFIG_API_SPEC_URL,
   PUBLIC_API_DOCS_OUTPUT_DIR,
   PUBLIC_API_SIDEBAR_PATH,
+  PUBLIC_API_TAGS_PATH,
 };

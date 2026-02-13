@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Applications",
+    "description": "Use applications to generate access tokens. Access tokens are necessary for most programmatic interactions with Airbyte."
+  },
+  {
+    "name": "Organizatons and workspaces",
+    "description": "The highest level of structure in Airbyte is an organization. Organizations are how you manage membership and permissions, billing (if applicable), and overall account usage. Each organization consists of one or more workspaces. A workspace groups sources, destinations, and connections. You can also use workspaces to assign access and permissions."
+  },
+  {
+    "name": "Connectors",
+    "description": "You move data from sources to destinations using connectors. A connector is the component Airbyte uses to connect to and interact with your source or destination."
+  },
+  {
+    "name": "Connections and streams",
+    "description": "A connection is the relationship between a source connector and a destination connector. When you create a connection, you create an automated data pipeline that syncs data from a source to a destination. A stream is a group of related records within a connection. Depending on the destination, a stream might be a table, file, multiple files, or blob."
+  },
+  {
+    "name": "Tags",
+    "description": "Use tags to organize connections based on any set of criteria you like, then filter your connections based on the tags you want to see."
+  },
+  {
+    "name": "Jobs",
+    "description": "Trigger and manage jobs (syncs) in your connections."
+  },
+  {
+    "name": "Users",
+    "description": "View and manage users in your organization."
+  },
+  {
+    "name": "Permissions",
+    "description": "Manage permissions for individual users."
+  },
+  {
+    "name": "Groups",
+    "description": "Group-based access control for your organization. Create groups of users and manage group-level permissions."
+  },
+  {
+    "name": "Data planes",
+    "description": "A data plane initiates jobs, syncs data, completes jobs, and reports its status back to the control plane. Data planes are child objects of regions."
+  },
+  {
+    "name": "Regions",
+    "description": "A region refers to the geographical location where your data and connections are processed. Assigning a region to a workspace ensures that all connections within that workspace run in the specified region. Regions are parent objects of data planes."
+  },
+  {
+    "name": "OAuth",
+    "description": "Manage OAuth redirect endpoints and OAuth app credentials when configuring connectors."
+  },
+  {
+    "name": "Declarative connector definitions",
+    "description": "Create and manage low-code, YAML-based source connectors made with the Connector Builder or low-code CDK. These are advanced endpoints for teams building custom connectors or maintaining forked versions of existing connectors, who want to manage those connectors programatically and deploy with CI/CD pipelines."
+  },
+  {
+    "name": "Connector definitions",
+    "description": "Create and manage custom connectors built with the Python or Java CDK and packaged as a Docker image. These are advanced endpoints for teams building custom connectors or maintaining forked versions of existing connectors, who want to manage those connectors programatically and deploy with CI/CD pipelines."
+  },
+  {
+    "name": "Health",
+    "description": "Basic health check to verify the Airbyte API is running and reachable."
+  }
+]

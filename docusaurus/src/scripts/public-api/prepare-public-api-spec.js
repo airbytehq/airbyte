@@ -20,6 +20,7 @@ const {
   PUBLIC_SPEC_FILE_NAMES,
   CONFIG_API_SPEC_URL,
   SOURCE_CONFIGS_DEREFERENCED_PATH,
+  PUBLIC_API_TAGS_PATH,
 } = require("./constants");
 
 // Create a YAML version of the cache path
@@ -259,104 +260,176 @@ function dereferenceSchema(schema, schemas, visitedRefs = new Set(), depth = 0, 
 }
 
 /**
- * Creates tag definitions from the public spec operations that are missing from config,
- * and merges with config tags
+ * Mapping from operation path + method to the new display tag.
+ * Built from the curated tag mapping spreadsheet.
+ * Operations not in this mapping will be excluded from the docs.
  */
-function injectTagsFromConfigSpec(publicSpec, configSpec) {
-  console.log("Injecting tags from config spec into public spec...");
+const OPERATION_TAG_MAPPING = {
+  "GET /applications": "Applications",
+  "POST /applications": "Applications",
+  "POST /applications/token": "Applications",
+  "DELETE /applications/{applicationId}": "Applications",
+  "GET /applications/{applicationId}": "Applications",
+  "GET /connections": "Connections and streams",
+  "POST /connections": "Connections and streams",
+  "DELETE /connections/{connectionId}": "Connections and streams",
+  "GET /connections/{connectionId}": "Connections and streams",
+  "PATCH /connections/{connectionId}": "Connections and streams",
+  "GET /connector_definitions": "Connections and streams",
+  "GET /dataplanes": "Data planes",
+  "POST /dataplanes": "Data planes",
+  "DELETE /dataplanes/{dataplaneId}": "Data planes",
+  "GET /dataplanes/{dataplaneId}": "Data planes",
+  "PATCH /dataplanes/{dataplaneId}": "Data planes",
+  "GET /destinations": "Connectors",
+  "POST /destinations": "Connectors",
+  "DELETE /destinations/{destinationId}": "Connectors",
+  "GET /destinations/{destinationId}": "Connectors",
+  "PATCH /destinations/{destinationId}": "Connectors",
+  "PUT /destinations/{destinationId}": "Connectors",
+  "GET /groups": "Groups",
+  "POST /groups": "Groups",
+  "DELETE /groups/{groupId}": "Groups",
+  "GET /groups/{groupId}": "Groups",
+  "PATCH /groups/{groupId}": "Groups",
+  "GET /groups/{groupId}/members": "Groups",
+  "POST /groups/{groupId}/members": "Groups",
+  "DELETE /groups/{groupId}/members/{userId}": "Groups",
+  "GET /groups/{groupId}/permissions": "Groups",
+  "POST /groups/{groupId}/permissions": "Groups",
+  "DELETE /groups/{groupId}/permissions/{permissionId}": "Groups",
+  "GET /health": "Health",
+  "GET /jobs": "Jobs",
+  "POST /jobs": "Jobs",
+  "DELETE /jobs/{jobId}": "Jobs",
+  "GET /jobs/{jobId}": "Jobs",
+  "GET /oauth/callback": "OAuth",
+  "GET /organizations": "Organizations and workspaces",
+  "PUT /organizations/{organizationId}/oauthCredentials": "OAuth",
+  "GET /permissions": "Permissions",
+  "POST /permissions": "Permissions",
+  "DELETE /permissions/{permissionId}": "Permissions",
+  "GET /permissions/{permissionId}": "Permissions",
+  "PATCH /permissions/{permissionId}": "Permissions",
+  "GET /regions": "Regions",
+  "POST /regions": "Regions",
+  "DELETE /regions/{regionId}": "Regions",
+  "GET /regions/{regionId}": "Regions",
+  "PATCH /regions/{regionId}": "Regions",
+  "GET /sources": "Connectors",
+  "POST /sources": "Connectors",
+  "POST /sources/initiateOAuth": "OAuth",
+  "DELETE /sources/{sourceId}": "Connectors",
+  "GET /sources/{sourceId}": "Connectors",
+  "PATCH /sources/{sourceId}": "Connectors",
+  "PUT /sources/{sourceId}": "Connectors",
+  "GET /streams": "Connections and streams",
+  "GET /tags": "Tags",
+  "POST /tags": "Tags",
+  "DELETE /tags/{tagId}": "Tags",
+  "GET /tags/{tagId}": "Tags",
+  "PATCH /tags/{tagId}": "Tags",
+  "GET /users": "Users",
+  "GET /workspaces": "Organizations and workspaces",
+  "POST /workspaces": "Organizations and workspaces",
+  "DELETE /workspaces/{workspaceId}": "Organizations and workspaces",
+  "GET /workspaces/{workspaceId}": "Organizations and workspaces",
+  "PATCH /workspaces/{workspaceId}": "Organizations and workspaces",
+  "GET /workspaces/{workspaceId}/definitions/declarative_sources": "Declarative connector definitions",
+  "POST /workspaces/{workspaceId}/definitions/declarative_sources": "Declarative connector definitions",
+  "DELETE /workspaces/{workspaceId}/definitions/declarative_sources/{definitionId}": "Declarative connector definitions",
+  "GET /workspaces/{workspaceId}/definitions/declarative_sources/{definitionId}": "Declarative connector definitions",
+  "PUT /workspaces/{workspaceId}/definitions/declarative_sources/{definitionId}": "Declarative connector definitions",
+  "GET /workspaces/{workspaceId}/definitions/destinations": "Connector definitions",
+  "POST /workspaces/{workspaceId}/definitions/destinations": "Connector definitions",
+  "DELETE /workspaces/{workspaceId}/definitions/destinations/{definitionId}": "Connector definitions",
+  "GET /workspaces/{workspaceId}/definitions/destinations/{definitionId}": "Connector definitions",
+  "PUT /workspaces/{workspaceId}/definitions/destinations/{definitionId}": "Connector definitions",
+  "GET /workspaces/{workspaceId}/definitions/sources": "Connector definitions",
+  "POST /workspaces/{workspaceId}/definitions/sources": "Connector definitions",
+  "DELETE /workspaces/{workspaceId}/definitions/sources/{definitionId}": "Connector definitions",
+  "GET /workspaces/{workspaceId}/definitions/sources/{definitionId}": "Connector definitions",
+  "PUT /workspaces/{workspaceId}/definitions/sources/{definitionId}": "Connector definitions",
+  "PUT /workspaces/{workspaceId}/oauthCredentials": "OAuth",
+};
 
-  if (!configSpec.tags || configSpec.tags.length === 0) {
-    throw new Error("Config spec has no tags to inject into public spec");
-  }
+/**
+ * Applies tags from the curated public_api_tags.json file to the spec.
+ * - Loads tag definitions (name + description) from the JSON file
+ * - Rewrites each operation's tags to use the new display tag as the primary tag
+ * - Removes operations that are not in the curated mapping (not public)
+ */
+function applyTagsFromFile(publicSpec) {
+  console.log("Applying tags from public_api_tags.json...");
 
-  // Find all tags used by operations in the public spec (only first/primary tag per operation)
-  const usedTags = new Set();
-  for (const pathItem of Object.values(publicSpec.paths || {})) {
-    const httpMethods = [
-      "get",
-      "put",
-      "post",
-      "delete",
-      "options",
-      "head",
-      "patch",
-      "trace",
-    ];
+  // Load curated tags from file
+  const tagsFromFile = JSON.parse(fs.readFileSync(PUBLIC_API_TAGS_PATH, "utf-8"));
+  const allowedTagNames = new Set(tagsFromFile.map((t) => t.name));
+
+  console.log(`   📋 Loaded ${tagsFromFile.length} curated tags: ${[...allowedTagNames].join(", ")}`);
+
+  const httpMethods = ["get", "put", "post", "delete", "options", "head", "patch", "trace"];
+
+  // Rewrite operation tags and remove non-public endpoints
+  const filteredPaths = {};
+  let includedCount = 0;
+  let excludedCount = 0;
+
+  for (const [pathKey, pathItem] of Object.entries(publicSpec.paths || {})) {
+    const filteredPathItem = {};
+    let hasOperations = false;
 
     for (const method of httpMethods) {
       const operation = pathItem[method];
-      // Only use the first tag (primary tag) for each operation
-      if (operation?.tags && Array.isArray(operation.tags) && operation.tags.length > 0) {
-        usedTags.add(operation.tags[0]);
+      if (!operation) continue;
+
+      // Build the lookup key: "METHOD /path"
+      const lookupKey = `${method.toUpperCase()} ${pathKey}`;
+      const newTag = OPERATION_TAG_MAPPING[lookupKey];
+
+      if (newTag && allowedTagNames.has(newTag)) {
+        // Rewrite tags: new display tag as the only tag
+        operation.tags = [newTag];
+        filteredPathItem[method] = operation;
+        hasOperations = true;
+        includedCount++;
+      } else {
+        excludedCount++;
+      }
+    }
+
+    // Copy over non-method properties (parameters, etc.)
+    if (hasOperations) {
+      for (const [key, value] of Object.entries(pathItem)) {
+        if (!httpMethods.includes(key) && !(key in filteredPathItem)) {
+          filteredPathItem[key] = value;
+        }
+      }
+      filteredPaths[pathKey] = filteredPathItem;
+    }
+  }
+
+  console.log(`   ✅ Included ${includedCount} operations, excluded ${excludedCount} non-public operations`);
+
+  // Only include tags that actually have operations
+  const usedTagNames = new Set();
+  for (const pathItem of Object.values(filteredPaths)) {
+    for (const method of httpMethods) {
+      const operation = pathItem[method];
+      if (operation?.tags) {
+        operation.tags.forEach((t) => usedTagNames.add(t));
       }
     }
   }
 
-  // Create a map of config tags by name
-  const configTagsMap = {};
-  configSpec.tags.forEach((tag) => {
-    configTagsMap[tag.name] = tag;
-  });
+  const finalTags = tagsFromFile.filter((t) => usedTagNames.has(t.name));
+  console.log(`   📊 ${finalTags.length} tags have operations: ${finalTags.map((t) => t.name).join(", ")}`);
 
-  // Build final tag list: use config tags where available, create default ones for missing tags
-  const finalTags = [];
-  const addedTagNames = new Set();
-
-  // First, add config tags that are used in the public spec
-  for (const tagName of usedTags) {
-    if (configTagsMap[tagName]) {
-      finalTags.push(configTagsMap[tagName]);
-      addedTagNames.add(tagName);
-    }
-  }
-
-  // Then, create default tag definitions for tags that are used but not in config
-  for (const tagName of usedTags) {
-    if (!addedTagNames.has(tagName)) {
-      finalTags.push({
-        name: tagName,
-        description: `${tagName} operations`,
-      });
-      addedTagNames.add(tagName);
-    }
-  }
-
-  console.log(
-    `✅ Created ${finalTags.length} tag definitions (${addedTagNames.size} from operations, ${
-      finalTags.length - addedTagNames.size
-    } from config)`
-  );
-
-  // Create a new spec with injected tags
-  const enhancedSpec = {
+  return {
     ...publicSpec,
+    paths: filteredPaths,
     tags: finalTags,
   };
-
-  // Clean up: keep only the first tag for each operation to avoid duplicates in sidebar
-  console.log("Cleaning up operations to keep only primary tags...");
-  for (const pathItem of Object.values(enhancedSpec.paths || {})) {
-    const httpMethods = [
-      "get",
-      "put",
-      "post",
-      "delete",
-      "options",
-      "head",
-      "patch",
-      "trace",
-    ];
-
-    for (const method of httpMethods) {
-      const operation = pathItem[method];
-      if (operation?.tags && Array.isArray(operation.tags) && operation.tags.length > 1) {
-        // Keep only the first tag
-        operation.tags = [operation.tags[0]];
-      }
-    }
-  }
-
-  return enhancedSpec;
 }
 
 /**
@@ -572,6 +645,14 @@ async function main() {
     const configSpec = configResult.spec;
     console.timeEnd("MERGE_SPECS");
 
+    // Override info.title to avoid collision with tag names
+    // (the OpenAPI plugin generates both .info.mdx and .tag.mdx files,
+    // and if info.title matches a tag name they get the same doc ID)
+    publicSpec.info = {
+      ...publicSpec.info,
+      title: "Airbyte API",
+    };
+
     console.log(
       `📦 Merged Public API spec with ${publicSpecs.length} components`
     );
@@ -601,10 +682,10 @@ async function main() {
       console.log('   Using all SourceConfiguration items instead');
     }
 
-    // Inject tags from config spec into public spec
-    console.time("INJECT_TAGS");
-    const enhancedSpec = injectTagsFromConfigSpec(specToUseFiltered, configSpec);
-    console.timeEnd("INJECT_TAGS");
+    // Apply tags from curated public_api_tags.json and filter to public endpoints only
+    console.time("APPLY_TAGS");
+    const enhancedSpec = applyTagsFromFile(specToUseFiltered);
+    console.timeEnd("APPLY_TAGS");
 
     // Validate the enhanced spec
     console.time("VALIDATE_SPEC");

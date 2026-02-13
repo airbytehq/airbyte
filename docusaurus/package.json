@@ -10,15 +10,13 @@
     "node": ">=20 <22"
   },
   "scripts": {
-    "prepare-registry-cache": "NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/prepare-registry-cache.js",
-    "gen-agent-engine-api-docs": "pnpm exec docusaurus clean-api-docs all && pnpm exec docusaurus gen-api-docs all",
-    "prepare-agent-engine-api": "NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/agent-engine-api/prepare-agent-engine-api-spec.js && NODE_OPTIONS='--max-old-space-size=4096' pnpm prettier --write src/data/agent_engine_api_spec.json && pnpm run gen-agent-engine-api-docs",
-    "prepare-embedded-api": "NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/embedded-api/prepare-embedded-api-spec.js && NODE_OPTIONS='--max-old-space-size=4096' pnpm prettier --write src/data/embedded_api_spec.json && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus clean-api-docs embedded-api --plugin-id embedded-api && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus gen-api-docs embedded-api --plugin-id embedded-api",
-    "prepare-public-api": "NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/public-api/prepare-public-api-spec.js && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus clean-api-docs public-api --plugin-id public-api && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus gen-api-docs public-api --plugin-id public-api",
+    "prepare-registry-cache": "node src/scripts/prepare-registry-cache.js",
+    "prepare-agent-engine-api": "node src/scripts/agent-engine-api/prepare-agent-engine-api-spec.js && pnpm prettier --write src/data/agent_engine_api_spec.json && pnpm exec docusaurus clean-api-docs agent-engine --plugin-id agent-engine-api && pnpm exec docusaurus gen-api-docs agent-engine --plugin-id agent-engine-api",
+    "prepare-public-api": "NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/public-api/prepare-public-api-spec.js && pnpm exec docusaurus clean-api-docs public-api --plugin-id public-api && pnpm exec docusaurus gen-api-docs public-api --plugin-id public-api",
     "cleanup-cache": "node src/scripts/cleanup-cache.js",
-    "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-agent-engine-api && pnpm run prepare-embedded-api && pnpm run prepare-public-api",
+    "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-agent-engine-api && pnpm run prepare-public-api",
     "postbuild": "pnpm run cleanup-cache",
-    "prestart": "pnpm run prepare-registry-cache && pnpm run prepare-agent-engine-api && pnpm run prepare-embedded-api && pnpm run prepare-public-api",
+    "prestart": "pnpm run prepare-registry-cache && pnpm run prepare-agent-engine-api && pnpm run prepare-public-api",
     "docusaurus": "docusaurus",
     "start": " node src/scripts/fetchSchema.js && docusaurus start --port 3005",
     "start:debug": "echo '🐛 DEBUG MODE - Detailed timing information' && NODE_OPTIONS='--max-old-space-size=8192' npm run prebuild -- 2>&1 | tee build-timing.log && NODE_OPTIONS='--max-old-space-size=8192' docusaurus start --port 3005",
@@ -190,5 +188,10 @@
     "@types/node": "^24.10.2",
     "prettier": "3.5.3"
   },
-  "packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638"
+  "packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638",
+  "pnpm": {
+    "patchedDependencies": {
+      "docusaurus-plugin-openapi-docs@4.7.1": "patches/docusaurus-plugin-openapi-docs@4.7.1.patch"
+    }
+  }
 }

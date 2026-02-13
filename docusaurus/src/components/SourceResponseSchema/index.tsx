@@ -35,34 +35,6 @@ const sortStatusCodes = (codes: string[]): string[] => {
   });
 };
 
-// Get human-readable status code text
-function getStatusCodeText(code: string): string {
-  const statusTexts: Record<string, string> = {
-    "200": "OK",
-    "201": "Created",
-    "204": "No Content",
-    "400": "Bad Request",
-    "401": "Unauthorized",
-    "403": "Forbidden",
-    "404": "Not Found",
-    "409": "Conflict",
-    "422": "Unprocessable Entity",
-    "500": "Internal Server Error",
-    "502": "Bad Gateway",
-    "503": "Service Unavailable",
-  };
-  return statusTexts[code] || "Response";
-}
-
-// Helper to get status code color class
-function getStatusCodeColorClass(code: string): string {
-  const num = parseInt(code, 10);
-  if (num >= 200 && num < 300) return "openapi-badge__success"; // 2xx - green
-  if (num >= 300 && num < 400) return "openapi-badge__redirect"; // 3xx - blue
-  if (num >= 400 && num < 500) return "openapi-badge__error"; // 4xx - red
-  if (num >= 500) return "openapi-badge__error"; // 5xx - red
-  return "openapi-badge__info"; // fallback
-}
 
 const renderBodyProperties = (properties: ResponseBodyProperty[], endpointData: any) => (
   <ul style={{ marginLeft: "1rem", listStyle: "none", padding: 0 }}>
