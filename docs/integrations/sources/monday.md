@@ -77,6 +77,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.1 | 2026-02-13 | [72192](https://github.com/airbytehq/airbyte/pull/72192) | Add `user_id` field to `activity_logs` stream |
 | 2.5.0 | 2026-02-04 | [72832](https://github.com/airbytehq/airbyte/pull/72832) | Upgrade to Monday.com API version 2026-01 |
 | 2.4.21 | 2026-02-10 | [73038](https://github.com/airbytehq/airbyte/pull/73038) | Update dependencies |
 | 2.4.20 | 2026-02-03 | [72577](https://github.com/airbytehq/airbyte/pull/72577) | Update dependencies |
