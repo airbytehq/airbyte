@@ -143,6 +143,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.29 | 2026-02-13 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Fix 0 records regression: decouple resource stream start_datetime from config start_date to prevent parent stream filtering |
 | 1.5.28 | 2026-01-20 | [70672](https://github.com/airbytehq/airbyte/pull/70672) | Update dependencies |
 | 1.5.27 | 2025-11-25 | [70083](https://github.com/airbytehq/airbyte/pull/70083) | Update dependencies |
 | 1.5.26 | 2025-11-18 | [69489](https://github.com/airbytehq/airbyte/pull/69489) | Update dependencies |
