@@ -63,14 +63,14 @@ app.post("/api/airbyte/widget-token", async (req, res) => {
     const { userId } = req.body;
     const operatorToken = await getOperatorToken();
 
-    const response = await fetch(`${AIRBYTE_API}/embedded/widget-token`, {
+    const response = await fetch(`${AIRBYTE_API}/account/applications/widget-token`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${operatorToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        workspace_name: userId, // creates or reuses a workspace for this user
+        external_user_id: userId, // creates or reuses a customer for this user
         allowed_origin: process.env.ALLOWED_ORIGIN, // must match your frontend's origin exactly (including port)
       }),
     });
@@ -231,7 +231,7 @@ const widget = new AirbyteEmbeddedWidget({
 
 Once a user authenticates through the Authentication module, the following happens.
 
-- Airbyte creates that connector in that customer. If a customer with the given `workspace_name` already exists, Airbyte adds the connector to the others in that customer.
+- Airbyte creates that connector in that customer. If a customer with the given `external_user_id` already exists, Airbyte adds the connector to the others in that customer.
 
 - If you configured data replication, Airbyte creates a connection between this connector and your configured destination, then replicates data on the schedule you defined.
 
@@ -244,11 +244,11 @@ By default, the authentication module displays all connectors you've enabled. To
 Pass tag parameters when generating the widget token:
 
 ```bash
-curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
+curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
   -H 'Authorization: Bearer <operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_name": "user_123",
+    "external_user_id": "user_123",
     "allowed_origin": "https://yourapp.com",
     "selected_source_template_tags": ["pro-tier"],
     "selected_source_template_tags_mode": "any",
