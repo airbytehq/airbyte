@@ -55,7 +55,7 @@ For incremental syncs, the connector uses `created_at` as the cursor field and f
 
 The Granola Enterprise API only provides access to notes that have been shared in workspace-wide folders. Private notes are not accessible through the API. For more information, refer to the [Granola Enterprise API documentation](https://docs.granola.ai/help-center/sharing/integrations/enterprise-api).
 
-This connector does not use the single-note detail endpoint (`GET /v1/notes/{note_id}`), so fields available only on that endpoint---such as summaries, transcripts, attendees, calendar events, and folder membership---are not included.
+This connector does not use the single-note detail endpoint (`GET /v1/notes/{note_id}`), so fields available only on that endpoint, such as summaries, transcripts, attendees, calendar events, and folder membership, are not included.
 
 ## Performance considerations
 
