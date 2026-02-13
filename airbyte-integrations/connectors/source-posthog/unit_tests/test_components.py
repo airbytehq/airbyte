@@ -132,6 +132,7 @@ def test_stream_slices(test_name, stream_state, expected_stream_slices):
 # EventsV2CartesianProductStreamSlicer Tests
 # =============================================================================
 
+
 @pytest.mark.parametrize(
     "test_name, initial_state, stream_slice, last_record, expected_state",
     [
@@ -247,6 +248,7 @@ def test_v2_stream_slices_without_config_project_id():
 # EventsV2Retriever Tests
 # =============================================================================
 
+
 class TestEventsV2Retriever:
     def test_validate_datetime_valid_formats(self):
         config = {"api_key": "test", "start_date": "2021-01-01T00:00:00Z"}
@@ -277,7 +279,7 @@ class TestEventsV2Retriever:
         stream_slice = {
             "start_time": "2021-01-01T00:00:00.000000+0000",
             "end_time": "2021-01-10T23:59:59.999999+0000",
-            "project_id": "116435"
+            "project_id": "116435",
         }
 
         query = retriever._build_hogql_query(stream_slice, offset=0)
@@ -293,11 +295,7 @@ class TestEventsV2Retriever:
         config = {"api_key": "test", "start_date": "2021-01-01T00:00:00Z"}
         retriever = EventsV2Retriever(config=config, stream_slicer=None, parameters={})
 
-        stream_slice = {
-            "start_time": "2021-01-01T00:00:00Z",
-            "end_time": "2021-01-10T23:59:59Z",
-            "project_id": "116435"
-        }
+        stream_slice = {"start_time": "2021-01-01T00:00:00Z", "end_time": "2021-01-10T23:59:59Z", "project_id": "116435"}
 
         query = retriever._build_hogql_query(stream_slice, offset=10000)
 
@@ -309,15 +307,31 @@ class TestEventsV2Retriever:
 
         response_body = {
             "columns": [
-                "uuid", "event", "properties", "timestamp", "distinct_id",
-                "elements_chain", "created_at", "person_id", "person_properties", "person_is_identified"
+                "uuid",
+                "event",
+                "properties",
+                "timestamp",
+                "distinct_id",
+                "elements_chain",
+                "created_at",
+                "person_id",
+                "person_properties",
+                "person_is_identified",
             ],
             "results": [
                 [
-                    "abc-123", "$pageview", {"$current_url": "http://example.com"}, "2021-01-01T10:00:00Z",
-                    "user-123", None, "2021-01-01T10:00:00Z", "person-456", {"email": "test@example.com"}, True
+                    "abc-123",
+                    "$pageview",
+                    {"$current_url": "http://example.com"},
+                    "2021-01-01T10:00:00Z",
+                    "user-123",
+                    None,
+                    "2021-01-01T10:00:00Z",
+                    "person-456",
+                    {"email": "test@example.com"},
+                    True,
                 ]
-            ]
+            ],
         }
 
         records = retriever._extract_records_from_response(response_body)
@@ -348,15 +362,18 @@ class TestEventsV2Retriever:
 
         response_body = {
             "columns": [
-                "uuid", "event", "properties", "timestamp", "distinct_id",
-                "elements_chain", "created_at", "person_id", "person_properties", "person_is_identified"
+                "uuid",
+                "event",
+                "properties",
+                "timestamp",
+                "distinct_id",
+                "elements_chain",
+                "created_at",
+                "person_id",
+                "person_properties",
+                "person_is_identified",
             ],
-            "results": [
-                [
-                    "abc-123", "$pageview", {}, "2021-01-01T10:00:00Z",
-                    "user-123", None, None, None, None, None
-                ]
-            ]
+            "results": [["abc-123", "$pageview", {}, "2021-01-01T10:00:00Z", "user-123", None, None, None, None, None]],
         }
 
         records = retriever._extract_records_from_response(response_body)

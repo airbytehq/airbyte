@@ -2,17 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import logging
 import re
+from dataclasses import dataclass, field
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+
+import requests
 
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.retrievers import Retriever
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-import requests
+
 
 logger = logging.getLogger("airbyte")
 
@@ -20,6 +22,7 @@ logger = logging.getLogger("airbyte")
 # =============================================================================
 # Original Events Stream Components (uses deprecated /events endpoint)
 # =============================================================================
+
 
 @dataclass
 class EventsSimpleRetriever(SimpleRetriever):
@@ -163,6 +166,7 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
 # Events V2 Stream Components (uses Query API with HogQL)
 # =============================================================================
 
+
 @dataclass
 class EventsV2CartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
     """Stream slicer for events_v2 that supports project_id from config.
@@ -268,13 +272,13 @@ class EventsV2Retriever(Retriever):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        if self.stream_slicer and hasattr(self.stream_slicer, 'get_stream_state'):
+        if self.stream_slicer and hasattr(self.stream_slicer, "get_stream_state"):
             return self.stream_slicer.get_stream_state()
         return self._state
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]) -> None:
-        if self.stream_slicer and hasattr(self.stream_slicer, 'set_initial_state'):
+        if self.stream_slicer and hasattr(self.stream_slicer, "set_initial_state"):
             self.stream_slicer.set_initial_state(value)
         self._state = value
 
@@ -288,7 +292,7 @@ class EventsV2Retriever(Retriever):
         """Validate datetime string format to prevent HogQL injection."""
         if not dt_str:
             raise ValueError("Empty datetime string")
-        pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([+-]\d{2}:?\d{2}|Z)?$'
+        pattern = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([+-]\d{2}:?\d{2}|Z)?$"
         if not re.match(pattern, dt_str):
             raise ValueError(f"Invalid datetime format: {dt_str}")
         return dt_str
@@ -387,18 +391,10 @@ class EventsV2Retriever(Retriever):
 
         while True:
             hogql_query = self._build_hogql_query(stream_slice, offset)
-            query_body = {
-                "query": {
-                    "kind": "HogQLQuery",
-                    "query": hogql_query
-                }
-            }
+            query_body = {"query": {"kind": "HogQLQuery", "query": hogql_query}}
 
             url = f"{self._get_base_url()}/api/projects/{project_id}/query/"
-            headers = {
-                "Authorization": f"Bearer {self._get_api_key()}",
-                "Content-Type": "application/json"
-            }
+            headers = {"Authorization": f"Bearer {self._get_api_key()}", "Content-Type": "application/json"}
 
             try:
                 response = requests.post(url, json=query_body, headers=headers, timeout=300)
@@ -423,5 +419,5 @@ class EventsV2Retriever(Retriever):
                 logger.error(f"Error fetching events from Query API: {e}")
                 raise
 
-        if most_recent_record and self.stream_slicer and hasattr(self.stream_slicer, 'close_slice'):
+        if most_recent_record and self.stream_slicer and hasattr(self.stream_slicer, "close_slice"):
             self.stream_slicer.close_slice(stream_slice, most_recent_record)
