@@ -70,7 +70,7 @@ app.post("/api/airbyte/widget-token", async (req, res) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        external_user_id: userId, // creates or reuses a workspace for this user
+        external_user_id: userId, // creates or reuses a customer for this user
         allowed_origin: process.env.ALLOWED_ORIGIN, // must match your frontend's origin exactly (including port)
       }),
     });
