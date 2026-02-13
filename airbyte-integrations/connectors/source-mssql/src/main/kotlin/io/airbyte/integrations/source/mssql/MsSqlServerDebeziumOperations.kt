@@ -560,14 +560,19 @@ class MsSqlServerDebeziumOperations(
     override fun generateColdStartOffset(): DebeziumOffset {
         val currentLsn = getCurrentMaxLsn()
         val databaseName = configuration.databaseName
+        val topicPrefix = DebeziumPropertiesBuilder.sanitizeTopicPrefix(databaseName)
 
-        // Create offset structure that matches SQL Server Debezium connector format
+        // Create offset structure that matches SQL Server Debezium connector format.
+        // The key must match what Debezium internally constructs in SqlServerPartition:
+        //   [connectorName, {"server": topicPrefix, "database": databaseName}]
+        // where connectorName = the "name" property (raw databaseName)
+        // and topicPrefix = sanitizeTopicPrefix(databaseName) used in "topic.prefix".
         val key =
             Jsons.arrayNode().apply {
                 add(databaseName)
                 add(
                     Jsons.objectNode().apply {
-                        put("server", databaseName)
+                        put("server", topicPrefix)
                         put("database", databaseName)
                     }
                 )
@@ -585,7 +590,7 @@ class MsSqlServerDebeziumOperations(
     }
 
     override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> {
-        return generateCommonDebeziumProperties(streams) + ("snapshot.mode" to "no_data")
+        return generateCommonDebeziumProperties(streams) + ("snapshot.mode" to "recovery")
     }
 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> {
