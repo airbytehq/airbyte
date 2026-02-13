@@ -62,7 +62,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
 | `external_id` | `string` | No | Lists tickets by external id |
-| `sort` | `"id" \| "status" \| "updated_at" \| "-id" \| "-status" \| "-updated_at"` | No | Sort order |
+| `sort_by` | `"assignee" \| "assignee.name" \| "created_at" \| "group" \| "id" \| "requester" \| "requester.name" \| "status" \| "subject" \| "updated_at"` | No | Sort field for offset pagination |
+| `sort_order` | `"asc" \| "desc"` | No | Sort order for offset pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -376,6 +378,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `page` | `integer` | No | Page number for pagination |
 | `role` | `"end-user" \| "agent" \| "admin"` | No | Filter by role |
 | `external_id` | `string` | No | Filter by external id |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -683,6 +686,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -895,6 +899,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
 | `exclude_deleted` | `boolean` | No | Exclude deleted groups |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -1091,7 +1096,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `ticket_id` | `integer` | Yes | The ID of the ticket |
 | `page` | `integer` | No | Page number for pagination |
 | `include_inline_images` | `boolean` | No | Include inline images in the response |
-| `sort` | `"created_at" \| "-created_at"` | No | Sort order |
+| `sort_order` | `"asc" \| "desc"` | No | Sort order for comments (always sorted by created_at) |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -1344,6 +1350,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -1406,6 +1413,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `ticket_id` | `integer` | Yes | The ID of the ticket |
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -1536,6 +1544,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -1726,6 +1735,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
 | `locale` | `string` | No | Locale for the results |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -1983,6 +1993,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -2205,6 +2216,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `group_id` | `integer` | No | Filter by group ID |
 | `sort_by` | `"alphabetical" \| "created_at" \| "updated_at" \| "position"` | No | Sort results |
 | `sort_order` | `"asc" \| "desc"` | No | Sort order |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -2333,6 +2345,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `only_viewable` | `boolean` | No | Return only viewable macros |
 | `sort_by` | `"alphabetical" \| "created_at" \| "updated_at" \| "position"` | No | Sort results |
 | `sort_order` | `"asc" \| "desc"` | No | Sort order |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -2454,7 +2467,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `page` | `integer` | No | Page number for pagination |
 | `active` | `boolean` | No | Filter by active status |
 | `category_id` | `string` | No | Filter by category ID |
-| `sort` | `"alphabetical" \| "created_at" \| "updated_at" \| "position"` | No | Sort results |
+| `sort_by` | `"alphabetical" \| "created_at" \| "updated_at" \| "usage_1h" \| "usage_24h" \| "usage_7d"` | No | Sort field for offset pagination |
+| `sort_order` | `"asc" \| "desc"` | No | Sort order for offset pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -2577,7 +2592,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
 | `active` | `boolean` | No | Filter by active status |
-| `sort` | `"alphabetical" \| "created_at" \| "updated_at" \| "position"` | No | Sort results |
+| `sort_by` | `"alphabetical" \| "created_at" \| "updated_at" \| "usage_1h" \| "usage_24h" \| "usage_7d"` | No | Sort field for offset pagination |
+| `sort_order` | `"asc" \| "desc"` | No | Sort order for offset pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -2695,6 +2712,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -2811,6 +2829,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `score` | `"offered" \| "unoffered" \| "received" \| "good" \| "bad"` | No | Filter by score |
 | `start_time` | `integer` | No | Start time (Unix epoch) |
 | `end_time` | `integer` | No | End time (Unix epoch) |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -3014,6 +3033,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -3072,6 +3092,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -3132,6 +3153,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -3249,6 +3271,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `page` | `integer` | No | Page number for pagination |
 | `active` | `boolean` | No | Filter by active status |
 | `end_user_visible` | `boolean` | No | Filter by end user visibility |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -3472,6 +3495,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `page` | `integer` | No | Page number for pagination |
 | `sort_by` | `"created_at" \| "updated_at" \| "title" \| "position"` | No | Sort articles by field |
 | `sort_order` | `"asc" \| "desc"` | No | Sort order |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
@@ -3607,6 +3631,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `article_id` | `integer` | Yes | The unique ID of the article |
 | `page` | `integer` | No | Page number for pagination |
+| `per_page` | `integer` | No | Number of results per page |
 
 
 <details>
