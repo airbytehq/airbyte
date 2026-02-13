@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.export.ExportedRecord
 import io.airbyte.cdk.load.message.Meta.Change
 import java.time.Instant
 import java.util.UUID
@@ -87,35 +86,4 @@ data class OutputRecord(
         airbyteMeta,
     )
 
-    fun toExportedRecord(): ExportedRecord =
-        ExportedRecord(
-            rawId = rawId,
-            extractedAt = extractedAt,
-            loadedAt = loadedAt,
-            generationId = generationId,
-            data = data,
-            airbyteMeta =
-                airbyteMeta?.let {
-                    ExportedRecord.Meta(
-                        changes = it.changes,
-                        syncId = it.syncId,
-                    )
-                },
-        )
 }
-
-fun ExportedRecord.toOutputRecord(): OutputRecord =
-    OutputRecord(
-        rawId = rawId,
-        extractedAt = extractedAt,
-        loadedAt = loadedAt,
-        generationId = generationId,
-        data = data,
-        airbyteMeta =
-            airbyteMeta?.let {
-                OutputRecord.Meta(
-                    changes = it.changes,
-                    syncId = it.syncId,
-                )
-            },
-    )
