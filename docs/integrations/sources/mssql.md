@@ -454,7 +454,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.3.4 | 2026-02-13 | [73327](https://github.com/airbytehq/airbyte/pull/73327) | Fix MSSQL CDC cold-start failure by changing snapshot.mode from recovery to no_data |
+| 4.3.4 | 2026-02-13 | [73327](https://github.com/airbytehq/airbyte/pull/73327) | Fix MSSQL CDC cold-start offset key mismatch causing recovery snapshot failure |
 | 4.3.3 | 2025-01-16 | [71821](https://github.com/airbytehq/airbyte/pull/71821) | Require a manual refresh when schema history is missing, bump CDK version. |
 | 4.3.2 | 2025-12-11 | [70836](https://github.com/airbytehq/airbyte/pull/70836) | Add Azure SQL Database compatibility for SQL Server Agent check |
 | 4.3.1 | 2025-12-09 | [70823](https://github.com/airbytehq/airbyte/pull/70823) | Bump up connector version number to release the connector |
