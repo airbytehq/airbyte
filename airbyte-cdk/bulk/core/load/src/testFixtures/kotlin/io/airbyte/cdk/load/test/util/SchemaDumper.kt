@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.component.TableSchema
-import io.airbyte.cdk.load.export.ExportedTableSchema
 
 /**
  * Destinations will eventually all have a
@@ -36,16 +35,4 @@ interface SchemaDumper {
 data class FullTableSchema(
     val tableSchema: TableSchema,
     val additionalInfo: Map<String, Any?> = emptyMap(),
-) {
-    fun toExportedTableSchema(): ExportedTableSchema =
-        ExportedTableSchema(
-            tableSchema = tableSchema,
-            additionalInfo = additionalInfo,
-        )
-}
-
-fun ExportedTableSchema.toFullTableSchema(): FullTableSchema =
-    FullTableSchema(
-        tableSchema = tableSchema,
-        additionalInfo = additionalInfo,
-    )
+)
