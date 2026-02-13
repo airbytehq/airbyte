@@ -24,10 +24,10 @@ object HstoreFieldType :
     )
 
 object HstoreAccessor : JdbcAccessor<Map<String, String?>> {
-    @Suppress("UNCHECKED_CAST")
     override fun get(rs: ResultSet, colIdx: Int): Map<String, String?>? {
         val obj = rs.getObject(colIdx) ?: return null
-        return obj as Map<String, String?>
+        require(obj is Map<*, *>) { "Expected Map for hstore column, got ${obj::class.java.name}" }
+        return obj.entries.associate { (k, v) -> k as String to v as String? }
     }
     override fun set(stmt: PreparedStatement, paramIdx: Int, value: Map<String, String?>) {
         stmt.setString(
