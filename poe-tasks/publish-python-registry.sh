@@ -18,7 +18,7 @@ Options:
     -n, --name CONNECTOR_NAME     Connector name (required)
     -t, --token TOKEN             PyPI token (optional, specify this or set PYTHON_REGISTRY_TOKEN environment variable)
     -v, --version VERSION         Override version (optional)
-    --release-type TYPE           Release type (optional): 'pre-release' or 'main-release' (default is 'pre-release')
+    --with-semver-suffix TYPE     Semver suffix (optional): 'none', 'preview', or 'rc' (default is 'preview')
     --test-registry               Use the test PyPI registry (default is production registry)
     -h, --help                    Show this help message
 
@@ -27,7 +27,7 @@ Environment Variables:
 
 Examples:
     $0 --name source-faker --token \$PYPI_TOKEN
-    $0 --name source-faker --token \$PYPI_TOKEN --release-type main-release
+    $0 --name source-faker --token \$PYPI_TOKEN --with-semver-suffix none
 EOF
 }
 
@@ -54,7 +54,7 @@ TEST_REGISTRY_UPLOAD_URL="https://test.pypi.org/legacy/"
 TEST_REGISTRY_CHECK_URL="https://test.pypi.org/pypi"
 TEST_REGISTRY_PACKAGE_URL="https://test.pypi.org/project"
 
-RELEASE_TYPE="pre-release"
+SEMVER_SUFFIX="preview"
 CONNECTOR_NAME=""
 PYPI_TOKEN=""
 VERSION_OVERRIDE=""
@@ -74,8 +74,8 @@ while [[ $# -gt 0 ]]; do
             VERSION_OVERRIDE="$2"
             shift 2
             ;;
-        --release-type)
-            RELEASE_TYPE="$2"
+        --with-semver-suffix)
+            SEMVER_SUFFIX="$2"
             shift 2
             ;;
         --test-registry)
@@ -104,8 +104,8 @@ if [[ -z "$CONNECTOR_NAME" ]]; then
     exit 1
 fi
 
-if [[ "$RELEASE_TYPE" != "pre-release" && "$RELEASE_TYPE" != "main-release" ]]; then
-    echo "Error: Invalid release type '$RELEASE_TYPE'. Valid options are 'pre-release' or 'main-release'." >&2
+if [[ "$SEMVER_SUFFIX" != "none" && "$SEMVER_SUFFIX" != "preview" && "$SEMVER_SUFFIX" != "rc" ]]; then
+    echo "Error: Invalid semver suffix '$SEMVER_SUFFIX'. Valid options are 'none', 'preview', or 'rc'." >&2
     usage >&2
     exit 1
 fi
@@ -156,19 +156,22 @@ BASE_VERSION=$(poe -qq get-version)
 # Determine version to use
 if [[ -n "$VERSION_OVERRIDE" ]]; then
     VERSION="$VERSION_OVERRIDE"
-elif [[ "$RELEASE_TYPE" == "pre-release" ]]; then
-    # Add current timestamp for pre-release.
+elif [[ "$SEMVER_SUFFIX" == "preview" ]]; then
+    # Add current timestamp for preview builds.
     # we can't use the git revision because not all python registries allow local version identifiers. 
     # Public version identifiers must conform to PEP 440 and only allow digits.
     TIMESTAMP=$(date +"%Y%m%d%H%M")
     VERSION="${BASE_VERSION}.dev.${TIMESTAMP}"
+elif [[ "$SEMVER_SUFFIX" == "rc" ]]; then
+    # Add rc1 suffix for release candidates
+    VERSION="${BASE_VERSION}rc1"
 else
     VERSION="$BASE_VERSION"
 fi
 
 echo "Package name: $PACKAGE_NAME"
 echo "Version: $VERSION"
-echo "Release type: $RELEASE_TYPE"
+echo "Semver suffix: $SEMVER_SUFFIX"
 echo
 
 # Check if package already exists
