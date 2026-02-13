@@ -2,69 +2,72 @@
 
 This page contains the setup guide and reference information for the [Monday](https://monday.com/) source connector.
 
+This connector uses the [Monday.com GraphQL API](https://developer.monday.com/api-reference/docs) (version 2026-01).
+
 ## Prerequisites
 
-- Monday API Token / Monday Access Token
+To set up the Monday source connector, you need either:
 
-You can find your Oauth application in Monday main page -> Profile picture (bottom left corner) -> Developers -> My Apps -> Select your app.
+- A **Personal API Token**, which you can generate from your Monday.com account under **Profile picture** (bottom left corner) > **Admin** > **API**.
+- An **OAuth 2.0 application**, which you can find or create under **Profile picture** (bottom left corner) > **Developers** > **My Apps**.
 
-You can get the API token for Monday by going to Profile picture (bottom left corner) -> Admin -> API.
+For more details, see Monday.com's [authentication documentation](https://developer.monday.com/api-reference/docs/authentication).
 
 ## Setup guide
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Monday connector and select **Monday** from the Source type dropdown.
-4. Fill in your API Key or authenticate using OAuth and then click **Set up source**.
+1. In Airbyte, navigate to **Sources** and click **+ New source**.
+2. Search for and select **Monday**.
+3. Enter a name for the connector.
+4. Choose your authentication method and enter the required credentials.
+5. Optionally, enter one or more **Board IDs** to limit syncing to specific boards. If left empty, the connector syncs data from all boards in your account.
+6. Click **Set up source**.
 
-### Connect using `OAuth 2.0` option
+### Connect using OAuth 2.0
 
-1. Select `OAuth2.0` in `Authorization Method`.
-2. Click on `authenticate your Monday account`.
-3. Proceed with the authentication using the credentials for your Monday account.
+1. Select **OAuth2.0** in **Authorization Method**.
+2. Click **Authenticate your Monday account**.
+3. Complete the authentication flow using your Monday.com credentials.
 
-### Connect using `API Token` option
+### Connect using API Token
 
-1. Generate an API Token as described [here](https://developer.monday.com/api-reference/docs/authentication).
-2. Use the generated `api_token` in the Airbyte connection.
+1. Generate an API token as described in Monday.com's [authentication documentation](https://developer.monday.com/api-reference/docs/authentication).
+2. Select **API Token** in **Authorization Method**.
+3. Enter your token in the **Personal API Token** field.
 
 ## Supported sync modes
 
-The Monday source connector supports the following features:
+The Monday source connector supports the following sync modes:
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
-| SSL connection    | No         |
 | Namespaces        | No         |
 
-## Supported Streams
+## Supported streams
 
-Several output streams are available from this source:
+The following streams are available:
 
-- [Activity logs](https://developer.monday.com/api-reference/docs/activity-logs)
-- [Items](https://developer.monday.com/api-reference/docs/items-queries)
-- [Boards](https://developer.monday.com/api-reference/docs/groups-queries#groups-queries)
-- [Teams](https://developer.monday.com/api-reference/docs/teams-queries)
-- [Updates](https://developer.monday.com/api-reference/docs/updates-queries)
-- [Users](https://developer.monday.com/api-reference/docs/users-queries-1)
-- [Tags](https://developer.monday.com/api-reference/docs/tags-queries)
-- [Workspaces](https://developer.monday.com/api-reference/docs/workspaces)
+| Stream | Sync mode | API documentation |
+| :--- | :--- | :--- |
+| Activity logs | Full Refresh, Incremental | [Activity logs](https://developer.monday.com/api-reference/docs/activity-logs) |
+| Boards | Full Refresh, Incremental | [Boards](https://developer.monday.com/api-reference/docs/boards) |
+| Items | Full Refresh, Incremental | [Items](https://developer.monday.com/api-reference/docs/items-queries) |
+| Tags | Full Refresh | [Tags](https://developer.monday.com/api-reference/docs/tags-queries) |
+| Teams | Full Refresh | [Teams](https://developer.monday.com/api-reference/docs/teams-queries) |
+| Updates | Full Refresh | [Updates](https://developer.monday.com/api-reference/docs/updates-queries) |
+| Users | Full Refresh | [Users](https://developer.monday.com/api-reference/docs/users-queries-1) |
+| Workspaces | Full Refresh | [Workspaces](https://developer.monday.com/api-reference/docs/workspaces) |
 
-Important Notes:
+### Stream notes
 
-- `Columns` are available from the `Boards` stream. By syncing the `Boards` stream you will get the `Columns` for each `Board` synced in the database
-  The typical name of the table depends on the `destination` you use like `boards.columns`, for instance.
+- The Boards stream includes column definitions for each board. In your destination, these appear as nested data, typically named `boards.columns`.
 
-- `Column Values` are available from the `Items` stream. By syncing the `Items` stream you will get the `Column Values` for each `Item` (row) of the board.
-  The typical name of the table depends on the `destination` you use like `items.column_values`, for instance.
-  If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+- The Items stream includes column values for each item. In your destination, these appear as nested data, typically named `items.column_values`.
 
-- Incremental sync for `Items` and `Boards` streams is done using the `Activity logs` stream.
-  Ids of boards and items are extracted from activity logs events and used to selectively sync boards and items.
-  Some data may be lost if the time between incremental syncs is longer than the activity logs retention time for your plan.
-  Check your Monday plan at https://monday.com/pricing.
+- Incremental sync for the Items and Boards streams relies on the Activity logs stream. Board and item IDs are extracted from activity log events and used to selectively sync only the changed records. If the time between syncs exceeds the activity log retention period for your [Monday.com plan](https://monday.com/pricing), some changes may not be captured during incremental syncs.
+
+If there are additional endpoints you'd like Airbyte to support, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ## Performance considerations
 
@@ -78,7 +81,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.5.1 | 2026-02-13 | [72192](https://github.com/airbytehq/airbyte/pull/72192) | Add `user_id` field to `activity_logs` stream |
-| 2.5.0 | 2026-02-04 | [72832](https://github.com/airbytehq/airbyte/pull/72832) | Upgrade to Monday.com API version 2026-01 |
+| 2.5.0 | 2026-02-11 | [72832](https://github.com/airbytehq/airbyte/pull/72832) | Upgrade to Monday.com API version 2026-01 |
 | 2.4.21 | 2026-02-10 | [73038](https://github.com/airbytehq/airbyte/pull/73038) | Update dependencies |
 | 2.4.20 | 2026-02-03 | [72577](https://github.com/airbytehq/airbyte/pull/72577) | Update dependencies |
 | 2.4.19 | 2026-01-20 | [71994](https://github.com/airbytehq/airbyte/pull/71994) | Update dependencies |
