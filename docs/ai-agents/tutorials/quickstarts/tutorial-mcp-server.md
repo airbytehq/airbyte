@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Agent Engine MCP server tutorial
 
-In this tutorial, you install Airbyte's Agent Engine MCP server, configure a connector, and register the server with your agent. Once registered, your can use natural language to query your data sources. You don't have to write any code.
+In this tutorial, you install Airbyte's Agent Engine MCP server, configure a connector, and register the server with your agent. Once registered, you can use natural language to query your data sources. You don't have to write any code.
 
 This tutorial uses GitHub as an example, but you can substitute any [agent connector](../../connectors/) that Airbyte supports.
 
@@ -29,24 +29,29 @@ Before you begin this tutorial, ensure you have the following.
 
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
 
-- A uv virtual environment (run `uv venv`) to start yours
-
 - A [GitHub personal access token](https://github.com/settings/tokens). For this tutorial, a classic token with `repo` scope is sufficient.
 
 - An agent that supports MCP servers
 
-## Part 1: Install the MCP server
+## Part 1: Create a project
 
-Install the `airbyte-agent-mcp` package from PyPI:
+Create a directory for your MCP server configuration and initialize a uv project:
 
 ```bash
-uv pip install airbyte-agent-mcp
+mkdir my-mcp-server && cd my-mcp-server
+uv init --python 3.13
 ```
 
-This installs the `adp` command-line tool, which you use to discover connectors, generate configurations, and register the MCP server with your AI tool.
+Add `airbyte-agent-mcp` as a dependency:
+
+```bash
+uv add --prerelease allow airbyte-agent-mcp
+```
+
+This installs the package and makes the `adp` command-line tool available through `uv run`. You use `adp` to discover connectors, generate configurations, and register the MCP server with your agent.
 
 :::note
-If you prefer not to install the package globally, you can use `uvx` to run `adp` commands without installing. Replace `adp` with `uvx --from airbyte-agent-mcp adp` in the commands that follow.
+The `--prerelease allow` flag is required because `airbyte-agent-mcp` depends on a pre-release version of one of its upstream libraries. This flag is only needed during installation.
 :::
 
 ## Part 2: List available connectors
@@ -54,7 +59,7 @@ If you prefer not to install the package globally, you can use `uvx` to run `adp
 Run the following command to see the available open source connectors:
 
 ```bash
-adp connectors list-oss
+uv run adp connectors list-oss
 ```
 
 This queries the Airbyte connector registry and displays a table of available connectors, their package names, versions, and definition IDs.
@@ -62,7 +67,7 @@ This queries the Airbyte connector registry and displays a table of available co
 To filter by name, use the `--pattern` flag:
 
 ```bash
-adp connectors list-oss --pattern github
+uv run adp connectors list-oss --pattern github
 ```
 
 ## Part 3: Generate a connector configuration
@@ -70,7 +75,7 @@ adp connectors list-oss --pattern github
 Generate a configuration file for the GitHub connector:
 
 ```bash
-adp connectors configure --package airbyte-agent-github
+uv run adp connectors configure --package airbyte-agent-github
 ```
 
 This installs the connector package, inspects its authentication requirements, and generates a YAML configuration file called `connector-github-package.yaml`. The file looks like this:
@@ -79,17 +84,21 @@ This installs the connector package, inspects its authentication requirements, a
 connector:
   package: airbyte-agent-github
 credentials:
-  token: ${env.GITHUB_TOKEN}
+  access_token: ${env.GITHUB_ACCESS_TOKEN}
 ```
 
-The `${env.GITHUB_TOKEN}` placeholder tells the MCP server to read the value from an environment variable. You set this in the next step.
+The `${env.GITHUB_ACCESS_TOKEN}` placeholder tells the MCP server to read the value from an environment variable. You set this in the next step.
+
+:::note
+Some connectors support multiple authentication methods. The `configure` command may include commented-out alternatives in the generated file. You only need to configure one method.
+:::
 
 ## Part 4: Set your credentials
 
 Create a `.env` file in the same directory as your connector configuration:
 
 ```text title=".env"
-GITHUB_TOKEN=your-github-personal-access-token
+GITHUB_ACCESS_TOKEN=your-github-personal-access-token
 ```
 
 Replace the placeholder with your actual GitHub personal access token.
@@ -100,7 +109,7 @@ The `adp` CLI automatically loads `.env` files from the current directory. The `
 Never commit your `.env` file to version control. If you do this by mistake, rotate your secrets immediately.
 :::
 
-## Part 5: Register with your AI tool
+## Part 5: Register with your agent
 
 Register the MCP server with your preferred agent.
 
@@ -108,20 +117,20 @@ Register the MCP server with your preferred agent.
 <TabItem value="claude-code" label="Claude Code" default>
 
 ```bash
-adp mcp add-to claude-code connector-github-package.yaml
+uv run adp mcp add-to claude-code connector-github-package.yaml
 ```
 
 This runs `claude mcp add` under the hood and registers the server at the user scope by default. To register at the project scope instead:
 
 ```bash
-adp mcp add-to claude-code connector-github-package.yaml --scope project
+uv run adp mcp add-to claude-code connector-github-package.yaml --scope project
 ```
 
 </TabItem>
 <TabItem value="claude-desktop" label="Claude Desktop">
 
 ```bash
-adp mcp add-to claude-desktop connector-github-package.yaml
+uv run adp mcp add-to claude-desktop connector-github-package.yaml
 ```
 
 This modifies your Claude Desktop configuration file directly. On macOS, the config file is at `~/Library/Application Support/Claude/claude_desktop_config.json`.
@@ -130,20 +139,20 @@ This modifies your Claude Desktop configuration file directly. On macOS, the con
 <TabItem value="cursor" label="Cursor">
 
 ```bash
-adp mcp add-to cursor connector-github-package.yaml
+uv run adp mcp add-to cursor connector-github-package.yaml
 ```
 
 This modifies the Cursor MCP configuration file. To register at the project scope instead of user scope:
 
 ```bash
-adp mcp add-to cursor connector-github-package.yaml --scope project
+uv run adp mcp add-to cursor connector-github-package.yaml --scope project
 ```
 
 </TabItem>
 <TabItem value="codex" label="Codex">
 
 ```bash
-adp mcp add-to codex connector-github-package.yaml
+uv run adp mcp add-to codex connector-github-package.yaml
 ```
 
 This runs `codex mcp add` to register the server.
@@ -154,7 +163,7 @@ This runs `codex mcp add` to register the server.
 You can optionally specify a custom name for the server with `--name`:
 
 ```bash
-adp mcp add-to claude-code connector-github-package.yaml --name my-github
+uv run adp mcp add-to claude-code connector-github-package.yaml --name my-github
 ```
 
 If you don't specify a name, the server is named automatically based on the connector (for example, `airbyte-github`).
@@ -163,20 +172,20 @@ If you don't specify a name, the server is named automatically based on the conn
 
 Restart your agent so it picks up the new MCP server registration.
 
-Once restarted, prompt your AI tool with natural language questions about your GitHub data. Try prompts like:
+Once restarted, prompt your agent with natural language questions about your GitHub data. Try prompts like:
 
 - "List the 5 most recent open issues in airbytehq/airbyte"
 - "Show me the latest pull requests in my-org/my-repo"
 - "What are the open issues assigned to octocat?"
 
-Your AI tool discovers the MCP server's tools automatically and calls them based on your prompts. The MCP server handles executing the connector operations and returning the results.
+Your agent discovers the MCP server's tools automatically and calls them based on your prompts. The MCP server handles executing the connector operations and returning the results.
 
 ### Troubleshooting
 
-If your AI tool fails to retrieve data, check the following:
+If your agent fails to retrieve data, check the following:
 
-- **MCP server not found**: Ensure you restarted your AI tool after registering the server.
-- **Environment variable errors**: Verify your `.env` file is in the same directory as your connector YAML file and that the variable names match.
+- **MCP server not found**: Ensure you restarted your agent after registering the server.
+- **Environment variable errors**: Verify your `.env` file is in the same directory where you run the `adp` commands and that the variable names match your YAML configuration.
 - **HTTP 401 errors**: Your GitHub token is invalid or expired. Generate a new token and update your `.env` file.
 - **HTTP 403 errors**: Your GitHub token doesn't have the required scopes. Ensure your token has `repo` scope.
 
@@ -184,7 +193,7 @@ If your AI tool fails to retrieve data, check the following:
 
 In this tutorial, you learned how to:
 
-- Install the Agent Engine MCP server from PyPI
+- Set up a project with the Agent Engine MCP server
 - Discover available connectors with the `adp` CLI
 - Generate a connector configuration file
 - Set credentials using environment variables
@@ -193,7 +202,7 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- Try a different connector. Run `adp connectors list-oss` to see all available connectors and repeat these steps with a different data source.
+- Try a different connector. Run `uv run adp connectors list-oss` to see all available connectors and repeat these steps with a different data source.
 
 - Learn how to [configure the MCP server](../../mcp-server/configuration) for advanced scenarios like Airbyte Cloud hosted execution, git-based packages, and aggregate configurations with multiple connectors.
 
