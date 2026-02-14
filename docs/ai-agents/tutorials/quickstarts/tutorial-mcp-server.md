@@ -14,7 +14,7 @@ This tutorial uses GitHub as an example, but you can substitute any [agent conne
 
 ## Overview
 
-This tutorial is for AI engineers and other technical users who work with data and AI tools. You can complete it in about 5 minutes.
+This tutorial is for somewhat other technical users who work with data and AI agents. You can complete it in about 5 minutes.
 
 The tutorial assumes you have basic familiarity with:
 
@@ -43,13 +43,11 @@ mkdir my-mcp-server && cd my-mcp-server
 uv init --python 3.13
 ```
 
-Add `airbyte-agent-mcp` as a dependency:
+Add `airbyte-agent-mcp` as a dependency. This installs the package and makes the `adp` command-line tool, available through `uv run`. You use `adp` to discover connectors, generate configurations, and register the MCP server with your agent.
 
 ```bash
 uv add --prerelease allow airbyte-agent-mcp
 ```
-
-This installs the package and makes the `adp` command-line tool available through `uv run`. You use `adp` to discover connectors, generate configurations, and register the MCP server with your agent.
 
 :::note
 The `--prerelease allow` flag is required because `airbyte-agent-mcp` depends on a pre-release version of one of its upstream libraries. This flag is only needed during installation.
