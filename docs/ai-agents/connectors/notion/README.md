@@ -3,10 +3,10 @@
 The Notion agent connector is a Python package that equips AI agents to interact with Notion through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Notion is an all-in-one workspace for notes, docs, wikis, projects, and collaboration.
-This connector provides read access to Notion workspaces including users, pages, databases,
-blocks, and comments through the Notion REST API. It enables querying workspace structure,
-page content, database schemas, and collaboration data for productivity analysis and
-content management insights.
+This connector provides read access to Notion workspaces including users, pages, data sources,
+blocks, and comments through the Notion REST API (version 2025-09-03). It enables querying
+workspace structure, page content, data source schemas, and collaboration data for productivity
+analysis and content management insights.
 
 
 ## Example questions
@@ -15,14 +15,14 @@ The Notion connector is optimized to handle prompts like these.
 
 - List all users in my Notion workspace
 - Show me all pages in my Notion workspace
-- What databases exist in my Notion workspace?
+- What data sources exist in my Notion workspace?
 - Get the details of a specific page by ID
 - List child blocks of a specific page
 - Show me comments on a specific page
-- What is the schema of a specific database?
+- What is the schema of a specific data source?
 - Who are the bot users in my workspace?
 - Find pages created in the last week
-- List databases that have been recently edited
+- List data sources that have been recently edited
 - Show me all archived pages
 
 ## Unsupported questions
@@ -30,7 +30,7 @@ The Notion connector is optimized to handle prompts like these.
 The Notion connector isn't currently able to handle prompts like these.
 
 - Create a new page in Notion
-- Update a database property
+- Update a data source property
 - Delete a block
 - Add a comment to a page
 
@@ -97,7 +97,7 @@ This connector supports the following entities and actions. For more details, se
 |--------|---------|
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
 | Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Search](./REFERENCE.md#pages-search) |
-| Databases | [List](./REFERENCE.md#databases-list), [Get](./REFERENCE.md#databases-get), [Search](./REFERENCE.md#databases-search) |
+| Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Search](./REFERENCE.md#data-sources-search) |
 | Blocks | [List](./REFERENCE.md#blocks-list), [Get](./REFERENCE.md#blocks-get), [Search](./REFERENCE.md#blocks-search) |
 | Comments | [List](./REFERENCE.md#comments-list) |
 
@@ -112,7 +112,7 @@ See the official [Notion API reference](https://developers.notion.com/reference/
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 04a4f347a8f30c6f4f322ba94180755cc4359e49
+- **Package version:** 0.1.1
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 3bf837940c35b88e006de58e6a47831b0f61bb40
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/notion/CHANGELOG.md)
