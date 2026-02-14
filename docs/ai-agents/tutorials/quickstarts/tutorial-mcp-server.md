@@ -1,5 +1,5 @@
 ---
-sidebar_label: "Agent Engine MCP server"
+sidebar_label: "MCP server"
 sidebar_position: 2
 ---
 
@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Agent Engine MCP server tutorial
 
-In this tutorial, you install Airbyte's Agent Engine MCP server, configure a connector, and register the server with your AI coding tool. Once registered, your AI tool can query your data sources using natural language, with no application code required.
+In this tutorial, you install Airbyte's Agent Engine MCP server, configure a connector, and register the server with your agent. Once registered, your can use natural language to query your data sources. You don't have to write any code.
 
 This tutorial uses GitHub as an example, but you can substitute any [agent connector](../../connectors/) that Airbyte supports.
 
@@ -19,16 +19,21 @@ This tutorial is for AI engineers and other technical users who work with data a
 The tutorial assumes you have basic familiarity with:
 
 - Python and package management with [uv](https://github.com/astral-sh/uv)
-- An AI coding tool that supports MCP (Claude Code, Claude Desktop, Cursor, or Codex)
+- MCP servers
 
 ## Before you start
 
 Before you begin this tutorial, ensure you have the following.
 
 - [Python](https://www.python.org/downloads/) version 3.13 or later
+
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
+
+- A uv virtual environment (run `uv venv`) to start yours
+
 - A [GitHub personal access token](https://github.com/settings/tokens). For this tutorial, a classic token with `repo` scope is sufficient.
-- An AI coding tool that supports MCP: [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview), [Claude Desktop](https://claude.ai/download), [Cursor](https://www.cursor.com/), or [Codex](https://openai.com/index/introducing-codex/)
+
+- An agent that supports MCP servers
 
 ## Part 1: Install the MCP server
 
@@ -97,7 +102,7 @@ Never commit your `.env` file to version control. If you do this by mistake, rot
 
 ## Part 5: Register with your AI tool
 
-Register the MCP server with your preferred AI coding tool.
+Register the MCP server with your preferred agent.
 
 <Tabs>
 <TabItem value="claude-code" label="Claude Code" default>
@@ -156,7 +161,7 @@ If you don't specify a name, the server is named automatically based on the conn
 
 ## Part 6: Use it
 
-Restart your AI coding tool so it picks up the new MCP server registration.
+Restart your agent so it picks up the new MCP server registration.
 
 Once restarted, prompt your AI tool with natural language questions about your GitHub data. Try prompts like:
 
@@ -183,7 +188,7 @@ In this tutorial, you learned how to:
 - Discover available connectors with the `adp` CLI
 - Generate a connector configuration file
 - Set credentials using environment variables
-- Register the MCP server with an AI coding tool
+- Register the MCP server with an agent
 - Query data using natural language prompts
 
 ## Next steps
