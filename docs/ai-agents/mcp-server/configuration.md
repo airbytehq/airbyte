@@ -5,13 +5,22 @@ sidebar_position: 2
 
 # Configure the MCP server
 
-The Agent Engine MCP server is configured with a YAML file that specifies which connector to use and how to authenticate. This page covers the configuration file format, the two execution modes, credential management, and aggregate configurations for running multiple connectors.
+You configure the Agent Engine MCP server with a YAML file that specifies which connector to use and how to authenticate. This page covers the configuration file format, execution modes, credential management, and aggregate configurations for running multiple connectors.
 
 ## Configuration file format
 
-A connector configuration file has two required sections:
+Place the configuration file in the folder from which you run the MCP server.
 
-```yaml
+The file has two required sections.
+
+| Key           | Description                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `connector`   | Specifies the connector source. This can be a PyPI package, a git URL, a local path, or an agent connector ID.    |
+| `credentials` | A key-value map of authentication fields. Values use `${env.VAR_NAME}` syntax to reference environment variables. |
+
+This is an example of the file format.
+
+```yaml title="connector-package.yaml"
 connector:
   package: airbyte-agent-gong
 credentials:
@@ -19,18 +28,15 @@ credentials:
   access_key_secret: ${env.GONG_ACCESS_KEY_SECRET}
 ```
 
-- **`connector`**: Specifies the connector source. This can be a PyPI package, a git URL, a local path, or an Airbyte Cloud connector ID.
-- **`credentials`**: A key-value map of authentication fields. Values use `${env.VAR_NAME}` syntax to reference environment variables.
-
-Some connectors also accept a **`config`** section for additional parameters like subdomains or workspace IDs. The `adp connectors configure` command generates the correct structure for each connector.
+Some connectors also accept a `config` section for additional parameters like subdomains or workspace IDs. The `adp connectors configure` command generates the correct structure for each connector.
 
 ## Open source mode
 
-In open source mode, the MCP server installs a connector package and calls the third-party API directly using your credentials. This mode supports the operations that the API provides, such as list and get by ID.
+In open source mode, the MCP server installs a connector package and calls the third-party API directly using your credentials. This mode supports the operations that the API provides, such as list and get by ID. However, it doesn't support using the [context store](../platform/context-store).
 
 ### PyPI packages
 
-The most common configuration. Specify a package name from the Airbyte connector registry:
+The most common configuration. Run `uv run adp connectors list-oss` to see available packages and their versions, then specify a package name from the Airbyte connector registry.
 
 ```yaml
 connector:
@@ -51,11 +57,9 @@ credentials:
   access_key_secret: ${env.GONG_ACCESS_KEY_SECRET}
 ```
 
-Run `uv run adp connectors list-oss` to see available packages and their versions.
-
 ### Git URLs
 
-Point the connector to a git repository:
+Point the connector to a git repository.
 
 ```yaml
 connector:
@@ -64,7 +68,7 @@ credentials:
   token: ${env.MY_TOKEN}
 ```
 
-You can specify a branch or tag with `ref` and a subdirectory with `subdirectory`:
+You can specify a branch or tag with `ref` and a subdirectory with `subdirectory`.
 
 ```yaml
 connector:
@@ -75,9 +79,9 @@ credentials:
   token: ${env.MY_TOKEN}
 ```
 
-### Local paths
+### Local path
 
-Point the connector to a local directory:
+Point the connector to a local directory.
 
 ```yaml
 connector:
@@ -86,11 +90,9 @@ credentials:
   token: ${env.MY_TOKEN}
 ```
 
-This is useful during connector development.
-
 ## Hosted mode
 
-In hosted mode, the MCP server calls the Airbyte Cloud API instead of the third-party API directly. This mode supports arbitrary search and filter queries across all entities because Airbyte Cloud keeps data indexed in the [context store](../platform/context-store).
+In hosted mode, the MCP server calls the Airbyte Cloud API instead of the third-party API directly. This mode supports arbitrary search and filter queries across all entities because Agent Engine keeps data indexed in the [context store](../platform/context-store).
 
 ```yaml
 connector:

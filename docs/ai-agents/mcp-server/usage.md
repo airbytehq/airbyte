@@ -3,7 +3,7 @@ sidebar_label: "Usage"
 sidebar_position: 3
 ---
 
-# Use the MCP server
+# Advanced usage of the MCP server
 
 This page covers the MCP tools that the server exposes, field selection and exclusion, downloads, transport modes, and the terminal chat interface.
 
