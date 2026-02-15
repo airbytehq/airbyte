@@ -94,6 +94,42 @@ credentials:
 
 In hosted mode, the MCP server calls the Airbyte Cloud API instead of the third-party API directly. This mode supports arbitrary search and filter queries across all entities because Agent Engine keeps data indexed in the [context store](../platform/context-store).
 
+Hosted mode uses your Airbyte Cloud credentials (Client ID and Secret) instead of third-party API credentials. You authenticate once, then the CLI remembers your credentials for subsequent commands.
+
+### Step 1: Log in to Airbyte Cloud
+
+Run `adp login` with your organization ID. This opens a link to your Airbyte authentication page where you can find your Client ID and Secret.
+
+```bash
+uv run adp login <organization-id>
+```
+
+The command prompts for your Client ID and Secret, saves them to `~/.airbyte_agent_mcp/orgs/<organization-id>/.env`, and sets the organization as the default. All subsequent `adp` commands automatically load these credentials.
+
+### Step 2: Find your connector ID
+
+List the connectors configured in your organization:
+
+```bash
+uv run adp connectors list-cloud
+```
+
+Use `--customer` to filter by customer name:
+
+```bash
+uv run adp connectors list-cloud --customer acme
+```
+
+### Step 3: Generate a configuration
+
+Pass the connector ID from the previous step:
+
+```bash
+uv run adp connectors configure --connector-id <your-connector-id>
+```
+
+This generates a configuration file like:
+
 ```yaml
 connector:
   connector_id: <your-connector-id>
@@ -111,18 +147,6 @@ connector:
 credentials:
   airbyte_client_id: ${env.AIRBYTE_CLIENT_ID}
   airbyte_client_secret: ${env.AIRBYTE_CLIENT_SECRET}
-```
-
-To generate a hosted mode configuration:
-
-```bash
-uv run adp connectors configure --connector-id <your-connector-id>
-```
-
-Run `uv run adp connectors list-cloud` to see connectors available in your Airbyte Cloud organization. Use `--customer` to filter by customer name:
-
-```bash
-uv run adp connectors list-cloud --customer acme
 ```
 
 ## Credential management
@@ -154,15 +178,9 @@ Never commit your `.env` file to version control. Add `.env` to your `.gitignore
 
 ### Organization login
 
-For Airbyte Cloud connectors, you can save your credentials globally instead of using a `.env` file:
+For hosted mode connectors, running `adp login` (described in [Hosted mode](#hosted-mode)) saves your Airbyte Cloud credentials globally so you don't need a `.env` file. The CLI loads the saved credentials automatically on every command.
 
-```bash
-uv run adp login <organization-id>
-```
-
-This prints a link to the Airbyte authentication page for your organization, then prompts for your Client ID and Secret. Credentials are saved to `~/.airbyte_agent_mcp/orgs/<organization-id>/.env` and the organization is set as the default.
-
-You can log into multiple organizations and switch between them:
+If you work with multiple Airbyte Cloud organizations, you can log into each one and switch between them:
 
 ```bash
 uv run adp orgs list                  # List logged-in organizations
