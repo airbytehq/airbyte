@@ -167,9 +167,11 @@ If you don't specify a name, the server name is based on the connector. For exam
 
 2. Once restarted, prompt your agent with natural language questions about your GitHub data. Try prompts like:
 
-  - "List the 5 most recent open issues in airbytehq/airbyte"
-  - "Show me the latest pull requests in my-org/my-repo"
-  - "What are the open issues assigned to octocat?"
+    - "List the 5 most recent open issues in airbytehq/airbyte"
+
+    - "Show me the latest pull requests in my-org/my-repo"
+    
+    - "What are the open issues assigned to octocat?"
 
 Your agent discovers the MCP server's tools automatically and calls them based on your prompts. The MCP server handles executing the connector operations and returning the results.
 
