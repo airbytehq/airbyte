@@ -7,7 +7,7 @@ description: Gmail is the email service provided by Google.
 check:
   type: CheckStream
   stream_names:
-    - messages
+    - profile
 
 definitions:
   streams:
