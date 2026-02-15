@@ -7,6 +7,8 @@ sidebar_position: 2
 
 You configure the Agent Engine MCP server with a YAML file that specifies which connector to use and how to authenticate. This page covers the configuration file format, execution modes, credential management, and aggregate configurations for running multiple connectors.
 
+If you need help getting started with the MCP server, complete the [tutorial](../tutorials/quickstarts/tutorial-mcp-server) first.
+
 ## Configuration file format
 
 Place the configuration file in the folder from which you run the MCP server.
@@ -20,7 +22,7 @@ The file has two required sections.
 
 This is an example of the file format.
 
-```yaml title="connector-package.yaml"
+```yaml title="connector-gong-package.yaml"
 connector:
   package: airbyte-agent-gong
 credentials:
@@ -32,13 +34,13 @@ Some connectors also accept a `config` section for additional parameters like su
 
 ## Open source mode
 
-In open source mode, the MCP server installs a connector package and calls the third-party API directly using your credentials. This mode supports the operations that the API provides, such as list and get by ID. However, it doesn't support using the [context store](../platform/context-store).
+In open source mode, the MCP server installs a connector package and calls the third-party API directly using your credentials. This mode only supports the operations the third-party API provides. It doesn't support using the Agent Engine's search or the [context store](../platform/context-store). Search operations are only possible if the third-party has search endpoints, and are limited to the capabilities and rate limiting of those endpoints.
 
 ### PyPI packages
 
 The most common configuration. Run `uv run adp connectors list-oss` to see available packages and their versions, then specify a package name from the Airbyte connector registry.
 
-```yaml
+```yaml title="connector-gong-package.yaml"
 connector:
   package: airbyte-agent-gong
 credentials:
@@ -48,7 +50,7 @@ credentials:
 
 To pin a specific version:
 
-```yaml
+```yaml title="connector-gong-package.yaml"
 connector:
   package: airbyte-agent-gong
   version: 0.1.13
@@ -61,7 +63,7 @@ credentials:
 
 Point the connector to a git repository.
 
-```yaml
+```yaml title="connector-gong-package.yaml"
 connector:
   git: https://github.com/org/repo.git
 credentials:
@@ -70,7 +72,7 @@ credentials:
 
 You can specify a branch or tag with `ref` and a subdirectory with `subdirectory`.
 
-```yaml
+```yaml title="connector-gong-package.yaml"
 connector:
   git: https://github.com/org/repo.git
   ref: main
@@ -83,7 +85,7 @@ credentials:
 
 Point the connector to a local directory.
 
-```yaml
+```yaml title="connector-gong-package.yaml"
 connector:
   path: ../integrations/my-connector/.generated
 credentials:
@@ -92,9 +94,9 @@ credentials:
 
 ## Hosted mode
 
-In hosted mode, the MCP server calls the Airbyte Cloud API instead of the third-party API directly. This mode supports arbitrary search and filter queries across all entities because Agent Engine keeps data indexed in the [context store](../platform/context-store).
+In hosted mode, the MCP server proxies API calls through the Agent Engine. This mode supports search and filter queries because Agent Engine keeps data indexed in the [context store](../platform/context-store).
 
-Hosted mode uses your Airbyte Cloud credentials (Client ID and Secret) instead of third-party API credentials. You authenticate once, then the CLI remembers your credentials for subsequent commands.
+Hosted mode uses your Agent Engine credentials (client ID and secret) instead of third-party API credentials. You authenticate once, then the CLI remembers your credentials for subsequent commands.
 
 ### Step 1: Log in to Airbyte Cloud
 
@@ -104,7 +106,7 @@ Run `adp login` with your organization ID. This opens a link to your Airbyte aut
 uv run adp login <organization-id>
 ```
 
-The command prompts for your Client ID and Secret, saves them to `~/.airbyte_agent_mcp/orgs/<organization-id>/.env`, and sets the organization as the default. All subsequent `adp` commands automatically load these credentials.
+The command prompts for your client ID and secret, saves them to `~/.airbyte_agent_mcp/orgs/<organization-id>/.env`, and sets the organization as the default. All subsequent `adp` commands automatically load these credentials.
 
 ### Step 2: Find your connector ID
 
@@ -128,21 +130,10 @@ Pass the connector ID from the previous step:
 uv run adp connectors configure --connector-id <your-connector-id>
 ```
 
-This generates a configuration file like:
+This generates a configuration file like this:
 
-```yaml
+```yaml title="connector-gong-cloud.yaml"
 connector:
-  connector_id: <your-connector-id>
-credentials:
-  airbyte_client_id: ${env.AIRBYTE_CLIENT_ID}
-  airbyte_client_secret: ${env.AIRBYTE_CLIENT_SECRET}
-```
-
-You can combine a connector ID with a package source to get both hosted search and local execution:
-
-```yaml
-connector:
-  package: airbyte-agent-gong
   connector_id: <your-connector-id>
 credentials:
   airbyte_client_id: ${env.AIRBYTE_CLIENT_ID}
@@ -161,11 +152,11 @@ credentials:
   access_key_secret: ${env.GONG_ACCESS_KEY_SECRET}
 ```
 
-If a referenced variable is not set, the server raises an error.
+If you don't set a referenced variable, the MCP server gives you an error.
 
 ### The .env file
 
-The `adp` CLI automatically loads `.env` files from the current working directory. Create a `.env` file alongside your connector configuration:
+The `adp` command line tool automatically loads `.env` files from the current working directory. Create a `.env` file alongside your connector configuration:
 
 ```text title=".env"
 GONG_ACCESS_KEY=your-access-key
