@@ -175,17 +175,7 @@ If you don't specify a name, the server name is based on the connector. For exam
 
 Your agent discovers the MCP server's tools automatically and calls them based on your prompts. The MCP server handles executing the connector operations and returning the results.
 
-### Troubleshooting
-
-If your agent fails to retrieve data, check the following:
-
-- **MCP server not found**: Ensure you restarted your agent after registering the server.
-
-- **Environment variable errors**: Verify your `.env` file is in the same directory where you run the `adp` commands and that the variable names match your YAML configuration.
-
-- **HTTP 401 errors**: Your GitHub token is invalid or expired. Generate a new token and update your `.env` file.
-
-- **HTTP 403 errors**: Your GitHub token doesn't have the required scopes. Ensure your token has `repo` scope.
+If your agent fails to retrieve data, see [Troubleshoot the MCP server](../../mcp-server/troubleshooting).
 
 ## Summary
 

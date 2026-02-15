@@ -147,23 +147,3 @@ uv run adp chat connector-gong-package.yaml
 ```
 
 Type `exit` or press Ctrl-C to quit.
-
-## Troubleshooting
-
-### Long text fields are truncated
-
-For `list` and `search` results, the MCP server truncates text fields longer than 200 characters to reduce token usage. Truncated fields are marked with `[truncated]`. To get the full value:
-
-1. Use the `get` action with the record ID.
-2. If `get` is not available, retry the original query with `skip_truncation=true` and tight `select_fields` and `limit`.
-
-### Search returns no results
-
-If `search` returns no results but you expect data:
-
-- The search index may lag behind by hours. Try `list` with date boundary parameters instead.
-- Try `fuzzy` matching instead of `like` in your filter (e.g., `{"fuzzy": {"name": "search term"}}`).
-
-### Date range queries miss recent data
-
-When querying date ranges that include today, the search index may not have the latest records. Issue both a `search` call and a `list` call with date boundary parameters, then merge results and deduplicate by ID.
