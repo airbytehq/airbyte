@@ -1,9 +1,9 @@
 ---
-sidebar_label: "Usage"
+sidebar_label: "Advanced use"
 sidebar_position: 3
 ---
 
-# Advanced usage of the MCP server
+# Advanced use of the MCP server
 
 This page covers the MCP tools that the server exposes, field selection and exclusion, downloads, transport modes, and the terminal chat interface.
 
@@ -15,16 +15,14 @@ When you register the MCP server with your agent, it exposes the following tools
 
 The primary tool. Executes an operation on a connector entity.
 
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `entity` | string | Entity name (e.g., `users`, `calls`, `issues`) |
-| `action` | string | Operation to perform: `list`, `get`, `search`, or `download` |
-| `params` | object or string | Operation parameters (varies by entity and action) |
-| `select_fields` | list of strings | Fields to include in the response (allowlist) |
-| `exclude_fields` | list of strings | Fields to remove from the response (blocklist) |
-| `skip_truncation` | boolean | Disable long-text truncation for list/search responses |
-
-The `search` action is available in [hosted mode](configuration#hosted-mode) and supports filtering, sorting, and pagination. The `list` action returns all records and is available in both modes.
+| Parameter         | Type             | Description                                                                                                                                                                                                                                                       |
+| ----------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `entity`          | string           | Entity name, like `users`, `calls`, or `issues`.                                                                                                                                                                                                                   |
+| `action`          | string           | Operation to perform: `list`, `get`, `search`, or `download`. The `search` action is available in [hosted mode](configuration#hosted-mode) and supports filtering, sorting, and pagination. The `list` action returns all records and is available in both modes.   |
+| `params`          | object or string | Operation parameters (varies by entity and action).                                                                                                                                                                                                                |
+| `select_fields`    | list of strings  | Fields to include in the response.                                                                                                                                                                                                                  |
+| `exclude_fields`   | list of strings  | Fields to remove from the response.                                                                                                                                                                                                                 |
+| `skip_truncation` | boolean          | Disable long-text truncation for list/search responses.                                                                                                                                                                                                            |
 
 ### `connector_info`
 
@@ -116,7 +114,7 @@ uv run adp mcp serve connector-gong-package.yaml --transport http --port 8080
 
 ## Terminal chat
 
-The `adp chat` command is a lightweight terminal agent for querying your connector data with natural language. It uses Claude to interpret your questions, call the MCP server tools, and return formatted answers — without needing an IDE integration. This is useful for testing your connector setup or running ad-hoc data queries.
+The `adp chat` command is a lightweight terminal agent for querying your connector data with natural language. It uses Claude to interpret your questions, call the MCP server tools, and return formatted answers without needing an IDE integration. This is useful for testing your connector setup or running ad-hoc data queries.
 
 `adp chat` requires an `ANTHROPIC_API_KEY` environment variable and only supports Anthropic models. The default model is `claude-opus-4-6`. Use `--model` to select a different Anthropic model.
 
@@ -128,13 +126,13 @@ Pass a prompt as an argument to get a single response. Tool call progress is wri
 uv run adp chat connector-gong-package.yaml "show me 5 recent calls"
 ```
 
-Use `--quiet` to hide tool call details and show only the final answer:
+Use `--quiet` to hide tool call details and show only the final answer.
 
 ```bash
 uv run adp chat connector-gong-package.yaml "show me 5 recent calls" --quiet
 ```
 
-You can also use an aggregate configuration:
+You can also use an aggregate configuration.
 
 ```bash
 uv run adp chat connectors.yaml "show me 5 users from each system"
@@ -142,11 +140,13 @@ uv run adp chat connectors.yaml "show me 5 users from each system"
 
 ### Interactive REPL
 
-Omit the prompt to start an interactive session. The REPL maintains conversation history across turns, so you can ask follow-up questions. Type `exit` or press Ctrl-C to quit.
+Omit the prompt to start an interactive session. The REPL maintains conversation history across turns, so you can ask follow-up questions.
 
 ```bash
 uv run adp chat connector-gong-package.yaml
 ```
+
+Type `exit` or press Ctrl-C to quit.
 
 ## Troubleshooting
 
