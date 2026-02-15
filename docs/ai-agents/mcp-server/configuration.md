@@ -92,6 +92,33 @@ credentials:
   token: ${env.MY_TOKEN}
 ```
 
+### Credential management
+
+#### Environment variable interpolation
+
+Credential values use `${env.VAR_NAME}` syntax. The MCP server resolves these placeholders at startup by reading from the process environment.
+
+```yaml
+credentials:
+  access_key: ${env.GONG_ACCESS_KEY}
+  access_key_secret: ${env.GONG_ACCESS_KEY_SECRET}
+```
+
+If you don't set a referenced variable, the MCP server gives you an error.
+
+#### The .env file
+
+The `adp` command line tool automatically loads `.env` files from the current working directory. Create a `.env` file alongside your connector configuration:
+
+```text title=".env"
+GONG_ACCESS_KEY=your-access-key
+GONG_ACCESS_KEY_SECRET=your-secret
+```
+
+:::warning
+Never commit your `.env` file to version control. Add `.env` to your `.gitignore` file. If you commit credentials by mistake, rotate them immediately.
+:::
+
 ## Hosted mode
 
 In hosted mode, the MCP server proxies API calls through the Agent Engine. This mode supports search and filter queries because Agent Engine keeps data indexed in the [context store](../platform/context-store).
@@ -140,36 +167,7 @@ credentials:
   airbyte_client_secret: ${env.AIRBYTE_CLIENT_SECRET}
 ```
 
-## Credential management
-
-### Environment variable interpolation
-
-Credential values use `${env.VAR_NAME}` syntax. The MCP server resolves these placeholders at startup by reading from the process environment.
-
-```yaml
-credentials:
-  access_key: ${env.GONG_ACCESS_KEY}
-  access_key_secret: ${env.GONG_ACCESS_KEY_SECRET}
-```
-
-If you don't set a referenced variable, the MCP server gives you an error.
-
-### The .env file
-
-The `adp` command line tool automatically loads `.env` files from the current working directory. Create a `.env` file alongside your connector configuration:
-
-```text title=".env"
-GONG_ACCESS_KEY=your-access-key
-GONG_ACCESS_KEY_SECRET=your-secret
-```
-
-:::warning
-Never commit your `.env` file to version control. Add `.env` to your `.gitignore` file. If you commit credentials by mistake, rotate them immediately.
-:::
-
-### Organization login
-
-For hosted mode connectors, running `adp login` (described in [Hosted mode](#hosted-mode)) saves your Airbyte Cloud credentials globally so you don't need a `.env` file. The CLI loads the saved credentials automatically on every command.
+### Managing multiple organizations
 
 If you work with multiple Airbyte Cloud organizations, you can log into each one and switch between them:
 
