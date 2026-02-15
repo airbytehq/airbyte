@@ -1,9 +1,11 @@
 ---
-sidebar_label: "Configuration"
 sidebar_position: 2
 ---
 
 # Configure the MCP server
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 You configure the Agent Engine MCP server with a YAML file that specifies which connector to use and how to authenticate. This page covers the configuration file format, execution modes, credential management, and aggregate configurations for running multiple connectors.
 
@@ -11,9 +13,7 @@ If you need help getting started with the MCP server, complete the [tutorial](..
 
 ## Configuration file format
 
-Place the configuration file in the folder from which you run the MCP server.
-
-The file has two required sections.
+Place the configuration file in the folder from which you run the MCP server. The file has two required sections.
 
 | Key           | Description                                                                                                       |
 | ------------- | ----------------------------------------------------------------------------------------------------------------- |
@@ -31,6 +31,8 @@ credentials:
 ```
 
 Some connectors also accept a `config` section for additional parameters like subdomains or workspace IDs. The `adp connectors configure` command generates the correct structure for each connector.
+
+You can [configure multiple connectors](#use-multiple-connectors-with-one-mcp-server) in the same MCP server.
 
 ## Open source mode
 
@@ -92,9 +94,7 @@ credentials:
   token: ${env.MY_TOKEN}
 ```
 
-### Credential management
-
-#### Environment variable interpolation
+### Manage credentials
 
 Credential values use `${env.VAR_NAME}` syntax. The MCP server resolves these placeholders at startup by reading from the process environment.
 
@@ -103,10 +103,6 @@ credentials:
   access_key: ${env.GONG_ACCESS_KEY}
   access_key_secret: ${env.GONG_ACCESS_KEY_SECRET}
 ```
-
-If you don't set a referenced variable, the MCP server gives you an error.
-
-#### The .env file
 
 The `adp` command line tool automatically loads `.env` files from the current working directory. Create a `.env` file alongside your connector configuration:
 
@@ -125,7 +121,11 @@ In hosted mode, the MCP server proxies API calls through the Agent Engine. This 
 
 Hosted mode uses your Agent Engine credentials (client ID and secret) instead of third-party API credentials. You authenticate once, then the CLI remembers your credentials for subsequent commands.
 
-### Step 1: Log in to Airbyte Cloud
+### Before you begin
+
+Before you can use a connector in hosted mode, you need to [authenticate with that connector](../platform/authenticate/hosted).
+
+### Step 1: Log in to Agent Engine
 
 Run `adp login` with your organization ID. This opens a link to your Airbyte authentication page where you can find your Client ID and Secret.
 
@@ -169,7 +169,7 @@ credentials:
 
 ### Managing multiple organizations
 
-If you work with multiple Airbyte Cloud organizations, you can log into each one and switch between them:
+If you work with multiple Agent Engine organizations, you can log into each one and switch between them.
 
 ```bash
 uv run adp orgs list                  # List logged-in organizations
@@ -177,9 +177,14 @@ uv run adp orgs default <org-id>      # Set the default organization
 uv run adp --org <org-id> <command>   # Override for a single command
 ```
 
-## Aggregate configurations
+## Use multiple connectors with one MCP server {#use-multiple-connectors-with-one-mcp-server}
 
-An aggregate configuration lets you run multiple connectors in a single MCP server. Create a YAML file that references your individual connector config files:
+You don't need to create separate MCP servers for each connector. Instead, create a YAML file that references all your individual connector config files.
+
+| Key       | Description                                                                                         |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| `name`    | Sets the MCP server name                                                                            |
+| `configs`  | Lists paths to individual connector configuration files, relative to the aggregate file's directory    |
 
 ```yaml title="connectors.yaml"
 name: airbyte-crm-suite
@@ -190,13 +195,58 @@ configs:
 
 The `name` field sets the MCP server name. The `configs` field lists paths to individual connector configuration files (relative to the aggregate file's directory).
 
-Register the aggregate config with your agent the same way you would a single connector:
+Then, register the aggregate config with your agent the same way you would a single connector.
+
+<Tabs>
+<TabItem value="claude-code" label="Claude Code" default>
+
+This command runs `claude mcp add` under the hood and registers the server at the user scope.
 
 ```bash
 uv run adp mcp add-to claude-code connectors.yaml
 ```
 
-## CLI reference
+To register at the project scope instead, add `--scope project` to that command.
+
+</TabItem>
+<TabItem value="claude-desktop" label="Claude Desktop">
+
+This command modifies your Claude Desktop configuration file directly.
+
+```bash
+uv run adp mcp add-to claude-desktop connectors.yaml
+```
+
+</TabItem>
+<TabItem value="cursor" label="Cursor">
+
+This modifies the Cursor MCP configuration file.
+
+```bash
+uv run adp mcp add-to cursor connectors.yaml
+```
+
+To register at the project scope instead of user scope, add a `--scope project` flag.
+
+</TabItem>
+<TabItem value="codex" label="Codex">
+
+This command runs `codex mcp add` to register the server.
+
+```bash
+uv run adp mcp add-to codex connectors.yaml
+```
+
+</TabItem>
+</Tabs>
+
+You can optionally specify a custom name for the server with `--name`:
+
+```bash
+uv run adp mcp add-to claude-code connector-github-package.yaml --name my-server-name
+```
+
+## Command line tool reference
 
 All commands use `uv run adp <command>`. Use `--help` on any command for full options.
 
@@ -211,7 +261,7 @@ uv run adp connectors list-oss --pattern salesforce
 
 ### `adp connectors list-cloud`
 
-List connectors configured in your Airbyte Cloud organization. Requires `adp login` first.
+List connectors configured in your Agent Engine organization. Requires `adp login` first.
 
 ```bash
 uv run adp connectors list-cloud
@@ -223,23 +273,20 @@ uv run adp connectors list-cloud --customer acme
 Generate a connector configuration file by inspecting the connector's authentication requirements.
 
 ```bash
-uv run adp connectors configure --package airbyte-agent-gong
-uv run adp connectors configure --package airbyte-agent-gong --version 0.1.13
-uv run adp connectors configure --connector-id <id>
-uv run adp connectors configure --package airbyte-agent-gong --filename my-gong.yaml
+uv run adp connectors configure
 ```
 
-| Flag | Description |
-| --- | --- |
-| `--package` | PyPI package name, local path, or `git+https://` URL |
-| `--connector-id`, `-c` | Airbyte Cloud connector ID |
-| `--version`, `-v` | Package version (PyPI only) |
-| `--filename`, `-f` | Output file path (auto-generated if not specified) |
-| `--overwrite`, `-o` | Overwrite the output file if it already exists |
+| Flag                   | Description                                          |
+| ---------------------- | ---------------------------------------------------- |
+| `--package`            | PyPI package name, local path, or `git+https://` URL |
+| `--connector-id`, `-c` | Agent Engine connector ID                            |
+| `--version`, `-v`      | Package version (PyPI only)                          |
+| `--filename`, `-f`      | Output file path (auto-generated if not specified)     |
+| `--overwrite`, `-o`    | Overwrite the output file if it already exists        |
 
 ### `adp login`
 
-Save Airbyte Cloud credentials to the global config directory.
+Save Agent Engine credentials to the global config directory.
 
 ```bash
 uv run adp login <organization-id>
