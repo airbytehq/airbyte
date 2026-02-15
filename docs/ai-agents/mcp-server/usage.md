@@ -84,15 +84,15 @@ Some entities support a `download` action for binary content like call recording
 ```json
 {
   "download": {
-    "file_path": "/path/to/call_audio_abc123.mp3",
+    "file_path": "~/.airbyte_agent_mcp/downloads/call_audio_a1b2c3d4e5f6.mp3",
     "size_bytes": 1048576,
     "entity": "call_audio",
-    "message": "File downloaded and saved to: /path/to/call_audio_abc123.mp3 (1,048,576 bytes)."
+    "message": "File downloaded and saved to: ~/.airbyte_agent_mcp/downloads/call_audio_a1b2c3d4e5f6.mp3 (1,048,576 bytes)."
   }
 }
 ```
 
-The file extension is detected automatically from the file content.
+Files are saved to `~/.airbyte_agent_mcp/downloads/` (or `~/.airbyte_agent_mcp/orgs/<org-id>/downloads/` in hosted mode). The file name is generated from the entity name and a random identifier, and the extension is detected automatically from the file content.
 
 ## Transport modes
 
