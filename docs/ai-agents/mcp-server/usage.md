@@ -116,11 +116,13 @@ uv run adp mcp serve connector-gong-package.yaml --transport http --port 8080
 
 ## Terminal chat
 
-The `adp chat` command lets you interact with your connector data using natural language in the terminal, powered by Claude. This requires an `ANTHROPIC_API_KEY` environment variable.
+The `adp chat` command is a lightweight terminal agent for querying your connector data with natural language. It uses Claude to interpret your questions, call the MCP server tools, and return formatted answers — without needing an IDE integration. This is useful for testing your connector setup or running ad-hoc data queries.
+
+`adp chat` requires an `ANTHROPIC_API_KEY` environment variable and only supports Anthropic models. The default model is `claude-opus-4-6`. Use `--model` to select a different Anthropic model.
 
 ### One-shot mode
 
-Pass a prompt as an argument to get a single response:
+Pass a prompt as an argument to get a single response. Tool call progress is written to stderr, so you can pipe the final answer to a file:
 
 ```bash
 uv run adp chat connector-gong-package.yaml "show me 5 recent calls"
@@ -140,16 +142,10 @@ uv run adp chat connectors.yaml "show me 5 users from each system"
 
 ### Interactive REPL
 
-Omit the prompt to start an interactive session:
+Omit the prompt to start an interactive session. The REPL maintains conversation history across turns, so you can ask follow-up questions. Type `exit` or press Ctrl-C to quit.
 
 ```bash
 uv run adp chat connector-gong-package.yaml
-```
-
-Use `--model` to specify a different Anthropic model:
-
-```bash
-uv run adp chat connector-gong-package.yaml --model claude-sonnet-4-20250514
 ```
 
 ## Troubleshooting
