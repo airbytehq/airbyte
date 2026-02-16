@@ -13,14 +13,14 @@ Airbyte source connector that syncs data from [Tulip](https://tulip.co) Tables i
 
 ## Configuration
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `subdomain` | Yes | Your Tulip instance subdomain (e.g., `acme` for `acme.tulip.co`) |
-| `api_key` | Yes | Tulip API key with `tables:read` scope |
-| `api_secret` | Yes | Tulip API secret |
-| `workspace_id` | No | Workspace ID for workspace-scoped table access |
-| `sync_from_date` | No | ISO 8601 timestamp (`YYYY-MM-DDTHH:MM:SSZ`) to limit the initial sync |
-| `custom_filter_json` | No | JSON array of Tulip API filter objects applied to every request |
+| Field                | Required | Description                                                           |
+| -------------------- | -------- | --------------------------------------------------------------------- |
+| `subdomain`          | Yes      | Your Tulip instance subdomain (e.g., `acme` for `acme.tulip.co`)      |
+| `api_key`            | Yes      | Tulip API key with `tables:read` scope                                |
+| `api_secret`         | Yes      | Tulip API secret                                                      |
+| `workspace_id`       | No       | Workspace ID for workspace-scoped table access                        |
+| `sync_from_date`     | No       | ISO 8601 timestamp (`YYYY-MM-DDTHH:MM:SSZ`) to limit the initial sync |
+| `custom_filter_json` | No       | JSON array of Tulip API filter objects applied to every request       |
 
 ### Authentication Setup
 
@@ -33,17 +33,17 @@ For workspace-scoped access, also provide the Workspace ID (found in your Tulip 
 
 ## Type Mapping
 
-| Tulip Type | JSON Schema Type |
-|-----------|-----------------|
-| `integer` | `integer` |
-| `float` | `number` |
-| `boolean` | `boolean` |
+| Tulip Type  | JSON Schema Type               |
+| ----------- | ------------------------------ |
+| `integer`   | `integer`                      |
+| `float`     | `number`                       |
+| `boolean`   | `boolean`                      |
 | `timestamp` | `string` (format: `date-time`) |
-| `datetime` | `string` (format: `date-time`) |
-| `interval` | `integer` |
-| `user` | `string` |
-| `tableLink` | *excluded* |
-| All others | `string` |
+| `datetime`  | `string` (format: `date-time`) |
+| `interval`  | `integer`                      |
+| `user`      | `string`                       |
+| `tableLink` | _excluded_                     |
+| All others  | `string`                       |
 
 All fields are nullable (`["null", "<type>"]`).
 
@@ -51,12 +51,12 @@ All fields are nullable (`["null", "<type>"]`).
 
 Every stream includes these system fields:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Primary key |
-| `_createdAt` | date-time | Record creation timestamp |
-| `_updatedAt` | date-time | Last update timestamp |
-| `_sequenceNumber` | integer | Monotonically increasing cursor |
+| Field             | Type      | Description                     |
+| ----------------- | --------- | ------------------------------- |
+| `id`              | string    | Primary key                     |
+| `_createdAt`      | date-time | Record creation timestamp       |
+| `_updatedAt`      | date-time | Last update timestamp           |
+| `_sequenceNumber` | integer   | Monotonically increasing cursor |
 
 ## Sync Modes
 

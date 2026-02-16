@@ -112,7 +112,9 @@ def build_api_url(
     """
     base_url = f"https://{subdomain}.tulip.co/api/{API_VERSION}"
     if workspace_id:
-        return f"{base_url}/w/{workspace_id}/tables/{table_id}/{endpoint_type}".rstrip("/")
+        return f"{base_url}/w/{workspace_id}/tables/{table_id}/{endpoint_type}".rstrip(
+            "/"
+        )
     return f"{base_url}/tables/{table_id}/{endpoint_type}".rstrip("/")
 
 
@@ -191,7 +193,9 @@ def build_allowed_fields(table_metadata: Mapping[str, Any]) -> List[str]:
     return allowed_fields
 
 
-def transform_record(record: Dict[str, Any], field_mapping: Dict[str, str]) -> Dict[str, Any]:
+def transform_record(
+    record: Dict[str, Any], field_mapping: Dict[str, str]
+) -> Dict[str, Any]:
     """Transform Tulip record field IDs to human-readable column names.
 
     System fields (id, _createdAt, _updatedAt, _sequenceNumber) are

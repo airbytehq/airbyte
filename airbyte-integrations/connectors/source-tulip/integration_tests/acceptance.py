@@ -118,7 +118,11 @@ class TestDiscover:
 class TestRead:
     def test_reads_records(self, config_exists):
         messages, code = _run_connector(
-            "read", "--config", CONFIG, "--catalog", CATALOG,
+            "read",
+            "--config",
+            CONFIG,
+            "--catalog",
+            CATALOG,
             timeout=120,
         )
         assert code == 0
@@ -129,7 +133,11 @@ class TestRead:
 
     def test_records_have_expected_fields(self, config_exists):
         messages, _ = _run_connector(
-            "read", "--config", CONFIG, "--catalog", CATALOG,
+            "read",
+            "--config",
+            CONFIG,
+            "--catalog",
+            CATALOG,
             timeout=120,
         )
         record_msgs = [m for m in messages if m.get("type") == "RECORD"]
@@ -142,7 +150,11 @@ class TestRead:
         """Run a full sync, save state, then re-run — should get 0 new records."""
         # First run: full sync
         messages, _ = _run_connector(
-            "read", "--config", CONFIG, "--catalog", CATALOG,
+            "read",
+            "--config",
+            CONFIG,
+            "--catalog",
+            CATALOG,
             timeout=120,
         )
         state_msgs = [m for m in messages if m.get("type") == "STATE"]
@@ -156,8 +168,13 @@ class TestRead:
 
         # Second run: incremental with state
         messages2, code = _run_connector(
-            "read", "--config", CONFIG, "--catalog", CATALOG,
-            "--state", state_path,
+            "read",
+            "--config",
+            CONFIG,
+            "--catalog",
+            CATALOG,
+            "--state",
+            state_path,
             timeout=120,
         )
         assert code == 0

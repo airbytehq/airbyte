@@ -66,4 +66,5 @@ def mock_table_metadata():
 @pytest.fixture
 def mock_tables_list():
     import copy
+
     return copy.deepcopy(MOCK_TABLES_LIST)

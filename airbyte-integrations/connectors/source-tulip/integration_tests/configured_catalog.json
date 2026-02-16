@@ -8,64 +8,34 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "_createdAt": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "_updatedAt": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "_sequenceNumber": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "greater_than_65__lpvpe_greaterthan_65": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "less_than_or_equal_to_65__ombye_lesserthanorequalto_65": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "machine__xfkds_machine": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "_sequenceNumber"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["_sequenceNumber"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"

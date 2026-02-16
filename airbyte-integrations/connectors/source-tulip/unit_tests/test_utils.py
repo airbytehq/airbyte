@@ -16,6 +16,7 @@ from source_tulip.utils import (
 
 # --- generate_column_name ---
 
+
 class TestGenerateColumnName:
     def test_with_label(self):
         assert generate_column_name("rqoqm", "Customer Name") == "customer_name__rqoqm"
@@ -69,6 +70,7 @@ class TestGenerateColumnName:
 
 # --- map_tulip_type_to_json_schema ---
 
+
 class TestMapTulipType:
     def test_integer(self):
         assert map_tulip_type_to_json_schema("integer") == {"type": ["null", "integer"]}
@@ -88,7 +90,9 @@ class TestMapTulipType:
         assert result == {"type": ["null", "string"], "format": "date-time"}
 
     def test_interval(self):
-        assert map_tulip_type_to_json_schema("interval") == {"type": ["null", "integer"]}
+        assert map_tulip_type_to_json_schema("interval") == {
+            "type": ["null", "integer"]
+        }
 
     def test_user(self):
         assert map_tulip_type_to_json_schema("user") == {"type": ["null", "string"]}
@@ -105,6 +109,7 @@ class TestMapTulipType:
 
 
 # --- build_api_url ---
+
 
 class TestBuildApiUrl:
     def test_without_workspace(self):
@@ -126,15 +131,20 @@ class TestBuildApiUrl:
 
 # --- build_tables_url ---
 
+
 class TestBuildTablesUrl:
     def test_without_workspace(self):
         assert build_tables_url("acme", None) == "https://acme.tulip.co/api/v3/tables"
 
     def test_with_workspace(self):
-        assert build_tables_url("acme", "W456") == "https://acme.tulip.co/api/v3/w/W456/tables"
+        assert (
+            build_tables_url("acme", "W456")
+            == "https://acme.tulip.co/api/v3/w/W456/tables"
+        )
 
 
 # --- build_field_mapping ---
+
 
 class TestBuildFieldMapping:
     def test_basic_mapping(self, mock_table_metadata):
@@ -148,7 +158,11 @@ class TestBuildFieldMapping:
         metadata = {
             "columns": [
                 {"name": "id", "label": "ID", "dataType": {"type": "string"}},
-                {"name": "_createdAt", "label": "Created", "dataType": {"type": "timestamp"}},
+                {
+                    "name": "_createdAt",
+                    "label": "Created",
+                    "dataType": {"type": "timestamp"},
+                },
                 {"name": "custom", "label": "Custom", "dataType": {"type": "string"}},
             ]
         }
@@ -168,6 +182,7 @@ class TestBuildFieldMapping:
 
 
 # --- build_allowed_fields ---
+
 
 class TestBuildAllowedFields:
     def test_excludes_tablelink(self, mock_table_metadata):
@@ -197,6 +212,7 @@ class TestBuildAllowedFields:
 
 
 # --- transform_record ---
+
 
 class TestTransformRecord:
     def test_maps_custom_fields(self):
@@ -258,6 +274,7 @@ class TestTransformRecord:
 
 
 # --- adjust_cursor_for_overlap ---
+
 
 class TestAdjustCursorForOverlap:
     def test_subtracts_60_seconds(self):

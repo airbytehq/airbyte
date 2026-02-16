@@ -63,6 +63,6 @@ connectionSpecification:
         sync request. See Tulip API docs for filter syntax. Example:
         [{"field": "status", "functionType": "equal", "arg": "active"}]
       examples:
-        - '[]'
+        - "[]"
         - '[{"field": "status", "functionType": "equal", "arg": "active"}]'
       order: 5
