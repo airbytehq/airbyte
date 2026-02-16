@@ -129,6 +129,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{{ 'after:' + config['start_date'].replace('-', '/') if config.get('start_date') else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -206,6 +207,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{{ 'after:' + config['start_date'].replace('-', '/') if config.get('start_date') else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -263,6 +265,58 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/threads_details"
+    history:
+      type: DeclarativeStream
+      name: history
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: history
+          http_method: GET
+          request_parameters:
+            startHistoryId: "{{ stream_state.get('id') or stream_partition.get('history_id') or '1' }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - history
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: historyId
+              partition_field: history_id
+              stream:
+                $ref: "#/definitions/streams/profile"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
+      incremental_sync:
+        type: IncrementingCountCursor
+        cursor_field: id
+        start_value: 0
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/history"
   base_requester:
     type: HttpRequester
     url_base: https://gmail.googleapis.com/gmail/v1/users/me/
@@ -286,6 +340,7 @@ streams:
   - $ref: "#/definitions/streams/messages_details"
   - $ref: "#/definitions/streams/threads"
   - $ref: "#/definitions/streams/threads_details"
+  - $ref: "#/definitions/streams/history"
 
 spec:
   type: Spec
@@ -322,6 +377,16 @@ spec:
         title: Include Spam & Trash
         default: false
         order: 3
+      start_date:
+        type: string
+        order: 4
+        title: Start Date
+        description: >-
+          Only sync messages and threads created after this date. Format:
+          YYYY-MM-DD. If not set, all messages and threads will be synced.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        examples:
+          - "2024-01-01"
     additionalProperties: true
 
 metadata:
@@ -334,6 +399,7 @@ metadata:
     messages_details: true
     threads: true
     threads_details: true
+    history: true
   testedStreams:
     profile:
       streamHash: de8ec9652feea6f68ec8f01e4eaf55d9eedd699c
@@ -667,6 +733,15 @@ schemas:
         type:
           - string
           - "null"
+    required:
+      - id
+  history:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
     required:
       - id
   threads_details:
