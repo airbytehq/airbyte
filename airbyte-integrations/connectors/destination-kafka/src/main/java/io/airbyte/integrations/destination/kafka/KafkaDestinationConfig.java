@@ -7,12 +7,23 @@ package io.airbyte.integrations.destination.kafka;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.slf4j.Logger;
@@ -25,11 +36,18 @@ public class KafkaDestinationConfig {
   private final String topicPattern;
   private final boolean sync;
   private final KafkaProducer<String, JsonNode> producer;
+  private final List<File> temporarySslFiles;
+
+  private final Thread shutdownHook;
 
   private KafkaDestinationConfig(final String topicPattern, final boolean sync, final JsonNode config) {
     this.topicPattern = topicPattern;
     this.sync = sync;
+    this.temporarySslFiles = new ArrayList<>();
     this.producer = buildKafkaProducer(config);
+
+    this.shutdownHook = new Thread(this::cleanupTemporaryFiles);
+    Runtime.getRuntime().addShutdownHook(shutdownHook);
   }
 
   public static KafkaDestinationConfig getKafkaDestinationConfig(final JsonNode config) {
@@ -78,8 +96,8 @@ public class KafkaDestinationConfig {
 
   private Map<String, Object> propertiesByProtocol(final JsonNode config) {
     final JsonNode protocolConfig = config.get("protocol");
-    LOGGER.info("Kafka protocol config: {}", protocolConfig.toString());
     final KafkaProtocol protocol = KafkaProtocol.valueOf(protocolConfig.get("security_protocol").asText().toUpperCase());
+    LOGGER.info("Configuring Kafka with security protocol: {}", protocol);
     final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
         .put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, protocol.toString());
 
@@ -89,10 +107,129 @@ public class KafkaDestinationConfig {
         builder.put(SaslConfigs.SASL_JAAS_CONFIG, protocolConfig.get("sasl_jaas_config").asText());
         builder.put(SaslConfigs.SASL_MECHANISM, protocolConfig.get("sasl_mechanism").asText());
       }
+      case SSL -> {
+        try {
+          configureSslProperties(builder, protocolConfig);
+        } catch (IOException e) {
+          throw new RuntimeException("Failed to configure SSL properties", e);
+        }
+      }
       default -> throw new RuntimeException("Unexpected Kafka protocol: " + Jsons.serialize(protocol));
     }
 
     return builder.build();
+  }
+
+  /**
+   * Configures SSL properties for Kafka producer using PEM-format certificates.
+   * Creates temporary files for certificates and keys as Kafka requires file paths.
+   */
+  private void configureSslProperties(final ImmutableMap.Builder<String, Object> builder, final JsonNode protocolConfig) throws IOException {
+    LOGGER.info("Configuring SSL certificate authentication");
+
+    if (protocolConfig.has("ssl_keystore_certificate_chain") && !protocolConfig.get("ssl_keystore_certificate_chain").asText().isBlank()) {
+      final String certChain = protocolConfig.get("ssl_keystore_certificate_chain").asText();
+      final String privateKey = protocolConfig.get("ssl_keystore_key").asText();
+      final String keystorePassword = protocolConfig.has("ssl_keystore_password")
+          ? protocolConfig.get("ssl_keystore_password").asText()
+          : "";
+
+      final String combinedPem = certChain + "\n" + privateKey;
+      final File keystoreFile = writeToTempFile(combinedPem, "kafka-keystore", ".pem");
+
+      builder.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, keystoreFile.getAbsolutePath());
+      builder.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, "PEM");
+      LOGGER.info("SSL keystore configured with combined certificate and key at: {}", keystoreFile.getAbsolutePath());
+
+      if (!keystorePassword.isBlank()) {
+        builder.put(SslConfigs.SSL_KEY_PASSWORD_CONFIG, keystorePassword);
+      }
+    }
+
+    if (protocolConfig.has("ssl_truststore_certificates") && !protocolConfig.get("ssl_truststore_certificates").asText().isBlank()) {
+      final String caCerts = protocolConfig.get("ssl_truststore_certificates").asText();
+      final String truststorePassword = protocolConfig.has("ssl_truststore_password")
+          ? protocolConfig.get("ssl_truststore_password").asText()
+          : "";
+
+      final File trustFile = writeToTempFile(caCerts, "kafka-truststore", ".pem");
+      builder.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, trustFile.getAbsolutePath());
+      builder.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "PEM");
+      LOGGER.info("SSL truststore configured at: {}", trustFile.getAbsolutePath());
+
+      if (!truststorePassword.isBlank()) {
+        builder.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, truststorePassword);
+      }
+    }
+
+    if (protocolConfig.has("ssl_endpoint_identification_algorithm")) {
+      final String endpointAlgorithm = protocolConfig.get("ssl_endpoint_identification_algorithm").asText();
+      builder.put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, endpointAlgorithm);
+      LOGGER.info("SSL endpoint identification algorithm set to: {}", endpointAlgorithm.isBlank() ? "disabled" : endpointAlgorithm);
+    }
+  }
+
+  /**
+   * Writes content to a temporary file with restricted permissions.
+   * The file is marked for deletion on JVM exit and tracked for cleanup.
+   */
+  private File writeToTempFile(final String content, final String prefix, final String suffix) throws IOException {
+    final Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rw-------");
+    Path tempFile;
+
+    try {
+      tempFile = Files.createTempFile(prefix, suffix, PosixFilePermissions.asFileAttribute(permissions));
+    } catch (UnsupportedOperationException e) {
+      tempFile = Files.createTempFile(prefix, suffix);
+      LOGGER.warn("POSIX file permissions not supported, temporary file created without restricted permissions");
+    }
+
+    Files.writeString(tempFile, content, StandardCharsets.UTF_8);
+
+    final File file = tempFile.toFile();
+    file.deleteOnExit();
+
+    temporarySslFiles.add(file);
+
+    LOGGER.debug("Created temporary SSL file: {}", file.getAbsolutePath());
+    return file;
+  }
+
+  /**
+   * Cleans up all temporary SSL files created during configuration.
+   * Called automatically by shutdown hook or can be called manually.
+   */
+  private void cleanupTemporaryFiles() {
+    LOGGER.debug("Cleaning up {} temporary SSL files", temporarySslFiles.size());
+    for (File file : temporarySslFiles) {
+      try {
+        if (file.exists() && file.delete()) {
+          LOGGER.debug("Deleted temporary SSL file: {}", file.getAbsolutePath());
+        }
+      } catch (Exception e) {
+        LOGGER.warn("Failed to delete temporary SSL file: {}", file.getAbsolutePath(), e);
+      }
+    }
+    temporarySslFiles.clear();
+  }
+
+  /**
+   * Closes the producer and cleans up resources.
+   * Should be called when the config is no longer needed.
+   */
+  public void close() {
+    try {
+      if (producer != null) {
+        producer.close();
+      }
+    } finally {
+      cleanupTemporaryFiles();
+      try {
+        Runtime.getRuntime().removeShutdownHook(shutdownHook);
+      } catch (IllegalStateException e) {
+        // Ignore if shutdown is already in progress
+      }
+    }
   }
 
   public String getTopicPattern() {
