@@ -94,7 +94,7 @@ Available fields are limited by what is presented in the static schema.
 
 - **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)**: Contains info about your Marketo static lists.
 - **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs.
-- **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo programs.
+- **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo segmentations.
 
 ## Performance considerations
 

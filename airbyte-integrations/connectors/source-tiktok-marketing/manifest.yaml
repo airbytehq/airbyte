@@ -2120,6 +2120,22 @@ definitions:
         $ref: "#/definitions/requester"
         path: pixel/instant_page/event/
         http_method: GET
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - predicate: "{{ response.get('code') == 40100 }}"
+              action: RATE_LIMITED
+              error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
+            # The pixel_instant_page_events and pixel_events_statistics streams iterate over all
+            # objective_type x optimization_goal combinations, but TikTok's API only supports a subset.
+            # Unsupported combinations return an error with "one or more value of the param(s) is not acceptable".
+            # We match both plural ("params") and singular ("param") variants of the message.
+            - predicate: "{{ 'one or more value of the params is not acceptable' in response.get('message', '').lower() or 'one or more value of the param is not acceptable' in response.get('message', '').lower() }}"
+              action: IGNORE
+              error_message: "Unsupported objective_type/optimization_goal combination, skipping. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') != 0 }}"
+              action: FAIL
+              error_message: "{{ response['message'] }}"
       record_selector:
         type: RecordSelector
         extractor:

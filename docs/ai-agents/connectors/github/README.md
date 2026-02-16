@@ -1,4 +1,6 @@
-# Github agent connector
+# Github
+
+The Github agent connector is a Python package that equips AI agents to interact with Github through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 GitHub is a platform for version control and collaborative software development
 using Git. This connector provides access to repositories, branches, commits, issues,
@@ -13,7 +15,7 @@ The Github connector is optimized to handle prompts like these.
 - Show me all open issues in my repositories this month
 - List the top 5 repositories I've starred recently
 - Analyze the commit trends in my main project over the last quarter
-- Find all pull requests created by \{team_member\} in the past two weeks
+- Find all pull requests created in the past two weeks
 - Search for repositories related to machine learning in my organizations
 - Compare the number of contributors across my different team projects
 - Identify the most active branches in my main repository
@@ -68,12 +70,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_github import GithubConnector
+from airbyte_agent_github import GithubConnector, AirbyteAuthConfig
 
 connector = GithubConnector(
-    external_user_id="<your-scoped-token>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -82,27 +86,28 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [Api_search](./REFERENCE.md#repositories-api_search) |
+| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [API Search](./REFERENCE.md#repositories-api_search) |
 | Org Repositories | [List](./REFERENCE.md#org-repositories-list) |
 | Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get) |
 | Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get) |
 | Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get) |
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Api_search](./REFERENCE.md#issues-api_search) |
-| Pull Requests | [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [Api_search](./REFERENCE.md#pull-requests-api_search) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [API Search](./REFERENCE.md#issues-api_search) |
+| Pull Requests | [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [API Search](./REFERENCE.md#pull-requests-api_search) |
 | Reviews | [List](./REFERENCE.md#reviews-list) |
 | Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get) |
 | Pr Comments | [List](./REFERENCE.md#pr-comments-list), [Get](./REFERENCE.md#pr-comments-get) |
 | Labels | [List](./REFERENCE.md#labels-list), [Get](./REFERENCE.md#labels-get) |
 | Milestones | [List](./REFERENCE.md#milestones-list), [Get](./REFERENCE.md#milestones-get) |
 | Organizations | [Get](./REFERENCE.md#organizations-get), [List](./REFERENCE.md#organizations-list) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [Api_search](./REFERENCE.md#users-api_search) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
 | Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get) |
 | Stargazers | [List](./REFERENCE.md#stargazers-list) |
@@ -110,16 +115,21 @@ This connector supports the following entities and actions.
 | Viewer Repositories | [List](./REFERENCE.md#viewer-repositories-list) |
 | Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
 | Project Items | [List](./REFERENCE.md#project-items-list) |
+| File Content | [Get](./REFERENCE.md#file-content-get) |
+| Directory Content | [List](./REFERENCE.md#directory-content-list) |
 
+
+### Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Github API docs
 
-For the service's official API docs, see the [Github API reference](https://docs.github.com/en/rest).
+See the official [Github API reference](https://docs.github.com/en/rest).
 
 ## Version information
 
-- **Package version:** 0.18.62
-- **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
+- **Package version:** 0.18.105
+- **Connector version:** 0.1.14
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/github/CHANGELOG.md)

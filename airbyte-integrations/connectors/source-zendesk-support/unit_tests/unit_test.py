@@ -9,6 +9,7 @@ import logging
 
 import pytest
 
+from airbyte_cdk.models import Status
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 from .conftest import get_source
@@ -56,7 +57,8 @@ def test_check(response, status_code, check_passed):
             HttpRequest("https://sandbox.zendesk.com/api/v2/tags?page%5Bsize%5D=100"),
             HttpResponse(body=json.dumps(response), status_code=status_code),
         )
-        ok, _ = get_source(config=config, state=None).check_connection(logger=logging.Logger(name="airbyte"), config=config)
+        result = get_source(config=config, state=None).check(logger=logging.Logger(name="airbyte"), config=config)
+        ok = result.status == Status.SUCCEEDED
         assert check_passed == ok
 
 

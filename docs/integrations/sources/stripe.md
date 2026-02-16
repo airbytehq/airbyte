@@ -167,7 +167,6 @@ However, not all the entities are supported by the Events API, so the Stripe con
 - `Events`
 - `File Links`
 - `Files`
-- `Refunds`
 - `Setup Attempts`
 - `Shipping Rates`
 
@@ -207,6 +206,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Plans`
 - `Prices`
 - `Products`
+- `Refunds`
 - `Reviews`
 - `Setup Intents`
 - `Subscription Schedule`
@@ -246,6 +246,9 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.15.18 | 2026-02-12 | [73318](https://github.com/airbytehq/airbyte/pull/73318) | Promoting release candidate 5.15.18-rc.1 to a main version. |
+| 5.15.18-rc.1 | 2026-02-04 | [72432](https://github.com/airbytehq/airbyte/pull/72432) | fix(source-stripe):  Fix Missing ConcurrencyLevel & Reduce Default Step Size |
+| 5.15.17 | 2026-01-27 | [72363](https://github.com/airbytehq/airbyte/pull/72363) | fix(source-stripe): Add date filtering for checkout_sessions full refresh |
 | 5.15.16 | 2026-01-20 | [72106](https://github.com/airbytehq/airbyte/pull/72106) | Update dependencies |
 | 5.15.15 | 2026-01-14 | [71614](https://github.com/airbytehq/airbyte/pull/71614) | Update dependencies |
 | 5.15.14 | 2025-12-18 | [70638](https://github.com/airbytehq/airbyte/pull/70638) | Update dependencies |

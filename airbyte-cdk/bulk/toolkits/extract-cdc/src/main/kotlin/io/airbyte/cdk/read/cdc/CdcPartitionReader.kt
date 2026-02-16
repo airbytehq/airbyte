@@ -5,6 +5,7 @@
 package io.airbyte.cdk.read.cdc
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
@@ -210,6 +211,18 @@ class CdcPartitionReader<T : Comparable<T>>(
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
+        // During the initial CDC snapshot (synthetic mode), Debezium reads the schema/structure
+        // of all CDC-enabled tables. If the watchdog times out during this phase, it means the
+        // database has too many tables or the timeout is configured too low.
+        // Throw ConfigErrorException to fail fast and prevent saving corrupted state
+        // (offset without schema history).
+        if (isInputStateSynthetic && closeReasonReference.get() == CloseReason.WATCHDOG_TIMEOUT) {
+            throw ConfigErrorException(
+                "Watchdog timeout during initial snapshot. " +
+                    "Please increase 'Initial Waiting Time' in the source configuration page. " +
+                    "Visit our Best Practices guide for more details: https://docs.airbyte.com/platform/understanding-airbyte/cdc-best-practices"
+            )
+        }
         val offset: DebeziumOffset = stateFilesAccessor.readUpdatedOffset(startingOffset)
         val schemaHistory: DebeziumSchemaHistory? =
             if (DebeziumPropertiesBuilder().with(decoratedProperties).expectsSchemaHistoryFile) {

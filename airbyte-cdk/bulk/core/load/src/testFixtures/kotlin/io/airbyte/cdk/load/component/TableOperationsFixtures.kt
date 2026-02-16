@@ -699,11 +699,9 @@ object TableOperationsFixtures {
         DestinationStream(
             unmappedNamespace = namespace,
             unmappedName = name,
-            importType = tableSchema.importType,
             generationId = generationId,
             minimumGenerationId = minimumGenerationId,
             syncId = syncId,
-            schema = ObjectType(LinkedHashMap(tableSchema.columnSchema.inputSchema)),
             namespaceMapper = NamespaceMapper(),
             tableSchema = tableSchema,
         )

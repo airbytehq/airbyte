@@ -1,4 +1,6 @@
-# Shopify agent connector
+# Shopify
+
+The Shopify agent connector is a Python package that equips AI agents to interact with Shopify through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Shopify is an e-commerce platform that enables businesses to create online stores,
 manage products, process orders, and handle customer relationships. This connector
@@ -11,17 +13,17 @@ orders, products, inventory, and more.
 The Shopify connector is optimized to handle prompts like these.
 
 - List all customers in my Shopify store
-- Show me orders from the last 30 days
-- Get details for customer \{customer_id\}
+- Show me details for a recent customer
 - What products do I have in my store?
-- Show me abandoned checkouts from this week
 - List all locations for my store
-- Get inventory levels for location \{location_id\}
+- Show me inventory levels for a recent location
 - Show me all draft orders
-- What price rules are currently active?
 - List all custom collections in my store
-- Get details for order \{order_id\}
-- Show me product variants for product \{product_id\}
+- Show me details for a recent order
+- Show me product variants for a recent product
+- Show me orders from the last 30 days
+- Show me abandoned checkouts from this week
+- What price rules are currently active?
 
 ## Unsupported questions
 
@@ -54,8 +56,7 @@ from airbyte_agent_shopify.models import ShopifyAuthConfig
 
 connector = ShopifyConnector(
     auth_config=ShopifyAuthConfig(
-        api_key="<Your Shopify Admin API access token>",
-        shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
+        api_key="<Your Shopify Admin API access token>"
     )
 )
 
@@ -72,12 +73,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_shopify import ShopifyConnector
+from airbyte_agent_shopify import ShopifyConnector, AirbyteAuthConfig
 
 connector = ShopifyConnector(
-    external_user_id="<your-scoped-token>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -86,10 +89,11 @@ async def shopify_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
@@ -127,14 +131,17 @@ This connector supports the following entities and actions.
 | Fulfillment Orders | [List](./REFERENCE.md#fulfillment-orders-list), [Get](./REFERENCE.md#fulfillment-orders-get) |
 
 
+### Authentication
+
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Shopify API docs
 
-For the service's official API docs, see the [Shopify API reference](https://shopify.dev/docs/api/admin-rest).
+See the official [Shopify API reference](https://shopify.dev/docs/api/admin-rest).
 
 ## Version information
 
-- **Package version:** 0.1.9
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
+- **Package version:** 0.1.54
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/shopify/CHANGELOG.md)
