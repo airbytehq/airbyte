@@ -10,6 +10,7 @@ Gmail is the email service provided by Google.
 | `client_refresh_token` | `string` | Refresh token.  |  |
 | `include_spam_and_trash` | `boolean` | Include Spam &amp; Trash. Include drafts/messages from SPAM and TRASH in the results. Defaults to false. | false |
 | `start_date` | `string` | Start Date. Only sync messages and threads created after this date. Format: YYYY-MM-DD. If not set, all messages and threads will be synced. |  |
+| `start_history_id` | `string` | Start History ID. Starting `historyId` to use for the `history` stream on first sync. If not set, defaults to "1". |  |
 
 Note that this connector uses the Google API OAuth2.0 for authentication. To get started, follow the steps [here](https://developers.google.com/gmail/api/auth/web-server#create_a_client_id_and_client_secret) to retrieve `client_id` and `client_secret`. See [here](https://developers.google.com/identity/protocols/oauth2/web-server) for more detailed guide on the OAuth flow to retrieve the `client_refresh_token`.
 
