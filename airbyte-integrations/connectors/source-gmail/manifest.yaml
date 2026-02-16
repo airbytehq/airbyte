@@ -229,10 +229,6 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
             stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
-      incremental_sync:
-        type: IncrementingCountCursor
-        cursor_field: historyId
-        start_value: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:

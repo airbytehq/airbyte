@@ -24,7 +24,7 @@ Note that this connector uses the Google API OAuth2.0 for authentication. To get
 | labels_details | id | No pagination | ✅ |  ❌  |
 | messages | id | DefaultPaginator | ✅ |  ❌  |
 | messages_details | id | No pagination | ✅ |  ✅  |
-| threads | id | DefaultPaginator | ✅ |  ✅  |
+| threads | id | DefaultPaginator | ✅ |  ❌  |
 | threads_details | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
