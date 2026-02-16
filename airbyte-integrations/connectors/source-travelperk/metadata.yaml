@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.travelperk.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-travelperk
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.61.6@sha256:a86098c6af1cf9d0b4484f33c973981a4d4f16740924ce9325b01ee4c8ca33df
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c810979b-e86f-4f71-870c-a3f07d776661
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-travelperk
+  githubIssueLabel: source-travelperk
+  icon: icon.svg
+  license: MIT
+  name: Travelperk
+  releaseDate: 2026-02-16
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/travelperk
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
