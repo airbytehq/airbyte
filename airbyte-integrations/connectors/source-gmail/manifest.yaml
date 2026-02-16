@@ -7,7 +7,7 @@ description: Gmail is the email service provided by Google.
 check:
   type: CheckStream
   stream_names:
-    - messages
+    - profile
 
 definitions:
   streams:
@@ -178,6 +178,17 @@ definitions:
               partition_field: message_id
               stream:
                 $ref: "#/definitions/streams/messages"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: internalDate
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2005-01-01T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -216,6 +227,10 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
             stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
+      incremental_sync:
+        type: IncrementingCountCursor
+        cursor_field: historyId
+        start_value: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
