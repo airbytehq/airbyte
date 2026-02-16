@@ -265,50 +265,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/threads_details"
-    history:
-      type: DeclarativeStream
-      name: history
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: history
-          http_method: GET
-          request_parameters:
-            startHistoryId: "{{ stream_state.get('id') or config.get('start_history_id', '1') }}"
-          error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 404
-                action: IGNORE
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - history
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: pageToken
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
-            stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
-      incremental_sync:
-        type: IncrementingCountCursor
-        cursor_field: id
-        start_value: 0
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/history"
   base_requester:
     type: HttpRequester
     url_base: https://gmail.googleapis.com/gmail/v1/users/me/
@@ -332,7 +288,6 @@ streams:
   - $ref: "#/definitions/streams/messages_details"
   - $ref: "#/definitions/streams/threads"
   - $ref: "#/definitions/streams/threads_details"
-  - $ref: "#/definitions/streams/history"
 
 spec:
   type: Spec
@@ -379,16 +334,6 @@ spec:
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         examples:
           - "2024-01-01"
-      start_history_id:
-        type: string
-        order: 5
-        title: Start History ID
-        description: >-
-          Starting `historyId` to use for the `history` stream on first sync.
-          If not set, defaults to "1".
-        pattern: "^[0-9]+$"
-        examples:
-          - "12345"
     additionalProperties: true
 
 metadata:
@@ -401,7 +346,6 @@ metadata:
     messages_details: true
     threads: true
     threads_details: true
-    history: true
   testedStreams:
     profile:
       streamHash: de8ec9652feea6f68ec8f01e4eaf55d9eedd699c
@@ -735,15 +679,6 @@ schemas:
         type:
           - string
           - "null"
-    required:
-      - id
-  history:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type: string
     required:
       - id
   threads_details:
