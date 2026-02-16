@@ -1,0 +1,68 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/tulip
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Tulip Source Spec
+  type: object
+  required:
+    - subdomain
+    - api_key
+    - api_secret
+  additionalProperties: true
+  properties:
+    subdomain:
+      type: string
+      title: Tulip Subdomain
+      description: >-
+        Your Tulip instance subdomain. For example, if your Tulip URL is
+        acme.tulip.co, enter 'acme'.
+      examples:
+        - "acme"
+        - "release-candidate"
+      order: 0
+    api_key:
+      type: string
+      title: API Key
+      description: >-
+        Tulip API key with tables:read scope. Created in Tulip under
+        Account Settings > API Tokens.
+      airbyte_secret: true
+      order: 1
+    api_secret:
+      type: string
+      title: API Secret
+      description: >-
+        Tulip API secret corresponding to the API key.
+      airbyte_secret: true
+      order: 2
+    workspace_id:
+      type: string
+      title: Workspace ID
+      description: >-
+        Optional. Workspace ID for workspace-scoped table access. Omit for
+        instance-level API keys or instances without workspaces.
+      examples:
+        - "hcdqTwJchvZXRETq4"
+      order: 3
+    sync_from_date:
+      type: string
+      title: Sync Start Date
+      description: >-
+        Optional. ISO 8601 timestamp to limit the initial sync. Records with
+        _updatedAt before this date are skipped. Defaults to syncing all
+        historical data if omitted.
+      examples:
+        - "2025-01-01T00:00:00Z"
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      pattern_descriptor: "ISO 8601 timestamp in the format YYYY-MM-DDTHH:MM:SSZ"
+      order: 4
+    custom_filter_json:
+      type: string
+      title: Custom Filter JSON
+      description: >-
+        Optional. A JSON array of Tulip API filter objects applied to every
+        sync request. See Tulip API docs for filter syntax. Example:
+        [{"field": "status", "functionType": "equal", "arg": "active"}]
+      examples:
+        - '[]'
+        - '[{"field": "status", "functionType": "equal", "arg": "active"}]'
+      order: 5
