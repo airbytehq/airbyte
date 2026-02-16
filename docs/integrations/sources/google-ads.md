@@ -339,6 +339,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.5 | 2026-02-16 | [73363](https://github.com/airbytehq/airbyte/pull/73363) | Promoting release candidate 4.1.5-rc.2 to a main version. |
 | 4.1.5-rc.2  | 2026-02-11 | [73269](https://github.com/airbytehq/airbyte/pull/73269) | Fix decoder wiring to prevent OOM when using CustomRetriever |
 | 4.1.5-rc.1  | 2026-02-10 | [72840](https://github.com/airbytehq/airbyte/pull/72840) | Add retry for ChunkedEncodingError in response streaming |
 | 4.1.4       | 2026-01-29 | [72453](https://github.com/airbytehq/airbyte/pull/72453) | Promoting release candidate 4.1.4-rc.1 to a main version. |
