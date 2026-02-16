@@ -26,3 +26,4 @@ from .source import SourceGithub
 
 
 __all__ = ["SourceGithub"]
+# test-label-iteration-4: source-github only (verify stripe label removed)
