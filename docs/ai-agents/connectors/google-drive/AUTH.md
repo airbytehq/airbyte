@@ -1,4 +1,4 @@
-# Google-Drive authentication and configuration
+# Google-Drive authentication
 
 This page documents the authentication and configuration options for the Google-Drive agent connector.
 

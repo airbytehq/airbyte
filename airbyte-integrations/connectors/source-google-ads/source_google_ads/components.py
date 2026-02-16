@@ -18,6 +18,7 @@ import requests
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
 from airbyte_cdk.sources.declarative.decoders.composite_raw_decoder import JsonParser
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
@@ -542,13 +543,14 @@ class GoogleAdsRetriever(SimpleRetriever):
 
     MAX_RETRIES: int = 3
     DATE_FORMAT: str = "%Y-%m-%d"
+    decoder: Decoder | None = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
-        # CustomRequester requires a name at init time but the real stream name is only
-        # available after the retriever is fully constructed; propagate it here.
         if hasattr(self.requester, "name"):
             self.requester.name = self.name
+        if self.decoder and isinstance(self.record_selector.extractor, DpathExtractor):
+            self.record_selector.extractor.decoder = self.decoder
 
     def _read_pages(
         self,

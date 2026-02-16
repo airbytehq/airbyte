@@ -1,4 +1,6 @@
-# Gong agent connector
+# Gong
+
+The Gong agent connector is a Python package that equips AI agents to interact with Gong through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Gong is a revenue intelligence platform that captures and analyzes customer interactions
 across calls, emails, and web conferences. This connector provides access to users,
@@ -113,9 +115,9 @@ This connector supports the following entities and actions. For more details, se
 | Stats Activity Scorecards | [List](./REFERENCE.md#stats-activity-scorecards-list), [Search](./REFERENCE.md#stats-activity-scorecards-search) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Gong API docs
 
@@ -123,7 +125,7 @@ See the official [Gong API reference](https://gong.app.gong.io/settings/api/docu
 
 ## Version information
 
-- **Package version:** 0.19.103
+- **Package version:** 0.19.109
 - **Connector version:** 0.1.18
-- **Generated with Connector SDK commit SHA:** 04691d063af9e36703f1d2a66e2a1df8e9e52dbe
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/gong/CHANGELOG.md)

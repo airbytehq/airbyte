@@ -1,4 +1,4 @@
-# Shopify authentication and configuration
+# Shopify authentication
 
 This page documents the authentication and configuration options for the Shopify agent connector.
 

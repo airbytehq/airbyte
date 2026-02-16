@@ -93,7 +93,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -109,15 +109,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Unique identifier for the base |
-| `hits[].data.name` | `string` | Name of the base |
-| `hits[].data.permissionLevel` | `string` | Permission level for the base |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the base |
+| `data[].name` | `string` | Name of the base |
+| `data[].permissionLevel` | `string` | Permission level for the base |
 
 </details>
 
@@ -216,7 +215,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -234,17 +233,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Unique identifier for the table |
-| `hits[].data.name` | `string` | Name of the table |
-| `hits[].data.primaryFieldId` | `string` | ID of the primary field |
-| `hits[].data.fields` | `array` | List of fields in the table |
-| `hits[].data.views` | `array` | List of views in the table |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the table |
+| `data[].name` | `string` | Name of the table |
+| `data[].primaryFieldId` | `string` | ID of the primary field |
+| `data[].fields` | `array` | List of fields in the table |
+| `data[].views` | `array` | List of views in the table |
 
 </details>
 

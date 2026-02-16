@@ -212,6 +212,7 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.4 | 2026-02-10 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
 | 5.6.3 | 2026-02-10 | [72768](https://github.com/airbytehq/airbyte/pull/72768) | Update dependencies |
 | 5.6.2 | 2026-01-20 | [72028](https://github.com/airbytehq/airbyte/pull/72028) | Update dependencies |
 | 5.6.1 | 2026-01-14 | [68982](https://github.com/airbytehq/airbyte/pull/68982) | Update dependencies |
