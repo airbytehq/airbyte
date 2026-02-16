@@ -33,9 +33,7 @@ class SourceTulip(AbstractSource):
                 return False, f"Missing required configuration field: {field}"
 
         try:
-            url = build_tables_url(
-                config["subdomain"], config.get("workspace_id")
-            )
+            url = build_tables_url(config["subdomain"], config.get("workspace_id"))
             response = requests.get(
                 url,
                 auth=(config["api_key"], config["api_secret"]),
@@ -57,9 +55,7 @@ class SourceTulip(AbstractSource):
         Calls GET /api/v3/tables (or workspace-scoped equivalent) to
         discover all available tables, then instantiates a stream for each.
         """
-        url = build_tables_url(
-            config["subdomain"], config.get("workspace_id")
-        )
+        url = build_tables_url(config["subdomain"], config.get("workspace_id"))
         response = requests.get(
             url,
             auth=(config["api_key"], config["api_secret"]),

@@ -50,7 +50,11 @@ def create_api_budget() -> HttpAPIBudget:
     return HttpAPIBudget(
         policies=[
             MovingWindowCallRatePolicy(
-                rates=[Rate(limit=TULIP_RATE_LIMIT_PER_SECOND, interval=timedelta(seconds=1))],
+                rates=[
+                    Rate(
+                        limit=TULIP_RATE_LIMIT_PER_SECOND, interval=timedelta(seconds=1)
+                    )
+                ],
                 matchers=[HttpRequestMatcher()],
             ),
         ],
@@ -62,7 +66,9 @@ class TulipBackoffStrategy(BackoffStrategy):
 
     def backoff_time(
         self,
-        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        response_or_exception: Optional[
+            Union[requests.Response, requests.RequestException]
+        ],
         attempt_count: int,
     ) -> Optional[float]:
         if isinstance(response_or_exception, requests.Response):
@@ -250,25 +256,39 @@ class TulipTableStream(HttpStream, IncrementalMixin):
             api_filters = self._build_incremental_filters()
             if next_page_token:
                 api_filters.append(
-                    {"field": "_sequenceNumber", "functionType": "greaterThan", "arg": next_page_token["last_sequence"]}
+                    {
+                        "field": "_sequenceNumber",
+                        "functionType": "greaterThan",
+                        "arg": next_page_token["last_sequence"],
+                    }
                 )
 
         return {
             "limit": DEFAULT_LIMIT,
             "offset": 0,
             "filters": json.dumps(api_filters),
-            "sortOptions": json.dumps([{"sortBy": "_sequenceNumber", "sortDir": "asc"}]),
+            "sortOptions": json.dumps(
+                [{"sortBy": "_sequenceNumber", "sortDir": "asc"}]
+            ),
             "fields": json.dumps(self._get_allowed_fields()),
         }
 
     def _build_bootstrap_filters(self, last_sequence: int) -> List[Dict[str, Any]]:
         """Build filters for bootstrap phase."""
         api_filters: List[Dict[str, Any]] = [
-            {"field": "_sequenceNumber", "functionType": "greaterThan", "arg": last_sequence}
+            {
+                "field": "_sequenceNumber",
+                "functionType": "greaterThan",
+                "arg": last_sequence,
+            }
         ]
         if self.sync_from_date:
             api_filters.append(
-                {"field": "_updatedAt", "functionType": "greaterThan", "arg": self.sync_from_date}
+                {
+                    "field": "_updatedAt",
+                    "functionType": "greaterThan",
+                    "arg": self.sync_from_date,
+                }
             )
         api_filters.extend(self.custom_filters)
         return api_filters
@@ -286,7 +306,11 @@ class TulipTableStream(HttpStream, IncrementalMixin):
         start_time = adjust_cursor_for_overlap(self._last_updated_at)
         if start_time:
             api_filters.append(
-                {"field": "_updatedAt", "functionType": "greaterThan", "arg": start_time}
+                {
+                    "field": "_updatedAt",
+                    "functionType": "greaterThan",
+                    "arg": start_time,
+                }
             )
         api_filters.extend(self.custom_filters)
         return api_filters

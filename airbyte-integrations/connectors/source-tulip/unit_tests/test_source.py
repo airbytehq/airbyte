@@ -96,7 +96,9 @@ class TestStreams:
             assert len(names) == 2
             assert all("__" in name for name in names)
 
-    def test_streams_without_workspace(self, source, mock_config_minimal, mock_tables_list):
+    def test_streams_without_workspace(
+        self, source, mock_config_minimal, mock_tables_list
+    ):
         with requests_mock.Mocker() as m:
             m.get(
                 "https://test.tulip.co/api/v3/tables",

@@ -291,7 +291,9 @@ class TestParseResponse:
 
     def test_bootstrap_to_incremental_transition(self):
         # Batch smaller than DEFAULT_LIMIT triggers transition
-        records = [{"id": "1", "_sequenceNumber": 5, "_updatedAt": "2026-01-01T00:00:00Z"}]
+        records = [
+            {"id": "1", "_sequenceNumber": 5, "_updatedAt": "2026-01-01T00:00:00Z"}
+        ]
         resp = _mock_response(records)
         stream = _make_stream()
         assert stream._cursor_mode == "BOOTSTRAP"
@@ -333,7 +335,11 @@ class TestParseResponse:
     def test_cursor_frozen_during_full_batch(self):
         """_last_updated_at should NOT advance during a full batch (mid-sync)."""
         records = [
-            {"id": str(i), "_sequenceNumber": i, "_updatedAt": f"2026-01-{(i % 28) + 1:02d}T00:00:00Z"}
+            {
+                "id": str(i),
+                "_sequenceNumber": i,
+                "_updatedAt": f"2026-01-{(i % 28) + 1:02d}T00:00:00Z",
+            }
             for i in range(DEFAULT_LIMIT)
         ]
         resp = _mock_response(records)
@@ -393,7 +399,10 @@ class TestParseResponse:
         filters = json.loads(params["filters"])
         updated_filter = next(f for f in filters if f["field"] == "_updatedAt")
         # Should be based on 2026-01-01 minus 60s overlap, NOT 2026-06-01
-        assert "2025-12-31" in updated_filter["arg"] or "2026-01-01" in updated_filter["arg"]
+        assert (
+            "2025-12-31" in updated_filter["arg"]
+            or "2026-01-01" in updated_filter["arg"]
+        )
 
     def test_incremental_cursor_committed_on_last_batch(self):
         """In INCREMENTAL mode, cursor should commit when last batch is processed."""
