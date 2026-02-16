@@ -131,6 +131,16 @@
         "default": 14,
         "examples": [14],
         "order": 6
+      },
+      "step_days": {
+        "title": "Step (Days)",
+        "type": "integer",
+        "description": "The number of days per request slice for incremental streams. Smaller values reduce the amount of data per request, which can help avoid timeouts and connection errors for accounts with large data volumes. Default is 14 days.",
+        "minimum": 1,
+        "maximum": 30,
+        "default": 14,
+        "examples": [1, 7, 14],
+        "order": 7
       }
     }
   },
