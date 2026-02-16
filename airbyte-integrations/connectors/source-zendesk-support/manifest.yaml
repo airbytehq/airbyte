@@ -863,10 +863,9 @@ definitions:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
+            - type: ExponentialBackoffStrategy
+              factor: 5
           response_filters:
-            - http_codes: [504]
-              action: FAIL
-              error_message: "Skipping stream `{{ parameters.get('name') }}`. Timed out waiting for response: {{ response.text }}..."
             - http_codes: [403, 404]
               action: FAIL
               failure_type: config_error
