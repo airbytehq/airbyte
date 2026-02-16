@@ -1,3 +1,0 @@
-pytest>=8.0
-pytest-cov>=4.1
-requests-mock>=1.11
