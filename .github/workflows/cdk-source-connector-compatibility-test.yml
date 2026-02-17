@@ -1,0 +1,95 @@
+name: CDK Source Connector Compatibility Test
+
+on:
+  pull_request:
+    paths:
+      - "airbyte-cdk/bulk/core/base/version.properties"
+      - "airbyte-cdk/bulk/core/extract/version.properties"
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  generate-matrix:
+    name: Generate Source Connector Matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        with:
+          submodules: true # Needed for when airbyte-enterprise calls this workflow
+
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: Generate Source Connector Matrix
+        id: generate-matrix
+        run: echo "connectors_matrix=$(tools/bin/bulk-cdk/get-certified-connectors.sh sources)" | tee -a $GITHUB_OUTPUT
+
+  connectors-test:
+    name: Test ${{ matrix.connector }}
+    needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.connectors-matrix != '[]'
+    runs-on: linux-24.04-large
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+      DD_TAGS: "connector.name:${{ matrix.connector }}"
+
+    strategy:
+      matrix:
+        connector: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 5
+      fail-fast: false
+
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        if: matrix.connector
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        if: matrix.connector
+        with:
+          gradle-version: "8.14"
+
+      - name: Install the latest version of uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: Install Poe
+        if: matrix.connector
+        run: uv tool install poethepoet
+
+      - name: Install connector dependencies
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Fetch connector secrets
+        if: matrix.connector && (vars.GCP_PROJECT_ID != '')
+        run: airbyte-cdk secrets fetch ${{ matrix.connector }}
+
+      - name: Run CDK upgrade
+        if: matrix.connector
+        run: ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk --cdkVersion=local
+
+      - name: Run Unit Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
+      - name: Run Integration Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-integration-tests

@@ -25,8 +25,6 @@ class DevNullBasicFunctionalityIntegrationTest :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
-        useDataFlowPipeline = true,
     )

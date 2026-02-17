@@ -35,6 +35,7 @@ Visit `https://www.algolia.com/doc/rest-api/search/#section/Authentication` for 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.35 | 2026-02-10 | [72998](https://github.com/airbytehq/airbyte/pull/72998) | Update dependencies |
 | 0.0.34 | 2025-12-19 | [70943](https://github.com/airbytehq/airbyte/pull/70943) | Update dependencies |
 | 0.0.33 | 2025-12-02 | [70281](https://github.com/airbytehq/airbyte/pull/70281) | Update dependencies |
 | 0.0.32 | 2025-10-29 | [69056](https://github.com/airbytehq/airbyte/pull/69056) | Update dependencies |

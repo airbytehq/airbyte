@@ -8,35 +8,35 @@ The Greenhouse connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Candidates | [List](#candidates-list), [Get](#candidates-get) |
-| Applications | [List](#applications-list), [Get](#applications-get) |
-| Jobs | [List](#jobs-list), [Get](#jobs-get) |
-| Offers | [List](#offers-list), [Get](#offers-get) |
-| Users | [List](#users-list), [Get](#users-get) |
-| Departments | [List](#departments-list), [Get](#departments-get) |
-| Offices | [List](#offices-list), [Get](#offices-get) |
-| Job Posts | [List](#job-posts-list), [Get](#job-posts-get) |
-| Sources | [List](#sources-list) |
+| Candidates | [List](#candidates-list), [Get](#candidates-get), [Search](#candidates-search) |
+| Applications | [List](#applications-list), [Get](#applications-get), [Search](#applications-search) |
+| Jobs | [List](#jobs-list), [Get](#jobs-get), [Search](#jobs-search) |
+| Offers | [List](#offers-list), [Get](#offers-get), [Search](#offers-search) |
+| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
+| Departments | [List](#departments-list), [Get](#departments-get), [Search](#departments-search) |
+| Offices | [List](#offices-list), [Get](#offices-get), [Search](#offices-search) |
+| Job Posts | [List](#job-posts-list), [Get](#job-posts-get), [Search](#job-posts-search) |
+| Sources | [List](#sources-list), [Search](#sources-search) |
 | Scheduled Interviews | [List](#scheduled-interviews-list), [Get](#scheduled-interviews-get) |
 | Application Attachment | [Download](#application-attachment-download) |
 | Candidate Attachment | [Download](#candidate-attachment-download) |
 
-### Candidates
+## Candidates
 
-#### Candidates List
+### Candidates List
 
 Returns a paginated list of all candidates in the organization
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.candidates.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -46,7 +46,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -57,7 +57,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -91,11 +91,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Candidates Get
+### Candidates Get
 
 Get a single candidate by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.candidates.get(
@@ -103,10 +103,10 @@ await greenhouse.candidates.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -119,7 +119,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -129,7 +129,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -163,22 +163,130 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Applications
+### Candidates Search
 
-#### Applications List
+Search and filter candidates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await greenhouse.candidates.search(
+    query={"filter": {"eq": {"addresses": []}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "candidates",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"addresses": []}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `addresses` | `array` | Candidate's addresses |
+| `application_ids` | `array` | List of application IDs |
+| `applications` | `array` | An array of all applications made by candidates. |
+| `attachments` | `array` | Attachments related to the candidate |
+| `can_email` | `boolean` | Indicates if candidate can be emailed |
+| `company` | `string` | Company where the candidate is associated |
+| `coordinator` | `string` | Coordinator assigned to the candidate |
+| `created_at` | `string` | Date and time of creation |
+| `custom_fields` | `object` | Custom fields associated with the candidate |
+| `educations` | `array` | List of candidate's educations |
+| `email_addresses` | `array` | Candidate's email addresses |
+| `employments` | `array` | List of candidate's employments |
+| `first_name` | `string` | Candidate's first name |
+| `id` | `integer` | Candidate's ID |
+| `is_private` | `boolean` | Indicates if the candidate's data is private |
+| `keyed_custom_fields` | `object` | Keyed custom fields associated with the candidate |
+| `last_activity` | `string` | Details of the last activity related to the candidate |
+| `last_name` | `string` | Candidate's last name |
+| `phone_numbers` | `array` | Candidate's phone numbers |
+| `photo_url` | `string` | URL of the candidate's profile photo |
+| `recruiter` | `string` | Recruiter assigned to the candidate |
+| `social_media_addresses` | `array` | Candidate's social media addresses |
+| `tags` | `array` | Tags associated with the candidate |
+| `title` | `string` | Candidate's title (e.g., Mr., Mrs., Dr.) |
+| `updated_at` | `string` | Date and time of last update |
+| `website_addresses` | `array` | List of candidate's website addresses |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].addresses` | `array` | Candidate's addresses |
+| `data[].application_ids` | `array` | List of application IDs |
+| `data[].applications` | `array` | An array of all applications made by candidates. |
+| `data[].attachments` | `array` | Attachments related to the candidate |
+| `data[].can_email` | `boolean` | Indicates if candidate can be emailed |
+| `data[].company` | `string` | Company where the candidate is associated |
+| `data[].coordinator` | `string` | Coordinator assigned to the candidate |
+| `data[].created_at` | `string` | Date and time of creation |
+| `data[].custom_fields` | `object` | Custom fields associated with the candidate |
+| `data[].educations` | `array` | List of candidate's educations |
+| `data[].email_addresses` | `array` | Candidate's email addresses |
+| `data[].employments` | `array` | List of candidate's employments |
+| `data[].first_name` | `string` | Candidate's first name |
+| `data[].id` | `integer` | Candidate's ID |
+| `data[].is_private` | `boolean` | Indicates if the candidate's data is private |
+| `data[].keyed_custom_fields` | `object` | Keyed custom fields associated with the candidate |
+| `data[].last_activity` | `string` | Details of the last activity related to the candidate |
+| `data[].last_name` | `string` | Candidate's last name |
+| `data[].phone_numbers` | `array` | Candidate's phone numbers |
+| `data[].photo_url` | `string` | URL of the candidate's profile photo |
+| `data[].recruiter` | `string` | Recruiter assigned to the candidate |
+| `data[].social_media_addresses` | `array` | Candidate's social media addresses |
+| `data[].tags` | `array` | Tags associated with the candidate |
+| `data[].title` | `string` | Candidate's title (e.g., Mr., Mrs., Dr.) |
+| `data[].updated_at` | `string` | Date and time of last update |
+| `data[].website_addresses` | `array` | List of candidate's website addresses |
+
+</details>
+
+## Applications
+
+### Applications List
 
 Returns a paginated list of all applications
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.applications.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -188,7 +296,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -204,7 +312,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -237,11 +345,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Applications Get
+### Applications Get
 
 Get a single application by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.applications.get(
@@ -249,10 +357,10 @@ await greenhouse.applications.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -265,7 +373,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -275,7 +383,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -308,22 +416,118 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Jobs
+### Applications Search
 
-#### Jobs List
+Search and filter applications records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await greenhouse.applications.search(
+    query={"filter": {"eq": {"answers": []}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "applications",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"answers": []}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `answers` | `array` | Answers provided in the application. |
+| `applied_at` | `string` | Timestamp when the candidate applied. |
+| `attachments` | `array` | Attachments uploaded with the application. |
+| `candidate_id` | `integer` | Unique identifier for the candidate. |
+| `credited_to` | `object` | Information about the employee who credited the application. |
+| `current_stage` | `object` | Current stage of the application process. |
+| `id` | `integer` | Unique identifier for the application. |
+| `job_post_id` | `integer` |  |
+| `jobs` | `array` | Jobs applied for by the candidate. |
+| `last_activity_at` | `string` | Timestamp of the last activity on the application. |
+| `location` | `string` | Location related to the application. |
+| `prospect` | `boolean` | Status of the application prospect. |
+| `prospect_detail` | `object` | Details related to the application prospect. |
+| `prospective_department` | `string` | Prospective department for the candidate. |
+| `prospective_office` | `string` | Prospective office for the candidate. |
+| `rejected_at` | `string` | Timestamp when the application was rejected. |
+| `rejection_details` | `object` | Details related to the application rejection. |
+| `rejection_reason` | `object` | Reason for the application rejection. |
+| `source` | `object` | Source of the application. |
+| `status` | `string` | Status of the application. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].answers` | `array` | Answers provided in the application. |
+| `data[].applied_at` | `string` | Timestamp when the candidate applied. |
+| `data[].attachments` | `array` | Attachments uploaded with the application. |
+| `data[].candidate_id` | `integer` | Unique identifier for the candidate. |
+| `data[].credited_to` | `object` | Information about the employee who credited the application. |
+| `data[].current_stage` | `object` | Current stage of the application process. |
+| `data[].id` | `integer` | Unique identifier for the application. |
+| `data[].job_post_id` | `integer` |  |
+| `data[].jobs` | `array` | Jobs applied for by the candidate. |
+| `data[].last_activity_at` | `string` | Timestamp of the last activity on the application. |
+| `data[].location` | `string` | Location related to the application. |
+| `data[].prospect` | `boolean` | Status of the application prospect. |
+| `data[].prospect_detail` | `object` | Details related to the application prospect. |
+| `data[].prospective_department` | `string` | Prospective department for the candidate. |
+| `data[].prospective_office` | `string` | Prospective office for the candidate. |
+| `data[].rejected_at` | `string` | Timestamp when the application was rejected. |
+| `data[].rejection_details` | `object` | Details related to the application rejection. |
+| `data[].rejection_reason` | `object` | Reason for the application rejection. |
+| `data[].source` | `object` | Source of the application. |
+| `data[].status` | `string` | Status of the application. |
+
+</details>
+
+## Jobs
+
+### Jobs List
 
 Returns a paginated list of all jobs in the organization
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.jobs.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -333,7 +537,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -344,7 +548,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -367,11 +571,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Jobs Get
+### Jobs Get
 
 Get a single job by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.jobs.get(
@@ -379,10 +583,10 @@ await greenhouse.jobs.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -395,7 +599,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -405,7 +609,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -428,22 +632,114 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Offers
+### Jobs Search
 
-#### Offers List
+Search and filter jobs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await greenhouse.jobs.search(
+    query={"filter": {"eq": {"closed_at": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "jobs",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"closed_at": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `closed_at` | `string` | The date and time the job was closed |
+| `confidential` | `boolean` | Indicates if the job details are confidential |
+| `copied_from_id` | `integer` | The ID of the job from which this job was copied |
+| `created_at` | `string` | The date and time the job was created |
+| `custom_fields` | `object` | Custom fields related to the job |
+| `departments` | `array` | Departments associated with the job |
+| `hiring_team` | `object` | Members of the hiring team for the job |
+| `id` | `integer` | Unique ID of the job |
+| `is_template` | `boolean` | Indicates if the job is a template |
+| `keyed_custom_fields` | `object` | Keyed custom fields related to the job |
+| `name` | `string` | Name of the job |
+| `notes` | `string` | Additional notes or comments about the job |
+| `offices` | `array` | Offices associated with the job |
+| `opened_at` | `string` | The date and time the job was opened |
+| `openings` | `array` | Openings associated with the job |
+| `requisition_id` | `string` | ID associated with the job requisition |
+| `status` | `string` | Current status of the job |
+| `updated_at` | `string` | The date and time the job was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].closed_at` | `string` | The date and time the job was closed |
+| `data[].confidential` | `boolean` | Indicates if the job details are confidential |
+| `data[].copied_from_id` | `integer` | The ID of the job from which this job was copied |
+| `data[].created_at` | `string` | The date and time the job was created |
+| `data[].custom_fields` | `object` | Custom fields related to the job |
+| `data[].departments` | `array` | Departments associated with the job |
+| `data[].hiring_team` | `object` | Members of the hiring team for the job |
+| `data[].id` | `integer` | Unique ID of the job |
+| `data[].is_template` | `boolean` | Indicates if the job is a template |
+| `data[].keyed_custom_fields` | `object` | Keyed custom fields related to the job |
+| `data[].name` | `string` | Name of the job |
+| `data[].notes` | `string` | Additional notes or comments about the job |
+| `data[].offices` | `array` | Offices associated with the job |
+| `data[].opened_at` | `string` | The date and time the job was opened |
+| `data[].openings` | `array` | Openings associated with the job |
+| `data[].requisition_id` | `string` | ID associated with the job requisition |
+| `data[].status` | `string` | Current status of the job |
+| `data[].updated_at` | `string` | The date and time the job was last updated |
+
+</details>
+
+## Offers
+
+### Offers List
 
 Returns a paginated list of all offers
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.offers.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -453,7 +749,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -467,7 +763,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -488,11 +784,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Offers Get
+### Offers Get
 
 Get a single offer by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.offers.get(
@@ -500,10 +796,10 @@ await greenhouse.offers.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -516,7 +812,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -526,7 +822,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -547,22 +843,106 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Users
+### Offers Search
 
-#### Users List
+Search and filter offers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await greenhouse.offers.search(
+    query={"filter": {"eq": {"application_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "offers",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"application_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `application_id` | `integer` | Unique identifier for the application associated with the offer |
+| `candidate_id` | `integer` | Unique identifier for the candidate associated with the offer |
+| `created_at` | `string` | Timestamp indicating when the offer was created |
+| `custom_fields` | `object` | Additional custom fields related to the offer |
+| `id` | `integer` | Unique identifier for the offer |
+| `job_id` | `integer` | Unique identifier for the job associated with the offer |
+| `keyed_custom_fields` | `object` | Keyed custom fields associated with the offer |
+| `opening` | `object` | Details about the job opening |
+| `resolved_at` | `string` | Timestamp indicating when the offer was resolved |
+| `sent_at` | `string` | Timestamp indicating when the offer was sent |
+| `starts_at` | `string` | Timestamp indicating when the offer starts |
+| `status` | `string` | Status of the offer |
+| `updated_at` | `string` | Timestamp indicating when the offer was last updated |
+| `version` | `integer` | Version of the offer data |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].application_id` | `integer` | Unique identifier for the application associated with the offer |
+| `data[].candidate_id` | `integer` | Unique identifier for the candidate associated with the offer |
+| `data[].created_at` | `string` | Timestamp indicating when the offer was created |
+| `data[].custom_fields` | `object` | Additional custom fields related to the offer |
+| `data[].id` | `integer` | Unique identifier for the offer |
+| `data[].job_id` | `integer` | Unique identifier for the job associated with the offer |
+| `data[].keyed_custom_fields` | `object` | Keyed custom fields associated with the offer |
+| `data[].opening` | `object` | Details about the job opening |
+| `data[].resolved_at` | `string` | Timestamp indicating when the offer was resolved |
+| `data[].sent_at` | `string` | Timestamp indicating when the offer was sent |
+| `data[].starts_at` | `string` | Timestamp indicating when the offer starts |
+| `data[].status` | `string` | Status of the offer |
+| `data[].updated_at` | `string` | Timestamp indicating when the offer was last updated |
+| `data[].version` | `integer` | Version of the offer data |
+
+</details>
+
+## Users
+
+### Users List
 
 Returns a paginated list of all users
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.users.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -572,7 +952,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -587,7 +967,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -609,11 +989,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Users Get
+### Users Get
 
 Get a single user by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.users.get(
@@ -621,10 +1001,10 @@ await greenhouse.users.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -637,7 +1017,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -647,7 +1027,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -669,22 +1049,106 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Departments
+### Users Search
 
-#### Departments List
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await greenhouse.users.search(
+    query={"filter": {"eq": {"created_at": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"created_at": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `created_at` | `string` | The date and time when the user account was created. |
+| `departments` | `array` | List of departments associated with users |
+| `disabled` | `boolean` | Indicates whether the user account is disabled. |
+| `emails` | `array` | Email addresses of the users |
+| `employee_id` | `string` | Employee identifier for the user. |
+| `first_name` | `string` | The first name of the user. |
+| `id` | `integer` | Unique identifier for the user. |
+| `last_name` | `string` | The last name of the user. |
+| `linked_candidate_ids` | `array` | IDs of candidates linked to the user. |
+| `name` | `string` | The full name of the user. |
+| `offices` | `array` | List of office locations where users are based |
+| `primary_email_address` | `string` | The primary email address of the user. |
+| `site_admin` | `boolean` | Indicates whether the user is a site administrator. |
+| `updated_at` | `string` | The date and time when the user account was last updated. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].created_at` | `string` | The date and time when the user account was created. |
+| `data[].departments` | `array` | List of departments associated with users |
+| `data[].disabled` | `boolean` | Indicates whether the user account is disabled. |
+| `data[].emails` | `array` | Email addresses of the users |
+| `data[].employee_id` | `string` | Employee identifier for the user. |
+| `data[].first_name` | `string` | The first name of the user. |
+| `data[].id` | `integer` | Unique identifier for the user. |
+| `data[].last_name` | `string` | The last name of the user. |
+| `data[].linked_candidate_ids` | `array` | IDs of candidates linked to the user. |
+| `data[].name` | `string` | The full name of the user. |
+| `data[].offices` | `array` | List of office locations where users are based |
+| `data[].primary_email_address` | `string` | The primary email address of the user. |
+| `data[].site_admin` | `boolean` | Indicates whether the user is a site administrator. |
+| `data[].updated_at` | `string` | The date and time when the user account was last updated. |
+
+</details>
+
+## Departments
+
+### Departments List
 
 Returns a paginated list of all departments
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.departments.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -694,7 +1158,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -705,7 +1169,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -720,11 +1184,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Departments Get
+### Departments Get
 
 Get a single department by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.departments.get(
@@ -732,10 +1196,10 @@ await greenhouse.departments.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -748,7 +1212,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -758,7 +1222,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -773,22 +1237,92 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Offices
+### Departments Search
 
-#### Offices List
+Search and filter departments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await greenhouse.departments.search(
+    query={"filter": {"eq": {"child_department_external_ids": []}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "departments",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"child_department_external_ids": []}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `child_department_external_ids` | `array` | External IDs of child departments associated with this department. |
+| `child_ids` | `array` | Unique IDs of child departments associated with this department. |
+| `external_id` | `string` | External ID of this department. |
+| `id` | `integer` | Unique ID of this department. |
+| `name` | `string` | Name of the department. |
+| `parent_department_external_id` | `string` | External ID of the parent department of this department. |
+| `parent_id` | `integer` | Unique ID of the parent department of this department. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].child_department_external_ids` | `array` | External IDs of child departments associated with this department. |
+| `data[].child_ids` | `array` | Unique IDs of child departments associated with this department. |
+| `data[].external_id` | `string` | External ID of this department. |
+| `data[].id` | `integer` | Unique ID of this department. |
+| `data[].name` | `string` | Name of the department. |
+| `data[].parent_department_external_id` | `string` | External ID of the parent department of this department. |
+| `data[].parent_id` | `integer` | Unique ID of the parent department of this department. |
+
+</details>
+
+## Offices
+
+### Offices List
 
 Returns a paginated list of all offices
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.offices.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -798,7 +1332,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -809,7 +1343,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -826,11 +1360,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Offices Get
+### Offices Get
 
 Get a single office by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.offices.get(
@@ -838,10 +1372,10 @@ await greenhouse.offices.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -854,7 +1388,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -864,7 +1398,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -881,22 +1415,96 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Job Posts
+### Offices Search
 
-#### Job Posts List
+Search and filter offices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await greenhouse.offices.search(
+    query={"filter": {"eq": {"child_ids": []}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "offices",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"child_ids": []}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `child_ids` | `array` | IDs of child offices associated with this office |
+| `child_office_external_ids` | `array` | External IDs of child offices associated with this office |
+| `external_id` | `string` | Unique identifier for this office in the external system |
+| `id` | `integer` | Unique identifier for this office in the API system |
+| `location` | `object` | Location details of this office |
+| `name` | `string` | Name of the office |
+| `parent_id` | `integer` | ID of the parent office, if this office is a branch office |
+| `parent_office_external_id` | `string` | External ID of the parent office in the external system |
+| `primary_contact_user_id` | `integer` | User ID of the primary contact person for this office |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].child_ids` | `array` | IDs of child offices associated with this office |
+| `data[].child_office_external_ids` | `array` | External IDs of child offices associated with this office |
+| `data[].external_id` | `string` | Unique identifier for this office in the external system |
+| `data[].id` | `integer` | Unique identifier for this office in the API system |
+| `data[].location` | `object` | Location details of this office |
+| `data[].name` | `string` | Name of the office |
+| `data[].parent_id` | `integer` | ID of the parent office, if this office is a branch office |
+| `data[].parent_office_external_id` | `string` | External ID of the parent office in the external system |
+| `data[].primary_contact_user_id` | `integer` | User ID of the primary contact person for this office |
+
+</details>
+
+## Job Posts
+
+### Job Posts List
 
 Returns a paginated list of all job posts
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.job_posts.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -906,7 +1514,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -919,7 +1527,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -942,11 +1550,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Job Posts Get
+### Job Posts Get
 
 Get a single job post by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.job_posts.get(
@@ -954,10 +1562,10 @@ await greenhouse.job_posts.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -970,7 +1578,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -980,7 +1588,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1003,22 +1611,108 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Sources
+### Job Posts Search
 
-#### Sources List
+Search and filter job posts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await greenhouse.job_posts.search(
+    query={"filter": {"eq": {"active": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "job_posts",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"active": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `active` | `boolean` | Flag indicating if the job post is active or not. |
+| `content` | `string` | Content or description of the job post. |
+| `created_at` | `string` | Date and time when the job post was created. |
+| `demographic_question_set_id` | `integer` | ID of the demographic question set associated with the job post. |
+| `external` | `boolean` | Flag indicating if the job post is external or not. |
+| `first_published_at` | `string` | Date and time when the job post was first published. |
+| `id` | `integer` | Unique identifier of the job post. |
+| `internal` | `boolean` | Flag indicating if the job post is internal or not. |
+| `internal_content` | `string` | Internal content or description of the job post. |
+| `job_id` | `integer` | ID of the job associated with the job post. |
+| `live` | `boolean` | Flag indicating if the job post is live or not. |
+| `location` | `object` | Details about the job post location. |
+| `questions` | `array` | List of questions related to the job post. |
+| `title` | `string` | Title or headline of the job post. |
+| `updated_at` | `string` | Date and time when the job post was last updated. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].active` | `boolean` | Flag indicating if the job post is active or not. |
+| `data[].content` | `string` | Content or description of the job post. |
+| `data[].created_at` | `string` | Date and time when the job post was created. |
+| `data[].demographic_question_set_id` | `integer` | ID of the demographic question set associated with the job post. |
+| `data[].external` | `boolean` | Flag indicating if the job post is external or not. |
+| `data[].first_published_at` | `string` | Date and time when the job post was first published. |
+| `data[].id` | `integer` | Unique identifier of the job post. |
+| `data[].internal` | `boolean` | Flag indicating if the job post is internal or not. |
+| `data[].internal_content` | `string` | Internal content or description of the job post. |
+| `data[].job_id` | `integer` | ID of the job associated with the job post. |
+| `data[].live` | `boolean` | Flag indicating if the job post is live or not. |
+| `data[].location` | `object` | Details about the job post location. |
+| `data[].questions` | `array` | List of questions related to the job post. |
+| `data[].title` | `string` | Title or headline of the job post. |
+| `data[].updated_at` | `string` | Date and time when the job post was last updated. |
+
+</details>
+
+## Sources
+
+### Sources List
 
 Returns a paginated list of all sources
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.sources.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1028,7 +1722,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1039,7 +1733,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1050,22 +1744,84 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Scheduled Interviews
+### Sources Search
 
-#### Scheduled Interviews List
+Search and filter sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await greenhouse.sources.search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "sources",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | The unique identifier for the source. |
+| `name` | `string` | The name of the source. |
+| `type` | `object` | Type of the data source |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | The unique identifier for the source. |
+| `data[].name` | `string` | The name of the source. |
+| `data[].type` | `object` | Type of the data source |
+
+</details>
+
+## Scheduled Interviews
+
+### Scheduled Interviews List
 
 Returns a paginated list of all scheduled interviews
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.scheduled_interviews.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1075,7 +1831,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1092,7 +1848,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1113,11 +1869,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-#### Scheduled Interviews Get
+### Scheduled Interviews Get
 
 Get a single scheduled interview by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await greenhouse.scheduled_interviews.get(
@@ -1125,10 +1881,10 @@ await greenhouse.scheduled_interviews.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1141,7 +1897,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1151,7 +1907,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1172,16 +1928,16 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-### Application Attachment
+## Application Attachment
 
-#### Application Attachment Download
+### Application Attachment Download
 
 Downloads an attachment (resume, cover letter, etc.) for an application by index.
 The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
 Files should be downloaded immediately after retrieval.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in greenhouse.application_attachment.download(    id=0,    attachment_index=0):# Process each chunk (e.g., write to file)
@@ -1190,10 +1946,10 @@ async for chunk in greenhouse.application_attachment.download(    id=0,    attac
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1207,7 +1963,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1216,16 +1972,16 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Candidate Attachment
+## Candidate Attachment
 
-#### Candidate Attachment Download
+### Candidate Attachment Download
 
 Downloads an attachment (resume, cover letter, etc.) for a candidate by index.
 The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
 Files should be downloaded immediately after retrieval.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in greenhouse.candidate_attachment.download(    id=0,    attachment_index=0):# Process each chunk (e.g., write to file)
@@ -1234,10 +1990,10 @@ async for chunk in greenhouse.candidate_attachment.download(    id=0,    attachm
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1251,7 +2007,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1259,45 +2015,4 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `attachment_index` | `integer` | Yes | Index of the attachment to download (0-based) |
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
-
-
-
-## Authentication
-
-The Greenhouse connector supports the following authentication methods.
-
-
-### Harvest API Key Authentication
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Greenhouse Harvest API Key from the Dev Center |
-
-#### Example
-
-**Python SDK**
-
-```python
-GreenhouseConnector(
-  auth_config=GreenhouseAuthConfig(
-    api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
-  )
-)
-```
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/sources' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "workspace_id": "{your_workspace_id}",
-  "source_template_id": "{source_template_id}",
-  "auth_config": {
-    "api_key": "<Your Greenhouse Harvest API Key from the Dev Center>"
-  },
-  "name": "My Greenhouse Connector"
-}'
-```
 

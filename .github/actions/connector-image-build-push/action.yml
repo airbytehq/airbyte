@@ -12,16 +12,16 @@ inputs:
     description: "Docker registry"
     required: false
     default: "docker.io/airbyte"
-  release-type:
-    description: "Release type: 'pre-release' or 'main-release'. Determines tagging and latest push behavior."
+  with-semver-suffix:
+    description: "Semver suffix mode: 'none', 'preview', or 'rc'. Determines tagging and latest push behavior."
     required: false
-    default: "pre-release"
+    default: "preview"
   tag-override:
     description: "Override the image tag (optional). If not provided, the tag will be derived from the connector metadata.yaml."
     required: false
     default: ""
   push-latest-tag:
-    description: "Override the default behavior and if publishing an image, determine whether to tag it with latest in addition to the version tag. If not provided, the action will determine based on release-type."
+    description: "Override the default behavior and if publishing an image, determine whether to tag it with latest in addition to the version tag. If not provided, the action will determine based on with-semver-suffix."
     required: false
   dry-run:
     description: "Dry run mode (build but do not push)"
@@ -138,13 +138,16 @@ runs:
         if [[ "${{ inputs.tag-override }}" ]]; then
           CONNECTOR_VERSION_TAG="${{ inputs.tag-override }}"
           echo "🏷 Using provided tag override: $CONNECTOR_VERSION_TAG"
-        elif [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
+        elif [[ "${{ inputs.with-semver-suffix }}" == "preview" ]]; then
           hash=$(git rev-parse --short=7 HEAD)
           CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-preview.${hash}"
-          echo "🏷 Using pre-release tag: $CONNECTOR_VERSION_TAG"
+          echo "🏷 Using preview tag: $CONNECTOR_VERSION_TAG"
+        elif [[ "${{ inputs.with-semver-suffix }}" == "rc" ]]; then
+          CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-rc1"
+          echo "🏷 Using RC tag: $CONNECTOR_VERSION_TAG"
         else
           CONNECTOR_VERSION_TAG="$CONNECTOR_VERSION"
-          echo "🏷 Using main release tag: $CONNECTOR_VERSION_TAG"
+          echo "🏷 Using exact version tag: $CONNECTOR_VERSION_TAG"
         fi
 
         # Determine whether to push with latest tag
@@ -153,13 +156,13 @@ runs:
           PUSH_LATEST_TAG="${{ inputs.push-latest-tag }}"
           echo "🏷 Using explicit push-latest-tag setting: $PUSH_LATEST_TAG"
         else
-          # Auto-determine based on release-type and release candidate status
-          if [[ "${{ inputs.release-type }}" == "main-release" && "$IS_RELEASE_CANDIDATE" == "false" ]]; then
+          # Auto-determine based on with-semver-suffix and release candidate status
+          if [[ "${{ inputs.with-semver-suffix }}" == "none" && "$IS_RELEASE_CANDIDATE" == "false" ]]; then
             PUSH_LATEST_TAG="true"
-            echo "🏷 Will push with latest tag for main release"
+            echo "🏷 Will push with latest tag for production release"
           else
             PUSH_LATEST_TAG="false"
-            echo "🏷 Skipping latest tag for pre-release or release candidate build"
+            echo "🏷 Skipping latest tag for preview, RC, or release candidate build"
           fi
         fi
 
@@ -200,10 +203,10 @@ runs:
         echo "  Version Tag: $CONNECTOR_VERSION_TAG"
         echo "  Registry: ${{ inputs.registry }}"
         echo "  Full Image Name: $FULL_IMAGE_NAME"
-        echo "  Release Type: ${{ inputs.release-type }}"
+        echo "  Semver Suffix: ${{ inputs.with-semver-suffix }}"
         echo "  Push Latest Tag: $PUSH_LATEST_TAG"
         echo "  Dry Run: ${{ inputs.dry-run }}"
-        echo "  Force Publish: ${{ inputs.force-publish }}" 
+        echo "  Force Publish: ${{ inputs.force-publish }}"
 
         {
           echo "connector-name=$CONNECTOR_NAME"
