@@ -264,7 +264,7 @@ GO
   [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs)
 
   for CDC. It is therefore vital that the Agent is operational in order for CDC to work
-  effectively.You can check
+  effectively. You can check
 
   the status of the SQL Server Agent as follows:
 
