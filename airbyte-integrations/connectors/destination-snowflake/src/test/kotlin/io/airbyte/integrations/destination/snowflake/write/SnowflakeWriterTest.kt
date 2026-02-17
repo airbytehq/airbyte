@@ -55,7 +55,6 @@ internal class SnowflakeWriterTest {
                         namespace = tableName.namespace,
                         name = tableName.name
                     )
-                every { importType } returns Append
             }
         val catalog = DestinationCatalog(listOf(stream))
         val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
@@ -99,7 +98,6 @@ internal class SnowflakeWriterTest {
             mockk<DestinationStream> {
                 every { minimumGenerationId } returns 0L
                 every { generationId } returns 0L
-                every { importType } returns Append
                 every { tableSchema } returns
                     StreamTableSchema(
                         tableNames = tableNames,
@@ -162,7 +160,6 @@ internal class SnowflakeWriterTest {
             mockk<DestinationStream> {
                 every { minimumGenerationId } returns 1L
                 every { generationId } returns 1L
-                every { importType } returns Append
                 every { tableSchema } returns
                     StreamTableSchema(
                         tableNames = tableNames,
@@ -225,7 +222,6 @@ internal class SnowflakeWriterTest {
             mockk<DestinationStream> {
                 every { minimumGenerationId } returns 1L
                 every { generationId } returns 2L
-                every { importType } returns Append
                 every { tableSchema } returns
                     StreamTableSchema(
                         tableNames = tableNames,
@@ -289,7 +285,6 @@ internal class SnowflakeWriterTest {
             mockk<DestinationStream> {
                 every { minimumGenerationId } returns 0L
                 every { generationId } returns 0L
-                every { importType } returns Append
                 every { tableSchema } returns
                     StreamTableSchema(
                         tableNames = tableNames,
@@ -351,7 +346,6 @@ internal class SnowflakeWriterTest {
             mockk<DestinationStream> {
                 every { minimumGenerationId } returns 0L
                 every { generationId } returns 0L
-                every { importType } returns Append
                 every { tableSchema } returns
                     StreamTableSchema(
                         tableNames = tableNames,

@@ -92,7 +92,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 365) }}D
+    step: P{{ config.get('slice_range', 30) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -159,7 +159,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 365) }}D
+    step: P{{ config.get('slice_range', 30) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -249,7 +249,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 365) }}D
+    step: P{{ config.get('slice_range', 30) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -1871,7 +1871,7 @@ spec:
       slice_range:
         type: integer
         title: Data request time increment in days
-        default: 365
+        default: 30
         minimum: 1
         examples: [1, 3, 10, 30, 180, 360]
         description: >-
@@ -1882,10 +1882,10 @@ spec:
       num_workers:
         type: integer
         title: Number of concurrent workers
-        minimum: 1
-        maximum: 20
-        default: 10
-        examples: [1, 2, 3]
+        minimum: 2
+        maximum: 100
+        default: 25
+        examples: [ 2, 3, 4]
         description: >-
           The number of worker thread to use for the sync.
           The performance upper boundary depends on call_rate_limit setting and type of account.
@@ -1896,8 +1896,26 @@ spec:
         examples: [25, 100]
         description: >-
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
-          API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
-          calls per second for test and production tokens respectively.
+          API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25
+          calls per second for test/sandbox tokens and 100 for production tokens.
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrate num_workers from 1 to 2 as the new minimum value
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["num_workers"]
+                value: "2"
+            condition: "{{ config.get('num_workers', 25) == 1 }}"
+# Concurrency level controls how many partition slices are processed in parallel.
+# Each worker handles a different time slice, preventing overlap.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 25) }}"
+  max_concurrency: 100
 
 api_budget:
   type: HTTPAPIBudget
@@ -1914,9 +1932,14 @@ api_budget:
 
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 100 if 'sk_test_' in config['client_secret'] else 25 }}"
+        # Use call_rate_limit from config if provided, otherwise default to 25 (test/sandbox) or 100 (live)
+        # Per Stripe docs: Live mode = 100 ops/sec, Sandbox = 25 ops/sec
+        # Sandbox secret keys begin with 'sk_test_', this is how we check which limit to use if live or sandbox account.
+        - limit: "{{ config.get('call_rate_limit', 25 if 'sk_test_' in config['client_secret'] else 100) }}"
           interval: PT1S
       matchers: []
+  # Tell the CDK to recognize 429 as rate limit hit and back off accordingly
+  status_codes_for_ratelimit_hit: [429]
 schemas:
   accounts:
     $schema: https://json-schema.org/draft-07/schema#

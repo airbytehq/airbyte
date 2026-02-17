@@ -3,20 +3,20 @@
   "version": "0.0.0",
   "private": true,
   "volta": {
-    "node": "22.21.1",
+    "node": "20.20.0",
     "pnpm": "9.4.0"
   },
   "engines": {
-    "node": ">=20 <25"
+    "node": ">=20 <22"
   },
   "scripts": {
     "prepare-registry-cache": "node src/scripts/prepare-registry-cache.js",
-    "gen-embedded-api-docs": "pnpm exec docusaurus clean-api-docs all && pnpm exec docusaurus gen-api-docs all",
-    "prepare-embedded-api": "pnpm run gen-embedded-api-docs && node src/scripts/embedded-api/prepare-embedded-api-spec.js && pnpm prettier --write src/data/embedded_api_spec.json",
+    "gen-agent-engine-api-docs": "pnpm exec docusaurus clean-api-docs all && pnpm exec docusaurus gen-api-docs all",
+    "prepare-agent-engine-api": "node src/scripts/agent-engine-api/prepare-agent-engine-api-spec.js && pnpm prettier --write src/data/agent_engine_api_spec.json && pnpm run gen-agent-engine-api-docs",
     "cleanup-cache": "node src/scripts/cleanup-cache.js",
-    "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-embedded-api",
+    "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-agent-engine-api",
     "postbuild": "pnpm run cleanup-cache",
-    "prestart": "pnpm run prepare-registry-cache && pnpm run prepare-embedded-api",
+    "prestart": "pnpm run prepare-registry-cache && pnpm run prepare-agent-engine-api",
     "docusaurus": "docusaurus",
     "start": "node src/scripts/fetchSchema.js && docusaurus start --port 3005",
     "build": "node src/scripts/fetchSchema.js && docusaurus build",
@@ -127,8 +127,8 @@
     "cssnano-preset-advanced": "6.0.2",
     "dayjs": "^1.11.11",
     "del": "6.1.1",
-    "docusaurus-plugin-openapi-docs": "^4.5.1",
-    "docusaurus-theme-openapi-docs": "^4.5.1",
+    "docusaurus-plugin-openapi-docs": "^4.7.1",
+    "docusaurus-theme-openapi-docs": "^4.7.1",
     "dotenv": "^16.4.5",
     "html-loader": "^4.2.0",
     "js-yaml": "^4.1.0",
@@ -178,6 +178,7 @@
   },
   "devDependencies": {
     "@rsdoctor/cli": "^1.3.4",
+    "baseline-browser-mapping": "^2.9.19",
     "prettier": "3.5.3"
   },
   "packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638"
