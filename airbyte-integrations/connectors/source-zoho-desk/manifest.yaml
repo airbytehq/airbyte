@@ -1133,7 +1133,7 @@ definitions:
           $ref: "#/schemas/dashboard_onhold_tickets"
   base_requester:
     type: HttpRequester
-    url_base: https://desk.zoho.com/api/v1
+    url_base: https://desk.zoho.{{ config['region'] }}/api/v1
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config[\"client_id\"] }}"
@@ -1143,7 +1143,7 @@ definitions:
       expires_in_name: expires_in
       access_token_name: access_token
       refresh_request_body: {}
-      token_refresh_endpoint: "{{ config[\"token_refresh_endpoint\"] }}"
+      token_refresh_endpoint: https://accounts.zoho.{{ config['region'] }}/oauth/v2/token
 
 streams:
   - $ref: "#/definitions/streams/organization"
@@ -1188,36 +1188,44 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
+      - region
       - client_id
       - client_secret
-      - token_refresh_endpoint
       - refresh_token
     properties:
+      region:
+        type: string
+        description: >-
+          The region code for the Zoho Desk API. Use the domain suffix from
+          your Zoho account URL (e.g., 'com' for zoho.com, 'eu' for zoho.eu).
+        enum:
+          - com
+          - eu
+          - in
+          - com.cn
+          - com.au
+          - jp
+          - sa
+          - ca
+        name: region
+        order: 0
+        title: Region
       client_id:
         type: string
-        order: 0
+        order: 1
         title: Client ID
         airbyte_secret: true
       client_secret:
         type: string
-        order: 1
-        title: Client secret
-        airbyte_secret: true
-      token_refresh_endpoint:
-        type: string
-        name: token_refresh_endpoint
         order: 2
-        title: Token Refresh Endpoint
+        title: Client Secret
+        airbyte_secret: true
       refresh_token:
         type: string
         name: refresh_token
         order: 3
         title: OAuth Refresh Token
         airbyte_secret: true
-      include_custom_domain:
-        type: boolean
-        order: 4
-        title: include Custom Domain
     additionalProperties: true
 
 metadata:

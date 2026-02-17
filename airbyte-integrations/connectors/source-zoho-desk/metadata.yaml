@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "desk.zoho.com"
+      - "desk.zoho.*"
   registryOverrides:
     oss:
       enabled: true
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 08164461-a3fd-49d5-8185-b83d51013585
-  dockerImageTag: 0.0.43
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-zoho-desk
   githubIssueLabel: source-zoho-desk
   icon: icon.svg
