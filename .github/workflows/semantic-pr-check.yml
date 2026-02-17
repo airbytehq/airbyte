@@ -46,18 +46,19 @@ jobs:
           # Comparison is case-insensitive, so only lowercase variants are needed.
           # See: https://github.com/commitizen/conventional-commit-types/blob/master/index.json
           types: |
-            fix
-            feat
-            docs
-            ci
-            chore
             build
-            test
-            refactor
+            chore
+            ci
+            deps
+            docs
+            feat
+            fix
             perf
-            style
-            revert
+            refactor
             release
+            revert
+            style
+            test
 
       - name: Check for "do not merge" in PR title
         if: ${{ github.event.pull_request.draft == false }}
