@@ -121,8 +121,8 @@ public class KafkaDestinationConfig {
   }
 
   /**
-   * Configures SSL properties for Kafka producer using PEM-format certificates.
-   * Creates temporary files for certificates and keys as Kafka requires file paths.
+   * Configures SSL properties for Kafka producer using PEM-format certificates. Creates temporary
+   * files for certificates and keys as Kafka requires file paths.
    */
   private void configureSslProperties(final ImmutableMap.Builder<String, Object> builder, final JsonNode protocolConfig) throws IOException {
     LOGGER.info("Configuring SSL certificate authentication");
@@ -170,8 +170,8 @@ public class KafkaDestinationConfig {
   }
 
   /**
-   * Writes content to a temporary file with restricted permissions.
-   * The file is marked for deletion on JVM exit and tracked for cleanup.
+   * Writes content to a temporary file with restricted permissions. The file is marked for deletion
+   * on JVM exit and tracked for cleanup.
    */
   private File writeToTempFile(final String content, final String prefix, final String suffix) throws IOException {
     final Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rw-------");
@@ -196,8 +196,8 @@ public class KafkaDestinationConfig {
   }
 
   /**
-   * Cleans up all temporary SSL files created during configuration.
-   * Called automatically by shutdown hook or can be called manually.
+   * Cleans up all temporary SSL files created during configuration. Called automatically by shutdown
+   * hook or can be called manually.
    */
   private void cleanupTemporaryFiles() {
     LOGGER.debug("Cleaning up {} temporary SSL files", temporarySslFiles.size());
@@ -214,8 +214,8 @@ public class KafkaDestinationConfig {
   }
 
   /**
-   * Closes the producer and cleans up resources.
-   * Should be called when the config is no longer needed.
+   * Closes the producer and cleans up resources. Should be called when the config is no longer
+   * needed.
    */
   public void close() {
     try {
