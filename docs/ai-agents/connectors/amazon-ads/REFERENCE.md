@@ -8,7 +8,7 @@ The Amazon-Ads connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Profiles | [List](#profiles-list), [Get](#profiles-get) |
+| Profiles | [List](#profiles-list), [Get](#profiles-get), [Search](#profiles-search) |
 | Portfolios | [List](#portfolios-list), [Get](#portfolios-get) |
 | Sponsored Product Campaigns | [List](#sponsored-product-campaigns-list), [Get](#sponsored-product-campaigns-get) |
 
@@ -31,7 +31,7 @@ await amazon_ads.profiles.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -84,7 +84,7 @@ await amazon_ads.profiles.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -121,6 +121,74 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Profiles Search
+
+Search and filter profiles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await amazon_ads.profiles.search(
+    query={"filter": {"eq": {"accountInfo": {}}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "profiles",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"accountInfo": {}}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `accountInfo` | `object` |  |
+| `countryCode` | `string` |  |
+| `currencyCode` | `string` |  |
+| `dailyBudget` | `number` |  |
+| `profileId` | `integer` |  |
+| `timezone` | `string` |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].accountInfo` | `object` |  |
+| `data[].countryCode` | `string` |  |
+| `data[].currencyCode` | `string` |  |
+| `data[].dailyBudget` | `number` |  |
+| `data[].profileId` | `integer` |  |
+| `data[].timezone` | `string` |  |
+
+</details>
+
 ## Portfolios
 
 ### Portfolios List
@@ -138,7 +206,7 @@ await amazon_ads.portfolios.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -171,7 +239,7 @@ await amazon_ads.portfolios.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -227,7 +295,7 @@ await amazon_ads.sponsored_product_campaigns.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -263,7 +331,7 @@ await amazon_ads.sponsored_product_campaigns.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{

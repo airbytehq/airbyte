@@ -8,8 +8,8 @@ The Slack connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get) |
-| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update) |
+| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
+| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Search](#channels-search) |
 | Channel Messages | [List](#channel-messages-list) |
 | Threads | [List](#threads-list) |
 | Messages | [Create](#messages-create), [Update](#messages-update) |
@@ -32,7 +32,7 @@ await slack.users.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -102,7 +102,7 @@ await slack.users.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -153,6 +153,108 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Users Search
+
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await slack.users.search(
+    query={"filter": {"eq": {"color": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"color": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `color` | `string` | The color assigned to the user for visual purposes. |
+| `deleted` | `boolean` | Indicates if the user is deleted or not. |
+| `has_2fa` | `boolean` | Flag indicating if the user has two-factor authentication enabled. |
+| `id` | `string` | Unique identifier for the user. |
+| `is_admin` | `boolean` | Flag specifying if the user is an admin or not. |
+| `is_app_user` | `boolean` | Specifies if the user is an app user. |
+| `is_bot` | `boolean` | Indicates if the user is a bot account. |
+| `is_email_confirmed` | `boolean` | Flag indicating if the user's email is confirmed. |
+| `is_forgotten` | `boolean` | Specifies if the user is marked as forgotten. |
+| `is_invited_user` | `boolean` | Indicates if the user is invited or not. |
+| `is_owner` | `boolean` | Flag indicating if the user is an owner. |
+| `is_primary_owner` | `boolean` | Specifies if the user is the primary owner. |
+| `is_restricted` | `boolean` | Flag specifying if the user is restricted. |
+| `is_ultra_restricted` | `boolean` | Indicates if the user has ultra-restricted access. |
+| `name` | `string` | The username of the user. |
+| `profile` | `object` | User's profile information containing detailed details. |
+| `real_name` | `string` | The real name of the user. |
+| `team_id` | `string` | Unique identifier for the team the user belongs to. |
+| `tz` | `string` | Timezone of the user. |
+| `tz_label` | `string` | Label representing the timezone of the user. |
+| `tz_offset` | `integer` | Offset of the user's timezone. |
+| `updated` | `integer` | Timestamp of when the user's information was last updated. |
+| `who_can_share_contact_card` | `string` | Specifies who can share the user's contact card. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].color` | `string` | The color assigned to the user for visual purposes. |
+| `data[].deleted` | `boolean` | Indicates if the user is deleted or not. |
+| `data[].has_2fa` | `boolean` | Flag indicating if the user has two-factor authentication enabled. |
+| `data[].id` | `string` | Unique identifier for the user. |
+| `data[].is_admin` | `boolean` | Flag specifying if the user is an admin or not. |
+| `data[].is_app_user` | `boolean` | Specifies if the user is an app user. |
+| `data[].is_bot` | `boolean` | Indicates if the user is a bot account. |
+| `data[].is_email_confirmed` | `boolean` | Flag indicating if the user's email is confirmed. |
+| `data[].is_forgotten` | `boolean` | Specifies if the user is marked as forgotten. |
+| `data[].is_invited_user` | `boolean` | Indicates if the user is invited or not. |
+| `data[].is_owner` | `boolean` | Flag indicating if the user is an owner. |
+| `data[].is_primary_owner` | `boolean` | Specifies if the user is the primary owner. |
+| `data[].is_restricted` | `boolean` | Flag specifying if the user is restricted. |
+| `data[].is_ultra_restricted` | `boolean` | Indicates if the user has ultra-restricted access. |
+| `data[].name` | `string` | The username of the user. |
+| `data[].profile` | `object` | User's profile information containing detailed details. |
+| `data[].real_name` | `string` | The real name of the user. |
+| `data[].team_id` | `string` | Unique identifier for the team the user belongs to. |
+| `data[].tz` | `string` | Timezone of the user. |
+| `data[].tz_label` | `string` | Label representing the timezone of the user. |
+| `data[].tz_offset` | `integer` | Offset of the user's timezone. |
+| `data[].updated` | `integer` | Timestamp of when the user's information was last updated. |
+| `data[].who_can_share_contact_card` | `string` | Specifies who can share the user's contact card. |
+
+</details>
+
 ## Channels
 
 ### Channels List
@@ -168,7 +270,7 @@ await slack.channels.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -251,7 +353,7 @@ await slack.channels.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -329,7 +431,7 @@ await slack.channels.create(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -409,7 +511,7 @@ await slack.channels.update(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -473,6 +575,124 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Channels Search
+
+Search and filter channels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await slack.channels.search(
+    query={"filter": {"eq": {"context_team_id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channels",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"context_team_id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `context_team_id` | `string` | The unique identifier of the team context in which the channel exists. |
+| `created` | `integer` | The timestamp when the channel was created. |
+| `creator` | `string` | The ID of the user who created the channel. |
+| `id` | `string` | The unique identifier of the channel. |
+| `is_archived` | `boolean` | Indicates if the channel is archived. |
+| `is_channel` | `boolean` | Indicates if the entity is a channel. |
+| `is_ext_shared` | `boolean` | Indicates if the channel is externally shared. |
+| `is_general` | `boolean` | Indicates if the channel is a general channel in the workspace. |
+| `is_group` | `boolean` | Indicates if the channel is a group (private channel) rather than a regular channel. |
+| `is_im` | `boolean` | Indicates if the entity is a direct message (IM) channel. |
+| `is_member` | `boolean` | Indicates if the calling user is a member of the channel. |
+| `is_mpim` | `boolean` | Indicates if the entity is a multiple person direct message (MPIM) channel. |
+| `is_org_shared` | `boolean` | Indicates if the channel is organization-wide shared. |
+| `is_pending_ext_shared` | `boolean` | Indicates if the channel is pending external shared. |
+| `is_private` | `boolean` | Indicates if the channel is a private channel. |
+| `is_read_only` | `boolean` | Indicates if the channel is read-only. |
+| `is_shared` | `boolean` | Indicates if the channel is shared. |
+| `last_read` | `string` | The timestamp of the user's last read message in the channel. |
+| `locale` | `string` | The locale of the channel. |
+| `name` | `string` | The name of the channel. |
+| `name_normalized` | `string` | The normalized name of the channel. |
+| `num_members` | `integer` | The number of members in the channel. |
+| `parent_conversation` | `string` | The parent conversation of the channel. |
+| `pending_connected_team_ids` | `array` | The IDs of teams that are pending to be connected to the channel. |
+| `pending_shared` | `array` | The list of pending shared items of the channel. |
+| `previous_names` | `array` | The previous names of the channel. |
+| `purpose` | `object` | The purpose of the channel. |
+| `shared_team_ids` | `array` | The IDs of teams with which the channel is shared. |
+| `topic` | `object` | The topic of the channel. |
+| `unlinked` | `integer` | Indicates if the channel is unlinked. |
+| `updated` | `integer` | The timestamp when the channel was last updated. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].context_team_id` | `string` | The unique identifier of the team context in which the channel exists. |
+| `data[].created` | `integer` | The timestamp when the channel was created. |
+| `data[].creator` | `string` | The ID of the user who created the channel. |
+| `data[].id` | `string` | The unique identifier of the channel. |
+| `data[].is_archived` | `boolean` | Indicates if the channel is archived. |
+| `data[].is_channel` | `boolean` | Indicates if the entity is a channel. |
+| `data[].is_ext_shared` | `boolean` | Indicates if the channel is externally shared. |
+| `data[].is_general` | `boolean` | Indicates if the channel is a general channel in the workspace. |
+| `data[].is_group` | `boolean` | Indicates if the channel is a group (private channel) rather than a regular channel. |
+| `data[].is_im` | `boolean` | Indicates if the entity is a direct message (IM) channel. |
+| `data[].is_member` | `boolean` | Indicates if the calling user is a member of the channel. |
+| `data[].is_mpim` | `boolean` | Indicates if the entity is a multiple person direct message (MPIM) channel. |
+| `data[].is_org_shared` | `boolean` | Indicates if the channel is organization-wide shared. |
+| `data[].is_pending_ext_shared` | `boolean` | Indicates if the channel is pending external shared. |
+| `data[].is_private` | `boolean` | Indicates if the channel is a private channel. |
+| `data[].is_read_only` | `boolean` | Indicates if the channel is read-only. |
+| `data[].is_shared` | `boolean` | Indicates if the channel is shared. |
+| `data[].last_read` | `string` | The timestamp of the user's last read message in the channel. |
+| `data[].locale` | `string` | The locale of the channel. |
+| `data[].name` | `string` | The name of the channel. |
+| `data[].name_normalized` | `string` | The normalized name of the channel. |
+| `data[].num_members` | `integer` | The number of members in the channel. |
+| `data[].parent_conversation` | `string` | The parent conversation of the channel. |
+| `data[].pending_connected_team_ids` | `array` | The IDs of teams that are pending to be connected to the channel. |
+| `data[].pending_shared` | `array` | The list of pending shared items of the channel. |
+| `data[].previous_names` | `array` | The previous names of the channel. |
+| `data[].purpose` | `object` | The purpose of the channel. |
+| `data[].shared_team_ids` | `array` | The IDs of teams with which the channel is shared. |
+| `data[].topic` | `object` | The topic of the channel. |
+| `data[].unlinked` | `integer` | Indicates if the channel is unlinked. |
+| `data[].updated` | `integer` | The timestamp when the channel was last updated. |
+
+</details>
+
 ## Channel Messages
 
 ### Channel Messages List
@@ -490,7 +710,7 @@ await slack.channel_messages.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -609,7 +829,7 @@ await slack.threads.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -735,7 +955,7 @@ await slack.messages.create(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -802,7 +1022,7 @@ await slack.messages.update(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -864,7 +1084,7 @@ await slack.channel_topics.create(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -946,7 +1166,7 @@ await slack.channel_purposes.create(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1029,7 +1249,7 @@ await slack.reactions.create(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1065,39 +1285,3 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
-
-
-## Replication Configuration
-
-Settings for data replication from Slack
-
-These settings control how data is replicated from the source. Pass them via the `replication_config` parameter when creating a source.
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `start_date` | `str (date-time)` | Yes | UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. |
-| `lookback_window` | `int` | Yes | Number of days to look back when syncing data (0-365). |
-| `join_channels` | `bool` | Yes | Whether to automatically join public channels to sync messages. |
-
-### Example
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/integrations/connectors' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "external_user_id": "{your_external_user_id}",
-  "connector_type": "slack",
-  "credentials": {
-    ...
-  },
-  "replication_config": {
-    "start_date": "<UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.>",
-    "lookback_window": "<Number of days to look back when syncing data (0-365).>",
-    "join_channels": "<Whether to automatically join public channels to sync messages.>"
-  },
-  "name": "My Slack Connector"
-}'
-```

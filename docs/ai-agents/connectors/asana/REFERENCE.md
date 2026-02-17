@@ -8,25 +8,25 @@ The Asana connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Tasks | [List](#tasks-list), [Get](#tasks-get) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [Search](#tasks-search) |
 | Project Tasks | [List](#project-tasks-list) |
 | Workspace Task Search | [List](#workspace-task-search-list) |
-| Projects | [List](#projects-list), [Get](#projects-get) |
+| Projects | [List](#projects-list), [Get](#projects-get), [Search](#projects-search) |
 | Task Projects | [List](#task-projects-list) |
 | Team Projects | [List](#team-projects-list) |
 | Workspace Projects | [List](#workspace-projects-list) |
-| Workspaces | [List](#workspaces-list), [Get](#workspaces-get) |
-| Users | [List](#users-list), [Get](#users-get) |
+| Workspaces | [List](#workspaces-list), [Get](#workspaces-get), [Search](#workspaces-search) |
+| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
 | Workspace Users | [List](#workspace-users-list) |
 | Team Users | [List](#team-users-list) |
-| Teams | [Get](#teams-get) |
+| Teams | [Get](#teams-get), [Search](#teams-search) |
 | Workspace Teams | [List](#workspace-teams-list) |
 | User Teams | [List](#user-teams-list) |
-| Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
+| Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download), [Search](#attachments-search) |
 | Workspace Tags | [List](#workspace-tags-list) |
-| Tags | [Get](#tags-get) |
+| Tags | [Get](#tags-get), [Search](#tags-search) |
 | Project Sections | [List](#project-sections-list) |
-| Sections | [Get](#sections-get) |
+| Sections | [Get](#sections-get), [Search](#sections-search) |
 | Task Subtasks | [List](#task-subtasks-list) |
 | Task Dependencies | [List](#task-dependencies-list) |
 | Task Dependents | [List](#task-dependents-list) |
@@ -46,7 +46,7 @@ await asana.tasks.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -107,7 +107,7 @@ await asana.tasks.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -139,6 +139,134 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Tasks Search
+
+Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await asana.tasks.search(
+    query={"filter": {"eq": {"actual_time_minutes": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"actual_time_minutes": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `actual_time_minutes` | `integer` | The actual time spent on the task in minutes |
+| `approval_status` | `string` |  |
+| `assignee` | `object` |  |
+| `completed` | `boolean` |  |
+| `completed_at` | `string` |  |
+| `completed_by` | `object` |  |
+| `created_at` | `string` |  |
+| `custom_fields` | `array` |  |
+| `dependencies` | `array` |  |
+| `dependents` | `array` |  |
+| `due_at` | `string` |  |
+| `due_on` | `string` |  |
+| `external` | `object` |  |
+| `followers` | `array` |  |
+| `gid` | `string` |  |
+| `hearted` | `boolean` |  |
+| `hearts` | `array` |  |
+| `html_notes` | `string` |  |
+| `is_rendered_as_separator` | `boolean` |  |
+| `liked` | `boolean` |  |
+| `likes` | `array` |  |
+| `memberships` | `array` |  |
+| `modified_at` | `string` |  |
+| `name` | `string` |  |
+| `notes` | `string` |  |
+| `num_hearts` | `integer` |  |
+| `num_likes` | `integer` |  |
+| `num_subtasks` | `integer` |  |
+| `parent` | `object` |  |
+| `permalink_url` | `string` |  |
+| `projects` | `array` |  |
+| `resource_subtype` | `string` |  |
+| `resource_type` | `string` |  |
+| `start_on` | `string` |  |
+| `tags` | `array` |  |
+| `workspace` | `object` |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].actual_time_minutes` | `integer` | The actual time spent on the task in minutes |
+| `data[].approval_status` | `string` |  |
+| `data[].assignee` | `object` |  |
+| `data[].completed` | `boolean` |  |
+| `data[].completed_at` | `string` |  |
+| `data[].completed_by` | `object` |  |
+| `data[].created_at` | `string` |  |
+| `data[].custom_fields` | `array` |  |
+| `data[].dependencies` | `array` |  |
+| `data[].dependents` | `array` |  |
+| `data[].due_at` | `string` |  |
+| `data[].due_on` | `string` |  |
+| `data[].external` | `object` |  |
+| `data[].followers` | `array` |  |
+| `data[].gid` | `string` |  |
+| `data[].hearted` | `boolean` |  |
+| `data[].hearts` | `array` |  |
+| `data[].html_notes` | `string` |  |
+| `data[].is_rendered_as_separator` | `boolean` |  |
+| `data[].liked` | `boolean` |  |
+| `data[].likes` | `array` |  |
+| `data[].memberships` | `array` |  |
+| `data[].modified_at` | `string` |  |
+| `data[].name` | `string` |  |
+| `data[].notes` | `string` |  |
+| `data[].num_hearts` | `integer` |  |
+| `data[].num_likes` | `integer` |  |
+| `data[].num_subtasks` | `integer` |  |
+| `data[].parent` | `object` |  |
+| `data[].permalink_url` | `string` |  |
+| `data[].projects` | `array` |  |
+| `data[].resource_subtype` | `string` |  |
+| `data[].resource_type` | `string` |  |
+| `data[].start_on` | `string` |  |
+| `data[].tags` | `array` |  |
+| `data[].workspace` | `object` |  |
+
+</details>
+
 ## Project Tasks
 
 ### Project Tasks List
@@ -156,7 +284,7 @@ await asana.project_tasks.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -205,7 +333,10 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 ### Workspace Task Search List
 
-Returns tasks that match the specified search criteria. Note - This endpoint requires a premium Asana account. At least one search parameter must be provided.
+Returns tasks that match the specified search criteria. This endpoint requires a premium Asana account.
+
+IMPORTANT: At least one search filter parameter must be provided. Valid filter parameters include: text, completed, assignee.any, projects.any, sections.any, teams.any, followers.any, created_at.after, created_at.before, modified_at.after, modified_at.before, due_on.after, due_on.before, and resource_subtype. The sort_by and sort_ascending parameters are for ordering results and do not count as search filters.
+
 
 #### Python SDK
 
@@ -218,7 +349,7 @@ await asana.workspace_task_search.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -293,7 +424,7 @@ await asana.projects.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -349,7 +480,7 @@ await asana.projects.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -408,6 +539,112 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Projects Search
+
+Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await asana.projects.search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "projects",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` |  |
+| `color` | `string` |  |
+| `created_at` | `string` |  |
+| `current_status` | `object` |  |
+| `custom_field_settings` | `array` |  |
+| `custom_fields` | `array` |  |
+| `default_view` | `string` |  |
+| `due_date` | `string` |  |
+| `due_on` | `string` |  |
+| `followers` | `array` |  |
+| `gid` | `string` |  |
+| `html_notes` | `string` |  |
+| `icon` | `string` |  |
+| `is_template` | `boolean` |  |
+| `members` | `array` |  |
+| `modified_at` | `string` |  |
+| `name` | `string` |  |
+| `notes` | `string` |  |
+| `owner` | `object` |  |
+| `permalink_url` | `string` |  |
+| `public` | `boolean` |  |
+| `resource_type` | `string` |  |
+| `start_on` | `string` |  |
+| `team` | `object` |  |
+| `workspace` | `object` |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].archived` | `boolean` |  |
+| `data[].color` | `string` |  |
+| `data[].created_at` | `string` |  |
+| `data[].current_status` | `object` |  |
+| `data[].custom_field_settings` | `array` |  |
+| `data[].custom_fields` | `array` |  |
+| `data[].default_view` | `string` |  |
+| `data[].due_date` | `string` |  |
+| `data[].due_on` | `string` |  |
+| `data[].followers` | `array` |  |
+| `data[].gid` | `string` |  |
+| `data[].html_notes` | `string` |  |
+| `data[].icon` | `string` |  |
+| `data[].is_template` | `boolean` |  |
+| `data[].members` | `array` |  |
+| `data[].modified_at` | `string` |  |
+| `data[].name` | `string` |  |
+| `data[].notes` | `string` |  |
+| `data[].owner` | `object` |  |
+| `data[].permalink_url` | `string` |  |
+| `data[].public` | `boolean` |  |
+| `data[].resource_type` | `string` |  |
+| `data[].start_on` | `string` |  |
+| `data[].team` | `object` |  |
+| `data[].workspace` | `object` |  |
+
+</details>
+
 ## Task Projects
 
 ### Task Projects List
@@ -425,7 +662,7 @@ await asana.task_projects.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -484,7 +721,7 @@ await asana.team_projects.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -544,7 +781,7 @@ await asana.workspace_projects.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -602,7 +839,7 @@ await asana.workspaces.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -655,7 +892,7 @@ await asana.workspaces.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -691,6 +928,72 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Workspaces Search
+
+Search and filter workspaces records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await asana.workspaces.search(
+    query={"filter": {"eq": {"email_domains": []}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "workspaces",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"email_domains": []}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `email_domains` | `array` |  |
+| `gid` | `string` |  |
+| `is_organization` | `boolean` |  |
+| `name` | `string` |  |
+| `resource_type` | `string` |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].email_domains` | `array` |  |
+| `data[].gid` | `string` |  |
+| `data[].is_organization` | `boolean` |  |
+| `data[].name` | `string` |  |
+| `data[].resource_type` | `string` |  |
+
+</details>
+
 ## Users
 
 ### Users List
@@ -706,7 +1009,7 @@ await asana.users.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -761,7 +1064,7 @@ await asana.users.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -798,6 +1101,74 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Users Search
+
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await asana.users.search(
+    query={"filter": {"eq": {"email": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"email": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `email` | `string` |  |
+| `gid` | `string` |  |
+| `name` | `string` |  |
+| `photo` | `object` |  |
+| `resource_type` | `string` |  |
+| `workspaces` | `array` |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].email` | `string` |  |
+| `data[].gid` | `string` |  |
+| `data[].name` | `string` |  |
+| `data[].photo` | `object` |  |
+| `data[].resource_type` | `string` |  |
+| `data[].workspaces` | `array` |  |
+
+</details>
+
 ## Workspace Users
 
 ### Workspace Users List
@@ -815,7 +1186,7 @@ await asana.workspace_users.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -874,7 +1245,7 @@ await asana.team_users.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -933,7 +1304,7 @@ await asana.teams.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -969,6 +1340,76 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Teams Search
+
+Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await asana.teams.search(
+    query={"filter": {"eq": {"description": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"description": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `description` | `string` |  |
+| `gid` | `string` |  |
+| `html_description` | `string` |  |
+| `name` | `string` |  |
+| `organization` | `object` |  |
+| `permalink_url` | `string` |  |
+| `resource_type` | `string` |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].description` | `string` |  |
+| `data[].gid` | `string` |  |
+| `data[].html_description` | `string` |  |
+| `data[].name` | `string` |  |
+| `data[].organization` | `object` |  |
+| `data[].permalink_url` | `string` |  |
+| `data[].resource_type` | `string` |  |
+
+</details>
+
 ## Workspace Teams
 
 ### Workspace Teams List
@@ -986,7 +1427,7 @@ await asana.workspace_teams.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1046,7 +1487,7 @@ await asana.user_teams.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1107,7 +1548,7 @@ await asana.attachments.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1165,7 +1606,7 @@ await asana.attachments.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1225,7 +1666,7 @@ async for chunk in asana.attachments.download(    attachment_gid="<str>"):# Proc
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1246,6 +1687,86 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
+### Attachments Search
+
+Search and filter attachments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await asana.attachments.search(
+    query={"filter": {"eq": {"connected_to_app": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "attachments",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"connected_to_app": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `connected_to_app` | `boolean` |  |
+| `created_at` | `string` |  |
+| `download_url` | `string` |  |
+| `gid` | `string` |  |
+| `host` | `string` |  |
+| `name` | `string` |  |
+| `parent` | `object` |  |
+| `permanent_url` | `string` |  |
+| `resource_subtype` | `string` |  |
+| `resource_type` | `string` |  |
+| `size` | `integer` |  |
+| `view_url` | `string` |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].connected_to_app` | `boolean` |  |
+| `data[].created_at` | `string` |  |
+| `data[].download_url` | `string` |  |
+| `data[].gid` | `string` |  |
+| `data[].host` | `string` |  |
+| `data[].name` | `string` |  |
+| `data[].parent` | `object` |  |
+| `data[].permanent_url` | `string` |  |
+| `data[].resource_subtype` | `string` |  |
+| `data[].resource_type` | `string` |  |
+| `data[].size` | `integer` |  |
+| `data[].view_url` | `string` |  |
+
+</details>
+
 ## Workspace Tags
 
 ### Workspace Tags List
@@ -1263,7 +1784,7 @@ await asana.workspace_tags.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1322,7 +1843,7 @@ await asana.tags.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1362,6 +1883,76 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Tags Search
+
+Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await asana.tags.search(
+    query={"filter": {"eq": {"color": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"color": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `color` | `string` |  |
+| `followers` | `array` |  |
+| `gid` | `string` |  |
+| `name` | `string` |  |
+| `permalink_url` | `string` |  |
+| `resource_type` | `string` |  |
+| `workspace` | `object` |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].color` | `string` |  |
+| `data[].followers` | `array` |  |
+| `data[].gid` | `string` |  |
+| `data[].name` | `string` |  |
+| `data[].permalink_url` | `string` |  |
+| `data[].resource_type` | `string` |  |
+| `data[].workspace` | `object` |  |
+
+</details>
+
 ## Project Sections
 
 ### Project Sections List
@@ -1379,7 +1970,7 @@ await asana.project_sections.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1438,7 +2029,7 @@ await asana.sections.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1474,6 +2065,72 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 </details>
 
+### Sections Search
+
+Search and filter sections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await asana.sections.search(
+    query={"filter": {"eq": {"created_at": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "sections",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"created_at": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `created_at` | `string` |  |
+| `gid` | `string` |  |
+| `name` | `string` |  |
+| `project` | `object` |  |
+| `resource_type` | `string` |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].created_at` | `string` |  |
+| `data[].gid` | `string` |  |
+| `data[].name` | `string` |  |
+| `data[].project` | `object` |  |
+| `data[].resource_type` | `string` |  |
+
+</details>
+
 ## Task Subtasks
 
 ### Task Subtasks List
@@ -1491,7 +2148,7 @@ await asana.task_subtasks.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1552,7 +2209,7 @@ await asana.task_dependencies.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1613,7 +2270,7 @@ await asana.task_dependents.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{

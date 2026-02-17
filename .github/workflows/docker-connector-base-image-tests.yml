@@ -149,6 +149,7 @@ jobs:
       fail-fast: false
       matrix:
         connector:
+          - source-mssql
           - source-postgres
           - destination-postgres
           - destination-snowflake
