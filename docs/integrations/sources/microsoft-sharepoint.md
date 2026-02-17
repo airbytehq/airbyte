@@ -32,7 +32,7 @@ This page contains the setup guide and reference information for the [Microsoft 
 8. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 9. Add a stream:
    1. Write the **File Type**
-   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate.The supported formats are **CSV**, **Parquet**, **Avro**, **JSONL**, and **Excel**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
@@ -98,7 +98,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 10. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 11. Add a stream:
     1. Write the **File Type**
-    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate.The supported formats are **CSV**, **Parquet**, **Avro**, **JSONL**, and **Excel**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
     3. Give a **Name** to the stream
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
     5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
@@ -158,7 +158,7 @@ As you can probably tell, there are many ways to achieve the same goal with path
 
 ## User Schema
 
-When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
+When using the Avro, Jsonl, CSV, Parquet, or Excel format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
@@ -227,6 +227,12 @@ The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/l
 
 There are currently no options for JSONL parsing.
 
+### Excel
+
+Excel format (.xlsx) is supported for reading spreadsheet data. The connector will automatically infer the schema from the file contents.
+
+- **Schemaless**: When enabled, syncs will not validate or structure records against the stream's schema.
+
 ### Document File Type Format (Experimental)
 
 :::warning
@@ -284,7 +290,13 @@ The Microsoft SharePoint source connector supports the following [sync modes](ht
 
 ### Supported Streams
 
-There is no predefined streams. The streams are based on content of files were added on the Set up page.
+There are no predefined streams. The streams are based on the content of files added on the Set up page. The following file formats are supported:
+ - csv
+ - parquet
+ - avro
+ - jsonl
+ - excel
+ - unstructured document format
 
 ### Performance considerations
 
