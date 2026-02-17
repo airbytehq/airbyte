@@ -736,7 +736,7 @@ class Commits(IncrementalMixin, GithubStream):
     def _validate_branches_to_pull(self):
         """
         Validates and builds the mapping of repositories to branches for pulling commits.
-        
+
         This method handles empty repositories gracefully by:
         1. Detecting repositories that have no default branch (empty repos)
         2. Logging a warning for empty repositories
@@ -762,8 +762,7 @@ class Commits(IncrementalMixin, GithubStream):
             # Skip empty repositories - they have no default branch and no branches to pull commits from
             if repo not in default_branches:
                 self.logger.warning(
-                    f"Repository `{repo}` appears to be empty (no default branch found). "
-                    f"Skipping commits for this repository."
+                    f"Repository `{repo}` appears to be empty (no default branch found). " f"Skipping commits for this repository."
                 )
                 continue
 
@@ -779,9 +778,7 @@ class Commits(IncrementalMixin, GithubStream):
                     repo_branches = [default_branch]
                 else:
                     # This shouldn't happen since we checked above, but just in case
-                    self.logger.warning(
-                        f"Repository `{repo}` has no default branch. Skipping commits for this repository."
-                    )
+                    self.logger.warning(f"Repository `{repo}` has no default branch. Skipping commits for this repository.")
                     continue
             self.branches_to_repos[repo] = repo_branches
 
