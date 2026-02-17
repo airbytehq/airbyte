@@ -18,8 +18,8 @@ Your API key must have read permissions enabled for the modules that correspond 
 | Candidates | `applications`, `application_criteria_evaluations`, `candidates` |
 | Interviews | `interviews`, `interview_stages`, `interview_schedules` |
 | Jobs | `jobs`, `job_postings` |
-| Hiring Process | `archive_reasons`, `candidate_tags`, `custom_fields`, `feedback_form_definitions` |
-| Organization | `departments`, `locations`, `sources`, `users` |
+| Hiring Process | `archive_reasons`, `candidate_tags`, `custom_fields`, `feedback_form_definitions`, `sources` |
+| Organization | `departments`, `locations`, `users` |
 | Offers | `offers` |
 
 :::note
