@@ -14,6 +14,8 @@ from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
@@ -109,7 +111,8 @@ class AdCreativesFromAds(FBMarketingStream):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """Use the same schema as ad_creatives stream"""
-        return super().get_json_schema()
+        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
+        return loader.get_schema("ad_creatives")
 
     def _get_creative_fields(self) -> List[str]:
         """Get the list of creative fields to request, excluding computed fields"""
