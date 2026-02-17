@@ -148,7 +148,7 @@ class AdjustableSliceGenerator(SliceGenerator):
         """
         self._current_range = max(
             int(self._current_range / self.RANGE_REDUCE_FACTOR),
-            self.MIN_RANGE_DAYS  # Enforce minimum to prevent excessive requests
+            self.MIN_RANGE_DAYS,  # Enforce minimum to prevent excessive requests
         )
         start_date = self._prev_start_date
         end_date = min(self._end_date, start_date + (pendulum.Duration(days=self._current_range)))

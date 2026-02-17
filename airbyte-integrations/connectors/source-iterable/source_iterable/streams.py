@@ -14,11 +14,12 @@ from pendulum.datetime import DateTime
 from requests import HTTPError
 from requests.exceptions import (
     ChunkedEncodingError,
-    Timeout,
-    ReadTimeout,
-    ConnectTimeout,
     ConnectionError,
+    ConnectTimeout,
+    ReadTimeout,
+    Timeout,
 )
+
 
 # JSONDecodeError is available in Python 3.5+, fallback to ValueError for older versions
 try:
@@ -255,7 +256,7 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
                 record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
             except (ValueError, KeyError, TypeError) as e:
                 skipped_count += 1
-                cursor_value = record.get(self.cursor_field, 'missing')
+                cursor_value = record.get(self.cursor_field, "missing")
                 self.logger.warning(
                     f"Skipping record on line {line_num} for stream {self.name} due to datetime parsing error: {str(e)}. "
                     f"Record cursor field value: {cursor_value}"
@@ -265,9 +266,7 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
             yield record
 
         if skipped_count > 0:
-            self.logger.warn(
-                f"Skipped {skipped_count} malformed record(s) for stream {self.name} during parsing"
-            )
+            self.logger.warn(f"Skipped {skipped_count} malformed record(s) for stream {self.name} during parsing")
 
     def request_kwargs(
         self,
@@ -400,8 +399,7 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
 
                 total_elapsed = pendulum.now() - slice_start_time
                 self.logger.info(
-                    f"Completed slice: {record_count} records in {total_elapsed.total_seconds():.1f}s "
-                    f"for stream {self.name}"
+                    f"Completed slice: {record_count} records in {total_elapsed.total_seconds():.1f}s " f"for stream {self.name}"
                 )
                 break
             except (ChunkedEncodingError, Timeout, ReadTimeout, ConnectTimeout, ConnectionError) as e:
@@ -694,7 +692,7 @@ class Templates(IterableExportStreamRanged):
                 record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
             except (ValueError, KeyError, TypeError) as e:
                 skipped_count += 1
-                cursor_value = record.get(self.cursor_field, 'missing')
+                cursor_value = record.get(self.cursor_field, "missing")
                 self.logger.warning(
                     f"Skipping record {record_num} for stream {self.name} due to datetime parsing error: {str(e)}. "
                     f"Record cursor field value: {cursor_value}"
@@ -704,6 +702,4 @@ class Templates(IterableExportStreamRanged):
             yield record
 
         if skipped_count > 0:
-            self.logger.warn(
-                f"Skipped {skipped_count} record(s) for stream {self.name} due to datetime parsing errors"
-            )
+            self.logger.warn(f"Skipped {skipped_count} record(s) for stream {self.name} due to datetime parsing errors")

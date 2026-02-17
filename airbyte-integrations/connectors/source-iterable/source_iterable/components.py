@@ -12,6 +12,7 @@ from requests.exceptions import ChunkedEncodingError
 
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 
+
 logger = logging.getLogger("airbyte")
 
 
@@ -50,6 +51,7 @@ class FaultTolerantJsonlExtractor(DpathExtractor):
                     # Apply field_path filtering using parent class logic
                     if self.field_path:
                         import dpath.util
+
                         extracted = dpath.util.get(record, self.field_path, default=[])
                         if isinstance(extracted, list):
                             for item in extracted:
@@ -62,8 +64,7 @@ class FaultTolerantJsonlExtractor(DpathExtractor):
                     skipped_count += 1
                     line_preview = line[:100] if isinstance(line, str) else str(line)[:100]
                     logger.warning(
-                        f"Skipping malformed JSON on line {line_num}: {str(e)[:200]}. "
-                        f"Line content (first 100 chars): {line_preview}"
+                        f"Skipping malformed JSON on line {line_num}: {str(e)[:200]}. " f"Line content (first 100 chars): {line_preview}"
                     )
                     continue
         except ChunkedEncodingError as e:
@@ -86,9 +87,7 @@ class FaultTolerantJsonlExtractor(DpathExtractor):
             # so the next sync will automatically resume from where this one left off
         except Exception as e:
             # Catch any other unexpected errors during decoding
-            logger.error(
-                f"Unexpected error during JSONL extraction at line {line_num}: {type(e).__name__}: {str(e)}"
-            )
+            logger.error(f"Unexpected error during JSONL extraction at line {line_num}: {type(e).__name__}: {str(e)}")
             raise
 
         if skipped_count > 0:
