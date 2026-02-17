@@ -94,7 +94,11 @@ If you are accessing your account through a Google Ads Manager account, you must
 11. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
 </FieldAnchor>
 
-12. Click **Set up source** and wait for the tests to complete.
+<FieldAnchor field="num_workers">
+12. (Optional) Enter the **Number of Concurrent Workers** to use for syncing. The default value is 3. You can set this to a value between 2 and 25. Increasing this value may speed up syncs for accounts with many customers or streams, but higher values consume more of your Google Ads API quota. Most users can leave this at the default.
+</FieldAnchor>
+
+13. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -114,7 +118,8 @@ If you are accessing your account through a Google Ads Manager account, you must
 11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
 12. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, see the section on [Conversion Windows](#note-on-conversion-windows) below, or refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
 13. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
-14. Click **Set up source** and wait for the tests to complete.
+14. (Optional) Enter the **Number of Concurrent Workers** to use for syncing. The default value is 3. You can set this to a value between 2 and 25. Increasing this value may speed up syncs for accounts with many customers or streams, but higher values consume more of your Google Ads API quota. Most users can leave this at the default.
+15. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 <HideInUI>
@@ -339,7 +344,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.6-rc.1 | 2026-02-16 | [72953](https://github.com/airbytehq/airbyte/pull/72953) | Add HTTPAPIBudget and configurable concurrency level |
+| 4.1.6-rc.1 | 2026-02-17 | [72953](https://github.com/airbytehq/airbyte/pull/72953) | Add HTTPAPIBudget and configurable concurrency level |
 | 4.1.5 | 2026-02-16 | [73363](https://github.com/airbytehq/airbyte/pull/73363) | Promoting release candidate 4.1.5-rc.2 to a main version. |
 | 4.1.5-rc.2  | 2026-02-11 | [73269](https://github.com/airbytehq/airbyte/pull/73269) | Fix decoder wiring to prevent OOM when using CustomRetriever |
 | 4.1.5-rc.1  | 2026-02-10 | [72840](https://github.com/airbytehq/airbyte/pull/72840) | Add retry for ChunkedEncodingError in response streaming |
