@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Shared utility functions for Tulip connector.
 
 Ported from the Fivetran connector reference implementation, adapted
@@ -9,6 +11,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Mapping, Optional
+
 
 logger = logging.getLogger("airbyte")
 
@@ -112,9 +115,7 @@ def build_api_url(
     """
     base_url = f"https://{subdomain}.tulip.co/api/{API_VERSION}"
     if workspace_id:
-        return f"{base_url}/w/{workspace_id}/tables/{table_id}/{endpoint_type}".rstrip(
-            "/"
-        )
+        return f"{base_url}/w/{workspace_id}/tables/{table_id}/{endpoint_type}".rstrip("/")
     return f"{base_url}/tables/{table_id}/{endpoint_type}".rstrip("/")
 
 
@@ -186,16 +187,12 @@ def build_allowed_fields(table_metadata: Mapping[str, Any]) -> List[str]:
         allowed_fields.append(field_id)
 
     if excluded_fields:
-        logger.info(
-            f"Excluding {len(excluded_fields)} tableLink fields: {excluded_fields}"
-        )
+        logger.info(f"Excluding {len(excluded_fields)} tableLink fields: {excluded_fields}")
 
     return allowed_fields
 
 
-def transform_record(
-    record: Dict[str, Any], field_mapping: Dict[str, str]
-) -> Dict[str, Any]:
+def transform_record(record: Dict[str, Any], field_mapping: Dict[str, str]) -> Dict[str, Any]:
     """Transform Tulip record field IDs to human-readable column names.
 
     System fields (id, _createdAt, _updatedAt, _sequenceNumber) are

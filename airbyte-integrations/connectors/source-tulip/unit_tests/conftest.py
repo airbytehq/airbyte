@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Shared test fixtures for unit tests."""
 
 import pytest

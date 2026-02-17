@@ -1,10 +1,12 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Unit tests for TulipTableStream."""
 
 import json
-import pytest
 from unittest.mock import MagicMock
 
-from source_tulip.streams import TulipTableStream, DEFAULT_LIMIT
+import pytest
+from source_tulip.streams import DEFAULT_LIMIT, TulipTableStream
 from source_tulip.utils import generate_column_name
 
 from unit_tests.conftest import MOCK_CONFIG, MOCK_TABLE_METADATA
@@ -208,9 +210,7 @@ class TestRequestParams:
 
     def test_with_custom_filters(self):
         config = MOCK_CONFIG.copy()
-        config["custom_filter_json"] = json.dumps(
-            [{"field": "status", "functionType": "equal", "arg": "active"}]
-        )
+        config["custom_filter_json"] = json.dumps([{"field": "status", "functionType": "equal", "arg": "active"}])
         stream = _make_stream(config=config)
         params = stream.request_params()
         filters = json.loads(params["filters"])
@@ -291,9 +291,7 @@ class TestParseResponse:
 
     def test_bootstrap_to_incremental_transition(self):
         # Batch smaller than DEFAULT_LIMIT triggers transition
-        records = [
-            {"id": "1", "_sequenceNumber": 5, "_updatedAt": "2026-01-01T00:00:00Z"}
-        ]
+        records = [{"id": "1", "_sequenceNumber": 5, "_updatedAt": "2026-01-01T00:00:00Z"}]
         resp = _mock_response(records)
         stream = _make_stream()
         assert stream._cursor_mode == "BOOTSTRAP"
@@ -301,10 +299,7 @@ class TestParseResponse:
         assert stream._cursor_mode == "INCREMENTAL"
 
     def test_no_transition_on_full_batch(self):
-        records = [
-            {"id": str(i), "_sequenceNumber": i, "_updatedAt": "2026-01-01T00:00:00Z"}
-            for i in range(DEFAULT_LIMIT)
-        ]
+        records = [{"id": str(i), "_sequenceNumber": i, "_updatedAt": "2026-01-01T00:00:00Z"} for i in range(DEFAULT_LIMIT)]
         resp = _mock_response(records)
         stream = _make_stream()
         list(stream.parse_response(resp))
@@ -368,10 +363,7 @@ class TestParseResponse:
 
     def test_state_returns_frozen_value_mid_sync(self):
         """State getter should return the frozen start-of-sync value during mid-sync."""
-        records = [
-            {"id": str(i), "_sequenceNumber": i, "_updatedAt": "2026-06-01T00:00:00Z"}
-            for i in range(DEFAULT_LIMIT)
-        ]
+        records = [{"id": str(i), "_sequenceNumber": i, "_updatedAt": "2026-06-01T00:00:00Z"} for i in range(DEFAULT_LIMIT)]
         resp = _mock_response(records)
         stream = _make_stream()
         stream._last_updated_at = "2026-01-01T00:00:00Z"
@@ -387,10 +379,7 @@ class TestParseResponse:
         stream._last_updated_at = "2026-01-01T00:00:00Z"
 
         # Simulate processing a full batch that advances _max_seen_updated_at
-        records = [
-            {"id": str(i), "_sequenceNumber": i, "_updatedAt": "2026-06-01T00:00:00Z"}
-            for i in range(DEFAULT_LIMIT)
-        ]
+        records = [{"id": str(i), "_sequenceNumber": i, "_updatedAt": "2026-06-01T00:00:00Z"} for i in range(DEFAULT_LIMIT)]
         resp = _mock_response(records)
         list(stream.parse_response(resp))
 
@@ -399,10 +388,7 @@ class TestParseResponse:
         filters = json.loads(params["filters"])
         updated_filter = next(f for f in filters if f["field"] == "_updatedAt")
         # Should be based on 2026-01-01 minus 60s overlap, NOT 2026-06-01
-        assert (
-            "2025-12-31" in updated_filter["arg"]
-            or "2026-01-01" in updated_filter["arg"]
-        )
+        assert "2025-12-31" in updated_filter["arg"] or "2026-01-01" in updated_filter["arg"]
 
     def test_incremental_cursor_committed_on_last_batch(self):
         """In INCREMENTAL mode, cursor should commit when last batch is processed."""
