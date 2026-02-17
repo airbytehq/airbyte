@@ -44,7 +44,7 @@ data:
           from `boolean` to `string` type. Users syncing the `pixels` stream will need to
           refresh the source schema and reset the stream after upgrading.
           For more information, see our migration documentation for source TikTok Marketing.
-        upgradeDeadline: "2026-03-02"
+        upgradeDeadline: "2026-03-03"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
