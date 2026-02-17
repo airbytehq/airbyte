@@ -140,9 +140,8 @@ class AdCreativesFromAds(FBMarketingStream):
         try:
             creative = FBAdCreative(creative_id)
             creative_data = creative.api_get(fields=self._get_creative_fields())
-            # Use export_all_data() to properly convert nested FB objects to dicts
             return creative_data.export_all_data()
-        except FacebookRequestError as e:
+        except (FacebookRequestError, TypeError) as e:
             logger.warning(f"Failed to fetch creative {creative_id}: {e}")
             return None
 
