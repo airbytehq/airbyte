@@ -178,7 +178,7 @@ jobs:
       - name: Setup Connection Subset Option
         if: github.event_name == 'workflow_dispatch'
         run: |
-          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=sandboxes" >> $GITHUB_ENV
+          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=all" >> $GITHUB_ENV
         # TODO: re-enable when we have resolved the more-than-10-inputs issue in workflow_dispatch.
         # run: |
         #   echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
