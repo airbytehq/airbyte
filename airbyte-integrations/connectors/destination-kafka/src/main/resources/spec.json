@@ -144,9 +144,7 @@
           },
           {
             "title": "SSL",
-            "required": [
-              "security_protocol"
-            ],
+            "required": ["security_protocol"],
             "properties": {
               "security_protocol": {
                 "type": "string",
