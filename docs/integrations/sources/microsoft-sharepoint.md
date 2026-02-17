@@ -291,6 +291,7 @@ The Microsoft SharePoint source connector supports the following [sync modes](ht
 ### Supported Streams
 
 There are no predefined streams. The streams are based on the content of files added on the Set up page. The following file formats are supported:
+
  - csv
  - parquet
  - avro
