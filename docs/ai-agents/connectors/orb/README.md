@@ -1,4 +1,6 @@
-# Orb agent connector
+# Orb
+
+The Orb agent connector is a Python package that equips AI agents to interact with Orb through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Orb is a usage-based billing platform that enables businesses to implement flexible pricing models,
 track customer usage, and manage subscriptions. This connector provides access to customers,
@@ -13,15 +15,15 @@ The Orb connector is optimized to handle prompts like these.
 - List all active subscriptions
 - What plans are available?
 - Show me recent invoices
-- Get details for customer \{customer_id\}
-- What is the status of subscription \{subscription_id\}?
+- Show me details for a recent customer
+- What is the status of a recent subscription?
+- Show me the pricing details for a plan
+- Confirm the Stripe ID linked to a customer
+- What is the payment provider ID for a customer?
 - List all invoices for a specific customer
-- Show me the pricing details for plan \{plan_id\}
 - List all subscriptions for customer XYZ
 - Show all active subscriptions for a specific customer
 - What subscriptions does customer \{external_customer_id\} have?
-- Confirm the Stripe ID linked to this customer
-- What is the payment provider ID for customer \{customer_id\}?
 - Pull all invoices from the last month
 - Show invoices created after \{date\}
 - List all paid invoices for customer \{customer_id\}
@@ -76,12 +78,14 @@ In hosted mode, API credentials are stored securely in Airbyte Cloud. You provid
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_orb import OrbConnector
+from airbyte_agent_orb import OrbConnector, AirbyteAuthConfig
 
 connector = OrbConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -98,15 +102,15 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get) |
-| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get) |
-| Plans | [List](./REFERENCE.md#plans-list), [Get](./REFERENCE.md#plans-get) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get) |
+| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Search](./REFERENCE.md#customers-search) |
+| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [Search](./REFERENCE.md#subscriptions-search) |
+| Plans | [List](./REFERENCE.md#plans-list), [Get](./REFERENCE.md#plans-get), [Search](./REFERENCE.md#plans-search) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Search](./REFERENCE.md#invoices-search) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Orb API docs
 
@@ -114,7 +118,7 @@ See the official [Orb API reference](https://docs.withorb.com/api-reference).
 
 ## Version information
 
-- **Package version:** 0.1.4
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 5b20f488dec0e8f29410823753106603c23a4b65
+- **Package version:** 0.1.33
+- **Connector version:** 0.1.4
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/orb/CHANGELOG.md)

@@ -1,0 +1,12 @@
+.header {
+  flex-grow: 1;
+  margin-bottom: 12px;
+}
+
+.connectorIcon {
+  max-height: 40px;
+  max-width: 40px;
+  float: left;
+  margin-right: 10px;
+  margin-top: 1.5rem;
+}
