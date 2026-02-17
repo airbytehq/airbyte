@@ -1,0 +1,71 @@
+# Semantic PR Title Validation
+#
+# This workflow validates PR titles follow conventional commit format.
+# This is required for consistent release notes and changelog generation.
+#
+# Valid formats:
+# - feat(source-postgres): add new stream
+# - fix(destination-bigquery): handle null values
+# - chore(source-github): update dependencies [2026-01-15]
+# - release(source-stripe): promote 5.15.18
+# - docs: update connector setup guide
+# - ci: update workflow-actions pinned SHA
+#
+# Optional scope: type(scope): description
+# Breaking changes: type!: description or type(scope)!: description
+
+name: Semantic PR Title Validation
+
+on:
+  pull_request:
+    types: [opened, edited, ready_for_review, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-pr-title:
+    name: Validate PR Title
+    # Skip if 'edited' event but the title wasn't changed (e.g., only description was edited)
+    if: >
+      github.event.action != 'edited'
+      || (
+        github.event.changes.title &&
+        github.event.changes.title.from != ''
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check semantic PR title
+        uses: amannn/action-semantic-pull-request@v6
+        if: ${{ github.event.pull_request.draft == false }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Configure which types are allowed (newline-delimited).
+          # Comparison is case-insensitive, so only lowercase variants are needed.
+          # See: https://github.com/commitizen/conventional-commit-types/blob/master/index.json
+          types: |
+            build
+            chore
+            ci
+            deps
+            docs
+            feat
+            fix
+            perf
+            refactor
+            release
+            revert
+            style
+            test
+
+      - name: Check for "do not merge" in PR title
+        if: ${{ github.event.pull_request.draft == false }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = context.payload.pull_request.title.toLowerCase();
+            if (title.includes('do not merge') || title.includes('do-not-merge')) {
+              core.setFailed('PR title contains "do not merge" or "do-not-merge". Please remove this before merging.');
+            }

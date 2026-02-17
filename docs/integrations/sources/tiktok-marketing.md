@@ -146,6 +146,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.0 | 2026-02-16 | [73357](https://github.com/airbytehq/airbyte/pull/73357) | Fix `currency` field type from `boolean` to `string` in pixels events schema |
 | 4.8.14 | 2026-02-12 | | Fix pixel_instant_page_events stream failing on unsupported objective/optimization combinations (error 40002) by ignoring invalid parameter combos |
 | 4.8.13 | 2026-01-20 | [64958](https://github.com/airbytehq/airbyte/pull/64958) | Update dependencies |
 | 4.8.12 | 2026-01-15 | [70241](https://github.com/airbytehq/airbyte/pull/70241) | Fix `pixel_events_statistics` stream: `pixel_ids` format, `date_range` calculation, and add error handler to skip advertisers without pixel permissions |
