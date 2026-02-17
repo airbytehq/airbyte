@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Entry point for the Tulip source connector."""
 
 import sys

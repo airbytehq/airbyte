@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Integration acceptance tests for source-tulip.
 
 These tests run against a live Tulip API. They require valid credentials
@@ -13,6 +15,7 @@ import sys
 from pathlib import Path
 
 import pytest
+
 
 PROJECT_ROOT = Path(__file__).parent.parent
 PYTHON = str(PROJECT_ROOT / ".venv_airbyte" / "bin" / "python")

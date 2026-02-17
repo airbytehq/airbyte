@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Tulip Airbyte Source Connector."""
 
 import logging
@@ -7,9 +9,9 @@ import requests
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-
 from source_tulip.streams import TulipTableStream, create_api_budget
 from source_tulip.utils import build_tables_url
+
 
 logger = logging.getLogger("airbyte")
 
@@ -21,9 +23,7 @@ class SourceTulip(AbstractSource):
     selectable Airbyte stream with dynamic schema discovery.
     """
 
-    def check_connection(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Validate credentials by hitting the table-listing API.
 
         Returns (True, None) on success, (False, error_message) on failure.

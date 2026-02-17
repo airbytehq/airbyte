@@ -1,7 +1,8 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Unit tests for utility functions."""
 
 import pytest
-
 from source_tulip.utils import (
     adjust_cursor_for_overlap,
     build_allowed_fields,
@@ -90,9 +91,7 @@ class TestMapTulipType:
         assert result == {"type": ["null", "string"], "format": "date-time"}
 
     def test_interval(self):
-        assert map_tulip_type_to_json_schema("interval") == {
-            "type": ["null", "integer"]
-        }
+        assert map_tulip_type_to_json_schema("interval") == {"type": ["null", "integer"]}
 
     def test_user(self):
         assert map_tulip_type_to_json_schema("user") == {"type": ["null", "string"]}
@@ -137,10 +136,7 @@ class TestBuildTablesUrl:
         assert build_tables_url("acme", None) == "https://acme.tulip.co/api/v3/tables"
 
     def test_with_workspace(self):
-        assert (
-            build_tables_url("acme", "W456")
-            == "https://acme.tulip.co/api/v3/w/W456/tables"
-        )
+        assert build_tables_url("acme", "W456") == "https://acme.tulip.co/api/v3/w/W456/tables"
 
 
 # --- build_field_mapping ---

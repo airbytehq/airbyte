@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Tulip Table stream implementation.
 
 Each TulipTableStream represents one Tulip table. Schemas are
@@ -12,17 +14,16 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import requests
 
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.core import IncrementalMixin
-from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 from airbyte_cdk.sources.streams.call_rate import (
     HttpAPIBudget,
+    HttpRequestMatcher,
     MovingWindowCallRatePolicy,
     Rate,
-    HttpRequestMatcher,
 )
+from airbyte_cdk.sources.streams.core import IncrementalMixin
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
-
+from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 from source_tulip.utils import (
     SYSTEM_FIELD_NAMES,
     SYSTEM_FIELDS_SCHEMA,
@@ -33,6 +34,7 @@ from source_tulip.utils import (
     map_tulip_type_to_json_schema,
     transform_record,
 )
+
 
 logger = logging.getLogger("airbyte")
 
@@ -50,11 +52,7 @@ def create_api_budget() -> HttpAPIBudget:
     return HttpAPIBudget(
         policies=[
             MovingWindowCallRatePolicy(
-                rates=[
-                    Rate(
-                        limit=TULIP_RATE_LIMIT_PER_SECOND, interval=timedelta(seconds=1)
-                    )
-                ],
+                rates=[Rate(limit=TULIP_RATE_LIMIT_PER_SECOND, interval=timedelta(seconds=1))],
                 matchers=[HttpRequestMatcher()],
             ),
         ],
@@ -66,9 +64,7 @@ class TulipBackoffStrategy(BackoffStrategy):
 
     def backoff_time(
         self,
-        response_or_exception: Optional[
-            Union[requests.Response, requests.RequestException]
-        ],
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
         attempt_count: int,
     ) -> Optional[float]:
         if isinstance(response_or_exception, requests.Response):
@@ -112,9 +108,7 @@ class TulipTableStream(HttpStream, IncrementalMixin):
         self.api_secret = config["api_secret"]
         self.workspace_id = config.get("workspace_id")
         self.sync_from_date = config.get("sync_from_date")
-        self.custom_filters: List[Dict[str, Any]] = json.loads(
-            config.get("custom_filter_json", "[]") or "[]"
-        )
+        self.custom_filters: List[Dict[str, Any]] = json.loads(config.get("custom_filter_json", "[]") or "[]")
 
         self._cursor_value: int = 0
         self._last_updated_at: Optional[str] = None
@@ -267,9 +261,7 @@ class TulipTableStream(HttpStream, IncrementalMixin):
             "limit": DEFAULT_LIMIT,
             "offset": 0,
             "filters": json.dumps(api_filters),
-            "sortOptions": json.dumps(
-                [{"sortBy": "_sequenceNumber", "sortDir": "asc"}]
-            ),
+            "sortOptions": json.dumps([{"sortBy": "_sequenceNumber", "sortDir": "asc"}]),
             "fields": json.dumps(self._get_allowed_fields()),
         }
 
@@ -317,9 +309,7 @@ class TulipTableStream(HttpStream, IncrementalMixin):
 
     # --- Pagination ---
 
-    def next_page_token(
-        self, response: requests.Response
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Cursor-based pagination using _sequenceNumber."""
         records = response.json()
         if not records or len(records) < DEFAULT_LIMIT:
@@ -342,10 +332,7 @@ class TulipTableStream(HttpStream, IncrementalMixin):
 
         if not records:
             if self._cursor_mode == "BOOTSTRAP":
-                logger.info(
-                    f"Stream {self.name}: BOOTSTRAP complete "
-                    f"(empty batch), switching to INCREMENTAL"
-                )
+                logger.info(f"Stream {self.name}: BOOTSTRAP complete " f"(empty batch), switching to INCREMENTAL")
                 self._cursor_mode = "INCREMENTAL"
             self._commit_cursor()
             return
@@ -357,9 +344,7 @@ class TulipTableStream(HttpStream, IncrementalMixin):
                 self._cursor_value = seq
 
             updated_at = record.get("_updatedAt")
-            if updated_at and (
-                not self._max_seen_updated_at or updated_at > self._max_seen_updated_at
-            ):
+            if updated_at and (not self._max_seen_updated_at or updated_at > self._max_seen_updated_at):
                 self._max_seen_updated_at = updated_at
 
             yield transform_record(record, field_mapping)
