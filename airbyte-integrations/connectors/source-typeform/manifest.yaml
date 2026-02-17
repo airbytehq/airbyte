@@ -983,7 +983,8 @@ streams:
         url_base: https://api.typeform.com/
         http_method: GET
         request_parameters:
-          sort: "{{ 'submitted_at,asc' if not next_page_token else '' }}"
+          sort: "{{ '' if next_page_token else ('submitted_at,asc' if config.get('response_type', ['completed']) == ['completed'] else 'landed_at,asc') }}"
+          response_type: "{{ ','.join(config.get('response_type', ['completed'])) }}"
         request_headers: {}
         error_handler:
           type: CompositeErrorHandler
@@ -1089,6 +1090,11 @@ streams:
               - string
           submitted_at:
             description: Timestamp when the response was submitted
+            type:
+              - "null"
+              - string
+          staged_at:
+            description: Timestamp when a partial response was staged (saved but not submitted)
             type:
               - "null"
               - string
@@ -1887,6 +1893,19 @@ spec:
           type: string
         uniqueItems: true
         order: 3
+      response_type:
+        title: Response Type Filter
+        description: By default, the responses stream only returns completed responses. Use this option to select which response types to include. Possible values are 'completed' (fully submitted responses), 'partial' (responses saved but not submitted), and 'started' (respondent landed on the form but did not submit or save). Changing this setting from the default may require resetting the responses stream.
+        type: array
+        items:
+          type: string
+          enum:
+            - completed
+            - partial
+            - started
+        default:
+          - completed
+        order: 4
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
