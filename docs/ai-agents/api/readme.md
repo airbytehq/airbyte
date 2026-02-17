@@ -53,11 +53,11 @@ application tokens expire after 15 minutes. Request a new token when needed.
 Scoped tokens provide customer-level access for some end-user operations. Each scoped token is limited to a single customer, ensuring data isolation between customers. Generate a scoped token using your application token:
 
 ```bash title="Request"
-curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
+curl -X POST https://api.airbyte.ai/api/v1/account/applications/scoped-token \
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_name": "customer_workspace_123"
+    "external_user_id": "customer_workspace_123"
   }'
 ```
 
@@ -68,11 +68,11 @@ If the customer doesn't exist, Airbyte creates it automatically. Scoped tokens e
 Widget tokens are specialized tokens for embedding the [authentication module](/ai-agents/platform/authenticate/build-auth/authentication-module) in your app. They include all features of scoped tokens plus origin validation for CORS protection.
 
 ```bash title="Request"
-curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
+curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_name": "customer_workspace_123",
+    "external_user_id": "customer_workspace_123",
     "allowed_origin": "https://yourapp.com"
   }'
 ```
