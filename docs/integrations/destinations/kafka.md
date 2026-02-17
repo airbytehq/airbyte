@@ -96,7 +96,14 @@ You should now have all the requirements needed to configure Kafka as a destinat
 
 More info about this can be found in the [Kafka producer configs documentation site](https://kafka.apache.org/documentation/#producerconfigs).
 
-_NOTE_: Some configurations for SSL are not available yet.
+#### Authentication
+
+The connector supports the following authentication methods:
+
+- **PLAINTEXT**: No authentication (not recommended for production)
+- **SASL_PLAINTEXT**: SASL authentication over plaintext connection
+- **SASL_SSL**: SASL authentication over SSL/TLS encrypted connection
+- **SSL**: Certificate-based mutual TLS (mTLS) authentication using PEM format certificates
 
 ## Changelog
 
@@ -105,6 +112,7 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------  |
+| 0.2.0   | 2026-02-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add SSL certificate authentication support and upgrade Kafka client to 4.1.0   |
 | 0.1.11  | 2025-03-28 | [56450](https://github.com/airbytehq/airbyte/pull/56450) | Add support for other SASL Mechanisms when SASL_PLAINTEXT protocol is selected |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state  |
 | 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                         |
