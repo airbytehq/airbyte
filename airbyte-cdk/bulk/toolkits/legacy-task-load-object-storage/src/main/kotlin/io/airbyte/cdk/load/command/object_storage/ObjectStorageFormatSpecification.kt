@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.avro.AvroCompressionConfiguration
 import io.airbyte.cdk.load.command.avro.AvroCompressionConfigurationProvider
@@ -37,6 +38,21 @@ interface ObjectStorageFormatSpecificationProvider {
                         (format as CSVFormatSpecification).flattening ==
                             FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING
                 )
+            is ParquetFormatSpecification -> {
+                (format as ParquetFormatSpecification).let {
+                    ParquetFormatConfiguration(
+                        parquetWriterConfiguration =
+                            ParquetWriterConfiguration(
+                                compressionCodecName = it.compressionCodec!!.name,
+                                blockSizeMb = it.blockSizeMb!!,
+                                maxPaddingSizeMb = it.maxPaddingSizeMb!!,
+                                pageSizeKb = it.pageSizeKb!!,
+                                dictionaryPageSizeKb = it.dictionaryPageSizeKb!!,
+                                dictionaryEncoding = it.dictionaryEncoding!!
+                            )
+                    )
+                }
+            }
         }
     }
 }
@@ -49,6 +65,7 @@ interface ObjectStorageFormatSpecificationProvider {
 @JsonSubTypes(
     JsonSubTypes.Type(value = CSVFormatSpecification::class, name = "CSV"),
     JsonSubTypes.Type(value = JsonFormatSpecification::class, name = "JSONL"),
+    JsonSubTypes.Type(value = ParquetFormatSpecification::class, name = "Parquet"),
 )
 sealed class ObjectStorageFormatSpecification(
     @JsonSchemaTitle("Format Type") open val formatType: Type
@@ -56,6 +73,7 @@ sealed class ObjectStorageFormatSpecification(
     enum class Type(@get:JsonValue val typeName: String) {
         CSV("CSV"),
         JSONL("JSONL"),
+        PARQUET("Parquet"),
     }
 }
 
@@ -78,6 +96,70 @@ class JsonFormatSpecification(
     override val flattening: FlatteningSpecificationProvider.Flattening? =
         FlatteningSpecificationProvider.Flattening.NO_FLATTENING
 ) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider
+
+/** Parquet */
+@JsonSchemaTitle("Parquet: Columnar Storage")
+class ParquetFormatSpecification(
+    @JsonSchemaTitle("Format Type")
+    @JsonProperty("format_type")
+    @JsonSchemaInject(json = """{"order":0}""")
+    override val formatType: Type = Type.PARQUET
+) : ObjectStorageFormatSpecification(formatType) {
+    enum class ParquetFormatCompressionCodec {
+        UNCOMPRESSED,
+        SNAPPY,
+        GZIP,
+        LZO,
+        BROTLI,
+        LZ4,
+        ZSTD
+    }
+
+    @JsonSchemaTitle("Compression Codec")
+    @JsonPropertyDescription("The compression algorithm used to compress data pages.")
+    @JsonProperty("compression_codec", defaultValue = "UNCOMPRESSED")
+    @JsonSchemaInject(json = """{"order":1}""")
+    val compressionCodec: ParquetFormatCompressionCodec? =
+        ParquetFormatCompressionCodec.UNCOMPRESSED
+
+    @JsonSchemaTitle("Block Size (Row Group Size) (MB)")
+    @JsonPropertyDescription(
+        "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB."
+    )
+    @JsonProperty("block_size_mb", defaultValue = "128")
+    @JsonSchemaInject(json = """{"order":2}""")
+    val blockSizeMb: Int? = 128
+
+    @JsonSchemaTitle("Max Padding Size (MB)")
+    @JsonPropertyDescription(
+        "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB."
+    )
+    @JsonProperty("max_padding_size_mb", defaultValue = "8")
+    @JsonSchemaInject(json = """{"order":3}""")
+    val maxPaddingSizeMb: Int? = 8
+
+    @JsonSchemaTitle("Page Size (KB)")
+    @JsonPropertyDescription(
+        "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB."
+    )
+    @JsonProperty("page_size_kb", defaultValue = "1024")
+    @JsonSchemaInject(json = """{"order":4}""")
+    val pageSizeKb: Int? = 1024
+
+    @JsonSchemaTitle("Dictionary Page Size (KB)")
+    @JsonPropertyDescription(
+        "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB."
+    )
+    @JsonProperty("dictionary_page_size_kb", defaultValue = "1024")
+    @JsonSchemaInject(json = """{"order":5}""")
+    val dictionaryPageSizeKb: Int? = 1024
+
+    @JsonSchemaTitle("Dictionary Encoding")
+    @JsonPropertyDescription("Default: true.")
+    @JsonProperty("dictionary_encoding")
+    @JsonSchemaInject(json = """{"order":6}""")
+    val dictionaryEncoding: Boolean? = true
+}
 
 interface FlatteningSpecificationProvider {
     @get:JsonSchemaTitle("Flattening")
