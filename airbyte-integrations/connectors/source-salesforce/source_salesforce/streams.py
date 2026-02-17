@@ -845,7 +845,7 @@ class BulkSalesforceStream(SalesforceStream):
             message_repository=self._message_repository,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
-        if isinstance(self, BulkIncrementalSalesforceStream):
+        if isinstance(self, BulkIncrementalSalesforceStream) and self._stream_slicer_cursor:
             stream_kwargs.update({"replication_key": self.replication_key, "start_date": self.start_date})
             new_cls = IncrementalRestSalesforceStream
 
