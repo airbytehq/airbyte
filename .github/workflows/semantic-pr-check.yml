@@ -38,7 +38,6 @@ jobs:
     steps:
       - name: Check semantic PR title
         uses: amannn/action-semantic-pull-request@v6
-        if: ${{ github.event.pull_request.draft == false }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
