@@ -67,6 +67,10 @@ function extractMinimalRegistryData(fullRegistry) {
     documentationUrl_oss: connector.documentationUrl_oss || "",
     // Properties used by remark/connectorList.js (isPypiConnector)
     remoteRegistries_oss: connector.remoteRegistries_oss || {},
+    // Properties used by ConnectorRegistry component (connectorRegistryDecoration.js)
+    connector_type: connector.connector_type || "",
+    documentationUrl_cloud: connector.documentationUrl_cloud || "",
+    name_cloud: connector.name_cloud || "",
     // Properties used by remark/docsHeaderDecoration.js for HeaderDecoration component
     dockerImageTag_oss: connector.dockerImageTag_oss || "",
     github_url: connector.github_url || "",
