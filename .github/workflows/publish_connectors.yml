@@ -474,6 +474,8 @@ jobs:
     needs: [publish_options, publish_connector_registry_entries]
     if: needs.publish_options.outputs.dry-run != 'true'
     uses: ./.github/workflows/generate-connector-registries.yml
+    with:
+      publish-type: ${{ needs.publish_options.outputs.with-semver-suffix == 'preview' && 'prerelease' || 'main' }}
     secrets: inherit
 
   notify-failure-slack-channel:

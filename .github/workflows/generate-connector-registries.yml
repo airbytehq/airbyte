@@ -8,14 +8,21 @@ on:
         required: false
         type: string
   workflow_call:
+    inputs:
+      publish-type:
+        description: "Publish type for concurrency grouping: 'main' for production releases, 'prerelease' for preview builds. Prevents prerelease registry generation from being cancelled by concurrent main publishes."
+        required: false
+        type: string
+        default: main
 
 permissions:
   contents: read
 
 concurrency:
-  # Only allow one active run, and one pending run.
-  # This prevents race conditions between multiple runs of this workflow.
-  group: generate-connector-registry
+  # Separate concurrency groups for main vs prerelease publishes.
+  # This prevents prerelease registry generation from being cancelled
+  # when a main publish triggers concurrently.
+  group: generate-connector-registry-${{ inputs.publish-type || 'main' }}
   # If a new run is triggered while there's already one in-progress,
   # allow the in-progress run to finish.
   cancel-in-progress: false
