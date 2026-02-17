@@ -158,6 +158,7 @@ class SourceFacebookMarketing(AbstractSource):
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
             filter_statuses=[status.value for status in [*ValidAdStatuses]],
+            include_incrementality=config.include_incrementality,
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),
@@ -331,6 +332,7 @@ class SourceFacebookMarketing(AbstractSource):
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
+                include_incrementality=insight.include_incrementality,
             )
             streams.append(stream)
         return streams
