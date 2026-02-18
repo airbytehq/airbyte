@@ -98,7 +98,7 @@ jobs:
           start-message: |
             **AI Triage Starting...**
 
-            Thank you for opening this issue! I'm an AI assistant that will do an initial review and may:
+            Thank you for opening this issue! I'm an AI triage bot that will do an initial review and may:
             - Ask clarifying questions if needed
             - Suggest relevant documentation or workarounds
             - Flag this for internal visibility
