@@ -9,7 +9,7 @@ data:
   dockerRepository: airbyte/source-tulip
   documentationUrl: https://docs.airbyte.com/integrations/sources/tulip
   githubIssueLabel: source-tulip
-  license: MIT
+  license: ELv2
   name: Tulip
   releaseDate: 2026-02-13
   releaseStage: alpha
