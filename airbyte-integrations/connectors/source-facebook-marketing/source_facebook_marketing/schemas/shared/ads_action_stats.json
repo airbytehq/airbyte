@@ -15,6 +15,9 @@
       "1d_view": {
         "type": ["null", "number"]
       },
+      "incrementality": {
+        "type": ["null", "number"]
+      },
       "7d_view": {
         "type": ["null", "number"]
       },
