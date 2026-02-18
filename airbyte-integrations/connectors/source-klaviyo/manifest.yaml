@@ -1102,6 +1102,7 @@ definitions:
                 timeframe:
                   start: "{{ stream_interval.start_time }}"
                   end: "{{ stream_interval.end_time }}"
+                interval: daily
                 conversion_metric_id: "{{ config.get('conversion_metric_id') or None }}"
           error_handler:
             type: CustomErrorHandler
@@ -1276,10 +1277,12 @@ spec:
         type: string
         title: Conversion Metric ID
         description: >-
-          ID of the metric to use for conversion statistics in reporting streams
-          (flow_series_reports and campaign_values_reports). If not provided, a
-          placeholder value will be used. You can find your metric IDs in your
-          Klaviyo account under Analytics > Metrics.
+          Required for flow_series_reports and campaign_values_reports streams.
+          The ID of a Klaviyo metric to track conversions (e.g., "Placed Order",
+          "Active on Site"). Even if you only want basic statistics like opens/clicks,
+          the Klaviyo API requires a conversion metric ID. Find metric IDs in your
+          Klaviyo account under Analytics > Metrics, or use the Metrics API endpoint
+          to list available metrics and their IDs.
         order: 5
         examples:
           - "RESQ6t"
