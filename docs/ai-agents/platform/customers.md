@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Manage customers
 
-In Agent Engine, a **customer** represents an end-user of your service who connects their own data sources. Each customer gets an isolated environment that stores their credentials, connectors, and data separately from other customers. You may occasionally see the terms `workspace` or `external_customer` in the Agent Engine API. These terms are essentially interchangeable. All of them map to a customer. In older documentation or API versions, `customer_name` may appear as `external_user_id`.
+In Agent Engine, a **customer** represents an end-user of your service who connects their own data sources. Each customer gets an isolated environment that stores their credentials, connectors, and data separately from other customers. You may occasionally see the terms `workspace` or `external_customer` in the Agent Engine API. These terms are essentially interchangeable. All of them map to a customer.
 
 The `customer_name` you provide when creating scoped tokens serves as the unique customer identifier within your organization. Use any string that makes sense for your service, like an internal customer ID or company name.
 
