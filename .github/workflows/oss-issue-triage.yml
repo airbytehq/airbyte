@@ -99,12 +99,14 @@ jobs:
           start-message: |
             **AI Triage Starting...**
 
-            Thank you for opening this issue! I'm an AI assistant that will help with initial triage.
-
-            I'll review your issue and:
+            Thank you for opening this issue! I'm an AI assistant that will do an initial review and may:
             - Ask clarifying questions if needed
-            - Provide immediate guidance if available
-            - Escalate to the appropriate team if this requires engineering attention
+            - Suggest relevant documentation or workarounds
+            - Flag this for internal visibility
+
+            **Note:** Community issues are reviewed on a best-effort basis and do not have a guaranteed response time. For additional help:
+            - Join the [Airbyte Community Slack](https://slack.airbyte.com) to connect with other users and community members
+            - If you're an Airbyte Cloud customer, you can [open a support ticket](https://support.airbyte.com) or contact your account representative, referencing this issue URL
 
             [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/oss_issue_triage.md)
           tags: |
@@ -129,30 +131,6 @@ jobs:
           repositories: "airbyte,oncall"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
-
-      - name: Post start comment on discussion
-        id: discussion-comment
-        env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-          DISCUSSION_NODE_ID: ${{ github.event.discussion.node_id }}
-          COMMENT_BODY: |
-            **AI Triage Starting...**
-
-            Thank you for opening this discussion! I'm an AI assistant that will help with initial triage.
-
-            I'll review your discussion and:
-            - Ask clarifying questions if needed
-            - Provide immediate guidance if available
-            - Escalate to the appropriate team if this requires engineering attention
-
-            [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/oss_issue_triage.md)
-        run: |
-          set -euo pipefail
-
-          gh api graphql \
-            -f query='mutation($discussionId: ID!, $body: String!) { addDiscussionComment(input: {discussionId: $discussionId, body: $body}) { comment { id } } }' \
-            -f discussionId="$DISCUSSION_NODE_ID" \
-            -f body="$COMMENT_BODY"
 
       - name: Run AI Triage
         uses: aaronsteers/devin-action@v0.2.0
