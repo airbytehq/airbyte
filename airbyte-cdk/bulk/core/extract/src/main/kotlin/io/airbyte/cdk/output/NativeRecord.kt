@@ -44,7 +44,7 @@ fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): Obj
     return parentNode
 }
 
-interface ProtobufAwareCustomConnectorJsonCodec<T>: JsonCodec<T> {
+interface ProtobufAwareCustomConnectorJsonCodec<T> : JsonCodec<T> {
     fun valueForProtobufEncoding(v: T): Any?
 }
 
@@ -62,7 +62,10 @@ fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
             is CdcOffsetDateTimeCodec ->
                 (value as OffsetDateTime).format(OffsetDateTimeCodec.formatter)
             is ArrayEncoder<*> -> fve.encode().toString()
-            is ProtobufAwareCustomConnectorJsonCodec<*> -> (fve.jsonEncoder as ProtobufAwareCustomConnectorJsonCodec).valueForProtobufEncoding(value)
+            is ProtobufAwareCustomConnectorJsonCodec<*> ->
+                (fve.jsonEncoder as ProtobufAwareCustomConnectorJsonCodec).valueForProtobufEncoding(
+                    value
+                )
             else -> value
         }
     }
