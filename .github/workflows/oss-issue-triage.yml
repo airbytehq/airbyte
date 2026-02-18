@@ -19,10 +19,6 @@ jobs:
   check-permissions:
     name: Check User Permissions
     runs-on: ubuntu-24.04
-    outputs:
-      is-community-member: ${{ steps.check-access.outputs.is-community-member }}
-      author: ${{ steps.gather-metadata.outputs.author }}
-      event-type: ${{ steps.gather-metadata.outputs.event-type }}
     steps:
       - name: Gather event metadata
         id: gather-metadata
@@ -69,6 +65,10 @@ jobs:
             echo "User is a community member - triggering AI triage"
             echo "is-community-member=true" >> $GITHUB_OUTPUT
           fi
+    outputs:
+      is-community-member: ${{ steps.check-access.outputs.is-community-member }}
+      author: ${{ steps.gather-metadata.outputs.author }}
+      event-type: ${{ steps.gather-metadata.outputs.event-type }}
 
   ai-triage-issue:
     name: AI Triage for Community Issue
