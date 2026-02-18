@@ -66,6 +66,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.3.43 | 2026-02-17 | [73522](https://github.com/airbytehq/airbyte/pull/73522) | Update dependencies |
 | 1.3.42 | 2026-02-03 | [72656](https://github.com/airbytehq/airbyte/pull/72656) | Update dependencies |
 | 1.3.41 | 2026-01-20 | [72016](https://github.com/airbytehq/airbyte/pull/72016) | Update dependencies |
 | 1.3.40 | 2026-01-14 | [71471](https://github.com/airbytehq/airbyte/pull/71471) | Update dependencies |
