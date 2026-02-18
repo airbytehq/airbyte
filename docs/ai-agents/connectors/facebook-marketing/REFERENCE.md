@@ -19,6 +19,8 @@ The Facebook-Marketing connector supports the following entities and actions.
 | Custom Conversions | [List](#custom-conversions-list), [Search](#custom-conversions-search) |
 | Images | [List](#images-list), [Search](#images-search) |
 | Videos | [List](#videos-list), [Search](#videos-search) |
+| Pixels | [List](#pixels-list), [Get](#pixels-get) |
+| Pixel Stats | [List](#pixel-stats-list) |
 
 ## Current User
 
@@ -2191,6 +2193,194 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].views` | `integer` | Number of views |
 | `data[].created_time` | `string` | Creation time |
 | `data[].updated_time` | `string` | Last update time |
+
+</details>
+
+## Pixels
+
+### Pixels List
+
+Returns a list of Facebook pixels for the specified ad account, including pixel configuration and event quality data
+
+#### Python SDK
+
+```python
+await facebook_marketing.pixels.list(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pixels",
+    "action": "list",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+| `fields` | `string` | No | Comma-separated list of fields to return |
+| `limit` | `integer` | No | Maximum number of results to return |
+| `after` | `string` | No | Cursor for pagination |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `creation_time` | `string \| null` |  |
+| `creator` | `object \| null` |  |
+| `data_use_setting` | `string \| null` |  |
+| `enable_automatic_matching` | `boolean \| null` |  |
+| `first_party_cookie_status` | `string \| null` |  |
+| `is_created_by_app` | `boolean \| null` |  |
+| `is_crm` | `boolean \| null` |  |
+| `is_unavailable` | `boolean \| null` |  |
+| `last_fired_time` | `string \| null` |  |
+| `owner_ad_account` | `object \| null` |  |
+| `owner_business` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `after` | `string \| null` |  |
+
+</details>
+
+### Pixels Get
+
+Returns details about a single Facebook pixel by ID
+
+#### Python SDK
+
+```python
+await facebook_marketing.pixels.get(
+    pixel_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pixels",
+    "action": "get",
+    "params": {
+        "pixel_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `pixel_id` | `string` | Yes | The Facebook pixel ID |
+| `fields` | `string` | No | Comma-separated list of fields to return |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `creation_time` | `string \| null` |  |
+| `creator` | `object \| null` |  |
+| `data_use_setting` | `string \| null` |  |
+| `enable_automatic_matching` | `boolean \| null` |  |
+| `first_party_cookie_status` | `string \| null` |  |
+| `is_created_by_app` | `boolean \| null` |  |
+| `is_crm` | `boolean \| null` |  |
+| `is_unavailable` | `boolean \| null` |  |
+| `last_fired_time` | `string \| null` |  |
+| `owner_ad_account` | `object \| null` |  |
+| `owner_business` | `object \| null` |  |
+
+
+</details>
+
+## Pixel Stats
+
+### Pixel Stats List
+
+Returns event quality and stats data for a Facebook pixel, including event counts, match quality scores, and deduplication metrics
+
+#### Python SDK
+
+```python
+await facebook_marketing.pixel_stats.list(
+    pixel_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pixel_stats",
+    "action": "list",
+    "params": {
+        "pixel_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `pixel_id` | `string` | Yes | The Facebook pixel ID |
+| `start_time` | `string` | No | Start time for stats period as Unix timestamp |
+| `end_time` | `string` | No | End time for stats period as Unix timestamp |
+| `aggregation` | `"event" \| "device" \| "custom_data_field"` | No | Aggregation level for stats |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array \| null` |  |
+| `event` | `string \| null` |  |
+| `event_source` | `string \| null` |  |
+| `total_count` | `integer \| null` |  |
+| `total_matched_count` | `integer \| null` |  |
+| `total_deduped_count` | `integer \| null` |  |
+| `test_events_count` | `integer \| null` |  |
+
 
 </details>
 
