@@ -96,6 +96,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.17 | 2026-02-18 | [72955](https://github.com/airbytehq/airbyte/pull/72955) | fix(source-intercom): add step size and end_datetime to contacts, conversations, and activity_logs streams (AI-Triage PR) |
 | 0.13.16-rc.1 | 2025-12-11 | [70335](https://github.com/airbytehq/airbyte/pull/70335) | Fix pagination on companies stream |
 | 0.13.15 | 2025-11-25 | [69563](https://github.com/airbytehq/airbyte/pull/69563) | Update dependencies |
 | 0.13.14 | 2025-11-19 | [69306](https://github.com/airbytehq/airbyte/pull/69306) | Update custom IntercomScrollRetriever to not use deprecated stream_state parameter |
