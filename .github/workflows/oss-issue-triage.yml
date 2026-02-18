@@ -130,21 +130,49 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
+      - name: Prepare discussion prompt
+        id: prepare-prompt
+        env:
+          DISC_NUM: ${{ github.event.discussion.number }}
+          DISC_AUTHOR: ${{ github.event.discussion.user.login }}
+          DISC_TITLE: ${{ github.event.discussion.title }}
+          DISC_URL: ${{ github.event.discussion.html_url }}
+          DISC_CAT: ${{ github.event.discussion.category.name }}
+          DISC_BODY: ${{ github.event.discussion.body }}
+          DISC_NODE_ID: ${{ github.event.discussion.node_id }}
+        run: |
+          escape_for_bash() {
+            local text="$1"
+            text="${text//\\/\\\\}"
+            text="${text//\`/\\\`}"
+            text="${text//\$/\\\$}"
+            text="${text//\"/\\\"}"
+            printf '%s' "$text"
+          }
+
+          ESC_TITLE=$(escape_for_bash "$DISC_TITLE")
+          ESC_BODY=$(escape_for_bash "$DISC_BODY")
+
+          {
+            echo "prompt<<PROMPT_EOF"
+            printf 'Discussion #%s by @%s: %s\n' "$DISC_NUM" "$DISC_AUTHOR" "$ESC_TITLE"
+            printf 'Discussion URL: %s\n' "$DISC_URL"
+            printf 'Discussion Category: %s\n' "$DISC_CAT"
+            echo ""
+            echo "Discussion Body:"
+            printf '%s\n' "$ESC_BODY"
+            echo ""
+            printf 'IMPORTANT: This is a GitHub Discussion, not an issue. You should post your response as a comment on the discussion using the GitHub GraphQL API. The discussion node ID is: %s\n' "$DISC_NODE_ID"
+            echo "PROMPT_EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Run AI Triage
         uses: aaronsteers/devin-action@v0.2.0
         with:
           playbook-macro: "!oss_issue_triage"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
-          prompt-text: |
-            Discussion #${{ github.event.discussion.number }} by @${{ github.event.discussion.user.login }}: ${{ github.event.discussion.title }}
-            Discussion URL: ${{ github.event.discussion.html_url }}
-            Discussion Category: ${{ github.event.discussion.category.name }}
-
-            Discussion Body:
-            ${{ github.event.discussion.body }}
-
-            IMPORTANT: This is a GitHub Discussion, not an issue. You should post your response as a comment on the discussion using the GitHub GraphQL API. The discussion node ID is: ${{ github.event.discussion.node_id }}
+          prompt-text: ${{ steps.prepare-prompt.outputs.prompt }}
           tags: |
             oss-issue-triage
             community-discussion
