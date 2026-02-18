@@ -225,6 +225,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.11 | 2026-02-18 | [72893](https://github.com/airbytehq/airbyte/pull/72893) | Enhance branch validation to skip empty repositories in `Commits` stream |
 | 2.1.9 | 2026-01-27 | [72375](https://github.com/airbytehq/airbyte/pull/72375) | Update dependencies |
 | 2.1.8 | 2026-01-20 | [71986](https://github.com/airbytehq/airbyte/pull/71986) | Update dependencies |
 | 2.1.7 | 2026-01-14 | [71400](https://github.com/airbytehq/airbyte/pull/71400) | Update dependencies |
