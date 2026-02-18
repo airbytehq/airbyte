@@ -68,6 +68,7 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 The **Flow Series Reports** and **Campaign Values Reports** streams require a **Conversion Metric ID** to be configured. This is a Klaviyo metric ID (e.g., "Placed Order", "Active on Site") that the API uses to calculate conversion-related statistics.
 
 To find your Conversion Metric ID:
+
 1. Log into your Klaviyo account
 2. Navigate to **Analytics** > **Metrics**
 3. Select the metric you want to track conversions for (e.g., "Placed Order")
