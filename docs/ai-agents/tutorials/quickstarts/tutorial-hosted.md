@@ -123,7 +123,7 @@ from airbyte_agent_github import GithubConnector, AirbyteAuthConfig
 
 connector = GithubConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        external_user_id="<your_external_user_id>",
         airbyte_client_id="<your_client_id>",
         airbyte_client_secret="<your_client_secret>",
     )
