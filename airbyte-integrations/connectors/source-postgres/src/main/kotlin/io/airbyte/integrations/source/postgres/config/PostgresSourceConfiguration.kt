@@ -192,8 +192,6 @@ constructor(
             throw ConfigErrorException("Checkpoint Target Interval should be positive")
         }
 
-        // TODO: only use username from <username>@azure.com when checking privileges
-
         val maxDBConnections: Int? = pojo.maxDbConnections
 
         log.info { "maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}" }
