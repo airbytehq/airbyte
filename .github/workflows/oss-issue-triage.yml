@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   check-permissions:
-    name: Check User Permissions
+    name: Resolve Input Variables
     runs-on: ubuntu-24.04
     steps:
       - name: Gather event metadata
