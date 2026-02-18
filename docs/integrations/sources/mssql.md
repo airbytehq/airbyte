@@ -236,6 +236,7 @@ For further detail, see the
 ```
 
 - If you are using Transaction Replication, the retention has to be changed using the following scripts:
+
 ```text
 
 EXEC sp_changedistributiondb
