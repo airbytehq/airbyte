@@ -65,15 +65,28 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 ### Analytics Streams
 
-The **Flow Series Reports** and **Campaign Values Reports** streams require a **Conversion Metric ID** to be configured. This is a Klaviyo metric ID (e.g., "Placed Order", "Active on Site") that the API uses to calculate conversion-related statistics.
+The **Flow Series Reports** and **Campaign Values Reports** streams provide performance analytics with conversion tracking. These streams can optionally be filtered to specific **Conversion Metric IDs** using the `metric_ids` configuration field.
 
-To find your Conversion Metric ID:
+#### Conversion Metric ID Filtering (Optional)
+
+By default, the connector will automatically fetch reports for **all available metrics** in your account. However, you can optionally specify a comma-separated list of specific metric IDs (e.g., "RESQ6t,ABC123") to limit reporting to only the conversion metrics you need.
+
+**⚠️ Important Rate Limit Considerations:**
+
+These analytics endpoints have very strict Klaviyo API rate limits ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)):
+
+- **Burst:** 1 request per second
+- **Steady:** 2 requests per minute
+- **Daily:** 225 requests per day
+
+**Because the connector makes a separate API request for each metric and each time slice, syncing all metrics can take several hours and may hit daily rate limits.** We strongly recommend specifying only the conversion metrics you need using the `metric_ids` field.
+
+To find your Conversion Metric IDs:
+
 1. Log into your Klaviyo account
 2. Navigate to **Analytics** > **Metrics**
 3. Select the metric you want to track conversions for (e.g., "Placed Order")
-4. Copy the metric ID from the URL or API
-
-**Note:** Even if you only need basic statistics like opens and clicks, the Klaviyo API requires a conversion metric ID for these analytics endpoints. You can use any metric from your account.
+4. Copy the metric ID from the URL, or use the **Metrics** stream to list all available metrics and their IDs
 
 ## Performance considerations
 

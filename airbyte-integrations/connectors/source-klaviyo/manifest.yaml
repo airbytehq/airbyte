@@ -784,6 +784,61 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/metrics"
+    metrics_for_reporting:
+      type: DeclarativeStream
+      name: metrics_for_reporting
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: metrics
+          http_method: GET
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          record_filter:
+            type: RecordFilter
+            condition: "{{ not config.get('metric_ids') or record['id'] in (config.get('metric_ids', '').split(',') | map('trim') | list) }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/metrics"
     lists:
       type: DeclarativeStream
       name: lists
@@ -930,6 +985,7 @@ definitions:
         - flow_id
         - flow_message_id
         - send_channel
+        - conversion_metric_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -972,7 +1028,7 @@ definitions:
                   start: "{{ stream_interval.start_time }}"
                   end: "{{ stream_interval.end_time }}"
                 interval: daily
-                conversion_metric_id: "{{ config.get('conversion_metric_id') or None }}"
+                conversion_metric_id: "{{ stream_partition['metric_id'] }}"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -1011,6 +1067,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: metric_id
+              stream:
+                $ref: "#/definitions/streams/metrics_for_reporting"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
@@ -1040,6 +1104,9 @@ definitions:
             - path:
                 - send_channel
               value: "{{ record.get('groupings', {}).get('send_channel') }}"
+            - path:
+                - conversion_metric_id
+              value: "{{ stream_partition['metric_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1052,6 +1119,7 @@ definitions:
         - campaign_id
         - campaign_message_id
         - send_channel
+        - conversion_metric_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -1102,8 +1170,7 @@ definitions:
                 timeframe:
                   start: "{{ stream_interval.start_time }}"
                   end: "{{ stream_interval.end_time }}"
-                interval: daily
-                conversion_metric_id: "{{ config.get('conversion_metric_id') or None }}"
+                conversion_metric_id: "{{ stream_partition['metric_id'] }}"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -1142,6 +1209,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: metric_id
+              stream:
+                $ref: "#/definitions/streams/metrics_for_reporting"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
@@ -1171,6 +1246,9 @@ definitions:
             - path:
                 - send_channel
               value: "{{ record.get('groupings', {}).get('send_channel') }}"
+            - path:
+                - conversion_metric_id
+              value: "{{ stream_partition['metric_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1273,19 +1351,24 @@ spec:
           - 0
           - 7
         order: 4
-      conversion_metric_id:
+      metric_ids:
         type: string
-        title: Conversion Metric ID
+        title: Report Stream Conversion Metric IDs
         description: >-
-          Required for flow_series_reports and campaign_values_reports streams.
-          The ID of a Klaviyo metric to track conversions (e.g., "Placed Order",
-          "Active on Site"). Even if you only want basic statistics like opens/clicks,
-          the Klaviyo API requires a conversion metric ID. Find metric IDs in your
-          Klaviyo account under Analytics > Metrics, or use the Metrics API endpoint
-          to list available metrics and their IDs.
+          OPTIONAL: Comma-separated list of specific metric IDs to use for
+          flow_series_reports and campaign_values_reports streams. If left empty,
+          the connector will automatically fetch reports for ALL available metrics
+          in your account. Due to Klaviyo's strict API rate limits
+          - see [Klaviyo's API docs](https://developers.klaviyo.com/en/reference/query_campaign_values),
+          syncing all metrics can be extremely slow and may take hours to complete.
+          RECOMMENDED: Specify only the conversion metrics you need (e.g., "RESQ6t"
+          for Placed Order) to avoid slow syncs. Find metric IDs in your Klaviyo
+          account under Analytics > Metrics, or use the metrics stream to list all
+          available metrics and their IDs.
         order: 5
         examples:
           - "RESQ6t"
+          - "RESQ6t,ABC123,XYZ789"
     additionalProperties: true
 
 metadata:
@@ -3691,6 +3774,11 @@ schemas:
           - "null"
           - string
         description: Send channel (e.g., email, sms)
+      conversion_metric_id:
+        type:
+          - "null"
+          - string
+        description: The metric ID used for conversion tracking in this report
       groupings:
         type:
           - "null"
@@ -3900,6 +3988,11 @@ schemas:
           - "null"
           - string
         description: Send channel (e.g., email, sms)
+      conversion_metric_id:
+        type:
+          - "null"
+          - string
+        description: The metric ID used for conversion tracking in this report
       groupings:
         type:
           - "null"
