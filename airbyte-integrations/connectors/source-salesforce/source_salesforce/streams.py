@@ -427,7 +427,7 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         if not self._cursor:
-            yield from [StreamSlice(partition={}, cursor_slice={})]
+            yield from [StreamSlice(partition={}, cursor_slice={"start_date": "", "end_date": ""})]
             return
 
         for stream_slice in self._cursor.stream_slices():
