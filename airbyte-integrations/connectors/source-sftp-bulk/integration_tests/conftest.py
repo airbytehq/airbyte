@@ -14,7 +14,8 @@ from typing import Any, Mapping, Tuple
 import docker
 import paramiko
 import pytest
-from cryptography.hazmat.primitives.asymmetric.ec import SECP256R1, generate_private_key as ec_generate
+from cryptography.hazmat.primitives.asymmetric.ec import SECP256R1
+from cryptography.hazmat.primitives.asymmetric.ec import generate_private_key as ec_generate
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat
 
