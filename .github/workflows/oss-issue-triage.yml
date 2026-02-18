@@ -1,4 +1,4 @@
-name: OSS Issue Triage
+name: OSS Issue and Discussion Triage
 
 # This workflow automatically triggers AI triage for issues and discussions opened by
 # community members (users without write access to the repository). It helps provide
