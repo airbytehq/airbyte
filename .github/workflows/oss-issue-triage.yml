@@ -134,10 +134,9 @@ jobs:
         id: discussion-comment
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          DISCUSSION_NODE_ID: ${{ github.event.discussion.node_id }}
         run: |
           set -euo pipefail
-
-          DISCUSSION_NODE_ID="${{ github.event.discussion.node_id }}"
 
           COMMENT_BODY="**AI Triage Starting...**
 
@@ -150,15 +149,10 @@ jobs:
 
           [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/oss_issue_triage.md)"
 
-          gh api graphql -f query='
-            mutation($discussionId: ID!, $body: String!) {
-              addDiscussionComment(input: {discussionId: $discussionId, body: $body}) {
-                comment {
-                  id
-                }
-              }
-            }
-          ' -f discussionId="$DISCUSSION_NODE_ID" -f body="$COMMENT_BODY"
+          gh api graphql \
+            -f query='mutation($discussionId: ID!, $body: String!) { addDiscussionComment(input: {discussionId: $discussionId, body: $body}) { comment { id } } }' \
+            -f discussionId="$DISCUSSION_NODE_ID" \
+            -f body="$COMMENT_BODY"
 
       - name: Run AI Triage
         uses: aaronsteers/devin-action@v0.2.0
