@@ -21,6 +21,9 @@
       "28d_view": {
         "type": ["null", "number"]
       },
+      "incrementality": {
+        "type": ["null", "number"]
+      },
       "action_destination": {
         "type": ["null", "string"]
       },
