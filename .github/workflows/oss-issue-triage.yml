@@ -74,7 +74,6 @@ jobs:
     name: AI Triage for Community Issue
     needs: check-permissions
     if: needs.check-permissions.outputs.event-type == 'issue'
-    # if: needs.check-permissions.outputs.is-community-member == 'true' && needs.check-permissions.outputs.event-type == 'issue'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
@@ -117,7 +116,6 @@ jobs:
     name: AI Triage for Community Discussion
     needs: check-permissions
     if: needs.check-permissions.outputs.event-type == 'discussion'
-    # if: needs.check-permissions.outputs.is-community-member == 'true' && needs.check-permissions.outputs.event-type == 'discussion'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
