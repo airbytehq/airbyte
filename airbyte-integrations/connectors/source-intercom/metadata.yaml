@@ -29,7 +29,7 @@ data:
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: ELv2
-  maxSecondsBetweenMessages: 21600
+  maxSecondsBetweenMessages: 32400
   name: Intercom
   remoteRegistries:
     pypi:
