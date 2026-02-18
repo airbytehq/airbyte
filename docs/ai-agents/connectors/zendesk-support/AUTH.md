@@ -1,4 +1,4 @@
-# Zendesk-Support authentication and configuration
+# Zendesk-Support authentication
 
 This page documents the authentication and configuration options for the Zendesk-Support agent connector.
 

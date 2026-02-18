@@ -387,7 +387,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -419,31 +419,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.changelog` | `object` | Details of changelogs associated with the issue |
-| `hits[].data.created` | `string` | The timestamp when the issue was created |
-| `hits[].data.editmeta` | `object` | The metadata for the fields on the issue that can be amended |
-| `hits[].data.expand` | `string` | Expand options that include additional issue details in the response |
-| `hits[].data.fields` | `object` | Details of various fields associated with the issue |
-| `hits[].data.fieldsToInclude` | `object` | Specify the fields to include in the fetched issues data |
-| `hits[].data.id` | `string` | The unique ID of the issue |
-| `hits[].data.key` | `string` | The unique key of the issue |
-| `hits[].data.names` | `object` | The ID and name of each field present on the issue |
-| `hits[].data.operations` | `object` | The operations that can be performed on the issue |
-| `hits[].data.projectId` | `string` | The ID of the project containing the issue |
-| `hits[].data.projectKey` | `string` | The key of the project containing the issue |
-| `hits[].data.properties` | `object` | Details of the issue properties identified in the request |
-| `hits[].data.renderedFields` | `object` | The rendered value of each field present on the issue |
-| `hits[].data.schema` | `object` | The schema describing each field present on the issue |
-| `hits[].data.self` | `string` | The URL of the issue details |
-| `hits[].data.transitions` | `array` | The transitions that can be performed on the issue |
-| `hits[].data.updated` | `string` | The timestamp when the issue was last updated |
-| `hits[].data.versionedRepresentations` | `object` | The versions of each field on the issue |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].changelog` | `object` | Details of changelogs associated with the issue |
+| `data[].created` | `string` | The timestamp when the issue was created |
+| `data[].editmeta` | `object` | The metadata for the fields on the issue that can be amended |
+| `data[].expand` | `string` | Expand options that include additional issue details in the response |
+| `data[].fields` | `object` | Details of various fields associated with the issue |
+| `data[].fieldsToInclude` | `object` | Specify the fields to include in the fetched issues data |
+| `data[].id` | `string` | The unique ID of the issue |
+| `data[].key` | `string` | The unique key of the issue |
+| `data[].names` | `object` | The ID and name of each field present on the issue |
+| `data[].operations` | `object` | The operations that can be performed on the issue |
+| `data[].projectId` | `string` | The ID of the project containing the issue |
+| `data[].projectKey` | `string` | The key of the project containing the issue |
+| `data[].properties` | `object` | Details of the issue properties identified in the request |
+| `data[].renderedFields` | `object` | The rendered value of each field present on the issue |
+| `data[].schema` | `object` | The schema describing each field present on the issue |
+| `data[].self` | `string` | The URL of the issue details |
+| `data[].transitions` | `array` | The transitions that can be performed on the issue |
+| `data[].updated` | `string` | The timestamp when the issue was last updated |
+| `data[].versionedRepresentations` | `object` | The versions of each field on the issue |
 
 </details>
 
@@ -634,7 +633,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -681,46 +680,45 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.archived` | `boolean` | Whether the project is archived |
-| `hits[].data.archivedBy` | `object` | The user who archived the project |
-| `hits[].data.archivedDate` | `string` | The date when the project was archived |
-| `hits[].data.assigneeType` | `string` | The default assignee when creating issues for this project |
-| `hits[].data.avatarUrls` | `object` | The URLs of the project's avatars |
-| `hits[].data.components` | `array` | List of the components contained in the project |
-| `hits[].data.deleted` | `boolean` | Whether the project is marked as deleted |
-| `hits[].data.deletedBy` | `object` | The user who marked the project as deleted |
-| `hits[].data.deletedDate` | `string` | The date when the project was marked as deleted |
-| `hits[].data.description` | `string` | A brief description of the project |
-| `hits[].data.email` | `string` | An email address associated with the project |
-| `hits[].data.entityId` | `string` | The unique identifier of the project entity |
-| `hits[].data.expand` | `string` | Expand options that include additional project details in the response |
-| `hits[].data.favourite` | `boolean` | Whether the project is selected as a favorite |
-| `hits[].data.id` | `string` | The ID of the project |
-| `hits[].data.insight` | `object` | Insights about the project |
-| `hits[].data.isPrivate` | `boolean` | Whether the project is private |
-| `hits[].data.issueTypeHierarchy` | `object` | The issue type hierarchy for the project |
-| `hits[].data.issueTypes` | `array` | List of the issue types available in the project |
-| `hits[].data.key` | `string` | The key of the project |
-| `hits[].data.lead` | `object` | The username of the project lead |
-| `hits[].data.name` | `string` | The name of the project |
-| `hits[].data.permissions` | `object` | User permissions on the project |
-| `hits[].data.projectCategory` | `object` | The category the project belongs to |
-| `hits[].data.projectTypeKey` | `string` | The project type of the project |
-| `hits[].data.properties` | `object` | Map of project properties |
-| `hits[].data.retentionTillDate` | `string` | The date when the project is deleted permanently |
-| `hits[].data.roles` | `object` | The name and self URL for each role defined in the project |
-| `hits[].data.self` | `string` | The URL of the project details |
-| `hits[].data.simplified` | `boolean` | Whether the project is simplified |
-| `hits[].data.style` | `string` | The type of the project |
-| `hits[].data.url` | `string` | A link to information about this project |
-| `hits[].data.uuid` | `string` | Unique ID for next-gen projects |
-| `hits[].data.versions` | `array` | The versions defined in the project |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].archived` | `boolean` | Whether the project is archived |
+| `data[].archivedBy` | `object` | The user who archived the project |
+| `data[].archivedDate` | `string` | The date when the project was archived |
+| `data[].assigneeType` | `string` | The default assignee when creating issues for this project |
+| `data[].avatarUrls` | `object` | The URLs of the project's avatars |
+| `data[].components` | `array` | List of the components contained in the project |
+| `data[].deleted` | `boolean` | Whether the project is marked as deleted |
+| `data[].deletedBy` | `object` | The user who marked the project as deleted |
+| `data[].deletedDate` | `string` | The date when the project was marked as deleted |
+| `data[].description` | `string` | A brief description of the project |
+| `data[].email` | `string` | An email address associated with the project |
+| `data[].entityId` | `string` | The unique identifier of the project entity |
+| `data[].expand` | `string` | Expand options that include additional project details in the response |
+| `data[].favourite` | `boolean` | Whether the project is selected as a favorite |
+| `data[].id` | `string` | The ID of the project |
+| `data[].insight` | `object` | Insights about the project |
+| `data[].isPrivate` | `boolean` | Whether the project is private |
+| `data[].issueTypeHierarchy` | `object` | The issue type hierarchy for the project |
+| `data[].issueTypes` | `array` | List of the issue types available in the project |
+| `data[].key` | `string` | The key of the project |
+| `data[].lead` | `object` | The username of the project lead |
+| `data[].name` | `string` | The name of the project |
+| `data[].permissions` | `object` | User permissions on the project |
+| `data[].projectCategory` | `object` | The category the project belongs to |
+| `data[].projectTypeKey` | `string` | The project type of the project |
+| `data[].properties` | `object` | Map of project properties |
+| `data[].retentionTillDate` | `string` | The date when the project is deleted permanently |
+| `data[].roles` | `object` | The name and self URL for each role defined in the project |
+| `data[].self` | `string` | The URL of the project details |
+| `data[].simplified` | `boolean` | Whether the project is simplified |
+| `data[].style` | `string` | The type of the project |
+| `data[].url` | `string` | A link to information about this project |
+| `data[].uuid` | `string` | Unique ID for next-gen projects |
+| `data[].versions` | `array` | The versions defined in the project |
 
 </details>
 
@@ -931,7 +929,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -958,26 +956,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.accountId` | `string` | The account ID of the user, uniquely identifying the user across all Atlassian products |
-| `hits[].data.accountType` | `string` | The user account type (atlassian, app, or customer) |
-| `hits[].data.active` | `boolean` | Indicates whether the user is active |
-| `hits[].data.applicationRoles` | `object` | The application roles assigned to the user |
-| `hits[].data.avatarUrls` | `object` | The avatars of the user |
-| `hits[].data.displayName` | `string` | The display name of the user |
-| `hits[].data.emailAddress` | `string` | The email address of the user |
-| `hits[].data.expand` | `string` | Options to include additional user details in the response |
-| `hits[].data.groups` | `object` | The groups to which the user belongs |
-| `hits[].data.key` | `string` | Deprecated property |
-| `hits[].data.locale` | `string` | The locale of the user |
-| `hits[].data.name` | `string` | Deprecated property |
-| `hits[].data.self` | `string` | The URL of the user |
-| `hits[].data.timeZone` | `string` | The time zone specified in the user's profile |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].accountId` | `string` | The account ID of the user, uniquely identifying the user across all Atlassian products |
+| `data[].accountType` | `string` | The user account type (atlassian, app, or customer) |
+| `data[].active` | `boolean` | Indicates whether the user is active |
+| `data[].applicationRoles` | `object` | The application roles assigned to the user |
+| `data[].avatarUrls` | `object` | The avatars of the user |
+| `data[].displayName` | `string` | The display name of the user |
+| `data[].emailAddress` | `string` | The email address of the user |
+| `data[].expand` | `string` | Options to include additional user details in the response |
+| `data[].groups` | `object` | The groups to which the user belongs |
+| `data[].key` | `string` | Deprecated property |
+| `data[].locale` | `string` | The locale of the user |
+| `data[].name` | `string` | Deprecated property |
+| `data[].self` | `string` | The URL of the user |
+| `data[].timeZone` | `string` | The time zone specified in the user's profile |
 
 </details>
 
@@ -1139,7 +1136,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1163,23 +1160,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.clauseNames` | `array` | The names that can be used to reference the field in an advanced search |
-| `hits[].data.custom` | `boolean` | Whether the field is a custom field |
-| `hits[].data.id` | `string` | The ID of the field |
-| `hits[].data.key` | `string` | The key of the field |
-| `hits[].data.name` | `string` | The name of the field |
-| `hits[].data.navigable` | `boolean` | Whether the field can be used as a column on the issue navigator |
-| `hits[].data.orderable` | `boolean` | Whether the content of the field can be used to order lists |
-| `hits[].data.schema` | `object` | The data schema for the field |
-| `hits[].data.scope` | `object` | The scope of the field |
-| `hits[].data.searchable` | `boolean` | Whether the content of the field can be searched |
-| `hits[].data.untranslatedName` | `string` | The untranslated name of the field |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].clauseNames` | `array` | The names that can be used to reference the field in an advanced search |
+| `data[].custom` | `boolean` | Whether the field is a custom field |
+| `data[].id` | `string` | The ID of the field |
+| `data[].key` | `string` | The key of the field |
+| `data[].name` | `string` | The name of the field |
+| `data[].navigable` | `boolean` | Whether the field can be used as a column on the issue navigator |
+| `data[].orderable` | `boolean` | Whether the content of the field can be used to order lists |
+| `data[].schema` | `object` | The data schema for the field |
+| `data[].scope` | `object` | The scope of the field |
+| `data[].searchable` | `boolean` | Whether the content of the field can be searched |
+| `data[].untranslatedName` | `string` | The untranslated name of the field |
 
 </details>
 
@@ -1565,7 +1561,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1590,24 +1586,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.author` | `object` | The ID of the user who created the comment |
-| `hits[].data.body` | `object` | The comment text in Atlassian Document Format |
-| `hits[].data.created` | `string` | The date and time at which the comment was created |
-| `hits[].data.id` | `string` | The ID of the comment |
-| `hits[].data.issueId` | `string` | Id of the related issue |
-| `hits[].data.jsdPublic` | `boolean` | Whether the comment is visible in Jira Service Desk |
-| `hits[].data.properties` | `array` | A list of comment properties |
-| `hits[].data.renderedBody` | `string` | The rendered version of the comment |
-| `hits[].data.self` | `string` | The URL of the comment |
-| `hits[].data.updateAuthor` | `object` | The ID of the user who updated the comment last |
-| `hits[].data.updated` | `string` | The date and time at which the comment was updated last |
-| `hits[].data.visibility` | `object` | The group or role to which this item is visible |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].author` | `object` | The ID of the user who created the comment |
+| `data[].body` | `object` | The comment text in Atlassian Document Format |
+| `data[].created` | `string` | The date and time at which the comment was created |
+| `data[].id` | `string` | The ID of the comment |
+| `data[].issueId` | `string` | Id of the related issue |
+| `data[].jsdPublic` | `boolean` | Whether the comment is visible in Jira Service Desk |
+| `data[].properties` | `array` | A list of comment properties |
+| `data[].renderedBody` | `string` | The rendered version of the comment |
+| `data[].self` | `string` | The URL of the comment |
+| `data[].updateAuthor` | `object` | The ID of the user who updated the comment last |
+| `data[].updated` | `string` | The date and time at which the comment was updated last |
+| `data[].visibility` | `object` | The group or role to which this item is visible |
 
 </details>
 
@@ -1781,7 +1776,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1807,25 +1802,24 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.author` | `object` | Details of the user who created the worklog |
-| `hits[].data.comment` | `object` | A comment about the worklog in Atlassian Document Format |
-| `hits[].data.created` | `string` | The datetime on which the worklog was created |
-| `hits[].data.id` | `string` | The ID of the worklog record |
-| `hits[].data.issueId` | `string` | The ID of the issue this worklog is for |
-| `hits[].data.properties` | `array` | Details of properties for the worklog |
-| `hits[].data.self` | `string` | The URL of the worklog item |
-| `hits[].data.started` | `string` | The datetime on which the worklog effort was started |
-| `hits[].data.timeSpent` | `string` | The time spent working on the issue as days, hours, or minutes |
-| `hits[].data.timeSpentSeconds` | `integer` | The time in seconds spent working on the issue |
-| `hits[].data.updateAuthor` | `object` | Details of the user who last updated the worklog |
-| `hits[].data.updated` | `string` | The datetime on which the worklog was last updated |
-| `hits[].data.visibility` | `object` | Details about any restrictions in the visibility of the worklog |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].author` | `object` | Details of the user who created the worklog |
+| `data[].comment` | `object` | A comment about the worklog in Atlassian Document Format |
+| `data[].created` | `string` | The datetime on which the worklog was created |
+| `data[].id` | `string` | The ID of the worklog record |
+| `data[].issueId` | `string` | The ID of the issue this worklog is for |
+| `data[].properties` | `array` | Details of properties for the worklog |
+| `data[].self` | `string` | The URL of the worklog item |
+| `data[].started` | `string` | The datetime on which the worklog effort was started |
+| `data[].timeSpent` | `string` | The time spent working on the issue as days, hours, or minutes |
+| `data[].timeSpentSeconds` | `integer` | The time in seconds spent working on the issue |
+| `data[].updateAuthor` | `object` | Details of the user who last updated the worklog |
+| `data[].updated` | `string` | The datetime on which the worklog was last updated |
+| `data[].visibility` | `object` | Details about any restrictions in the visibility of the worklog |
 
 </details>
 

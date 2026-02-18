@@ -1,4 +1,4 @@
-# Greenhouse authentication and configuration
+# Greenhouse authentication
 
 This page documents the authentication and configuration options for the Greenhouse agent connector.
 

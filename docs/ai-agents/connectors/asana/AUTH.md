@@ -1,4 +1,4 @@
-# Asana authentication and configuration
+# Asana authentication
 
 This page documents the authentication and configuration options for the Asana agent connector.
 

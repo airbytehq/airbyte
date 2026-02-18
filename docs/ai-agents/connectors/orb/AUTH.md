@@ -1,4 +1,4 @@
-# Orb authentication and configuration
+# Orb authentication
 
 This page documents the authentication and configuration options for the Orb agent connector.
 

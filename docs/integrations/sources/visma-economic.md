@@ -52,6 +52,7 @@ For more information about the api see the [E-conomic REST API Documentation](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.48 | 2026-02-17 | [73437](https://github.com/airbytehq/airbyte/pull/73437) | Update dependencies |
 | 0.3.47 | 2026-02-03 | [72680](https://github.com/airbytehq/airbyte/pull/72680) | Update dependencies |
 | 0.3.46 | 2026-01-20 | [72060](https://github.com/airbytehq/airbyte/pull/72060) | Update dependencies |
 | 0.3.45 | 2026-01-14 | [71490](https://github.com/airbytehq/airbyte/pull/71490) | Update dependencies |

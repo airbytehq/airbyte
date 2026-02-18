@@ -1,4 +1,4 @@
-# Amazon-Ads authentication and configuration
+# Amazon-Ads authentication
 
 This page documents the authentication and configuration options for the Amazon-Ads agent connector.
 

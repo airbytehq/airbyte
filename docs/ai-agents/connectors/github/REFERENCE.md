@@ -29,6 +29,8 @@ The Github connector supports the following entities and actions.
 | Viewer Repositories | [List](#viewer-repositories-list) |
 | Projects | [List](#projects-list), [Get](#projects-get) |
 | Project Items | [List](#project-items-list) |
+| File Content | [Get](#file-content-get) |
+| Directory Content | [List](#directory-content-list) |
 
 ## Repositories
 
@@ -320,6 +322,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `repo` | `string` | Yes | The name of the repository |
 | `per_page` | `integer` | No | The number of results per page |
 | `after` | `string` | No | Cursor for pagination |
+| `path` | `string` | No | Only include commits that modified this file path (e.g. "airbyte-integrations/connectors/source-stripe/") |
 | `fields` | `array<string>` | No | Optional array of field names to select |
 
 
@@ -1681,6 +1684,101 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `project_number` | `integer` | Yes | The project number |
 | `per_page` | `integer` | No | The number of results per page |
 | `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+## File Content
+
+### File Content Get
+
+Returns the text content of a file at a specific path and git ref (branch, tag, or commit SHA).
+Only works for text files. Binary files will have text as null and isBinary as true.
+
+
+#### Python SDK
+
+```python
+await github.file_content.get(
+    owner="<str>",
+    repo="<str>",
+    path="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "file_content",
+    "action": "get",
+    "params": {
+        "owner": "<str>",
+        "repo": "<str>",
+        "path": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `owner` | `string` | Yes | The account owner of the repository |
+| `repo` | `string` | Yes | The name of the repository |
+| `path` | `string` | Yes | The file path within the repository (e.g. 'README.md' or 'src/main.py') |
+| `ref` | `string` | No | The git ref to read from — branch name, tag, or commit SHA. Defaults to 'HEAD' (default branch) |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+## Directory Content
+
+### Directory Content List
+
+Returns a list of files and subdirectories at a specific path in the repository.
+Each entry includes the name, type (blob for files, tree for directories), and object ID.
+Use this to explore repository structure before reading specific files.
+
+
+#### Python SDK
+
+```python
+await github.directory_content.list(
+    owner="<str>",
+    repo="<str>",
+    path="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "directory_content",
+    "action": "list",
+    "params": {
+        "owner": "<str>",
+        "repo": "<str>",
+        "path": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `owner` | `string` | Yes | The account owner of the repository |
+| `repo` | `string` | Yes | The name of the repository |
+| `path` | `string` | Yes | The directory path within the repository (e.g. 'src' or 'airbyte-integrations/connectors/source-stripe') |
+| `ref` | `string` | No | The git ref — branch name, tag, or commit SHA. Defaults to 'HEAD' (default branch) |
 | `fields` | `array<string>` | No | Optional array of field names to select |
 
 

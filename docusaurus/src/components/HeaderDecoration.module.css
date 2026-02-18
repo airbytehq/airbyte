@@ -9,11 +9,16 @@
   margin-bottom: 12px;
 }
 
+.connectorHeaderActions {
+  margin-top: 1.5rem;
+}
+
 .connectorIcon {
   max-height: 40px;
   max-width: 40px;
   float: left;
   margin-right: 10px;
+  margin-top: 1.5rem;
 }
 
 div.connectorMetadataCallout {
