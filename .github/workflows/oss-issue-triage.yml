@@ -11,7 +11,6 @@ on:
     types: [created]
 
 permissions:
-  contents: read
   issues: write
   discussions: write
 
@@ -76,9 +75,6 @@ jobs:
     if: needs.check-permissions.outputs.event-type == 'issue'
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: get-app-token
@@ -118,9 +114,6 @@ jobs:
     if: needs.check-permissions.outputs.event-type == 'discussion'
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: get-app-token
