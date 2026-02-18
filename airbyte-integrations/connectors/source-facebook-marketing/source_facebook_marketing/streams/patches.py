@@ -11,6 +11,7 @@ from facebook_business.exceptions import FacebookBadObjectError
 
 from source_facebook_marketing.streams.common import retry_pattern
 
+
 logger = logging.getLogger("airbyte")
 
 backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
