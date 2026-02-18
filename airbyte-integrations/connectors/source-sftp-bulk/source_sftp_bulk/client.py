@@ -24,6 +24,16 @@ def handle_backoff(details):
     logger.warning("SSH Connection closed unexpectedly. Waiting {wait} seconds and retrying...".format(**details))
 
 
+def _load_private_key(key_str: str) -> paramiko.PKey:
+    """Load a private key string, auto-detecting type (RSA, Ed25519, ECDSA, DSS)."""
+    for cls in (paramiko.RSAKey, paramiko.Ed25519Key, paramiko.ECDSAKey, paramiko.DSSKey):
+        try:
+            return cls.from_private_key(io.StringIO(key_str))
+        except (paramiko.ssh_exception.SSHException, ValueError):
+            continue
+    raise paramiko.ssh_exception.SSHException("Unable to identify private key type")
+
+
 class SFTPClient:
     _connection: paramiko.SFTPClient = None
 
@@ -41,7 +51,7 @@ class SFTPClient:
         self.password = password
         self.port = int(port) or 22
 
-        self.key = paramiko.RSAKey.from_private_key(io.StringIO(private_key)) if private_key else None
+        self.key = _load_private_key(private_key) if private_key else None
         self.timeout = float(timeout) if timeout else REQUEST_TIMEOUT
 
         self._connect()
