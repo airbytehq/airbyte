@@ -1,4 +1,6 @@
-# Zendesk-Chat agent connector
+# Zendesk-Chat
+
+The Zendesk-Chat agent connector is a Python package that equips AI agents to interact with Zendesk-Chat through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Zendesk Chat enables real-time customer support through live chat. This connector
 provides access to chat transcripts, agents, departments, shortcuts, triggers,
@@ -108,22 +110,22 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Accounts | [Get](./REFERENCE.md#accounts-get) |
-| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get) |
+| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Search](./REFERENCE.md#agents-search) |
 | Agent Timeline | [List](./REFERENCE.md#agent-timeline-list) |
 | Bans | [List](./REFERENCE.md#bans-list), [Get](./REFERENCE.md#bans-get) |
-| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get) |
-| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get) |
+| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get), [Search](./REFERENCE.md#chats-search) |
+| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Search](./REFERENCE.md#departments-search) |
 | Goals | [List](./REFERENCE.md#goals-list), [Get](./REFERENCE.md#goals-get) |
 | Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get) |
 | Routing Settings | [Get](./REFERENCE.md#routing-settings-get) |
-| Shortcuts | [List](./REFERENCE.md#shortcuts-list), [Get](./REFERENCE.md#shortcuts-get) |
+| Shortcuts | [List](./REFERENCE.md#shortcuts-list), [Get](./REFERENCE.md#shortcuts-get), [Search](./REFERENCE.md#shortcuts-search) |
 | Skills | [List](./REFERENCE.md#skills-list), [Get](./REFERENCE.md#skills-get) |
-| Triggers | [List](./REFERENCE.md#triggers-list) |
+| Triggers | [List](./REFERENCE.md#triggers-list), [Search](./REFERENCE.md#triggers-search) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Zendesk-Chat API docs
 
@@ -131,7 +133,7 @@ See the official [Zendesk-Chat API reference](https://developer.zendesk.com/api-
 
 ## Version information
 
-- **Package version:** 0.1.44
-- **Connector version:** 0.1.7
-- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Package version:** 0.1.53
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-chat/CHANGELOG.md)

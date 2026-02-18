@@ -1,4 +1,4 @@
-# Facebook-Marketing authentication and configuration
+# Facebook-Marketing authentication
 
 This page documents the authentication and configuration options for the Facebook-Marketing agent connector.
 

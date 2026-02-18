@@ -1,4 +1,6 @@
-# Github agent connector
+# Github
+
+The Github agent connector is a Python package that equips AI agents to interact with Github through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 GitHub is a platform for version control and collaborative software development
 using Git. This connector provides access to repositories, branches, commits, issues,
@@ -113,11 +115,13 @@ This connector supports the following entities and actions. For more details, se
 | Viewer Repositories | [List](./REFERENCE.md#viewer-repositories-list) |
 | Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
 | Project Items | [List](./REFERENCE.md#project-items-list) |
+| File Content | [Get](./REFERENCE.md#file-content-get) |
+| Directory Content | [List](./REFERENCE.md#directory-content-list) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Github API docs
 
@@ -125,7 +129,7 @@ See the official [Github API reference](https://docs.github.com/en/rest).
 
 ## Version information
 
-- **Package version:** 0.18.95
-- **Connector version:** 0.1.11
-- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Package version:** 0.18.105
+- **Connector version:** 0.1.14
+- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/github/CHANGELOG.md)

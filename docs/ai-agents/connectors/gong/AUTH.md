@@ -1,4 +1,4 @@
-# Gong authentication and configuration
+# Gong authentication
 
 This page documents the authentication and configuration options for the Gong agent connector.
 

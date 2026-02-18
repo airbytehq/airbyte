@@ -124,7 +124,7 @@ class GcsDataLakeStreamLoader(
         // Reconcile identifier fields after BigLake creates the table
         // BigLake reassigns field IDs, so we need to update the schema with the correct field names
         val primaryKeyNames =
-            when (val importType = stream.importType) {
+            when (val importType = stream.tableSchema.importType) {
                 is Dedupe -> {
                     importType.primaryKey.flatten().map { originalName ->
                         if (Meta.COLUMN_NAMES.contains(originalName)) {
