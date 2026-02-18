@@ -256,6 +256,23 @@ class Images(FBMarketingReversedIncrementalStream):
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ad_images(params=params, fields=self.fields(account_id=account_id))
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        except TypeError as e:
+            account_id = stream_slice.get("account_id", "unknown") if stream_slice else "unknown"
+            logger.warning(
+                f"TypeError in FB SDK while reading images for account {account_id}: {e}. "
+                f"This is a known issue in the FB SDK's AdImageMixin._set_data when the API "
+                f"returns data in an unexpected format. Skipping remaining image records."
+            )
+
     def get_record_deleted_status(self, record) -> bool:
         return record[AdImage.Field.status] == AdImage.Status.deleted
 
