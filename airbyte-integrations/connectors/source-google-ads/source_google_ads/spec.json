@@ -131,6 +131,16 @@
         "default": 14,
         "examples": [14],
         "order": 6
+      },
+      "num_workers": {
+        "type": "integer",
+        "title": "Number of Concurrent Workers",
+        "description": "The number of concurrent workers to use for syncing. Increasing this value may speed up syncs for accounts with many customers or streams. Adjust based on your API usage and rate limits.",
+        "minimum": 2,
+        "maximum": 25,
+        "default": 3,
+        "examples": [2, 3, 5],
+        "order": 7
       }
     }
   },
