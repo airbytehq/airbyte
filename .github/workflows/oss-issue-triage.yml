@@ -135,19 +135,19 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           DISCUSSION_NODE_ID: ${{ github.event.discussion.node_id }}
+          COMMENT_BODY: |
+            **AI Triage Starting...**
+
+            Thank you for opening this discussion! I'm an AI assistant that will help with initial triage.
+
+            I'll review your discussion and:
+            - Ask clarifying questions if needed
+            - Provide immediate guidance if available
+            - Escalate to the appropriate team if this requires engineering attention
+
+            [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/oss_issue_triage.md)
         run: |
           set -euo pipefail
-
-          COMMENT_BODY="**AI Triage Starting...**
-
-          Thank you for opening this discussion! I'm an AI assistant that will help with initial triage.
-
-          I'll review your discussion and:
-          - Ask clarifying questions if needed
-          - Provide immediate guidance if available
-          - Escalate to the appropriate team if this requires engineering attention
-
-          [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/oss_issue_triage.md)"
 
           gh api graphql \
             -f query='mutation($discussionId: ID!, $body: String!) { addDiscussionComment(input: {discussionId: $discussionId, body: $body}) { comment { id } } }' \
