@@ -339,6 +339,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.6 | 2026-02-18 | [73636](https://github.com/airbytehq/airbyte/pull/73636) | Promoting release candidate 4.1.6-rc.1 to a main version. |
 | 4.1.6-rc.1 | 2026-02-16 | [72953](https://github.com/airbytehq/airbyte/pull/72953) | Add HTTPAPIBudget and configurable concurrency level |
 | 4.1.5 | 2026-02-16 | [73363](https://github.com/airbytehq/airbyte/pull/73363) | Promoting release candidate 4.1.5-rc.2 to a main version. |
 | 4.1.5-rc.2  | 2026-02-11 | [73269](https://github.com/airbytehq/airbyte/pull/73269) | Fix decoder wiring to prevent OOM when using CustomRetriever |
