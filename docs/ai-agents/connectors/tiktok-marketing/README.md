@@ -2,7 +2,7 @@
 
 The Tiktok-Marketing agent connector is a Python package that equips AI agents to interact with Tiktok-Marketing through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
-Connector for the TikTok Marketing API (Business API v1.3). Provides access to advertiser accounts, campaigns, ad groups, ads, audiences, and creative assets (images and videos). Requires an Access Token from the TikTok for Business platform. All list operations require an advertiser_id parameter to scope results to a specific advertiser account.
+Connector for the TikTok Marketing API (Business API v1.3). Provides access to advertiser accounts, campaigns, ad groups, ads, audiences, creative assets (images and videos), and daily performance reports at the advertiser, campaign, ad group, and ad levels. Requires an Access Token from the TikTok for Business platform. All list operations require an advertiser_id parameter to scope results to a specific advertiser account.
 
 ## Example questions
 
@@ -15,10 +15,16 @@ The Tiktok-Marketing connector is optimized to handle prompts like these.
 - List my custom audiences
 - Show me all creative asset images
 - List creative asset videos
+- Show me daily ad performance reports
+- Get campaign performance metrics for the last 30 days
+- Show me advertiser spend reports
 - Which campaigns have the highest budget?
 - Find all paused ad groups
 - What ads were created last month?
 - Show campaigns with lifetime budget mode
+- Which ads had the most impressions yesterday?
+- What is my total ad spend this month?
+- Which campaigns have the highest click-through rate?
 
 ## Unsupported questions
 
@@ -27,8 +33,6 @@ The Tiktok-Marketing connector isn't currently able to handle prompts like these
 - Create a new campaign
 - Update ad group targeting
 - Delete an ad
-- Show me ad performance reports
-- What is my ad spend this month?
 
 ## Installation
 
@@ -98,6 +102,10 @@ This connector supports the following entities and actions. For more details, se
 | Audiences | [List](./REFERENCE.md#audiences-list), [Search](./REFERENCE.md#audiences-search) |
 | Creative Assets Images | [List](./REFERENCE.md#creative-assets-images-list), [Search](./REFERENCE.md#creative-assets-images-search) |
 | Creative Assets Videos | [List](./REFERENCE.md#creative-assets-videos-list), [Search](./REFERENCE.md#creative-assets-videos-search) |
+| Advertisers Reports Daily | [List](./REFERENCE.md#advertisers-reports-daily-list), [Search](./REFERENCE.md#advertisers-reports-daily-search) |
+| Campaigns Reports Daily | [List](./REFERENCE.md#campaigns-reports-daily-list), [Search](./REFERENCE.md#campaigns-reports-daily-search) |
+| Ad Groups Reports Daily | [List](./REFERENCE.md#ad-groups-reports-daily-list), [Search](./REFERENCE.md#ad-groups-reports-daily-search) |
+| Ads Reports Daily | [List](./REFERENCE.md#ads-reports-daily-list), [Search](./REFERENCE.md#ads-reports-daily-search) |
 
 
 ### Authentication
@@ -110,7 +118,7 @@ See the official [Tiktok-Marketing API reference](https://business-api.tiktok.co
 
 ## Version information
 
-- **Package version:** 0.1.1
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 0186dbc7998aa603d640de92ab4b9a5a6d9310ca
+- **Package version:** 0.1.2
+- **Connector version:** 1.1.1
+- **Generated with Connector SDK commit SHA:** c05713133fc6e6e5c0a9e378e4c04758b174f0bd
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/tiktok-marketing/CHANGELOG.md)
