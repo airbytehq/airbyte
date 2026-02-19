@@ -59,6 +59,7 @@ definitions:
           inject_into: request_parameter
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d"
     BaseSimpleRetriever:
       type: SimpleRetriever
       requester:
@@ -8235,6 +8236,7 @@ streams:
         inject_into: request_parameter
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%d"
     retriever:
       type: SimpleRetriever
       requester:
