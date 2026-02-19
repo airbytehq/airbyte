@@ -52,7 +52,7 @@ Every `execute` call should include either `select_fields` or `exclude_fields` t
 
 Returns only the specified fields:
 
-```
+```text
 select_fields=["id", "title", "started", "primaryUserId"]
 ```
 
@@ -60,7 +60,7 @@ select_fields=["id", "title", "started", "primaryUserId"]
 
 Returns all fields except the specified ones:
 
-```
+```text
 exclude_fields=["content", "interaction", "parties", "context"]
 ```
 
@@ -70,7 +70,7 @@ If you provide both, `select_fields` takes priority and `exclude_fields` is igno
 
 Both `select_fields` and `exclude_fields` support dot notation to target nested fields:
 
-```
+```text
 select_fields=["id", "title", "content.topics", "content.brief"]
 exclude_fields=["content.trackers", "interaction.speakers"]
 ```
