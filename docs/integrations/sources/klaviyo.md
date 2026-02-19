@@ -51,15 +51,42 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 - [Campaigns](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
 - [Campaigns Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
+- [Campaign Values Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_campaign_values) - Analytics stream for campaign performance metrics
 - [Email Templates](https://developers.klaviyo.com/en/v2024-10-15/reference/get_templates)
 - [Events](https://developers.klaviyo.com/en/v2024-10-15/reference/get_events)
 - [Events Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_event)
 - [Flows](https://developers.klaviyo.com/en/v2024-10-15/reference/get_flows)
+- [Flow Series Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_flow_series) - Analytics stream for automated flow performance over time
 - [GlobalExclusions](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
 - [Lists](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
 - [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
 - [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
 - [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
+
+### Analytics Streams
+
+The **Flow Series Reports** and **Campaign Values Reports** streams provide performance analytics with conversion tracking. These streams can optionally be filtered to specific **Conversion Metric IDs** using the `metric_ids` configuration field.
+
+#### Conversion Metric ID Filtering (Optional)
+
+By default, the connector will automatically fetch reports for **all available metrics** in your account. However, you can optionally specify a comma-separated list of specific metric IDs (e.g., "RESQ6t,ABC123") to limit reporting to only the conversion metrics you need.
+
+**⚠️ Important Rate Limit Considerations:**
+
+These analytics endpoints have very strict Klaviyo API rate limits ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)):
+
+- **Burst:** 1 request per second
+- **Steady:** 2 requests per minute
+- **Daily:** 225 requests per day
+
+**Because the connector makes a separate API request for each metric and each time slice, syncing all metrics can take several hours and may hit daily rate limits.** We strongly recommend specifying only the conversion metrics you need using the `metric_ids` field.
+
+To find your Conversion Metric IDs:
+
+1. Log into your Klaviyo account
+2. Navigate to **Analytics** > **Metrics**
+3. Select the metric you want to track conversions for (e.g., "Placed Order")
+4. Copy the metric ID from the URL, or use the **Metrics** stream to list all available metrics and their IDs
 
 ## Performance considerations
 
@@ -96,6 +123,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.17.0  | 2026-02-18 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add new analytics streams: Flow Series Reports and Campaign Values Reports |
 | 2.16.15 | 2026-02-17 | [73540](https://github.com/airbytehq/airbyte/pull/73540) | Update dependencies |
 | 2.16.14 | 2026-02-10 | [73058](https://github.com/airbytehq/airbyte/pull/73058) | Update dependencies |
 | 2.16.13 | 2026-02-03 | [72750](https://github.com/airbytehq/airbyte/pull/72750) | Update dependencies |
