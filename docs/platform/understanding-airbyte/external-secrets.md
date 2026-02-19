@@ -1,4 +1,5 @@
 ---
+products: enterprise-flex
 sidebar_label: External Secret Management
 ---
 
