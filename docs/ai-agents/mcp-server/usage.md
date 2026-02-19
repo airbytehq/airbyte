@@ -11,9 +11,7 @@ This page covers the MCP tools that the server exposes, field selection and excl
 
 When you register the MCP server with your agent, it exposes the following tools. Your agent discovers and calls these tools automatically based on your prompts.
 
-The `execute`, `connector_info`, and `entity_schema` tools are registered with a connector name prefix (for example, `github__execute`, `gong__connector_info`). The `get_instructions` and `current_datetime` tools are shared across all connectors and have no prefix.
-
-### `execute`
+### `<connector>__execute`
 
 The primary tool. Executes an operation on a connector entity.
 
@@ -26,11 +24,11 @@ The primary tool. Executes an operation on a connector entity.
 | `exclude_fields`   | list of strings  | Fields to remove from the response.                                                                                                                                                                                                                 |
 | `skip_truncation` | boolean          | Disable long-text truncation for list/search responses.                                                                                                                                                                                                            |
 
-### `connector_info`
+### `<connector>__connector_info`
 
 Returns connector metadata including the connector name, version, and a list of available entities with their supported actions and parameters. Call this tool to discover what data the connector can access.
 
-### `entity_schema`
+### `<connector>__entity_schema`
 
 Returns the JSON schema for a specific entity. Call this tool to understand the structure of an entity's data before querying it.
 
