@@ -46,6 +46,7 @@ For `list` and `search` results, the MCP server truncates text fields longer tha
 
 If `search` returns no results but you expect data:
 
+- The `search` action only works in [hosted mode](configuration#hosted-mode) with the [context store](../platform/context-store) enabled. In open source mode, use `list` with date boundary parameters instead.
 - The search index may lag behind by hours. Try `list` with date boundary parameters instead.
 - Try `fuzzy` matching instead of `like` in your filter (e.g., `{"fuzzy": {"name": "search term"}}`).
 

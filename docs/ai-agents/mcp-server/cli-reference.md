@@ -16,6 +16,10 @@ uv run adp connectors list-oss
 uv run adp connectors list-oss --pattern salesforce
 ```
 
+| Flag               | Description                          |
+| ------------------ | ------------------------------------ |
+| `--pattern`, `-p`   | Filter connectors by name            |
+
 ## `adp connectors list-cloud`
 
 List connectors configured in your Agent Engine organization. Requires [`adp login`](#adp-login) first.
@@ -25,12 +29,17 @@ uv run adp connectors list-cloud
 uv run adp connectors list-cloud --customer acme
 ```
 
+| Flag               | Description                          |
+| ------------------ | ------------------------------------ |
+| `--customer`        | Filter by customer name              |
+
 ## `adp connectors configure`
 
 Generate a connector configuration file by inspecting the connector's authentication requirements.
 
 ```bash
-uv run adp connectors configure
+uv run adp connectors configure --package airbyte-agent-gong
+uv run adp connectors configure --connector-id <your-connector-id>
 ```
 
 | Flag                   | Description                                          |
@@ -43,21 +52,31 @@ uv run adp connectors configure
 
 ## `adp login`
 
-Save Agent Engine credentials to the global config directory.
+Save Agent Engine credentials to the global config directory. Prompts for your Client ID and Secret, then stores them for subsequent commands.
 
 ```bash
 uv run adp login <organization-id>
 ```
+
+| Flag               | Description                                |
+| ------------------ | ------------------------------------------ |
+| `<organization-id>` | Your Agent Engine organization ID (required) |
 
 ## `adp orgs`
 
 Manage logged-in organizations.
 
 ```bash
-uv run adp orgs list                 # List all logged-in organizations
-uv run adp orgs default              # Show the default organization
-uv run adp orgs default <org-id>     # Set the default organization
+uv run adp orgs list
+uv run adp orgs default
+uv run adp orgs default <org-id>
 ```
+
+| Subcommand           | Description                          |
+| -------------------- | ------------------------------------ |
+| `list`                | List all logged-in organizations     |
+| `default`             | Show the default organization        |
+| `default <org-id>`    | Set the default organization         |
 
 ## `adp mcp serve`
 
@@ -80,9 +99,7 @@ Register the MCP server with an agent. Supported targets: `claude-code`, `claude
 
 ```bash
 uv run adp mcp add-to claude-code connector-gong-package.yaml
-uv run adp mcp add-to claude-desktop connector-gong-package.yaml
-uv run adp mcp add-to cursor connector-gong-package.yaml
-uv run adp mcp add-to codex connector-gong-package.yaml
+uv run adp mcp add-to cursor connector-gong-package.yaml --scope project
 ```
 
 | Flag            | Default | Description                                                    |
@@ -92,16 +109,14 @@ uv run adp mcp add-to codex connector-gong-package.yaml
 
 ## `adp chat`
 
-Chat with connector data using natural language in the terminal. Uses Claude and requires an `ANTHROPIC_API_KEY` environment variable.
+Chat with connector data using natural language in the terminal. Uses Claude and requires an `ANTHROPIC_API_KEY` environment variable. Pass a prompt argument for one-shot mode, or omit it to start an interactive REPL.
 
 ```bash
 uv run adp chat connector-gong-package.yaml "show me 5 recent calls"
 uv run adp chat connector-gong-package.yaml
 ```
 
-| Flag            | Default          | Description                                      |
-| --------------- | ---------------- | ------------------------------------------------ |
-| `--model`, `-m`  | `claude-opus-4-6` | Anthropic model to use                           |
-| `--quiet`, `-q`  | `false`          | Only show the final answer (hide tool calls)     |
-
-Pass a prompt argument for one-shot mode, or omit it to start an interactive REPL.
+| Flag            | Default          | Description                                  |
+| --------------- | ---------------- | -------------------------------------------- |
+| `--model`, `-m`  | `claude-opus-4-6` | Anthropic model to use                       |
+| `--quiet`, `-q`  | `false`          | Only show the final answer (hide tool calls) |
