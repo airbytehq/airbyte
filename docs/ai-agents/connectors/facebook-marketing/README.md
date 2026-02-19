@@ -29,6 +29,9 @@ The Facebook-Marketing connector is optimized to handle prompts like these.
 - List all pixels in my ad account
 - Show me the event stats for my pixel
 - What events is my Facebook pixel tracking?
+- Search the Ad Library for political ads in the US
+- Find ads about climate change in the Ad Library
+- Show me Ad Library ads from a specific Facebook page
 - Show me the ad sets with the highest daily budget
 - Show me the performance insights for the last 7 days
 - Which campaigns have the most spend this month?
@@ -117,6 +120,7 @@ This connector supports the following entities and actions. For more details, se
 | Videos | [List](./REFERENCE.md#videos-list), [Search](./REFERENCE.md#videos-search) |
 | Pixels | [List](./REFERENCE.md#pixels-list), [Get](./REFERENCE.md#pixels-get) |
 | Pixel Stats | [List](./REFERENCE.md#pixel-stats-list) |
+| Ad Library | [List](./REFERENCE.md#ad-library-list) |
 
 
 ### Authentication
@@ -129,7 +133,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.39
-- **Connector version:** 1.0.17
-- **Generated with Connector SDK commit SHA:** c1210d32fc0606ee725ac366eb32f773bd93b4e6
+- **Package version:** 0.1.40
+- **Connector version:** 1.0.18
+- **Generated with Connector SDK commit SHA:** e5834c935a86367f9ab214ad8c824a4cf64f0bed
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)
