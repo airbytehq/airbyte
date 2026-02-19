@@ -10,8 +10,17 @@ module.exports = {
       },
       items: [
         "api-documentation",
-        "terraform-documentation",
-        "terraform-provider-pre-1.0",
+        {
+          type: "category",
+          label: "Terraform Provider",
+          link: {
+            type: "doc",
+            id: "terraform-documentation",
+          },
+          items: [
+            "terraform-provider-pre-1.0",
+          ],
+        },
         {
           type: "category",
           label: "PyAirbyte",
