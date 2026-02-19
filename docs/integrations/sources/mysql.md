@@ -180,7 +180,8 @@ to edit some configurations to improve performance and accommodate any server li
 
 This configuration controls how many simultaneous database queries the MySQL source can execute at once.
 
-#### Default behavior 
+#### Default behavior
+
 If left empty, Airbyte automatically optimizes the number based on your setup.
 
 ### Why it matters
