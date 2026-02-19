@@ -1,4 +1,6 @@
-# Zendesk-Support agent connector
+# Zendesk-Support
+
+The Zendesk-Support agent connector is a Python package that equips AI agents to interact with Zendesk-Support through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Zendesk Support is a customer service platform that helps businesses manage support
 tickets, customer interactions, and help center content. This connector provides
@@ -92,33 +94,33 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
-| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get) |
-| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get) |
-| Ticket Comments | [List](./REFERENCE.md#ticket-comments-list) |
+| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Search](./REFERENCE.md#tickets-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
+| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Search](./REFERENCE.md#organizations-search) |
+| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Search](./REFERENCE.md#groups-search) |
+| Ticket Comments | [List](./REFERENCE.md#ticket-comments-list), [Search](./REFERENCE.md#ticket-comments-search) |
 | Attachments | [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
-| Ticket Audits | [List](./REFERENCE.md#ticket-audits-list), [List](./REFERENCE.md#ticket-audits-list) |
-| Ticket Metrics | [List](./REFERENCE.md#ticket-metrics-list) |
-| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Get](./REFERENCE.md#ticket-fields-get) |
-| Brands | [List](./REFERENCE.md#brands-list), [Get](./REFERENCE.md#brands-get) |
+| Ticket Audits | [List](./REFERENCE.md#ticket-audits-list), [List](./REFERENCE.md#ticket-audits-list), [Search](./REFERENCE.md#ticket-audits-search) |
+| Ticket Metrics | [List](./REFERENCE.md#ticket-metrics-list), [Search](./REFERENCE.md#ticket-metrics-search) |
+| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Get](./REFERENCE.md#ticket-fields-get), [Search](./REFERENCE.md#ticket-fields-search) |
+| Brands | [List](./REFERENCE.md#brands-list), [Get](./REFERENCE.md#brands-get), [Search](./REFERENCE.md#brands-search) |
 | Views | [List](./REFERENCE.md#views-list), [Get](./REFERENCE.md#views-get) |
 | Macros | [List](./REFERENCE.md#macros-list), [Get](./REFERENCE.md#macros-get) |
 | Triggers | [List](./REFERENCE.md#triggers-list), [Get](./REFERENCE.md#triggers-get) |
 | Automations | [List](./REFERENCE.md#automations-list), [Get](./REFERENCE.md#automations-get) |
-| Tags | [List](./REFERENCE.md#tags-list) |
-| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Get](./REFERENCE.md#satisfaction-ratings-get) |
+| Tags | [List](./REFERENCE.md#tags-list), [Search](./REFERENCE.md#tags-search) |
+| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Get](./REFERENCE.md#satisfaction-ratings-get), [Search](./REFERENCE.md#satisfaction-ratings-search) |
 | Group Memberships | [List](./REFERENCE.md#group-memberships-list) |
 | Organization Memberships | [List](./REFERENCE.md#organization-memberships-list) |
 | Sla Policies | [List](./REFERENCE.md#sla-policies-list), [Get](./REFERENCE.md#sla-policies-get) |
-| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Get](./REFERENCE.md#ticket-forms-get) |
+| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Get](./REFERENCE.md#ticket-forms-get), [Search](./REFERENCE.md#ticket-forms-search) |
 | Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get) |
 | Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Zendesk-Support API docs
 
@@ -126,7 +128,7 @@ See the official [Zendesk-Support API reference](https://developer.zendesk.com/a
 
 ## Version information
 
-- **Package version:** 0.18.96
-- **Connector version:** 0.1.13
-- **Generated with Connector SDK commit SHA:** b36beaead6fb6c49f155ba346a49e61388c16278
+- **Package version:** 0.18.106
+- **Connector version:** 0.1.15
+- **Generated with Connector SDK commit SHA:** 0186dbc7998aa603d640de92ab4b9a5a6d9310ca
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-support/CHANGELOG.md)

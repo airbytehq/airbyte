@@ -1,4 +1,6 @@
-# Asana agent connector
+# Asana
+
+The Asana agent connector is a Python package that equips AI agents to interact with Asana through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Asana is a work management platform that helps teams organize, track, and manage
 projects and tasks. This connector provides access to tasks, projects, workspaces,
@@ -92,33 +94,33 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Search](./REFERENCE.md#tasks-search) |
 | Project Tasks | [List](./REFERENCE.md#project-tasks-list) |
 | Workspace Task Search | [List](./REFERENCE.md#workspace-task-search-list) |
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Search](./REFERENCE.md#projects-search) |
 | Task Projects | [List](./REFERENCE.md#task-projects-list) |
 | Team Projects | [List](./REFERENCE.md#team-projects-list) |
 | Workspace Projects | [List](./REFERENCE.md#workspace-projects-list) |
-| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
+| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Search](./REFERENCE.md#workspaces-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
 | Workspace Users | [List](./REFERENCE.md#workspace-users-list) |
 | Team Users | [List](./REFERENCE.md#team-users-list) |
-| Teams | [Get](./REFERENCE.md#teams-get) |
+| Teams | [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
 | Workspace Teams | [List](./REFERENCE.md#workspace-teams-list) |
 | User Teams | [List](./REFERENCE.md#user-teams-list) |
-| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
+| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download), [Search](./REFERENCE.md#attachments-search) |
 | Workspace Tags | [List](./REFERENCE.md#workspace-tags-list) |
-| Tags | [Get](./REFERENCE.md#tags-get) |
+| Tags | [Get](./REFERENCE.md#tags-get), [Search](./REFERENCE.md#tags-search) |
 | Project Sections | [List](./REFERENCE.md#project-sections-list) |
-| Sections | [Get](./REFERENCE.md#sections-get) |
+| Sections | [Get](./REFERENCE.md#sections-get), [Search](./REFERENCE.md#sections-search) |
 | Task Subtasks | [List](./REFERENCE.md#task-subtasks-list) |
 | Task Dependencies | [List](./REFERENCE.md#task-dependencies-list) |
 | Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Asana API docs
 
@@ -126,7 +128,7 @@ See the official [Asana API reference](https://developers.asana.com/reference/re
 
 ## Version information
 
-- **Package version:** 0.19.96
-- **Connector version:** 0.1.13
-- **Generated with Connector SDK commit SHA:** b36beaead6fb6c49f155ba346a49e61388c16278
+- **Package version:** 0.19.106
+- **Connector version:** 0.1.15
+- **Generated with Connector SDK commit SHA:** 0186dbc7998aa603d640de92ab4b9a5a6d9310ca
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/asana/CHANGELOG.md)

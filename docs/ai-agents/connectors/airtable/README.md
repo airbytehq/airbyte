@@ -1,4 +1,6 @@
-# Airtable agent connector
+# Airtable
+
+The Airtable agent connector is a Python package that equips AI agents to interact with Airtable through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Airtable is a cloud-based platform that combines the simplicity of a spreadsheet with the 
 power of a database. This connector provides access to bases, tables, and records for 
@@ -90,14 +92,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Bases | [List](./REFERENCE.md#bases-list) |
-| Tables | [List](./REFERENCE.md#tables-list) |
+| Bases | [List](./REFERENCE.md#bases-list), [Search](./REFERENCE.md#bases-search) |
+| Tables | [List](./REFERENCE.md#tables-list), [Search](./REFERENCE.md#tables-search) |
 | Records | [List](./REFERENCE.md#records-list), [Get](./REFERENCE.md#records-get) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Airtable API docs
 
@@ -105,7 +107,7 @@ See the official [Airtable API reference](https://airtable.com/developers/web/ap
 
 ## Version information
 
-- **Package version:** 0.1.23
-- **Connector version:** 1.0.4
-- **Generated with Connector SDK commit SHA:** b36beaead6fb6c49f155ba346a49e61388c16278
+- **Package version:** 0.1.32
+- **Connector version:** 1.0.5
+- **Generated with Connector SDK commit SHA:** 0186dbc7998aa603d640de92ab4b9a5a6d9310ca
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/airtable/CHANGELOG.md)
