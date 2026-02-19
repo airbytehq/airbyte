@@ -1,4 +1,9 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mssql
+
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicLong
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -14,10 +19,8 @@ class MsSqlServerCdcCursorTest {
         val now = Instant.now()
         val cursorValue = now.epochSecond * 100_000_000 + 1
 
-        assertTrue(cursorValue > 0,
-            "CDC cursor must be positive, got $cursorValue")
-        assertTrue(cursorValue < Long.MAX_VALUE,
-            "CDC cursor must not overflow Long.MAX_VALUE")
+        assertTrue(cursorValue > 0, "CDC cursor must be positive, got $cursorValue")
+        assertTrue(cursorValue < Long.MAX_VALUE, "CDC cursor must not overflow Long.MAX_VALUE")
     }
 
     @Test
@@ -31,6 +34,4 @@ class MsSqlServerCdcCursorTest {
         assertTrue(second > first)
         assertTrue(third > second)
     }
-
-
 }
