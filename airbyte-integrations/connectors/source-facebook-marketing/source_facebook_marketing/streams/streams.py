@@ -151,7 +151,7 @@ class Activities(FBMarketingIncrementalStream):
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
         state_value = stream_state.get(self.cursor_field)
-        if stream_state:
+        if stream_state and state_value:
             since = ab_datetime_parse(state_value) if isinstance(state_value, str) else AirbyteDateTime.from_datetime(state_value)
         elif self._start_date:
             since = self._start_date
