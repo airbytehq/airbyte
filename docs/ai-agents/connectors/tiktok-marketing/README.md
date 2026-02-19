@@ -118,7 +118,7 @@ See the official [Tiktok-Marketing API reference](https://business-api.tiktok.co
 
 ## Version information
 
-- **Package version:** 0.1.3
+- **Package version:** 0.1.4
 - **Connector version:** 1.1.2
-- **Generated with Connector SDK commit SHA:** 1c0056b9f6a8151cadd0f591788beba76579b2f3
+- **Generated with Connector SDK commit SHA:** 3f4da97b971360f39e879a898fabe79b5362a117
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/tiktok-marketing/CHANGELOG.md)
