@@ -28,6 +28,21 @@ Airbyte connector for [Persona](https://withpersona.com) that makes it easy to m
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-02-17 | [73197](https://github.com/airbytehq/airbyte/pull/73197) | Update dependencies |
+| 0.0.46 | 2026-02-03 | [72673](https://github.com/airbytehq/airbyte/pull/72673) | Update dependencies |
+| 0.0.45 | 2026-01-20 | [72187](https://github.com/airbytehq/airbyte/pull/72187) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71543](https://github.com/airbytehq/airbyte/pull/71543) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70502](https://github.com/airbytehq/airbyte/pull/70502) | Update dependencies |
+| 0.0.42 | 2025-11-25 | [69945](https://github.com/airbytehq/airbyte/pull/69945) | Update dependencies |
+| 0.0.41 | 2025-11-18 | [69637](https://github.com/airbytehq/airbyte/pull/69637) | Update dependencies |
+| 0.0.40 | 2025-10-29 | [68973](https://github.com/airbytehq/airbyte/pull/68973) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68233](https://github.com/airbytehq/airbyte/pull/68233) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [67486](https://github.com/airbytehq/airbyte/pull/67486) | Update dependencies |
+| 0.0.37 | 2025-10-01 | [66960](https://github.com/airbytehq/airbyte/pull/66960) | Update dependencies |
+| 0.0.36 | 2025-09-23 | [66415](https://github.com/airbytehq/airbyte/pull/66415) | Update dependencies |
+| 0.0.35 | 2025-09-09 | [65769](https://github.com/airbytehq/airbyte/pull/65769) | Update dependencies |
+| 0.0.34 | 2025-08-23 | [65163](https://github.com/airbytehq/airbyte/pull/65163) | Update dependencies |
+| 0.0.33 | 2025-08-16 | [64793](https://github.com/airbytehq/airbyte/pull/64793) | Update dependencies |
 | 0.0.32 | 2025-08-02 | [64278](https://github.com/airbytehq/airbyte/pull/64278) | Update dependencies |
 | 0.0.31 | 2025-07-26 | [63872](https://github.com/airbytehq/airbyte/pull/63872) | Update dependencies |
 | 0.0.30 | 2025-07-19 | [63437](https://github.com/airbytehq/airbyte/pull/63437) | Update dependencies |

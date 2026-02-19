@@ -1,0 +1,315 @@
+name: On-Demand Connector Regression Tests
+
+concurrency:
+  # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
+  #
+  # - github.head_ref is only defined on PR runs, it makes sure that the concurrency group is unique for pull requests
+  #  ensuring that only one run per pull request is active at a time.
+  #
+  # - github.run_id is defined on all runs, it makes sure that the concurrency group is unique for workflow dispatches.
+  # This allows us to run multiple workflow dispatches in parallel.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      # Global static-arg inputs for slash commands
+      repo:
+        description: "The repository name"
+        required: false
+        default: "airbytehq/airbyte"
+        type: string
+      gitref:
+        description: "The git reference (branch or tag)"
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+        type: number
+      pr:
+        description: "The pull request number, if applicable"
+        required: false
+        type: number
+
+      # Workflow-specific inputs
+      connector_filter:
+        description: >
+          Connector filter. Will be passed to the `airbyte-ci connectors` command.
+          To select all modified connectors, use '--modified'. To select specific connectors,
+          pass one or or more `--name` args, e.g. '--name=source-faker --name=source-hardcoded-records'.
+        default: "--modified"
+      connection_id:
+        description: >
+          Connection ID. ID of the connection to test; use "auto" to let the
+          connection retriever choose a connection.
+        default: "auto"
+      streams:
+        description: >
+          (Optional) Streams. Which streams to include in tests.
+          If not set, these will be chosen automatically.
+        required: false
+        default: ""
+        type: string
+      should_read_with_state:
+        description: Whether to run tests against the read command with state
+        default: "true"
+        type: boolean
+      use_local_cdk:
+        description: Use the local CDK when building the target connector
+        default: "false"
+        type: boolean
+      disable_proxy:
+        description: Disable proxy for requests
+        default: "false"
+        type: boolean
+
+      # Workaround: GitHub currently supports a max of 10 inputs for workflow_dispatch events.
+      # We need to consolidate some inputs to stay within this limit.
+      # connection_subset:
+      #   description: The subset of connections to select from.
+      #   default: "sandboxes"
+      #   type: choice
+      #   options:
+      #     - sandboxes
+      #     - all
+      # control_version:
+      #   description: The version to use as a control version. This is useful when the version defined in the cloud registry does not have a lot of usage (either because a progressive rollout is underway or because a new version has just been released).
+      #   required: false
+      #   type: string
+
+jobs:
+  regression_tests:
+    name: Regression Tests
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    timeout-minutes: 360 # 6 hours
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Append start with run link
+        id: pr-comment-id
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.pr != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ github.token }}
+          issue-number: ${{ github.event.inputs.pr }}
+          comment-id: ${{ github.event.inputs.comment-id }}
+          edit-mode: append
+          body: |
+            > Starting regression tests (filter: `${{ github.event.inputs.connector_filter || '--modified' }}`)
+            > Workflow run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Install Python
+        id: install_python
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Extract branch name [WORKFLOW DISPATCH]
+        shell: bash
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Install Poetry
+        id: install_poetry
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
+        with:
+          version: 1.8.5
+
+      - name: Make poetry venv in project
+        id: poetry_venv
+        run: poetry config virtualenvs.in-project true
+
+      - name: Install Python packages
+        id: install_python_packages
+        working-directory: airbyte-ci/connectors/pipelines
+        run: poetry install
+
+      - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
+        id: fetch_last_commit_id_wd
+        run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
+
+      - name: Setup Stream Parameters
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ -z "${{ github.event.inputs.streams }}" ]; then
+            echo "STREAM_PARAMS=" >> $GITHUB_ENV
+          else
+            STREAMS=$(echo "${{ github.event.inputs.streams }}" | sed 's/,/ --connector_live_tests.selected-streams=/g')
+            echo "STREAM_PARAMS=--connector_live_tests.selected-streams=$STREAMS" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Local CDK Flag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ${{ github.event.inputs.use_local_cdk }}; then
+            echo "USE_LOCAL_CDK_FLAG=--use-local-cdk" >> $GITHUB_ENV
+          else
+            echo "USE_LOCAL_CDK_FLAG=" >> $GITHUB_ENV
+          fi
+
+      - name: Setup State Flag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ${{ github.event.inputs.should_read_with_state }}; then
+            echo "READ_WITH_STATE_FLAG=--connector_live_tests.should-read-with-state" >> $GITHUB_ENV
+          else
+            echo "READ_WITH_STATE_FLAG=" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Proxy Flag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ${{ github.event.inputs.disable_proxy }}; then
+            echo "DISABLE_PROXY_FLAG=--connector_live_tests.disable-proxy" >> $GITHUB_ENV
+          else
+            echo "DISABLE_PROXY_FLAG=" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Connection Subset Option
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=sandboxes" >> $GITHUB_ENV
+        # TODO: re-enable when we have resolved the more-than-10-inputs issue in workflow_dispatch.
+        # run: |
+        #   echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
+
+      - name: Setup Control Version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "CONTROL_VERSION=" >> $GITHUB_ENV
+        # TODO: re-enable when we have resolved the more-than-10-inputs issue in workflow_dispatch.
+        # run: |
+        #   if [ -n "${{ github.event.inputs.control_version }}" ]; then
+        #     echo "CONTROL_VERSION=--connector_live_tests.control-version=${{ github.event.inputs.control_version }}" >> $GITHUB_ENV
+        #   else
+        #     echo "CONTROL_VERSION=" >> $GITHUB_ENV
+        #   fi
+
+      # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
+      # permissions to add commits to our main repo as well as forks. This will only work on
+      # forks if the user installs the app into their fork. Until we document this as a clear
+      # path, we will have to keep using the PAT.
+      - name: Run Regression Tests [WORKFLOW DISPATCH]
+        id: run-regression-tests
+        if: github.event_name == 'workflow_dispatch' # TODO: consider using the matrix strategy (https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs). See https://github.com/airbytehq/airbyte/pull/37659#discussion_r1583380234 for details.
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          git_branch: ${{ steps.extract_branch.outputs.branch }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} ${{ inputs.connector_filter }} test --only-step connector_live_tests --connector_live_tests.test-suite=regression --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url="https://github.com/airbytehq/airbyte/pull/${{ github.event.inputs.pr }}" ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }} ${{ env.CONTROL_VERSION }} --global-status-check-context="Regression Tests" --global-status-check-description='Running regression tests'
+
+      - name: Locate regression test report
+        if: always() && github.event_name == 'workflow_dispatch'
+        id: locate-report
+        run: |
+          # Find the most recent report.html file in /tmp/live_tests_artifacts/
+          REPORT_PATH=$(find /tmp/live_tests_artifacts -name "report.html" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -f2- -d" ")
+          if [ -n "$REPORT_PATH" ]; then
+            echo "report_path=$REPORT_PATH" >> "$GITHUB_OUTPUT"
+            echo "Found report at: $REPORT_PATH"
+          else
+            echo "report_path=" >> "$GITHUB_OUTPUT"
+            echo "No report.html found in /tmp/live_tests_artifacts/"
+          fi
+
+      - name: Upload regression test report
+        if: always() && github.event_name == 'workflow_dispatch' && steps.locate-report.outputs.report_path != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-test-report
+          path: ${{ steps.locate-report.outputs.report_path }}
+          if-no-files-found: ignore
+
+      - name: Append regression outcome
+        if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.pr != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ github.token }}
+          comment-id: ${{ steps.pr-comment-id.outputs.comment-id }}
+          edit-mode: append
+          body: |
+            > Regression tests: ${{ steps.run-regression-tests.outcome == 'success' && '✅ PASSED' || steps.run-regression-tests.outcome == 'failure' && '❌ FAILED' || steps.run-regression-tests.outcome == 'cancelled' && '⚠️ CANCELLED' || steps.run-regression-tests.outcome == 'skipped' && '⏭️ SKIPPED' || '❓ UNKNOWN' }}
+            > Report: ${{ steps.locate-report.outputs.report_path != '' && 'artifact `regression-test-report` available in the run' || 'not generated' }}
+
+      - name: Install live-tests dependencies for LLM evaluation
+        if: always() && github.event_name == 'workflow_dispatch'
+        working-directory: airbyte-ci/connectors/live-tests
+        run: poetry install
+
+      - name: Install and Start Ollama
+        if: always() && github.event_name == 'workflow_dispatch'
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+          ollama pull llama3.2:3b
+          echo "Ollama server started and model pulled"
+
+      - name: Evaluate Regression Test Report with LLM
+        if: always() && github.event_name == 'workflow_dispatch' && steps.locate-report.outputs.report_path != ''
+        id: llm-eval
+        continue-on-error: true
+        working-directory: airbyte-ci/connectors/live-tests
+        env:
+          OPENAI_API_KEY: ollama
+          OPENAI_BASE_URL: http://127.0.0.1:11434/v1
+          EVAL_MODEL: llama3.2:3b
+        run: |
+          set -u
+          echo "ran=false" >> "$GITHUB_OUTPUT"
+          echo "result=error" >> "$GITHUB_OUTPUT"
+
+          REPORT_PATH="${{ steps.locate-report.outputs.report_path }}"
+
+          if [ -z "$REPORT_PATH" ]; then
+            echo "Error: No report path provided from locate-report step" >&2
+            echo "## ⚠️ LLM Evaluation Skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "No regression test report found. The tests may have failed to generate a report." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          echo "Evaluating report at: $REPORT_PATH"
+
+          # Run the evaluation script
+          OUT_JSON="$RUNNER_TEMP/llm_eval.json"
+          poetry run python src/live_tests/regression_tests/llm_evaluation/evaluate_report.py \
+            --report-path "$REPORT_PATH" \
+            --output-json "$OUT_JSON"
+
+          # If we got here, script exit 0 and produced a judgment
+          PASS=$(jq -r '.evaluation.pass' "$OUT_JSON")
+          if [ "$PASS" = "true" ]; then RES="pass"; else RES="fail"; fi
+          echo "ran=true" >> "$GITHUB_OUTPUT"
+          echo "result=$RES" >> "$GITHUB_OUTPUT"
+
+      - name: Append LLM outcome
+        if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.pr != ''
+        env:
+          EVAL_MODEL: llama3.2:3b
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ github.token }}
+          comment-id: ${{ steps.pr-comment-id.outputs.comment-id }}
+          edit-mode: append
+          body: |
+            > LLM Evaluation: ${{ steps.llm-eval.outputs.ran == 'true' && (steps.llm-eval.outputs.result == 'pass' && '✅ PASS' || steps.llm-eval.outputs.result == 'fail' && '❌ FAIL' || '⚠️ ERROR') || '⚠️ Did not run' }}${{ steps.llm-eval.outputs.ran == 'true' && format(' (model: {0})', env.EVAL_MODEL) || '' }}

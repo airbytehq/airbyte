@@ -42,19 +42,24 @@ definitions:
     response_filters:
       - predicate: "{{ 'KDP authors do not have access to Sponsored Brands functionality' in response.details }}"
         action: FAIL
+        failure_type: config_error
         error_message: "{{ response.details }}"
       - predicate: "{{ 'Not authorized to access scope' in response.details }}"
         action: FAIL
+        failure_type: config_error
         error_message: "{{ response.details }}"
       - predicate: "{{ 'Tactic T00020 is not supported for report API in marketplace' in response.details }}"
         action: FAIL
+        failure_type: config_error
         error_message: "{{ response.details }}"
       - predicate: "{{ 'Report date is too far in the past' in response.details }}"
         action: FAIL
+        failure_type: config_error
         error_message: "{{ response.details }}"
       - type: HttpResponseFilter
         http_codes: [ 425 ]
         action: FAIL
+        failure_type: config_error
         error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
 
   report_polling_error_handler:
@@ -1065,7 +1070,7 @@ definitions:
               {%- set _start_date = config.get("start_date") -%}
               {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
               {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1147,7 +1152,7 @@ definitions:
               {%- set _start_date = config.get("start_date") -%}
               {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
               {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1229,7 +1234,7 @@ definitions:
               {%- set _start_date = config.get("start_date") -%}
               {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
               {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1310,7 +1315,7 @@ definitions:
               {%- set _start_date = config.get("start_date") -%}
               {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
               {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -3181,8 +3186,8 @@ definitions:
       datetime: >-
         {%- set today = today_utc() - duration('P1D') -%}
         {%- set user_start_date = config.get('start_date', today.strftime('%Y-%m-%d')) -%}
-        {%- set ninety_days_ago = today - duration('P90D') -%}
-        "{{ max(user_start_date, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+        {%- set sixty_days_ago = today - duration('P60D') -%}
+        "{{ max(user_start_date, sixty_days_ago.strftime('%Y-%m-%d')) }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"
@@ -3482,7 +3487,7 @@ spec:
         type: integer
         title: Number of concurrent workers
         minimum: 2
-        maximum: 10
+        maximum: 20
         default: 10
         examples:
           - 2
@@ -3542,7 +3547,7 @@ spec:
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
-  max_concurrency: 10
+  max_concurrency: 20
 
 schemas:
   attribution_report_performance_adgroup:

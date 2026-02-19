@@ -1,6 +1,8 @@
 ---
 title: AI Assistant
+products: cloud
 ---
+
 # AI Assistant for the Connector Builder (Beta)
 
 Welcome to the **AI Assistant**, your personal helper for creating Airbyte connectors through our Connector Builder. While still in beta, this AI tool promises to significantly speed up your development time by automating and simplifying the process of building connectors.

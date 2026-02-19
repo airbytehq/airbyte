@@ -12066,7 +12066,7 @@ definitions:
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "updated"
-    start_datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
+    start_datetime: "{{ config.get('start_date', day_delta(-730, format='%Y-%m-%dT%H:%M:%SZ')) }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_datetime_formats:
     - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -12225,6 +12225,153 @@ definitions:
             - 'null'
             format: date-time
             readOnly: true
+  issue_changelogs_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: issue_changelogs
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/issues_stream"
+            parent_key: id
+            partition_field: issue_id
+            incremental_dependency: true
+    $parameters:
+      path: issue/{{ stream_slice.issue_id }}/changelog
+      extract_field: values
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+            description: The ID of the changelog.
+          items:
+            type:
+              - "null"
+              - array
+            description: The list of items changed.
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                to:
+                  type:
+                    - "null"
+                    - string
+                from:
+                  type:
+                    - "null"
+                    - string
+                field:
+                  type:
+                    - "null"
+                    - string
+                fieldId:
+                  type:
+                    - "null"
+                    - string
+                toString:
+                  type:
+                    - "null"
+                    - string
+                fieldtype:
+                  type:
+                    - "null"
+                    - string
+                fromString:
+                  type:
+                    - "null"
+                    - string
+          author:
+            type: object
+            description: The user who made the change.
+            properties:
+              self:
+                type: string
+                description: The URL of the user.
+              active:
+                type: boolean
+                description: Whether the user is active.
+              timeZone:
+                type:
+                  - "null"
+                  - string
+                description: >-
+                  The time zone specified in the user's profile. Depending on
+                  the user’s privacy settings, this may be returned as null.
+              accountId:
+                type: string
+                description: >-
+                  The account ID of the user, which uniquely identifies the user
+                  across all Atlassian products. For example,
+                  5b10ac8d82e05b22cc7d4ef5.
+              avatarUrls:
+                type: object
+                description: The avatars of the user.
+                properties:
+                  16x16:
+                    type: string
+                    description: The URL of the item's 16x16 pixel avatar.
+                  24x24:
+                    type: string
+                    description: The URL of the item's 24x24 pixel avatar.
+                  32x32:
+                    type: string
+                    description: The URL of the item's 32x32 pixel avatar.
+                  48x48:
+                    type: string
+                    description: The URL of the item's 48x48 pixel avatar.
+              accountType:
+                type: string
+                description: >-
+                  The type of account represented by this user. This will be one
+                  of 'atlassian' (normal users), 'app' (application user) or
+                  'customer' (Jira Service Desk customer user)
+              displayName:
+                type: string
+                description: >-
+                  The display name of the user. Depending on the user’s privacy
+                  settings, this may return an alternative value.
+              emailAddress:
+                type: string
+                description: >-
+                  The email address of the user. Depending on the user’s privacy
+                  settings, this may be returned as null.
+          created:
+            type:
+              - string
+              - "null"
+            description: The date and time when the change took place.
+            format: date-time
+            readOnly: true
+          updated:
+            type:
+              - string
+              - "null"
+            description: The date and time when the change took place.
+            format: date-time
+            readOnly: true
+          issueId:
+            type: string
+            description: The unique identifier of the issue where the changelog belongs
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - issueId
+            value: "{{ stream_slice.issue_id }}"
+            value_type: string
+          - path:
+              - updated
+            value: "{{ record.created }}"
+            value_type: string
   issues_stream:
     $ref: "#/definitions/incremental_stream"
     name: issues
@@ -14472,6 +14619,7 @@ streams:
 
 - "#/definitions/issue_comments_stream"
 - "#/definitions/issue_worklogs_stream"
+- "#/definitions/issue_changelogs_stream"
 
 check:
   type: CheckStream

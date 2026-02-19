@@ -1,0 +1,110 @@
+# WARNING: This docker-compose.yml file is tightly coupled with PolarisEnvironment.kt.
+# Any changes to service configurations here (ports, credentials, service names, bootstrap
+# credentials, etc.) must be reflected in PolarisEnvironment.kt and vice versa.
+# See: src/test-integration/kotlin/io/airbyte/integrations/destination/s3_data_lake/PolarisEnvironment.kt
+
+services:
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio_root
+      MINIO_ROOT_PASSWORD: m1n1opwd
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web console
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      # MinIO ready endpoint
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/ready"]
+      interval: 2s
+      timeout: 2s
+      retries: 60
+    restart: unless-stopped
+
+  mc-bootstrap:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c '
+        set -e
+        echo "Waiting for MinIO to be ready..."
+        for i in $(seq 1 60); do
+          if mc alias set pol http://minio:9000 minio_root m1n1opwd >/dev/null 2>&1; then
+            break
+          fi
+          echo "mc alias set failed, retrying ($i/60)..."
+          sleep 2
+        done
+        echo "Ensuring bucket exists..."
+        # Retry create-or-exists a few times to avoid transient races
+        for i in $(seq 1 30); do
+          if mc ls pol >/dev/null 2>&1; then
+            mc mb -p pol/bucket123 >/dev/null 2>&1 || true
+            # Verify bucket is actually visible
+            if mc ls pol/bucket123 >/dev/null 2>&1; then
+              echo "Bucket bucket123 is present."
+              exit 0
+            fi
+          fi
+          echo "Bucket not visible yet, retrying ($i/30)..."
+          sleep 1
+        done
+        echo "ERROR: Failed to ensure bucket after retries."
+        exit 1
+      '
+    restart: "no" # one-shot job; fail if it can’t create
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: POLARIS
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  polaris:
+    image: apache/polaris:1.1.0-incubating
+    depends_on:
+      postgres:
+        condition: service_started
+      minio:
+        condition: service_healthy
+      mc-bootstrap:
+        # only start Polaris once bucket creation completed successfully
+        condition: service_completed_successfully
+    environment:
+      QUARKUS_HTTP_PORT: "8181"
+      QUARKUS_MANAGEMENT_PORT: "8182"
+
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/POLARIS
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: postgres
+
+      # Bootstrap credentials: tenant "POLARIS", principal "root", secret "s3cr3t"
+      JAVA_OPTS_APPEND: "-Dpolaris.bootstrap.credentials=POLARIS,root,s3cr3t"
+
+      QUARKUS_LOG_LEVEL: INFO
+
+      # --- for Option B (server-side vending), give Polaris base creds to talk to MinIO ---
+      AWS_ACCESS_KEY_ID: minio_root
+      AWS_SECRET_ACCESS_KEY: m1n1opwd
+      AWS_REGION: us-east-1
+      # These helpers are read by some builds; harmless if ignored
+      POLARIS_S3_ENDPOINT: http://minio:9000
+      POLARIS_S3_PATH_STYLE_ACCESS: "true"
+    ports:
+      - "8181:8181" # Catalog API
+      - "8182:8182" # Health/metrics
+    restart: unless-stopped
+
+volumes:
+  minio-data:
+  pg-data:

@@ -54,6 +54,7 @@ Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-req
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 0.4.20 | 2025-08-16 | [65057](https://github.com/airbytehq/airbyte/pull/65057) | Update dependencies |
 | 0.4.19 | 2025-08-02 | [64411](https://github.com/airbytehq/airbyte/pull/64411) | Update dependencies |
 | 0.4.18 | 2025-07-26 | [63796](https://github.com/airbytehq/airbyte/pull/63796) | Update dependencies |
 | 0.4.17 | 2025-07-08 | [62858](https://github.com/airbytehq/airbyte/pull/62858) | Updated Schema for `campaigns_details`, `campaigns_analytics`, and `campaigns` |

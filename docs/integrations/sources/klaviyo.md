@@ -28,7 +28,8 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
 6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
-7. Click **Set up source**.
+7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
+8. Click **Set up source**.
 
 ### For Airbyte Open Source:
 
@@ -48,17 +49,17 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Campaigns](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
-- [Campaigns Detailed](https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns)
-- [Email Templates](https://developers.klaviyo.com/en/reference/get_templates)
-- [Events](https://developers.klaviyo.com/en/reference/get_events)
-- [Events Detailed](https://developers.klaviyo.com/en/reference/get_event)
-- [Flows](https://developers.klaviyo.com/en/reference/get_flows)
-- [GlobalExclusions](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
-- [Lists](https://developers.klaviyo.com/en/reference/get_lists)
-- [Lists Detailed](https://developers.klaviyo.com/en/reference/get_lists)
-- [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
-- [Profiles](https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles)
+- [Campaigns](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
+- [Campaigns Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
+- [Email Templates](https://developers.klaviyo.com/en/v2024-10-15/reference/get_templates)
+- [Events](https://developers.klaviyo.com/en/v2024-10-15/reference/get_events)
+- [Events Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_event)
+- [Flows](https://developers.klaviyo.com/en/v2024-10-15/reference/get_flows)
+- [GlobalExclusions](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
+- [Lists](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
+- [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
+- [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
+- [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
 
 ## Performance considerations
 
@@ -95,22 +96,40 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.14.20 | 2025-08-09 | [64618](https://github.com/airbytehq/airbyte/pull/64618) | Update dependencies |
-| 2.14.19 | 2025-08-02 | [64210](https://github.com/airbytehq/airbyte/pull/64210) | Update dependencies |
-| 2.14.18 | 2025-07-26 | [63815](https://github.com/airbytehq/airbyte/pull/63815) | Update dependencies |
-| 2.14.17 | 2025-07-19 | [63482](https://github.com/airbytehq/airbyte/pull/63482) | Update dependencies |
-| 2.14.16 | 2025-07-12 | [63154](https://github.com/airbytehq/airbyte/pull/63154) | Update dependencies |
-| 2.14.15 | 2025-07-05 | [62631](https://github.com/airbytehq/airbyte/pull/62631) | Update dependencies |
-| 2.14.14 | 2025-06-28 | [62167](https://github.com/airbytehq/airbyte/pull/62167) | Update dependencies |
-| 2.14.13 | 2025-06-21 | [61858](https://github.com/airbytehq/airbyte/pull/61858) | Update dependencies |
-| 2.14.12 | 2025-06-14 | [60653](https://github.com/airbytehq/airbyte/pull/60653) | Update dependencies |
-| 2.14.11 | 2025-05-10 | [59260](https://github.com/airbytehq/airbyte/pull/59260) | Update dependencies |
-| 2.14.10 | 2025-04-29 | [58123](https://github.com/airbytehq/airbyte/pull/58123) | Add missing fields for `events_detailed` stream for attributions |
-| 2.14.9 | 2025-04-26 | [58192](https://github.com/airbytehq/airbyte/pull/58192) | Update dependencies |
-| 2.14.8 | 2025-04-12 | [57751](https://github.com/airbytehq/airbyte/pull/57751) | Update dependencies |
-| 2.14.7 | 2025-04-05 | [57033](https://github.com/airbytehq/airbyte/pull/57033) | Update dependencies |
-| 2.14.6 | 2025-03-29 | [56634](https://github.com/airbytehq/airbyte/pull/56634) | Update dependencies |
-| 2.14.5 | 2025-03-22 | [56017](https://github.com/airbytehq/airbyte/pull/56017) | Update dependencies |
+| 2.16.15 | 2026-02-17 | [73540](https://github.com/airbytehq/airbyte/pull/73540) | Update dependencies |
+| 2.16.14 | 2026-02-10 | [73058](https://github.com/airbytehq/airbyte/pull/73058) | Update dependencies |
+| 2.16.13 | 2026-02-03 | [72750](https://github.com/airbytehq/airbyte/pull/72750) | Update dependencies |
+| 2.16.12 | 2026-01-20 | [72040](https://github.com/airbytehq/airbyte/pull/72040) | Update dependencies |
+| 2.16.11 | 2026-01-19 | [70208](https://github.com/airbytehq/airbyte/pull/70208) | Add chunking to events_detailed stream to fix full refresh stalling and incremental mode returning zero rows |
+| 2.16.10 | 2026-01-14 | [71461](https://github.com/airbytehq/airbyte/pull/71461) | Update dependencies |
+| 2.16.9 | 2025-12-18 | [70783](https://github.com/airbytehq/airbyte/pull/70783) | Update dependencies |
+| 2.16.8 | 2025-11-25 | [70028](https://github.com/airbytehq/airbyte/pull/70028) | Update dependencies |
+| 2.16.7 | 2025-11-18 | [69457](https://github.com/airbytehq/airbyte/pull/69457) | Update dependencies |
+| 2.16.6 | 2025-10-29 | [68983](https://github.com/airbytehq/airbyte/pull/68983) | Update dependencies |
+| 2.16.5 | 2025-10-21 | [68298](https://github.com/airbytehq/airbyte/pull/68298) | Update dependencies |
+| 2.16.4 | 2025-10-14 | [68028](https://github.com/airbytehq/airbyte/pull/68028) | Update dependencies |
+| 2.16.3 | 2025-10-07 | [67517](https://github.com/airbytehq/airbyte/pull/67517) | Update dependencies |
+| 2.16.2 | 2025-09-30 | [66643](https://github.com/airbytehq/airbyte/pull/66643) | Update dependencies |
+| 2.16.1 | 2025-09-09 | [66070](https://github.com/airbytehq/airbyte/pull/66070) | Update dependencies |
+| 2.15.0 | 2025-09-07 | [65935](https://github.com/airbytehq/airbyte/pull/65935)    | Fix profile subscriptions
+| 2.14.22 | 2025-08-25 | [65509](https://github.com/airbytehq/airbyte/pull/65509)       | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component                                                                       |\
+| 2.14.21 | 2025-08-23 | [65317](https://github.com/airbytehq/airbyte/pull/65317)   | Update dependencies                                                                                                                                                    |
+| 2.14.20 | 2025-08-09 | [64618](https://github.com/airbytehq/airbyte/pull/64618)   | Update dependencies                                                                                                                                                    |
+| 2.14.19 | 2025-08-02 | [64210](https://github.com/airbytehq/airbyte/pull/64210)   | Update dependencies                                                                                                                                                    |
+| 2.14.18 | 2025-07-26 | [63815](https://github.com/airbytehq/airbyte/pull/63815)   | Update dependencies                                                                                                                                                    |
+| 2.14.17 | 2025-07-19 | [63482](https://github.com/airbytehq/airbyte/pull/63482)   | Update dependencies                                                                                                                                                    |
+| 2.14.16 | 2025-07-12 | [63154](https://github.com/airbytehq/airbyte/pull/63154)   | Update dependencies                                                                                                                                                    |
+| 2.14.15 | 2025-07-05 | [62631](https://github.com/airbytehq/airbyte/pull/62631)   | Update dependencies                                                                                                                                                    |
+| 2.14.14 | 2025-06-28 | [62167](https://github.com/airbytehq/airbyte/pull/62167)   | Update dependencies                                                                                                                                                    |
+| 2.14.13 | 2025-06-21 | [61858](https://github.com/airbytehq/airbyte/pull/61858)   | Update dependencies                                                                                                                                                    |
+| 2.14.12 | 2025-06-14 | [60653](https://github.com/airbytehq/airbyte/pull/60653)   | Update dependencies                                                                                                                                                    |
+| 2.14.11 | 2025-05-10 | [59260](https://github.com/airbytehq/airbyte/pull/59260)   | Update dependencies                                                                                                                                                    |
+| 2.14.10 | 2025-04-29 | [58123](https://github.com/airbytehq/airbyte/pull/58123)   | Add missing fields for `events_detailed` stream for attributions                                                                                                       |
+| 2.14.9  | 2025-04-26 | [58192](https://github.com/airbytehq/airbyte/pull/58192)   | Update dependencies                                                                                                                                                    |
+| 2.14.8  | 2025-04-12 | [57751](https://github.com/airbytehq/airbyte/pull/57751)   | Update dependencies                                                                                                                                                    |
+| 2.14.7  | 2025-04-05 | [57033](https://github.com/airbytehq/airbyte/pull/57033)   | Update dependencies                                                                                                                                                    |
+| 2.14.6  | 2025-03-29 | [56634](https://github.com/airbytehq/airbyte/pull/56634)   | Update dependencies                                                                                                                                                    |
+| 2.14.5  | 2025-03-22 | [56017](https://github.com/airbytehq/airbyte/pull/56017)   | Update dependencies                                                                                                                                                    |
 | 2.14.4  | 2025-03-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)       | Add back step to streams that can process date ranges in parallel                                                                                                      |
 | 2.14.3  | 2025-03-08 | [55479](https://github.com/airbytehq/airbyte/pull/55479)   | Update dependencies                                                                                                                                                    |
 | 2.14.2  | 2025-03-03 | [54720](https://github.com/airbytehq/airbyte/pull/54720)   | Add event_properties option to events request                                                                                                                          |
@@ -187,8 +206,8 @@ contain the `predictive_analytics` field and workflows depending on this field w
 | 0.3.3   | 2023-10-13 | [31379](https://github.com/airbytehq/airbyte/pull/31379)   | Skip streams that the connector no longer has access to                                                                                                                |
 | 0.3.2   | 2023-06-20 | [27498](https://github.com/airbytehq/airbyte/pull/27498)   | Do not store state in the future                                                                                                                                       |
 | 0.3.1   | 2023-06-08 | [27162](https://github.com/airbytehq/airbyte/pull/27162)   | Anonymize check connection error message                                                                                                                               |
-| 0.3.0   | 2023-02-18 | [23236](https://github.com/airbytehq/airbyte/pull/23236)   | Add ` Email Templates` stream                                                                                                                                          |
-| 0.2.0   | 2023-03-13 | [22942](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream                                                                                                                                                  |
+| 0.3.0   | 2023-02-18 | [23236](https://github.com/airbytehq/airbyte/pull/23236)   | Add `Email Templates` stream                                                                                                                                          |
+| 0.2.0   | 2023-03-13 | [23968](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream                                                                                                                                                  |
 | 0.1.13  | 2023-02-13 | [22942](https://github.com/airbytehq/airbyte/pull/22942)   | Specified date formatting in specification                                                                                                                             |
 | 0.1.12  | 2023-01-30 | [22071](https://github.com/airbytehq/airbyte/pull/22071)   | Fix `Events` stream schema                                                                                                                                             |
 | 0.1.11  | 2023-01-27 | [22012](https://github.com/airbytehq/airbyte/pull/22012)   | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                            |

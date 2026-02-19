@@ -26,6 +26,19 @@ now: Wed Oct 03 2012 15:00:21 GMT-0400 (EDT)
 
 When importing a large MongoDB collection for the first time, the import duration might exceed the Oplog retention period. The Oplog is crucial for incremental updates, and an invalid resume token will require the MongoDB collection to be re-imported to ensure no source updates were missed.
 
+### MongoDB CDC Limitations
+
+MongoDB has a 16MB maximum document size limit for BSON documents. During CDC (Change Data Capture) syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. This typically occurs during incremental syncs when change stream events include the full document content.
+
+If you encounter this error, you have several options to resolve it:
+
+1. Switch the affected stream to Full Refresh sync mode instead of Incremental mode. Full Refresh does not use change streams and is not subject to this limitation.
+2. If you are using Post Image update capture mode, switch to Lookup mode. Lookup mode retrieves the current document state separately, which can reduce the size of change stream events.
+3. Restructure large documents in your MongoDB collection to stay under the 16MB limit.
+4. Deselect streams containing documents that exceed the size limit.
+
+For more information about MongoDB's document size limits, see the [MongoDB documentation on limits](https://www.mongodb.com/docs/manual/reference/limits/).
+
 ### Supported MongoDB Clusters
 
 - Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.

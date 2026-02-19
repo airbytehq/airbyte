@@ -1,0 +1,134 @@
+# Workflow to bump the CDK version for a specified Airbyte connector.
+# This is intended to be triggered via a slash command from a PR, but can also be
+# triggered manually via the GitHub UI.
+name: Bump Connector CDK Version
+on:
+  workflow_dispatch:
+    inputs:
+      connector:
+        description: "Airbyte connector for which the CDK version will be bumped."
+        required: true
+      pr:
+        description: "Pull request where workflow status messages will be posted."
+        type: number
+        required: true
+      comment-id:
+        description: "Optional. Where the workflow status messages will be posted. If not provided, a new messages will be posted."
+        required: false
+
+      # These must be declared, but they are unused and ignored.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+      gitref:
+        description: "Ref (Ignored)"
+        required: false
+
+jobs:
+  update-connector-cdk-version:
+    name: Update Connector CDK Version
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Resolve job vars
+        id: resolve-job-vars
+        run: |
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Append comment with job run link
+        id: first-comment-action
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          issue-number: ${{ github.event.inputs.pr }}
+          body: |
+            > Update CDK version job started for `${{ github.event.inputs.connector }}`. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+
+      - name: Validate connector
+        id: validate-connector
+        shell: bash
+        run: |
+          connector_path="airbyte-integrations/connectors/${{ github.event.inputs.connector }}"
+          if [ ! -d "$connector_path" ]; then
+          echo "error=Connector directory not found: $connector_path" | tee -a $GITHUB_OUTPUT
+          exit 1
+          fi
+
+          build_file="$connector_path/build.gradle"
+          if [ ! -f "$build_file" ]; then
+          echo "error=This connector does not use Gradle (no build.gradle found). CDK upgrades are only supported for Java/Kotlin connectors." | tee -a $GITHUB_OUTPUT
+          exit 1
+          fi
+
+          # Check if connector uses airbyteBulkConnector plugin
+          if ! grep -q "airbyte-bulk-connector" "$build_file"; then
+          echo "error=This connector does not use the airbyte-bulk-connector plugin. CDK upgrades are only supported for connectors using the bulk CDK." | tee -a $GITHUB_OUTPUT
+          exit 1
+          fi
+
+      - name: Setup Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+
+      - name: Run CDK upgrade
+        run: ./gradlew ":airbyte-integrations:connectors:${{ github.event.inputs.connector }}:upgradeCdk"
+
+      - name: Check for changes
+        id: git-diff
+        run: |
+          git diff --quiet && echo "No changes to commit" || echo "changes=true" | tee -a $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Commit changes
+        if: steps.git-diff.outputs.changes == 'true'
+        run: |
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+          git add .
+          git commit -m "Bump ${{ github.event.inputs.connector }} cdk version"
+          git push
+
+      - name: Append success comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: steps.git-diff.outputs.changes == 'true'
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: hooray
+          body: |
+            > ✅ Successfully updated CDK version for `${{ github.event.inputs.connector }}`.
+
+      - name: Append success comment (no-op)
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: steps.git-diff.outputs.changes != 'true'
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: hooray
+          body: |
+            > ✅ CDK version for `${{ github.event.inputs.connector }}` was already up to date (no changes made).
+
+      - name: Append validation failure comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: failure() && steps.validate-connector.outputs.error
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > 🔴 **Validation Error**: ${{ steps.validate-connector.outputs.error }}
+
+      - name: Append failure comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: failure() && !steps.validate-connector.outputs.error
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > 🔴 Job failed while updating CDK version for `${{ github.event.inputs.connector }}`. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.

@@ -4,17 +4,17 @@
 
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.types import Config
 
 
 class GreenhouseStateMigration(LegacyToPerPartitionStateMigration):
-    declarative_stream: DeclarativeStream
+    declarative_stream: DeclarativeStreamModel
     config: Config
 
-    def __init__(self, declarative_stream: DeclarativeStream, config: Config):
+    def __init__(self, declarative_stream: DeclarativeStreamModel, config: Config):
         self._partition_router = declarative_stream.retriever.partition_router
         self._cursor = declarative_stream.incremental_sync
         self._config = config

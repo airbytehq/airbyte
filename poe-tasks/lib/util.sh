@@ -13,14 +13,25 @@ connector_docs_path() {
   # First, remove -strict-encrypt suffix since these connectors
   # share documentation with their base connector
   local connector_name="$1"
+  local is_enterprise="$2"
   connector_name=$(echo "$connector_name" | sed -r 's/-strict-encrypt$//')
 
-  # The regex '^(source|destination)-(.*)' matches strings like source-whatever or destination-something-like-this,
-  # capturing the connector type (source/destination) and the connector name (whatever / something-like-this).
-  # We then output '\1s/\2.md', which inserts the captured values as `\1` and `\2`.
-  # This produces a string like `sources/whatever.md`.
-  # Then we prepend the 'docs/integrations/' path.
-  echo $DOCS_BASE_DIR/$(echo $connector_name | sed -r 's@^(source|destination)-(.*)@\1s/\2.md@')
+  if [ "$is_enterprise" = "true" ]; then
+    docs_path="$DOCS_BASE_DIR/enterprise-connectors/$connector_name.md"
+  else
+    # The regex '^(source|destination)-(.*)' matches strings like source-whatever or destination-something-like-this,
+    # capturing the connector type (source/destination) and the connector name (whatever / something-like-this).
+    # We then output '\1s/\2.md', which inserts the captured values as `\1` and `\2`.
+    # This produces a string like `sources/whatever.md`.
+    # Then we prepend the 'docs/integrations/' path.
+    docs_path=$DOCS_BASE_DIR/$(echo $connector_name | sed -r 's@^(source|destination)-(.*)@\1s/\2.md@')
+  fi
+
+  if ! test -f "$docs_path"; then
+      echo 'Connector documentation file does not exist:' "$docs_path" >&2
+  fi
+
+  echo "$docs_path"
 }
 
 # Expects that you have populated a $connectors variable as an array.
@@ -43,13 +54,19 @@ get_only_connector() {
   echo "${connectors[@]:0:1}"
 }
 
-# Generate the prerelease image tag (e.g. `1.2.3-dev.abcde12345`).
+# Generate the preview image tag (e.g. `1.2.3-preview.abcde12`).
 generate_dev_tag() {
   local base="$1"
-  # force a 10-char short hash to match existing airbyte-ci behaviour.
+  # Use 7-char short hash to match the new prerelease format.
   local hash
-  hash=$(git rev-parse --short=10 HEAD)
-  echo "${base}-dev.${hash}"
+  hash=$(git rev-parse --short=7 HEAD)
+  echo "${base}-preview.${hash}"
+}
+
+# Generate the release candidate image tag (e.g. `1.2.3-rc1`).
+generate_rc_tag() {
+  local base="$1"
+  echo "${base}-rc1"
 }
 
 # Authenticate to gcloud using the contents of a variable.

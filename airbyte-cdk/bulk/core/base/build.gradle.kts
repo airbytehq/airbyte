@@ -1,10 +1,5 @@
-import de.undercouch.gradle.tasks.download.Download
-import io.netifi.flatbuffers.plugin.tasks.FlatBuffers
-
 plugins {
-    id("de.undercouch.download") version ("5.6.0")
     id("com.google.protobuf") version("0.9.4")
-    id("io.netifi.flatbuffers") version("1.0.7")
 }
 
 kotlin {
@@ -61,23 +56,13 @@ tasks.withType<Copy>().configureEach {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-val flatBuffersArchive = "fbs/fbs.zip"
-val flatBuffersArchiveDownloadBaseUrl = "https://github.com/google/flatbuffers/releases/latest/download"
-// Select the proper FlatBuffers binary based on the build operating system
-val osName = System.getProperty("os.name").lowercase()
-val flatBuffersDownloadUrl = when(osName) {
-    "mac os x" -> "$flatBuffersArchiveDownloadBaseUrl/Mac.flatc.binary.zip"
-    "windows" -> "$flatBuffersArchiveDownloadBaseUrl/Windows.flatc.binary.zip"
-    else -> "$flatBuffersArchiveDownloadBaseUrl/Linux.flatc.binary.g++-13.zip"
-}
-
 dependencies {
 
     api("com.fasterxml.jackson.core:jackson-annotations")
     api("com.fasterxml.jackson.core:jackson-databind")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     api("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
-    api("io.airbyte.airbyte-protocol:protocol-models:0.18.0") {
+    api("io.airbyte.airbyte-protocol:protocol-models:0.19.0") {
         exclude(group="com.google.guava", module="guava")
         exclude(group="com.google.api-client")
         exclude(group="org.apache.logging.log4j")
@@ -128,41 +113,6 @@ dependencies {
     testFixturesApi("io.github.deblockt:json-diff:1.1.0")
 }
 
-flatbuffers {
-    flatBuffersVersion = "25.2.10"
-    flatcPath = "${project.layout.buildDirectory.get()}/fbs/flatc"
-    language = "java"
-}
-
 tasks.test {
     environment=mapOf("PRESENT" to "present-value")
-}
-
-tasks.register<Download>("downloadFlatc") {
-    src(flatBuffersDownloadUrl)
-    dest(project.layout.buildDirectory.file(flatBuffersArchive))
-    overwrite(true)
-
-}
-
-tasks.register<Copy>("installFlatc") {
-    dependsOn("downloadFlatc")
-    val file = project.layout.buildDirectory.file(flatBuffersArchive)
-    val outputDir = project.layout.buildDirectory.dir("fbs")
-    from(zipTree(file))
-    into(outputDir)
-}
-
-
-tasks.register<FlatBuffers>("generateFbs") {
-    inputDir = file("src/main/fbs")
-    outputDir = file("build/generated/fbs")
-    language = "java"
-    dependsOn("installFlatc")
-}
-
-tasks.configureEach {
-    when(name) {
-        "compileJava", "compileTestJava", "compileKotlin", "compileTestKotlin", "kspKotlin" -> dependsOn("generateFbs")
-    }
 }

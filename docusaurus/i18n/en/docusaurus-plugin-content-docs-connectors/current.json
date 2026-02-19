@@ -1,0 +1,2694 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.connectors.category.Connectors": {
+    "message": "Connectors",
+    "description": "The label for category Connectors in sidebar connectors"
+  },
+  "sidebar.connectors.category.Sources": {
+    "message": "Sources",
+    "description": "The label for category Sources in sidebar connectors"
+  },
+  "sidebar.connectors.category.Airbyte": {
+    "message": "Airbyte",
+    "description": "The label for category Airbyte in sidebar connectors"
+  },
+  "sidebar.connectors.category.Airtable": {
+    "message": "Airtable",
+    "description": "The label for category Airtable in sidebar connectors"
+  },
+  "sidebar.connectors.category.Amazon Ads": {
+    "message": "Amazon Ads",
+    "description": "The label for category Amazon Ads in sidebar connectors"
+  },
+  "sidebar.connectors.category.Amazon Seller Partner": {
+    "message": "Amazon Seller Partner",
+    "description": "The label for category Amazon Seller Partner in sidebar connectors"
+  },
+  "sidebar.connectors.category.Bing Ads": {
+    "message": "Bing Ads",
+    "description": "The label for category Bing Ads in sidebar connectors"
+  },
+  "sidebar.connectors.category.Facebook Marketing": {
+    "message": "Facebook Marketing",
+    "description": "The label for category Facebook Marketing in sidebar connectors"
+  },
+  "sidebar.connectors.category.GitLab": {
+    "message": "GitLab",
+    "description": "The label for category GitLab in sidebar connectors"
+  },
+  "sidebar.connectors.category.Google Ads": {
+    "message": "Google Ads",
+    "description": "The label for category Google Ads in sidebar connectors"
+  },
+  "sidebar.connectors.category.Google Analytics 4 (GA4)": {
+    "message": "Google Analytics 4 (GA4)",
+    "description": "The label for category Google Analytics 4 (GA4) in sidebar connectors"
+  },
+  "sidebar.connectors.category.Harvest": {
+    "message": "Harvest",
+    "description": "The label for category Harvest in sidebar connectors"
+  },
+  "sidebar.connectors.category.HubSpot": {
+    "message": "HubSpot",
+    "description": "The label for category HubSpot in sidebar connectors"
+  },
+  "sidebar.connectors.category.Instagram": {
+    "message": "Instagram",
+    "description": "The label for category Instagram in sidebar connectors"
+  },
+  "sidebar.connectors.category.Jira": {
+    "message": "Jira",
+    "description": "The label for category Jira in sidebar connectors"
+  },
+  "sidebar.connectors.category.Klaviyo": {
+    "message": "Klaviyo",
+    "description": "The label for category Klaviyo in sidebar connectors"
+  },
+  "sidebar.connectors.category.LinkedIn Ads": {
+    "message": "LinkedIn Ads",
+    "description": "The label for category LinkedIn Ads in sidebar connectors"
+  },
+  "sidebar.connectors.category.Mailchimp": {
+    "message": "Mailchimp",
+    "description": "The label for category Mailchimp in sidebar connectors"
+  },
+  "sidebar.connectors.category.Monday": {
+    "message": "Monday",
+    "description": "The label for category Monday in sidebar connectors"
+  },
+  "sidebar.connectors.category.Mongo DB": {
+    "message": "Mongo DB",
+    "description": "The label for category Mongo DB in sidebar connectors"
+  },
+  "sidebar.connectors.category.MS SQL Server (MSSQL)": {
+    "message": "MS SQL Server (MSSQL)",
+    "description": "The label for category MS SQL Server (MSSQL) in sidebar connectors"
+  },
+  "sidebar.connectors.category.MySQL": {
+    "message": "MySQL",
+    "description": "The label for category MySQL in sidebar connectors"
+  },
+  "sidebar.connectors.category.Notion": {
+    "message": "Notion",
+    "description": "The label for category Notion in sidebar connectors"
+  },
+  "sidebar.connectors.category.Paypal": {
+    "message": "Paypal",
+    "description": "The label for category Paypal in sidebar connectors"
+  },
+  "sidebar.connectors.category.Pinterest": {
+    "message": "Pinterest",
+    "description": "The label for category Pinterest in sidebar connectors"
+  },
+  "sidebar.connectors.category.Postgres": {
+    "message": "Postgres",
+    "description": "The label for category Postgres in sidebar connectors"
+  },
+  "sidebar.connectors.category.S3": {
+    "message": "S3",
+    "description": "The label for category S3 in sidebar connectors"
+  },
+  "sidebar.connectors.category.Sendgrid": {
+    "message": "Sendgrid",
+    "description": "The label for category Sendgrid in sidebar connectors"
+  },
+  "sidebar.connectors.category.Shopify": {
+    "message": "Shopify",
+    "description": "The label for category Shopify in sidebar connectors"
+  },
+  "sidebar.connectors.category.Slack": {
+    "message": "Slack",
+    "description": "The label for category Slack in sidebar connectors"
+  },
+  "sidebar.connectors.category.Snapchat Marketing": {
+    "message": "Snapchat Marketing",
+    "description": "The label for category Snapchat Marketing in sidebar connectors"
+  },
+  "sidebar.connectors.category.Snowflake": {
+    "message": "Snowflake",
+    "description": "The label for category Snowflake in sidebar connectors"
+  },
+  "sidebar.connectors.category.Stripe": {
+    "message": "Stripe",
+    "description": "The label for category Stripe in sidebar connectors"
+  },
+  "sidebar.connectors.category.TikTok Marketing": {
+    "message": "TikTok Marketing",
+    "description": "The label for category TikTok Marketing in sidebar connectors"
+  },
+  "sidebar.connectors.category.Typeform": {
+    "message": "Typeform",
+    "description": "The label for category Typeform in sidebar connectors"
+  },
+  "sidebar.connectors.category.Zendesk Chat": {
+    "message": "Zendesk Chat",
+    "description": "The label for category Zendesk Chat in sidebar connectors"
+  },
+  "sidebar.connectors.category.Zendesk Support": {
+    "message": "Zendesk Support",
+    "description": "The label for category Zendesk Support in sidebar connectors"
+  },
+  "sidebar.connectors.category.Zendesk Talk": {
+    "message": "Zendesk Talk",
+    "description": "The label for category Zendesk Talk in sidebar connectors"
+  },
+  "sidebar.connectors.category.Marketplace": {
+    "message": "Marketplace",
+    "description": "The label for category Marketplace in sidebar connectors"
+  },
+  "sidebar.connectors.category.Amazon SQS": {
+    "message": "Amazon SQS",
+    "description": "The label for category Amazon SQS in sidebar connectors"
+  },
+  "sidebar.connectors.category.Apify Dataset": {
+    "message": "Apify Dataset",
+    "description": "The label for category Apify Dataset in sidebar connectors"
+  },
+  "sidebar.connectors.category.Appfollow": {
+    "message": "Appfollow",
+    "description": "The label for category Appfollow in sidebar connectors"
+  },
+  "sidebar.connectors.category.AppsFlyer": {
+    "message": "AppsFlyer",
+    "description": "The label for category AppsFlyer in sidebar connectors"
+  },
+  "sidebar.connectors.category.Asana": {
+    "message": "Asana",
+    "description": "The label for category Asana in sidebar connectors"
+  },
+  "sidebar.connectors.category.AWS CloudTrail": {
+    "message": "AWS CloudTrail",
+    "description": "The label for category AWS CloudTrail in sidebar connectors"
+  },
+  "sidebar.connectors.category.Chartmogul": {
+    "message": "Chartmogul",
+    "description": "The label for category Chartmogul in sidebar connectors"
+  },
+  "sidebar.connectors.category.Confluence": {
+    "message": "Confluence",
+    "description": "The label for category Confluence in sidebar connectors"
+  },
+  "sidebar.connectors.category.Datadog": {
+    "message": "Datadog",
+    "description": "The label for category Datadog in sidebar connectors"
+  },
+  "sidebar.connectors.category.Dolibarr": {
+    "message": "Dolibarr",
+    "description": "The label for category Dolibarr in sidebar connectors"
+  },
+  "sidebar.connectors.category.Facebook Pages": {
+    "message": "Facebook Pages",
+    "description": "The label for category Facebook Pages in sidebar connectors"
+  },
+  "sidebar.connectors.category.Firebolt": {
+    "message": "Firebolt",
+    "description": "The label for category Firebolt in sidebar connectors"
+  },
+  "sidebar.connectors.category.Freshsales": {
+    "message": "Freshsales",
+    "description": "The label for category Freshsales in sidebar connectors"
+  },
+  "sidebar.connectors.category.LinkedIn Pages": {
+    "message": "LinkedIn Pages",
+    "description": "The label for category LinkedIn Pages in sidebar connectors"
+  },
+  "sidebar.connectors.category.Looker": {
+    "message": "Looker",
+    "description": "The label for category Looker in sidebar connectors"
+  },
+  "sidebar.connectors.category.MailerLite": {
+    "message": "MailerLite",
+    "description": "The label for category MailerLite in sidebar connectors"
+  },
+  "sidebar.connectors.category.Metabase": {
+    "message": "Metabase",
+    "description": "The label for category Metabase in sidebar connectors"
+  },
+  "sidebar.connectors.category.Microsoft Teams": {
+    "message": "Microsoft Teams",
+    "description": "The label for category Microsoft Teams in sidebar connectors"
+  },
+  "sidebar.connectors.category.Mixpanel": {
+    "message": "Mixpanel",
+    "description": "The label for category Mixpanel in sidebar connectors"
+  },
+  "sidebar.connectors.category.Orb": {
+    "message": "Orb",
+    "description": "The label for category Orb in sidebar connectors"
+  },
+  "sidebar.connectors.category.Outreach": {
+    "message": "Outreach",
+    "description": "The label for category Outreach in sidebar connectors"
+  },
+  "sidebar.connectors.category.Pardot (Salesforce Marketing Cloud Account Engagement)": {
+    "message": "Pardot (Salesforce Marketing Cloud Account Engagement)",
+    "description": "The label for category Pardot (Salesforce Marketing Cloud Account Engagement) in sidebar connectors"
+  },
+  "sidebar.connectors.category.Paystack": {
+    "message": "Paystack",
+    "description": "The label for category Paystack in sidebar connectors"
+  },
+  "sidebar.connectors.category.Pipedrive": {
+    "message": "Pipedrive",
+    "description": "The label for category Pipedrive in sidebar connectors"
+  },
+  "sidebar.connectors.category.PostHog": {
+    "message": "PostHog",
+    "description": "The label for category PostHog in sidebar connectors"
+  },
+  "sidebar.connectors.category.Primetric": {
+    "message": "Primetric",
+    "description": "The label for category Primetric in sidebar connectors"
+  },
+  "sidebar.connectors.category.QuickBooks": {
+    "message": "QuickBooks",
+    "description": "The label for category QuickBooks in sidebar connectors"
+  },
+  "sidebar.connectors.category.Recharge": {
+    "message": "Recharge",
+    "description": "The label for category Recharge in sidebar connectors"
+  },
+  "sidebar.connectors.category.Recurly": {
+    "message": "Recurly",
+    "description": "The label for category Recurly in sidebar connectors"
+  },
+  "sidebar.connectors.category.RSS": {
+    "message": "RSS",
+    "description": "The label for category RSS in sidebar connectors"
+  },
+  "sidebar.connectors.category.Sample Data": {
+    "message": "Sample Data",
+    "description": "The label for category Sample Data in sidebar connectors"
+  },
+  "sidebar.connectors.category.SFTP Bulk": {
+    "message": "SFTP Bulk",
+    "description": "The label for category SFTP Bulk in sidebar connectors"
+  },
+  "sidebar.connectors.category.Timely": {
+    "message": "Timely",
+    "description": "The label for category Timely in sidebar connectors"
+  },
+  "sidebar.connectors.category.TMDb": {
+    "message": "TMDb",
+    "description": "The label for category TMDb in sidebar connectors"
+  },
+  "sidebar.connectors.category.Track PMS": {
+    "message": "Track PMS",
+    "description": "The label for category Track PMS in sidebar connectors"
+  },
+  "sidebar.connectors.category.Trello": {
+    "message": "Trello",
+    "description": "The label for category Trello in sidebar connectors"
+  },
+  "sidebar.connectors.category.Weatherstack": {
+    "message": "Weatherstack",
+    "description": "The label for category Weatherstack in sidebar connectors"
+  },
+  "sidebar.connectors.category.Xero": {
+    "message": "Xero",
+    "description": "The label for category Xero in sidebar connectors"
+  },
+  "sidebar.connectors.category.Zoom": {
+    "message": "Zoom",
+    "description": "The label for category Zoom in sidebar connectors"
+  },
+  "sidebar.connectors.category.Enterprise": {
+    "message": "Enterprise",
+    "description": "The label for category Enterprise in sidebar connectors"
+  },
+  "sidebar.connectors.category.Destinations": {
+    "message": "Destinations",
+    "description": "The label for category Destinations in sidebar connectors"
+  },
+  "sidebar.connectors.category.Azure Blob Storage": {
+    "message": "Azure Blob Storage",
+    "description": "The label for category Azure Blob Storage in sidebar connectors"
+  },
+  "sidebar.connectors.category.BigQuery": {
+    "message": "BigQuery",
+    "description": "The label for category BigQuery in sidebar connectors"
+  },
+  "sidebar.connectors.category.ClickHouse": {
+    "message": "ClickHouse",
+    "description": "The label for category ClickHouse in sidebar connectors"
+  },
+  "sidebar.connectors.category.Databricks Lakehouse": {
+    "message": "Databricks Lakehouse",
+    "description": "The label for category Databricks Lakehouse in sidebar connectors"
+  },
+  "sidebar.connectors.category.Redshift": {
+    "message": "Redshift",
+    "description": "The label for category Redshift in sidebar connectors"
+  },
+  "sidebar.connectors.category.Weaviate": {
+    "message": "Weaviate",
+    "description": "The label for category Weaviate in sidebar connectors"
+  },
+  "sidebar.connectors.category.DuckDB": {
+    "message": "DuckDB",
+    "description": "The label for category DuckDB in sidebar connectors"
+  },
+  "sidebar.connectors.category.Oracle DB": {
+    "message": "Oracle DB",
+    "description": "The label for category Oracle DB in sidebar connectors"
+  },
+  "sidebar.connectors.category.Teradata": {
+    "message": "Teradata",
+    "description": "The label for category Teradata in sidebar connectors"
+  },
+  "sidebar.connectors.category.Vector Database (powered by LangChain)": {
+    "message": "Vector Database (powered by LangChain)",
+    "description": "The label for category Vector Database (powered by LangChain) in sidebar connectors"
+  },
+  "sidebar.connectors.doc.Migration Guide": {
+    "message": "Migration Guide",
+    "description": "The label for the doc item Migration Guide in sidebar connectors, linking to the doc destinations/langchain-migrations"
+  },
+  "sidebar.connectors.doc.Amplitude": {
+    "message": "Amplitude",
+    "description": "The label for the doc item Amplitude in sidebar connectors, linking to the doc sources/amplitude"
+  },
+  "sidebar.connectors.doc.Azure Blob Storage": {
+    "message": "Azure Blob Storage",
+    "description": "The label for the doc item Azure Blob Storage in sidebar connectors, linking to the doc sources/azure-blob-storage"
+  },
+  "sidebar.connectors.doc.Chargebee": {
+    "message": "Chargebee",
+    "description": "The label for the doc item Chargebee in sidebar connectors, linking to the doc sources/chargebee"
+  },
+  "sidebar.connectors.doc.File (CSV, JSON, Excel, Feather, Parquet)": {
+    "message": "File (CSV, JSON, Excel, Feather, Parquet)",
+    "description": "The label for the doc item File (CSV, JSON, Excel, Feather, Parquet) in sidebar connectors, linking to the doc sources/file"
+  },
+  "sidebar.connectors.doc.Freshdesk": {
+    "message": "Freshdesk",
+    "description": "The label for the doc item Freshdesk in sidebar connectors, linking to the doc sources/freshdesk"
+  },
+  "sidebar.connectors.doc.GitHub": {
+    "message": "GitHub",
+    "description": "The label for the doc item GitHub in sidebar connectors, linking to the doc sources/github"
+  },
+  "sidebar.connectors.doc.Google Cloud Storage (GCS)": {
+    "message": "Google Cloud Storage (GCS)",
+    "description": "The label for the doc item Google Cloud Storage (GCS) in sidebar connectors, linking to the doc destinations/gcs"
+  },
+  "sidebar.connectors.doc.Google Search Console": {
+    "message": "Google Search Console",
+    "description": "The label for the doc item Google Search Console in sidebar connectors, linking to the doc sources/google-search-console"
+  },
+  "sidebar.connectors.doc.Google Sheets": {
+    "message": "Google Sheets",
+    "description": "The label for the doc item Google Sheets in sidebar connectors, linking to the doc destinations/google-sheets"
+  },
+  "sidebar.connectors.doc.Intercom": {
+    "message": "Intercom",
+    "description": "The label for the doc item Intercom in sidebar connectors, linking to the doc sources/intercom"
+  },
+  "sidebar.connectors.doc.Microsoft SharePoint": {
+    "message": "Microsoft SharePoint",
+    "description": "The label for the doc item Microsoft SharePoint in sidebar connectors, linking to the doc sources/microsoft-sharepoint"
+  },
+  "sidebar.connectors.doc.Troubleshooting": {
+    "message": "Troubleshooting",
+    "description": "The label for the doc item Troubleshooting in sidebar connectors, linking to the doc destinations/s3/s3-troubleshooting"
+  },
+  "sidebar.connectors.doc.Cloud SQL for Postgres": {
+    "message": "Cloud SQL for Postgres",
+    "description": "The label for the doc item Cloud SQL for Postgres in sidebar connectors, linking to the doc sources/postgres/cloud-sql-postgres"
+  },
+  "sidebar.connectors.doc.Salesforce": {
+    "message": "Salesforce",
+    "description": "The label for the doc item Salesforce in sidebar connectors, linking to the doc sources/salesforce"
+  },
+  "sidebar.connectors.doc.Sentry": {
+    "message": "Sentry",
+    "description": "The label for the doc item Sentry in sidebar connectors, linking to the doc sources/sentry"
+  },
+  "sidebar.connectors.doc.Source ServiceNow": {
+    "message": "Source ServiceNow",
+    "description": "The label for the doc item Source ServiceNow in sidebar connectors, linking to the doc enterprise-connectors/source-service-now"
+  },
+  "sidebar.connectors.doc.Source Workday": {
+    "message": "Source Workday",
+    "description": "The label for the doc item Source Workday in sidebar connectors, linking to the doc enterprise-connectors/source-workday"
+  },
+  "sidebar.connectors.doc.WooCommerce": {
+    "message": "WooCommerce",
+    "description": "The label for the doc item WooCommerce in sidebar connectors, linking to the doc sources/woocommerce"
+  },
+  "sidebar.connectors.doc.100ms": {
+    "message": "100ms",
+    "description": "The label for the doc item 100ms in sidebar connectors, linking to the doc sources/100ms"
+  },
+  "sidebar.connectors.doc.7shifts": {
+    "message": "7shifts",
+    "description": "The label for the doc item 7shifts in sidebar connectors, linking to the doc sources/7shifts"
+  },
+  "sidebar.connectors.doc.ActiveCampaign": {
+    "message": "ActiveCampaign",
+    "description": "The label for the doc item ActiveCampaign in sidebar connectors, linking to the doc sources/activecampaign"
+  },
+  "sidebar.connectors.doc.Adjust": {
+    "message": "Adjust",
+    "description": "The label for the doc item Adjust in sidebar connectors, linking to the doc sources/adjust"
+  },
+  "sidebar.connectors.doc.Adobe Commerce (Magento)": {
+    "message": "Adobe Commerce (Magento)",
+    "description": "The label for the doc item Adobe Commerce (Magento) in sidebar connectors, linking to the doc sources/adobe-commerce-magento"
+  },
+  "sidebar.connectors.doc.AgileCRM": {
+    "message": "AgileCRM",
+    "description": "The label for the doc item AgileCRM in sidebar connectors, linking to the doc sources/agilecrm"
+  },
+  "sidebar.connectors.doc.Aha API": {
+    "message": "Aha API",
+    "description": "The label for the doc item Aha API in sidebar connectors, linking to the doc sources/aha"
+  },
+  "sidebar.connectors.doc.Airbyte": {
+    "message": "Airbyte",
+    "description": "The label for the doc item Airbyte in sidebar connectors, linking to the doc sources/airbyte"
+  },
+  "sidebar.connectors.doc.Aircall": {
+    "message": "Aircall",
+    "description": "The label for the doc item Aircall in sidebar connectors, linking to the doc sources/aircall"
+  },
+  "sidebar.connectors.doc.Akeneo": {
+    "message": "Akeneo",
+    "description": "The label for the doc item Akeneo in sidebar connectors, linking to the doc sources/akeneo"
+  },
+  "sidebar.connectors.doc.Algolia": {
+    "message": "Algolia",
+    "description": "The label for the doc item Algolia in sidebar connectors, linking to the doc sources/algolia"
+  },
+  "sidebar.connectors.doc.Alpaca Broker API": {
+    "message": "Alpaca Broker API",
+    "description": "The label for the doc item Alpaca Broker API in sidebar connectors, linking to the doc sources/alpaca-broker-api"
+  },
+  "sidebar.connectors.doc.Alpha Vantage": {
+    "message": "Alpha Vantage",
+    "description": "The label for the doc item Alpha Vantage in sidebar connectors, linking to the doc sources/alpha-vantage"
+  },
+  "sidebar.connectors.doc.Appcues": {
+    "message": "Appcues",
+    "description": "The label for the doc item Appcues in sidebar connectors, linking to the doc sources/appcues"
+  },
+  "sidebar.connectors.doc.Appfigures": {
+    "message": "Appfigures",
+    "description": "The label for the doc item Appfigures in sidebar connectors, linking to the doc sources/appfigures"
+  },
+  "sidebar.connectors.doc.Apple Ads (Apple Search Ads)": {
+    "message": "Apple Ads (Apple Search Ads)",
+    "description": "The label for the doc item Apple Ads (Apple Search Ads) in sidebar connectors, linking to the doc sources/apple-search-ads"
+  },
+  "sidebar.connectors.doc.Appstore": {
+    "message": "Appstore",
+    "description": "The label for the doc item Appstore in sidebar connectors, linking to the doc sources/appstore"
+  },
+  "sidebar.connectors.doc.Apptivo": {
+    "message": "Apptivo",
+    "description": "The label for the doc item Apptivo in sidebar connectors, linking to the doc sources/apptivo"
+  },
+  "sidebar.connectors.doc.Ashby": {
+    "message": "Ashby",
+    "description": "The label for the doc item Ashby in sidebar connectors, linking to the doc sources/ashby"
+  },
+  "sidebar.connectors.doc.AssemblyAI": {
+    "message": "AssemblyAI",
+    "description": "The label for the doc item AssemblyAI in sidebar connectors, linking to the doc sources/assemblyai"
+  },
+  "sidebar.connectors.doc.Auth0": {
+    "message": "Auth0",
+    "description": "The label for the doc item Auth0 in sidebar connectors, linking to the doc sources/auth0"
+  },
+  "sidebar.connectors.doc.Aviationstack": {
+    "message": "Aviationstack",
+    "description": "The label for the doc item Aviationstack in sidebar connectors, linking to the doc sources/aviationstack"
+  },
+  "sidebar.connectors.doc.Avni": {
+    "message": "Avni",
+    "description": "The label for the doc item Avni in sidebar connectors, linking to the doc sources/avni"
+  },
+  "sidebar.connectors.doc.AWIN Advertiser": {
+    "message": "AWIN Advertiser",
+    "description": "The label for the doc item AWIN Advertiser in sidebar connectors, linking to the doc sources/awin-advertiser"
+  },
+  "sidebar.connectors.doc.Azure Table Storage": {
+    "message": "Azure Table Storage",
+    "description": "The label for the doc item Azure Table Storage in sidebar connectors, linking to the doc sources/azure-table"
+  },
+  "sidebar.connectors.doc.Babelforce": {
+    "message": "Babelforce",
+    "description": "The label for the doc item Babelforce in sidebar connectors, linking to the doc sources/babelforce"
+  },
+  "sidebar.connectors.doc.BambooHR": {
+    "message": "BambooHR",
+    "description": "The label for the doc item BambooHR in sidebar connectors, linking to the doc sources/bamboo-hr"
+  },
+  "sidebar.connectors.doc.Basecamp": {
+    "message": "Basecamp",
+    "description": "The label for the doc item Basecamp in sidebar connectors, linking to the doc sources/basecamp"
+  },
+  "sidebar.connectors.doc.Beamer": {
+    "message": "Beamer",
+    "description": "The label for the doc item Beamer in sidebar connectors, linking to the doc sources/beamer"
+  },
+  "sidebar.connectors.doc.BigCommerce": {
+    "message": "BigCommerce",
+    "description": "The label for the doc item BigCommerce in sidebar connectors, linking to the doc sources/bigcommerce"
+  },
+  "sidebar.connectors.doc.BigMailer": {
+    "message": "BigMailer",
+    "description": "The label for the doc item BigMailer in sidebar connectors, linking to the doc sources/bigmailer"
+  },
+  "sidebar.connectors.doc.BigQuery": {
+    "message": "BigQuery",
+    "description": "The label for the doc item BigQuery in sidebar connectors, linking to the doc sources/bigquery"
+  },
+  "sidebar.connectors.doc.Bitly": {
+    "message": "Bitly",
+    "description": "The label for the doc item Bitly in sidebar connectors, linking to the doc sources/bitly"
+  },
+  "sidebar.connectors.doc.Blogger": {
+    "message": "Blogger",
+    "description": "The label for the doc item Blogger in sidebar connectors, linking to the doc sources/blogger"
+  },
+  "sidebar.connectors.doc.Bluetally": {
+    "message": "Bluetally",
+    "description": "The label for the doc item Bluetally in sidebar connectors, linking to the doc sources/bluetally"
+  },
+  "sidebar.connectors.doc.BoldSign": {
+    "message": "BoldSign",
+    "description": "The label for the doc item BoldSign in sidebar connectors, linking to the doc sources/boldsign"
+  },
+  "sidebar.connectors.doc.Box": {
+    "message": "Box",
+    "description": "The label for the doc item Box in sidebar connectors, linking to the doc sources/box"
+  },
+  "sidebar.connectors.doc.Box Data Extract": {
+    "message": "Box Data Extract",
+    "description": "The label for the doc item Box Data Extract in sidebar connectors, linking to the doc sources/box-data-extract"
+  },
+  "sidebar.connectors.doc.Braintree": {
+    "message": "Braintree",
+    "description": "The label for the doc item Braintree in sidebar connectors, linking to the doc sources/braintree"
+  },
+  "sidebar.connectors.doc.Braze": {
+    "message": "Braze",
+    "description": "The label for the doc item Braze in sidebar connectors, linking to the doc sources/braze"
+  },
+  "sidebar.connectors.doc.Breezometer": {
+    "message": "Breezometer",
+    "description": "The label for the doc item Breezometer in sidebar connectors, linking to the doc sources/breezometer"
+  },
+  "sidebar.connectors.doc.Breezy HR": {
+    "message": "Breezy HR",
+    "description": "The label for the doc item Breezy HR in sidebar connectors, linking to the doc sources/breezy-hr"
+  },
+  "sidebar.connectors.doc.Brevo": {
+    "message": "Brevo",
+    "description": "The label for the doc item Brevo in sidebar connectors, linking to the doc sources/brevo"
+  },
+  "sidebar.connectors.doc.Brex": {
+    "message": "Brex",
+    "description": "The label for the doc item Brex in sidebar connectors, linking to the doc sources/brex"
+  },
+  "sidebar.connectors.doc.Bugsnag": {
+    "message": "Bugsnag",
+    "description": "The label for the doc item Bugsnag in sidebar connectors, linking to the doc sources/bugsnag"
+  },
+  "sidebar.connectors.doc.Buildkite": {
+    "message": "Buildkite",
+    "description": "The label for the doc item Buildkite in sidebar connectors, linking to the doc sources/buildkite"
+  },
+  "sidebar.connectors.doc.Bunny RevOps": {
+    "message": "Bunny RevOps",
+    "description": "The label for the doc item Bunny RevOps in sidebar connectors, linking to the doc sources/bunny-inc"
+  },
+  "sidebar.connectors.doc.Buzzsprout": {
+    "message": "Buzzsprout",
+    "description": "The label for the doc item Buzzsprout in sidebar connectors, linking to the doc sources/buzzsprout"
+  },
+  "sidebar.connectors.doc.Cal.com": {
+    "message": "Cal.com",
+    "description": "The label for the doc item Cal.com in sidebar connectors, linking to the doc sources/cal-com"
+  },
+  "sidebar.connectors.doc.Calendly": {
+    "message": "Calendly",
+    "description": "The label for the doc item Calendly in sidebar connectors, linking to the doc sources/calendly"
+  },
+  "sidebar.connectors.doc.CallRail": {
+    "message": "CallRail",
+    "description": "The label for the doc item CallRail in sidebar connectors, linking to the doc sources/callrail"
+  },
+  "sidebar.connectors.doc.Campaign Monitor": {
+    "message": "Campaign Monitor",
+    "description": "The label for the doc item Campaign Monitor in sidebar connectors, linking to the doc sources/campaign-monitor"
+  },
+  "sidebar.connectors.doc.Campayn": {
+    "message": "Campayn",
+    "description": "The label for the doc item Campayn in sidebar connectors, linking to the doc sources/campayn"
+  },
+  "sidebar.connectors.doc.Canny": {
+    "message": "Canny",
+    "description": "The label for the doc item Canny in sidebar connectors, linking to the doc sources/canny"
+  },
+  "sidebar.connectors.doc.Capsule CRM": {
+    "message": "Capsule CRM",
+    "description": "The label for the doc item Capsule CRM in sidebar connectors, linking to the doc sources/capsule-crm"
+  },
+  "sidebar.connectors.doc.Captain Data": {
+    "message": "Captain Data",
+    "description": "The label for the doc item Captain Data in sidebar connectors, linking to the doc sources/captain-data"
+  },
+  "sidebar.connectors.doc.Care Quality Commission": {
+    "message": "Care Quality Commission",
+    "description": "The label for the doc item Care Quality Commission in sidebar connectors, linking to the doc sources/care-quality-commission"
+  },
+  "sidebar.connectors.doc.Cart.com": {
+    "message": "Cart.com",
+    "description": "The label for the doc item Cart.com in sidebar connectors, linking to the doc sources/cart"
+  },
+  "sidebar.connectors.doc.Castor EDC": {
+    "message": "Castor EDC",
+    "description": "The label for the doc item Castor EDC in sidebar connectors, linking to the doc sources/castor-edc"
+  },
+  "sidebar.connectors.doc.Chameleon": {
+    "message": "Chameleon",
+    "description": "The label for the doc item Chameleon in sidebar connectors, linking to the doc sources/chameleon"
+  },
+  "sidebar.connectors.doc.Chargedesk": {
+    "message": "Chargedesk",
+    "description": "The label for the doc item Chargedesk in sidebar connectors, linking to the doc sources/chargedesk"
+  },
+  "sidebar.connectors.doc.Chargify": {
+    "message": "Chargify",
+    "description": "The label for the doc item Chargify in sidebar connectors, linking to the doc destinations/chargify"
+  },
+  "sidebar.connectors.doc.churnkey": {
+    "message": "churnkey",
+    "description": "The label for the doc item churnkey in sidebar connectors, linking to the doc sources/churnkey"
+  },
+  "sidebar.connectors.doc.CIMIS": {
+    "message": "CIMIS",
+    "description": "The label for the doc item CIMIS in sidebar connectors, linking to the doc sources/cimis"
+  },
+  "sidebar.connectors.doc.Cin7 Inventory API": {
+    "message": "Cin7 Inventory API",
+    "description": "The label for the doc item Cin7 Inventory API in sidebar connectors, linking to the doc sources/cin7"
+  },
+  "sidebar.connectors.doc.Circleci": {
+    "message": "Circleci",
+    "description": "The label for the doc item Circleci in sidebar connectors, linking to the doc sources/circleci"
+  },
+  "sidebar.connectors.doc.Cisco Meraki": {
+    "message": "Cisco Meraki",
+    "description": "The label for the doc item Cisco Meraki in sidebar connectors, linking to the doc sources/cisco-meraki"
+  },
+  "sidebar.connectors.doc.Clarifai": {
+    "message": "Clarifai",
+    "description": "The label for the doc item Clarifai in sidebar connectors, linking to the doc sources/clarif-ai"
+  },
+  "sidebar.connectors.doc.Clazar": {
+    "message": "Clazar",
+    "description": "The label for the doc item Clazar in sidebar connectors, linking to the doc sources/clazar"
+  },
+  "sidebar.connectors.doc.ClickHouse": {
+    "message": "ClickHouse",
+    "description": "The label for the doc item ClickHouse in sidebar connectors, linking to the doc destinations/clickhouse-deprecated"
+  },
+  "sidebar.connectors.doc.ClickUp API": {
+    "message": "ClickUp API",
+    "description": "The label for the doc item ClickUp API in sidebar connectors, linking to the doc sources/clickup-api"
+  },
+  "sidebar.connectors.doc.Clockify": {
+    "message": "Clockify",
+    "description": "The label for the doc item Clockify in sidebar connectors, linking to the doc sources/clockify"
+  },
+  "sidebar.connectors.doc.Clockodo": {
+    "message": "Clockodo",
+    "description": "The label for the doc item Clockodo in sidebar connectors, linking to the doc sources/clockodo"
+  },
+  "sidebar.connectors.doc.Close.com": {
+    "message": "Close.com",
+    "description": "The label for the doc item Close.com in sidebar connectors, linking to the doc sources/close-com"
+  },
+  "sidebar.connectors.doc.Cloudbeds": {
+    "message": "Cloudbeds",
+    "description": "The label for the doc item Cloudbeds in sidebar connectors, linking to the doc sources/cloudbeds"
+  },
+  "sidebar.connectors.doc.Coassemble": {
+    "message": "Coassemble",
+    "description": "The label for the doc item Coassemble in sidebar connectors, linking to the doc sources/coassemble"
+  },
+  "sidebar.connectors.doc.CockroachDB": {
+    "message": "CockroachDB",
+    "description": "The label for the doc item CockroachDB in sidebar connectors, linking to the doc sources/cockroachdb"
+  },
+  "sidebar.connectors.doc.Coda": {
+    "message": "Coda",
+    "description": "The label for the doc item Coda in sidebar connectors, linking to the doc sources/coda"
+  },
+  "sidebar.connectors.doc.Codefresh": {
+    "message": "Codefresh",
+    "description": "The label for the doc item Codefresh in sidebar connectors, linking to the doc sources/codefresh"
+  },
+  "sidebar.connectors.doc.CoinAPI": {
+    "message": "CoinAPI",
+    "description": "The label for the doc item CoinAPI in sidebar connectors, linking to the doc sources/coin-api"
+  },
+  "sidebar.connectors.doc.CoinGecko Coins": {
+    "message": "CoinGecko Coins",
+    "description": "The label for the doc item CoinGecko Coins in sidebar connectors, linking to the doc sources/coingecko-coins"
+  },
+  "sidebar.connectors.doc.Coinmarketcap API": {
+    "message": "Coinmarketcap API",
+    "description": "The label for the doc item Coinmarketcap API in sidebar connectors, linking to the doc sources/coinmarketcap"
+  },
+  "sidebar.connectors.doc.Commcare": {
+    "message": "Commcare",
+    "description": "The label for the doc item Commcare in sidebar connectors, linking to the doc sources/commcare"
+  },
+  "sidebar.connectors.doc.Commercetools": {
+    "message": "Commercetools",
+    "description": "The label for the doc item Commercetools in sidebar connectors, linking to the doc sources/commercetools"
+  },
+  "sidebar.connectors.doc.Concord": {
+    "message": "Concord",
+    "description": "The label for the doc item Concord in sidebar connectors, linking to the doc sources/concord"
+  },
+  "sidebar.connectors.doc.Configcat API": {
+    "message": "Configcat API",
+    "description": "The label for the doc item Configcat API in sidebar connectors, linking to the doc sources/configcat"
+  },
+  "sidebar.connectors.doc.ConvertKit": {
+    "message": "ConvertKit",
+    "description": "The label for the doc item ConvertKit in sidebar connectors, linking to the doc sources/convertkit"
+  },
+  "sidebar.connectors.doc.Convex": {
+    "message": "Convex",
+    "description": "The label for the doc item Convex in sidebar connectors, linking to the doc destinations/convex"
+  },
+  "sidebar.connectors.doc.Copper": {
+    "message": "Copper",
+    "description": "The label for the doc item Copper in sidebar connectors, linking to the doc sources/copper"
+  },
+  "sidebar.connectors.doc.Couchbase": {
+    "message": "Couchbase",
+    "description": "The label for the doc item Couchbase in sidebar connectors, linking to the doc destinations/couchbase"
+  },
+  "sidebar.connectors.doc.Countercyclical": {
+    "message": "Countercyclical",
+    "description": "The label for the doc item Countercyclical in sidebar connectors, linking to the doc sources/countercyclical"
+  },
+  "sidebar.connectors.doc.Courier": {
+    "message": "Courier",
+    "description": "The label for the doc item Courier in sidebar connectors, linking to the doc sources/courier"
+  },
+  "sidebar.connectors.doc.Customer.io": {
+    "message": "Customer.io",
+    "description": "The label for the doc item Customer.io in sidebar connectors, linking to the doc sources/customer-io"
+  },
+  "sidebar.connectors.doc.Customerly": {
+    "message": "Customerly",
+    "description": "The label for the doc item Customerly in sidebar connectors, linking to the doc sources/customerly"
+  },
+  "sidebar.connectors.doc.DataScope": {
+    "message": "DataScope",
+    "description": "The label for the doc item DataScope in sidebar connectors, linking to the doc sources/datascope"
+  },
+  "sidebar.connectors.doc.Db2": {
+    "message": "Db2",
+    "description": "The label for the doc item Db2 in sidebar connectors, linking to the doc sources/db2"
+  },
+  "sidebar.connectors.doc.DBT": {
+    "message": "DBT",
+    "description": "The label for the doc item DBT in sidebar connectors, linking to the doc sources/dbt"
+  },
+  "sidebar.connectors.doc.Delighted": {
+    "message": "Delighted",
+    "description": "The label for the doc item Delighted in sidebar connectors, linking to the doc sources/delighted"
+  },
+  "sidebar.connectors.doc.Deputy": {
+    "message": "Deputy",
+    "description": "The label for the doc item Deputy in sidebar connectors, linking to the doc sources/deputy"
+  },
+  "sidebar.connectors.doc.Ding Connect": {
+    "message": "Ding Connect",
+    "description": "The label for the doc item Ding Connect in sidebar connectors, linking to the doc sources/ding-connect"
+  },
+  "sidebar.connectors.doc.Display & Video 360": {
+    "message": "Display & Video 360",
+    "description": "The label for the doc item Display & Video 360 in sidebar connectors, linking to the doc sources/dv-360"
+  },
+  "sidebar.connectors.doc.Dixa": {
+    "message": "Dixa",
+    "description": "The label for the doc item Dixa in sidebar connectors, linking to the doc sources/dixa"
+  },
+  "sidebar.connectors.doc.Dockerhub": {
+    "message": "Dockerhub",
+    "description": "The label for the doc item Dockerhub in sidebar connectors, linking to the doc sources/dockerhub"
+  },
+  "sidebar.connectors.doc.Docuseal": {
+    "message": "Docuseal",
+    "description": "The label for the doc item Docuseal in sidebar connectors, linking to the doc sources/docuseal"
+  },
+  "sidebar.connectors.doc.Dremio": {
+    "message": "Dremio",
+    "description": "The label for the doc item Dremio in sidebar connectors, linking to the doc sources/dremio"
+  },
+  "sidebar.connectors.doc.Drift": {
+    "message": "Drift",
+    "description": "The label for the doc item Drift in sidebar connectors, linking to the doc sources/drift"
+  },
+  "sidebar.connectors.doc.Drip": {
+    "message": "Drip",
+    "description": "The label for the doc item Drip in sidebar connectors, linking to the doc sources/drip"
+  },
+  "sidebar.connectors.doc.Dropbox Sign": {
+    "message": "Dropbox Sign",
+    "description": "The label for the doc item Dropbox Sign in sidebar connectors, linking to the doc sources/dropbox-sign"
+  },
+  "sidebar.connectors.doc.Drupal": {
+    "message": "Drupal",
+    "description": "The label for the doc item Drupal in sidebar connectors, linking to the doc sources/drupal"
+  },
+  "sidebar.connectors.doc.Dwolla": {
+    "message": "Dwolla",
+    "description": "The label for the doc item Dwolla in sidebar connectors, linking to the doc sources/dwolla"
+  },
+  "sidebar.connectors.doc.Dynamodb": {
+    "message": "Dynamodb",
+    "description": "The label for the doc item Dynamodb in sidebar connectors, linking to the doc sources/dynamodb"
+  },
+  "sidebar.connectors.doc.e-conomic": {
+    "message": "e-conomic",
+    "description": "The label for the doc item e-conomic in sidebar connectors, linking to the doc sources/e-conomic"
+  },
+  "sidebar.connectors.doc.Easypost": {
+    "message": "Easypost",
+    "description": "The label for the doc item Easypost in sidebar connectors, linking to the doc sources/easypost"
+  },
+  "sidebar.connectors.doc.Easypromos": {
+    "message": "Easypromos",
+    "description": "The label for the doc item Easypromos in sidebar connectors, linking to the doc sources/easypromos"
+  },
+  "sidebar.connectors.doc.Ebay Finance": {
+    "message": "Ebay Finance",
+    "description": "The label for the doc item Ebay Finance in sidebar connectors, linking to the doc sources/ebay-finance"
+  },
+  "sidebar.connectors.doc.Ebay Fulfillment": {
+    "message": "Ebay Fulfillment",
+    "description": "The label for the doc item Ebay Fulfillment in sidebar connectors, linking to the doc sources/ebay-fulfillment"
+  },
+  "sidebar.connectors.doc.Elasticemail": {
+    "message": "Elasticemail",
+    "description": "The label for the doc item Elasticemail in sidebar connectors, linking to the doc sources/elasticemail"
+  },
+  "sidebar.connectors.doc.Elasticsearch": {
+    "message": "Elasticsearch",
+    "description": "The label for the doc item Elasticsearch in sidebar connectors, linking to the doc destinations/elasticsearch"
+  },
+  "sidebar.connectors.doc.EmailOctopus": {
+    "message": "EmailOctopus",
+    "description": "The label for the doc item EmailOctopus in sidebar connectors, linking to the doc sources/emailoctopus"
+  },
+  "sidebar.connectors.doc.Employment-Hero": {
+    "message": "Employment-Hero",
+    "description": "The label for the doc item Employment-Hero in sidebar connectors, linking to the doc sources/employment-hero"
+  },
+  "sidebar.connectors.doc.Encharge": {
+    "message": "Encharge",
+    "description": "The label for the doc item Encharge in sidebar connectors, linking to the doc sources/encharge"
+  },
+  "sidebar.connectors.doc.End-to-End Testing Source": {
+    "message": "End-to-End Testing Source",
+    "description": "The label for the doc item End-to-End Testing Source in sidebar connectors, linking to the doc sources/e2e-test"
+  },
+  "sidebar.connectors.doc.End-to-End Testing Source for Cloud": {
+    "message": "End-to-End Testing Source for Cloud",
+    "description": "The label for the doc item End-to-End Testing Source for Cloud in sidebar connectors, linking to the doc sources/e2e-test-cloud"
+  },
+  "sidebar.connectors.doc.Eventbrite": {
+    "message": "Eventbrite",
+    "description": "The label for the doc item Eventbrite in sidebar connectors, linking to the doc sources/eventbrite"
+  },
+  "sidebar.connectors.doc.Eventee": {
+    "message": "Eventee",
+    "description": "The label for the doc item Eventee in sidebar connectors, linking to the doc sources/eventee"
+  },
+  "sidebar.connectors.doc.Eventzilla": {
+    "message": "Eventzilla",
+    "description": "The label for the doc item Eventzilla in sidebar connectors, linking to the doc sources/eventzilla"
+  },
+  "sidebar.connectors.doc.Everhour": {
+    "message": "Everhour",
+    "description": "The label for the doc item Everhour in sidebar connectors, linking to the doc sources/everhour"
+  },
+  "sidebar.connectors.doc.Exchange Rates API": {
+    "message": "Exchange Rates API",
+    "description": "The label for the doc item Exchange Rates API in sidebar connectors, linking to the doc sources/exchange-rates"
+  },
+  "sidebar.connectors.doc.EZOfficeInventory": {
+    "message": "EZOfficeInventory",
+    "description": "The label for the doc item EZOfficeInventory in sidebar connectors, linking to the doc sources/ezofficeinventory"
+  },
+  "sidebar.connectors.doc.Factorial": {
+    "message": "Factorial",
+    "description": "The label for the doc item Factorial in sidebar connectors, linking to the doc sources/factorial"
+  },
+  "sidebar.connectors.doc.Fastbill": {
+    "message": "Fastbill",
+    "description": "The label for the doc item Fastbill in sidebar connectors, linking to the doc sources/fastbill"
+  },
+  "sidebar.connectors.doc.Fastly": {
+    "message": "Fastly",
+    "description": "The label for the doc item Fastly in sidebar connectors, linking to the doc sources/fastly"
+  },
+  "sidebar.connectors.doc.Fauna": {
+    "message": "Fauna",
+    "description": "The label for the doc item Fauna in sidebar connectors, linking to the doc sources/fauna"
+  },
+  "sidebar.connectors.doc.Fillout": {
+    "message": "Fillout",
+    "description": "The label for the doc item Fillout in sidebar connectors, linking to the doc sources/fillout"
+  },
+  "sidebar.connectors.doc.Finage": {
+    "message": "Finage",
+    "description": "The label for the doc item Finage in sidebar connectors, linking to the doc sources/finage"
+  },
+  "sidebar.connectors.doc.Financial Modelling": {
+    "message": "Financial Modelling",
+    "description": "The label for the doc item Financial Modelling in sidebar connectors, linking to the doc sources/financial-modelling"
+  },
+  "sidebar.connectors.doc.Finnhub": {
+    "message": "Finnhub",
+    "description": "The label for the doc item Finnhub in sidebar connectors, linking to the doc sources/finnhub"
+  },
+  "sidebar.connectors.doc.Finnworlds": {
+    "message": "Finnworlds",
+    "description": "The label for the doc item Finnworlds in sidebar connectors, linking to the doc sources/finnworlds"
+  },
+  "sidebar.connectors.doc.Firebase Realtime Database": {
+    "message": "Firebase Realtime Database",
+    "description": "The label for the doc item Firebase Realtime Database in sidebar connectors, linking to the doc sources/firebase-realtime-database"
+  },
+  "sidebar.connectors.doc.FireHydrant": {
+    "message": "FireHydrant",
+    "description": "The label for the doc item FireHydrant in sidebar connectors, linking to the doc sources/firehydrant"
+  },
+  "sidebar.connectors.doc.Fleetio API": {
+    "message": "Fleetio API",
+    "description": "The label for the doc item Fleetio API in sidebar connectors, linking to the doc sources/fleetio"
+  },
+  "sidebar.connectors.doc.Flexmail": {
+    "message": "Flexmail",
+    "description": "The label for the doc item Flexmail in sidebar connectors, linking to the doc sources/flexmail"
+  },
+  "sidebar.connectors.doc.Flexport": {
+    "message": "Flexport",
+    "description": "The label for the doc item Flexport in sidebar connectors, linking to the doc sources/flexport"
+  },
+  "sidebar.connectors.doc.Float": {
+    "message": "Float",
+    "description": "The label for the doc item Float in sidebar connectors, linking to the doc sources/float"
+  },
+  "sidebar.connectors.doc.Flowlu": {
+    "message": "Flowlu",
+    "description": "The label for the doc item Flowlu in sidebar connectors, linking to the doc sources/flowlu"
+  },
+  "sidebar.connectors.doc.Formbricks": {
+    "message": "Formbricks",
+    "description": "The label for the doc item Formbricks in sidebar connectors, linking to the doc sources/formbricks"
+  },
+  "sidebar.connectors.doc.FreeAgent Connector": {
+    "message": "FreeAgent Connector",
+    "description": "The label for the doc item FreeAgent Connector in sidebar connectors, linking to the doc sources/free-agent-connector"
+  },
+  "sidebar.connectors.doc.Freightview": {
+    "message": "Freightview",
+    "description": "The label for the doc item Freightview in sidebar connectors, linking to the doc sources/freightview"
+  },
+  "sidebar.connectors.doc.FreshBooks": {
+    "message": "FreshBooks",
+    "description": "The label for the doc item FreshBooks in sidebar connectors, linking to the doc sources/freshbooks"
+  },
+  "sidebar.connectors.doc.Freshcaller": {
+    "message": "Freshcaller",
+    "description": "The label for the doc item Freshcaller in sidebar connectors, linking to the doc sources/freshcaller"
+  },
+  "sidebar.connectors.doc.Freshchat": {
+    "message": "Freshchat",
+    "description": "The label for the doc item Freshchat in sidebar connectors, linking to the doc sources/freshchat"
+  },
+  "sidebar.connectors.doc.Freshservice": {
+    "message": "Freshservice",
+    "description": "The label for the doc item Freshservice in sidebar connectors, linking to the doc sources/freshservice"
+  },
+  "sidebar.connectors.doc.Front": {
+    "message": "Front",
+    "description": "The label for the doc item Front in sidebar connectors, linking to the doc sources/front"
+  },
+  "sidebar.connectors.doc.Fulcrum": {
+    "message": "Fulcrum",
+    "description": "The label for the doc item Fulcrum in sidebar connectors, linking to the doc sources/fulcrum"
+  },
+  "sidebar.connectors.doc.FullStory": {
+    "message": "FullStory",
+    "description": "The label for the doc item FullStory in sidebar connectors, linking to the doc sources/fullstory"
+  },
+  "sidebar.connectors.doc.Gainsight-API": {
+    "message": "Gainsight-API",
+    "description": "The label for the doc item Gainsight-API in sidebar connectors, linking to the doc sources/gainsight-px"
+  },
+  "sidebar.connectors.doc.Genesys": {
+    "message": "Genesys",
+    "description": "The label for the doc item Genesys in sidebar connectors, linking to the doc sources/genesys"
+  },
+  "sidebar.connectors.doc.GetGist": {
+    "message": "GetGist",
+    "description": "The label for the doc item GetGist in sidebar connectors, linking to the doc sources/getgist"
+  },
+  "sidebar.connectors.doc.Giphy": {
+    "message": "Giphy",
+    "description": "The label for the doc item Giphy in sidebar connectors, linking to the doc sources/giphy"
+  },
+  "sidebar.connectors.doc.GitBook": {
+    "message": "GitBook",
+    "description": "The label for the doc item GitBook in sidebar connectors, linking to the doc sources/gitbook"
+  },
+  "sidebar.connectors.doc.Glassfrog": {
+    "message": "Glassfrog",
+    "description": "The label for the doc item Glassfrog in sidebar connectors, linking to the doc sources/glassfrog"
+  },
+  "sidebar.connectors.doc.Gmail": {
+    "message": "Gmail",
+    "description": "The label for the doc item Gmail in sidebar connectors, linking to the doc sources/gmail"
+  },
+  "sidebar.connectors.doc.GNews": {
+    "message": "GNews",
+    "description": "The label for the doc item GNews in sidebar connectors, linking to the doc sources/gnews"
+  },
+  "sidebar.connectors.doc.GoCardless": {
+    "message": "GoCardless",
+    "description": "The label for the doc item GoCardless in sidebar connectors, linking to the doc sources/gocardless"
+  },
+  "sidebar.connectors.doc.Goldcast": {
+    "message": "Goldcast",
+    "description": "The label for the doc item Goldcast in sidebar connectors, linking to the doc sources/goldcast"
+  },
+  "sidebar.connectors.doc.GoLogin": {
+    "message": "GoLogin",
+    "description": "The label for the doc item GoLogin in sidebar connectors, linking to the doc sources/gologin"
+  },
+  "sidebar.connectors.doc.Gong": {
+    "message": "Gong",
+    "description": "The label for the doc item Gong in sidebar connectors, linking to the doc sources/gong"
+  },
+  "sidebar.connectors.doc.Google Analytics (Universal Analytics)": {
+    "message": "Google Analytics (Universal Analytics)",
+    "description": "The label for the doc item Google Analytics (Universal Analytics) in sidebar connectors, linking to the doc sources/google-analytics-v4"
+  },
+  "sidebar.connectors.doc.Google Calendar": {
+    "message": "Google Calendar",
+    "description": "The label for the doc item Google Calendar in sidebar connectors, linking to the doc sources/google-calendar"
+  },
+  "sidebar.connectors.doc.Google Classroom": {
+    "message": "Google Classroom",
+    "description": "The label for the doc item Google Classroom in sidebar connectors, linking to the doc sources/google-classroom"
+  },
+  "sidebar.connectors.doc.Google Directory": {
+    "message": "Google Directory",
+    "description": "The label for the doc item Google Directory in sidebar connectors, linking to the doc sources/google-directory"
+  },
+  "sidebar.connectors.doc.Google Drive": {
+    "message": "Google Drive",
+    "description": "The label for the doc item Google Drive in sidebar connectors, linking to the doc sources/google-drive"
+  },
+  "sidebar.connectors.doc.Google Forms": {
+    "message": "Google Forms",
+    "description": "The label for the doc item Google Forms in sidebar connectors, linking to the doc sources/google-forms"
+  },
+  "sidebar.connectors.doc.Google PageSpeed Insights": {
+    "message": "Google PageSpeed Insights",
+    "description": "The label for the doc item Google PageSpeed Insights in sidebar connectors, linking to the doc sources/google-pagespeed-insights"
+  },
+  "sidebar.connectors.doc.Google Tasks": {
+    "message": "Google Tasks",
+    "description": "The label for the doc item Google Tasks in sidebar connectors, linking to the doc sources/google-tasks"
+  },
+  "sidebar.connectors.doc.Google Workspace Admin Reports": {
+    "message": "Google Workspace Admin Reports",
+    "description": "The label for the doc item Google Workspace Admin Reports in sidebar connectors, linking to the doc sources/google-workspace-admin-reports"
+  },
+  "sidebar.connectors.doc.Google-webfonts": {
+    "message": "Google-webfonts",
+    "description": "The label for the doc item Google-webfonts in sidebar connectors, linking to the doc sources/google-webfonts"
+  },
+  "sidebar.connectors.doc.Gorgias": {
+    "message": "Gorgias",
+    "description": "The label for the doc item Gorgias in sidebar connectors, linking to the doc sources/gorgias"
+  },
+  "sidebar.connectors.doc.Greenhouse": {
+    "message": "Greenhouse",
+    "description": "The label for the doc item Greenhouse in sidebar connectors, linking to the doc sources/greenhouse"
+  },
+  "sidebar.connectors.doc.GreytHr": {
+    "message": "GreytHr",
+    "description": "The label for the doc item GreytHr in sidebar connectors, linking to the doc sources/greythr"
+  },
+  "sidebar.connectors.doc.Gridly": {
+    "message": "Gridly",
+    "description": "The label for the doc item Gridly in sidebar connectors, linking to the doc sources/gridly"
+  },
+  "sidebar.connectors.doc.Guru": {
+    "message": "Guru",
+    "description": "The label for the doc item Guru in sidebar connectors, linking to the doc sources/guru"
+  },
+  "sidebar.connectors.doc.Gutendex": {
+    "message": "Gutendex",
+    "description": "The label for the doc item Gutendex in sidebar connectors, linking to the doc sources/gutendex"
+  },
+  "sidebar.connectors.doc.Hardcoded Records": {
+    "message": "Hardcoded Records",
+    "description": "The label for the doc item Hardcoded Records in sidebar connectors, linking to the doc sources/hardcoded-records"
+  },
+  "sidebar.connectors.doc.Harness": {
+    "message": "Harness",
+    "description": "The label for the doc item Harness in sidebar connectors, linking to the doc sources/harness"
+  },
+  "sidebar.connectors.doc.Height": {
+    "message": "Height",
+    "description": "The label for the doc item Height in sidebar connectors, linking to the doc sources/height"
+  },
+  "sidebar.connectors.doc.Hellobaton": {
+    "message": "Hellobaton",
+    "description": "The label for the doc item Hellobaton in sidebar connectors, linking to the doc sources/hellobaton"
+  },
+  "sidebar.connectors.doc.Help Scout": {
+    "message": "Help Scout",
+    "description": "The label for the doc item Help Scout in sidebar connectors, linking to the doc sources/help-scout"
+  },
+  "sidebar.connectors.doc.Hibob": {
+    "message": "Hibob",
+    "description": "The label for the doc item Hibob in sidebar connectors, linking to the doc sources/hibob"
+  },
+  "sidebar.connectors.doc.High Level": {
+    "message": "High Level",
+    "description": "The label for the doc item High Level in sidebar connectors, linking to the doc sources/high-level"
+  },
+  "sidebar.connectors.doc.HoorayHR": {
+    "message": "HoorayHR",
+    "description": "The label for the doc item HoorayHR in sidebar connectors, linking to the doc sources/hoorayhr"
+  },
+  "sidebar.connectors.doc.HTTP Request": {
+    "message": "HTTP Request",
+    "description": "The label for the doc item HTTP Request in sidebar connectors, linking to the doc sources/http-request"
+  },
+  "sidebar.connectors.doc.Hubplanner": {
+    "message": "Hubplanner",
+    "description": "The label for the doc item Hubplanner in sidebar connectors, linking to the doc sources/hubplanner"
+  },
+  "sidebar.connectors.doc.Hugging Face - Datasets": {
+    "message": "Hugging Face - Datasets",
+    "description": "The label for the doc item Hugging Face - Datasets in sidebar connectors, linking to the doc sources/hugging-face-datasets"
+  },
+  "sidebar.connectors.doc.Humanitix": {
+    "message": "Humanitix",
+    "description": "The label for the doc item Humanitix in sidebar connectors, linking to the doc sources/humanitix"
+  },
+  "sidebar.connectors.doc.Huntr": {
+    "message": "Huntr",
+    "description": "The label for the doc item Huntr in sidebar connectors, linking to the doc sources/huntr"
+  },
+  "sidebar.connectors.doc.Illumina Basespace": {
+    "message": "Illumina Basespace",
+    "description": "The label for the doc item Illumina Basespace in sidebar connectors, linking to the doc sources/illumina-basespace"
+  },
+  "sidebar.connectors.doc.Imagga": {
+    "message": "Imagga",
+    "description": "The label for the doc item Imagga in sidebar connectors, linking to the doc sources/imagga"
+  },
+  "sidebar.connectors.doc.Incident.io": {
+    "message": "Incident.io",
+    "description": "The label for the doc item Incident.io in sidebar connectors, linking to the doc sources/incident-io"
+  },
+  "sidebar.connectors.doc.Inflowinventory": {
+    "message": "Inflowinventory",
+    "description": "The label for the doc item Inflowinventory in sidebar connectors, linking to the doc sources/inflowinventory"
+  },
+  "sidebar.connectors.doc.Insightful": {
+    "message": "Insightful",
+    "description": "The label for the doc item Insightful in sidebar connectors, linking to the doc sources/insightful"
+  },
+  "sidebar.connectors.doc.Insightly": {
+    "message": "Insightly",
+    "description": "The label for the doc item Insightly in sidebar connectors, linking to the doc sources/insightly"
+  },
+  "sidebar.connectors.doc.Instatus": {
+    "message": "Instatus",
+    "description": "The label for the doc item Instatus in sidebar connectors, linking to the doc sources/instatus"
+  },
+  "sidebar.connectors.doc.Intruder.io API": {
+    "message": "Intruder.io API",
+    "description": "The label for the doc item Intruder.io API in sidebar connectors, linking to the doc sources/intruder"
+  },
+  "sidebar.connectors.doc.Invoiced": {
+    "message": "Invoiced",
+    "description": "The label for the doc item Invoiced in sidebar connectors, linking to the doc sources/invoiced"
+  },
+  "sidebar.connectors.doc.Invoiceninja": {
+    "message": "Invoiceninja",
+    "description": "The label for the doc item Invoiceninja in sidebar connectors, linking to the doc sources/invoiceninja"
+  },
+  "sidebar.connectors.doc.Ip2whois API": {
+    "message": "Ip2whois API",
+    "description": "The label for the doc item Ip2whois API in sidebar connectors, linking to the doc sources/ip2whois"
+  },
+  "sidebar.connectors.doc.Iterable": {
+    "message": "Iterable",
+    "description": "The label for the doc item Iterable in sidebar connectors, linking to the doc sources/iterable"
+  },
+  "sidebar.connectors.doc.Jamf Pro": {
+    "message": "Jamf Pro",
+    "description": "The label for the doc item Jamf Pro in sidebar connectors, linking to the doc sources/jamf-pro"
+  },
+  "sidebar.connectors.doc.Jenkins": {
+    "message": "Jenkins",
+    "description": "The label for the doc item Jenkins in sidebar connectors, linking to the doc sources/jenkins"
+  },
+  "sidebar.connectors.doc.Jina AI Reader": {
+    "message": "Jina AI Reader",
+    "description": "The label for the doc item Jina AI Reader in sidebar connectors, linking to the doc sources/jina-ai-reader"
+  },
+  "sidebar.connectors.doc.JobNimbus": {
+    "message": "JobNimbus",
+    "description": "The label for the doc item JobNimbus in sidebar connectors, linking to the doc sources/jobnimbus"
+  },
+  "sidebar.connectors.doc.Jotform": {
+    "message": "Jotform",
+    "description": "The label for the doc item Jotform in sidebar connectors, linking to the doc sources/jotform"
+  },
+  "sidebar.connectors.doc.Judge.me Reviews": {
+    "message": "Judge.me Reviews",
+    "description": "The label for the doc item Judge.me Reviews in sidebar connectors, linking to the doc sources/judge-me-reviews"
+  },
+  "sidebar.connectors.doc.JustCall": {
+    "message": "JustCall",
+    "description": "The label for the doc item JustCall in sidebar connectors, linking to the doc sources/justcall"
+  },
+  "sidebar.connectors.doc.JustSift": {
+    "message": "JustSift",
+    "description": "The label for the doc item JustSift in sidebar connectors, linking to the doc sources/just-sift"
+  },
+  "sidebar.connectors.doc.K6 Cloud API": {
+    "message": "K6 Cloud API",
+    "description": "The label for the doc item K6 Cloud API in sidebar connectors, linking to the doc sources/k6-cloud"
+  },
+  "sidebar.connectors.doc.Kafka": {
+    "message": "Kafka",
+    "description": "The label for the doc item Kafka in sidebar connectors, linking to the doc destinations/kafka"
+  },
+  "sidebar.connectors.doc.Katana": {
+    "message": "Katana",
+    "description": "The label for the doc item Katana in sidebar connectors, linking to the doc sources/katana"
+  },
+  "sidebar.connectors.doc.Keka": {
+    "message": "Keka",
+    "description": "The label for the doc item Keka in sidebar connectors, linking to the doc sources/keka"
+  },
+  "sidebar.connectors.doc.Kisi": {
+    "message": "Kisi",
+    "description": "The label for the doc item Kisi in sidebar connectors, linking to the doc sources/kisi"
+  },
+  "sidebar.connectors.doc.Kissmetrics": {
+    "message": "Kissmetrics",
+    "description": "The label for the doc item Kissmetrics in sidebar connectors, linking to the doc sources/kissmetrics"
+  },
+  "sidebar.connectors.doc.Klarna": {
+    "message": "Klarna",
+    "description": "The label for the doc item Klarna in sidebar connectors, linking to the doc sources/klarna"
+  },
+  "sidebar.connectors.doc.Klaus API": {
+    "message": "Klaus API",
+    "description": "The label for the doc item Klaus API in sidebar connectors, linking to the doc sources/klaus-api"
+  },
+  "sidebar.connectors.doc.Kustomer": {
+    "message": "Kustomer",
+    "description": "The label for the doc item Kustomer in sidebar connectors, linking to the doc sources/kustomer-singer"
+  },
+  "sidebar.connectors.doc.Kyriba": {
+    "message": "Kyriba",
+    "description": "The label for the doc item Kyriba in sidebar connectors, linking to the doc sources/kyriba"
+  },
+  "sidebar.connectors.doc.KYVE": {
+    "message": "KYVE",
+    "description": "The label for the doc item KYVE in sidebar connectors, linking to the doc sources/kyve"
+  },
+  "sidebar.connectors.doc.Lago API": {
+    "message": "Lago API",
+    "description": "The label for the doc item Lago API in sidebar connectors, linking to the doc sources/getlago"
+  },
+  "sidebar.connectors.doc.Launchdarkly API": {
+    "message": "Launchdarkly API",
+    "description": "The label for the doc item Launchdarkly API in sidebar connectors, linking to the doc sources/launchdarkly"
+  },
+  "sidebar.connectors.doc.Leadfeeder": {
+    "message": "Leadfeeder",
+    "description": "The label for the doc item Leadfeeder in sidebar connectors, linking to the doc sources/leadfeeder"
+  },
+  "sidebar.connectors.doc.Lemlist": {
+    "message": "Lemlist",
+    "description": "The label for the doc item Lemlist in sidebar connectors, linking to the doc sources/lemlist"
+  },
+  "sidebar.connectors.doc.Less Annoying CRM": {
+    "message": "Less Annoying CRM",
+    "description": "The label for the doc item Less Annoying CRM in sidebar connectors, linking to the doc sources/less-annoying-crm"
+  },
+  "sidebar.connectors.doc.Lever Hiring": {
+    "message": "Lever Hiring",
+    "description": "The label for the doc item Lever Hiring in sidebar connectors, linking to the doc sources/lever-hiring"
+  },
+  "sidebar.connectors.doc.Lightspeed Retail": {
+    "message": "Lightspeed Retail",
+    "description": "The label for the doc item Lightspeed Retail in sidebar connectors, linking to the doc sources/lightspeed-retail"
+  },
+  "sidebar.connectors.doc.Linear": {
+    "message": "Linear",
+    "description": "The label for the doc item Linear in sidebar connectors, linking to the doc sources/linear"
+  },
+  "sidebar.connectors.doc.Linnworks": {
+    "message": "Linnworks",
+    "description": "The label for the doc item Linnworks in sidebar connectors, linking to the doc sources/linnworks"
+  },
+  "sidebar.connectors.doc.Lob": {
+    "message": "Lob",
+    "description": "The label for the doc item Lob in sidebar connectors, linking to the doc sources/lob"
+  },
+  "sidebar.connectors.doc.Lokalise": {
+    "message": "Lokalise",
+    "description": "The label for the doc item Lokalise in sidebar connectors, linking to the doc sources/lokalise"
+  },
+  "sidebar.connectors.doc.lu.ma": {
+    "message": "lu.ma",
+    "description": "The label for the doc item lu.ma in sidebar connectors, linking to the doc sources/luma"
+  },
+  "sidebar.connectors.doc.Magento": {
+    "message": "Magento",
+    "description": "The label for the doc item Magento in sidebar connectors, linking to the doc sources/magento"
+  },
+  "sidebar.connectors.doc.Mailersend": {
+    "message": "Mailersend",
+    "description": "The label for the doc item Mailersend in sidebar connectors, linking to the doc sources/mailersend"
+  },
+  "sidebar.connectors.doc.MailGun": {
+    "message": "MailGun",
+    "description": "The label for the doc item MailGun in sidebar connectors, linking to the doc sources/mailgun"
+  },
+  "sidebar.connectors.doc.Mailjet - Mail API": {
+    "message": "Mailjet - Mail API",
+    "description": "The label for the doc item Mailjet - Mail API in sidebar connectors, linking to the doc sources/mailjet-mail"
+  },
+  "sidebar.connectors.doc.Mailjet - SMS API": {
+    "message": "Mailjet - SMS API",
+    "description": "The label for the doc item Mailjet - SMS API in sidebar connectors, linking to the doc sources/mailjet-sms"
+  },
+  "sidebar.connectors.doc.Mailosaur": {
+    "message": "Mailosaur",
+    "description": "The label for the doc item Mailosaur in sidebar connectors, linking to the doc sources/mailosaur"
+  },
+  "sidebar.connectors.doc.Mailtrap": {
+    "message": "Mailtrap",
+    "description": "The label for the doc item Mailtrap in sidebar connectors, linking to the doc sources/mailtrap"
+  },
+  "sidebar.connectors.doc.Marketo": {
+    "message": "Marketo",
+    "description": "The label for the doc item Marketo in sidebar connectors, linking to the doc sources/marketo"
+  },
+  "sidebar.connectors.doc.Marketstack": {
+    "message": "Marketstack",
+    "description": "The label for the doc item Marketstack in sidebar connectors, linking to the doc sources/marketstack"
+  },
+  "sidebar.connectors.doc.Mendeley": {
+    "message": "Mendeley",
+    "description": "The label for the doc item Mendeley in sidebar connectors, linking to the doc sources/mendeley"
+  },
+  "sidebar.connectors.doc.Mention": {
+    "message": "Mention",
+    "description": "The label for the doc item Mention in sidebar connectors, linking to the doc sources/mention"
+  },
+  "sidebar.connectors.doc.Mercado Ads": {
+    "message": "Mercado Ads",
+    "description": "The label for the doc item Mercado Ads in sidebar connectors, linking to the doc sources/mercado-ads"
+  },
+  "sidebar.connectors.doc.Merge": {
+    "message": "Merge",
+    "description": "The label for the doc item Merge in sidebar connectors, linking to the doc sources/merge"
+  },
+  "sidebar.connectors.doc.Microsoft Dataverse": {
+    "message": "Microsoft Dataverse",
+    "description": "The label for the doc item Microsoft Dataverse in sidebar connectors, linking to the doc sources/microsoft-dataverse"
+  },
+  "sidebar.connectors.doc.Microsoft Dynamics AX": {
+    "message": "Microsoft Dynamics AX",
+    "description": "The label for the doc item Microsoft Dynamics AX in sidebar connectors, linking to the doc sources/microsoft-dynamics-ax"
+  },
+  "sidebar.connectors.doc.Microsoft Dynamics Customer Engagement": {
+    "message": "Microsoft Dynamics Customer Engagement",
+    "description": "The label for the doc item Microsoft Dynamics Customer Engagement in sidebar connectors, linking to the doc sources/microsoft-dynamics-customer-engagement"
+  },
+  "sidebar.connectors.doc.Microsoft Dynamics GP": {
+    "message": "Microsoft Dynamics GP",
+    "description": "The label for the doc item Microsoft Dynamics GP in sidebar connectors, linking to the doc sources/microsoft-dynamics-gp"
+  },
+  "sidebar.connectors.doc.Microsoft Dynamics NAV": {
+    "message": "Microsoft Dynamics NAV",
+    "description": "The label for the doc item Microsoft Dynamics NAV in sidebar connectors, linking to the doc sources/microsoft-dynamics-nav"
+  },
+  "sidebar.connectors.doc.Microsoft Entra Id": {
+    "message": "Microsoft Entra Id",
+    "description": "The label for the doc item Microsoft Entra Id in sidebar connectors, linking to the doc sources/microsoft-entra-id"
+  },
+  "sidebar.connectors.doc.Microsoft Lists": {
+    "message": "Microsoft Lists",
+    "description": "The label for the doc item Microsoft Lists in sidebar connectors, linking to the doc sources/microsoft-lists"
+  },
+  "sidebar.connectors.doc.Microsoft OneDrive": {
+    "message": "Microsoft OneDrive",
+    "description": "The label for the doc item Microsoft OneDrive in sidebar connectors, linking to the doc sources/microsoft-onedrive"
+  },
+  "sidebar.connectors.doc.Miro": {
+    "message": "Miro",
+    "description": "The label for the doc item Miro in sidebar connectors, linking to the doc sources/miro"
+  },
+  "sidebar.connectors.doc.Missive": {
+    "message": "Missive",
+    "description": "The label for the doc item Missive in sidebar connectors, linking to the doc sources/missive"
+  },
+  "sidebar.connectors.doc.MixMax": {
+    "message": "MixMax",
+    "description": "The label for the doc item MixMax in sidebar connectors, linking to the doc sources/mixmax"
+  },
+  "sidebar.connectors.doc.Mode": {
+    "message": "Mode",
+    "description": "The label for the doc item Mode in sidebar connectors, linking to the doc sources/mode"
+  },
+  "sidebar.connectors.doc.Mux": {
+    "message": "Mux",
+    "description": "The label for the doc item Mux in sidebar connectors, linking to the doc sources/mux"
+  },
+  "sidebar.connectors.doc.My Hours": {
+    "message": "My Hours",
+    "description": "The label for the doc item My Hours in sidebar connectors, linking to the doc sources/my-hours"
+  },
+  "sidebar.connectors.doc.N8n": {
+    "message": "N8n",
+    "description": "The label for the doc item N8n in sidebar connectors, linking to the doc sources/n8n"
+  },
+  "sidebar.connectors.doc.NASA": {
+    "message": "NASA",
+    "description": "The label for the doc item NASA in sidebar connectors, linking to the doc sources/nasa"
+  },
+  "sidebar.connectors.doc.Navan": {
+    "message": "Navan",
+    "description": "The label for the doc item Navan in sidebar connectors, linking to the doc sources/navan"
+  },
+  "sidebar.connectors.doc.Nebius AI": {
+    "message": "Nebius AI",
+    "description": "The label for the doc item Nebius AI in sidebar connectors, linking to the doc sources/nebius-ai"
+  },
+  "sidebar.connectors.doc.New York Times": {
+    "message": "New York Times",
+    "description": "The label for the doc item New York Times in sidebar connectors, linking to the doc sources/nytimes"
+  },
+  "sidebar.connectors.doc.News API": {
+    "message": "News API",
+    "description": "The label for the doc item News API in sidebar connectors, linking to the doc sources/news-api"
+  },
+  "sidebar.connectors.doc.Newsdata API": {
+    "message": "Newsdata API",
+    "description": "The label for the doc item Newsdata API in sidebar connectors, linking to the doc sources/newsdata"
+  },
+  "sidebar.connectors.doc.NewsData.io": {
+    "message": "NewsData.io",
+    "description": "The label for the doc item NewsData.io in sidebar connectors, linking to the doc sources/newsdata-io"
+  },
+  "sidebar.connectors.doc.Nexiopay": {
+    "message": "Nexiopay",
+    "description": "The label for the doc item Nexiopay in sidebar connectors, linking to the doc sources/nexiopay"
+  },
+  "sidebar.connectors.doc.NinjaOne RMM": {
+    "message": "NinjaOne RMM",
+    "description": "The label for the doc item NinjaOne RMM in sidebar connectors, linking to the doc sources/ninjaone-rmm"
+  },
+  "sidebar.connectors.doc.NoCRM": {
+    "message": "NoCRM",
+    "description": "The label for the doc item NoCRM in sidebar connectors, linking to the doc sources/nocrm"
+  },
+  "sidebar.connectors.doc.Northpass LMS": {
+    "message": "Northpass LMS",
+    "description": "The label for the doc item Northpass LMS in sidebar connectors, linking to the doc sources/northpass-lms"
+  },
+  "sidebar.connectors.doc.Nutshell": {
+    "message": "Nutshell",
+    "description": "The label for the doc item Nutshell in sidebar connectors, linking to the doc sources/nutshell"
+  },
+  "sidebar.connectors.doc.Nylas": {
+    "message": "Nylas",
+    "description": "The label for the doc item Nylas in sidebar connectors, linking to the doc sources/nylas"
+  },
+  "sidebar.connectors.doc.Okta": {
+    "message": "Okta",
+    "description": "The label for the doc item Okta in sidebar connectors, linking to the doc sources/okta"
+  },
+  "sidebar.connectors.doc.Omnisend": {
+    "message": "Omnisend",
+    "description": "The label for the doc item Omnisend in sidebar connectors, linking to the doc sources/omnisend"
+  },
+  "sidebar.connectors.doc.Oncehub": {
+    "message": "Oncehub",
+    "description": "The label for the doc item Oncehub in sidebar connectors, linking to the doc sources/oncehub"
+  },
+  "sidebar.connectors.doc.Onepagecrm": {
+    "message": "Onepagecrm",
+    "description": "The label for the doc item Onepagecrm in sidebar connectors, linking to the doc sources/onepagecrm"
+  },
+  "sidebar.connectors.doc.OneSignal": {
+    "message": "OneSignal",
+    "description": "The label for the doc item OneSignal in sidebar connectors, linking to the doc sources/onesignal"
+  },
+  "sidebar.connectors.doc.Onfleet": {
+    "message": "Onfleet",
+    "description": "The label for the doc item Onfleet in sidebar connectors, linking to the doc sources/onfleet"
+  },
+  "sidebar.connectors.doc.Open Data DC": {
+    "message": "Open Data DC",
+    "description": "The label for the doc item Open Data DC in sidebar connectors, linking to the doc sources/open-data-dc"
+  },
+  "sidebar.connectors.doc.Open Exchange Rates": {
+    "message": "Open Exchange Rates",
+    "description": "The label for the doc item Open Exchange Rates in sidebar connectors, linking to the doc sources/open-exchange-rates"
+  },
+  "sidebar.connectors.doc.OpenAQ": {
+    "message": "OpenAQ",
+    "description": "The label for the doc item OpenAQ in sidebar connectors, linking to the doc sources/openaq"
+  },
+  "sidebar.connectors.doc.OpenFDA": {
+    "message": "OpenFDA",
+    "description": "The label for the doc item OpenFDA in sidebar connectors, linking to the doc sources/openfda"
+  },
+  "sidebar.connectors.doc.OpenWeather": {
+    "message": "OpenWeather",
+    "description": "The label for the doc item OpenWeather in sidebar connectors, linking to the doc sources/openweather"
+  },
+  "sidebar.connectors.doc.Opinion Stage": {
+    "message": "Opinion Stage",
+    "description": "The label for the doc item Opinion Stage in sidebar connectors, linking to the doc sources/opinion-stage"
+  },
+  "sidebar.connectors.doc.Opsgenie": {
+    "message": "Opsgenie",
+    "description": "The label for the doc item Opsgenie in sidebar connectors, linking to the doc sources/opsgenie"
+  },
+  "sidebar.connectors.doc.OPUSWatch": {
+    "message": "OPUSWatch",
+    "description": "The label for the doc item OPUSWatch in sidebar connectors, linking to the doc sources/opuswatch"
+  },
+  "sidebar.connectors.doc.Oracle DB": {
+    "message": "Oracle DB",
+    "description": "The label for the doc item Oracle DB in sidebar connectors, linking to the doc sources/oracle"
+  },
+  "sidebar.connectors.doc.Oracle Netsuite": {
+    "message": "Oracle Netsuite",
+    "description": "The label for the doc item Oracle Netsuite in sidebar connectors, linking to the doc sources/netsuite"
+  },
+  "sidebar.connectors.doc.Oracle Peoplesoft": {
+    "message": "Oracle Peoplesoft",
+    "description": "The label for the doc item Oracle Peoplesoft in sidebar connectors, linking to the doc sources/oracle-peoplesoft"
+  },
+  "sidebar.connectors.doc.Oracle Siebel CRM": {
+    "message": "Oracle Siebel CRM",
+    "description": "The label for the doc item Oracle Siebel CRM in sidebar connectors, linking to the doc sources/oracle-siebel-crm"
+  },
+  "sidebar.connectors.doc.Orbit": {
+    "message": "Orbit",
+    "description": "The label for the doc item Orbit in sidebar connectors, linking to the doc sources/orbit"
+  },
+  "sidebar.connectors.doc.Oura": {
+    "message": "Oura",
+    "description": "The label for the doc item Oura in sidebar connectors, linking to the doc sources/oura"
+  },
+  "sidebar.connectors.doc.Outbrain Amplify": {
+    "message": "Outbrain Amplify",
+    "description": "The label for the doc item Outbrain Amplify in sidebar connectors, linking to the doc sources/outbrain-amplify"
+  },
+  "sidebar.connectors.doc.Oveit": {
+    "message": "Oveit",
+    "description": "The label for the doc item Oveit in sidebar connectors, linking to the doc sources/oveit"
+  },
+  "sidebar.connectors.doc.Pabbly Subscriptions Billing": {
+    "message": "Pabbly Subscriptions Billing",
+    "description": "The label for the doc item Pabbly Subscriptions Billing in sidebar connectors, linking to the doc sources/pabbly-subscriptions-billing"
+  },
+  "sidebar.connectors.doc.Paddle": {
+    "message": "Paddle",
+    "description": "The label for the doc item Paddle in sidebar connectors, linking to the doc sources/paddle"
+  },
+  "sidebar.connectors.doc.PagerDuty": {
+    "message": "PagerDuty",
+    "description": "The label for the doc item PagerDuty in sidebar connectors, linking to the doc sources/pagerduty"
+  },
+  "sidebar.connectors.doc.PandaDoc": {
+    "message": "PandaDoc",
+    "description": "The label for the doc item PandaDoc in sidebar connectors, linking to the doc sources/pandadoc"
+  },
+  "sidebar.connectors.doc.Paperform": {
+    "message": "Paperform",
+    "description": "The label for the doc item Paperform in sidebar connectors, linking to the doc sources/paperform"
+  },
+  "sidebar.connectors.doc.Papersign": {
+    "message": "Papersign",
+    "description": "The label for the doc item Papersign in sidebar connectors, linking to the doc sources/papersign"
+  },
+  "sidebar.connectors.doc.Partnerize": {
+    "message": "Partnerize",
+    "description": "The label for the doc item Partnerize in sidebar connectors, linking to the doc sources/partnerize"
+  },
+  "sidebar.connectors.doc.Partnerstack": {
+    "message": "Partnerstack",
+    "description": "The label for the doc item Partnerstack in sidebar connectors, linking to the doc sources/partnerstack"
+  },
+  "sidebar.connectors.doc.PayFit": {
+    "message": "PayFit",
+    "description": "The label for the doc item PayFit in sidebar connectors, linking to the doc sources/payfit"
+  },
+  "sidebar.connectors.doc.Pendo": {
+    "message": "Pendo",
+    "description": "The label for the doc item Pendo in sidebar connectors, linking to the doc sources/pendo"
+  },
+  "sidebar.connectors.doc.Pennylane": {
+    "message": "Pennylane",
+    "description": "The label for the doc item Pennylane in sidebar connectors, linking to the doc sources/pennylane"
+  },
+  "sidebar.connectors.doc.Perigon": {
+    "message": "Perigon",
+    "description": "The label for the doc item Perigon in sidebar connectors, linking to the doc sources/perigon"
+  },
+  "sidebar.connectors.doc.PersistIq": {
+    "message": "PersistIq",
+    "description": "The label for the doc item PersistIq in sidebar connectors, linking to the doc sources/persistiq"
+  },
+  "sidebar.connectors.doc.Persona": {
+    "message": "Persona",
+    "description": "The label for the doc item Persona in sidebar connectors, linking to the doc sources/persona"
+  },
+  "sidebar.connectors.doc.Pexels-API": {
+    "message": "Pexels-API",
+    "description": "The label for the doc item Pexels-API in sidebar connectors, linking to the doc sources/pexels-api"
+  },
+  "sidebar.connectors.doc.Phyllo": {
+    "message": "Phyllo",
+    "description": "The label for the doc item Phyllo in sidebar connectors, linking to the doc sources/phyllo"
+  },
+  "sidebar.connectors.doc.Picqer": {
+    "message": "Picqer",
+    "description": "The label for the doc item Picqer in sidebar connectors, linking to the doc sources/picqer"
+  },
+  "sidebar.connectors.doc.Pingdom": {
+    "message": "Pingdom",
+    "description": "The label for the doc item Pingdom in sidebar connectors, linking to the doc sources/pingdom"
+  },
+  "sidebar.connectors.doc.Pipeliner": {
+    "message": "Pipeliner",
+    "description": "The label for the doc item Pipeliner in sidebar connectors, linking to the doc sources/pipeliner"
+  },
+  "sidebar.connectors.doc.Pivotal Tracker": {
+    "message": "Pivotal Tracker",
+    "description": "The label for the doc item Pivotal Tracker in sidebar connectors, linking to the doc sources/pivotal-tracker"
+  },
+  "sidebar.connectors.doc.Piwik": {
+    "message": "Piwik",
+    "description": "The label for the doc item Piwik in sidebar connectors, linking to the doc sources/piwik"
+  },
+  "sidebar.connectors.doc.Plaid": {
+    "message": "Plaid",
+    "description": "The label for the doc item Plaid in sidebar connectors, linking to the doc sources/plaid"
+  },
+  "sidebar.connectors.doc.Planhat": {
+    "message": "Planhat",
+    "description": "The label for the doc item Planhat in sidebar connectors, linking to the doc sources/planhat"
+  },
+  "sidebar.connectors.doc.Plausible": {
+    "message": "Plausible",
+    "description": "The label for the doc item Plausible in sidebar connectors, linking to the doc sources/plausible"
+  },
+  "sidebar.connectors.doc.Pocket": {
+    "message": "Pocket",
+    "description": "The label for the doc item Pocket in sidebar connectors, linking to the doc sources/pocket"
+  },
+  "sidebar.connectors.doc.PokéAPI": {
+    "message": "PokéAPI",
+    "description": "The label for the doc item PokéAPI in sidebar connectors, linking to the doc sources/pokeapi"
+  },
+  "sidebar.connectors.doc.Polygon Stock API": {
+    "message": "Polygon Stock API",
+    "description": "The label for the doc item Polygon Stock API in sidebar connectors, linking to the doc sources/polygon-stock-api"
+  },
+  "sidebar.connectors.doc.Poplar": {
+    "message": "Poplar",
+    "description": "The label for the doc item Poplar in sidebar connectors, linking to the doc sources/poplar"
+  },
+  "sidebar.connectors.doc.Postmarkapp": {
+    "message": "Postmarkapp",
+    "description": "The label for the doc item Postmarkapp in sidebar connectors, linking to the doc sources/postmarkapp"
+  },
+  "sidebar.connectors.doc.PrestaShop": {
+    "message": "PrestaShop",
+    "description": "The label for the doc item PrestaShop in sidebar connectors, linking to the doc sources/prestashop"
+  },
+  "sidebar.connectors.doc.Pretix": {
+    "message": "Pretix",
+    "description": "The label for the doc item Pretix in sidebar connectors, linking to the doc sources/pretix"
+  },
+  "sidebar.connectors.doc.Printify": {
+    "message": "Printify",
+    "description": "The label for the doc item Printify in sidebar connectors, linking to the doc sources/printify"
+  },
+  "sidebar.connectors.doc.Productboard": {
+    "message": "Productboard",
+    "description": "The label for the doc item Productboard in sidebar connectors, linking to the doc sources/productboard"
+  },
+  "sidebar.connectors.doc.Productive": {
+    "message": "Productive",
+    "description": "The label for the doc item Productive in sidebar connectors, linking to the doc sources/productive"
+  },
+  "sidebar.connectors.doc.Public APIs": {
+    "message": "Public APIs",
+    "description": "The label for the doc item Public APIs in sidebar connectors, linking to the doc sources/public-apis"
+  },
+  "sidebar.connectors.doc.PyPI": {
+    "message": "PyPI",
+    "description": "The label for the doc item PyPI in sidebar connectors, linking to the doc sources/pypi"
+  },
+  "sidebar.connectors.doc.Qonto": {
+    "message": "Qonto",
+    "description": "The label for the doc item Qonto in sidebar connectors, linking to the doc sources/qonto"
+  },
+  "sidebar.connectors.doc.Qualaroo": {
+    "message": "Qualaroo",
+    "description": "The label for the doc item Qualaroo in sidebar connectors, linking to the doc sources/qualaroo"
+  },
+  "sidebar.connectors.doc.Railz": {
+    "message": "Railz",
+    "description": "The label for the doc item Railz in sidebar connectors, linking to the doc sources/railz"
+  },
+  "sidebar.connectors.doc.RD Station Marketing": {
+    "message": "RD Station Marketing",
+    "description": "The label for the doc item RD Station Marketing in sidebar connectors, linking to the doc sources/rd-station-marketing"
+  },
+  "sidebar.connectors.doc.Recreation.gov API": {
+    "message": "Recreation.gov API",
+    "description": "The label for the doc item Recreation.gov API in sidebar connectors, linking to the doc sources/recreation"
+  },
+  "sidebar.connectors.doc.Recruitee": {
+    "message": "Recruitee",
+    "description": "The label for the doc item Recruitee in sidebar connectors, linking to the doc sources/recruitee"
+  },
+  "sidebar.connectors.doc.Reddit": {
+    "message": "Reddit",
+    "description": "The label for the doc item Reddit in sidebar connectors, linking to the doc sources/reddit"
+  },
+  "sidebar.connectors.doc.Redshift": {
+    "message": "Redshift",
+    "description": "The label for the doc item Redshift in sidebar connectors, linking to the doc sources/redshift"
+  },
+  "sidebar.connectors.doc.referralhero": {
+    "message": "referralhero",
+    "description": "The label for the doc item referralhero in sidebar connectors, linking to the doc sources/referralhero"
+  },
+  "sidebar.connectors.doc.RentCast": {
+    "message": "RentCast",
+    "description": "The label for the doc item RentCast in sidebar connectors, linking to the doc sources/rentcast"
+  },
+  "sidebar.connectors.doc.Repairshopr": {
+    "message": "Repairshopr",
+    "description": "The label for the doc item Repairshopr in sidebar connectors, linking to the doc sources/repairshopr"
+  },
+  "sidebar.connectors.doc.Reply.io": {
+    "message": "Reply.io",
+    "description": "The label for the doc item Reply.io in sidebar connectors, linking to the doc sources/reply-io"
+  },
+  "sidebar.connectors.doc.Retail Express by Maropost": {
+    "message": "Retail Express by Maropost",
+    "description": "The label for the doc item Retail Express by Maropost in sidebar connectors, linking to the doc sources/retailexpress-by-maropost"
+  },
+  "sidebar.connectors.doc.Retently": {
+    "message": "Retently",
+    "description": "The label for the doc item Retently in sidebar connectors, linking to the doc sources/retently"
+  },
+  "sidebar.connectors.doc.RevenueCat": {
+    "message": "RevenueCat",
+    "description": "The label for the doc item RevenueCat in sidebar connectors, linking to the doc sources/revenuecat"
+  },
+  "sidebar.connectors.doc.Revolut Merchant": {
+    "message": "Revolut Merchant",
+    "description": "The label for the doc item Revolut Merchant in sidebar connectors, linking to the doc sources/revolut-merchant"
+  },
+  "sidebar.connectors.doc.RingCentral": {
+    "message": "RingCentral",
+    "description": "The label for the doc item RingCentral in sidebar connectors, linking to the doc sources/ringcentral"
+  },
+  "sidebar.connectors.doc.Robert Koch-Institut Covid": {
+    "message": "Robert Koch-Institut Covid",
+    "description": "The label for the doc item Robert Koch-Institut Covid in sidebar connectors, linking to the doc sources/rki-covid"
+  },
+  "sidebar.connectors.doc.Rocket.chat API": {
+    "message": "Rocket.chat API",
+    "description": "The label for the doc item Rocket.chat API in sidebar connectors, linking to the doc sources/rocket-chat"
+  },
+  "sidebar.connectors.doc.Rocketlane": {
+    "message": "Rocketlane",
+    "description": "The label for the doc item Rocketlane in sidebar connectors, linking to the doc sources/rocketlane"
+  },
+  "sidebar.connectors.doc.Rollbar": {
+    "message": "Rollbar",
+    "description": "The label for the doc item Rollbar in sidebar connectors, linking to the doc sources/rollbar"
+  },
+  "sidebar.connectors.doc.Rootly": {
+    "message": "Rootly",
+    "description": "The label for the doc item Rootly in sidebar connectors, linking to the doc sources/rootly"
+  },
+  "sidebar.connectors.doc.Ruddr": {
+    "message": "Ruddr",
+    "description": "The label for the doc item Ruddr in sidebar connectors, linking to the doc sources/ruddr"
+  },
+  "sidebar.connectors.doc.SafetyCulture": {
+    "message": "SafetyCulture",
+    "description": "The label for the doc item SafetyCulture in sidebar connectors, linking to the doc sources/safetyculture"
+  },
+  "sidebar.connectors.doc.Sage HR": {
+    "message": "Sage HR",
+    "description": "The label for the doc item Sage HR in sidebar connectors, linking to the doc sources/sage-hr"
+  },
+  "sidebar.connectors.doc.Salesflare": {
+    "message": "Salesflare",
+    "description": "The label for the doc item Salesflare in sidebar connectors, linking to the doc sources/salesflare"
+  },
+  "sidebar.connectors.doc.Salesloft": {
+    "message": "Salesloft",
+    "description": "The label for the doc item Salesloft in sidebar connectors, linking to the doc sources/salesloft"
+  },
+  "sidebar.connectors.doc.SAP Business One": {
+    "message": "SAP Business One",
+    "description": "The label for the doc item SAP Business One in sidebar connectors, linking to the doc sources/sap-business-one"
+  },
+  "sidebar.connectors.doc.SAP Fieldglass": {
+    "message": "SAP Fieldglass",
+    "description": "The label for the doc item SAP Fieldglass in sidebar connectors, linking to the doc sources/sap-fieldglass"
+  },
+  "sidebar.connectors.doc.SavvyCal": {
+    "message": "SavvyCal",
+    "description": "The label for the doc item SavvyCal in sidebar connectors, linking to the doc sources/savvycal"
+  },
+  "sidebar.connectors.doc.Scryfall": {
+    "message": "Scryfall",
+    "description": "The label for the doc item Scryfall in sidebar connectors, linking to the doc sources/scryfall"
+  },
+  "sidebar.connectors.doc.SearchMetrics": {
+    "message": "SearchMetrics",
+    "description": "The label for the doc item SearchMetrics in sidebar connectors, linking to the doc sources/search-metrics"
+  },
+  "sidebar.connectors.doc.Secoda API": {
+    "message": "Secoda API",
+    "description": "The label for the doc item Secoda API in sidebar connectors, linking to the doc sources/secoda"
+  },
+  "sidebar.connectors.doc.Segment": {
+    "message": "Segment",
+    "description": "The label for the doc item Segment in sidebar connectors, linking to the doc sources/segment"
+  },
+  "sidebar.connectors.doc.Sendinblue API": {
+    "message": "Sendinblue API",
+    "description": "The label for the doc item Sendinblue API in sidebar connectors, linking to the doc sources/sendinblue"
+  },
+  "sidebar.connectors.doc.Sendowl": {
+    "message": "Sendowl",
+    "description": "The label for the doc item Sendowl in sidebar connectors, linking to the doc sources/sendowl"
+  },
+  "sidebar.connectors.doc.SendPulse": {
+    "message": "SendPulse",
+    "description": "The label for the doc item SendPulse in sidebar connectors, linking to the doc sources/sendpulse"
+  },
+  "sidebar.connectors.doc.Senseforce": {
+    "message": "Senseforce",
+    "description": "The label for the doc item Senseforce in sidebar connectors, linking to the doc sources/senseforce"
+  },
+  "sidebar.connectors.doc.Serpstat": {
+    "message": "Serpstat",
+    "description": "The label for the doc item Serpstat in sidebar connectors, linking to the doc sources/serpstat"
+  },
+  "sidebar.connectors.doc.SFTP": {
+    "message": "SFTP",
+    "description": "The label for the doc item SFTP in sidebar connectors, linking to the doc sources/sftp"
+  },
+  "sidebar.connectors.doc.Sharetribe": {
+    "message": "Sharetribe",
+    "description": "The label for the doc item Sharetribe in sidebar connectors, linking to the doc sources/sharetribe"
+  },
+  "sidebar.connectors.doc.Shippo": {
+    "message": "Shippo",
+    "description": "The label for the doc item Shippo in sidebar connectors, linking to the doc sources/shippo"
+  },
+  "sidebar.connectors.doc.Shipstation": {
+    "message": "Shipstation",
+    "description": "The label for the doc item Shipstation in sidebar connectors, linking to the doc sources/shipstation"
+  },
+  "sidebar.connectors.doc.ShopWired": {
+    "message": "ShopWired",
+    "description": "The label for the doc item ShopWired in sidebar connectors, linking to the doc sources/shopwired"
+  },
+  "sidebar.connectors.doc.Shortcut": {
+    "message": "Shortcut",
+    "description": "The label for the doc item Shortcut in sidebar connectors, linking to the doc sources/shortcut"
+  },
+  "sidebar.connectors.doc.Shortio": {
+    "message": "Shortio",
+    "description": "The label for the doc item Shortio in sidebar connectors, linking to the doc sources/shortio"
+  },
+  "sidebar.connectors.doc.Shutterstock": {
+    "message": "Shutterstock",
+    "description": "The label for the doc item Shutterstock in sidebar connectors, linking to the doc sources/shutterstock"
+  },
+  "sidebar.connectors.doc.Sigma Computing": {
+    "message": "Sigma Computing",
+    "description": "The label for the doc item Sigma Computing in sidebar connectors, linking to the doc sources/sigma-computing"
+  },
+  "sidebar.connectors.doc.SignNow": {
+    "message": "SignNow",
+    "description": "The label for the doc item SignNow in sidebar connectors, linking to the doc sources/signnow"
+  },
+  "sidebar.connectors.doc.SimFin": {
+    "message": "SimFin",
+    "description": "The label for the doc item SimFin in sidebar connectors, linking to the doc sources/simfin"
+  },
+  "sidebar.connectors.doc.Simple Circa": {
+    "message": "Simple Circa",
+    "description": "The label for the doc item Simple Circa in sidebar connectors, linking to the doc sources/circa"
+  },
+  "sidebar.connectors.doc.SimpleCast": {
+    "message": "SimpleCast",
+    "description": "The label for the doc item SimpleCast in sidebar connectors, linking to the doc sources/simplecast"
+  },
+  "sidebar.connectors.doc.Simplesat": {
+    "message": "Simplesat",
+    "description": "The label for the doc item Simplesat in sidebar connectors, linking to the doc sources/simplesat"
+  },
+  "sidebar.connectors.doc.SingleStore": {
+    "message": "SingleStore",
+    "description": "The label for the doc item SingleStore in sidebar connectors, linking to the doc destinations/singlestore"
+  },
+  "sidebar.connectors.doc.Smaily": {
+    "message": "Smaily",
+    "description": "The label for the doc item Smaily in sidebar connectors, linking to the doc sources/smaily"
+  },
+  "sidebar.connectors.doc.SmartEngage": {
+    "message": "SmartEngage",
+    "description": "The label for the doc item SmartEngage in sidebar connectors, linking to the doc sources/smartengage"
+  },
+  "sidebar.connectors.doc.Smartreach": {
+    "message": "Smartreach",
+    "description": "The label for the doc item Smartreach in sidebar connectors, linking to the doc sources/smartreach"
+  },
+  "sidebar.connectors.doc.Smartsheets": {
+    "message": "Smartsheets",
+    "description": "The label for the doc item Smartsheets in sidebar connectors, linking to the doc sources/smartsheets"
+  },
+  "sidebar.connectors.doc.Smartwaiver": {
+    "message": "Smartwaiver",
+    "description": "The label for the doc item Smartwaiver in sidebar connectors, linking to the doc sources/smartwaiver"
+  },
+  "sidebar.connectors.doc.Solarwinds Service Desk": {
+    "message": "Solarwinds Service Desk",
+    "description": "The label for the doc item Solarwinds Service Desk in sidebar connectors, linking to the doc sources/solarwinds-service-desk"
+  },
+  "sidebar.connectors.doc.Sonar Cloud API": {
+    "message": "Sonar Cloud API",
+    "description": "The label for the doc item Sonar Cloud API in sidebar connectors, linking to the doc sources/sonar-cloud"
+  },
+  "sidebar.connectors.doc.SpaceX-API": {
+    "message": "SpaceX-API",
+    "description": "The label for the doc item SpaceX-API in sidebar connectors, linking to the doc sources/spacex-api"
+  },
+  "sidebar.connectors.doc.SparkPost": {
+    "message": "SparkPost",
+    "description": "The label for the doc item SparkPost in sidebar connectors, linking to the doc sources/sparkpost"
+  },
+  "sidebar.connectors.doc.Split-io": {
+    "message": "Split-io",
+    "description": "The label for the doc item Split-io in sidebar connectors, linking to the doc sources/split-io"
+  },
+  "sidebar.connectors.doc.Spotify Ads": {
+    "message": "Spotify Ads",
+    "description": "The label for the doc item Spotify Ads in sidebar connectors, linking to the doc sources/spotify-ads"
+  },
+  "sidebar.connectors.doc.SpotlerCRM": {
+    "message": "SpotlerCRM",
+    "description": "The label for the doc item SpotlerCRM in sidebar connectors, linking to the doc sources/spotlercrm"
+  },
+  "sidebar.connectors.doc.Spree Commerce": {
+    "message": "Spree Commerce",
+    "description": "The label for the doc item Spree Commerce in sidebar connectors, linking to the doc sources/spree-commerce"
+  },
+  "sidebar.connectors.doc.Square": {
+    "message": "Square",
+    "description": "The label for the doc item Square in sidebar connectors, linking to the doc sources/square"
+  },
+  "sidebar.connectors.doc.Squarespace": {
+    "message": "Squarespace",
+    "description": "The label for the doc item Squarespace in sidebar connectors, linking to the doc sources/squarespace"
+  },
+  "sidebar.connectors.doc.Statsig": {
+    "message": "Statsig",
+    "description": "The label for the doc item Statsig in sidebar connectors, linking to the doc sources/statsig"
+  },
+  "sidebar.connectors.doc.Statuspage.io API": {
+    "message": "Statuspage.io API",
+    "description": "The label for the doc item Statuspage.io API in sidebar connectors, linking to the doc sources/statuspage"
+  },
+  "sidebar.connectors.doc.StockData": {
+    "message": "StockData",
+    "description": "The label for the doc item StockData in sidebar connectors, linking to the doc sources/stockdata"
+  },
+  "sidebar.connectors.doc.Strava": {
+    "message": "Strava",
+    "description": "The label for the doc item Strava in sidebar connectors, linking to the doc sources/strava"
+  },
+  "sidebar.connectors.doc.Sugar CRM": {
+    "message": "Sugar CRM",
+    "description": "The label for the doc item Sugar CRM in sidebar connectors, linking to the doc sources/sugar-crm"
+  },
+  "sidebar.connectors.doc.SurveyCTO": {
+    "message": "SurveyCTO",
+    "description": "The label for the doc item SurveyCTO in sidebar connectors, linking to the doc sources/surveycto"
+  },
+  "sidebar.connectors.doc.SurveyMonkey": {
+    "message": "SurveyMonkey",
+    "description": "The label for the doc item SurveyMonkey in sidebar connectors, linking to the doc sources/surveymonkey"
+  },
+  "sidebar.connectors.doc.SurveySparrow": {
+    "message": "SurveySparrow",
+    "description": "The label for the doc item SurveySparrow in sidebar connectors, linking to the doc sources/survey-sparrow"
+  },
+  "sidebar.connectors.doc.Survicate": {
+    "message": "Survicate",
+    "description": "The label for the doc item Survicate in sidebar connectors, linking to the doc sources/survicate"
+  },
+  "sidebar.connectors.doc.Svix": {
+    "message": "Svix",
+    "description": "The label for the doc item Svix in sidebar connectors, linking to the doc sources/svix"
+  },
+  "sidebar.connectors.doc.Systeme": {
+    "message": "Systeme",
+    "description": "The label for the doc item Systeme in sidebar connectors, linking to the doc sources/systeme"
+  },
+  "sidebar.connectors.doc.Taboola": {
+    "message": "Taboola",
+    "description": "The label for the doc item Taboola in sidebar connectors, linking to the doc sources/taboola"
+  },
+  "sidebar.connectors.doc.Talkdesk Explore": {
+    "message": "Talkdesk Explore",
+    "description": "The label for the doc item Talkdesk Explore in sidebar connectors, linking to the doc sources/talkdesk-explore"
+  },
+  "sidebar.connectors.doc.Tavus": {
+    "message": "Tavus",
+    "description": "The label for the doc item Tavus in sidebar connectors, linking to the doc sources/tavus"
+  },
+  "sidebar.connectors.doc.Teamtailor": {
+    "message": "Teamtailor",
+    "description": "The label for the doc item Teamtailor in sidebar connectors, linking to the doc sources/teamtailor"
+  },
+  "sidebar.connectors.doc.Teamwork": {
+    "message": "Teamwork",
+    "description": "The label for the doc item Teamwork in sidebar connectors, linking to the doc sources/teamwork"
+  },
+  "sidebar.connectors.doc.Tempo": {
+    "message": "Tempo",
+    "description": "The label for the doc item Tempo in sidebar connectors, linking to the doc sources/tempo"
+  },
+  "sidebar.connectors.doc.Teradata": {
+    "message": "Teradata",
+    "description": "The label for the doc item Teradata in sidebar connectors, linking to the doc sources/teradata"
+  },
+  "sidebar.connectors.doc.Testrail": {
+    "message": "Testrail",
+    "description": "The label for the doc item Testrail in sidebar connectors, linking to the doc sources/testrail"
+  },
+  "sidebar.connectors.doc.The Guardian API": {
+    "message": "The Guardian API",
+    "description": "The label for the doc item The Guardian API in sidebar connectors, linking to the doc sources/the-guardian-api"
+  },
+  "sidebar.connectors.doc.Thinkific": {
+    "message": "Thinkific",
+    "description": "The label for the doc item Thinkific in sidebar connectors, linking to the doc sources/thinkific"
+  },
+  "sidebar.connectors.doc.Thinkific Courses": {
+    "message": "Thinkific Courses",
+    "description": "The label for the doc item Thinkific Courses in sidebar connectors, linking to the doc sources/thinkific-courses"
+  },
+  "sidebar.connectors.doc.Thrive Learning": {
+    "message": "Thrive Learning",
+    "description": "The label for the doc item Thrive Learning in sidebar connectors, linking to the doc sources/thrive-learning"
+  },
+  "sidebar.connectors.doc.Ticketmaster": {
+    "message": "Ticketmaster",
+    "description": "The label for the doc item Ticketmaster in sidebar connectors, linking to the doc sources/ticketmaster"
+  },
+  "sidebar.connectors.doc.TicketTailor": {
+    "message": "TicketTailor",
+    "description": "The label for the doc item TicketTailor in sidebar connectors, linking to the doc sources/tickettailor"
+  },
+  "sidebar.connectors.doc.TiDB": {
+    "message": "TiDB",
+    "description": "The label for the doc item TiDB in sidebar connectors, linking to the doc destinations/tidb"
+  },
+  "sidebar.connectors.doc.Tinyemail": {
+    "message": "Tinyemail",
+    "description": "The label for the doc item Tinyemail in sidebar connectors, linking to the doc sources/tinyemail"
+  },
+  "sidebar.connectors.doc.Todoist": {
+    "message": "Todoist",
+    "description": "The label for the doc item Todoist in sidebar connectors, linking to the doc sources/todoist"
+  },
+  "sidebar.connectors.doc.Toggl API": {
+    "message": "Toggl API",
+    "description": "The label for the doc item Toggl API in sidebar connectors, linking to the doc sources/toggl"
+  },
+  "sidebar.connectors.doc.TPL/3PL Central": {
+    "message": "TPL/3PL Central",
+    "description": "The label for the doc item TPL/3PL Central in sidebar connectors, linking to the doc sources/tplcentral"
+  },
+  "sidebar.connectors.doc.Tremendous": {
+    "message": "Tremendous",
+    "description": "The label for the doc item Tremendous in sidebar connectors, linking to the doc sources/tremendous"
+  },
+  "sidebar.connectors.doc.TrustPilot": {
+    "message": "TrustPilot",
+    "description": "The label for the doc item TrustPilot in sidebar connectors, linking to the doc sources/trustpilot"
+  },
+  "sidebar.connectors.doc.TVMaze Schedule": {
+    "message": "TVMaze Schedule",
+    "description": "The label for the doc item TVMaze Schedule in sidebar connectors, linking to the doc sources/tvmaze-schedule"
+  },
+  "sidebar.connectors.doc.Twelve Data": {
+    "message": "Twelve Data",
+    "description": "The label for the doc item Twelve Data in sidebar connectors, linking to the doc sources/twelve-data"
+  },
+  "sidebar.connectors.doc.Twilio": {
+    "message": "Twilio",
+    "description": "The label for the doc item Twilio in sidebar connectors, linking to the doc sources/twilio"
+  },
+  "sidebar.connectors.doc.Twilio Taskrouter": {
+    "message": "Twilio Taskrouter",
+    "description": "The label for the doc item Twilio Taskrouter in sidebar connectors, linking to the doc sources/twilio-taskrouter"
+  },
+  "sidebar.connectors.doc.Twitter": {
+    "message": "Twitter",
+    "description": "The label for the doc item Twitter in sidebar connectors, linking to the doc sources/twitter"
+  },
+  "sidebar.connectors.doc.Tyntec SMS": {
+    "message": "Tyntec SMS",
+    "description": "The label for the doc item Tyntec SMS in sidebar connectors, linking to the doc sources/tyntec-sms"
+  },
+  "sidebar.connectors.doc.Ubidots": {
+    "message": "Ubidots",
+    "description": "The label for the doc item Ubidots in sidebar connectors, linking to the doc sources/ubidots"
+  },
+  "sidebar.connectors.doc.Unleash": {
+    "message": "Unleash",
+    "description": "The label for the doc item Unleash in sidebar connectors, linking to the doc sources/unleash"
+  },
+  "sidebar.connectors.doc.UpPromote": {
+    "message": "UpPromote",
+    "description": "The label for the doc item UpPromote in sidebar connectors, linking to the doc sources/uppromote"
+  },
+  "sidebar.connectors.doc.Uptick": {
+    "message": "Uptick",
+    "description": "The label for the doc item Uptick in sidebar connectors, linking to the doc sources/uptick"
+  },
+  "sidebar.connectors.doc.US Census API": {
+    "message": "US Census API",
+    "description": "The label for the doc item US Census API in sidebar connectors, linking to the doc sources/us-census"
+  },
+  "sidebar.connectors.doc.Uservoice": {
+    "message": "Uservoice",
+    "description": "The label for the doc item Uservoice in sidebar connectors, linking to the doc sources/uservoice"
+  },
+  "sidebar.connectors.doc.Vantage API": {
+    "message": "Vantage API",
+    "description": "The label for the doc item Vantage API in sidebar connectors, linking to the doc sources/vantage"
+  },
+  "sidebar.connectors.doc.Veeqo": {
+    "message": "Veeqo",
+    "description": "The label for the doc item Veeqo in sidebar connectors, linking to the doc sources/veeqo"
+  },
+  "sidebar.connectors.doc.Vercel": {
+    "message": "Vercel",
+    "description": "The label for the doc item Vercel in sidebar connectors, linking to the doc sources/vercel"
+  },
+  "sidebar.connectors.doc.VictorOps": {
+    "message": "VictorOps",
+    "description": "The label for the doc item VictorOps in sidebar connectors, linking to the doc sources/victorops"
+  },
+  "sidebar.connectors.doc.Visma e-conomic": {
+    "message": "Visma e-conomic",
+    "description": "The label for the doc item Visma e-conomic in sidebar connectors, linking to the doc sources/visma-economic"
+  },
+  "sidebar.connectors.doc.Vitally": {
+    "message": "Vitally",
+    "description": "The label for the doc item Vitally in sidebar connectors, linking to the doc sources/vitally"
+  },
+  "sidebar.connectors.doc.VWO": {
+    "message": "VWO",
+    "description": "The label for the doc item VWO in sidebar connectors, linking to the doc sources/vwo"
+  },
+  "sidebar.connectors.doc.Waiteraid": {
+    "message": "Waiteraid",
+    "description": "The label for the doc item Waiteraid in sidebar connectors, linking to the doc sources/waiteraid"
+  },
+  "sidebar.connectors.doc.Wasabi": {
+    "message": "Wasabi",
+    "description": "The label for the doc item Wasabi in sidebar connectors, linking to the doc sources/wasabi-stats-api"
+  },
+  "sidebar.connectors.doc.Watchmode": {
+    "message": "Watchmode",
+    "description": "The label for the doc item Watchmode in sidebar connectors, linking to the doc sources/watchmode"
+  },
+  "sidebar.connectors.doc.Web Scrapper": {
+    "message": "Web Scrapper",
+    "description": "The label for the doc item Web Scrapper in sidebar connectors, linking to the doc sources/web-scrapper"
+  },
+  "sidebar.connectors.doc.Webflow": {
+    "message": "Webflow",
+    "description": "The label for the doc item Webflow in sidebar connectors, linking to the doc sources/webflow"
+  },
+  "sidebar.connectors.doc.When_i_work": {
+    "message": "When_i_work",
+    "description": "The label for the doc item When_i_work in sidebar connectors, linking to the doc sources/when-i-work"
+  },
+  "sidebar.connectors.doc.Whisky Hunter": {
+    "message": "Whisky Hunter",
+    "description": "The label for the doc item Whisky Hunter in sidebar connectors, linking to the doc sources/whisky-hunter"
+  },
+  "sidebar.connectors.doc.Wikipedia Pageviews": {
+    "message": "Wikipedia Pageviews",
+    "description": "The label for the doc item Wikipedia Pageviews in sidebar connectors, linking to the doc sources/wikipedia-pageviews"
+  },
+  "sidebar.connectors.doc.Wordpress": {
+    "message": "Wordpress",
+    "description": "The label for the doc item Wordpress in sidebar connectors, linking to the doc sources/wordpress"
+  },
+  "sidebar.connectors.doc.Workable": {
+    "message": "Workable",
+    "description": "The label for the doc item Workable in sidebar connectors, linking to the doc sources/workable"
+  },
+  "sidebar.connectors.doc.Workflowmax": {
+    "message": "Workflowmax",
+    "description": "The label for the doc item Workflowmax in sidebar connectors, linking to the doc sources/workflowmax"
+  },
+  "sidebar.connectors.doc.Workramp": {
+    "message": "Workramp",
+    "description": "The label for the doc item Workramp in sidebar connectors, linking to the doc sources/workramp"
+  },
+  "sidebar.connectors.doc.Wrike": {
+    "message": "Wrike",
+    "description": "The label for the doc item Wrike in sidebar connectors, linking to the doc sources/wrike"
+  },
+  "sidebar.connectors.doc.Wufoo": {
+    "message": "Wufoo",
+    "description": "The label for the doc item Wufoo in sidebar connectors, linking to the doc sources/wufoo"
+  },
+  "sidebar.connectors.doc.XKCD": {
+    "message": "XKCD",
+    "description": "The label for the doc item XKCD in sidebar connectors, linking to the doc sources/xkcd"
+  },
+  "sidebar.connectors.doc.Xsolla": {
+    "message": "Xsolla",
+    "description": "The label for the doc item Xsolla in sidebar connectors, linking to the doc sources/xsolla"
+  },
+  "sidebar.connectors.doc.Yahoo Finance Price": {
+    "message": "Yahoo Finance Price",
+    "description": "The label for the doc item Yahoo Finance Price in sidebar connectors, linking to the doc sources/yahoo-finance-price"
+  },
+  "sidebar.connectors.doc.Yandex Metrica": {
+    "message": "Yandex Metrica",
+    "description": "The label for the doc item Yandex Metrica in sidebar connectors, linking to the doc sources/yandex-metrica"
+  },
+  "sidebar.connectors.doc.Yotpo": {
+    "message": "Yotpo",
+    "description": "The label for the doc item Yotpo in sidebar connectors, linking to the doc sources/yotpo"
+  },
+  "sidebar.connectors.doc.You Need A Budget (YNAB)": {
+    "message": "You Need A Budget (YNAB)",
+    "description": "The label for the doc item You Need A Budget (YNAB) in sidebar connectors, linking to the doc sources/you-need-a-budget-ynab"
+  },
+  "sidebar.connectors.doc.Younium": {
+    "message": "Younium",
+    "description": "The label for the doc item Younium in sidebar connectors, linking to the doc sources/younium"
+  },
+  "sidebar.connectors.doc.YouSign": {
+    "message": "YouSign",
+    "description": "The label for the doc item YouSign in sidebar connectors, linking to the doc sources/yousign"
+  },
+  "sidebar.connectors.doc.YouTube Analytics": {
+    "message": "YouTube Analytics",
+    "description": "The label for the doc item YouTube Analytics in sidebar connectors, linking to the doc sources/youtube-analytics"
+  },
+  "sidebar.connectors.doc.Youtube Data API": {
+    "message": "Youtube Data API",
+    "description": "The label for the doc item Youtube Data API in sidebar connectors, linking to the doc sources/youtube-data"
+  },
+  "sidebar.connectors.doc.Zapier Supported Storage": {
+    "message": "Zapier Supported Storage",
+    "description": "The label for the doc item Zapier Supported Storage in sidebar connectors, linking to the doc sources/zapier-supported-storage"
+  },
+  "sidebar.connectors.doc.ZapSign": {
+    "message": "ZapSign",
+    "description": "The label for the doc item ZapSign in sidebar connectors, linking to the doc sources/zapsign"
+  },
+  "sidebar.connectors.doc.Zencart": {
+    "message": "Zencart",
+    "description": "The label for the doc item Zencart in sidebar connectors, linking to the doc sources/zencart"
+  },
+  "sidebar.connectors.doc.Zendesk Sell": {
+    "message": "Zendesk Sell",
+    "description": "The label for the doc item Zendesk Sell in sidebar connectors, linking to the doc sources/zendesk-sell"
+  },
+  "sidebar.connectors.doc.Zendesk Sunshine": {
+    "message": "Zendesk Sunshine",
+    "description": "The label for the doc item Zendesk Sunshine in sidebar connectors, linking to the doc sources/zendesk-sunshine"
+  },
+  "sidebar.connectors.doc.Zenefits": {
+    "message": "Zenefits",
+    "description": "The label for the doc item Zenefits in sidebar connectors, linking to the doc sources/zenefits"
+  },
+  "sidebar.connectors.doc.Zenloop": {
+    "message": "Zenloop",
+    "description": "The label for the doc item Zenloop in sidebar connectors, linking to the doc sources/zenloop"
+  },
+  "sidebar.connectors.doc.Zoho Analytics Metadata API": {
+    "message": "Zoho Analytics Metadata API",
+    "description": "The label for the doc item Zoho Analytics Metadata API in sidebar connectors, linking to the doc sources/zoho-analytics-metadata-api"
+  },
+  "sidebar.connectors.doc.Zoho Bigin": {
+    "message": "Zoho Bigin",
+    "description": "The label for the doc item Zoho Bigin in sidebar connectors, linking to the doc sources/zoho-bigin"
+  },
+  "sidebar.connectors.doc.Zoho Billing": {
+    "message": "Zoho Billing",
+    "description": "The label for the doc item Zoho Billing in sidebar connectors, linking to the doc sources/zoho-billing"
+  },
+  "sidebar.connectors.doc.Zoho Books": {
+    "message": "Zoho Books",
+    "description": "The label for the doc item Zoho Books in sidebar connectors, linking to the doc sources/zoho-books"
+  },
+  "sidebar.connectors.doc.Zoho Campaign": {
+    "message": "Zoho Campaign",
+    "description": "The label for the doc item Zoho Campaign in sidebar connectors, linking to the doc sources/zoho-campaign"
+  },
+  "sidebar.connectors.doc.Zoho CRM": {
+    "message": "Zoho CRM",
+    "description": "The label for the doc item Zoho CRM in sidebar connectors, linking to the doc sources/zoho-crm"
+  },
+  "sidebar.connectors.doc.Zoho Desk": {
+    "message": "Zoho Desk",
+    "description": "The label for the doc item Zoho Desk in sidebar connectors, linking to the doc sources/zoho-desk"
+  },
+  "sidebar.connectors.doc.Zoho Expense": {
+    "message": "Zoho Expense",
+    "description": "The label for the doc item Zoho Expense in sidebar connectors, linking to the doc sources/zoho-expense"
+  },
+  "sidebar.connectors.doc.Zoho Inventory": {
+    "message": "Zoho Inventory",
+    "description": "The label for the doc item Zoho Inventory in sidebar connectors, linking to the doc sources/zoho-inventory"
+  },
+  "sidebar.connectors.doc.Zoho Invoice": {
+    "message": "Zoho Invoice",
+    "description": "The label for the doc item Zoho Invoice in sidebar connectors, linking to the doc sources/zoho-invoice"
+  },
+  "sidebar.connectors.doc.Zonka Feedback": {
+    "message": "Zonka Feedback",
+    "description": "The label for the doc item Zonka Feedback in sidebar connectors, linking to the doc sources/zonka-feedback"
+  },
+  "sidebar.connectors.doc.Zuora": {
+    "message": "Zuora",
+    "description": "The label for the doc item Zuora in sidebar connectors, linking to the doc sources/zuora"
+  },
+  "sidebar.connectors.doc.SharePoint Enterprise": {
+    "message": "SharePoint Enterprise",
+    "description": "The label for the doc item SharePoint Enterprise in sidebar connectors, linking to the doc enterprise-connectors/source-sharepoint-enterprise"
+  },
+  "sidebar.connectors.doc.Source Db2": {
+    "message": "Source Db2",
+    "description": "The label for the doc item Source Db2 in sidebar connectors, linking to the doc enterprise-connectors/source-db2"
+  },
+  "sidebar.connectors.doc.Source Netsuite": {
+    "message": "Source Netsuite",
+    "description": "The label for the doc item Source Netsuite in sidebar connectors, linking to the doc enterprise-connectors/source-netsuite-enterprise"
+  },
+  "sidebar.connectors.doc.Source Oracle": {
+    "message": "Source Oracle",
+    "description": "The label for the doc item Source Oracle in sidebar connectors, linking to the doc enterprise-connectors/source-oracle-enterprise"
+  },
+  "sidebar.connectors.doc.Source Salesforce Marketing Cloud Engagement": {
+    "message": "Source Salesforce Marketing Cloud Engagement",
+    "description": "The label for the doc item Source Salesforce Marketing Cloud Engagement in sidebar connectors, linking to the doc enterprise-connectors/source-salesforce-marketing-cloud"
+  },
+  "sidebar.connectors.doc.Source SAP HANA": {
+    "message": "Source SAP HANA",
+    "description": "The label for the doc item Source SAP HANA in sidebar connectors, linking to the doc enterprise-connectors/source-sap-hana"
+  },
+  "sidebar.connectors.doc.Customer IO": {
+    "message": "Customer IO",
+    "description": "The label for the doc item Customer IO in sidebar connectors, linking to the doc destinations/customer-io"
+  },
+  "sidebar.connectors.doc.HubSpot Destination": {
+    "message": "HubSpot Destination",
+    "description": "The label for the doc item HubSpot Destination in sidebar connectors, linking to the doc destinations/hubspot"
+  },
+  "sidebar.connectors.doc.Milvus": {
+    "message": "Milvus",
+    "description": "The label for the doc item Milvus in sidebar connectors, linking to the doc destinations/milvus"
+  },
+  "sidebar.connectors.doc.PGVector Destination": {
+    "message": "PGVector Destination",
+    "description": "The label for the doc item PGVector Destination in sidebar connectors, linking to the doc destinations/pgvector"
+  },
+  "sidebar.connectors.doc.Pinecone": {
+    "message": "Pinecone",
+    "description": "The label for the doc item Pinecone in sidebar connectors, linking to the doc destinations/pinecone"
+  },
+  "sidebar.connectors.doc.S3 Data Lake": {
+    "message": "S3 Data Lake",
+    "description": "The label for the doc item S3 Data Lake in sidebar connectors, linking to the doc destinations/s3-data-lake"
+  },
+  "sidebar.connectors.doc.Snowflake Cortex Destination": {
+    "message": "Snowflake Cortex Destination",
+    "description": "The label for the doc item Snowflake Cortex Destination in sidebar connectors, linking to the doc destinations/snowflake-cortex"
+  },
+  "sidebar.connectors.doc./dev/null Destination": {
+    "message": "/dev/null Destination",
+    "description": "The label for the doc item /dev/null Destination in sidebar connectors, linking to the doc destinations/dev-null"
+  },
+  "sidebar.connectors.doc.Amazon SQS": {
+    "message": "Amazon SQS",
+    "description": "The label for the doc item Amazon SQS in sidebar connectors, linking to the doc destinations/amazon-sqs"
+  },
+  "sidebar.connectors.doc.Astra DB Destination": {
+    "message": "Astra DB Destination",
+    "description": "The label for the doc item Astra DB Destination in sidebar connectors, linking to the doc destinations/astra"
+  },
+  "sidebar.connectors.doc.AWS Datalake": {
+    "message": "AWS Datalake",
+    "description": "The label for the doc item AWS Datalake in sidebar connectors, linking to the doc destinations/aws-datalake"
+  },
+  "sidebar.connectors.doc.Cassandra": {
+    "message": "Cassandra",
+    "description": "The label for the doc item Cassandra in sidebar connectors, linking to the doc destinations/cassandra"
+  },
+  "sidebar.connectors.doc.Chroma": {
+    "message": "Chroma",
+    "description": "The label for the doc item Chroma in sidebar connectors, linking to the doc destinations/chroma"
+  },
+  "sidebar.connectors.doc.Cumul.io": {
+    "message": "Cumul.io",
+    "description": "The label for the doc item Cumul.io in sidebar connectors, linking to the doc destinations/cumulio"
+  },
+  "sidebar.connectors.doc.Databend": {
+    "message": "Databend",
+    "description": "The label for the doc item Databend in sidebar connectors, linking to the doc destinations/databend"
+  },
+  "sidebar.connectors.doc.deepset AI Platform": {
+    "message": "deepset AI Platform",
+    "description": "The label for the doc item deepset AI Platform in sidebar connectors, linking to the doc destinations/deepset"
+  },
+  "sidebar.connectors.doc.Doris": {
+    "message": "Doris",
+    "description": "The label for the doc item Doris in sidebar connectors, linking to the doc destinations/doris"
+  },
+  "sidebar.connectors.doc.DynamoDB": {
+    "message": "DynamoDB",
+    "description": "The label for the doc item DynamoDB in sidebar connectors, linking to the doc destinations/dynamodb"
+  },
+  "sidebar.connectors.doc.Exasol": {
+    "message": "Exasol",
+    "description": "The label for the doc item Exasol in sidebar connectors, linking to the doc destinations/exasol"
+  },
+  "sidebar.connectors.doc.Firebolt": {
+    "message": "Firebolt",
+    "description": "The label for the doc item Firebolt in sidebar connectors, linking to the doc destinations/firebolt"
+  },
+  "sidebar.connectors.doc.Firestore": {
+    "message": "Firestore",
+    "description": "The label for the doc item Firestore in sidebar connectors, linking to the doc destinations/firestore"
+  },
+  "sidebar.connectors.doc.GlassFlow": {
+    "message": "GlassFlow",
+    "description": "The label for the doc item GlassFlow in sidebar connectors, linking to the doc destinations/glassflow"
+  },
+  "sidebar.connectors.doc.Keen": {
+    "message": "Keen",
+    "description": "The label for the doc item Keen in sidebar connectors, linking to the doc destinations/keen"
+  },
+  "sidebar.connectors.doc.Kinesis": {
+    "message": "Kinesis",
+    "description": "The label for the doc item Kinesis in sidebar connectors, linking to the doc destinations/kinesis"
+  },
+  "sidebar.connectors.doc.KVDB": {
+    "message": "KVDB",
+    "description": "The label for the doc item KVDB in sidebar connectors, linking to the doc destinations/kvdb"
+  },
+  "sidebar.connectors.doc.Local CSV": {
+    "message": "Local CSV",
+    "description": "The label for the doc item Local CSV in sidebar connectors, linking to the doc destinations/csv"
+  },
+  "sidebar.connectors.doc.Local JSON": {
+    "message": "Local JSON",
+    "description": "The label for the doc item Local JSON in sidebar connectors, linking to the doc destinations/local-json"
+  },
+  "sidebar.connectors.doc.Mariadb Columnstore": {
+    "message": "Mariadb Columnstore",
+    "description": "The label for the doc item Mariadb Columnstore in sidebar connectors, linking to the doc destinations/mariadb-columnstore"
+  },
+  "sidebar.connectors.doc.MeiliSearch": {
+    "message": "MeiliSearch",
+    "description": "The label for the doc item MeiliSearch in sidebar connectors, linking to the doc destinations/meilisearch"
+  },
+  "sidebar.connectors.doc.MongoDB": {
+    "message": "MongoDB",
+    "description": "The label for the doc item MongoDB in sidebar connectors, linking to the doc destinations/mongodb"
+  },
+  "sidebar.connectors.doc.MotherDuck": {
+    "message": "MotherDuck",
+    "description": "The label for the doc item MotherDuck in sidebar connectors, linking to the doc destinations/motherduck"
+  },
+  "sidebar.connectors.doc.MQTT": {
+    "message": "MQTT",
+    "description": "The label for the doc item MQTT in sidebar connectors, linking to the doc destinations/mqtt"
+  },
+  "sidebar.connectors.doc.PubSub": {
+    "message": "PubSub",
+    "description": "The label for the doc item PubSub in sidebar connectors, linking to the doc destinations/pubsub"
+  },
+  "sidebar.connectors.doc.Pulsar": {
+    "message": "Pulsar",
+    "description": "The label for the doc item Pulsar in sidebar connectors, linking to the doc destinations/pulsar"
+  },
+  "sidebar.connectors.doc.Qdrant": {
+    "message": "Qdrant",
+    "description": "The label for the doc item Qdrant in sidebar connectors, linking to the doc destinations/qdrant"
+  },
+  "sidebar.connectors.doc.R2": {
+    "message": "R2",
+    "description": "The label for the doc item R2 in sidebar connectors, linking to the doc destinations/r2"
+  },
+  "sidebar.connectors.doc.RabbitMQ": {
+    "message": "RabbitMQ",
+    "description": "The label for the doc item RabbitMQ in sidebar connectors, linking to the doc destinations/rabbitmq"
+  },
+  "sidebar.connectors.doc.Ragie": {
+    "message": "Ragie",
+    "description": "The label for the doc item Ragie in sidebar connectors, linking to the doc destinations/ragie"
+  },
+  "sidebar.connectors.doc.Redis": {
+    "message": "Redis",
+    "description": "The label for the doc item Redis in sidebar connectors, linking to the doc destinations/redis"
+  },
+  "sidebar.connectors.doc.Redpanda": {
+    "message": "Redpanda",
+    "description": "The label for the doc item Redpanda in sidebar connectors, linking to the doc destinations/redpanda"
+  },
+  "sidebar.connectors.doc.Rockset": {
+    "message": "Rockset",
+    "description": "The label for the doc item Rockset in sidebar connectors, linking to the doc destinations/rockset"
+  },
+  "sidebar.connectors.doc.Scylla": {
+    "message": "Scylla",
+    "description": "The label for the doc item Scylla in sidebar connectors, linking to the doc destinations/scylla"
+  },
+  "sidebar.connectors.doc.SelectDB": {
+    "message": "SelectDB",
+    "description": "The label for the doc item SelectDB in sidebar connectors, linking to the doc destinations/selectdb"
+  },
+  "sidebar.connectors.doc.SFTP JSON": {
+    "message": "SFTP JSON",
+    "description": "The label for the doc item SFTP JSON in sidebar connectors, linking to the doc destinations/sftp-json"
+  },
+  "sidebar.connectors.doc.Sqlite": {
+    "message": "Sqlite",
+    "description": "The label for the doc item Sqlite in sidebar connectors, linking to the doc destinations/sqlite"
+  },
+  "sidebar.connectors.doc.Starburst Galaxy destination user guide": {
+    "message": "Starburst Galaxy destination user guide",
+    "description": "The label for the doc item Starburst Galaxy destination user guide in sidebar connectors, linking to the doc destinations/starburst-galaxy"
+  },
+  "sidebar.connectors.doc.Streamr": {
+    "message": "Streamr",
+    "description": "The label for the doc item Streamr in sidebar connectors, linking to the doc destinations/streamr"
+  },
+  "sidebar.connectors.doc.SurrealDB": {
+    "message": "SurrealDB",
+    "description": "The label for the doc item SurrealDB in sidebar connectors, linking to the doc destinations/surrealdb"
+  },
+  "sidebar.connectors.doc.Timeplus": {
+    "message": "Timeplus",
+    "description": "The label for the doc item Timeplus in sidebar connectors, linking to the doc destinations/timeplus"
+  },
+  "sidebar.connectors.doc.Typesense": {
+    "message": "Typesense",
+    "description": "The label for the doc item Typesense in sidebar connectors, linking to the doc destinations/typesense"
+  },
+  "sidebar.connectors.doc.Vectara": {
+    "message": "Vectara",
+    "description": "The label for the doc item Vectara in sidebar connectors, linking to the doc destinations/vectara"
+  },
+  "sidebar.connectors.doc.vertica": {
+    "message": "vertica",
+    "description": "The label for the doc item vertica in sidebar connectors, linking to the doc destinations/vertica"
+  },
+  "sidebar.connectors.doc.Xata": {
+    "message": "Xata",
+    "description": "The label for the doc item Xata in sidebar connectors, linking to the doc destinations/xata"
+  },
+  "sidebar.connectors.doc.Yellowbrick": {
+    "message": "Yellowbrick",
+    "description": "The label for the doc item Yellowbrick in sidebar connectors, linking to the doc destinations/yellowbrick"
+  },
+  "sidebar.connectors.doc.Yugabytedb": {
+    "message": "Yugabytedb",
+    "description": "The label for the doc item Yugabytedb in sidebar connectors, linking to the doc destinations/yugabytedb"
+  },
+  "sidebar.connectors.doc.Salesforce Destination": {
+    "message": "Salesforce Destination",
+    "description": "The label for the doc item Salesforce Destination in sidebar connectors, linking to the doc enterprise-connectors/destination-salesforce"
+  }
+}

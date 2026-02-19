@@ -1,28 +1,30 @@
 #!/usr/bin/env bash
 
 # This script takes any number of command-line arguments in the format `--name <connector_name>`
-# and prints some key-value pairs, formatted as Github output variables.
+# and prints some key-value pairs, formatted to be used as a GitHub output variable for matrix builds.
 # For example, `./parse-connector-name-args.sh --name source-faker --name destination-bigquery` will print:
-# connectors-to-publish={"connector":["source-faker","destination-bigquery"]}
-# connectors-to-publish-jvm={"connector":["destination-bigquery"]}
-# (assuming that source-faker is a non-JVM connector, and destination-bigquery is a JVM connector)
+# {"connector":["source-faker","destination-bigquery"]}
+connectors=()
 
-source "${BASH_SOURCE%/*}/lib/util.sh"
-
-source "${BASH_SOURCE%/*}/lib/parse_args.sh"
-
-connectors_jvm=()
-for connector in "${connectors[@]}"
-do
-  meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
-  if ! test -f "$meta"; then
-    echo "Error: metadata.yaml not found for ${connector}" >&2
-    exit 1
-  fi
-
-  if grep -qE 'language:\s*java' "$meta"; then
-    connectors_jvm+=($connector)
-  fi
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --name=*)
+      connectors+=("${1#*=}")
+      shift
+      ;;
+    --name)
+      connectors+=("$2")
+      shift 2
+      ;;
+    --*)
+      echo "Error: Unknown flag $1" >&2
+      exit 1
+      ;;
+    *)
+      connectors+=("$1")
+      shift
+      ;;
+  esac
 done
 
 # `printf '%s\n' "${arr[@]}"` prints each array item on a new line.
@@ -33,7 +35,5 @@ done
 #   `--slurp` makes jq parse each line into a JSON value, then combine them all into an array.
 # We then wrap the entire thing in a JSON object.
 connectors_output='{"connector":'$(printf '%s\n' "${connectors[@]}" | jq --raw-input . | jq --compact-output --slurp .)'}'
-connectors_jvm_output='{"connector":'$(printf '%s\n' "${connectors_jvm[@]}" | jq --raw-input . | jq --compact-output --slurp .)'}'
 
-echo "connectors-to-publish=$connectors_output"
-echo "connectors-to-publish-jvm=$connectors_jvm_output"
+echo "$connectors_output"

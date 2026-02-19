@@ -1,0 +1,166 @@
+{
+  "version.label": {
+    "message": "Cloud",
+    "description": "The label for version current"
+  },
+  "sidebar.platform.category.Airbyte Platform": {
+    "message": "Airbyte Platform",
+    "description": "The label for category Airbyte Platform in sidebar platform"
+  },
+  "sidebar.platform.category.Moving data": {
+    "message": "Moving data",
+    "description": "The label for category Moving data in sidebar platform"
+  },
+  "sidebar.platform.category.Sources, destinations, and connectors": {
+    "message": "Sources, destinations, and connectors",
+    "description": "The label for category Sources, destinations, and connectors in sidebar platform"
+  },
+  "sidebar.platform.category.Connections and streams": {
+    "message": "Connections and streams",
+    "description": "The label for category Connections and streams in sidebar platform"
+  },
+  "sidebar.platform.category.Manage connections": {
+    "message": "Manage connections",
+    "description": "The label for category Manage connections in sidebar platform"
+  },
+  "sidebar.platform.category.Sync Modes": {
+    "message": "Sync Modes",
+    "description": "The label for category Sync Modes in sidebar platform"
+  },
+  "sidebar.platform.category.Data activation (reverse ETL)": {
+    "message": "Data activation (reverse ETL)",
+    "description": "The label for category Data activation (reverse ETL) in sidebar platform"
+  },
+  "sidebar.platform.category.Building Connectors": {
+    "message": "Building Connectors",
+    "description": "The label for category Building Connectors in sidebar platform"
+  },
+  "sidebar.platform.category.Connector Builder": {
+    "message": "Connector Builder",
+    "description": "The label for category Connector Builder in sidebar platform"
+  },
+  "sidebar.platform.category.Concepts": {
+    "message": "Concepts",
+    "description": "The label for category Concepts in sidebar platform"
+  },
+  "sidebar.platform.category.Understanding the YAML file": {
+    "message": "Understanding the YAML file",
+    "description": "The label for category Understanding the YAML file in sidebar platform"
+  },
+  "sidebar.platform.category.Requester": {
+    "message": "Requester",
+    "description": "The label for category Requester in sidebar platform"
+  },
+  "sidebar.platform.category.Advanced Topics": {
+    "message": "Advanced Topics",
+    "description": "The label for category Advanced Topics in sidebar platform"
+  },
+  "sidebar.platform.category.Python CDK": {
+    "message": "Python CDK",
+    "description": "The label for category Python CDK in sidebar platform"
+  },
+  "sidebar.platform.category.Tutorial: Creating a connector with Python CDK": {
+    "message": "Tutorial: Creating a connector with Python CDK",
+    "description": "The label for category Tutorial: Creating a connector with Python CDK in sidebar platform"
+  },
+  "sidebar.platform.category.Testing Connectors": {
+    "message": "Testing Connectors",
+    "description": "The label for category Testing Connectors in sidebar platform"
+  },
+  "sidebar.platform.category.Deploy Airbyte": {
+    "message": "Deploy Airbyte",
+    "description": "The label for category Deploy Airbyte in sidebar platform"
+  },
+  "sidebar.platform.category.Infrastructure": {
+    "message": "Infrastructure",
+    "description": "The label for category Infrastructure in sidebar platform"
+  },
+  "sidebar.platform.category.Integrations": {
+    "message": "Integrations",
+    "description": "The label for category Integrations in sidebar platform"
+  },
+  "sidebar.platform.category.abctl": {
+    "message": "abctl",
+    "description": "The label for category abctl in sidebar platform"
+  },
+  "sidebar.platform.category.Self-Managed Enterprise": {
+    "message": "Self-Managed Enterprise",
+    "description": "The label for category Self-Managed Enterprise in sidebar platform"
+  },
+  "sidebar.platform.category.Upgrading Airbyte": {
+    "message": "Upgrading Airbyte",
+    "description": "The label for category Upgrading Airbyte in sidebar platform"
+  },
+  "sidebar.platform.category.Configuring Airbyte": {
+    "message": "Configuring Airbyte",
+    "description": "The label for category Configuring Airbyte in sidebar platform"
+  },
+  "sidebar.platform.category.Access Management": {
+    "message": "Access Management",
+    "description": "The label for category Access Management in sidebar platform"
+  },
+  "sidebar.platform.category.Single Sign-On (SSO)": {
+    "message": "Single Sign-On (SSO)",
+    "description": "The label for category Single Sign-On (SSO) in sidebar platform"
+  },
+  "sidebar.platform.category.Role-Based Access Control (RBAC)": {
+    "message": "Role-Based Access Control (RBAC)",
+    "description": "The label for category Role-Based Access Control (RBAC) in sidebar platform"
+  },
+  "sidebar.platform.category.Airbyte at Scale": {
+    "message": "Airbyte at Scale",
+    "description": "The label for category Airbyte at Scale in sidebar platform"
+  },
+  "sidebar.platform.category.Collecting Metrics": {
+    "message": "Collecting Metrics",
+    "description": "The label for category Collecting Metrics in sidebar platform"
+  },
+  "sidebar.platform.category.Security": {
+    "message": "Security",
+    "description": "The label for category Security in sidebar platform"
+  },
+  "sidebar.platform.category.Integrating with Airbyte": {
+    "message": "Integrating with Airbyte",
+    "description": "The label for category Integrating with Airbyte in sidebar platform"
+  },
+  "sidebar.platform.category.Account Management": {
+    "message": "Account Management",
+    "description": "The label for category Account Management in sidebar platform"
+  },
+  "sidebar.platform.category.Understand Airbyte": {
+    "message": "Understand Airbyte",
+    "description": "The label for category Understand Airbyte in sidebar platform"
+  },
+  "sidebar.platform.category.Licenses": {
+    "message": "Licenses",
+    "description": "The label for category Licenses in sidebar platform"
+  },
+  "sidebar.platform.category.Contribute to Airbyte": {
+    "message": "Contribute to Airbyte",
+    "description": "The label for category Contribute to Airbyte in sidebar platform"
+  },
+  "sidebar.platform.category.Resources": {
+    "message": "Resources",
+    "description": "The label for category Resources in sidebar platform"
+  },
+  "sidebar.platform.link.Roadmap": {
+    "message": "Roadmap",
+    "description": "The label for link Roadmap in sidebar platform, linking to https://go.airbyte.com/roadmap"
+  },
+  "sidebar.platform.doc.Quickstart": {
+    "message": "Quickstart",
+    "description": "The label for the doc item Quickstart in sidebar platform, linking to the doc using-airbyte/getting-started/oss-quickstart"
+  },
+  "sidebar.platform.doc.Low-Code CDK Intro": {
+    "message": "Low-Code CDK Intro",
+    "description": "The label for the doc item Low-Code CDK Intro in sidebar platform, linking to the doc connector-development/config-based/low-code-cdk-overview"
+  },
+  "sidebar.platform.doc.Creating a Secret": {
+    "message": "Creating a Secret",
+    "description": "The label for the doc item Creating a Secret in sidebar platform, linking to the doc deploying-airbyte/creating-secrets"
+  },
+  "sidebar.platform.doc.Using PyAirbyte": {
+    "message": "Using PyAirbyte",
+    "description": "The label for the doc item Using PyAirbyte in sidebar platform, linking to the doc using-airbyte/pyairbyte/getting-started"
+  }
+}

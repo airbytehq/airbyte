@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.stages
 
-import io.airbyte.cdk.load.dataflow.DataFlowStage
-import io.airbyte.cdk.load.dataflow.DataFlowStageIO
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 

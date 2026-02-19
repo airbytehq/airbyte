@@ -6,19 +6,21 @@ products: cloud
 
 Understanding the following limitations will help you more effectively manage Airbyte Cloud.
 
-- Max number of workspaces per user: 3\*
-- Max number of instances of the same source connector: 10\*
-- Max number of destinations in a workspace: 20\*
-- Max number of streams that can be returned by a source in a discover call: 1K
-- Max number of streams that can be configured to sync in a single connection: 1K
-- Max number of fields that can be selected to sync in a single connection: 20k
+## Standard plan limitations
+
+These limitations only apply to those using the Standard plan. If you upgrade to Pro or Enterprise Flex, Airbyte removes these limitations.
+
+- Max number of workspaces per user: 1. If you were a Cloud Standard customer before September 24, 2025, Airbyte has grandfathered you into its historical 3-workspace limit.
+
+## Cloud limitations for all plans
+
+- Max number of streams that can be returned by a source in a discover call: 1,000
+
+- Max number of streams that can be configured to sync in a single connection: 1,000
+
+- Max number of fields that can be selected to sync in a single connection: 20,000
+
 - Size of a single record: 20MB\*\*
-
----
-
-\* Limits on workspaces, sources, and destinations do not apply to customers of
-Airbyte Teams. To learn more
-[contact us](https://airbyte.com/talk-to-sales)!
 
 \*\* The effective maximum size of the record may vary based per destination. Some destinations may
 fail to sync if a record cannot be stored, but Destinations which support

@@ -30,4 +30,14 @@ data:
     - suite: unitTests
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  externalDocumentationUrls:
+    - title: Microsoft Dataverse Web API
+      url: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/overview
+      type: api_reference
+    - title: Dataverse authentication
+      url: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticate-oauth
+      type: authentication_guide
+    - title: Dataverse API limits
+      url: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/api-limits
+      type: rate_limits
 metadataSpecVersion: "1.0"
