@@ -27,9 +27,7 @@ This page contains the setup guide and reference information for the [GitHub 2](
 
 Create a [GitHub Account](https://github.com).
 
-**Airbyte Open Source additional setup steps**
-
-Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens).
+**Airbyte Open Source additional setup steps**: Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens).
 
 ### Step 2: Set up the GitHub connector in Airbyte
 
