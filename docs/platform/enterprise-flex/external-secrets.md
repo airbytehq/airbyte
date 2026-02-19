@@ -205,7 +205,7 @@ Configuration format will be provided by your Airbyte representative.
 
 ---
 
-## Using External Secret References in Connector Configurations
+## Using External Secret References in Connector Configurations {#external-secret-references}
 
 Once your secret storage is configured, you can reference secrets stored in your external secret manager when creating or updating connectors via the API or Terraform. Instead of passing a raw secret value, use the `secret_coordinate::` prefix followed by the name of the secret in your configured secret manager.
 
