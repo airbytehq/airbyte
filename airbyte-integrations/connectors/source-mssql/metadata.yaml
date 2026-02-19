@@ -9,7 +9,11 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
+<<<<<<< yarden/source-mssql-lsn-decoding-issue
   dockerImageTag: 4.3.5
+=======
+  dockerImageTag: 4.3.4
+>>>>>>> master
   dockerRepository: airbyte/source-mssql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   githubIssueLabel: source-mssql
