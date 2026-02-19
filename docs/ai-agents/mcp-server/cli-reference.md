@@ -7,7 +7,7 @@ sidebar_position: 4
 
 All commands use `uv run adp <command>`. Use `--help` on any command for full options.
 
-### Global flags
+## Global flags
 
 | Flag | Description |
 | --- | --- |
