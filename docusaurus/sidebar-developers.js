@@ -11,6 +11,7 @@ module.exports = {
       items: [
         "api-documentation",
         "terraform-documentation",
+        "terraform-provider-pre-1.0",
         {
           type: "category",
           label: "PyAirbyte",
