@@ -10,7 +10,7 @@ The Notion connector supports the following entities and actions.
 |--------|---------|
 | Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
 | Pages | [List](#pages-list), [Get](#pages-get), [Search](#pages-search) |
-| Databases | [List](#databases-list), [Get](#databases-get), [Search](#databases-search) |
+| Data Sources | [List](#data-sources-list), [Get](#data-sources-get), [Search](#data-sources-search) |
 | Blocks | [List](#blocks-list), [Get](#blocks-get), [Search](#blocks-search) |
 | Comments | [List](#comments-list) |
 
@@ -416,16 +416,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-## Databases
+## Data Sources
 
-### Databases List
+### Data Sources List
 
-Returns databases shared with the integration using the search endpoint
+Returns data sources shared with the integration using the search endpoint
 
 #### Python SDK
 
 ```python
-await notion.databases.list()
+await notion.data_sources.list()
 ```
 
 #### API
@@ -435,7 +435,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-    "entity": "databases",
+    "entity": "data_sources",
     "action": "list"
 }'
 ```
@@ -484,6 +484,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `cover` | `object \| null` |  |
 | `properties` | `object \| null` |  |
 | `parent` | `object \| any` |  |
+| `database_parent` | `object \| any` |  |
 | `url` | `string \| null` |  |
 | `public_url` | `string \| null` |  |
 | `archived` | `boolean \| null` |  |
@@ -502,15 +503,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Databases Get
+### Data Sources Get
 
-Retrieves a database object using the ID specified
+Retrieves a data source object using the ID specified
 
 #### Python SDK
 
 ```python
-await notion.databases.get(
-    database_id="<str>"
+await notion.data_sources.get(
+    data_source_id="<str>"
 )
 ```
 
@@ -521,10 +522,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-    "entity": "databases",
+    "entity": "data_sources",
     "action": "get",
     "params": {
-        "database_id": "<str>"
+        "data_source_id": "<str>"
     }
 }'
 ```
@@ -534,7 +535,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `database_id` | `string` | Yes | Database ID |
+| `data_source_id` | `string` | Yes | Data Source ID |
 
 
 <details>
@@ -566,6 +567,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `cover` | `object \| null` |  |
 | `properties` | `object \| null` |  |
 | `parent` | `object \| any` |  |
+| `database_parent` | `object \| any` |  |
 | `url` | `string \| null` |  |
 | `public_url` | `string \| null` |  |
 | `archived` | `boolean \| null` |  |
@@ -577,14 +579,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Databases Search
+### Data Sources Search
 
-Search and filter databases records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Search and filter data sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await notion.databases.search(
+await notion.data_sources.search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -596,7 +598,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
-    "entity": "databases",
+    "entity": "data_sources",
     "action": "search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
@@ -619,22 +621,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `archived` | `boolean` | Indicates if the data is archived or not. |
-| `cover` | `object` | URL or reference to the cover image of the database. |
-| `created_by` | `object` | The user who created the database. |
-| `created_time` | `string` | The timestamp when the database was created. |
-| `description` | `array` | Description text associated with the database. |
-| `icon` | `object` | URL or reference to the icon of the database. |
-| `id` | `string` | Unique identifier of the database. |
-| `is_inline` | `boolean` | Indicates if the database is displayed inline. |
-| `last_edited_by` | `object` | The user who last edited the database. |
-| `last_edited_time` | `string` | The timestamp when the database was last edited. |
-| `object` | `object` | The type of object represented by the database. |
-| `parent` | `object` | Indicates the parent database if it exists. |
-| `properties` | `array` | List of key-value pairs defining additional properties of the database. |
-| `public_url` | `string` | Public URL to access the database. |
-| `title` | `array` | Title or name of the database. |
-| `url` | `string` | URL or reference to access the database. |
+| `archived` | `boolean` | Indicates if the data source is archived or not. |
+| `cover` | `object` | URL or reference to the cover image of the data source. |
+| `created_by` | `object` | The user who created the data source. |
+| `created_time` | `string` | The timestamp when the data source was created. |
+| `database_parent` | `object` | The grandparent of the data source (parent of the database). |
+| `description` | `array` | Description text associated with the data source. |
+| `icon` | `object` | URL or reference to the icon of the data source. |
+| `id` | `string` | Unique identifier of the data source. |
+| `is_inline` | `boolean` | Indicates if the data source is displayed inline. |
+| `last_edited_by` | `object` | The user who last edited the data source. |
+| `last_edited_time` | `string` | The timestamp when the data source was last edited. |
+| `object` | `object` | The type of object (data_source). |
+| `parent` | `object` | The parent database of the data source. |
+| `properties` | `array` | Schema of properties for the data source. |
+| `public_url` | `string` | Public URL to access the data source. |
+| `title` | `array` | Title or name of the data source. |
+| `url` | `string` | URL or reference to access the data source. |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -646,22 +649,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.has_more` | `boolean` | Whether additional pages are available |
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
-| `data[].archived` | `boolean` | Indicates if the data is archived or not. |
-| `data[].cover` | `object` | URL or reference to the cover image of the database. |
-| `data[].created_by` | `object` | The user who created the database. |
-| `data[].created_time` | `string` | The timestamp when the database was created. |
-| `data[].description` | `array` | Description text associated with the database. |
-| `data[].icon` | `object` | URL or reference to the icon of the database. |
-| `data[].id` | `string` | Unique identifier of the database. |
-| `data[].is_inline` | `boolean` | Indicates if the database is displayed inline. |
-| `data[].last_edited_by` | `object` | The user who last edited the database. |
-| `data[].last_edited_time` | `string` | The timestamp when the database was last edited. |
-| `data[].object` | `object` | The type of object represented by the database. |
-| `data[].parent` | `object` | Indicates the parent database if it exists. |
-| `data[].properties` | `array` | List of key-value pairs defining additional properties of the database. |
-| `data[].public_url` | `string` | Public URL to access the database. |
-| `data[].title` | `array` | Title or name of the database. |
-| `data[].url` | `string` | URL or reference to access the database. |
+| `data[].archived` | `boolean` | Indicates if the data source is archived or not. |
+| `data[].cover` | `object` | URL or reference to the cover image of the data source. |
+| `data[].created_by` | `object` | The user who created the data source. |
+| `data[].created_time` | `string` | The timestamp when the data source was created. |
+| `data[].database_parent` | `object` | The grandparent of the data source (parent of the database). |
+| `data[].description` | `array` | Description text associated with the data source. |
+| `data[].icon` | `object` | URL or reference to the icon of the data source. |
+| `data[].id` | `string` | Unique identifier of the data source. |
+| `data[].is_inline` | `boolean` | Indicates if the data source is displayed inline. |
+| `data[].last_edited_by` | `object` | The user who last edited the data source. |
+| `data[].last_edited_time` | `string` | The timestamp when the data source was last edited. |
+| `data[].object` | `object` | The type of object (data_source). |
+| `data[].parent` | `object` | The parent database of the data source. |
+| `data[].properties` | `array` | Schema of properties for the data source. |
+| `data[].public_url` | `string` | Public URL to access the data source. |
+| `data[].title` | `array` | Title or name of the data source. |
+| `data[].url` | `string` | URL or reference to access the data source. |
 
 </details>
 
@@ -746,6 +750,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `equation` | `object \| null` |  |
 | `table` | `object \| null` |  |
 | `table_row` | `object \| null` |  |
+| `column` | `object \| null` |  |
+| `column_list` | `object \| null` |  |
+| `synced_block` | `object \| null` |  |
+| `template` | `object \| null` |  |
+| `link_preview` | `object \| null` |  |
+| `link_to_page` | `object \| null` |  |
+| `breadcrumb` | `object \| null` |  |
+| `unsupported` | `object \| null` |  |
 | `request_id` | `string \| null` |  |
 
 
@@ -835,6 +847,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `equation` | `object \| null` |  |
 | `table` | `object \| null` |  |
 | `table_row` | `object \| null` |  |
+| `column` | `object \| null` |  |
+| `column_list` | `object \| null` |  |
+| `synced_block` | `object \| null` |  |
+| `template` | `object \| null` |  |
+| `link_preview` | `object \| null` |  |
+| `link_to_page` | `object \| null` |  |
+| `breadcrumb` | `object \| null` |  |
+| `unsupported` | `object \| null` |  |
 | `request_id` | `string \| null` |  |
 
 
