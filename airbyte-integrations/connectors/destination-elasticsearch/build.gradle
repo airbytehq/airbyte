@@ -41,6 +41,6 @@ dependencies {
 
     // MIT
     // https://www.testcontainers.org/
-        testImplementation 'org.testcontainers:elasticsearch:1.21.4'
-        integrationTestJavaImplementation 'org.testcontainers:elasticsearch:1.21.4'
+    testImplementation 'org.testcontainers:elasticsearch:1.21.4'
+    integrationTestJavaImplementation 'org.testcontainers:elasticsearch:1.21.4'
 }
