@@ -50,8 +50,8 @@ dependencies {
     implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
     implementation 'org.bouncycastle:bctls-jdk18on:1.78.1'
 
-    testFixturesApi 'org.testcontainers:testcontainers:1.20.1'
-    testFixturesApi 'org.testcontainers:jdbc:1.20.1'
+        testFixturesApi 'org.testcontainers:testcontainers:1.21.4'
+        testFixturesApi 'org.testcontainers:jdbc:1.21.4'
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-sources'))
@@ -59,8 +59,8 @@ dependencies {
 
     testImplementation 'mysql:mysql-connector-java:8.0.33'
     testImplementation 'org.postgresql:postgresql:42.7.3'
-    testImplementation 'org.testcontainers:mysql:1.20.1'
-    testImplementation 'org.testcontainers:postgresql:1.20.1'
+        testImplementation 'org.testcontainers:mysql:1.21.4'
+        testImplementation 'org.testcontainers:postgresql:1.21.4'
     testImplementation 'org.xbib.elasticsearch:joptsimple:6.3.2.1'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.4.0'
 }

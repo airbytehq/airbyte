@@ -18,5 +18,5 @@ dependencies {
 
     //TODO Add jdbc driver import here. Ex: implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
-    testFixturesApi 'org.testcontainers:jdbc:1.19.4'
+    testFixturesApi 'org.testcontainers:jdbc:1.21.4'
 }
