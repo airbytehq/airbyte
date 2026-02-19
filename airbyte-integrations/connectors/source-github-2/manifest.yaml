@@ -12,7 +12,7 @@ definitions:
     HttpRequester:
       authenticator:
         type: BearerAuthenticator
-        api_token: "{{ config['token'] }}"
+        api_token: "{{ config['Personal Access Token'] }}"
       request_parameters:
         state: all
       error_handler:
@@ -62,7 +62,7 @@ streams:
         $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
-        url: https://api.github.com/orgs/{{ config['organization'] }}/teams
+        url: https://api.github.com/orgs/{{ config['Organization'] }}/teams
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -208,7 +208,7 @@ streams:
         $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
-        url: https://api.github.com/orgs/{{ config['organization'] }}/members
+        url: https://api.github.com/orgs/{{ config['Organization'] }}/members
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -400,7 +400,7 @@ streams:
         $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
-        url: https://api.github.com/orgs/{{ config['organization'] }}/repos
+        url: https://api.github.com/orgs/{{ config['Organization'] }}/repos
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -881,7 +881,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/assignees
         http_method: GET
         authenticator:
@@ -1009,7 +1009,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/branches
         http_method: GET
         authenticator:
@@ -1082,7 +1082,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/collaborators
         http_method: GET
         authenticator:
@@ -1244,7 +1244,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/stats/contributors
         http_method: GET
         authenticator:
@@ -1404,7 +1404,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/issues
         http_method: GET
         authenticator:
@@ -1987,7 +1987,7 @@ streams:
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_datetime'] }}"
+        datetime: "{{ config['Start Date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
@@ -2006,7 +2006,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/labels
         http_method: GET
         authenticator:
@@ -2086,7 +2086,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/tags
         http_method: GET
         authenticator:
@@ -2167,7 +2167,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/commits
         http_method: GET
         authenticator:
@@ -2511,7 +2511,7 @@ streams:
       cursor_field: author_datetime
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_datetime'] }}"
+        datetime: "{{ config['Start Date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
@@ -2531,7 +2531,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/deployments
         http_method: GET
         authenticator:
@@ -2951,7 +2951,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/pulls
         http_method: GET
         authenticator:
@@ -4808,7 +4808,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization']
+          https://api.github.com/repos/{{ config['Organization']
           }}/{{stream_slice.extra_fields.repository}}/pulls/{{
           stream_slice.pr_number }}/reviews
         http_method: GET
@@ -5002,7 +5002,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/actions/workflows
         http_method: GET
         authenticator:
@@ -5095,7 +5095,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.extra_fields.repository }}/actions/runs/{{
           stream_slice.workflow_run }}/jobs
         http_method: GET
@@ -5247,7 +5247,7 @@ streams:
       requester:
         type: HttpRequester
         url: >-
-          https://api.github.com/repos/{{ config['organization'] }}/{{
+          https://api.github.com/repos/{{ config['Organization'] }}/{{
           stream_slice.repo }}/actions/runs
         http_method: GET
         authenticator:
@@ -6223,7 +6223,7 @@ streams:
       cursor_field: created_at
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_datetime'] }}"
+        datetime: "{{ config['Start Date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
 spec:
