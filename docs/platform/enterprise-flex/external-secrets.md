@@ -205,6 +205,30 @@ Configuration format will be provided by your Airbyte representative.
 
 ---
 
+## Using External Secret References in Connector Configurations
+
+Once your secret storage is configured, you can reference secrets stored in your external secret manager when creating or updating connectors via the API or Terraform. Instead of passing a raw secret value, use the `secret_coordinate::` prefix followed by the name of the secret in your configured secret manager.
+
+For example, if you created a secret called `my-db-password` in your AWS Secrets Manager, Google Secret Manager, or Azure Key Vault, you can reference it in a connector configuration like this:
+
+```json
+{
+  "configuration": {
+    "host": "db.example.com",
+    "port": 5432,
+    "database": "mydb",
+    "username": "airbyte_user",
+    "password": "secret_coordinate::my-db-password"
+  }
+}
+```
+
+This works for any field in a connector spec that is marked as `airbyte_secret: true`. At runtime, Airbyte resolves the reference by reading the secret value from your configured secret manager.
+
+For more details, examples, and supported APIs, see [External Secret References](../understanding-airbyte/secrets.md#external-secret-references).
+
+---
+
 ## Verification Steps
 
 After providing your configuration to Airbyte:
