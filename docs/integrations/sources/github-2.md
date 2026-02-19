@@ -106,6 +106,6 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                       | Subject                                            |
 | :------ | :--------- | :------------------------------------------------- | :------------------------------------------------- |
-| 0.1.0   | 2026-02-19 | [TBA](https://github.com/airbytehq/airbyte/pull/#) | Initial release of Github 2 connector for Airbyte |
+| 0.1.0   | 2026-02-19 | [#49](https://github.com/canonical/airbyte/pull/#49) | Initial release of Github 2 connector for Airbyte |
 
 </details>
