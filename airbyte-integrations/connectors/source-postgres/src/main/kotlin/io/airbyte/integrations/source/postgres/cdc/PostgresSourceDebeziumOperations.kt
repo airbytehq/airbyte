@@ -119,8 +119,8 @@ class PostgresSourceDebeziumOperations(
             .with("slot.name", cdcConfig.replicationSlot)
             .with("publication.name", cdcConfig.publication)
             .apply {
-                if (cdcConfig.heartbeatActionQuery.isNotEmpty()) {
-                    this.with("heartbeat.action.query", cdcConfig.heartbeatActionQuery)
+                if (cdcConfig.heartbeatActionQuery?.isNotEmpty() ?: false) {
+                    this.with("heartbeat.action.query", cdcConfig.heartbeatActionQuery!!)
                 }
             }
             .withHeartbeatTimeout(cdcConfig.airbyteHeartbeatTimeout)
