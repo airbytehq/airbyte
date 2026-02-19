@@ -187,7 +187,8 @@ If left empty, Airbyte automatically optimizes the number based on your setup.
 - More concurrent connections can speed up data extraction by parallelizing work.
 - However, a large number of connections can overwhelm the server, especially if the source is being used in multiple syncs.
 
-### Best practices 
+### Best practices
+
 - **Leave unset for optimal performance**: Unless you have specific connection constraints, leave this field empty to let Airbyte automatically manage connections for best performance.
 - **Multiple syncs**: If you're using this source in multiple syncs simultaneously, consider setting a lower value to avoid hitting server limits.
 - **Check your database limits**: Verify your MySQL `max_connections` setting can accommodate the total connections across all syncs. You can check this with: `SHOW VARIABLES LIKE 'max_connections';`
