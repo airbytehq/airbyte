@@ -6,7 +6,7 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.8.1.post25.dev22155260871@sha256:a399185732f25fd1dbc5be7859028a9f5f633d2a03920b91ca2cc0536851e03f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.8.1.post37.dev22188494791@sha256:2b43f8810ca4c76aed9f740d13add2d2eab75cca472588e51eb1842ef4b8d9cb
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
