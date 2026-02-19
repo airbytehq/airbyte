@@ -129,6 +129,53 @@ def image_tag_fixture(acceptance_test_config) -> str:
 
 @pytest.fixture(name="connector_config")
 def connector_config_fixture(base_path, connector_config_path) -> Optional[SecretDict]:
+    # Check if should use 1Password
+    use_onepassword = os.getenv('USE_1PASSWORD_CREDENTIALS', '').lower() in ('true', '1', 'yes')
+
+    if use_onepassword:
+        try:
+            from connector_credentials import get_credential_set, is_available
+
+            if not is_available():
+                logging.warning("1Password CLI not available, falling back to file-based config")
+            else:
+                # Extract connector name from base_path
+                # base_path is like: .../airbyte-integrations/connectors/source-postgres
+                base_path_obj = Path(base_path)
+                connector_name = base_path_obj.name
+
+                # Extract variant from config filename
+                # secrets/config.json -> 'default'
+                # secrets/config_cdc.json -> 'cdc'
+                # integration_tests/temp/config_active.json -> 'default'
+                config_filename = Path(connector_config_path).stem
+                if config_filename == 'config' or config_filename.endswith('_active'):
+                    variant = 'default'
+                elif config_filename.startswith('config_'):
+                    variant = config_filename.replace('config_', '')
+                else:
+                    variant = 'default'
+
+                logging.info(f"Loading credentials from 1Password: {connector_name}/{variant}")
+
+                # Try to load from 1Password
+                cred_set = get_credential_set(connector_name, variant)
+
+                if cred_set and cred_set.is_ready:
+                    logging.info(f"✅ Loaded {len(cred_set.fields)} fields from 1Password")
+                    return SecretDict(cred_set.to_dict())
+                else:
+                    if cred_set:
+                        missing = [f.name for f in cred_set.fields if not f.is_set]
+                        logging.warning(f"1Password credentials not ready for {connector_name}/{variant}. Missing: {missing}")
+                    else:
+                        logging.warning(f"1Password credentials not found for {connector_name}/{variant}")
+        except ImportError:
+            logging.warning("connector_credentials module not available, falling back to file-based config")
+        except Exception as e:
+            logging.warning(f"Error loading from 1Password: {e}, falling back to file-based config")
+
+    # Fall back to file-based loading (original behavior)
     try:
         with open(str(connector_config_path), "r") as file:
             contents = file.read()
@@ -157,11 +204,48 @@ async def client_container_config_global_fixture(acceptance_test_config: Config)
 
 @pytest.fixture(name="client_container_config_secrets")
 def client_container_config_secrets_fixture(base_path, client_container_config) -> Optional[SecretDict]:
-    if client_container_config and hasattr(client_container_config, "secrets_path") and client_container_config.secrets_path:
-        with open(str(base_path / client_container_config.secrets_path), "r") as file:
-            contents = file.read()
-        return SecretDict(json.loads(contents))
-    return None
+    if not (client_container_config and hasattr(client_container_config, "secrets_path") and client_container_config.secrets_path):
+        return None
+
+    secrets_path = base_path / client_container_config.secrets_path
+
+    # Check if should use 1Password
+    use_onepassword = os.getenv('USE_1PASSWORD_CREDENTIALS', '').lower() in ('true', '1', 'yes')
+
+    if use_onepassword:
+        try:
+            from connector_credentials import get_credential_set, is_available
+
+            if is_available():
+                # Extract connector name and variant from secrets_path
+                base_path_obj = Path(base_path)
+                connector_name = base_path_obj.name
+
+                # Extract variant from filename (e.g., secrets/config_cdc.json -> 'cdc')
+                config_filename = Path(secrets_path).stem
+                if config_filename == 'config':
+                    variant = 'default'
+                elif config_filename.startswith('config_'):
+                    variant = config_filename.replace('config_', '')
+                else:
+                    variant = 'default'
+
+                logging.info(f"Loading client secrets from 1Password: {connector_name}/{variant}")
+
+                cred_set = get_credential_set(connector_name, variant)
+
+                if cred_set and cred_set.is_ready:
+                    logging.info(f"✅ Loaded {len(cred_set.fields)} client secret fields from 1Password")
+                    return SecretDict(cred_set.to_dict())
+                else:
+                    logging.warning(f"1Password credentials not ready for {connector_name}/{variant}, falling back to file")
+        except Exception as e:
+            logging.warning(f"Error loading client secrets from 1Password: {e}, falling back to file")
+
+    # Fall back to file-based loading
+    with open(str(secrets_path), "r") as file:
+        contents = file.read()
+    return SecretDict(json.loads(contents))
 
 
 @pytest.fixture(name="invalid_connector_config")

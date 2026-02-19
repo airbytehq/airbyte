@@ -78,31 +78,51 @@ def analyze_all_connectors(gsm_credentials: dict) -> dict:
 
 def flatten_nested_config(config: dict, parent_key: str = '', separator: str = '_') -> dict:
     """
-    Flatten nested credential dictionaries.
+    Flatten nested credential dictionaries using innermost field names.
 
     Example:
-        {"credentials": {"api_url": "...", "access_token": "..."}}
+        {"auth_method": {"auth_method": "oauth", "client_secret": "..."}}
         becomes
-        {"credentials_api_url": "...", "credentials_access_token": "..."}
+        {"auth_method": "oauth", "client_secret": "..."}
+
+    Falls back to full path if there are name collisions.
 
     Args:
         config: Configuration dict (may contain nested dicts)
         parent_key: Parent key for recursion
-        separator: Separator for flattened keys (default: underscore)
+        separator: Separator for flattened keys when needed (default: underscore)
 
     Returns:
-        Flattened dict with concatenated keys using separator
+        Flattened dict with innermost keys (or full path on collision)
     """
+    # First pass: collect all flattened paths and their innermost keys
+    paths = {}  # innermost_key -> list of (full_path, value)
+
+    def collect_paths(cfg: dict, parent: str = ''):
+        for key, value in cfg.items():
+            full_path = f"{parent}{separator}{key}" if parent else key
+
+            if isinstance(value, dict):
+                collect_paths(value, full_path)
+            else:
+                # Store the innermost key and its full path
+                innermost = key
+                if innermost not in paths:
+                    paths[innermost] = []
+                paths[innermost].append((full_path, value))
+
+    collect_paths(config, parent_key)
+
+    # Second pass: build result, using innermost key or full path on collision
     flattened = {}
-
-    for key, value in config.items():
-        new_key = f"{parent_key}{separator}{key}" if parent_key else key
-
-        # Only flatten dict values (nested credentials)
-        if isinstance(value, dict):
-            flattened.update(flatten_nested_config(value, new_key, separator))
+    for innermost_key, path_list in paths.items():
+        if len(path_list) == 1:
+            # No collision - use innermost key
+            flattened[innermost_key] = path_list[0][1]
         else:
-            flattened[new_key] = value
+            # Collision detected - use full paths
+            for full_path, value in path_list:
+                flattened[full_path] = value
 
     return flattened
 

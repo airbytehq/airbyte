@@ -12,36 +12,86 @@
 # Connector-specific overrides
 # Add your overrides below in the format: source-name.field_name: classification
 
+source-stripe.account_id: secret  # Stripe account identifier (sensitive)
 source-stripe.slice_range: config  # Time range for API query pagination, not sensitive
 
 source-github.repository: config  # GitHub repo identifier (owner/repo), not sensitive
 source-github.repositories: config  # List of repos to sync, not sensitive
-source-github.credentials_api_url: config  # GitHub API URL (public), not sensitive
+source-github.credentials_api_url: config  # GitHub API URL
+
+source-service-now.base_url: secret  # ServiceNow instance URL/hostname (sensitive)
 
 # Database connectors
+source-postgres.database: secret  # Database name (sensitive infrastructure info)
+source-postgres.host: secret  # Database host/IP (sensitive infrastructure info)
+source-postgres.port: secret  # Database port (sensitive when combined with host)
+source-postgres.tls: config  # TLS/SSL configuration
+source-postgres.is_test: config  # Test flag
 source-postgres.replication_method: config  # CDC/standard replication setting
+source-postgres.replication_method_method: config  # CDC method type
+source-postgres.replication_method_plugin: config  # CDC plugin name
+source-postgres.replication_method_replication_slot: config  # CDC replication slot name
+source-postgres.replication_method_publication: config  # CDC publication name
+source-postgres.replication_method_initial_waiting_seconds: config  # CDC initial sync delay
 source-postgres.ssl_mode: config  # SSL connection mode
 source-postgres.tunnel_method: config  # SSH tunnel configuration metadata
+source-postgres.tunnel_method_tunnel_host: secret  # SSH tunnel host/IP (sensitive)
+source-postgres.tunnel_method_tunnel_port: secret  # SSH tunnel port (sensitive)
+source-postgres.tunnel_method_tunnel_user: config  # SSH tunnel username
+source-postgres.tunnel_method_ssh_key: secret  # SSH private key for tunnel
+# Innermost field names (after new flattening logic)
+source-postgres.method: config  # CDC method type (innermost name)
+source-postgres.plugin: config  # CDC plugin name (innermost name)
+source-postgres.replication_slot: config  # CDC replication slot (innermost name)
+source-postgres.publication: config  # CDC publication (innermost name)
+source-postgres.initial_waiting_seconds: config  # CDC initial sync delay (innermost name)
 
+source-mysql.database: secret  # Database name (sensitive infrastructure info)
+source-mysql.host: secret  # Database host/IP (sensitive infrastructure info)
+source-mysql.port: secret  # Database port (sensitive when combined with host)
 source-mysql.replication_method: config  # CDC/standard replication setting
+source-mysql.replication_method_method: config  # CDC method type
 source-mysql.ssl_mode: config  # SSL connection mode
 source-mysql.tunnel_method: config  # SSH tunnel configuration metadata
+source-mysql.tunnel_method_tunnel_method: config  # SSH tunnel method type
+source-mysql.tunnel_method_tunnel_host: secret  # SSH tunnel host/IP (sensitive)
+source-mysql.tunnel_method_tunnel_port: secret  # SSH tunnel port (sensitive)
+source-mysql.tunnel_method_tunnel_user: config  # SSH tunnel username
+source-mysql.tunnel_method_ssh_key: secret  # SSH private key for tunnel
+source-mysql.tunnel_method_tunnel_user_password: secret  # SSH tunnel password
+# Innermost field names (after new flattening logic)
+source-mysql.tunnel_host: secret  # SSH tunnel host (innermost name)
+source-mysql.tunnel_port: secret  # SSH tunnel port (innermost name)
+source-mysql.tunnel_user: config  # SSH tunnel username (innermost name)
+source-mysql.method: config  # Tunnel/replication method type (innermost name)
 
 # SaaS connectors
 source-salesforce.is_sandbox: config  # Boolean flag for sandbox/production
 source-salesforce.auth_type: config  # Metadata about which auth method is used
-source-salesforce.credentials_client_id: config  # OAuth client ID (public identifier)
+source-salesforce.api_type: config  # API type (REST vs BULK)
+source-salesforce.streams_criteria: config  # Stream selection criteria
+source-salesforce._page_size: config  # Internal pagination setting
+source-salesforce.credentials_client_id: secret  # OAuth client ID
+source-salesforce.credentials_client_secret: secret  # OAuth client secret
+source-salesforce.credentials_refresh_token: secret  # OAuth refresh token
 
+source-hubspot.enable_experimental_streams: config  # Boolean flag for experimental streams
+source-hubspot.acceptance_test_config_contacts_web_analytics_object_ids: config  # Test configuration
 source-hubspot.credentials_client_id: config  # OAuth client ID (public identifier)
 source-hubspot.credentials_credentials_title: config  # Metadata about auth type
+source-hubspot.credentials_client_secret: secret  # OAuth client secret
+source-hubspot.credentials_refresh_token: secret  # OAuth refresh token
+# Innermost field names (after new flattening logic)
+source-hubspot.object_ids: config  # Test configuration object IDs (innermost name)
 
 source-slack.lookback_window: config  # Time range for syncing messages
 source-slack.join_channels: config  # Boolean flag for channel joining behavior
 source-slack.channel_filter: config  # Channel filter configuration
 
+source-jira.domain: secret  # Jira domain/hostname (sensitive infrastructure info)
 source-jira.projects: config  # List of Jira projects to sync
 
-source-shopify.shop: config  # Shop domain/name identifier
+source-shopify.shop: secret  # Shop domain/name identifier (sensitive)
 source-shopify.bulk_window_in_days: config  # Time range for bulk operations
 source-shopify.fetch_transactions_user_id: config  # Boolean flag for fetching transaction user IDs
 

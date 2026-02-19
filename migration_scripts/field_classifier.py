@@ -29,6 +29,7 @@ class FieldClassifier:
 
     # High-confidence regex patterns for secrets
     SECRET_PATTERNS = [
+        # API credentials
         r"^api_?key$",
         r"^api_?secret$",
         r"^(access|refresh)_?token$",
@@ -40,24 +41,70 @@ class FieldClassifier:
         r"^secret_?key$",
         r"^webhook_?secret$",
         r"^signing_?secret$",
+        # SSH/infrastructure keys
+        r"^ssh_?key$",
+        # Database infrastructure (sensitive)
+        r"^database$",
+        r"^tunnel_?host$",
+        r"^tunnel_?port$",
+        # Sensitive identifiers
+        r"^account_?id$",
+        r"^shop$",
+        # Service infrastructure (hostnames, domains, instance URLs)
+        r"^base_?url$",
+        r"^domain$",
+        # Database connection details
+        r"^host$",
+        r"^port$",
     ]
 
     # High-confidence regex patterns for config
     CONFIG_PATTERNS = [
-        r"^.*_url$",
-        r"^.*_uri$",
-        r"^host$",
+        # URLs/URIs (except base_url which is infrastructure)
+        r"^redirect_?uri$",
+        r"^api_?url$",
         r"^endpoint$",
-        r"^base_?url$",
+        # Dates and time ranges
         r"^.*_date$",
-        r"^.*_id$",
+        r"^lookback_?window$",
+        r"^slice_?range$",
+        r"^bulk_?window_?in_?days$",
+        r"^initial_?waiting_?seconds$",
+        # Non-sensitive identifiers (public OAuth client IDs, etc.)
+        r"^client_?id$",  # Public OAuth client identifier
+        # Geographic/organizational
         r"^region$",
         r"^subdomain$",
-        r"^domain$",
         r"^workspace$",
-        r"^account$",
         r"^tenant$",
         r"^organization$",
+        # Method/type configuration
+        r"^.*_method$",  # auth_method, tunnel_method, replication_method
+        r"^.*_type$",    # auth_type, api_type
+        r"^method$",     # Innermost name from nested method fields
+        # Boolean flags and feature toggles
+        r"^is_.*$",       # is_sandbox, is_test
+        r"^enable_.*$",   # enable_experimental_streams
+        r"^join_.*$",     # join_channels
+        r"^fetch_.*$",    # fetch_transactions_user_id
+        r"^tls$",
+        r"^ssl_?mode$",
+        # CDC/replication configuration
+        r"^plugin$",
+        r"^replication_?slot$",
+        r"^publication$",
+        # Pagination and sizing
+        r"^_?page_?size$",
+        # Lists and collections (non-sensitive)
+        r"^projects$",
+        r"^repository$",
+        r"^repositories$",
+        r"^channel_?filter$",
+        r"^streams_?criteria$",
+        # Test configuration
+        r"^object_?ids$",
+        # SSH tunnel configuration metadata (not credentials)
+        r"^tunnel_?user$",
     ]
 
     # High-confidence patterns for login credentials (username/email)

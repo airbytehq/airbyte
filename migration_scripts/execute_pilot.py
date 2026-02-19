@@ -102,9 +102,9 @@ def normalize_config_field_name(field_name: str) -> str:
     return field_name
 
 
-def create_defaults_yaml(connector_name: str, variants: dict[str, dict], airbyte_repo_root: Path):
+def create_smoke_test_config(connector_name: str, variants: dict[str, dict], airbyte_repo_root: Path):
     """
-    Create defaults.yaml file with config values for each variant.
+    Create smoke-test-config.yaml file with config values for each variant.
 
     Args:
         connector_name: Full connector name (e.g., "source-stripe")
@@ -112,30 +112,30 @@ def create_defaults_yaml(connector_name: str, variants: dict[str, dict], airbyte
         airbyte_repo_root: Path to airbyte repo root
 
     Returns:
-        Path to created defaults.yaml file
+        Path to created smoke-test-config.yaml file
     """
-    # Create path: airbyte-integrations/connectors/{connector_name}/integration_tests/defaults.yaml
+    # Create path: airbyte-integrations/connectors/{connector_name}/integration_tests/smoke-test-config.yaml
     connector_dir = airbyte_repo_root / "airbyte-integrations" / "connectors" / connector_name / "integration_tests"
     connector_dir.mkdir(parents=True, exist_ok=True)
 
     # Build YAML structure with config values for each variant
     # Normalize field names to remove flattening prefixes
-    defaults_data = {}
+    config_data = {}
     for variant_name, variant_data in variants.items():
         if variant_data["config"]:
             normalized_config = {
                 normalize_config_field_name(field): value
                 for field, value in variant_data["config"].items()
             }
-            defaults_data[variant_name] = normalized_config
+            config_data[variant_name] = normalized_config
 
-    # Write defaults.yaml
-    defaults_file = connector_dir / "defaults.yaml"
-    with open(defaults_file, 'w') as f:
-        yaml.dump(defaults_data, f, default_flow_style=False, sort_keys=False)
+    # Write smoke-test-config.yaml
+    config_file = connector_dir / "smoke-test-config.yaml"
+    with open(config_file, 'w') as f:
+        yaml.dump(config_data, f, default_flow_style=False, sort_keys=False)
 
-    print(f"  ✅ Created {defaults_file}")
-    return defaults_file
+    print(f"  ✅ Created {config_file}")
+    return config_file
 
 
 def execute_migration(connector_name, gsm_credentials, overrides, airbyte_repo_root: Path):
@@ -186,17 +186,17 @@ def execute_migration(connector_name, gsm_credentials, overrides, airbyte_repo_r
         print(f"     - Sections: {', '.join(migration_result.sections_created)}")
         print(f"     - Fields migrated: {migration_result.fields_migrated}")
 
-        # Step 3: Create defaults.yaml with config values
+        # Step 3: Create smoke-test-config.yaml with config values
         print()
-        print("  Creating defaults.yaml with config values...")
+        print("  Creating smoke-test-config.yaml with config values...")
         variants, login_sections = migrator._group_by_variant(result['secrets'])
-        defaults_file = create_defaults_yaml(connector_name, variants, airbyte_repo_root)
+        config_file = create_smoke_test_config(connector_name, variants, airbyte_repo_root)
 
         # Step 4: Show summary
         print()
         print(f"  ✅ Migration complete!")
         print(f"     - Auth fields → 1Password vault: replication-connector-credentials")
-        print(f"     - Config values → {defaults_file}")
+        print(f"     - Config values → {config_file}")
 
         return True
 
@@ -281,8 +281,8 @@ def main():
         print("Next steps:")
         print("  1. Verify 1Password items:")
         print("     op item list --vault replication-connector-credentials")
-        print("  2. Review defaults.yaml files:")
-        print("     find airbyte-integrations/connectors/source-*/integration_tests/defaults.yaml")
+        print("  2. Review smoke-test-config.yaml files:")
+        print("     find airbyte-integrations/connectors/source-*/integration_tests/smoke-test-config.yaml")
         print("  3. Test connector access with new structure")
         print("  4. Commit changes and proceed with full migration rollout")
         sys.exit(0)

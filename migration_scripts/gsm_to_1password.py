@@ -147,6 +147,7 @@ class OnePasswordMigrator:
         variants: dict[str, dict] = {}
         login_sections: dict[str, dict] = {}
         auth_fingerprints: dict[str, str] = {}  # fingerprint -> variant_name mapping
+        login_fingerprints: dict[str, str] = {}  # login_fingerprint -> login_section_name mapping
         self._dedup_warnings = []  # Track warnings for preview/output
 
         for secret in secrets:
@@ -187,7 +188,7 @@ class OnePasswordMigrator:
                 if field_name in raw_config:
                     variants[variant]["config"][field_name] = raw_config[field_name]
 
-            # Handle login credentials with variant-specific sections
+            # Handle login credentials with deduplication by fingerprint
             if login_field_names:
                 login_data = {
                     field_name: raw_config[field_name]
@@ -195,21 +196,27 @@ class OnePasswordMigrator:
                     if field_name in raw_config
                 }
                 if login_data:
-                    # Use variant name for login section if not default
-                    login_section_name = "login" if variant == "default" else f"login-{variant}"
+                    # Calculate fingerprint of login credentials
+                    login_fingerprint = self._calculate_auth_fingerprint(login_data)
 
-                    # Check if this login section already has data
-                    if login_section_name in login_sections:
-                        # Check if it's a duplicate
-                        existing_fingerprint = self._calculate_auth_fingerprint(login_sections[login_section_name])
-                        new_fingerprint = self._calculate_auth_fingerprint(login_data)
-                        if existing_fingerprint != new_fingerprint:
-                            self._dedup_warnings.append(
-                                f"⚠️  Multiple different login credentials found for variant '{variant}'. "
-                                f"Last value will be used."
-                            )
+                    if login_fingerprint in login_fingerprints:
+                        # Duplicate login credentials found - reuse existing section
+                        existing_section = login_fingerprints[login_fingerprint]
+                        # No need to add warning - this is expected for database connectors
+                    else:
+                        # New login credentials - create new section
+                        login_section_name = "login" if variant == "default" else f"login-{variant}"
 
-                    login_sections[login_section_name] = login_data
+                        # Handle name collision (different login but same variant name)
+                        base_name = login_section_name
+                        counter = 2
+                        while login_section_name in login_sections:
+                            login_section_name = f"{base_name}-{counter}"
+                            counter += 1
+
+                        # Store the new login credentials
+                        login_fingerprints[login_fingerprint] = login_section_name
+                        login_sections[login_section_name] = login_data
 
         return variants, login_sections
 
