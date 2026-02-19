@@ -14,7 +14,7 @@ This tutorial uses GitHub as an example, but you can substitute any [agent conne
 
 ## Overview
 
-This tutorial is for somewhat other technical users who work with data and AI agents. You can complete it in about 5 minutes.
+This tutorial is for somewhat technical users who work with data and AI agents. You can complete it in about 5 minutes.
 
 The tutorial assumes you have basic familiarity with:
 
@@ -36,7 +36,7 @@ Before you begin this tutorial, ensure you have the following.
 
 ## Part 1: Create a project
 
-Create a directory for your MCP server configuration and initialize a `uv` project:
+Create a directory for your MCP server configuration and initialize a `uv` project.
 
 ```bash
 mkdir my-mcp-server && cd my-mcp-server
@@ -55,15 +55,13 @@ The `--prerelease allow` flag is required because `airbyte-agent-mcp` depends on
 
 ## Part 2: List available connectors
 
-Run the following command to see the available open source connectors:
+Run the following command to see the available open source connectors. This queries the Airbyte connector registry and displays a table of available connectors, their package names, versions, and definition IDs.
 
 ```bash
 uv run adp connectors list-oss
 ```
 
-This queries the Airbyte connector registry and displays a table of available connectors, their package names, versions, and definition IDs.
-
-To filter connectors by name, use the `--pattern` flag:
+To filter connectors by name, use the `--pattern` flag
 
 ```bash
 uv run adp connectors list-oss --pattern github
@@ -153,13 +151,11 @@ uv run adp mcp add-to codex connector-github-package.yaml
 </TabItem>
 </Tabs>
 
-You can optionally specify a custom name for the server with `--name`:
+You can optionally specify a custom name for the server with `--name`. If you don't specify a name, the server name is based on the connector. For example, `airbyte-github`.
 
 ```bash
 uv run adp mcp add-to claude-code connector-github-package.yaml --name my-server-name
 ```
-
-If you don't specify a name, the server name is based on the connector. For example, `airbyte-github`.
 
 ## Part 6: Use the MCP server
 
@@ -167,15 +163,13 @@ If you don't specify a name, the server name is based on the connector. For exam
 
 2. Once restarted, prompt your agent with natural language questions about your GitHub data. Try prompts like:
 
-    - "List the 5 most recent open issues in airbytehq/airbyte"
+    - `List the 5 most recent open issues in airbytehq/airbyte`
 
-    - "Show me the latest pull requests in my-org/my-repo"
-    
-    - "What are the open issues assigned to octocat?"
+    - `Show me the latest pull requests in my-org/my-repo`
 
-Your agent discovers the MCP server's tools automatically and calls them based on your prompts. The MCP server handles executing the connector operations and returning the results.
+    - `What are the open issues assigned to octocat?`
 
-If your agent fails to retrieve data, see [Troubleshoot the MCP server](../../mcp-server/troubleshooting).
+Your agent discovers the MCP server's tools automatically and calls them based on your prompts. The MCP server handles executing the connector operations and returning the results. If your agent fails to retrieve data, see [Troubleshoot the MCP server](../../mcp-server/troubleshooting).
 
 ## Summary
 

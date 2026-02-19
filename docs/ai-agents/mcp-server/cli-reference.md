@@ -1,5 +1,5 @@
 ---
-sidebar_label: "CLI reference"
+sidebar_label: "Command line tool reference"
 sidebar_position: 4
 ---
 
