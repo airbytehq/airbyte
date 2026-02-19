@@ -16,9 +16,9 @@ uv run adp connectors list-oss
 uv run adp connectors list-oss --pattern salesforce
 ```
 
-| Flag               | Description                          |
-| ------------------ | ------------------------------------ |
-| `--pattern`, `-p`   | Filter connectors by name            |
+| Flag              | Description               |
+| ----------------- | ------------------------- |
+| `--pattern`, `-p` | Filter connectors by name |
 
 ## `adp connectors list-cloud`
 
@@ -29,9 +29,9 @@ uv run adp connectors list-cloud
 uv run adp connectors list-cloud --customer acme
 ```
 
-| Flag               | Description                          |
-| ------------------ | ------------------------------------ |
-| `--customer`        | Filter by customer name              |
+| Flag         | Description             |
+| ------------ | ----------------------- |
+| `--customer` | Filter by customer name |
 
 ## `adp connectors configure`
 
@@ -58,8 +58,8 @@ Save Agent Engine credentials to the global config directory. Prompts for your C
 uv run adp login <organization-id>
 ```
 
-| Flag               | Description                                |
-| ------------------ | ------------------------------------------ |
+| Flag                | Description                                  |
+| ------------------- | -------------------------------------------- |
 | `<organization-id>` | Your Agent Engine organization ID (required) |
 
 ## `adp orgs`
@@ -72,11 +72,11 @@ uv run adp orgs default
 uv run adp orgs default <org-id>
 ```
 
-| Subcommand           | Description                          |
-| -------------------- | ------------------------------------ |
-| `list`                | List all logged-in organizations     |
-| `default`             | Show the default organization        |
-| `default <org-id>`    | Set the default organization         |
+| Subcommand         | Description                      |
+| ------------------ | -------------------------------- |
+| `list`             | List all logged-in organizations |
+| `default`          | Show the default organization    |
+| `default <org-id>` | Set the default organization     |
 
 ## `adp mcp serve`
 
@@ -87,11 +87,11 @@ uv run adp mcp serve connector-gong-package.yaml
 uv run adp mcp serve connector-gong-package.yaml --transport http --port 8080
 ```
 
-| Flag               | Default     | Description                          |
-| ------------------ | ----------- | ------------------------------------ |
+| Flag                | Default     | Description                            |
+| ------------------- | ----------- | -------------------------------------- |
 | `--transport`, `-t` | `stdio`     | Transport protocol (`stdio` or `http`) |
-| `--host`, `-h`      | `127.0.0.1` | Host to bind to (HTTP only)          |
-| `--port`, `-p`      | `8000`      | Port to bind to (HTTP only)          |
+| `--host`, `-h`      | `127.0.0.1` | Host to bind to (HTTP only)            |
+| `--port`, `-p`      | `8000`      | Port to bind to (HTTP only)            |
 
 ## `adp mcp add-to`
 
@@ -104,8 +104,8 @@ uv run adp mcp add-to cursor connector-gong-package.yaml --scope project
 
 | Flag            | Default | Description                                                    |
 | --------------- | ------- | -------------------------------------------------------------- |
-| `--name`, `-n`   | Auto    | Name for the MCP server (default: `airbyte-<connector>`)       |
-| `--scope`, `-s`  | `user`  | Configuration scope: `user` or `project` (Claude Code, Cursor) |
+| `--name`, `-n`  | Auto    | Name for the MCP server (default: `airbyte-<connector>`)       |
+| `--scope`, `-s` | `user`  | Configuration scope: `user` or `project` (Claude Code, Cursor)  |
 
 ## `adp chat`
 
@@ -116,7 +116,7 @@ uv run adp chat connector-gong-package.yaml "show me 5 recent calls"
 uv run adp chat connector-gong-package.yaml
 ```
 
-| Flag            | Default          | Description                                  |
-| --------------- | ---------------- | -------------------------------------------- |
-| `--model`, `-m`  | `claude-opus-4-6` | Anthropic model to use                       |
-| `--quiet`, `-q`  | `false`          | Only show the final answer (hide tool calls) |
+| Flag            | Default           | Description                                  |
+| --------------- | ----------------- | -------------------------------------------- |
+| `--model`, `-m` | `claude-opus-4-6` | Anthropic model to use                       |
+| `--quiet`, `-q` | `false`           | Only show the final answer (hide tool calls)  |
