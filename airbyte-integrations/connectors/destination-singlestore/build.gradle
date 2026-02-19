@@ -21,5 +21,5 @@ application {
 dependencies {
     implementation 'com.singlestore:singlestore-jdbc-client:1.2.6'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.testcontainers:jdbc:1.19.0'
+    testImplementation 'org.testcontainers:jdbc:1.21.4'
 }
