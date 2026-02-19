@@ -1248,8 +1248,7 @@ streams:
           stream_slice.repo }}/stats/contributors
         http_method: GET
         authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['token_3'] }}"
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
           $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
