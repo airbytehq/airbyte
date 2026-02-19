@@ -198,6 +198,8 @@ class MondayGraphqlRequester(HttpRequester):
 
         if object_name == "column_values":
             fields.remove("display_value")
+            if "linked_item_ids" in fields:
+                fields.remove("linked_item_ids")
             fields.extend(
                 [
                     "... on MirrorValue{display_value}",
