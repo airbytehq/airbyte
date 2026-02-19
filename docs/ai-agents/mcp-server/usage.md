@@ -11,7 +11,7 @@ This page covers the MCP tools that the server exposes, field selection and excl
 
 When you register the MCP server with your agent, it exposes the following tools. Your agent discovers and calls these tools automatically based on your prompts.
 
-### `execute`
+### `<connector>__execute`
 
 The primary tool. Executes an operation on a connector entity.
 
@@ -24,11 +24,11 @@ The primary tool. Executes an operation on a connector entity.
 | `exclude_fields`   | list of strings  | Fields to remove from the response.                                                                                                                                                                                                                 |
 | `skip_truncation` | boolean          | Disable long-text truncation for list/search responses.                                                                                                                                                                                                            |
 
-### `connector_info`
+### `<connector>__connector_info`
 
 Returns connector metadata including the connector name, version, and a list of available entities with their supported actions and parameters. Call this tool to discover what data the connector can access.
 
-### `entity_schema`
+### `<connector>__entity_schema`
 
 Returns the JSON schema for a specific entity. Call this tool to understand the structure of an entity's data before querying it.
 
@@ -146,4 +146,4 @@ Omit the prompt to start an interactive session. The REPL maintains conversation
 uv run adp chat connector-gong-package.yaml
 ```
 
-Type `exit` or press Ctrl-C to quit.
+Type `exit`, `quit`, or press Ctrl-C to end the session.

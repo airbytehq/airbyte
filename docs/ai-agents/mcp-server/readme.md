@@ -4,7 +4,7 @@ sidebar_position: 6
 
 # Agent Engine MCP server
 
-Airbyte's Connector MCP server AI agents interact with your data sources through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). Instead of writing code to fetch data, you configure a connector and register it with your agent. The agent then calls the connector's operations automatically based on your natural language prompts.
+Airbyte's Agent Engine MCP server lets AI agents interact with your data sources through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). Instead of writing code to fetch data, you configure a connector and register it with your agent. The agent then calls the connector's operations automatically based on your natural language prompts.
 
 ## What the MCP server does
 
@@ -28,7 +28,7 @@ The MCP server is the fastest way to give an AI coding tool access to your data.
 
 ## How it works
 
-The MCP server follows a single-connector-per-server architecture. You configure each server instance with a YAML file that specifies which connector to use and how to authenticate. You can also use an aggregate configuration to run multiple connectors in a single server.
+You configure each server instance with a YAML file that specifies which connector to use and how to authenticate. You can run a single connector per server, or use an [aggregate configuration](configuration#use-multiple-connectors-with-one-mcp-server) to run multiple connectors in one server.
 
 The server supports two execution modes:
 
