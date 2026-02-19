@@ -74,7 +74,7 @@ class MsSqlServerDebeziumOperations(
     // Generates globally unique cursor values for CDC records by combining
     // current timestamp with an incrementing counter. This ensures monotonically
     // increasing values across sync restarts and avoids collisions.
-    val cdcCursorGenerator = AtomicLong(Instant.now().toEpochMilli() * 10_000_000 + 1)
+    val cdcCursorGenerator = AtomicLong(Instant.now().epochSecond * 100_000_000 + 1)
 
     private val log = KotlinLogging.logger {}
 
@@ -573,14 +573,14 @@ class MsSqlServerDebeziumOperations(
     override fun generateColdStartOffset(): DebeziumOffset {
         val currentLsn = getCurrentMaxLsn()
         val databaseName = configuration.databaseName
+        val topicPrefix = DebeziumPropertiesBuilder.sanitizeTopicPrefix(databaseName)
 
-        // Create offset structure that matches SQL Server Debezium connector format
         val key =
             Jsons.arrayNode().apply {
                 add(databaseName)
                 add(
                     Jsons.objectNode().apply {
-                        put("server", databaseName)
+                        put("server", topicPrefix)
                         put("database", databaseName)
                     }
                 )
