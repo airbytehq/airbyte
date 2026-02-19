@@ -228,7 +228,6 @@ const understandingAirbyte = {
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/secrets",
-    "understanding-airbyte/external-secrets",
     "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
@@ -464,6 +463,7 @@ module.exports = {
           },
           items: [
             "enterprise-flex/getting-started",
+            "enterprise-flex/external-secrets",
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
           ],

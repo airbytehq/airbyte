@@ -690,11 +690,6 @@
       "source": "/ai-agents/api/api-reference/sonar/:path*",
       "destination": "/ai-agents/api/api-reference/agent-engine-api/:path*",
       "statusCode": 301
-    },
-    {
-      "source": "/platform/enterprise-flex/external-secrets",
-      "destination": "/platform/understanding-airbyte/external-secrets",
-      "statusCode": 301
     }
   ]
 }
