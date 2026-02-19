@@ -54,7 +54,7 @@ Essentially, using this option creates an ongoing risk that upgrading the Terraf
 
 Instead of using a connector-specific resource, you can use `airbyte_source_custom` and `airbyte_destination_custom`. These are normally Airbyte's resources for custom connectors, but you can use them with any existing Airbyte or Marketplace connector and write your configurations as JSON objects. These configurations are more robust when connectors change. Mismatches between a Terraform provider and a connector do not prevent `terraform apply` from running. The absence of a newly added configuration option might have no impact at all on your data and your use of that connector.
 
-The main issue with this method is that JSON can technically contain anything, and you could make a mistake that Terraform doesn't warn you about. 
+The main issue with this method is that JSON can technically contain anything, and you could make a mistake that Terraform doesn't warn you about.
 
 The best way to get a JSON object is to set up a new connector in Airbyte's UI, fill out all the fields, then click **Copy JSON**. You don't actually need to create the connector in the UI since you want to do this with Terraform, but you do need to get the JSON. Currently, Airbyte optimizes this JSON object for the API, and you need to make some adjustments to use it in Terraform. The examples later in this article demonstrate the expected format.
 
@@ -146,9 +146,9 @@ Add a source from which you want to get data. In this example, you add Stripe as
 1. Add your source to `main.tf`.
 
     **JSON configuration:**
-        
+
     For this and any other Airbyte or Marketplace connector, you can define the source type in the JSON object.
-        
+
     ```hcl title="main.tf"
     resource "airbyte_source_custom" "my_source_stripe" {
         configuration = jsonencode({
@@ -212,8 +212,8 @@ Add a destination to which you want to send data. In this example, you add BigQu
     For BigQuery, you must use a [service account](https://cloud.google.com/iam/docs/service-account-overview) with credentials provided as a JSON string. This creates a unique situation that isn't true for all destinations.
 
     - If you're using the JSON configuration, use a heredoc and write the JSON string yourself to avoid encoding issues. Escape all slashes and newlines as illustrated in the code sample below.
-    
-    - If you're using the strongly typed configuration, it's helpful to wrap your credentials JSON in [jsonencode](https://developer.hashicorp.com/terraform/language/functions/jsonencode). This way, you don't have to manually escape slashes and newlines in your credentials and your Terraform code looks more human-readable.    
+
+    - If you're using the strongly typed configuration, it's helpful to wrap your credentials JSON in [jsonencode](https://developer.hashicorp.com/terraform/language/functions/jsonencode). This way, you don't have to manually escape slashes and newlines in your credentials and your Terraform code looks more human-readable.
     :::
 
     **JSON configuration:**
