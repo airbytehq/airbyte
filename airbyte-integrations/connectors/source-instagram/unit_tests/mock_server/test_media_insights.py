@@ -74,7 +74,7 @@ _MEDIA_IDS = {
     GENERAL_MEDIA: MEDIA_ID_GENERAL_MEDIA,
 }
 
-METRICS_GENERAL_MEDIA = ["reach", "saved", "likes", "comments", "shares", "follows", "profile_visits", "views"]
+METRICS_GENERAL_MEDIA = ["reach", "saved", "likes", "comments", "shares", "follows", "profile_visits"]
 
 _METRICS = {
     MEDIA_ID_REELS: ["comments", "ig_reels_avg_watch_time", "ig_reels_video_view_total_time", "likes", "reach", "saved", "shares", "views"],

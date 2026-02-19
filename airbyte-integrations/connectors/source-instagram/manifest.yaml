@@ -127,7 +127,7 @@ definitions:
               'reach,saved,likes,comments,shares,follows,profile_visits'
               }}{%elif stream_partition.media_insights_info.media_type ==
               "CAROUSEL_ALBUM"%}{{ 'reach,saved,shares,follows,profile_visits' }}{% else %}{{
-              'reach,saved,likes,comments,shares,follows,profile_visits,views' }}{%
+              'reach,saved,likes,comments,shares,follows,profile_visits' }}{%
               endif %}
           error_handler:
             type: DefaultErrorHandler
