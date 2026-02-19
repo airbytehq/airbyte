@@ -7,6 +7,13 @@ sidebar_position: 4
 
 All commands use `uv run adp <command>`. Use `--help` on any command for full options.
 
+### Global flags
+
+| Flag | Description |
+| --- | --- |
+| `--config-dir`, `-d` | Config directory (default: `~/.airbyte_agent_mcp`). Can also be set with the `AIRBYTE_CONFIG_DIR` environment variable. |
+| `--org` | Organization ID to use, overriding the default set by `adp login`. |
+
 ## `adp connectors list-oss`
 
 List available open source connectors from the Airbyte registry.
@@ -29,9 +36,10 @@ uv run adp connectors list-cloud
 uv run adp connectors list-cloud --customer acme
 ```
 
-| Flag         | Description             |
-| ------------ | ----------------------- |
-| `--customer` | Filter by customer name |
+| Flag             | Description             |
+| ---------------- | ----------------------- |
+| `--customer`, `-c` | Filter by customer name |
+| `--customer-id`  | Filter by customer ID   |
 
 ## `adp connectors configure`
 

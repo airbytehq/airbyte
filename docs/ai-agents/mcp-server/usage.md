@@ -11,6 +11,8 @@ This page covers the MCP tools that the server exposes, field selection and excl
 
 When you register the MCP server with your agent, it exposes the following tools. Your agent discovers and calls these tools automatically based on your prompts.
 
+The `execute`, `connector_info`, and `entity_schema` tools are registered with a connector name prefix (for example, `github__execute`, `gong__connector_info`). The `get_instructions` and `current_datetime` tools are shared across all connectors and have no prefix.
+
 ### `execute`
 
 The primary tool. Executes an operation on a connector entity.
@@ -146,4 +148,4 @@ Omit the prompt to start an interactive session. The REPL maintains conversation
 uv run adp chat connector-gong-package.yaml
 ```
 
-Type `exit` or press Ctrl-C to quit.
+Type `exit`, `quit`, or press Ctrl-C to end the session.
