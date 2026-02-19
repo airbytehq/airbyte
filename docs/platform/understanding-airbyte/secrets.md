@@ -55,7 +55,7 @@ Upon any operation, Airbyte reads the obfuscated JSON spec, extracts the secret 
 
 ## External Secret References
 
-Enterprise customers can leverage external secrets managers such as AWS Secrets Manager, Google Secret Manager, and Azure Key Vault to store and manage connector credentials. For detailed setup instructions and usage examples, see [External Secret Management](./external-secrets.md).
+Enterprise customers can leverage external secrets managers such as AWS Secrets Manager, Google Secret Manager, and Azure Key Vault to store and manage connector credentials. For detailed setup instructions and usage examples, see [External Secret Management](../enterprise-flex/external-secrets.md).
 
 ## Operational Details
 
