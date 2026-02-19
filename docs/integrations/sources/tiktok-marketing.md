@@ -119,10 +119,10 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | Pixels                                    | Prod         | pixel_id                                   | No          |
 | PixelInstantPageEvents                    | Prod         | -                                          | No          |
 | PixelEventsStatistics                     | Prod         | -                                          | No          |
-| AdsReportsByCountryDaily                  | Prod         | ad_id, stat_time_day, country_code         | No          |
-| AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | No          |
-| AdGroupsByCountryDaily                    | Prod         | adgroup_id, stat_time_day, country_code    | No          |
-| AdGroupsByCountryHourly                   | Prod         | adgroup_id, stat_time_hour, country_code   | No          |
+| AdsReportsByCountryDaily                  | Prod         | ad_id, stat_time_day, country_code         | Yes         |
+| AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | Yes         |
+| AdGroupsByCountryDaily                    | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
+| AdGroupsByCountryHourly                   | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
 
 :::info
 
@@ -146,8 +146,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.0 | 2026-02-16 | [73357](https://github.com/airbytehq/airbyte/pull/73357) | Fix `currency` field type from `boolean` to `string` in pixels events schema |
-| 4.8.14 | 2026-02-12 | | Fix pixel_instant_page_events stream failing on unsupported objective/optimization combinations (error 40002) by ignoring invalid parameter combos |
+| 5.0.0 | 2026-02-17 | [73357](https://github.com/airbytehq/airbyte/pull/73357) | Fix `currency` field type from `boolean` to `string` in pixels events schema |
+| 4.8.14 | 2026-02-16 | [73314](https://github.com/airbytehq/airbyte/pull/73314) | Fix pixel_instant_page_events stream failing on unsupported objective/optimization combinations (error 40002) by ignoring invalid parameter combos |
 | 4.8.13 | 2026-01-20 | [64958](https://github.com/airbytehq/airbyte/pull/64958) | Update dependencies |
 | 4.8.12 | 2026-01-15 | [70241](https://github.com/airbytehq/airbyte/pull/70241) | Fix `pixel_events_statistics` stream: `pixel_ids` format, `date_range` calculation, and add error handler to skip advertisers without pixel permissions |
 | 4.8.11 | 2026-01-15 | [71773](https://github.com/airbytehq/airbyte/pull/71773) | Finalize progressive rollout for version 4.8.11 |
