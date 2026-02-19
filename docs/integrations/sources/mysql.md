@@ -183,7 +183,8 @@ This configuration controls how many simultaneous database queries the MySQL sou
 #### Default behavior 
 If left empty, Airbyte automatically optimizes the number based on your setup.
 
-### Why it matters 
+### Why it matters
+
 - More concurrent connections can speed up data extraction by parallelizing work.
 - However, a large number of connections can overwhelm the server, especially if the source is being used in multiple syncs.
 
