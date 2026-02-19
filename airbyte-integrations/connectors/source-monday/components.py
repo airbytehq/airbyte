@@ -199,7 +199,11 @@ class MondayGraphqlRequester(HttpRequester):
         if object_name == "column_values":
             fields.remove("display_value")
             fields.extend(
-                ["... on MirrorValue{display_value}", "... on BoardRelationValue{display_value}", "... on DependencyValue{display_value}"]
+                [
+                    "... on MirrorValue{display_value}",
+                    "... on BoardRelationValue{display_value,linked_item_ids}",
+                    "... on DependencyValue{display_value,linked_item_ids}",
+                ]
             )
 
         fields = ",".join(fields)
