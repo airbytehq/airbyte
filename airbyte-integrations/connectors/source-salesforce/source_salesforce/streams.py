@@ -898,7 +898,8 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if not self._stream_slicer_cursor:
-            raise ValueError("Cursor should be set at this point")
+            yield from [StreamSlice(partition={}, cursor_slice={})]
+            return
 
         for stream_slice in self._stream_slicer_cursor.stream_slices():
             yield StreamSlice(
@@ -927,6 +928,12 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
             return {}
 
         property_chunk = property_chunk or {}
+        select_fields = ",".join(property_chunk.keys())
+        table_name = self.name
+
+        if not self._stream_slicer_cursor:
+            query = f"SELECT {select_fields} FROM {table_name}"
+            return {"q": query}
 
         start_date = max(
             (stream_state or {}).get(self.cursor_field, self.start_date),
@@ -935,8 +942,6 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
         )
         end_date = (stream_slice or {}).get("end_date", pendulum.now(tz="UTC").isoformat(timespec="milliseconds"))
 
-        select_fields = ",".join(property_chunk.keys())
-        table_name = self.name
         where_conditions = []
 
         if start_date:
