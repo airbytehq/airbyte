@@ -5541,7 +5541,7 @@ definitions:
                 description: Event corresponding currency.
                 type:
                   - "null"
-                  - boolean
+                  - string
               name:
                 description: Event name.
                 type:
