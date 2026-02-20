@@ -905,7 +905,6 @@ def test_streams_read_full_refresh(requests_mock):
         ]
 
     for cls, url in [
-        (Releases, "https://api.github.com/repos/organization/repository/releases"),
         (IssueEvents, "https://api.github.com/repos/organization/repository/issues/events"),
         (IssueMilestones, "https://api.github.com/repos/organization/repository/milestones"),
         (CommitComments, "https://api.github.com/repos/organization/repository/comments"),
@@ -915,6 +914,62 @@ def test_streams_read_full_refresh(requests_mock):
         requests_mock.get(url, json=get_json_response(stream.cursor_field))
         records = list(read_full_refresh(stream))
         assert records == get_records(stream.cursor_field)[1:2]
+
+    graphql_releases_response = {
+        "data": {
+            "repository": {
+                "name": "repository",
+                "owner": {"login": "organization"},
+                "releases": {
+                    "nodes": [
+                        {
+                            "id": 1,
+                            "node_id": "R_1",
+                            "created_at": "2022-02-01T00:00:00Z",
+                            "published_at": "2022-02-01T00:00:00Z",
+                            "updated_at": "2022-02-01T00:00:00Z",
+                            "name": "v1.0",
+                            "tag_name": "v1.0",
+                            "draft": False,
+                            "prerelease": False,
+                            "body": "",
+                            "body_html": "",
+                            "html_url": "https://github.com/organization/repository/releases/tag/v1.0",
+                            "author": None,
+                            "assets": {"nodes": []},
+                            "mentions_connection": {"totalCount": 0},
+                            "tagCommit": {"target_commitish": "abc123"},
+                        },
+                        {
+                            "id": 2,
+                            "node_id": "R_2",
+                            "created_at": "2022-02-02T00:00:00Z",
+                            "published_at": "2022-02-02T00:00:00Z",
+                            "updated_at": "2022-02-02T00:00:00Z",
+                            "name": "v2.0",
+                            "tag_name": "v2.0",
+                            "draft": False,
+                            "prerelease": False,
+                            "body": "",
+                            "body_html": "",
+                            "html_url": "https://github.com/organization/repository/releases/tag/v2.0",
+                            "author": None,
+                            "assets": {"nodes": []},
+                            "mentions_connection": {"totalCount": 0},
+                            "tagCommit": {"target_commitish": "def456"},
+                        },
+                    ],
+                    "pageInfo": {"hasNextPage": False, "endCursor": None},
+                },
+            }
+        }
+    }
+    requests_mock.post("https://api.github.com/graphql", json=graphql_releases_response)
+    stream = Releases(**repository_args_with_start_date)
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    assert records[0]["id"] == 2
+    assert records[0]["repository"] == "organization/repository"
 
     for cls, url in [
         (Tags, "https://api.github.com/repos/organization/repository/tags"),

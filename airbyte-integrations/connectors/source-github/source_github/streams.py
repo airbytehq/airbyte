@@ -39,6 +39,7 @@ from .graphql import (
     get_query_issue_reactions,
     get_query_projectsV2,
     get_query_pull_requests,
+    get_query_releases,
     get_query_reviews,
 )
 from .utils import GitHubAPILimitException, getter
@@ -502,24 +503,6 @@ class Users(Organizations):
 # Below are semi incremental streams
 
 
-class Releases(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
-    """
-
-    cursor_field = "created_at"
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-
-        assets = record.get("assets", [])
-        for asset in assets:
-            uploader = asset.pop("uploader", None)
-            asset["uploader_id"] = uploader.get("id") if uploader else None
-
-        return record
-
-
 class Events(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events
@@ -806,6 +789,57 @@ class GitHubGraphQLStream(GithubStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
+
+
+class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
+    """
+    API docs: https://docs.github.com/en/graphql/reference/objects#release
+    Uses GraphQL API to avoid the REST API's 10,000 result pagination limit.
+    """
+
+    cursor_field = "created_at"
+    is_sorted = "asc"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        repository = response.json().get("data", {}).get("repository")
+        if repository:
+            nodes = repository.get("releases", {}).get("nodes", [])
+            for record in nodes:
+                record["repository"] = self._get_repository_name(repository)
+                if record.get("author"):
+                    record["author"]["type"] = record["author"].pop("__typename", "User")
+                assets = record.get("assets", {}).get("nodes", [])
+                for asset in assets:
+                    uploader = asset.pop("uploader", None)
+                    asset["uploader_id"] = uploader.get("id") if uploader else None
+                record["assets"] = assets
+                mentions_connection = record.pop("mentions_connection", None)
+                if mentions_connection is not None:
+                    record["mentions_count"] = mentions_connection.get("totalCount", 0)
+                tag_commit = record.pop("tagCommit", record.pop("tag_commit", None))
+                if tag_commit:
+                    record["target_commitish"] = tag_commit.get("target_commitish", tag_commit.get("oid"))
+                yield record
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        repository = response.json().get("data", {}).get("repository")
+        if repository:
+            page_info = repository.get("releases", {}).get("pageInfo", {})
+            if page_info.get("hasNextPage"):
+                return {"after": page_info["endCursor"]}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        after = next_page_token["after"] if next_page_token else None
+        query = get_query_releases(
+            owner=organization, name=name, first=self.page_size, after=after, direction=self.is_sorted.upper()
+        )
+        return {"query": query}
 
 
 class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):

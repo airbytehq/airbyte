@@ -165,6 +165,51 @@ def get_query_issue_reactions(owner, name, first, after, number=None):
     return str(op)
 
 
+def get_query_releases(owner, name, first, after, direction):
+    kwargs = {"first": first, "order_by": {"field": "CREATED_AT", "direction": direction}}
+    if after:
+        kwargs["after"] = after
+
+    op = sgqlc.operation.Operation(_schema_root.query_type)
+    repository = op.repository(owner=owner, name=name)
+    repository.name()
+    repository.owner.login()
+    releases = repository.releases(**kwargs)
+    releases.nodes.__fields__(
+        id="node_id",
+        database_id="id",
+        name=True,
+        tag_name="tag_name",
+        created_at="created_at",
+        published_at="published_at",
+        updated_at="updated_at",
+        is_draft="draft",
+        is_prerelease="prerelease",
+        description="body",
+        description_html="body_html",
+        url="html_url",
+    )
+    releases.nodes.tag_commit.oid(__alias__="target_commitish")
+    author = releases.nodes.author(__alias__="author").__as__(_schema_root.User)
+    select_user_fields(author)
+    release_assets = releases.nodes.release_assets(first=100, __alias__="assets")
+    release_assets.nodes.__fields__(
+        id="node_id",
+        name=True,
+        content_type="content_type",
+        size=True,
+        download_count="download_count",
+        created_at="created_at",
+        updated_at="updated_at",
+        download_url="browser_download_url",
+        url=True,
+    )
+    release_assets.nodes.uploaded_by(__alias__="uploader").__as__(_schema_root.User).__fields__(database_id="id")
+    releases.nodes.mentions(first=0, __alias__="mentions_connection").total_count()
+    releases.page_info.__fields__(has_next_page=True, end_cursor=True)
+    return str(op)
+
+
 class QueryReactions:
     # AVERAGE_REVIEWS - optimal number of reviews to fetch inside every pull request.
     # If we try to fetch too many (up to 100) we will spend too many scores of query cost.
