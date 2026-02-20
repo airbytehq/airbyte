@@ -6,6 +6,7 @@ import {
   loadAgentEngineApiSidebar,
   replaceApiReferenceCategory,
 } from "./src/scripts/agent-engine-api/sidebar-generator";
+import { generateDevelopersSidebar } from "./src/scripts/public-api/sidebar-generator";
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({

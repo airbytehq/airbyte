@@ -1,6 +1,6 @@
 import {
-  PUBLIC_API_SPEC_CACHE_PATH,
   PUBLIC_API_SIDEBAR_PATH,
+  PUBLIC_API_TAGS_PATH,
 } from "./constants";
 import * as fs from "fs";
 type Tag = {
@@ -9,30 +9,26 @@ type Tag = {
 };
 
 /**
- * Loads allowed tags from the cached public API OpenAPI specification
+ * Loads allowed tags from the curated public_api_tags.json file
  */
 const loadAllowedTags = (): string[] => {
-  if (fs.existsSync(PUBLIC_API_SPEC_CACHE_PATH)) {
+  if (fs.existsSync(PUBLIC_API_TAGS_PATH)) {
     try {
-      const spec = JSON.parse(
-        fs.readFileSync(PUBLIC_API_SPEC_CACHE_PATH, "utf8"),
+      const tags: Tag[] = JSON.parse(
+        fs.readFileSync(PUBLIC_API_TAGS_PATH, "utf8"),
       );
-      // console.log('spec', spec);
-      const allowed =
-        spec.tags
-          ?.filter((tag: Tag) => tag.name.includes("public"))
-          .map((tag: Tag) => tag.name) || [];
-      console.log("spec.tags", allowed);
+      const allowed = tags.map((tag: Tag) => tag.name);
+      console.log("Allowed tags from public_api_tags.json:", allowed);
       return allowed;
     } catch (e) {
-      console.warn("Could not load OpenAPI spec for tag filtering:", e);
+      console.warn("Could not load public_api_tags.json for tag filtering:", e);
     }
   }
   return [];
 };
 
 /**
- * Loads and filters the public API sidebar based on allowed tags from the spec
+ * Loads and filters the public API sidebar based on allowed tags from the curated tags file
  */
 export const loadPublicApiSidebar = (): any[] => {
   if (fs.existsSync(PUBLIC_API_SIDEBAR_PATH)) {
@@ -42,15 +38,16 @@ export const loadPublicApiSidebar = (): any[] => {
       // The sidebar.ts exports the array directly via: export default sidebar.apisidebar;
       let apiSidebarItems = sidebarModule.default || sidebarModule || [];
 
-      // Filter to only show tags that are defined in the spec
-      // apiSidebarItems = apiSidebarItems.filter((item: any) => {
-      //   if (item.type !== "category") {
-      //     return true;
-      //   }
-      //   console.log("item.label", item);
-
-      //   return !item.label.includes("public");
-      // });
+      // Filter to only show tags that are defined in public_api_tags.json
+      const allowedTags = loadAllowedTags();
+      if (allowedTags.length > 0) {
+        apiSidebarItems = apiSidebarItems.filter((item: any) => {
+          if (item.type !== "category") {
+            return true;
+          }
+          return allowedTags.includes(item.label);
+        });
+      }
 
       console.log(`Filtered API sidebar to ${apiSidebarItems.length} items`);
       return apiSidebarItems;

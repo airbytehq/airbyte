@@ -1,8 +1,8 @@
 diff --git a/lib/index.js b/lib/index.js
-index 172081921f17188e2e553c2d3feefae4c7a5e250..4c67261889fbcde2711502d5f4f5b91ae2093844 100644
+index eaceeed79d3dd3cd70f70e8001703ce17462e4d1..6b4359649e709276a0d662c6952c2c1fcaabfaf2 100644
 --- a/lib/index.js
 +++ b/lib/index.js
-@@ -478,7 +478,7 @@ custom_edit_url: null
+@@ -538,7 +538,7 @@ custom_edit_url: null
                  let targetDocsPluginId;
                  if (pluginId) {
                      try {
@@ -11,7 +11,7 @@ index 172081921f17188e2e553c2d3feefae4c7a5e250..4c67261889fbcde2711502d5f4f5b91a
                          targetConfig = (_a = pluginConfig.config) !== null && _a !== void 0 ? _a : {};
                          targetDocsPluginId = pluginConfig.docsPluginId;
                      }
-@@ -532,7 +532,7 @@ custom_edit_url: null
+@@ -597,7 +597,7 @@ custom_edit_url: null
                  let targetDocsPluginId;
                  if (pluginId) {
                      try {
@@ -20,7 +20,7 @@ index 172081921f17188e2e553c2d3feefae4c7a5e250..4c67261889fbcde2711502d5f4f5b91a
                          targetConfig = (_a = pluginConfig.config) !== null && _a !== void 0 ? _a : {};
                          targetDocsPluginId = pluginConfig.docsPluginId;
                      }
-@@ -609,7 +609,7 @@ custom_edit_url: null
+@@ -677,7 +677,7 @@ custom_edit_url: null
                  let targetConfig;
                  if (pluginId) {
                      try {
@@ -29,7 +29,7 @@ index 172081921f17188e2e553c2d3feefae4c7a5e250..4c67261889fbcde2711502d5f4f5b91a
                          targetConfig = (_a = pluginConfig.config) !== null && _a !== void 0 ? _a : {};
                      }
                      catch {
-@@ -658,7 +658,7 @@ custom_edit_url: null
+@@ -728,7 +728,7 @@ custom_edit_url: null
                  let targetConfig;
                  if (pluginId) {
                      try {

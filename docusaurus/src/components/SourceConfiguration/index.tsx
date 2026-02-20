@@ -137,8 +137,8 @@ export const SourceConfiguration = ({ endpointData }: { endpointData: OptionalEn
   // Build configurationSchema from sourceConfigs data
   const configurationSchema = {
     oneOf: sourceConfigs.map(config => ({
+      ...config.schema,
       title: config.id,
-      ...config.schema
     }))
   };
 
