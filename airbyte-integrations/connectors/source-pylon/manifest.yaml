@@ -1,0 +1,1185 @@
+version: 6.5.0
+
+type: DeclarativeSource
+
+description: >-
+  Pylon (https://usepylon.com) is a customer support platform.
+  This connector replicates data from the Pylon REST API.
+  API Docs: https://docs.usepylon.com/pylon-docs/developer/api
+
+check:
+  type: CheckStream
+  stream_names:
+    - tags
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+
+    issues:
+      type: DeclarativeStream
+      name: issues
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: issues
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issues"
+
+    issue_messages:
+      type: DeclarativeStream
+      name: issue_messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "issues/{{ stream_partition.issue_id }}/messages"
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: issue_id
+              stream:
+                $ref: "#/definitions/streams/issues"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issue_messages"
+
+    issue_threads:
+      type: DeclarativeStream
+      name: issue_threads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "issues/{{ stream_partition.issue_id }}/threads"
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: issue_id
+              stream:
+                $ref: "#/definitions/streams/issues"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issue_threads"
+
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tags
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: custom-fields
+          http_method: GET
+          request_parameters:
+            object_type: "{{ stream_partition.object_type }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - account
+            - issue
+            - contact
+          cursor_field: object_type
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+
+    knowledge_bases:
+      type: DeclarativeStream
+      name: knowledge_bases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: knowledge-bases
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/knowledge_bases"
+
+    knowledge_base_articles:
+      type: DeclarativeStream
+      name: knowledge_base_articles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "knowledge-bases/{{ stream_partition.knowledge_base_id }}/articles"
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: knowledge_base_id
+              stream:
+                $ref: "#/definitions/streams/knowledge_bases"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/knowledge_base_articles"
+
+    ticket_forms:
+      type: DeclarativeStream
+      name: ticket_forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: ticket-forms
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ticket_forms"
+
+    user_roles:
+      type: DeclarativeStream
+      name: user_roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: user-roles
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_roles"
+
+    activity_types:
+      type: DeclarativeStream
+      name: activity_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: activity-types
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activity_types"
+
+    issue_statuses:
+      type: DeclarativeStream
+      name: issue_statuses
+      primary_key:
+        - slug
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: issue-statuses
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issue_statuses"
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.usepylon.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_token'] }}"
+
+  error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        max_retries: 3
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 5
+        response_filters:
+          - type: HttpResponseFilter
+            action: RATE_LIMITED
+            http_codes:
+              - 429
+            error_message: Rate limit hit
+
+  cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 999
+      cursor_value: "{{ response.get('pagination', {}).get('cursor', '') }}"
+      stop_condition: "{{ not response.get('pagination', {}).get('has_next_page', False) }}"
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/issues"
+  - $ref: "#/definitions/streams/issue_messages"
+  - $ref: "#/definitions/streams/issue_threads"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/knowledge_bases"
+  - $ref: "#/definitions/streams/knowledge_base_articles"
+  - $ref: "#/definitions/streams/ticket_forms"
+  - $ref: "#/definitions/streams/user_roles"
+  - $ref: "#/definitions/streams/activity_types"
+  - $ref: "#/definitions/streams/issue_statuses"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - start_date
+    properties:
+      api_token:
+        type: string
+        order: 0
+        title: API Token
+        description: >-
+          Your Pylon API token. Generate one in the Pylon dashboard under
+          Settings > API.
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start Date
+        description: >-
+          The date from which you want to start syncing data, in UTC. Format:
+          YYYY-MM-DDTHH:MM:SSZ
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2024-01-01T00:00:00Z"
+    additionalProperties: true
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      domains:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      primary_domain:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      latest_customer_activity_time:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      is_disabled:
+        type:
+          - "null"
+          - boolean
+      owner:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      channels:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+      crm_settings:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      external_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      emails:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      avatar_url:
+        type:
+          - "null"
+          - string
+      phone_numbers:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      primary_phone_number:
+        type:
+          - "null"
+          - string
+      portal_role:
+        type:
+          - "null"
+          - string
+      portal_role_id:
+        type:
+          - "null"
+          - string
+      account:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      integration_user_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+
+  issues:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      title:
+        type:
+          - "null"
+          - string
+      body_html:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      number:
+        type:
+          - "null"
+          - integer
+      link:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      first_response_time:
+        type:
+          - "null"
+          - string
+      first_response_seconds:
+        type:
+          - "null"
+          - number
+      business_hours_first_response_seconds:
+        type:
+          - "null"
+          - number
+      resolution_time:
+        type:
+          - "null"
+          - string
+      resolution_seconds:
+        type:
+          - "null"
+          - number
+      business_hours_resolution_seconds:
+        type:
+          - "null"
+          - number
+      latest_message_time:
+        type:
+          - "null"
+          - string
+      snoozed_until_time:
+        type:
+          - "null"
+          - string
+      number_of_touches:
+        type:
+          - "null"
+          - integer
+      customer_portal_visible:
+        type:
+          - "null"
+          - boolean
+      author_unverified:
+        type:
+          - "null"
+          - boolean
+      account:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      assignee:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      requester:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      team:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+      custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      external_issues:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+      attachment_urls:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      slack:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      chat_widget_info:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      csat_responses:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+
+  issue_messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      message_html:
+        type:
+          - "null"
+          - string
+      timestamp:
+        type:
+          - "null"
+          - string
+      is_private:
+        type:
+          - "null"
+          - boolean
+      source:
+        type:
+          - "null"
+          - string
+      thread_id:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      email_info:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      file_urls:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+
+  issue_threads:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      issue_id:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      channel_id:
+        type:
+          - "null"
+          - string
+      thread_id:
+        type:
+          - "null"
+          - string
+
+  tags:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      value:
+        type:
+          - "null"
+          - string
+      hex_color:
+        type:
+          - "null"
+          - string
+      object_type:
+        type:
+          - "null"
+          - string
+
+  teams:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      users:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      emails:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      avatar_url:
+        type:
+          - "null"
+          - string
+      role_id:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      label:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      object_type:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      is_read_only:
+        type:
+          - "null"
+          - boolean
+      select_metadata:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+
+  knowledge_bases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      title:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+      default_language:
+        type:
+          - "null"
+          - string
+      supported_languages:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+
+  knowledge_base_articles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      title:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      identifier:
+        type:
+          - "null"
+          - string
+      is_published:
+        type:
+          - "null"
+          - boolean
+      current_draft_content_html:
+        type:
+          - "null"
+          - string
+      visibility_config:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+
+  ticket_forms:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      description_html:
+        type:
+          - "null"
+          - string
+      is_public:
+        type:
+          - "null"
+          - boolean
+      fields:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+
+  user_roles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+
+  activity_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      label:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+      icon_url:
+        type:
+          - "null"
+          - string
+
+  issue_statuses:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      slug:
+        type: string
+      label:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      is_default_status:
+        type:
+          - "null"
+          - boolean
+      is_archived:
+        type:
+          - "null"
+          - boolean

@@ -61,8 +61,6 @@ class PostgresOssChecker(
             DestinationStream(
                 unmappedNamespace = outputSchema,
                 unmappedName = tableName,
-                importType = Append,
-                schema = checkSchema,
                 generationId = 0L,
                 minimumGenerationId = 0L,
                 syncId = 0L,

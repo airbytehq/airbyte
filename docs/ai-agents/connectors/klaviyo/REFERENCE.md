@@ -149,7 +149,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -169,19 +169,18 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.segments` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].segments` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -318,7 +317,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -337,18 +336,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -491,7 +489,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -510,18 +508,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated_at` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated_at` | `string` |  |
 
 </details>
 
@@ -610,7 +607,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -629,18 +626,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.datetime` | `string` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].datetime` | `string` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
 
 </details>
 
@@ -777,7 +773,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -796,18 +792,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -944,7 +939,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -963,18 +958,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -1111,7 +1105,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1129,17 +1123,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 

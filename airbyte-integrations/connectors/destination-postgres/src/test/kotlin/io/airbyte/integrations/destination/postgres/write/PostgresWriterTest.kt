@@ -81,7 +81,6 @@ class PostgresWriterTest {
         val tableSchema = StreamTableSchema(tableNames, columnSchema, importType)
 
         every { stream.tableSchema } returns tableSchema
-        every { stream.importType } returns importType
         every { stream.minimumGenerationId } returns 0L
         every { stream.generationId } returns 1L
 
@@ -121,7 +120,6 @@ class PostgresWriterTest {
         val tableSchema = StreamTableSchema(tableNames, columnSchema, importType)
 
         every { stream.tableSchema } returns tableSchema
-        every { stream.importType } returns importType
         every { stream.minimumGenerationId } returns 0L
         every { stream.generationId } returns 1L
 
@@ -165,7 +163,6 @@ class PostgresWriterTest {
         val tableSchema = StreamTableSchema(tableNames, columnSchema, appendImportType)
 
         every { stream.tableSchema } returns tableSchema
-        every { stream.importType } returns appendImportType
         every { stream.minimumGenerationId } returns 0L
         every { stream.generationId } returns 1L
 

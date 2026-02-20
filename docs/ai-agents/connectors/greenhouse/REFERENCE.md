@@ -198,7 +198,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -237,38 +237,37 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.addresses` | `array` | Candidate's addresses |
-| `hits[].data.application_ids` | `array` | List of application IDs |
-| `hits[].data.applications` | `array` | An array of all applications made by candidates. |
-| `hits[].data.attachments` | `array` | Attachments related to the candidate |
-| `hits[].data.can_email` | `boolean` | Indicates if candidate can be emailed |
-| `hits[].data.company` | `string` | Company where the candidate is associated |
-| `hits[].data.coordinator` | `string` | Coordinator assigned to the candidate |
-| `hits[].data.created_at` | `string` | Date and time of creation |
-| `hits[].data.custom_fields` | `object` | Custom fields associated with the candidate |
-| `hits[].data.educations` | `array` | List of candidate's educations |
-| `hits[].data.email_addresses` | `array` | Candidate's email addresses |
-| `hits[].data.employments` | `array` | List of candidate's employments |
-| `hits[].data.first_name` | `string` | Candidate's first name |
-| `hits[].data.id` | `integer` | Candidate's ID |
-| `hits[].data.is_private` | `boolean` | Indicates if the candidate's data is private |
-| `hits[].data.keyed_custom_fields` | `object` | Keyed custom fields associated with the candidate |
-| `hits[].data.last_activity` | `string` | Details of the last activity related to the candidate |
-| `hits[].data.last_name` | `string` | Candidate's last name |
-| `hits[].data.phone_numbers` | `array` | Candidate's phone numbers |
-| `hits[].data.photo_url` | `string` | URL of the candidate's profile photo |
-| `hits[].data.recruiter` | `string` | Recruiter assigned to the candidate |
-| `hits[].data.social_media_addresses` | `array` | Candidate's social media addresses |
-| `hits[].data.tags` | `array` | Tags associated with the candidate |
-| `hits[].data.title` | `string` | Candidate's title (e.g., Mr., Mrs., Dr.) |
-| `hits[].data.updated_at` | `string` | Date and time of last update |
-| `hits[].data.website_addresses` | `array` | List of candidate's website addresses |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].addresses` | `array` | Candidate's addresses |
+| `data[].application_ids` | `array` | List of application IDs |
+| `data[].applications` | `array` | An array of all applications made by candidates. |
+| `data[].attachments` | `array` | Attachments related to the candidate |
+| `data[].can_email` | `boolean` | Indicates if candidate can be emailed |
+| `data[].company` | `string` | Company where the candidate is associated |
+| `data[].coordinator` | `string` | Coordinator assigned to the candidate |
+| `data[].created_at` | `string` | Date and time of creation |
+| `data[].custom_fields` | `object` | Custom fields associated with the candidate |
+| `data[].educations` | `array` | List of candidate's educations |
+| `data[].email_addresses` | `array` | Candidate's email addresses |
+| `data[].employments` | `array` | List of candidate's employments |
+| `data[].first_name` | `string` | Candidate's first name |
+| `data[].id` | `integer` | Candidate's ID |
+| `data[].is_private` | `boolean` | Indicates if the candidate's data is private |
+| `data[].keyed_custom_fields` | `object` | Keyed custom fields associated with the candidate |
+| `data[].last_activity` | `string` | Details of the last activity related to the candidate |
+| `data[].last_name` | `string` | Candidate's last name |
+| `data[].phone_numbers` | `array` | Candidate's phone numbers |
+| `data[].photo_url` | `string` | URL of the candidate's profile photo |
+| `data[].recruiter` | `string` | Recruiter assigned to the candidate |
+| `data[].social_media_addresses` | `array` | Candidate's social media addresses |
+| `data[].tags` | `array` | Tags associated with the candidate |
+| `data[].title` | `string` | Candidate's title (e.g., Mr., Mrs., Dr.) |
+| `data[].updated_at` | `string` | Date and time of last update |
+| `data[].website_addresses` | `array` | List of candidate's website addresses |
 
 </details>
 
@@ -452,7 +451,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -485,32 +484,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.answers` | `array` | Answers provided in the application. |
-| `hits[].data.applied_at` | `string` | Timestamp when the candidate applied. |
-| `hits[].data.attachments` | `array` | Attachments uploaded with the application. |
-| `hits[].data.candidate_id` | `integer` | Unique identifier for the candidate. |
-| `hits[].data.credited_to` | `object` | Information about the employee who credited the application. |
-| `hits[].data.current_stage` | `object` | Current stage of the application process. |
-| `hits[].data.id` | `integer` | Unique identifier for the application. |
-| `hits[].data.job_post_id` | `integer` |  |
-| `hits[].data.jobs` | `array` | Jobs applied for by the candidate. |
-| `hits[].data.last_activity_at` | `string` | Timestamp of the last activity on the application. |
-| `hits[].data.location` | `string` | Location related to the application. |
-| `hits[].data.prospect` | `boolean` | Status of the application prospect. |
-| `hits[].data.prospect_detail` | `object` | Details related to the application prospect. |
-| `hits[].data.prospective_department` | `string` | Prospective department for the candidate. |
-| `hits[].data.prospective_office` | `string` | Prospective office for the candidate. |
-| `hits[].data.rejected_at` | `string` | Timestamp when the application was rejected. |
-| `hits[].data.rejection_details` | `object` | Details related to the application rejection. |
-| `hits[].data.rejection_reason` | `object` | Reason for the application rejection. |
-| `hits[].data.source` | `object` | Source of the application. |
-| `hits[].data.status` | `string` | Status of the application. |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].answers` | `array` | Answers provided in the application. |
+| `data[].applied_at` | `string` | Timestamp when the candidate applied. |
+| `data[].attachments` | `array` | Attachments uploaded with the application. |
+| `data[].candidate_id` | `integer` | Unique identifier for the candidate. |
+| `data[].credited_to` | `object` | Information about the employee who credited the application. |
+| `data[].current_stage` | `object` | Current stage of the application process. |
+| `data[].id` | `integer` | Unique identifier for the application. |
+| `data[].job_post_id` | `integer` |  |
+| `data[].jobs` | `array` | Jobs applied for by the candidate. |
+| `data[].last_activity_at` | `string` | Timestamp of the last activity on the application. |
+| `data[].location` | `string` | Location related to the application. |
+| `data[].prospect` | `boolean` | Status of the application prospect. |
+| `data[].prospect_detail` | `object` | Details related to the application prospect. |
+| `data[].prospective_department` | `string` | Prospective department for the candidate. |
+| `data[].prospective_office` | `string` | Prospective office for the candidate. |
+| `data[].rejected_at` | `string` | Timestamp when the application was rejected. |
+| `data[].rejection_details` | `object` | Details related to the application rejection. |
+| `data[].rejection_reason` | `object` | Reason for the application rejection. |
+| `data[].source` | `object` | Source of the application. |
+| `data[].status` | `string` | Status of the application. |
 
 </details>
 
@@ -669,7 +667,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -700,30 +698,29 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.closed_at` | `string` | The date and time the job was closed |
-| `hits[].data.confidential` | `boolean` | Indicates if the job details are confidential |
-| `hits[].data.copied_from_id` | `integer` | The ID of the job from which this job was copied |
-| `hits[].data.created_at` | `string` | The date and time the job was created |
-| `hits[].data.custom_fields` | `object` | Custom fields related to the job |
-| `hits[].data.departments` | `array` | Departments associated with the job |
-| `hits[].data.hiring_team` | `object` | Members of the hiring team for the job |
-| `hits[].data.id` | `integer` | Unique ID of the job |
-| `hits[].data.is_template` | `boolean` | Indicates if the job is a template |
-| `hits[].data.keyed_custom_fields` | `object` | Keyed custom fields related to the job |
-| `hits[].data.name` | `string` | Name of the job |
-| `hits[].data.notes` | `string` | Additional notes or comments about the job |
-| `hits[].data.offices` | `array` | Offices associated with the job |
-| `hits[].data.opened_at` | `string` | The date and time the job was opened |
-| `hits[].data.openings` | `array` | Openings associated with the job |
-| `hits[].data.requisition_id` | `string` | ID associated with the job requisition |
-| `hits[].data.status` | `string` | Current status of the job |
-| `hits[].data.updated_at` | `string` | The date and time the job was last updated |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].closed_at` | `string` | The date and time the job was closed |
+| `data[].confidential` | `boolean` | Indicates if the job details are confidential |
+| `data[].copied_from_id` | `integer` | The ID of the job from which this job was copied |
+| `data[].created_at` | `string` | The date and time the job was created |
+| `data[].custom_fields` | `object` | Custom fields related to the job |
+| `data[].departments` | `array` | Departments associated with the job |
+| `data[].hiring_team` | `object` | Members of the hiring team for the job |
+| `data[].id` | `integer` | Unique ID of the job |
+| `data[].is_template` | `boolean` | Indicates if the job is a template |
+| `data[].keyed_custom_fields` | `object` | Keyed custom fields related to the job |
+| `data[].name` | `string` | Name of the job |
+| `data[].notes` | `string` | Additional notes or comments about the job |
+| `data[].offices` | `array` | Offices associated with the job |
+| `data[].opened_at` | `string` | The date and time the job was opened |
+| `data[].openings` | `array` | Openings associated with the job |
+| `data[].requisition_id` | `string` | ID associated with the job requisition |
+| `data[].status` | `string` | Current status of the job |
+| `data[].updated_at` | `string` | The date and time the job was last updated |
 
 </details>
 
@@ -881,7 +878,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -908,26 +905,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.application_id` | `integer` | Unique identifier for the application associated with the offer |
-| `hits[].data.candidate_id` | `integer` | Unique identifier for the candidate associated with the offer |
-| `hits[].data.created_at` | `string` | Timestamp indicating when the offer was created |
-| `hits[].data.custom_fields` | `object` | Additional custom fields related to the offer |
-| `hits[].data.id` | `integer` | Unique identifier for the offer |
-| `hits[].data.job_id` | `integer` | Unique identifier for the job associated with the offer |
-| `hits[].data.keyed_custom_fields` | `object` | Keyed custom fields associated with the offer |
-| `hits[].data.opening` | `object` | Details about the job opening |
-| `hits[].data.resolved_at` | `string` | Timestamp indicating when the offer was resolved |
-| `hits[].data.sent_at` | `string` | Timestamp indicating when the offer was sent |
-| `hits[].data.starts_at` | `string` | Timestamp indicating when the offer starts |
-| `hits[].data.status` | `string` | Status of the offer |
-| `hits[].data.updated_at` | `string` | Timestamp indicating when the offer was last updated |
-| `hits[].data.version` | `integer` | Version of the offer data |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].application_id` | `integer` | Unique identifier for the application associated with the offer |
+| `data[].candidate_id` | `integer` | Unique identifier for the candidate associated with the offer |
+| `data[].created_at` | `string` | Timestamp indicating when the offer was created |
+| `data[].custom_fields` | `object` | Additional custom fields related to the offer |
+| `data[].id` | `integer` | Unique identifier for the offer |
+| `data[].job_id` | `integer` | Unique identifier for the job associated with the offer |
+| `data[].keyed_custom_fields` | `object` | Keyed custom fields associated with the offer |
+| `data[].opening` | `object` | Details about the job opening |
+| `data[].resolved_at` | `string` | Timestamp indicating when the offer was resolved |
+| `data[].sent_at` | `string` | Timestamp indicating when the offer was sent |
+| `data[].starts_at` | `string` | Timestamp indicating when the offer starts |
+| `data[].status` | `string` | Status of the offer |
+| `data[].updated_at` | `string` | Timestamp indicating when the offer was last updated |
+| `data[].version` | `integer` | Version of the offer data |
 
 </details>
 
@@ -1088,7 +1084,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1115,26 +1111,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.created_at` | `string` | The date and time when the user account was created. |
-| `hits[].data.departments` | `array` | List of departments associated with users |
-| `hits[].data.disabled` | `boolean` | Indicates whether the user account is disabled. |
-| `hits[].data.emails` | `array` | Email addresses of the users |
-| `hits[].data.employee_id` | `string` | Employee identifier for the user. |
-| `hits[].data.first_name` | `string` | The first name of the user. |
-| `hits[].data.id` | `integer` | Unique identifier for the user. |
-| `hits[].data.last_name` | `string` | The last name of the user. |
-| `hits[].data.linked_candidate_ids` | `array` | IDs of candidates linked to the user. |
-| `hits[].data.name` | `string` | The full name of the user. |
-| `hits[].data.offices` | `array` | List of office locations where users are based |
-| `hits[].data.primary_email_address` | `string` | The primary email address of the user. |
-| `hits[].data.site_admin` | `boolean` | Indicates whether the user is a site administrator. |
-| `hits[].data.updated_at` | `string` | The date and time when the user account was last updated. |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].created_at` | `string` | The date and time when the user account was created. |
+| `data[].departments` | `array` | List of departments associated with users |
+| `data[].disabled` | `boolean` | Indicates whether the user account is disabled. |
+| `data[].emails` | `array` | Email addresses of the users |
+| `data[].employee_id` | `string` | Employee identifier for the user. |
+| `data[].first_name` | `string` | The first name of the user. |
+| `data[].id` | `integer` | Unique identifier for the user. |
+| `data[].last_name` | `string` | The last name of the user. |
+| `data[].linked_candidate_ids` | `array` | IDs of candidates linked to the user. |
+| `data[].name` | `string` | The full name of the user. |
+| `data[].offices` | `array` | List of office locations where users are based |
+| `data[].primary_email_address` | `string` | The primary email address of the user. |
+| `data[].site_admin` | `boolean` | Indicates whether the user is a site administrator. |
+| `data[].updated_at` | `string` | The date and time when the user account was last updated. |
 
 </details>
 
@@ -1277,7 +1272,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1297,19 +1292,18 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.child_department_external_ids` | `array` | External IDs of child departments associated with this department. |
-| `hits[].data.child_ids` | `array` | Unique IDs of child departments associated with this department. |
-| `hits[].data.external_id` | `string` | External ID of this department. |
-| `hits[].data.id` | `integer` | Unique ID of this department. |
-| `hits[].data.name` | `string` | Name of the department. |
-| `hits[].data.parent_department_external_id` | `string` | External ID of the parent department of this department. |
-| `hits[].data.parent_id` | `integer` | Unique ID of the parent department of this department. |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].child_department_external_ids` | `array` | External IDs of child departments associated with this department. |
+| `data[].child_ids` | `array` | Unique IDs of child departments associated with this department. |
+| `data[].external_id` | `string` | External ID of this department. |
+| `data[].id` | `integer` | Unique ID of this department. |
+| `data[].name` | `string` | Name of the department. |
+| `data[].parent_department_external_id` | `string` | External ID of the parent department of this department. |
+| `data[].parent_id` | `integer` | Unique ID of the parent department of this department. |
 
 </details>
 
@@ -1456,7 +1450,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1478,21 +1472,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.child_ids` | `array` | IDs of child offices associated with this office |
-| `hits[].data.child_office_external_ids` | `array` | External IDs of child offices associated with this office |
-| `hits[].data.external_id` | `string` | Unique identifier for this office in the external system |
-| `hits[].data.id` | `integer` | Unique identifier for this office in the API system |
-| `hits[].data.location` | `object` | Location details of this office |
-| `hits[].data.name` | `string` | Name of the office |
-| `hits[].data.parent_id` | `integer` | ID of the parent office, if this office is a branch office |
-| `hits[].data.parent_office_external_id` | `string` | External ID of the parent office in the external system |
-| `hits[].data.primary_contact_user_id` | `integer` | User ID of the primary contact person for this office |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].child_ids` | `array` | IDs of child offices associated with this office |
+| `data[].child_office_external_ids` | `array` | External IDs of child offices associated with this office |
+| `data[].external_id` | `string` | Unique identifier for this office in the external system |
+| `data[].id` | `integer` | Unique identifier for this office in the API system |
+| `data[].location` | `object` | Location details of this office |
+| `data[].name` | `string` | Name of the office |
+| `data[].parent_id` | `integer` | ID of the parent office, if this office is a branch office |
+| `data[].parent_office_external_id` | `string` | External ID of the parent office in the external system |
+| `data[].primary_contact_user_id` | `integer` | User ID of the primary contact person for this office |
 
 </details>
 
@@ -1653,7 +1646,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1681,27 +1674,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.active` | `boolean` | Flag indicating if the job post is active or not. |
-| `hits[].data.content` | `string` | Content or description of the job post. |
-| `hits[].data.created_at` | `string` | Date and time when the job post was created. |
-| `hits[].data.demographic_question_set_id` | `integer` | ID of the demographic question set associated with the job post. |
-| `hits[].data.external` | `boolean` | Flag indicating if the job post is external or not. |
-| `hits[].data.first_published_at` | `string` | Date and time when the job post was first published. |
-| `hits[].data.id` | `integer` | Unique identifier of the job post. |
-| `hits[].data.internal` | `boolean` | Flag indicating if the job post is internal or not. |
-| `hits[].data.internal_content` | `string` | Internal content or description of the job post. |
-| `hits[].data.job_id` | `integer` | ID of the job associated with the job post. |
-| `hits[].data.live` | `boolean` | Flag indicating if the job post is live or not. |
-| `hits[].data.location` | `object` | Details about the job post location. |
-| `hits[].data.questions` | `array` | List of questions related to the job post. |
-| `hits[].data.title` | `string` | Title or headline of the job post. |
-| `hits[].data.updated_at` | `string` | Date and time when the job post was last updated. |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].active` | `boolean` | Flag indicating if the job post is active or not. |
+| `data[].content` | `string` | Content or description of the job post. |
+| `data[].created_at` | `string` | Date and time when the job post was created. |
+| `data[].demographic_question_set_id` | `integer` | ID of the demographic question set associated with the job post. |
+| `data[].external` | `boolean` | Flag indicating if the job post is external or not. |
+| `data[].first_published_at` | `string` | Date and time when the job post was first published. |
+| `data[].id` | `integer` | Unique identifier of the job post. |
+| `data[].internal` | `boolean` | Flag indicating if the job post is internal or not. |
+| `data[].internal_content` | `string` | Internal content or description of the job post. |
+| `data[].job_id` | `integer` | ID of the job associated with the job post. |
+| `data[].live` | `boolean` | Flag indicating if the job post is live or not. |
+| `data[].location` | `object` | Details about the job post location. |
+| `data[].questions` | `array` | List of questions related to the job post. |
+| `data[].title` | `string` | Title or headline of the job post. |
+| `data[].updated_at` | `string` | Date and time when the job post was last updated. |
 
 </details>
 
@@ -1787,7 +1779,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1803,15 +1795,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `integer` | The unique identifier for the source. |
-| `hits[].data.name` | `string` | The name of the source. |
-| `hits[].data.type` | `object` | Type of the data source |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | The unique identifier for the source. |
+| `data[].name` | `string` | The name of the source. |
+| `data[].type` | `object` | Type of the data source |
 
 </details>
 
