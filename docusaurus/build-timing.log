@@ -1,0 +1,561 @@
+
+> docu@0.0.0 prebuild
+> pnpm run prepare-registry-cache && pnpm run prepare-embedded-api && pnpm run prepare-public-api
+
+
+> docu@0.0.0 prepare-registry-cache /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus
+> NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/prepare-registry-cache.js
+
+
+> docu@0.0.0 prepare-embedded-api /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus
+> NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/embedded-api/prepare-embedded-api-spec.js && NODE_OPTIONS='--max-old-space-size=4096' pnpm prettier --write src/data/embedded_api_spec.json && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus clean-api-docs embedded-api --plugin-id embedded-api && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus gen-api-docs embedded-api --plugin-id embedded-api
+
+📁 Found previous spec version: 0.9.0
+🔄 Attempting to fetch latest embedded API spec...
+Fetching embedded API spec...
+🔍 Validating OpenAPI spec with @seriousme/openapi-schema-validator...
+✅ OpenAPI spec validation passed!
+⚠️  Could not load OpenAPI schema validator, using basic validation: Defined tags have no operations and will not appear in docs: Cache
+🔍 Performing basic OpenAPI spec validation...
+✅ Basic OpenAPI spec validation passed
+📋 API: Sonar v0.9.0
+📊 Spec stats: 101 paths, 13 tags, 129 operations
+✅ Embedded API spec processed and saved to /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/src/data/embedded_api_spec.json
+src/data/embedded_api_spec.json 225ms
+(node:60303) ExperimentalWarning: CommonJS module /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/src/remark/docsHeaderDecoration.js is loading ES Module /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/node_modules/.pnpm/unist-util-visit@5.0.0/node_modules/unist-util-visit/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-account-applications-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-agents-chat-schema-definitions-sources-source-definition-id-qa-report-run.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-agents-chat-schema-definitions-sources-source-definition-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-agents-chat-schema-templates-sources-source-template-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-agents-chat-templates-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-agents-discovery-source-definition-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-agents-chat-search.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-connectors-instances.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-connectors-instances-instance-id-execute.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-embedded-scoped-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-embedded-sources-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-embedded-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-embedded-sources-id-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-embedded-widget-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-definitions-sources-source-definition-id-catalog-query.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-definitions-sources-source-definition-id-streams.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-sources-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-sources-id-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-sources-id-search-stream-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-templates-connections-cron-describe.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-templates-connections.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-templates-sources-source-template-id-catalog-query.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-templates-connections-id-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-templates-sources-id-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-templates-sources-source-template-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-templates-sources-source-template-id-streams.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-templates-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-integrations-templates-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-account-applications.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-account-enroll.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-account-organizations-id-onboarding-progress.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-account-organizations-organization-id-customer-portal.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-admin-rate-limits.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-account-organizations-organization-id-signup.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-oauth-sources-revoke.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-oauth-sources-complete.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-webhooks-orb.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-oauth-sources-get-embedded-consent-url.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-webhooks-stripe.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-internal-workspaces-sync.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-tools-destinations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-sonar-apis-source-id-request.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/create-tools-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-embedded-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-definitions-sources-source-definition-id-streams-stream-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-templates-connections-id-tags-tag-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-templates-sources-id-tags-tag-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-templates-connections-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-templates-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-templates-sources-source-template-id-streams-stream-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-templates-tags-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-integrations-templates-sources-source-template-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-internal-admin-rate-limits-config-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/deprecated-get-embedded-scoped-token-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/deprecated-get-embedded-organizations-current-scoped.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/delete-workspaces-workspace-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-agents-chat-history-thread-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/deprecated-list-embedded-source-templates.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/deprecated-get-sonar-apis.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-agents-chat-schema-definitions-sources-source-definition-id-qa-report.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-agents-chat-schema-definitions-sources-source-definition-id-state.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-agents-chat-schema-templates-sources-source-template-id-state.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-embedded-scoped-token-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-connectors-instances-instance-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-embedded-source-templates-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-embedded-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-definitions-destinations-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-embedded-sources-check-id-status.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-sources-check-id-status.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-definitions-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-destinations-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-sources-id-meta-streams.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-sources-id-meta-streams-stream-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-templates-connections-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-internal-account-enrollment-status.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-templates-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-integrations-templates-sources-source-template-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id-payment-information.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id-subscription.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id-invoices.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-internal-admin-rate-limits-config-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-internal-health-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-internal-integrations-definitions-destinations-wrapped-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-sonar-files-source-id-drives-drive-id-get-path-path.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-sonar-files-source-id-drives.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-sonar-files-source-id-get-path-path.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-workspaces-stats.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-sonar-files-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/get-workspaces-workspace-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-connectors-instances-for-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-embedded-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-embedded-source-templates.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-integrations-definitions-destinations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-integrations-definitions-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-integrations-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-integrations-destinations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-integrations-templates-sources-global.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-integrations-templates-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-integrations-templates-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-integrations-templates-connections.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-internal-account-organizations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-internal-integrations-definitions-destinations-wrapped.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-internal-admin-rate-limits.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-sonar-files-source-id-list-path-path.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-sonar-files-source-id-drives-drive-id-list-path-path.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-internal-jobs.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/list-workspaces.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-integrations-definitions-sources-source-definition-id-streams-stream-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-embedded-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-integrations-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-integrations-templates-sources-source-template-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-integrations-templates-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-integrations-templates-sources-source-template-id-streams-stream-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-integrations-templates-connections-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-integrations-templates-tags-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-tools-destinations-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-internal-admin-rate-limits-config-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-internal-account-organizations-organization-id-billing-state.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-tools-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/update-workspaces-workspace-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/sonar.info.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/applications.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/destinations-definitions.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/destinations.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/embedded.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/sonar-ap-is.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/sources-definitions.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/sonar-files.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/sources.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/template-connections.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/template-tags.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/sidebar.ts"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/template-sources.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/ai-agents/embedded/api-reference/workspaces.tag.mdx"
+(node:60862) ExperimentalWarning: CommonJS module /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/src/remark/docsHeaderDecoration.js is loading ES Module /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/node_modules/.pnpm/unist-util-visit@5.0.0/node_modules/unist-util-visit/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Successfully created "../docs/ai-agents/embedded/api-reference/sidebar.ts"
+Successfully created "../docs/ai-agents/embedded/api-reference/sonar.info.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-account-applications-token.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-agents-chat-history-thread-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-agents-chat-schema-definitions-sources-source-definition-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-agents-chat-schema-definitions-sources-source-definition-id-qa-report.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-agents-chat-schema-definitions-sources-source-definition-id-qa-report-run.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-agents-chat-schema-definitions-sources-source-definition-id-state.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-agents-chat-schema-templates-sources-source-template-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-agents-chat-schema-templates-sources-source-template-id-state.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-agents-chat-search.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-agents-chat-templates-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-agents-discovery-source-definition-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-connectors-instances.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-connectors-instances-instance-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-connectors-instances-instance-id-execute.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-connectors-instances-for-user.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/deprecated-get-embedded-organizations-current-scoped.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-embedded-scoped-token.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/deprecated-get-embedded-scoped-token-info.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-embedded-scoped-token-info.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/deprecated-list-embedded-source-templates.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-embedded-source-templates.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-embedded-source-templates-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-embedded-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-embedded-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-embedded-sources-check.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-embedded-sources-check-id-status.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-embedded-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-embedded-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-embedded-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-embedded-sources-id-check.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-embedded-widget-token.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-integrations-definitions-destinations.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-definitions-destinations-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-integrations-definitions-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-definitions-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-definitions-sources-source-definition-id-catalog-query.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-definitions-sources-source-definition-id-streams.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-integrations-definitions-sources-source-definition-id-streams-stream-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-definitions-sources-source-definition-id-streams-stream-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-integrations-destinations.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-destinations-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-integrations-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-sources-check.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-sources-check-id-status.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-integrations-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-sources-id-check.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-sources-id-meta-streams.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-sources-id-meta-streams-stream-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-sources-id-search-stream-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-integrations-templates-connections.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-templates-connections.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-templates-connections-cron-describe.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-templates-connections-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-templates-connections-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-integrations-templates-connections-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-templates-connections-id-tags.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-templates-connections-id-tags-tag-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-templates-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-integrations-templates-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-integrations-templates-sources-global.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-integrations-templates-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-templates-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-templates-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-templates-sources-id-tags.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-templates-sources-id-tags-tag-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-templates-sources-source-template-id-catalog.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-templates-sources-source-template-id-catalog.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-integrations-templates-sources-source-template-id-catalog.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-integrations-templates-sources-source-template-id-catalog.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-templates-sources-source-template-id-catalog-query.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-templates-sources-source-template-id-streams.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-integrations-templates-sources-source-template-id-streams-stream-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-templates-sources-source-template-id-streams-stream-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-integrations-templates-tags.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-integrations-templates-tags.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-integrations-templates-tags-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-integrations-templates-tags-name.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-account-applications.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-account-enroll.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-internal-account-enrollment-status.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-internal-account-organizations.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-account-organizations-id-onboarding-progress.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-internal-account-organizations-organization-id-billing-state.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-account-organizations-organization-id-customer-portal.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id-info.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id-invoices.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id-payment-information.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-account-organizations-organization-id-signup.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-internal-account-organizations-organization-id-subscription.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-admin-rate-limits.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-internal-admin-rate-limits.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-internal-admin-rate-limits-config-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-internal-admin-rate-limits-config-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-internal-admin-rate-limits-config-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-internal-health-check.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-internal-integrations-definitions-destinations-wrapped.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-internal-integrations-definitions-destinations-wrapped-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-internal-jobs.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-oauth-sources-complete.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-oauth-sources-get-embedded-consent-url.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-oauth-sources-revoke.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-webhooks-orb.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-webhooks-stripe.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-internal-workspaces-sync.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/deprecated-get-sonar-apis.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-sonar-apis-source-id-request.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-sonar-files-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-sonar-files-source-id-drives.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-sonar-files-source-id-drives-drive-id-get-path-path.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-sonar-files-source-id-drives-drive-id-list-path-path.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-sonar-files-source-id-get-path-path.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-sonar-files-source-id-list-path-path.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-tools-destinations.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-tools-destinations-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/create-tools-sources.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-tools-sources-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/list-workspaces.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-workspaces-stats.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/get-workspaces-workspace-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/update-workspaces-workspace-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/delete-workspaces-workspace-id.api.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/embedded.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/template-connections.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/template-sources.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/template-tags.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/destinations.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/sources.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/destinations-definitions.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/sources-definitions.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/workspaces.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/sonar-ap-is.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/applications.tag.mdx"
+Successfully created "../docs/ai-agents/embedded/api-reference/sonar-files.tag.mdx"
+
+> docu@0.0.0 prepare-public-api /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus
+> NODE_OPTIONS='--max-old-space-size=4096' node src/scripts/public-api/prepare-public-api-spec.js && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus clean-api-docs public-api --plugin-id public-api && NODE_OPTIONS='--max-old-space-size=4096' pnpm exec docusaurus gen-api-docs public-api --plugin-id public-api && node src/scripts/public-api/replace-request-schema.js
+
+⏱️  [START] Prepare public API spec
+📁 Found previous spec version: 1.0.0
+🔄 Attempting to fetch latest public API and config specs...
+📥 Fetching 17 public API spec files and config spec...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_applications.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_config_templates.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_connections.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_declarative_source_definitions.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_definitions.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_destination_definitions.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_destinations.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_embedded_widget.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_jobs.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_organizations.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_permissions.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_source_definitions.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_sources.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_streams.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_tags.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_users.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/api_documentation_workspaces.yaml...
+Fetching from https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/config.yaml...
+FETCH_SPECS: 611.284ms
+✅ Merged 17 spec files into single spec with 30 paths
+MERGE_SPECS: 0.86ms
+📦 Merged Public API spec with 17 components
+📦 Config spec: Airbyte Configuration API v1.0.0
+⏭️  Skipping dereferencing - keeping all $ref pointers intact
+   Reason: Testing if dereferencing is causing the Docusaurus build to hang
+✅ Using SourceConfiguration in spec
+   docusaurus-plugin-llms-txt has been disabled
+📦 Fetched registry with 639 connectors
+✅ Filtered SourceConfiguration.oneOf: 555 → 58 certified sources
+Injecting tags from config spec into public spec...
+✅ Created 15 tag definitions (15 from operations, 0 from config)
+Cleaning up operations to keep only primary tags...
+INJECT_TAGS: 0.543ms
+⏭️  Skipping expensive schema validation (1386 schemas found)
+💡 Using basic validation for performance (full validation would take too long)
+🔍 Performing basic OpenAPI spec validation...
+✅ Basic OpenAPI spec validation passed
+📋 API: Applications v1.0.0
+📊 Spec stats: 30 paths, 15 tags, 63 operations
+VALIDATE_SPEC: 0.405ms
+🔍 Extracting 58 source configurations...
+✅ Extracted and dereferenced 58 source configurations
+EXTRACT_SCHEMAS: 14.026ms
+   📊 Extracted 58 source configurations
+SAVE_JSON: 4.002ms
+✅ Source configurations extracted and saved to /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/src/data/source-configs-dereferenced.json
+   📦 JSON file size: 630.79 KB
+DUMP_YAML: 166.902ms
+WRITE_YAML: 3.85ms
+✅ Public API spec processed and saved to /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/src/data/public_api_spec.yaml
+   📦 YAML file size: 3.00 MB
+TOTAL: 1.101s
+⏱️  [COMPLETE] Prepare public API spec
+(node:61548) ExperimentalWarning: CommonJS module /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/src/remark/docsHeaderDecoration.js is loading ES Module /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/node_modules/.pnpm/unist-util-visit@5.0.0/node_modules/unist-util-visit/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/cancel-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-access-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-application.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-declarative-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-or-update-organization-o-auth-credentials.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-or-update-workspace-o-auth-credentials.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/create-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-application.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-declarative-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/delete-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-application.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-declarative-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-embedded-widget.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-stream-properties.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/get-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-applications.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-connections.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/initiate-o-auth.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-destinations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-declarative-source-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-jobs.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-destination-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-organizations-for-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-source-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-permissions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-workspaces.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/list-users-within-an-organization.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/patch-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/patch-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/patch-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/put-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/put-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/update-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/update-declarative-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/update-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/update-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/update-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/update-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-applications.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/applications.info.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-connections.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-declarative-source-definitions.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-destination-definitions.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-destinations.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-organizations.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-source-definitions.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-permissions.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-jobs.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-sources.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-streams.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-tags.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-users.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/sidebar.ts"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public-workspaces.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docs/developers/api-reference/public.tag.mdx"
+(node:61896) ExperimentalWarning: CommonJS module /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/src/remark/docsHeaderDecoration.js is loading ES Module /Users/letiescanciano/Airbyte/airbyte/.conductor/vienna/docusaurus/node_modules/.pnpm/unist-util-visit@5.0.0/node_modules/unist-util-visit/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Complexity score = 10
+Successfully created "../docs/developers/api-reference/sidebar.ts"
+Successfully created "../docs/developers/api-reference/applications.info.mdx"
+Successfully created "../docs/developers/api-reference/list-applications.api.mdx"
+Successfully created "../docs/developers/api-reference/create-application.api.mdx"
+Successfully created "../docs/developers/api-reference/get-application.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-application.api.mdx"
+Successfully created "../docs/developers/api-reference/create-access-token.api.mdx"
+Successfully created "../docs/developers/api-reference/create-connection.api.mdx"
+Successfully created "../docs/developers/api-reference/list-connections.api.mdx"
+Successfully created "../docs/developers/api-reference/get-connection.api.mdx"
+Successfully created "../docs/developers/api-reference/patch-connection.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-connection.api.mdx"
+Successfully created "../docs/developers/api-reference/list-declarative-source-definitions.api.mdx"
+Successfully created "../docs/developers/api-reference/create-declarative-source-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/get-declarative-source-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/update-declarative-source-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-declarative-source-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/list-source-definitions.api.mdx"
+Successfully created "../docs/developers/api-reference/create-source-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/get-source-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/update-source-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-source-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/list-destination-definitions.api.mdx"
+Successfully created "../docs/developers/api-reference/create-destination-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/get-destination-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/update-destination-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-destination-definition.api.mdx"
+Successfully created "../docs/developers/api-reference/list-destinations.api.mdx"
+Successfully created "../docs/developers/api-reference/create-destination.api.mdx"
+Successfully created "../docs/developers/api-reference/get-destination.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-destination.api.mdx"
+Successfully created "../docs/developers/api-reference/patch-destination.api.mdx"
+Successfully created "../docs/developers/api-reference/put-destination.api.mdx"
+Successfully created "../docs/developers/api-reference/get-embedded-widget.api.mdx"
+Successfully created "../docs/developers/api-reference/list-jobs.api.mdx"
+Successfully created "../docs/developers/api-reference/create-job.api.mdx"
+Successfully created "../docs/developers/api-reference/get-job.api.mdx"
+Successfully created "../docs/developers/api-reference/cancel-job.api.mdx"
+Successfully created "../docs/developers/api-reference/list-organizations-for-user.api.mdx"
+Successfully created "../docs/developers/api-reference/create-or-update-organization-o-auth-credentials.api.mdx"
+Successfully created "../docs/developers/api-reference/get-permission.api.mdx"
+Successfully created "../docs/developers/api-reference/update-permission.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-permission.api.mdx"
+Successfully created "../docs/developers/api-reference/list-permissions.api.mdx"
+Successfully created "../docs/developers/api-reference/create-permission.api.mdx"
+Successfully created "../docs/developers/api-reference/list-sources.api.mdx"
+Successfully created "../docs/developers/api-reference/create-source.api.mdx"
+Successfully created "../docs/developers/api-reference/get-source.api.mdx"
+Successfully created "../docs/developers/api-reference/patch-source.api.mdx"
+Successfully created "../docs/developers/api-reference/put-source.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-source.api.mdx"
+Successfully created "../docs/developers/api-reference/initiate-o-auth.api.mdx"
+Successfully created "../docs/developers/api-reference/get-stream-properties.api.mdx"
+Successfully created "../docs/developers/api-reference/list-tags.api.mdx"
+Successfully created "../docs/developers/api-reference/create-tag.api.mdx"
+Successfully created "../docs/developers/api-reference/get-tag.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-tag.api.mdx"
+Successfully created "../docs/developers/api-reference/update-tag.api.mdx"
+Successfully created "../docs/developers/api-reference/list-users-within-an-organization.api.mdx"
+Successfully created "../docs/developers/api-reference/list-workspaces.api.mdx"
+Successfully created "../docs/developers/api-reference/create-workspace.api.mdx"
+Successfully created "../docs/developers/api-reference/get-workspace.api.mdx"
+Successfully created "../docs/developers/api-reference/update-workspace.api.mdx"
+Successfully created "../docs/developers/api-reference/delete-workspace.api.mdx"
+Successfully created "../docs/developers/api-reference/create-or-update-workspace-o-auth-credentials.api.mdx"
+Successfully created "../docs/developers/api-reference/public.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-jobs.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-applications.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-connections.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-declarative-source-definitions.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-source-definitions.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-destination-definitions.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-destinations.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-organizations.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-permissions.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-sources.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-streams.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-tags.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-users.tag.mdx"
+Successfully created "../docs/developers/api-reference/public-workspaces.tag.mdx"
+🔄 Replacing RequestSchema components...
+
+
+📝 Processing: docs/developers/api-reference/create-source.api.mdx
+✅ Updated: docs/developers/api-reference/create-source.api.mdx
+   Size reduction: 325.45 KB
+
+📝 Processing: docs/developers/api-reference/create-destination.api.mdx
+✅ Updated: docs/developers/api-reference/create-destination.api.mdx
+   Size reduction: 238.50 KB
+
+✨ Complete! Updated 2 file(s)
+
+📋 Summary:
+   - RequestSchema imports replaced with comments
+   - RequestSchema components replaced with CreateSourceRequestSchema
+   - MDX files are now much smaller
