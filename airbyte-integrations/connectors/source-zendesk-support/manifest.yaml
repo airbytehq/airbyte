@@ -7,6 +7,15 @@ check:
   stream_names:
     - tags
 
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT1M
+      call_limit: 10
+      matchers:
+        - url_path_pattern: "^incremental/"
+
 definitions:
   bearer_authenticator:
     type: BearerAuthenticator
