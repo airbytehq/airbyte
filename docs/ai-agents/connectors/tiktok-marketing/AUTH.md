@@ -60,7 +60,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "external_user_id": "<EXTERNAL_USER_ID>",
+    "customer_name": "<CUSTOMER_NAME>",
     "connector_type": "Tiktok-Marketing",
     "name": "My Tiktok-Marketing Connector",
     "credentials": {
@@ -83,7 +83,7 @@ Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `external_user_id` | `string` | Yes | Your unique identifier for the end user |
+| `customer_name` | `string` | Yes | Your unique identifier for the customer |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Tiktok-Marketing") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -94,7 +94,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "external_user_id": "<EXTERNAL_USER_ID>",
+    "customer_name": "<CUSTOMER_NAME>",
     "connector_type": "Tiktok-Marketing",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -106,7 +106,7 @@ Redirect your user to the `consent_url` from the response. After they authorize,
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `external_user_id` | `string` | Yes | Your unique identifier for the end user |
+| `customer_name` | `string` | Yes | Your unique identifier for the customer |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Tiktok-Marketing") |
 | `name` | `string` | Yes | A name for this connector instance |
 | `server_side_oauth_secret_id` | `string` | Yes | The secret_id from the OAuth callback |
@@ -119,7 +119,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "external_user_id": "<EXTERNAL_USER_ID>",
+    "customer_name": "<CUSTOMER_NAME>",
     "connector_type": "Tiktok-Marketing",
     "name": "My Tiktok-Marketing Connector",
     "server_side_oauth_secret_id": "<secret_id_from_callback>",
@@ -144,7 +144,7 @@ from airbyte_agent_tiktok_marketing import TiktokMarketingConnector, AirbyteAuth
 
 connector = TiktokMarketingConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
