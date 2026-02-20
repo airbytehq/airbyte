@@ -1,0 +1,367 @@
+/* Removed - using OpenAPI plugin classnames directly */
+
+/* Removed - using OpenAPI plugin classnames directly */
+
+/* Text Input for name and workspaceId */
+.textInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--ifm-color-border);
+  border-radius: 4px;
+  background-color: var(--ifm-background-surface-primary);
+  color: var(--ifm-color-content);
+  font-size: 0.9rem;
+  font-family: "Courier New", monospace;
+  transition: all 0.2s ease;
+}
+
+.textInput:hover {
+  border-color: var(--ifm-color-primary-lighter);
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 2px var(--ifm-color-primary-lightest);
+}
+
+/* Removed - using OpenAPI plugin classnames directly */
+
+/* Combobox Wrapper - Establishes positioning context for dropdown */
+.comboboxWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  z-index: 100;
+}
+
+/* Input Styling */
+.input {
+  width: 300px;
+  padding: 0.5rem 1rem 0.5rem 1rem;
+  border: 1px solid var(--ifm-color-primary-lightest);
+  border-radius: 4px;
+  /* background-color: var(--ifm-color-primary-lightest); */
+  color: var(--ifm-color-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  margin-left: 20px;
+  cursor: pointer;
+}
+
+.input:hover {
+  border-color: var(--ifm-color-primary-lighter);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 2px var(--ifm-color-primary-lightest);
+}
+
+/* Chevron Icon */
+.chevron {
+  position: absolute;
+  right: 0.75rem;
+  pointer-events: auto;
+  font-size: 0.6rem;
+  color: var(--ifm-color-emphasis-600);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dropdown Menu */
+.dropdown {
+  position: absolute;
+  background-color: var(--ifm-background-surface-primary) !important;
+  border: 1px solid var(--ifm-color-border);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 300px;
+  /* Create a new stacking context and ensure background fills the area */
+  isolation: isolate;
+}
+
+/* Dropdown Option */
+.option {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  /* Ensure solid opaque background - use RGB with explicit alpha */
+  background-color: var(--ifm-background-surface-primary) !important;
+  color: var(--ifm-color-content) !important;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  /* Force full coverage of background */
+  box-sizing: border-box;
+  /* Ensure option doesn't inherit opacity from parent */
+  opacity: 1;
+}
+
+.option:first-child {
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.option:last-child {
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.option:hover,
+.option.active {
+  background-color: var(--ifm-color-emphasis-100) !important;
+  color: var(--ifm-color-content) !important;
+  font-weight: bold;
+}
+
+.option.selected {
+  background-color: var(--ifm-color-primary-lightest) !important;
+  color: var(--color-grey-900) !important;
+  font-weight: 600;
+}
+
+.option.selected.active {
+  background-color: var(--ifm-color-primary-lighter) !important;
+  color: var(--color-grey-900) !important;
+}
+
+.optionName {
+  font-weight: 500;
+  color: var(--ifm-color-content);
+}
+
+.optionId {
+  font-size: 0.8rem;
+  color: var(--ifm-color-content) !important;
+  font-family: "Courier New", monospace;
+}
+
+.option.selected .optionId {
+  color: var(--color-grey-900) !important;
+  font-weight: 600;
+}
+
+/* No Results */
+.noResults {
+  padding: 1rem 0.75rem;
+  text-align: center;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.85rem;
+}
+
+/* Configuration Schema Section - using inline styles and plugin classnames */
+
+/* Scrollbar Styling */
+.dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+  background: var(--ifm-color-emphasis-400);
+  border-radius: 3px;
+}
+
+.dropdown::-webkit-scrollbar-thumb:hover {
+  background: var(--ifm-color-emphasis-600);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bodyFields {
+    gap: 1rem;
+  }
+
+  .fieldNameRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .textInput {
+    font-size: 1rem; /* Prevent zoom on iOS */
+  }
+
+  .dropdown {
+    max-height: 250px;
+  }
+
+  .collapsibleContent {
+    padding-left: 0.5rem;
+    border-left-width: 1px;
+  }
+}
+
+/* Dark mode adjustments */
+html[data-theme="dark"] .textInput,
+html[data-theme="dark"] .input {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] .textInput:focus,
+html[data-theme="dark"] .input:focus {
+  box-shadow: 0 0 0 2px var(--ifm-color-primary-lightest);
+}
+
+html[data-theme="dark"] .dropdown {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .configSchema {
+  background-color: var(--ifm-background-surface-primary);
+}
+
+/* Removed - now using OpenAPI plugin classnames directly for perfect consistency */
+
+/* Dropdown Button Styling */
+.dropdownButton {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  color: var(--ifm-color-emphasis-600);
+  transition: color 0.2s ease;
+}
+
+.dropdownButton:hover {
+  color: var(--ifm-color-primary);
+}
+
+/* Configuration Summary Styling */
+.configurationSummary span:first-of-type {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+details[open] .configurationSummary span:first-of-type {
+  transform: rotate(0deg);
+}
+
+details:not([open]) .configurationSummary span:first-of-type {
+  transform: rotate(-90deg);
+}
+
+.mimeTypeTab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid transparent;
+  margin-top: 0 !important;
+  margin-right: 0.5rem;
+  font-weight: var(--ifm-font-weight-bold);
+  font-size: 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: 300ms;
+  background-color: var(--color-white);
+  border-radius: var(--ifm-global-radius);
+}
+
+
+.mimeTypeTab_active {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+/* Disclosure Button Chevron Rotation */
+.disclosureButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  font: inherit;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+/* Chevron icon styling */
+.disclosureButton svg {
+  width: 12px;
+  height:  12px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+/* Rotate chevron when Disclosure is open - using data-[open] equivalent */
+.disclosureButton[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+
+.disclosureButton[aria-expanded="false"] svg {
+  transform: rotate(0deg);
+}
+
+.summaryHeader {
+  font-size: 12px;;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  margin-bottom: 0;
+}
+.required{
+    display: inline-flex;
+    align-items: center;
+    font-size: 10.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--openapi-required);
+    margin-left: 1%;
+    background-color: transparent;
+}
+
+/* Disclosure Panel Transition - mimics Tailwind data-closed states */
+.disclosurePanel {
+  transition: all 200ms ease-in-out;
+  overflow: hidden;
+}
+.disclosurePanel {
+  font-size: 14px;
+}
+
+/* Closed state - hidden and translated up */
+.disclosurePanel[data-closed] {
+  transform: translateY(-1.5rem);
+  opacity: 0;
+}
+
+/* Open state - visible and at normal position */
+.disclosurePanel[data-open] {
+  transform: translateY(0);
+  opacity: 1;
+}

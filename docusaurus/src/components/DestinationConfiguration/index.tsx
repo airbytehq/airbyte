@@ -5,26 +5,20 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import sourceConfigsDataRaw from "@site/src/data/source-configs-dereferenced.json";
+import destinationConfigsDataRaw from "@site/src/data/destination-configs-dereferenced.json";
 import styles from "./index.module.css";
 import { useState, useMemo } from "react";
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import parse, { HTMLReactParserOptions, Element, DOMNode, Text } from 'html-react-parser';
-import { ConfigSchemaProps, SourceConfig, EndpointData, OptionalEndpointData } from './types';
+import { ConfigSchemaProps, DestinationConfig, OptionalEndpointData } from './types';
 
-const sourceConfigsData = sourceConfigsDataRaw as SourceConfig[];
+const destinationConfigsData = destinationConfigsDataRaw as DestinationConfig[];
 
-/**
- * Parse HTML description and convert elements to React components
- * Supports links, bold, italic, and other common HTML elements
- * Links open in new tabs with proper security attributes
- */
 const parseHtmlDescription = (html: string) => {
   const options: HTMLReactParserOptions = {
     replace: (domNode: DOMNode) => {
       if (domNode instanceof Element && domNode.name === "a") {
-        console.log("Parsing anchor element:", domNode);
         const href = domNode.attribs?.href;
         if (href) {
           return (
@@ -34,27 +28,20 @@ const parseHtmlDescription = (html: string) => {
           );
         }
       }
-      // Return undefined to use the default rendering for non-anchor elements
       return undefined;
     },
   };
 
   const result = parse(html, options);
-  console.log("Parsing HTML description:", result);
-  // Ensure we always return an array for consistent rendering
   return Array.isArray(result) ? result : [result];
 };
 
-/**
- * Component to display configuration fields based on selected source type
- * Uses OpenAPI plugin classnames for perfect visual consistency
- */
 const ConfigurationFields = ({
-  selectedSourceId,
+  selectedDestinationId,
   configSchema,
 }: ConfigSchemaProps) => {
   const selectedConfig = configSchema.oneOf?.find(
-    (config) => config.title === selectedSourceId,
+    (config) => config.title === selectedDestinationId,
   );
 
   if (!selectedConfig) {
@@ -64,7 +51,6 @@ const ConfigurationFields = ({
   const requiredFields = selectedConfig.required || [];
   const properties = selectedConfig.properties || {};
 
-  // Sort properties: required first, then optional
   const sortedEntries = Object.entries(properties).sort(([nameA], [nameB]) => {
     const aRequired = requiredFields.includes(nameA);
     const bRequired = requiredFields.includes(nameB);
@@ -111,32 +97,31 @@ const ConfigurationFields = ({
   );
 };
 
-export const SourceConfiguration = ({ endpointData }: { endpointData: OptionalEndpointData }) => {
-  const [sourceConfigs] = useState<SourceConfig[]>(sourceConfigsData);
+export const DestinationConfiguration = ({ endpointData }: { endpointData: OptionalEndpointData }) => {
+  const [destinationConfigs] = useState<DestinationConfig[]>(destinationConfigsData);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSource, setSelectedSource] = useState<SourceConfig | null>(
-    sourceConfigsData.length > 0 ? sourceConfigsData[0] : null,
+  const [selectedDestination, setSelectedDestination] = useState<DestinationConfig | null>(
+    destinationConfigsData.length > 0 ? destinationConfigsData[0] : null,
   );
 
-  const filteredSources = useMemo(() => {
+  const filteredDestinations = useMemo(() => {
     if (!searchQuery.trim()) {
-      return sourceConfigs;
+      return destinationConfigs;
     }
     const query = searchQuery.toLowerCase();
-    return sourceConfigs.filter(
-      (source) =>
-        source.displayName.toLowerCase().includes(query) ||
-        source.id.toLowerCase().includes(query),
+    return destinationConfigs.filter(
+      (destination) =>
+        destination.displayName.toLowerCase().includes(query) ||
+        destination.id.toLowerCase().includes(query),
     );
-  }, [searchQuery, sourceConfigs]);
+  }, [searchQuery, destinationConfigs]);
 
-  const handleSourceSelect = (source: SourceConfig) => {
-    setSelectedSource(source);
+  const handleDestinationSelect = (destination: DestinationConfig) => {
+    setSelectedDestination(destination);
   };
 
-  // Build configurationSchema from sourceConfigs data
   const configurationSchema = {
-    oneOf: sourceConfigs.map(config => ({
+    oneOf: destinationConfigs.map(config => ({
       ...config.schema,
       title: config.id,
     }))
@@ -144,21 +129,20 @@ export const SourceConfiguration = ({ endpointData }: { endpointData: OptionalEn
 
   return (
     <>
-      {sourceConfigs.length > 0 && (
+      {destinationConfigs.length > 0 && (
         <>
-          {/* Combobox for source selection */}
           <Combobox
             immediate
-            value={selectedSource}
-            onChange={handleSourceSelect}
+            value={selectedDestination}
+            onChange={handleDestinationSelect}
             onClose={() => setSearchQuery("")}
           >
             <div className={styles.comboboxWrapper}>
               <ComboboxInput
-                id="source-combobox"
+                id="destination-combobox"
                 className={styles.input}
-                placeholder="Search sources..."
-                displayValue={(source: SourceConfig | null) => source?.id ?? ""}
+                placeholder="Search destinations..."
+                displayValue={(destination: DestinationConfig | null) => destination?.id ?? ""}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(event.target.value)}
                 autoComplete="off"
               />
@@ -168,36 +152,33 @@ export const SourceConfiguration = ({ endpointData }: { endpointData: OptionalEn
             </div>
 
             <ComboboxOptions className={styles.dropdown} anchor="bottom">
-              {filteredSources.length === 0 ? (
+              {filteredDestinations.length === 0 ? (
                 <div className={styles.noResults}>
                   {searchQuery
-                    ? `No sources found for "${searchQuery}"`
-                    : "No sources available"}
+                    ? `No destinations found for "${searchQuery}"`
+                    : "No destinations available"}
                 </div>
               ) : (
-                filteredSources.map((source) => (
+                filteredDestinations.map((destination) => (
                   <ComboboxOption
-                    key={source.id}
-                    value={source}
+                    key={destination.id}
+                    value={destination}
                     className={({ active, selected }: { active: boolean; selected: boolean }) =>
                       `${styles.option} ${active ? styles.active : ""} ${
                         selected ? styles.selected : ""
                       }`
                     }
                   >
-                    <span className={styles.optionId}>{source.id}</span>
+                    <span className={styles.optionId}>{destination.id}</span>
                   </ComboboxOption>
                 ))
               )}
             </ComboboxOptions>
           </Combobox>
 
-          {/* Display configuration schema properties for selected source */}
-
-          {/* Display required properties for selected source */}
-          {selectedSource && configurationSchema.oneOf && (
+          {selectedDestination && configurationSchema.oneOf && (
             <ConfigurationFields
-              selectedSourceId={selectedSource.id}
+              selectedDestinationId={selectedDestination.id}
               configSchema={configurationSchema}
             />
           )}
