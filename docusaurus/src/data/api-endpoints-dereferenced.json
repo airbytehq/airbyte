@@ -114,7 +114,8 @@
       }
     },
     "hasRequestConfiguration": true,
-    "hasResponseConfiguration": true
+    "hasResponseConfiguration": true,
+    "isDestination": true
   },
   "get-destination": {
     "operationId": "getDestination",
@@ -204,7 +205,8 @@
       }
     },
     "hasRequestConfiguration": false,
-    "hasResponseConfiguration": true
+    "hasResponseConfiguration": true,
+    "isDestination": true
   },
   "put-destination": {
     "operationId": "putDestination",
@@ -313,7 +315,8 @@
       }
     },
     "hasRequestConfiguration": true,
-    "hasResponseConfiguration": true
+    "hasResponseConfiguration": true,
+    "isDestination": true
   },
   "patch-destination": {
     "operationId": "patchDestination",
@@ -422,7 +425,8 @@
       }
     },
     "hasRequestConfiguration": true,
-    "hasResponseConfiguration": true
+    "hasResponseConfiguration": true,
+    "isDestination": true
   },
   "create-source": {
     "operationId": "createSource",
@@ -540,7 +544,8 @@
       }
     },
     "hasRequestConfiguration": true,
-    "hasResponseConfiguration": true
+    "hasResponseConfiguration": true,
+    "isDestination": false
   },
   "get-source": {
     "operationId": "getSource",
@@ -624,7 +629,8 @@
       }
     },
     "hasRequestConfiguration": false,
-    "hasResponseConfiguration": true
+    "hasResponseConfiguration": true,
+    "isDestination": false
   },
   "put-source": {
     "operationId": "putSource",
@@ -727,7 +733,8 @@
       }
     },
     "hasRequestConfiguration": true,
-    "hasResponseConfiguration": true
+    "hasResponseConfiguration": true,
+    "isDestination": false
   },
   "patch-source": {
     "operationId": "patchSource",
@@ -842,6 +849,7 @@
       }
     },
     "hasRequestConfiguration": true,
-    "hasResponseConfiguration": true
+    "hasResponseConfiguration": true,
+    "isDestination": false
   }
 }

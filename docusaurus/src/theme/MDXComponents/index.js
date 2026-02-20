@@ -11,6 +11,8 @@ import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
 import { SpecSchema } from "@site/src/components/SpecSchema";
 import { SourceRequestSchema } from "@site/src/components/SourceRequestSchema";
 import { SourceResponseSchema } from "@site/src/components/SourceResponseSchema";
+import { DestinationRequestSchema } from "@site/src/components/DestinationRequestSchema";
+import { DestinationResponseSchema } from "@site/src/components/DestinationResponseSchema";
 import MDXComponents from "@theme-original/MDXComponents";
 import { CardWithIcon } from "../../components/Card/Card";
 import { CopyPageButton } from "../../components/CopyPageButton/CopyPageButton";
@@ -33,6 +35,8 @@ export default {
   SpecSchema,
   SourceRequestSchema,
   SourceResponseSchema,
+  DestinationRequestSchema,
+  DestinationResponseSchema,
   PyAirbyteExample,
   ProductInformation,
   Details,
