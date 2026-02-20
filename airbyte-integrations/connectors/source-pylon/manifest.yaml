@@ -416,34 +416,6 @@ definitions:
         schema:
           $ref: "#/schemas/user_roles"
 
-    audit_logs:
-      type: DeclarativeStream
-      name: audit_logs
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: audit-logs
-          http_method: GET
-          request_parameters:
-            limit: "100"
-          error_handler:
-            $ref: "#/definitions/error_handler"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-        paginator:
-          $ref: "#/definitions/cursor_paginator"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/audit_logs"
-
     activity_types:
       type: DeclarativeStream
       name: activity_types
@@ -543,7 +515,6 @@ streams:
   - $ref: "#/definitions/streams/knowledge_base_articles"
   - $ref: "#/definitions/streams/ticket_forms"
   - $ref: "#/definitions/streams/user_roles"
-  - $ref: "#/definitions/streams/audit_logs"
   - $ref: "#/definitions/streams/activity_types"
   - $ref: "#/definitions/streams/issue_statuses"
 
@@ -1169,60 +1140,6 @@ schemas:
         type:
           - "null"
           - string
-
-  audit_logs:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type: string
-      action:
-        type:
-          - "null"
-          - string
-      action_happened_at:
-        type:
-          - "null"
-          - string
-      created_at:
-        type:
-          - "null"
-          - string
-      object_id:
-        type:
-          - "null"
-          - string
-      object_type:
-        type:
-          - "null"
-          - string
-      source:
-        type:
-          - "null"
-          - string
-      link:
-        type:
-          - "null"
-          - string
-      actor_user_id:
-        type:
-          - "null"
-          - string
-      actor_contact_id:
-        type:
-          - "null"
-          - string
-      attributes:
-        type:
-          - "null"
-          - object
-        additionalProperties: true
-      metadata:
-        type:
-          - "null"
-          - object
-        additionalProperties: true
 
   activity_types:
     type: object

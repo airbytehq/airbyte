@@ -23,7 +23,6 @@ This Source is capable of syncing the following Streams:
 - Knowledge Base Articles
 - Ticket Forms
 - User Roles
-- Audit Logs
 - Activity Types
 - Issue Statuses
 
@@ -38,8 +37,6 @@ This Source is capable of syncing the following Streams:
 ### Performance considerations
 
 The Pylon API enforces rate limits. The connector uses exponential backoff to handle rate-limited responses (HTTP 429). Under normal usage volumes, the connector should not encounter sustained rate limiting.
-
-The `audit_logs` stream requires a specific Pylon plan. Accounts without the required plan will receive HTTP 403 errors for this stream.
 
 ## Requirements
 
