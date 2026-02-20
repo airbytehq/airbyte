@@ -25,8 +25,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: accounts
           http_method: GET
-          request_parameters:
-            limit: "100"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -53,8 +51,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: contacts
           http_method: GET
-          request_parameters:
-            limit: "100"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -90,7 +86,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -141,7 +137,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -175,7 +171,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -209,7 +205,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -235,7 +231,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -261,7 +257,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -289,7 +285,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
         partition_router:
           type: ListPartitionRouter
           values:
@@ -322,7 +318,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -339,8 +335,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: "knowledge-bases/{{ stream_partition.knowledge_base_id }}/articles"
           http_method: GET
-          request_parameters:
-            limit: "100"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -384,7 +378,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -410,7 +404,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -436,7 +430,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -462,7 +456,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -496,8 +490,13 @@ definitions:
       type: RequestOption
       inject_into: request_parameter
       field_name: cursor
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
     pagination_strategy:
       type: CursorPagination
+      page_size: 999
       cursor_value: "{{ response.get('pagination', {}).get('cursor', '') }}"
       stop_condition: "{{ not response.get('pagination', {}).get('has_next_page', False) }}"
 
