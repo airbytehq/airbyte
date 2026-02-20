@@ -17,17 +17,13 @@
         },
         "azure_blob_storage_account_name": {
           "description": "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>.",
-          "examples": [
-            "mystorageaccount"
-          ],
+          "examples": ["mystorageaccount"],
           "title": "Azure Blob Storage Account Name",
           "type": "string"
         },
         "azure_blob_storage_container_name": {
           "description": "The name of the Azure Blob Storage Container. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#containers\">here</a>.",
-          "examples": [
-            "mycontainer"
-          ],
+          "examples": ["mycontainer"],
           "title": "Azure Blob Storage Container Name",
           "type": "string"
         },
@@ -45,9 +41,7 @@
         "azure_client_id": {
           "airbyte_secret": false,
           "description": "The Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication.",
-          "examples": [
-            "87654321-4321-4321-4321-210987654321"
-          ],
+          "examples": ["87654321-4321-4321-4321-210987654321"],
           "title": "Azure Client ID",
           "type": "string",
           "x-speakeasy-param-sensitive": true
@@ -56,9 +50,7 @@
           "airbyte_secret": true,
           "always_show": true,
           "description": "The Azure Active Directory (Entra ID) client secret. Required for Entra ID authentication.",
-          "examples": [
-            "your-client-secret"
-          ],
+          "examples": ["your-client-secret"],
           "title": "Azure Client Secret",
           "type": "string",
           "x-speakeasy-param-sensitive": true
@@ -66,9 +58,7 @@
         "azure_tenant_id": {
           "airbyte_secret": false,
           "description": "The Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication.",
-          "examples": [
-            "12345678-1234-1234-1234-123456789012"
-          ],
+          "examples": ["12345678-1234-1234-1234-123456789012"],
           "title": "Azure Tenant ID",
           "type": "string",
           "x-speakeasy-param-sensitive": true
@@ -81,25 +71,17 @@
               "properties": {
                 "flattening": {
                   "default": "No flattening",
-                  "enum": [
-                    "No flattening",
-                    "Root level flattening"
-                  ],
+                  "enum": ["No flattening", "Root level flattening"],
                   "title": "Flattening",
                   "type": "string"
                 },
                 "format_type": {
                   "default": "CSV",
-                  "enum": [
-                    "CSV"
-                  ],
+                  "enum": ["CSV"],
                   "type": "string"
                 }
               },
-              "required": [
-                "format_type",
-                "flattening"
-              ],
+              "required": ["format_type", "flattening"],
               "title": "CSV: Comma-Separated Values",
               "type": "object"
             },
@@ -108,24 +90,17 @@
               "properties": {
                 "flattening": {
                   "default": "No flattening",
-                  "enum": [
-                    "No flattening",
-                    "Root level flattening"
-                  ],
+                  "enum": ["No flattening", "Root level flattening"],
                   "title": "Flattening",
                   "type": "string"
                 },
                 "format_type": {
                   "default": "JSONL",
-                  "enum": [
-                    "JSONL"
-                  ],
+                  "enum": ["JSONL"],
                   "type": "string"
                 }
               },
-              "required": [
-                "format_type"
-              ],
+              "required": ["format_type"],
               "title": "JSON Lines: Newline-delimited JSON",
               "type": "object"
             }
@@ -147,9 +122,7 @@
         "destinationType": {
           "title": "azure-blob-storage",
           "const": "azure-blob-storage",
-          "enum": [
-            "azure-blob-storage"
-          ],
+          "enum": ["azure-blob-storage"],
           "order": 0,
           "type": "string"
         }
@@ -187,10 +160,7 @@
           "always_show": true,
           "default": "Hard delete",
           "description": "Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.",
-          "enum": [
-            "Hard delete",
-            "Soft delete"
-          ],
+          "enum": ["Hard delete", "Soft delete"],
           "group": "sync_behavior",
           "order": 5,
           "title": "CDC deletion mode",
@@ -285,15 +255,11 @@
               "properties": {
                 "method": {
                   "default": "Standard",
-                  "enum": [
-                    "Standard"
-                  ],
+                  "enum": ["Standard"],
                   "type": "string"
                 }
               },
-              "required": [
-                "method"
-              ],
+              "required": ["method"],
               "title": "Batched Standard Inserts",
               "type": "object"
             },
@@ -309,17 +275,13 @@
                       "properties": {
                         "credential_type": {
                           "default": "HMAC_KEY",
-                          "enum": [
-                            "HMAC_KEY"
-                          ],
+                          "enum": ["HMAC_KEY"],
                           "type": "string"
                         },
                         "hmac_key_access_id": {
                           "airbyte_secret": true,
                           "description": "HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
-                          "examples": [
-                            "1234567890abcdefghij1234"
-                          ],
+                          "examples": ["1234567890abcdefghij1234"],
                           "order": 0,
                           "title": "HMAC Access Key",
                           "type": "string",
@@ -352,18 +314,14 @@
                 },
                 "gcs_bucket_name": {
                   "description": "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
-                  "examples": [
-                    "airbyte_sync"
-                  ],
+                  "examples": ["airbyte_sync"],
                   "order": 1,
                   "title": "GCS Bucket Name",
                   "type": "string"
                 },
                 "gcs_bucket_path": {
                   "description": "Directory under the GCS bucket where data will be written.",
-                  "examples": [
-                    "data_sync/test"
-                  ],
+                  "examples": ["data_sync/test"],
                   "order": 2,
                   "title": "GCS Bucket Path",
                   "type": "string"
@@ -381,9 +339,7 @@
                 },
                 "method": {
                   "default": "GCS Staging",
-                  "enum": [
-                    "GCS Staging"
-                  ],
+                  "enum": ["GCS Staging"],
                   "type": "string"
                 }
               },
@@ -418,9 +374,7 @@
         "destinationType": {
           "title": "bigquery",
           "const": "bigquery",
-          "enum": [
-            "bigquery"
-          ],
+          "enum": ["bigquery"],
           "order": 0,
           "type": "string"
         }
@@ -488,10 +442,7 @@
         "protocol": {
           "default": "https",
           "description": "Protocol for the database connection string.",
-          "enum": [
-            "http",
-            "https"
-          ],
+          "enum": ["http", "https"],
           "order": 2,
           "title": "Protocol",
           "type": "string"
@@ -511,15 +462,11 @@
               "properties": {
                 "tunnel_method": {
                   "default": "NO_TUNNEL",
-                  "enum": [
-                    "NO_TUNNEL"
-                  ],
+                  "enum": ["NO_TUNNEL"],
                   "type": "string"
                 }
               },
-              "required": [
-                "tunnel_method"
-              ],
+              "required": ["tunnel_method"],
               "title": "No Tunnel",
               "type": "object"
             },
@@ -544,9 +491,7 @@
                 },
                 "tunnel_method": {
                   "default": "SSH_KEY_AUTH",
-                  "enum": [
-                    "SSH_KEY_AUTH"
-                  ],
+                  "enum": ["SSH_KEY_AUTH"],
                   "type": "string"
                 },
                 "tunnel_port": {
@@ -587,9 +532,7 @@
                 },
                 "tunnel_method": {
                   "default": "SSH_PASSWORD_AUTH",
-                  "enum": [
-                    "SSH_PASSWORD_AUTH"
-                  ],
+                  "enum": ["SSH_PASSWORD_AUTH"],
                   "type": "string"
                 },
                 "tunnel_port": {
@@ -641,9 +584,7 @@
         "destinationType": {
           "title": "clickhouse",
           "const": "clickhouse",
-          "enum": [
-            "clickhouse"
-          ],
+          "enum": ["clickhouse"],
           "order": 0,
           "type": "string"
         }
@@ -690,10 +631,7 @@
               "x-speakeasy-param-sensitive": true
             }
           },
-          "required": [
-            "siteId",
-            "apiKey"
-          ],
+          "required": ["siteId", "apiKey"],
           "title": "Credentials",
           "type": "object"
         },
@@ -704,15 +642,11 @@
               "properties": {
                 "storage_type": {
                   "default": "None",
-                  "enum": [
-                    "None"
-                  ],
+                  "enum": ["None"],
                   "type": "string"
                 }
               },
-              "required": [
-                "storage_type"
-              ],
+              "required": ["storage_type"],
               "title": "None",
               "type": "object"
             },
@@ -723,9 +657,7 @@
                   "airbyte_secret": true,
                   "always_show": true,
                   "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
-                  "examples": [
-                    "A012345678910EXAMPLE"
-                  ],
+                  "examples": ["A012345678910EXAMPLE"],
                   "order": 1,
                   "title": "Access Key ID",
                   "type": "string",
@@ -733,9 +665,7 @@
                 },
                 "bucket_path": {
                   "description": "All files in the bucket will be prefixed by this.",
-                  "examples": [
-                    "prefix/"
-                  ],
+                  "examples": ["prefix/"],
                   "order": 7,
                   "title": "Prefix Path in the Bucket",
                   "type": "string"
@@ -751,9 +681,7 @@
                 },
                 "s3_bucket_name": {
                   "description": "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>.",
-                  "examples": [
-                    "airbyte_sync"
-                  ],
+                  "examples": ["airbyte_sync"],
                   "order": 4,
                   "title": "S3 Bucket Name",
                   "type": "string"
@@ -797,18 +725,14 @@
                     "us-west-1",
                     "us-west-2"
                   ],
-                  "examples": [
-                    "us-east-1"
-                  ],
+                  "examples": ["us-east-1"],
                   "order": 5,
                   "title": "S3 Bucket Region",
                   "type": "string"
                 },
                 "s3_endpoint": {
                   "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
-                  "examples": [
-                    "http://localhost:9000"
-                  ],
+                  "examples": ["http://localhost:9000"],
                   "order": 6,
                   "title": "S3 Endpoint",
                   "type": "string"
@@ -817,9 +741,7 @@
                   "airbyte_secret": true,
                   "always_show": true,
                   "description": "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
-                  "examples": [
-                    "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
-                  ],
+                  "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
                   "order": 2,
                   "title": "Secret Access Key",
                   "type": "string",
@@ -827,9 +749,7 @@
                 },
                 "storage_type": {
                   "default": "S3",
-                  "enum": [
-                    "S3"
-                  ],
+                  "enum": ["S3"],
                   "type": "string"
                 }
               },
@@ -850,17 +770,12 @@
         "destinationType": {
           "title": "customer-io",
           "const": "customer-io",
-          "enum": [
-            "customer-io"
-          ],
+          "enum": ["customer-io"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "credentials",
-        "destinationType"
-      ],
+      "required": ["credentials", "destinationType"],
       "title": "Customer Io Specification",
       "type": "object"
     }
@@ -887,9 +802,7 @@
                   "const": "OAUTH",
                   "order": 0,
                   "type": "string",
-                  "enum": [
-                    "OAUTH"
-                  ]
+                  "enum": ["OAUTH"]
                 },
                 "client_id": {
                   "order": 1,
@@ -902,11 +815,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "auth_type",
-                "client_id",
-                "secret"
-              ],
+              "required": ["auth_type", "client_id", "secret"],
               "title": "OAuth2 (Recommended)"
             },
             {
@@ -915,9 +824,7 @@
                   "const": "BASIC",
                   "order": 0,
                   "type": "string",
-                  "enum": [
-                    "BASIC"
-                  ]
+                  "enum": ["BASIC"]
                 },
                 "personal_access_token": {
                   "airbyte_secret": true,
@@ -926,10 +833,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "auth_type",
-                "personal_access_token"
-              ],
+              "required": ["auth_type", "personal_access_token"],
               "title": "Personal Access Token"
             }
           ],
@@ -945,18 +849,14 @@
         },
         "hostname": {
           "description": "Databricks Cluster Server Hostname.",
-          "examples": [
-            "abc-12345678-wxyz.cloud.databricks.com"
-          ],
+          "examples": ["abc-12345678-wxyz.cloud.databricks.com"],
           "order": 2,
           "title": "Server Hostname",
           "type": "string"
         },
         "http_path": {
           "description": "Databricks Cluster HTTP Path.",
-          "examples": [
-            "sql/1.0/warehouses/0000-1111111-abcd90"
-          ],
+          "examples": ["sql/1.0/warehouses/0000-1111111-abcd90"],
           "order": 3,
           "title": "HTTP Path",
           "type": "string"
@@ -964,9 +864,7 @@
         "port": {
           "default": "443",
           "description": "Databricks Cluster Port.",
-          "examples": [
-            "443"
-          ],
+          "examples": ["443"],
           "order": 4,
           "title": "Port",
           "type": "string"
@@ -988,9 +886,7 @@
         "schema": {
           "default": "default",
           "description": "The default schema tables are written. If not specified otherwise, the \"default\" will be used.",
-          "examples": [
-            "default"
-          ],
+          "examples": ["default"],
           "order": 6,
           "title": "Default Schema",
           "type": "string"
@@ -998,9 +894,7 @@
         "destinationType": {
           "title": "databricks",
           "const": "databricks",
-          "enum": [
-            "databricks"
-          ],
+          "enum": ["databricks"],
           "order": 0,
           "type": "string"
         }
@@ -1054,9 +948,7 @@
                 },
                 "type": {
                   "default": "OAuth",
-                  "enum": [
-                    "OAuth"
-                  ],
+                  "enum": ["OAuth"],
                   "type": "string"
                 }
               },
@@ -1081,15 +973,11 @@
               "properties": {
                 "storage_type": {
                   "default": "None",
-                  "enum": [
-                    "None"
-                  ],
+                  "enum": ["None"],
                   "type": "string"
                 }
               },
-              "required": [
-                "storage_type"
-              ],
+              "required": ["storage_type"],
               "title": "None",
               "type": "object"
             },
@@ -1100,9 +988,7 @@
                   "airbyte_secret": true,
                   "always_show": true,
                   "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
-                  "examples": [
-                    "A012345678910EXAMPLE"
-                  ],
+                  "examples": ["A012345678910EXAMPLE"],
                   "order": 1,
                   "title": "Access Key ID",
                   "type": "string",
@@ -1110,9 +996,7 @@
                 },
                 "bucket_path": {
                   "description": "All files in the bucket will be prefixed by this.",
-                  "examples": [
-                    "prefix/"
-                  ],
+                  "examples": ["prefix/"],
                   "order": 7,
                   "title": "Prefix Path in the Bucket",
                   "type": "string"
@@ -1128,9 +1012,7 @@
                 },
                 "s3_bucket_name": {
                   "description": "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>.",
-                  "examples": [
-                    "airbyte_sync"
-                  ],
+                  "examples": ["airbyte_sync"],
                   "order": 4,
                   "title": "S3 Bucket Name",
                   "type": "string"
@@ -1174,18 +1056,14 @@
                     "us-west-1",
                     "us-west-2"
                   ],
-                  "examples": [
-                    "us-east-1"
-                  ],
+                  "examples": ["us-east-1"],
                   "order": 5,
                   "title": "S3 Bucket Region",
                   "type": "string"
                 },
                 "s3_endpoint": {
                   "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
-                  "examples": [
-                    "http://localhost:9000"
-                  ],
+                  "examples": ["http://localhost:9000"],
                   "order": 6,
                   "title": "S3 Endpoint",
                   "type": "string"
@@ -1194,9 +1072,7 @@
                   "airbyte_secret": true,
                   "always_show": true,
                   "description": "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
-                  "examples": [
-                    "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
-                  ],
+                  "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
                   "order": 2,
                   "title": "Secret Access Key",
                   "type": "string",
@@ -1204,9 +1080,7 @@
                 },
                 "storage_type": {
                   "default": "S3",
-                  "enum": [
-                    "S3"
-                  ],
+                  "enum": ["S3"],
                   "type": "string"
                 }
               },
@@ -1227,17 +1101,12 @@
         "destinationType": {
           "title": "hubspot",
           "const": "hubspot",
-          "enum": [
-            "hubspot"
-          ],
+          "enum": ["hubspot"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "credentials",
-        "destinationType"
-      ],
+      "required": ["credentials", "destinationType"],
       "title": "Hub Spot Specification",
       "type": "object"
     }
@@ -1276,9 +1145,7 @@
                 "mode": {
                   "const": "openai",
                   "default": "openai",
-                  "enum": [
-                    "openai"
-                  ],
+                  "enum": ["openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -1289,10 +1156,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "mode"
-              ],
+              "required": ["openai_key", "mode"],
               "title": "OpenAI",
               "type": "object"
             },
@@ -1308,17 +1172,12 @@
                 "mode": {
                   "const": "cohere",
                   "default": "cohere",
-                  "enum": [
-                    "cohere"
-                  ],
+                  "enum": ["cohere"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "cohere_key",
-                "mode"
-              ],
+              "required": ["cohere_key", "mode"],
               "title": "Cohere",
               "type": "object"
             },
@@ -1328,16 +1187,12 @@
                 "mode": {
                   "const": "fake",
                   "default": "fake",
-                  "enum": [
-                    "fake"
-                  ],
+                  "enum": ["fake"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "Fake",
               "type": "object"
             },
@@ -1346,26 +1201,20 @@
               "properties": {
                 "api_base": {
                   "description": "The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "https://your-resource-name.openai.azure.com"
-                  ],
+                  "examples": ["https://your-resource-name.openai.azure.com"],
                   "title": "Resource base URL",
                   "type": "string"
                 },
                 "deployment": {
                   "description": "The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "your-resource-name"
-                  ],
+                  "examples": ["your-resource-name"],
                   "title": "Deployment",
                   "type": "string"
                 },
                 "mode": {
                   "const": "azure_openai",
                   "default": "azure_openai",
-                  "enum": [
-                    "azure_openai"
-                  ],
+                  "enum": ["azure_openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -1377,12 +1226,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "api_base",
-                "deployment",
-                "mode"
-              ],
+              "required": ["openai_key", "api_base", "deployment", "mode"],
               "title": "Azure OpenAI",
               "type": "object"
             },
@@ -1398,45 +1242,32 @@
                 },
                 "base_url": {
                   "description": "The base URL for your OpenAI-compatible service",
-                  "examples": [
-                    "https://your-service-name.com"
-                  ],
+                  "examples": ["https://your-service-name.com"],
                   "title": "Base URL",
                   "type": "string"
                 },
                 "dimensions": {
                   "description": "The number of dimensions the embedding model is generating",
-                  "examples": [
-                    1536,
-                    384
-                  ],
+                  "examples": [1536, 384],
                   "title": "Embedding dimensions",
                   "type": "integer"
                 },
                 "mode": {
                   "const": "openai_compatible",
                   "default": "openai_compatible",
-                  "enum": [
-                    "openai_compatible"
-                  ],
+                  "enum": ["openai_compatible"],
                   "title": "Mode",
                   "type": "string"
                 },
                 "model_name": {
                   "default": "text-embedding-ada-002",
                   "description": "The name of the model to use for embedding",
-                  "examples": [
-                    "text-embedding-ada-002"
-                  ],
+                  "examples": ["text-embedding-ada-002"],
                   "title": "Model name",
                   "type": "string"
                 }
               },
-              "required": [
-                "base_url",
-                "dimensions",
-                "mode"
-              ],
+              "required": ["base_url", "dimensions", "mode"],
               "title": "OpenAI-compatible",
               "type": "object"
             }
@@ -1457,9 +1288,7 @@
                     "mode": {
                       "const": "token",
                       "default": "token",
-                      "enum": [
-                        "token"
-                      ],
+                      "enum": ["token"],
                       "title": "Mode",
                       "type": "string"
                     },
@@ -1471,10 +1300,7 @@
                       "x-speakeasy-param-sensitive": true
                     }
                   },
-                  "required": [
-                    "token",
-                    "mode"
-                  ],
+                  "required": ["token", "mode"],
                   "title": "API Token",
                   "type": "object"
                 },
@@ -1484,9 +1310,7 @@
                     "mode": {
                       "const": "username_password",
                       "default": "username_password",
-                      "enum": [
-                        "username_password"
-                      ],
+                      "enum": ["username_password"],
                       "title": "Mode",
                       "type": "string"
                     },
@@ -1505,11 +1329,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "username",
-                    "password",
-                    "mode"
-                  ],
+                  "required": ["username", "password", "mode"],
                   "title": "Username/Password",
                   "type": "object"
                 },
@@ -1519,16 +1339,12 @@
                     "mode": {
                       "const": "no_auth",
                       "default": "no_auth",
-                      "enum": [
-                        "no_auth"
-                      ],
+                      "enum": ["no_auth"],
                       "title": "Mode",
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "No auth",
                   "type": "object"
                 }
@@ -1573,11 +1389,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "host",
-            "collection",
-            "auth"
-          ],
+          "required": ["host", "collection", "auth"],
           "title": "Indexing",
           "type": "object"
         },
@@ -1620,10 +1432,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "from_field",
-                  "to_field"
-                ],
+                "required": ["from_field", "to_field"],
                 "title": "FieldNameMappingConfigModel",
                 "type": "object"
               },
@@ -1634,11 +1443,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
-              "examples": [
-                "age",
-                "user",
-                "user.name"
-              ],
+              "examples": ["age", "user", "user.name"],
               "items": {
                 "type": "string"
               },
@@ -1649,11 +1454,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
-              "examples": [
-                "text",
-                "user.name",
-                "users.*.name"
-              ],
+              "examples": ["text", "user.name", "users.*.name"],
               "items": {
                 "type": "string"
               },
@@ -1675,19 +1476,12 @@
                     "mode": {
                       "const": "separator",
                       "default": "separator",
-                      "enum": [
-                        "separator"
-                      ],
+                      "enum": ["separator"],
                       "title": "Mode",
                       "type": "string"
                     },
                     "separators": {
-                      "default": [
-                        "\"\\n\\n\"",
-                        "\"\\n\"",
-                        "\" \"",
-                        "\"\""
-                      ],
+                      "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
                       "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
                       "items": {
                         "type": "string"
@@ -1696,9 +1490,7 @@
                       "type": "array"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Separator",
                   "type": "object"
                 },
@@ -1708,9 +1500,7 @@
                     "mode": {
                       "const": "markdown",
                       "default": "markdown",
-                      "enum": [
-                        "markdown"
-                      ],
+                      "enum": ["markdown"],
                       "title": "Mode",
                       "type": "string"
                     },
@@ -1723,9 +1513,7 @@
                       "type": "integer"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Markdown header",
                   "type": "object"
                 },
@@ -1758,17 +1546,12 @@
                     "mode": {
                       "const": "code",
                       "default": "code",
-                      "enum": [
-                        "code"
-                      ],
+                      "enum": ["code"],
                       "title": "Mode",
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "language",
-                    "mode"
-                  ],
+                  "required": ["language", "mode"],
                   "title": "By Programming Language",
                   "type": "object"
                 }
@@ -1777,28 +1560,19 @@
               "type": "object"
             }
           },
-          "required": [
-            "chunk_size"
-          ],
+          "required": ["chunk_size"],
           "title": "ProcessingConfigModel",
           "type": "object"
         },
         "destinationType": {
           "title": "milvus",
           "const": "milvus",
-          "enum": [
-            "milvus"
-          ],
+          "enum": ["milvus"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "embedding",
-        "processing",
-        "indexing",
-        "destinationType"
-      ],
+      "required": ["embedding", "processing", "indexing", "destinationType"],
       "title": "Destination Config",
       "type": "object"
     }
@@ -1836,15 +1610,11 @@
               "properties": {
                 "load_type": {
                   "default": "INSERT",
-                  "enum": [
-                    "INSERT"
-                  ],
+                  "enum": ["INSERT"],
                   "type": "string"
                 }
               },
-              "required": [
-                "load_type"
-              ],
+              "required": ["load_type"],
               "title": "Insert Load",
               "type": "object"
             },
@@ -1865,26 +1635,20 @@
                 },
                 "azure_blob_storage_account_name": {
                   "description": "The name of the Azure Blob Storage account. See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#storage-accounts",
-                  "examples": [
-                    "mystorageaccount"
-                  ],
+                  "examples": ["mystorageaccount"],
                   "title": "Azure Blob Storage Account Name",
                   "type": "string"
                 },
                 "azure_blob_storage_container_name": {
                   "description": "The name of the Azure Blob Storage container. See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#containers",
-                  "examples": [
-                    "mycontainer"
-                  ],
+                  "examples": ["mycontainer"],
                   "title": "Azure Blob Storage Container Name",
                   "type": "string"
                 },
                 "bulk_load_data_source": {
                   "always_show": true,
                   "description": "Specifies the external data source name configured in MSSQL, which references the Azure Blob container. See: https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql",
-                  "examples": [
-                    "MyAzureBlobStorage"
-                  ],
+                  "examples": ["MyAzureBlobStorage"],
                   "order": 5,
                   "title": "BULK Load Data Source",
                   "type": "string"
@@ -1893,18 +1657,14 @@
                   "always_show": false,
                   "default": false,
                   "description": "When enabled, Airbyte will validate all values before loading them into the destination table. This provides stronger data integrity guarantees but may significantly impact performance.",
-                  "examples": [
-                    "false"
-                  ],
+                  "examples": ["false"],
                   "order": 6,
                   "title": "Pre-Load Value Validation",
                   "type": "boolean"
                 },
                 "load_type": {
                   "default": "BULK",
-                  "enum": [
-                    "BULK"
-                  ],
+                  "enum": ["BULK"],
                   "type": "string"
                 },
                 "shared_access_signature": {
@@ -1943,9 +1703,7 @@
         },
         "port": {
           "description": "The port of the MSSQL database.",
-          "examples": [
-            "1433"
-          ],
+          "examples": ["1433"],
           "maximum": 65536,
           "minimum": 0,
           "order": 1,
@@ -1955,9 +1713,7 @@
         "schema": {
           "default": "public",
           "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
-          "examples": [
-            "public"
-          ],
+          "examples": ["public"],
           "order": 3,
           "title": "Default Schema",
           "type": "string"
@@ -1971,15 +1727,11 @@
               "properties": {
                 "name": {
                   "default": "unencrypted",
-                  "enum": [
-                    "unencrypted"
-                  ],
+                  "enum": ["unencrypted"],
                   "type": "string"
                 }
               },
-              "required": [
-                "name"
-              ],
+              "required": ["name"],
               "title": "Unencrypted",
               "type": "object"
             },
@@ -1989,15 +1741,11 @@
               "properties": {
                 "name": {
                   "default": "encrypted_trust_server_certificate",
-                  "enum": [
-                    "encrypted_trust_server_certificate"
-                  ],
+                  "enum": ["encrypted_trust_server_certificate"],
                   "type": "string"
                 }
               },
-              "required": [
-                "name"
-              ],
+              "required": ["name"],
               "title": "Encrypted (trust server certificate)",
               "type": "object"
             },
@@ -2013,9 +1761,7 @@
                 },
                 "name": {
                   "default": "encrypted_verify_certificate",
-                  "enum": [
-                    "encrypted_verify_certificate"
-                  ],
+                  "enum": ["encrypted_verify_certificate"],
                   "type": "string"
                 },
                 "trustStoreName": {
@@ -2033,9 +1779,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "name"
-              ],
+              "required": ["name"],
               "title": "Encrypted (verify certificate)",
               "type": "object"
             }
@@ -2053,15 +1797,11 @@
               "properties": {
                 "tunnel_method": {
                   "default": "NO_TUNNEL",
-                  "enum": [
-                    "NO_TUNNEL"
-                  ],
+                  "enum": ["NO_TUNNEL"],
                   "type": "string"
                 }
               },
-              "required": [
-                "tunnel_method"
-              ],
+              "required": ["tunnel_method"],
               "title": "No Tunnel",
               "type": "object"
             },
@@ -2086,9 +1826,7 @@
                 },
                 "tunnel_method": {
                   "default": "SSH_KEY_AUTH",
-                  "enum": [
-                    "SSH_KEY_AUTH"
-                  ],
+                  "enum": ["SSH_KEY_AUTH"],
                   "type": "string"
                 },
                 "tunnel_port": {
@@ -2129,9 +1867,7 @@
                 },
                 "tunnel_method": {
                   "default": "SSH_PASSWORD_AUTH",
-                  "enum": [
-                    "SSH_PASSWORD_AUTH"
-                  ],
+                  "enum": ["SSH_PASSWORD_AUTH"],
                   "type": "string"
                 },
                 "tunnel_port": {
@@ -2182,9 +1918,7 @@
         "destinationType": {
           "title": "mssql",
           "const": "mssql",
-          "enum": [
-            "mssql"
-          ],
+          "enum": ["mssql"],
           "order": 0,
           "type": "string"
         }
@@ -2237,9 +1971,7 @@
                 "mode": {
                   "const": "openai",
                   "default": "openai",
-                  "enum": [
-                    "openai"
-                  ],
+                  "enum": ["openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -2250,10 +1982,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "mode"
-              ],
+              "required": ["openai_key", "mode"],
               "title": "OpenAI",
               "type": "object"
             },
@@ -2269,17 +1998,12 @@
                 "mode": {
                   "const": "cohere",
                   "default": "cohere",
-                  "enum": [
-                    "cohere"
-                  ],
+                  "enum": ["cohere"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "cohere_key",
-                "mode"
-              ],
+              "required": ["cohere_key", "mode"],
               "title": "Cohere",
               "type": "object"
             },
@@ -2289,16 +2013,12 @@
                 "mode": {
                   "const": "fake",
                   "default": "fake",
-                  "enum": [
-                    "fake"
-                  ],
+                  "enum": ["fake"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "Fake",
               "type": "object"
             },
@@ -2307,26 +2027,20 @@
               "properties": {
                 "api_base": {
                   "description": "The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "https://your-resource-name.openai.azure.com"
-                  ],
+                  "examples": ["https://your-resource-name.openai.azure.com"],
                   "title": "Resource base URL",
                   "type": "string"
                 },
                 "deployment": {
                   "description": "The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "your-resource-name"
-                  ],
+                  "examples": ["your-resource-name"],
                   "title": "Deployment",
                   "type": "string"
                 },
                 "mode": {
                   "const": "azure_openai",
                   "default": "azure_openai",
-                  "enum": [
-                    "azure_openai"
-                  ],
+                  "enum": ["azure_openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -2338,12 +2052,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "api_base",
-                "deployment",
-                "mode"
-              ],
+              "required": ["openai_key", "api_base", "deployment", "mode"],
               "title": "Azure OpenAI",
               "type": "object"
             },
@@ -2359,45 +2068,32 @@
                 },
                 "base_url": {
                   "description": "The base URL for your OpenAI-compatible service",
-                  "examples": [
-                    "https://your-service-name.com"
-                  ],
+                  "examples": ["https://your-service-name.com"],
                   "title": "Base URL",
                   "type": "string"
                 },
                 "dimensions": {
                   "description": "The number of dimensions the embedding model is generating",
-                  "examples": [
-                    1536,
-                    384
-                  ],
+                  "examples": [1536, 384],
                   "title": "Embedding dimensions",
                   "type": "integer"
                 },
                 "mode": {
                   "const": "openai_compatible",
                   "default": "openai_compatible",
-                  "enum": [
-                    "openai_compatible"
-                  ],
+                  "enum": ["openai_compatible"],
                   "title": "Mode",
                   "type": "string"
                 },
                 "model_name": {
                   "default": "text-embedding-ada-002",
                   "description": "The name of the model to use for embedding",
-                  "examples": [
-                    "text-embedding-ada-002"
-                  ],
+                  "examples": ["text-embedding-ada-002"],
                   "title": "Model name",
                   "type": "string"
                 }
               },
-              "required": [
-                "base_url",
-                "dimensions",
-                "mode"
-              ],
+              "required": ["base_url", "dimensions", "mode"],
               "title": "OpenAI-compatible",
               "type": "object"
             }
@@ -2414,26 +2110,20 @@
                 "password": {
                   "airbyte_secret": true,
                   "description": "Enter the password you want to use to access the database",
-                  "examples": [
-                    "AIRBYTE_PASSWORD"
-                  ],
+                  "examples": ["AIRBYTE_PASSWORD"],
                   "order": 7,
                   "title": "Password",
                   "type": "string",
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "password"
-              ],
+              "required": ["password"],
               "title": "Credentials",
               "type": "object"
             },
             "database": {
               "description": "Enter the name of the database that you want to sync data into",
-              "examples": [
-                "AIRBYTE_DATABASE"
-              ],
+              "examples": ["AIRBYTE_DATABASE"],
               "order": 4,
               "title": "Database",
               "type": "string"
@@ -2441,18 +2131,14 @@
             "default_schema": {
               "default": "public",
               "description": "Enter the name of the default schema",
-              "examples": [
-                "AIRBYTE_SCHEMA"
-              ],
+              "examples": ["AIRBYTE_SCHEMA"],
               "order": 5,
               "title": "Default Schema",
               "type": "string"
             },
             "host": {
               "description": "Enter the account name you want to use to access the database.",
-              "examples": [
-                "AIRBYTE_ACCOUNT"
-              ],
+              "examples": ["AIRBYTE_ACCOUNT"],
               "order": 1,
               "title": "Host",
               "type": "string"
@@ -2460,29 +2146,20 @@
             "port": {
               "default": 5432,
               "description": "Enter the port you want to use to access the database",
-              "examples": [
-                "5432"
-              ],
+              "examples": ["5432"],
               "order": 2,
               "title": "Port",
               "type": "integer"
             },
             "username": {
               "description": "Enter the name of the user you want to use to access the database",
-              "examples": [
-                "AIRBYTE_USER"
-              ],
+              "examples": ["AIRBYTE_USER"],
               "order": 6,
               "title": "Username",
               "type": "string"
             }
           },
-          "required": [
-            "host",
-            "database",
-            "username",
-            "credentials"
-          ],
+          "required": ["host", "database", "username", "credentials"],
           "title": "Postgres Connection",
           "type": "object"
         },
@@ -2525,10 +2202,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "from_field",
-                  "to_field"
-                ],
+                "required": ["from_field", "to_field"],
                 "title": "FieldNameMappingConfigModel",
                 "type": "object"
               },
@@ -2539,11 +2213,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
-              "examples": [
-                "age",
-                "user",
-                "user.name"
-              ],
+              "examples": ["age", "user", "user.name"],
               "items": {
                 "type": "string"
               },
@@ -2554,11 +2224,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
-              "examples": [
-                "text",
-                "user.name",
-                "users.*.name"
-              ],
+              "examples": ["text", "user.name", "users.*.name"],
               "items": {
                 "type": "string"
               },
@@ -2580,19 +2246,12 @@
                     "mode": {
                       "const": "separator",
                       "default": "separator",
-                      "enum": [
-                        "separator"
-                      ],
+                      "enum": ["separator"],
                       "title": "Mode",
                       "type": "string"
                     },
                     "separators": {
-                      "default": [
-                        "\"\\n\\n\"",
-                        "\"\\n\"",
-                        "\" \"",
-                        "\"\""
-                      ],
+                      "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
                       "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
                       "items": {
                         "type": "string"
@@ -2601,9 +2260,7 @@
                       "type": "array"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Separator",
                   "type": "object"
                 },
@@ -2613,9 +2270,7 @@
                     "mode": {
                       "const": "markdown",
                       "default": "markdown",
-                      "enum": [
-                        "markdown"
-                      ],
+                      "enum": ["markdown"],
                       "title": "Mode",
                       "type": "string"
                     },
@@ -2628,9 +2283,7 @@
                       "type": "integer"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Markdown header",
                   "type": "object"
                 },
@@ -2663,17 +2316,12 @@
                     "mode": {
                       "const": "code",
                       "default": "code",
-                      "enum": [
-                        "code"
-                      ],
+                      "enum": ["code"],
                       "title": "Mode",
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "language",
-                    "mode"
-                  ],
+                  "required": ["language", "mode"],
                   "title": "By Programming Language",
                   "type": "object"
                 }
@@ -2682,28 +2330,19 @@
               "type": "object"
             }
           },
-          "required": [
-            "chunk_size"
-          ],
+          "required": ["chunk_size"],
           "title": "ProcessingConfigModel",
           "type": "object"
         },
         "destinationType": {
           "title": "pgvector",
           "const": "pgvector",
-          "enum": [
-            "pgvector"
-          ],
+          "enum": ["pgvector"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "embedding",
-        "processing",
-        "indexing",
-        "destinationType"
-      ],
+      "required": ["embedding", "processing", "indexing", "destinationType"],
       "title": "Destination Config",
       "type": "object"
     }
@@ -2742,9 +2381,7 @@
                 "mode": {
                   "const": "openai",
                   "default": "openai",
-                  "enum": [
-                    "openai"
-                  ],
+                  "enum": ["openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -2755,10 +2392,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "mode"
-              ],
+              "required": ["openai_key", "mode"],
               "title": "OpenAI",
               "type": "object"
             },
@@ -2774,17 +2408,12 @@
                 "mode": {
                   "const": "cohere",
                   "default": "cohere",
-                  "enum": [
-                    "cohere"
-                  ],
+                  "enum": ["cohere"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "cohere_key",
-                "mode"
-              ],
+              "required": ["cohere_key", "mode"],
               "title": "Cohere",
               "type": "object"
             },
@@ -2794,16 +2423,12 @@
                 "mode": {
                   "const": "fake",
                   "default": "fake",
-                  "enum": [
-                    "fake"
-                  ],
+                  "enum": ["fake"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "Fake",
               "type": "object"
             },
@@ -2812,26 +2437,20 @@
               "properties": {
                 "api_base": {
                   "description": "The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "https://your-resource-name.openai.azure.com"
-                  ],
+                  "examples": ["https://your-resource-name.openai.azure.com"],
                   "title": "Resource base URL",
                   "type": "string"
                 },
                 "deployment": {
                   "description": "The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "your-resource-name"
-                  ],
+                  "examples": ["your-resource-name"],
                   "title": "Deployment",
                   "type": "string"
                 },
                 "mode": {
                   "const": "azure_openai",
                   "default": "azure_openai",
-                  "enum": [
-                    "azure_openai"
-                  ],
+                  "enum": ["azure_openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -2843,12 +2462,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "api_base",
-                "deployment",
-                "mode"
-              ],
+              "required": ["openai_key", "api_base", "deployment", "mode"],
               "title": "Azure OpenAI",
               "type": "object"
             },
@@ -2864,45 +2478,32 @@
                 },
                 "base_url": {
                   "description": "The base URL for your OpenAI-compatible service",
-                  "examples": [
-                    "https://your-service-name.com"
-                  ],
+                  "examples": ["https://your-service-name.com"],
                   "title": "Base URL",
                   "type": "string"
                 },
                 "dimensions": {
                   "description": "The number of dimensions the embedding model is generating",
-                  "examples": [
-                    1536,
-                    384
-                  ],
+                  "examples": [1536, 384],
                   "title": "Embedding dimensions",
                   "type": "integer"
                 },
                 "mode": {
                   "const": "openai_compatible",
                   "default": "openai_compatible",
-                  "enum": [
-                    "openai_compatible"
-                  ],
+                  "enum": ["openai_compatible"],
                   "title": "Mode",
                   "type": "string"
                 },
                 "model_name": {
                   "default": "text-embedding-ada-002",
                   "description": "The name of the model to use for embedding",
-                  "examples": [
-                    "text-embedding-ada-002"
-                  ],
+                  "examples": ["text-embedding-ada-002"],
                   "title": "Model name",
                   "type": "string"
                 }
               },
-              "required": [
-                "base_url",
-                "dimensions",
-                "mode"
-              ],
+              "required": ["base_url", "dimensions", "mode"],
               "title": "OpenAI-compatible",
               "type": "object"
             }
@@ -2921,10 +2522,7 @@
             },
             "pinecone_environment": {
               "description": "Pinecone Cloud environment to use",
-              "examples": [
-                "us-west1-gcp",
-                "gcp-starter"
-              ],
+              "examples": ["us-west1-gcp", "gcp-starter"],
               "title": "Pinecone Environment",
               "type": "string"
             },
@@ -2936,11 +2534,7 @@
               "x-speakeasy-param-sensitive": true
             }
           },
-          "required": [
-            "pinecone_key",
-            "pinecone_environment",
-            "index"
-          ],
+          "required": ["pinecone_key", "pinecone_environment", "index"],
           "title": "Indexing",
           "type": "object"
         },
@@ -2983,10 +2577,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "from_field",
-                  "to_field"
-                ],
+                "required": ["from_field", "to_field"],
                 "title": "FieldNameMappingConfigModel",
                 "type": "object"
               },
@@ -2997,11 +2588,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
-              "examples": [
-                "age",
-                "user",
-                "user.name"
-              ],
+              "examples": ["age", "user", "user.name"],
               "items": {
                 "type": "string"
               },
@@ -3012,11 +2599,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
-              "examples": [
-                "text",
-                "user.name",
-                "users.*.name"
-              ],
+              "examples": ["text", "user.name", "users.*.name"],
               "items": {
                 "type": "string"
               },
@@ -3038,19 +2621,12 @@
                     "mode": {
                       "const": "separator",
                       "default": "separator",
-                      "enum": [
-                        "separator"
-                      ],
+                      "enum": ["separator"],
                       "title": "Mode",
                       "type": "string"
                     },
                     "separators": {
-                      "default": [
-                        "\"\\n\\n\"",
-                        "\"\\n\"",
-                        "\" \"",
-                        "\"\""
-                      ],
+                      "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
                       "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
                       "items": {
                         "type": "string"
@@ -3059,9 +2635,7 @@
                       "type": "array"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Separator",
                   "type": "object"
                 },
@@ -3071,9 +2645,7 @@
                     "mode": {
                       "const": "markdown",
                       "default": "markdown",
-                      "enum": [
-                        "markdown"
-                      ],
+                      "enum": ["markdown"],
                       "title": "Mode",
                       "type": "string"
                     },
@@ -3086,9 +2658,7 @@
                       "type": "integer"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Markdown header",
                   "type": "object"
                 },
@@ -3121,17 +2691,12 @@
                     "mode": {
                       "const": "code",
                       "default": "code",
-                      "enum": [
-                        "code"
-                      ],
+                      "enum": ["code"],
                       "title": "Mode",
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "language",
-                    "mode"
-                  ],
+                  "required": ["language", "mode"],
                   "title": "By Programming Language",
                   "type": "object"
                 }
@@ -3140,28 +2705,19 @@
               "type": "object"
             }
           },
-          "required": [
-            "chunk_size"
-          ],
+          "required": ["chunk_size"],
           "title": "ProcessingConfigModel",
           "type": "object"
         },
         "destinationType": {
           "title": "pinecone",
           "const": "pinecone",
-          "enum": [
-            "pinecone"
-          ],
+          "enum": ["pinecone"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "embedding",
-        "processing",
-        "indexing",
-        "destinationType"
-      ],
+      "required": ["embedding", "processing", "indexing", "destinationType"],
       "title": "Destination Config",
       "type": "object"
     }
@@ -3214,9 +2770,7 @@
         "port": {
           "default": 5432,
           "description": "Port of the database.",
-          "examples": [
-            "5432"
-          ],
+          "examples": ["5432"],
           "maximum": 65536,
           "minimum": 0,
           "order": 1,
@@ -3232,9 +2786,7 @@
         "schema": {
           "default": "public",
           "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
-          "examples": [
-            "public"
-          ],
+          "examples": ["public"],
           "order": 3,
           "title": "Default Schema",
           "type": "string"
@@ -3256,16 +2808,12 @@
                 "mode": {
                   "const": "disable",
                   "default": "disable",
-                  "enum": [
-                    "disable"
-                  ],
+                  "enum": ["disable"],
                   "order": 0,
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "disable"
             },
             {
@@ -3275,16 +2823,12 @@
                 "mode": {
                   "const": "allow",
                   "default": "allow",
-                  "enum": [
-                    "allow"
-                  ],
+                  "enum": ["allow"],
                   "order": 0,
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "allow"
             },
             {
@@ -3294,16 +2838,12 @@
                 "mode": {
                   "const": "prefer",
                   "default": "prefer",
-                  "enum": [
-                    "prefer"
-                  ],
+                  "enum": ["prefer"],
                   "order": 0,
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "prefer"
             },
             {
@@ -3313,16 +2853,12 @@
                 "mode": {
                   "const": "require",
                   "default": "require",
-                  "enum": [
-                    "require"
-                  ],
+                  "enum": ["require"],
                   "order": 0,
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "require"
             },
             {
@@ -3349,17 +2885,12 @@
                 "mode": {
                   "const": "verify-ca",
                   "default": "verify-ca",
-                  "enum": [
-                    "verify-ca"
-                  ],
+                  "enum": ["verify-ca"],
                   "order": 0,
                   "type": "string"
                 }
               },
-              "required": [
-                "mode",
-                "ca_certificate"
-              ],
+              "required": ["mode", "ca_certificate"],
               "title": "verify-ca"
             },
             {
@@ -3404,9 +2935,7 @@
                 "mode": {
                   "const": "verify-full",
                   "default": "verify-full",
-                  "enum": [
-                    "verify-full"
-                  ],
+                  "enum": ["verify-full"],
                   "order": 0,
                   "type": "string"
                 }
@@ -3434,14 +2963,10 @@
                   "description": "No ssh tunnel needed to connect to database",
                   "order": 0,
                   "type": "string",
-                  "enum": [
-                    "NO_TUNNEL"
-                  ]
+                  "enum": ["NO_TUNNEL"]
                 }
               },
-              "required": [
-                "tunnel_method"
-              ],
+              "required": ["tunnel_method"],
               "title": "No Tunnel"
             },
             {
@@ -3466,16 +2991,12 @@
                   "description": "Connect through a jump server tunnel host using username and ssh key",
                   "order": 0,
                   "type": "string",
-                  "enum": [
-                    "SSH_KEY_AUTH"
-                  ]
+                  "enum": ["SSH_KEY_AUTH"]
                 },
                 "tunnel_port": {
                   "default": 22,
                   "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
-                  "examples": [
-                    "22"
-                  ],
+                  "examples": ["22"],
                   "maximum": 65536,
                   "minimum": 0,
                   "order": 2,
@@ -3511,16 +3032,12 @@
                   "description": "Connect through a jump server tunnel host using username and password authentication",
                   "order": 0,
                   "type": "string",
-                  "enum": [
-                    "SSH_PASSWORD_AUTH"
-                  ]
+                  "enum": ["SSH_PASSWORD_AUTH"]
                 },
                 "tunnel_port": {
                   "default": 22,
                   "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
-                  "examples": [
-                    "22"
-                  ],
+                  "examples": ["22"],
                   "maximum": 65536,
                   "minimum": 0,
                   "order": 2,
@@ -3571,9 +3088,7 @@
         "destinationType": {
           "title": "postgres",
           "const": "postgres",
-          "enum": [
-            "postgres"
-          ],
+          "enum": ["postgres"],
           "order": 0,
           "type": "string"
         }
@@ -3654,9 +3169,7 @@
         "port": {
           "default": 5439,
           "description": "Port of the database.",
-          "examples": [
-            "5439"
-          ],
+          "examples": ["5439"],
           "group": "connection",
           "maximum": 65536,
           "minimum": 0,
@@ -3674,9 +3187,7 @@
         "schema": {
           "default": "public",
           "description": "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
-          "examples": [
-            "public"
-          ],
+          "examples": ["public"],
           "group": "connection",
           "order": 6,
           "title": "Default Schema",
@@ -3692,14 +3203,10 @@
                   "description": "No ssh tunnel needed to connect to database",
                   "order": 0,
                   "type": "string",
-                  "enum": [
-                    "NO_TUNNEL"
-                  ]
+                  "enum": ["NO_TUNNEL"]
                 }
               },
-              "required": [
-                "tunnel_method"
-              ],
+              "required": ["tunnel_method"],
               "title": "No Tunnel"
             },
             {
@@ -3724,16 +3231,12 @@
                   "description": "Connect through a jump server tunnel host using username and ssh key",
                   "order": 0,
                   "type": "string",
-                  "enum": [
-                    "SSH_KEY_AUTH"
-                  ]
+                  "enum": ["SSH_KEY_AUTH"]
                 },
                 "tunnel_port": {
                   "default": 22,
                   "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
-                  "examples": [
-                    "22"
-                  ],
+                  "examples": ["22"],
                   "maximum": 65536,
                   "minimum": 0,
                   "order": 2,
@@ -3769,16 +3272,12 @@
                   "description": "Connect through a jump server tunnel host using username and password authentication",
                   "order": 0,
                   "type": "string",
-                  "enum": [
-                    "SSH_PASSWORD_AUTH"
-                  ]
+                  "enum": ["SSH_PASSWORD_AUTH"]
                 },
                 "tunnel_port": {
                   "default": 22,
                   "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
-                  "examples": [
-                    "22"
-                  ],
+                  "examples": ["22"],
                   "maximum": 65536,
                   "minimum": 0,
                   "order": 2,
@@ -3845,9 +3344,7 @@
                 "method": {
                   "const": "S3 Staging",
                   "type": "string",
-                  "enum": [
-                    "S3 Staging"
-                  ]
+                  "enum": ["S3 Staging"]
                 },
                 "purge_staging_data": {
                   "default": true,
@@ -3858,18 +3355,14 @@
                 },
                 "s3_bucket_name": {
                   "description": "The name of the staging S3 bucket.",
-                  "examples": [
-                    "airbyte.staging"
-                  ],
+                  "examples": ["airbyte.staging"],
                   "order": 0,
                   "title": "S3 Bucket Name",
                   "type": "string"
                 },
                 "s3_bucket_path": {
                   "description": "The directory under the S3 bucket where data will be written. If not provided, then defaults to the root directory. See <a href=\"https://docs.aws.amazon.com/prescriptive-guidance/latest/defining-bucket-names-data-lakes/faq.html#:~:text=be%20globally%20unique.-,For%20S3%20bucket%20paths,-%2C%20you%20can%20use\">path's name recommendations</a> for more details.",
-                  "examples": [
-                    "data_sync/test"
-                  ],
+                  "examples": ["data_sync/test"],
                   "order": 1,
                   "title": "S3 Bucket Path",
                   "type": "string"
@@ -3950,9 +3443,7 @@
         "destinationType": {
           "title": "redshift",
           "const": "redshift",
-          "enum": [
-            "redshift"
-          ],
+          "enum": ["redshift"],
           "order": 0,
           "type": "string"
         }
@@ -3979,9 +3470,7 @@
           "airbyte_secret": true,
           "always_show": true,
           "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
-          "examples": [
-            "A012345678910EXAMPLE"
-          ],
+          "examples": ["A012345678910EXAMPLE"],
           "order": 0,
           "title": "Access Key ID",
           "type": "string",
@@ -4014,15 +3503,11 @@
                       "properties": {
                         "compression_type": {
                           "default": "No Compression",
-                          "enum": [
-                            "No Compression"
-                          ],
+                          "enum": ["No Compression"],
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "compression_type"
-                      ],
+                      "required": ["compression_type"],
                       "title": "No Compression",
                       "type": "object"
                     },
@@ -4031,15 +3516,11 @@
                       "properties": {
                         "compression_type": {
                           "default": "GZIP",
-                          "enum": [
-                            "GZIP"
-                          ],
+                          "enum": ["GZIP"],
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "compression_type"
-                      ],
+                      "required": ["compression_type"],
                       "title": "GZIP",
                       "type": "object"
                     }
@@ -4049,25 +3530,17 @@
                 },
                 "flattening": {
                   "default": "No flattening",
-                  "enum": [
-                    "No flattening",
-                    "Root level flattening"
-                  ],
+                  "enum": ["No flattening", "Root level flattening"],
                   "title": "Flattening",
                   "type": "string"
                 },
                 "format_type": {
                   "default": "CSV",
-                  "enum": [
-                    "CSV"
-                  ],
+                  "enum": ["CSV"],
                   "type": "string"
                 }
               },
-              "required": [
-                "format_type",
-                "flattening"
-              ],
+              "required": ["format_type", "flattening"],
               "title": "CSV: Comma-Separated Values",
               "type": "object"
             },
@@ -4082,15 +3555,11 @@
                       "properties": {
                         "compression_type": {
                           "default": "No Compression",
-                          "enum": [
-                            "No Compression"
-                          ],
+                          "enum": ["No Compression"],
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "compression_type"
-                      ],
+                      "required": ["compression_type"],
                       "title": "No Compression",
                       "type": "object"
                     },
@@ -4099,15 +3568,11 @@
                       "properties": {
                         "compression_type": {
                           "default": "GZIP",
-                          "enum": [
-                            "GZIP"
-                          ],
+                          "enum": ["GZIP"],
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "compression_type"
-                      ],
+                      "required": ["compression_type"],
                       "title": "GZIP",
                       "type": "object"
                     }
@@ -4117,24 +3582,17 @@
                 },
                 "flattening": {
                   "default": "No flattening",
-                  "enum": [
-                    "No flattening",
-                    "Root level flattening"
-                  ],
+                  "enum": ["No flattening", "Root level flattening"],
                   "title": "Flattening",
                   "type": "string"
                 },
                 "format_type": {
                   "default": "JSONL",
-                  "enum": [
-                    "JSONL"
-                  ],
+                  "enum": ["JSONL"],
                   "type": "string"
                 }
               },
-              "required": [
-                "format_type"
-              ],
+              "required": ["format_type"],
               "title": "JSON Lines: Newline-delimited JSON",
               "type": "object"
             },
@@ -4149,15 +3607,11 @@
                       "properties": {
                         "codec": {
                           "default": "no compression",
-                          "enum": [
-                            "no compression"
-                          ],
+                          "enum": ["no compression"],
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "codec"
-                      ],
+                      "required": ["codec"],
                       "title": "no compression",
                       "type": "object"
                     },
@@ -4166,9 +3620,7 @@
                       "properties": {
                         "codec": {
                           "default": "Deflate",
-                          "enum": [
-                            "Deflate"
-                          ],
+                          "enum": ["Deflate"],
                           "type": "string"
                         },
                         "compression_level": {
@@ -4176,10 +3628,7 @@
                           "type": "integer"
                         }
                       },
-                      "required": [
-                        "codec",
-                        "compression_level"
-                      ],
+                      "required": ["codec", "compression_level"],
                       "title": "Deflate",
                       "type": "object"
                     },
@@ -4188,15 +3637,11 @@
                       "properties": {
                         "codec": {
                           "default": "bzip2",
-                          "enum": [
-                            "bzip2"
-                          ],
+                          "enum": ["bzip2"],
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "codec"
-                      ],
+                      "required": ["codec"],
                       "title": "bzip2",
                       "type": "object"
                     },
@@ -4205,9 +3650,7 @@
                       "properties": {
                         "codec": {
                           "default": "xz",
-                          "enum": [
-                            "xz"
-                          ],
+                          "enum": ["xz"],
                           "type": "string"
                         },
                         "compression_level": {
@@ -4215,10 +3658,7 @@
                           "type": "integer"
                         }
                       },
-                      "required": [
-                        "codec",
-                        "compression_level"
-                      ],
+                      "required": ["codec", "compression_level"],
                       "title": "xz",
                       "type": "object"
                     },
@@ -4227,9 +3667,7 @@
                       "properties": {
                         "codec": {
                           "default": "zstandard",
-                          "enum": [
-                            "zstandard"
-                          ],
+                          "enum": ["zstandard"],
                           "type": "string"
                         },
                         "compression_level": {
@@ -4254,15 +3692,11 @@
                       "properties": {
                         "codec": {
                           "default": "snappy",
-                          "enum": [
-                            "snappy"
-                          ],
+                          "enum": ["snappy"],
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "codec"
-                      ],
+                      "required": ["codec"],
                       "title": "snappy",
                       "type": "object"
                     }
@@ -4273,16 +3707,11 @@
                 },
                 "format_type": {
                   "default": "Avro",
-                  "enum": [
-                    "Avro"
-                  ],
+                  "enum": ["Avro"],
                   "type": "string"
                 }
               },
-              "required": [
-                "format_type",
-                "compression_codec"
-              ],
+              "required": ["format_type", "compression_codec"],
               "title": "Avro: Apache Avro",
               "type": "object"
             },
@@ -4323,9 +3752,7 @@
                 },
                 "format_type": {
                   "default": "Parquet",
-                  "enum": [
-                    "Parquet"
-                  ],
+                  "enum": ["Parquet"],
                   "type": "string"
                 },
                 "max_padding_size_mb": {
@@ -4341,9 +3768,7 @@
                   "type": "integer"
                 }
               },
-              "required": [
-                "format_type"
-              ],
+              "required": ["format_type"],
               "title": "Parquet: Columnar Storage",
               "type": "object"
             }
@@ -4363,18 +3788,14 @@
         },
         "s3_bucket_name": {
           "description": "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>.",
-          "examples": [
-            "airbyte_sync"
-          ],
+          "examples": ["airbyte_sync"],
           "order": 3,
           "title": "S3 Bucket Name",
           "type": "string"
         },
         "s3_bucket_path": {
           "description": "Directory under the S3 bucket where data will be written. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/s3#:~:text=to%20format%20the-,bucket%20path,-%3A\">here</a>",
-          "examples": [
-            "data_sync/test"
-          ],
+          "examples": ["data_sync/test"],
           "order": 4,
           "title": "S3 Bucket Path",
           "type": "string"
@@ -4418,18 +3839,14 @@
             "us-west-1",
             "us-west-2"
           ],
-          "examples": [
-            "us-east-1"
-          ],
+          "examples": ["us-east-1"],
           "order": 5,
           "title": "S3 Bucket Region",
           "type": "string"
         },
         "s3_endpoint": {
           "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
-          "examples": [
-            "http://localhost:9000"
-          ],
+          "examples": ["http://localhost:9000"],
           "order": 7,
           "title": "S3 Endpoint",
           "type": "string"
@@ -4447,9 +3864,7 @@
           "airbyte_secret": true,
           "always_show": true,
           "description": "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
-          "examples": [
-            "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
-          ],
+          "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
           "order": 1,
           "title": "Secret Access Key",
           "type": "string",
@@ -4458,9 +3873,7 @@
         "destinationType": {
           "title": "s3",
           "const": "s3",
-          "enum": [
-            "s3"
-          ],
+          "enum": ["s3"],
           "order": 0,
           "type": "string"
         }
@@ -4502,9 +3915,7 @@
                 "access_token": {
                   "airbyte_secret": true,
                   "description": "Optional token for authentication with the Nessie server.",
-                  "examples": [
-                    "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
-                  ],
+                  "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
                   "order": 2,
                   "title": "Nessie Access Token",
                   "type": "string",
@@ -4512,9 +3923,7 @@
                 },
                 "catalog_type": {
                   "default": "NESSIE",
-                  "enum": [
-                    "NESSIE"
-                  ],
+                  "enum": ["NESSIE"],
                   "type": "string"
                 },
                 "namespace": {
@@ -4529,11 +3938,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "catalog_type",
-                "server_uri",
-                "namespace"
-              ],
+              "required": ["catalog_type", "server_uri", "namespace"],
               "title": "Nessie Catalog",
               "type": "object"
             },
@@ -4543,9 +3948,7 @@
               "properties": {
                 "catalog_type": {
                   "default": "GLUE",
-                  "enum": [
-                    "GLUE"
-                  ],
+                  "enum": ["GLUE"],
                   "type": "string"
                 },
                 "database_name": {
@@ -4565,11 +3968,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "catalog_type",
-                "glue_id",
-                "database_name"
-              ],
+              "required": ["catalog_type", "glue_id", "database_name"],
               "title": "Glue Catalog",
               "type": "object"
             },
@@ -4579,9 +3978,7 @@
               "properties": {
                 "catalog_type": {
                   "default": "REST",
-                  "enum": [
-                    "REST"
-                  ],
+                  "enum": ["REST"],
                   "type": "string"
                 },
                 "namespace": {
@@ -4596,11 +3993,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "catalog_type",
-                "server_uri",
-                "namespace"
-              ],
+              "required": ["catalog_type", "server_uri", "namespace"],
               "title": "Rest Catalog",
               "type": "object"
             },
@@ -4616,17 +4009,13 @@
                 },
                 "catalog_type": {
                   "default": "POLARIS",
-                  "enum": [
-                    "POLARIS"
-                  ],
+                  "enum": ["POLARIS"],
                   "type": "string"
                 },
                 "client_id": {
                   "airbyte_secret": true,
                   "description": "The OAuth Client ID for authenticating with the Polaris server.",
-                  "examples": [
-                    "abc123clientid"
-                  ],
+                  "examples": ["abc123clientid"],
                   "order": 3,
                   "title": "Client ID",
                   "type": "string",
@@ -4635,9 +4024,7 @@
                 "client_secret": {
                   "airbyte_secret": true,
                   "description": "The OAuth Client Secret for authenticating with the Polaris server.",
-                  "examples": [
-                    "secretkey123"
-                  ],
+                  "examples": ["secretkey123"],
                   "order": 4,
                   "title": "Client Secret",
                   "type": "string",
@@ -4726,9 +4113,7 @@
             "us-west-1",
             "us-west-2"
           ],
-          "examples": [
-            "us-east-1"
-          ],
+          "examples": ["us-east-1"],
           "order": 3,
           "title": "S3 Bucket Region",
           "type": "string"
@@ -4751,9 +4136,7 @@
         "warehouse_location": {
           "always_show": true,
           "description": "The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. For AWS Glue and Nessie, must include the storage protocol (such as \"s3://\" for Amazon S3).",
-          "examples": [
-            "s3://your-bucket/path/to/store/files/in"
-          ],
+          "examples": ["s3://your-bucket/path/to/store/files/in"],
           "order": 5,
           "title": "Warehouse Location",
           "type": "string"
@@ -4761,9 +4144,7 @@
         "destinationType": {
           "title": "s3-data-lake",
           "const": "s3-data-lake",
-          "enum": [
-            "s3-data-lake"
-          ],
+          "enum": ["s3-data-lake"],
           "order": 0,
           "type": "string"
         }
@@ -4788,9 +4169,7 @@
         "auth_type": {
           "const": "Client",
           "type": "string",
-          "enum": [
-            "Client"
-          ]
+          "enum": ["Client"]
         },
         "client_id": {
           "description": "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client ID</a>.",
@@ -4820,15 +4199,11 @@
               "properties": {
                 "storage_type": {
                   "default": "None",
-                  "enum": [
-                    "None"
-                  ],
+                  "enum": ["None"],
                   "type": "string"
                 }
               },
-              "required": [
-                "storage_type"
-              ],
+              "required": ["storage_type"],
               "title": "None",
               "type": "object"
             },
@@ -4839,9 +4214,7 @@
                   "airbyte_secret": true,
                   "always_show": true,
                   "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
-                  "examples": [
-                    "A012345678910EXAMPLE"
-                  ],
+                  "examples": ["A012345678910EXAMPLE"],
                   "order": 1,
                   "title": "Access Key ID",
                   "type": "string",
@@ -4849,9 +4222,7 @@
                 },
                 "bucket_path": {
                   "description": "All files in the bucket will be prefixed by this.",
-                  "examples": [
-                    "prefix/"
-                  ],
+                  "examples": ["prefix/"],
                   "order": 7,
                   "title": "Prefix Path in the Bucket",
                   "type": "string"
@@ -4867,9 +4238,7 @@
                 },
                 "s3_bucket_name": {
                   "description": "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>.",
-                  "examples": [
-                    "airbyte_sync"
-                  ],
+                  "examples": ["airbyte_sync"],
                   "order": 4,
                   "title": "S3 Bucket Name",
                   "type": "string"
@@ -4913,18 +4282,14 @@
                     "us-west-1",
                     "us-west-2"
                   ],
-                  "examples": [
-                    "us-east-1"
-                  ],
+                  "examples": ["us-east-1"],
                   "order": 5,
                   "title": "S3 Bucket Region",
                   "type": "string"
                 },
                 "s3_endpoint": {
                   "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
-                  "examples": [
-                    "http://localhost:9000"
-                  ],
+                  "examples": ["http://localhost:9000"],
                   "order": 6,
                   "title": "S3 Endpoint",
                   "type": "string"
@@ -4933,9 +4298,7 @@
                   "airbyte_secret": true,
                   "always_show": true,
                   "description": "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
-                  "examples": [
-                    "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
-                  ],
+                  "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
                   "order": 2,
                   "title": "Secret Access Key",
                   "type": "string",
@@ -4943,9 +4306,7 @@
                 },
                 "storage_type": {
                   "default": "S3",
-                  "enum": [
-                    "S3"
-                  ],
+                  "enum": ["S3"],
                   "type": "string"
                 }
               },
@@ -4974,9 +4335,7 @@
         "destinationType": {
           "title": "salesforce",
           "const": "salesforce",
-          "enum": [
-            "salesforce"
-          ],
+          "enum": ["salesforce"],
           "order": 0,
           "type": "string"
         }
@@ -5016,10 +4375,7 @@
           "always_show": true,
           "default": "Hard delete",
           "description": "Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.",
-          "enum": [
-            "Hard delete",
-            "Soft delete"
-          ],
+          "enum": ["Hard delete", "Soft delete"],
           "group": "sync_behavior",
           "order": 5,
           "title": "CDC deletion mode",
@@ -5035,9 +4391,7 @@
               "properties": {
                 "auth_type": {
                   "default": "Key Pair Authentication",
-                  "enum": [
-                    "Key Pair Authentication"
-                  ],
+                  "enum": ["Key Pair Authentication"],
                   "type": "string"
                 },
                 "private_key": {
@@ -5056,10 +4410,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "auth_type",
-                "private_key"
-              ],
+              "required": ["auth_type", "private_key"],
               "title": "Key Pair Authentication",
               "type": "object"
             },
@@ -5069,9 +4420,7 @@
               "properties": {
                 "auth_type": {
                   "default": "Username and Password",
-                  "enum": [
-                    "Username and Password"
-                  ],
+                  "enum": ["Username and Password"],
                   "type": "string"
                 },
                 "password": {
@@ -5083,10 +4432,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "auth_type",
-                "password"
-              ],
+              "required": ["auth_type", "password"],
               "title": "Username and Password",
               "type": "object"
             }
@@ -5097,9 +4443,7 @@
         },
         "database": {
           "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">database</a> you want to sync data into",
-          "examples": [
-            "AIRBYTE_DATABASE"
-          ],
+          "examples": ["AIRBYTE_DATABASE"],
           "group": "connection",
           "order": 3,
           "title": "Database",
@@ -5148,9 +4492,7 @@
         },
         "role": {
           "description": "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles\">role</a> that you want to use to access Snowflake",
-          "examples": [
-            "AIRBYTE_ROLE"
-          ],
+          "examples": ["AIRBYTE_ROLE"],
           "group": "connection",
           "order": 1,
           "title": "Role",
@@ -5158,9 +4500,7 @@
         },
         "schema": {
           "description": "Enter the name of the default <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">schema</a>",
-          "examples": [
-            "AIRBYTE_SCHEMA"
-          ],
+          "examples": ["AIRBYTE_SCHEMA"],
           "group": "connection",
           "order": 4,
           "title": "Default Schema",
@@ -5168,9 +4508,7 @@
         },
         "username": {
           "description": "Enter the name of the user you want to use to access the database",
-          "examples": [
-            "AIRBYTE_USER"
-          ],
+          "examples": ["AIRBYTE_USER"],
           "group": "connection",
           "order": 5,
           "title": "Username",
@@ -5178,9 +4516,7 @@
         },
         "warehouse": {
           "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to use as a compute cluster",
-          "examples": [
-            "AIRBYTE_WAREHOUSE"
-          ],
+          "examples": ["AIRBYTE_WAREHOUSE"],
           "group": "connection",
           "order": 2,
           "title": "Warehouse",
@@ -5189,9 +4525,7 @@
         "destinationType": {
           "title": "snowflake",
           "const": "snowflake",
-          "enum": [
-            "snowflake"
-          ],
+          "enum": ["snowflake"],
           "order": 0,
           "type": "string"
         }
@@ -5243,9 +4577,7 @@
                 "mode": {
                   "const": "openai",
                   "default": "openai",
-                  "enum": [
-                    "openai"
-                  ],
+                  "enum": ["openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -5256,10 +4588,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "mode"
-              ],
+              "required": ["openai_key", "mode"],
               "title": "OpenAI",
               "type": "object"
             },
@@ -5275,17 +4604,12 @@
                 "mode": {
                   "const": "cohere",
                   "default": "cohere",
-                  "enum": [
-                    "cohere"
-                  ],
+                  "enum": ["cohere"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "cohere_key",
-                "mode"
-              ],
+              "required": ["cohere_key", "mode"],
               "title": "Cohere",
               "type": "object"
             },
@@ -5295,16 +4619,12 @@
                 "mode": {
                   "const": "fake",
                   "default": "fake",
-                  "enum": [
-                    "fake"
-                  ],
+                  "enum": ["fake"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "Fake",
               "type": "object"
             },
@@ -5313,26 +4633,20 @@
               "properties": {
                 "api_base": {
                   "description": "The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "https://your-resource-name.openai.azure.com"
-                  ],
+                  "examples": ["https://your-resource-name.openai.azure.com"],
                   "title": "Resource base URL",
                   "type": "string"
                 },
                 "deployment": {
                   "description": "The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "your-resource-name"
-                  ],
+                  "examples": ["your-resource-name"],
                   "title": "Deployment",
                   "type": "string"
                 },
                 "mode": {
                   "const": "azure_openai",
                   "default": "azure_openai",
-                  "enum": [
-                    "azure_openai"
-                  ],
+                  "enum": ["azure_openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -5344,12 +4658,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "api_base",
-                "deployment",
-                "mode"
-              ],
+              "required": ["openai_key", "api_base", "deployment", "mode"],
               "title": "Azure OpenAI",
               "type": "object"
             },
@@ -5365,45 +4674,32 @@
                 },
                 "base_url": {
                   "description": "The base URL for your OpenAI-compatible service",
-                  "examples": [
-                    "https://your-service-name.com"
-                  ],
+                  "examples": ["https://your-service-name.com"],
                   "title": "Base URL",
                   "type": "string"
                 },
                 "dimensions": {
                   "description": "The number of dimensions the embedding model is generating",
-                  "examples": [
-                    1536,
-                    384
-                  ],
+                  "examples": [1536, 384],
                   "title": "Embedding dimensions",
                   "type": "integer"
                 },
                 "mode": {
                   "const": "openai_compatible",
                   "default": "openai_compatible",
-                  "enum": [
-                    "openai_compatible"
-                  ],
+                  "enum": ["openai_compatible"],
                   "title": "Mode",
                   "type": "string"
                 },
                 "model_name": {
                   "default": "text-embedding-ada-002",
                   "description": "The name of the model to use for embedding",
-                  "examples": [
-                    "text-embedding-ada-002"
-                  ],
+                  "examples": ["text-embedding-ada-002"],
                   "title": "Model name",
                   "type": "string"
                 }
               },
-              "required": [
-                "base_url",
-                "dimensions",
-                "mode"
-              ],
+              "required": ["base_url", "dimensions", "mode"],
               "title": "OpenAI-compatible",
               "type": "object"
             }
@@ -5420,72 +4716,55 @@
                 "password": {
                   "airbyte_secret": true,
                   "description": "Enter the password you want to use to access the database",
-                  "examples": [
-                    "AIRBYTE_PASSWORD"
-                  ],
+                  "examples": ["AIRBYTE_PASSWORD"],
                   "order": 7,
                   "title": "Password",
                   "type": "string",
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "password"
-              ],
+              "required": ["password"],
               "title": "Credentials",
               "type": "object"
             },
             "database": {
               "description": "Enter the name of the database that you want to sync data into",
-              "examples": [
-                "AIRBYTE_DATABASE"
-              ],
+              "examples": ["AIRBYTE_DATABASE"],
               "order": 4,
               "title": "Database",
               "type": "string"
             },
             "default_schema": {
               "description": "Enter the name of the default schema",
-              "examples": [
-                "AIRBYTE_SCHEMA"
-              ],
+              "examples": ["AIRBYTE_SCHEMA"],
               "order": 5,
               "title": "Default Schema",
               "type": "string"
             },
             "host": {
               "description": "Enter the account name you want to use to access the database. This is usually the identifier before .snowflakecomputing.com",
-              "examples": [
-                "AIRBYTE_ACCOUNT"
-              ],
+              "examples": ["AIRBYTE_ACCOUNT"],
               "order": 1,
               "title": "Host",
               "type": "string"
             },
             "role": {
               "description": "Enter the role that you want to use to access Snowflake",
-              "examples": [
-                "AIRBYTE_ROLE",
-                "ACCOUNTADMIN"
-              ],
+              "examples": ["AIRBYTE_ROLE", "ACCOUNTADMIN"],
               "order": 2,
               "title": "Role",
               "type": "string"
             },
             "username": {
               "description": "Enter the name of the user you want to use to access the database",
-              "examples": [
-                "AIRBYTE_USER"
-              ],
+              "examples": ["AIRBYTE_USER"],
               "order": 6,
               "title": "Username",
               "type": "string"
             },
             "warehouse": {
               "description": "Enter the name of the warehouse that you want to use as a compute cluster",
-              "examples": [
-                "AIRBYTE_WAREHOUSE"
-              ],
+              "examples": ["AIRBYTE_WAREHOUSE"],
               "order": 3,
               "title": "Warehouse",
               "type": "string"
@@ -5542,10 +4821,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "from_field",
-                  "to_field"
-                ],
+                "required": ["from_field", "to_field"],
                 "title": "FieldNameMappingConfigModel",
                 "type": "object"
               },
@@ -5556,11 +4832,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
-              "examples": [
-                "age",
-                "user",
-                "user.name"
-              ],
+              "examples": ["age", "user", "user.name"],
               "items": {
                 "type": "string"
               },
@@ -5571,11 +4843,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
-              "examples": [
-                "text",
-                "user.name",
-                "users.*.name"
-              ],
+              "examples": ["text", "user.name", "users.*.name"],
               "items": {
                 "type": "string"
               },
@@ -5597,19 +4865,12 @@
                     "mode": {
                       "const": "separator",
                       "default": "separator",
-                      "enum": [
-                        "separator"
-                      ],
+                      "enum": ["separator"],
                       "title": "Mode",
                       "type": "string"
                     },
                     "separators": {
-                      "default": [
-                        "\"\\n\\n\"",
-                        "\"\\n\"",
-                        "\" \"",
-                        "\"\""
-                      ],
+                      "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
                       "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
                       "items": {
                         "type": "string"
@@ -5618,9 +4879,7 @@
                       "type": "array"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Separator",
                   "type": "object"
                 },
@@ -5630,9 +4889,7 @@
                     "mode": {
                       "const": "markdown",
                       "default": "markdown",
-                      "enum": [
-                        "markdown"
-                      ],
+                      "enum": ["markdown"],
                       "title": "Mode",
                       "type": "string"
                     },
@@ -5645,9 +4902,7 @@
                       "type": "integer"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Markdown header",
                   "type": "object"
                 },
@@ -5680,17 +4935,12 @@
                     "mode": {
                       "const": "code",
                       "default": "code",
-                      "enum": [
-                        "code"
-                      ],
+                      "enum": ["code"],
                       "title": "Mode",
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "language",
-                    "mode"
-                  ],
+                  "required": ["language", "mode"],
                   "title": "By Programming Language",
                   "type": "object"
                 }
@@ -5699,28 +4949,19 @@
               "type": "object"
             }
           },
-          "required": [
-            "chunk_size"
-          ],
+          "required": ["chunk_size"],
           "title": "ProcessingConfigModel",
           "type": "object"
         },
         "destinationType": {
           "title": "snowflake-cortex",
           "const": "snowflake-cortex",
-          "enum": [
-            "snowflake-cortex"
-          ],
+          "enum": ["snowflake-cortex"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "embedding",
-        "processing",
-        "indexing",
-        "destinationType"
-      ],
+      "required": ["embedding", "processing", "indexing", "destinationType"],
       "title": "Destination Config",
       "type": "object"
     }
@@ -5759,16 +5000,12 @@
                 "mode": {
                   "const": "no_embedding",
                   "default": "no_embedding",
-                  "enum": [
-                    "no_embedding"
-                  ],
+                  "enum": ["no_embedding"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "No external embedding",
               "type": "object"
             },
@@ -5777,26 +5014,20 @@
               "properties": {
                 "api_base": {
                   "description": "The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "https://your-resource-name.openai.azure.com"
-                  ],
+                  "examples": ["https://your-resource-name.openai.azure.com"],
                   "title": "Resource base URL",
                   "type": "string"
                 },
                 "deployment": {
                   "description": "The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
-                  "examples": [
-                    "your-resource-name"
-                  ],
+                  "examples": ["your-resource-name"],
                   "title": "Deployment",
                   "type": "string"
                 },
                 "mode": {
                   "const": "azure_openai",
                   "default": "azure_openai",
-                  "enum": [
-                    "azure_openai"
-                  ],
+                  "enum": ["azure_openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -5808,12 +5039,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "api_base",
-                "deployment",
-                "mode"
-              ],
+              "required": ["openai_key", "api_base", "deployment", "mode"],
               "title": "Azure OpenAI",
               "type": "object"
             },
@@ -5823,9 +5049,7 @@
                 "mode": {
                   "const": "openai",
                   "default": "openai",
-                  "enum": [
-                    "openai"
-                  ],
+                  "enum": ["openai"],
                   "title": "Mode",
                   "type": "string"
                 },
@@ -5836,10 +5060,7 @@
                   "x-speakeasy-param-sensitive": true
                 }
               },
-              "required": [
-                "openai_key",
-                "mode"
-              ],
+              "required": ["openai_key", "mode"],
               "title": "OpenAI",
               "type": "object"
             },
@@ -5855,17 +5076,12 @@
                 "mode": {
                   "const": "cohere",
                   "default": "cohere",
-                  "enum": [
-                    "cohere"
-                  ],
+                  "enum": ["cohere"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "cohere_key",
-                "mode"
-              ],
+              "required": ["cohere_key", "mode"],
               "title": "Cohere",
               "type": "object"
             },
@@ -5874,37 +5090,25 @@
               "properties": {
                 "dimensions": {
                   "description": "The number of dimensions the embedding model is generating",
-                  "examples": [
-                    1536,
-                    384
-                  ],
+                  "examples": [1536, 384],
                   "title": "Embedding dimensions",
                   "type": "integer"
                 },
                 "field_name": {
                   "description": "Name of the field in the record that contains the embedding",
-                  "examples": [
-                    "embedding",
-                    "vector"
-                  ],
+                  "examples": ["embedding", "vector"],
                   "title": "Field name",
                   "type": "string"
                 },
                 "mode": {
                   "const": "from_field",
                   "default": "from_field",
-                  "enum": [
-                    "from_field"
-                  ],
+                  "enum": ["from_field"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "field_name",
-                "dimensions",
-                "mode"
-              ],
+              "required": ["field_name", "dimensions", "mode"],
               "title": "From Field",
               "type": "object"
             },
@@ -5914,16 +5118,12 @@
                 "mode": {
                   "const": "fake",
                   "default": "fake",
-                  "enum": [
-                    "fake"
-                  ],
+                  "enum": ["fake"],
                   "title": "Mode",
                   "type": "string"
                 }
               },
-              "required": [
-                "mode"
-              ],
+              "required": ["mode"],
               "title": "Fake",
               "type": "object"
             },
@@ -5939,45 +5139,32 @@
                 },
                 "base_url": {
                   "description": "The base URL for your OpenAI-compatible service",
-                  "examples": [
-                    "https://your-service-name.com"
-                  ],
+                  "examples": ["https://your-service-name.com"],
                   "title": "Base URL",
                   "type": "string"
                 },
                 "dimensions": {
                   "description": "The number of dimensions the embedding model is generating",
-                  "examples": [
-                    1536,
-                    384
-                  ],
+                  "examples": [1536, 384],
                   "title": "Embedding dimensions",
                   "type": "integer"
                 },
                 "mode": {
                   "const": "openai_compatible",
                   "default": "openai_compatible",
-                  "enum": [
-                    "openai_compatible"
-                  ],
+                  "enum": ["openai_compatible"],
                   "title": "Mode",
                   "type": "string"
                 },
                 "model_name": {
                   "default": "text-embedding-ada-002",
                   "description": "The name of the model to use for embedding",
-                  "examples": [
-                    "text-embedding-ada-002"
-                  ],
+                  "examples": ["text-embedding-ada-002"],
                   "title": "Model name",
                   "type": "string"
                 }
               },
-              "required": [
-                "base_url",
-                "dimensions",
-                "mode"
-              ],
+              "required": ["base_url", "dimensions", "mode"],
               "title": "OpenAI-compatible",
               "type": "object"
             }
@@ -6011,10 +5198,7 @@
                     "x-speakeasy-param-sensitive": true
                   }
                 },
-                "required": [
-                  "header_key",
-                  "value"
-                ],
+                "required": ["header_key", "value"],
                 "title": "Header",
                 "type": "object"
               },
@@ -6030,9 +5214,7 @@
                     "mode": {
                       "const": "token",
                       "default": "token",
-                      "enum": [
-                        "token"
-                      ],
+                      "enum": ["token"],
                       "title": "Mode",
                       "type": "string"
                     },
@@ -6044,10 +5226,7 @@
                       "x-speakeasy-param-sensitive": true
                     }
                   },
-                  "required": [
-                    "token",
-                    "mode"
-                  ],
+                  "required": ["token", "mode"],
                   "title": "API Token",
                   "type": "object"
                 },
@@ -6057,9 +5236,7 @@
                     "mode": {
                       "const": "username_password",
                       "default": "username_password",
-                      "enum": [
-                        "username_password"
-                      ],
+                      "enum": ["username_password"],
                       "title": "Mode",
                       "type": "string"
                     },
@@ -6078,11 +5255,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "username",
-                    "password",
-                    "mode"
-                  ],
+                  "required": ["username", "password", "mode"],
                   "title": "Username/Password",
                   "type": "object"
                 },
@@ -6092,16 +5265,12 @@
                     "mode": {
                       "const": "no_auth",
                       "default": "no_auth",
-                      "enum": [
-                        "no_auth"
-                      ],
+                      "enum": ["no_auth"],
                       "title": "Mode",
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "No Authentication",
                   "type": "object"
                 }
@@ -6134,9 +5303,7 @@
             },
             "host": {
               "description": "The public endpoint of the Weaviate cluster.",
-              "examples": [
-                "https://my-cluster.weaviate.network"
-              ],
+              "examples": ["https://my-cluster.weaviate.network"],
               "order": 1,
               "title": "Public Endpoint",
               "type": "string"
@@ -6156,10 +5323,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "host",
-            "auth"
-          ],
+          "required": ["host", "auth"],
           "title": "Indexing",
           "type": "object"
         },
@@ -6202,10 +5366,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "from_field",
-                  "to_field"
-                ],
+                "required": ["from_field", "to_field"],
                 "title": "FieldNameMappingConfigModel",
                 "type": "object"
               },
@@ -6216,11 +5377,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
-              "examples": [
-                "age",
-                "user",
-                "user.name"
-              ],
+              "examples": ["age", "user", "user.name"],
               "items": {
                 "type": "string"
               },
@@ -6231,11 +5388,7 @@
               "always_show": true,
               "default": [],
               "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
-              "examples": [
-                "text",
-                "user.name",
-                "users.*.name"
-              ],
+              "examples": ["text", "user.name", "users.*.name"],
               "items": {
                 "type": "string"
               },
@@ -6257,19 +5410,12 @@
                     "mode": {
                       "const": "separator",
                       "default": "separator",
-                      "enum": [
-                        "separator"
-                      ],
+                      "enum": ["separator"],
                       "title": "Mode",
                       "type": "string"
                     },
                     "separators": {
-                      "default": [
-                        "\"\\n\\n\"",
-                        "\"\\n\"",
-                        "\" \"",
-                        "\"\""
-                      ],
+                      "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
                       "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
                       "items": {
                         "type": "string"
@@ -6278,9 +5424,7 @@
                       "type": "array"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Separator",
                   "type": "object"
                 },
@@ -6290,9 +5434,7 @@
                     "mode": {
                       "const": "markdown",
                       "default": "markdown",
-                      "enum": [
-                        "markdown"
-                      ],
+                      "enum": ["markdown"],
                       "title": "Mode",
                       "type": "string"
                     },
@@ -6305,9 +5447,7 @@
                       "type": "integer"
                     }
                   },
-                  "required": [
-                    "mode"
-                  ],
+                  "required": ["mode"],
                   "title": "By Markdown header",
                   "type": "object"
                 },
@@ -6340,17 +5480,12 @@
                     "mode": {
                       "const": "code",
                       "default": "code",
-                      "enum": [
-                        "code"
-                      ],
+                      "enum": ["code"],
                       "title": "Mode",
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "language",
-                    "mode"
-                  ],
+                  "required": ["language", "mode"],
                   "title": "By Programming Language",
                   "type": "object"
                 }
@@ -6359,28 +5494,19 @@
               "type": "object"
             }
           },
-          "required": [
-            "chunk_size"
-          ],
+          "required": ["chunk_size"],
           "title": "ProcessingConfigModel",
           "type": "object"
         },
         "destinationType": {
           "title": "weaviate",
           "const": "weaviate",
-          "enum": [
-            "weaviate"
-          ],
+          "enum": ["weaviate"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "embedding",
-        "processing",
-        "indexing",
-        "destinationType"
-      ],
+      "required": ["embedding", "processing", "indexing", "destinationType"],
       "title": "Destination Config",
       "type": "object"
     }
