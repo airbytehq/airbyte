@@ -836,9 +836,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
     ) -> Optional[Mapping]:
         organization, name = stream_slice["repository"].split("/")
         after = next_page_token["after"] if next_page_token else None
-        query = get_query_releases(
-            owner=organization, name=name, first=self.page_size, after=after, direction=self.is_sorted.upper()
-        )
+        query = get_query_releases(owner=organization, name=name, first=self.page_size, after=after, direction=self.is_sorted.upper())
         return {"query": query}
 
 
