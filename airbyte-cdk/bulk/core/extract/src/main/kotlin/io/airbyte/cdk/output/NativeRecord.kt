@@ -10,6 +10,7 @@ import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
 import io.airbyte.cdk.data.ByteCodec
 import io.airbyte.cdk.data.CdcOffsetDateTimeCodec
+import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
@@ -43,44 +44,9 @@ fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): Obj
     return parentNode
 }
 
-/*interface ConnectorJsonEncoder {
-    fun toProtobufEncoder(): ProtoEncoder<*>
+interface ProtobufAwareCustomConnectorJsonCodec<T> : JsonCodec<T> {
+    fun valueForProtobufEncoding(v: T): Any?
 }
-
-fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
-    return when (this) {
-        is ConnectorJsonEncoder -> toProtobufEncoder()
-        is LongCodec, -> longProtoEncoder
-        is IntCodec, -> intProtoEncoder
-        is TextCodec, -> textProtoEncoder
-        is BooleanCodec, -> booleanProtoEncoder
-        is OffsetDateTimeCodec, -> offsetDateTimeProtoEncoder
-        is FloatCodec, -> floatProtoEncoder
-        is NullCodec, -> nullProtoEncoder
-        is BinaryCodec, -> binaryProtoEncoder
-        is BigDecimalCodec, -> bigDecimalProtoEncoder
-        is BigDecimalIntegerCodec, -> bigDecimalProtoEncoder
-        is ShortCodec, -> shortProtoEncoder
-        is ByteCodec, -> byteProtoEncoder
-        is DoubleCodec, -> doubleProtoEncoder
-        is JsonBytesCodec, -> binaryProtoEncoder
-        is JsonStringCodec, -> textProtoEncoder
-        is UrlCodec, -> urlProtoEncoder
-        is LocalDateCodec, -> localDateProtoEncoder
-        is LocalTimeCodec, -> localTimeProtoEncoder
-        is LocalDateTimeCodec, -> localDateTimeProtoEncoder
-        is OffsetTimeCodec, -> offsetTimeProtoEncoder
-        is ArrayEncoder<*>, -> arrayProtoEncoder
-        else -> anyProtoEncoder
-    }
-}
-
-fun interface ProtoEncoder<T> {
-    fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: T
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder
-}*/
 
 /**
  * Transforms a field value into a protobuf-compatible representation. Handles special conversions
@@ -96,6 +62,10 @@ fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
             is CdcOffsetDateTimeCodec ->
                 (value as OffsetDateTime).format(OffsetDateTimeCodec.formatter)
             is ArrayEncoder<*> -> fve.encode().toString()
+            is ProtobufAwareCustomConnectorJsonCodec<*> ->
+                (fve.jsonEncoder as ProtobufAwareCustomConnectorJsonCodec).valueForProtobufEncoding(
+                    value
+                )
             else -> value
         }
     }
