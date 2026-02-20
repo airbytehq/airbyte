@@ -90,8 +90,6 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-
-
 ### Download files
 
 Some connectors support a `download` action that returns file content as a binary stream instead of JSON. This is used for entities like attachments, audio recordings, and documents. To check whether a connector supports downloads, see the connector's [reference documentation](/ai-agents/connectors).
