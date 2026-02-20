@@ -122,8 +122,8 @@ export const DestinationConfiguration = ({ endpointData }: { endpointData: Optio
 
   const configurationSchema = {
     oneOf: destinationConfigs.map(config => ({
+      ...config.schema,
       title: config.id,
-      ...config.schema
     }))
   };
 
