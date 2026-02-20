@@ -1,0 +1,2643 @@
+version: 6.0.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - employees
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        header: Authorization
+        api_token: Token {{ config['api_token'] }}
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+          - type: DefaultErrorHandler
+            max_retries: 10
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                failure_type: transient_error
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 500
+                  - 502
+                  - 503
+                  - 504
+                failure_type: transient_error
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                regex: ([-+]?\d+)
+                header: Retry-After
+                max_waiting_time_in_seconds: 3600
+              - type: ExponentialBackoffStrategy
+                factor: 5
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response['next'] }}"
+          stop_condition: "{{ 'next' not in response }}"
+
+streams:
+  - type: DeclarativeStream
+    name: employees
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/employees
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: employee_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - employee_id
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          employee_id:
+            type: string
+          linked_user:
+            type:
+              - string
+              - "null"
+          final_process_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations: []
+  - type: DeclarativeStream
+    name: attribute-worksheets
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/attribute-worksheets
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          workbook:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+          columns:
+            type:
+              - object
+              - "null"
+            properties:
+              object:
+                type:
+                  - string
+                  - "null"
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    object:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    variant:
+                      type:
+                        - string
+                        - "null"
+                    data_type:
+                      type:
+                        - string
+                        - "null"
+                    user_defined:
+                      type:
+                        - boolean
+                        - "null"
+                    read_only:
+                      type:
+                        - boolean
+                        - "null"
+                    worksheet_id:
+                      type:
+                        - string
+                        - "null"
+                    worksheet_name:
+                      type:
+                        - string
+                        - "null"
+                    source_column:
+                      type:
+                        - string
+                        - "null"
+                    source_field_name:
+                      type:
+                        - string
+                        - "null"
+                    source_field_label:
+                      type:
+                        - string
+                        - "null"
+                    source:
+                      type:
+                        - string
+                        - "null"
+                    parent_column:
+                      type:
+                        - string
+                        - "null"
+                    is_primary_key:
+                      type:
+                        - boolean
+                        - "null"
+              total_count:
+                type:
+                  - number
+                  - "null"
+          is_hidden:
+            type:
+              - boolean
+              - "null"
+          pk_type:
+            type:
+              - string
+              - "null"
+          pk_column_uuids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          columns_width:
+            type:
+              - object
+              - "null"
+            properties:
+              9287ae66-90fb-46c9-91f5-fd156ede84d3:
+                type:
+                  - number
+                  - "null"
+          records_per_page:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: payouts
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/payouts/payout-dates
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          payout_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: report-model
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/report-models
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          worksheets:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                object:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                is_hidden:
+                  type:
+                    - boolean
+                    - "null"
+          period_dates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                object:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                date:
+                  type:
+                    - string
+                    - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: data-workbooks
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/data-workbooks
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          worksheets:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                object:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: data-worksheets
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/data-workbooks
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          worksheets:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                object:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: employee-assumptions
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/employee-assumptions
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          employee:
+            type:
+              - string
+              - "null"
+          display_value:
+            type:
+              - string
+              - "null"
+          period_group:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          payout_currency:
+            type:
+              - string
+              - "null"
+          hierarchy_group_override:
+            type:
+              - string
+              - "null"
+          payout_date_override:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          statement_template:
+            type:
+              - string
+              - "null"
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              "null":
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth NRR Target:
+                type:
+                  - string
+                  - "null"
+              MBO Weight Q3:
+                type:
+                  - string
+                  - "null"
+              MBO Weight Q2:
+                type:
+                  - string
+                  - "null"
+              OTC (LC):
+                type:
+                  - string
+                  - "null"
+              Hire Date:
+                type:
+                  - string
+                  - "null"
+              USD Conv Rate:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth ARR Target Weight:
+                type:
+                  - string
+                  - "null"
+              MBO Weight Q4:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth ARR Target:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth NRR Target Weight:
+                type:
+                  - string
+                  - "null"
+              MBO Weight Q1:
+                type:
+                  - string
+                  - "null"
+              Employee First Name:
+                type:
+                  - string
+                  - "null"
+              Employee Last Name:
+                type:
+                  - string
+                  - "null"
+              OTC Proration (Months):
+                type:
+                  - string
+                  - "null"
+              ARR Weight %:
+                type:
+                  - string
+                  - "null"
+              Team Member Job Title:
+                type:
+                  - string
+                  - "null"
+              NRR Weight %:
+                type:
+                  - string
+                  - "null"
+              Target Currency:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth ARR Threshold:
+                type:
+                  - string
+                  - "null"
+              FYV NRR Consulting Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV NRR Consulting Target:
+                type:
+                  - string
+                  - "null"
+              FYV Renewals ARR Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV Renewals ARR Target:
+                type:
+                  - string
+                  - "null"
+              FYV Renewal ARR Threshold:
+                type:
+                  - string
+                  - "null"
+              Liam's Opp OTPR:
+                type:
+                  - string
+                  - "null"
+              SQL Q3:
+                type:
+                  - string
+                  - "null"
+              SQL Q1:
+                type:
+                  - string
+                  - "null"
+              Opps Gen Base Rate:
+                type:
+                  - string
+                  - "null"
+              Opps Generated Q4:
+                type:
+                  - string
+                  - "null"
+              SQL Q2:
+                type:
+                  - string
+                  - "null"
+              Opps Generated Q3:
+                type:
+                  - string
+                  - "null"
+              Opps Generated Q2:
+                type:
+                  - string
+                  - "null"
+              SQL Q4:
+                type:
+                  - string
+                  - "null"
+              Opps Generated Q1:
+                type:
+                  - string
+                  - "null"
+              Liam SQL OTPR:
+                type:
+                  - string
+                  - "null"
+              SQL Outbound multiplier:
+                type:
+                  - string
+                  - "null"
+              Opp Weight:
+                type:
+                  - string
+                  - "null"
+              SQL Weight:
+                type:
+                  - string
+                  - "null"
+              SQL OTPR (Manager):
+                type:
+                  - string
+                  - "null"
+              SDR Team:
+                type:
+                  - string
+                  - "null"
+              Opp OTPR (Manager):
+                type:
+                  - string
+                  - "null"
+              Booking Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV Device Target:
+                type:
+                  - string
+                  - "null"
+              Conversion Rate:
+                type:
+                  - string
+                  - "null"
+              OTPR 1:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Target Weight:
+                type:
+                  - string
+                  - "null"
+              MBO Weight:
+                type:
+                  - string
+                  - "null"
+              Revenue Goal Weight:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Combined Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV Target:
+                type:
+                  - string
+                  - "null"
+              FYV Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Team Target Original:
+                type:
+                  - string
+                  - "null"
+              FYV Renewal Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV Renewal Team Target:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Team Target:
+                type:
+                  - string
+                  - "null"
+              OTPR:
+                type:
+                  - string
+                  - "null"
+              Original OTPR:
+                type:
+                  - string
+                  - "null"
+              FYV Personal Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth - Data Center Target:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Renewal - Devices Target:
+                type:
+                  - string
+                  - "null"
+              FYV Personal Target:
+                type:
+                  - string
+                  - "null"
+              FYV Data Center Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV IoT Target Weight:
+                type:
+                  - string
+                  - "null"
+              Devices Team Target Weight:
+                type:
+                  - string
+                  - "null"
+              Devices Team Target:
+                type:
+                  - string
+                  - "null"
+              FYV IoT Target:
+                type:
+                  - string
+                  - "null"
+              OTPR 3:
+                type:
+                  - string
+                  - "null"
+              Opps Gen Accelerated Rate (USD):
+                type:
+                  - string
+                  - "null"
+              Per Lead Rate (USD):
+                type:
+                  - string
+                  - "null"
+              Opps Gen Base Rate (USD):
+                type:
+                  - string
+                  - "null"
+              OTPR 2:
+                type:
+                  - string
+                  - "null"
+              Assigned Alliances:
+                type:
+                  - string
+                  - "null"
+          period_group_final_process_date:
+            type:
+              - string
+              - "null"
+          assignment_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: hierarchy-groups
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/hierarchy-groups
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          default:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: transformation-worksheets
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/transformation-worksheets
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          workbook:
+            type:
+              - string
+              - "null"
+          workbook_name:
+            type:
+              - string
+              - "null"
+          columns:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                object:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                variant:
+                  type:
+                    - string
+                    - "null"
+                data_type:
+                  type:
+                    - string
+                    - "null"
+                format:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    comma:
+                      type:
+                        - boolean
+                        - "null"
+                    places:
+                      type:
+                        - string
+                        - "null"
+                formula:
+                  type:
+                    - string
+                    - "null"
+                read_only:
+                  type:
+                    - boolean
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: uploads
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/uploads
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          url:
+            type:
+              - string
+              - "null"
+          object_type:
+            type:
+              - string
+              - "null"
+          file_name:
+            type:
+              - string
+              - "null"
+          encoding:
+            type:
+              - string
+              - "null"
+          date_format:
+            type:
+              - string
+              - "null"
+          delimiter:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          params:
+            type:
+              - object
+              - "null"
+          details:
+            type:
+              - object
+              - "null"
+            properties:
+              process_url:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/users
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          email:
+            type:
+              - string
+              - "null"
+          login_id:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          enable_inquiry_notifications:
+            type:
+              - boolean
+              - "null"
+          enable_statement_notifications:
+            type:
+              - boolean
+              - "null"
+          eligible_to_receive_inquiries:
+            type:
+              - boolean
+              - "null"
+          eligible_to_submit_inquiries:
+            type:
+              - boolean
+              - "null"
+          enable_payout_processing_notifications:
+            type:
+              - boolean
+              - "null"
+          enable_connector_sync_email_notifications:
+            type:
+              - boolean
+              - "null"
+          enable_scim_email_notifications:
+            type:
+              - boolean
+              - "null"
+          enable_audit_log_export_notifications:
+            type:
+              - boolean
+              - "null"
+          is_organization_admin:
+            type:
+              - boolean
+              - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          linked_employee:
+            type:
+              - string
+              - "null"
+          last_activity:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          locale:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: commission-plans
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/plans
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          period_groups:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+          payout_dates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+          name:
+            type:
+              - string
+              - "null"
+          confetti_enabled:
+            type:
+              - boolean
+              - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          preview_config:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          attainment_display_setting:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: period-groups
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/payouts/period-groups
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          plan:
+            type:
+              - string
+              - "null"
+          payout_dates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          name:
+            type:
+              - string
+              - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          is_deleted:
+            type:
+              - boolean
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    name: audit-logs
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/audit-logs
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          version:
+            type:
+              - number
+              - "null"
+          id:
+            type: string
+          object:
+            type:
+              - string
+              - "null"
+          organization_id:
+            type:
+              - string
+              - "null"
+          organization_name:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          user_name:
+            type:
+              - string
+              - "null"
+          user_email:
+            type:
+              - string
+              - "null"
+          logged_in_user_id:
+            type:
+              - string
+              - "null"
+          logged_in_user_name:
+            type:
+              - string
+              - "null"
+          logged_in_user_email:
+            type:
+              - string
+              - "null"
+          ip_address:
+            type:
+              - string
+              - "null"
+          created_at:
+            type: string
+          event_type:
+            type:
+              - string
+              - "null"
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              after:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  sorts:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        order:
+                          type:
+                            - string
+                            - "null"
+                        transformation_column_name:
+                          type:
+                            - string
+                            - "null"
+                  sources:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        filters:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              value:
+                                anyOf:
+                                  - type: string
+                                  - type: array
+                                    items:
+                                      type: string
+                              operation:
+                                type:
+                                  - string
+                                  - "null"
+                              column_uuid:
+                                type:
+                                  - string
+                                  - "null"
+                        worksheet_name:
+                          type:
+                            - string
+                            - "null"
+                        worksheet_uuid:
+                          type:
+                            - string
+                            - "null"
+                        selected_columns:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                  is_hidden:
+                    type:
+                      - boolean
+                      - "null"
+                  connections:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        link:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            left:
+                              type:
+                                - string
+                                - "null"
+                            right:
+                              type:
+                                - string
+                                - "null"
+                        join_type:
+                          type:
+                            - string
+                            - "null"
+                        conditions:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              left:
+                                type:
+                                  - string
+                                  - "null"
+                              right:
+                                type:
+                                  - string
+                                  - "null"
+                              operation:
+                                type:
+                                  - string
+                                  - "null"
+                  terminal_filters:
+                    type:
+                      - array
+                      - "null"
+                  transformation_columns:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        source_id:
+                          type:
+                            - string
+                            - "null"
+                        column_uuid:
+                          type:
+                            - string
+                            - "null"
+                        mapping_type:
+                          type:
+                            - string
+                            - "null"
+                        transformed_column_uuid:
+                          type:
+                            - string
+                            - "null"
+                        merged_columns:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                              source_id:
+                                type:
+                                  - string
+                                  - "null"
+                              column_uuid:
+                                type:
+                                  - string
+                                  - "null"
+                              mapping_type:
+                                type:
+                                  - string
+                                  - "null"
+                              transformed_column_uuid:
+                                type:
+                                  - string
+                                  - "null"
+                  formula:
+                    type:
+                      - string
+                      - "null"
+                  format:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      comma:
+                        type:
+                          - boolean
+                          - "null"
+                      places:
+                        type:
+                          - string
+                          - "null"
+                  variant:
+                    type:
+                      - string
+                      - "null"
+                  data_type:
+                    type:
+                      - string
+                      - "null"
+                  file_name:
+                    type:
+                      - string
+                      - "null"
+                  object_name:
+                    type:
+                      - string
+                      - "null"
+                  object_type:
+                    type:
+                      - string
+                      - "null"
+                  upload_mode:
+                    type:
+                      - string
+                      - "null"
+                  data:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      OTPR:
+                        type:
+                          - string
+                          - "null"
+                      Ramp:
+                        type:
+                          - string
+                          - "null"
+                      OTC (LC):
+                        type:
+                          - string
+                          - "null"
+                      Start Date:
+                        type:
+                          - string
+                          - "null"
+                      Accel start:
+                        type:
+                          - string
+                          - "null"
+                      Accelerator:
+                        type:
+                          - string
+                          - "null"
+                      Employee ID:
+                        type:
+                          - string
+                          - "null"
+                      Employee Name:
+                        type:
+                          - string
+                          - "null"
+                      Local Currency:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Expansion Target:
+                        type:
+                          - string
+                          - "null"
+                      Notes:
+                        type:
+                          - string
+                          - "null"
+                      End Tier:
+                        type:
+                          - string
+                          - "null"
+                      Flat Rate:
+                        type:
+                          - string
+                          - "null"
+                      Unique ID:
+                        type:
+                          - string
+                          - "null"
+                      Start Tier:
+                        type:
+                          - string
+                          - "null"
+                      Table Name:
+                        type:
+                          - string
+                          - "null"
+                      Tier Number:
+                        type:
+                          - string
+                          - "null"
+                      FYV Target:
+                        type:
+                          - string
+                          - "null"
+                      OTPR ARR:
+                        type:
+                          - string
+                          - "null"
+                      Vertical:
+                        type:
+                          - string
+                          - "null"
+                      MBO Weight:
+                        type:
+                          - string
+                          - "null"
+                      Vertical gate:
+                        type:
+                          - string
+                          - "null"
+                      Effective Date:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Growth Target:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Growth Target Weight:
+                        type:
+                          - string
+                          - "null"
+                      FYV Renewals Target:
+                        type:
+                          - string
+                          - "null"
+                  employee:
+                    type:
+                      - string
+                      - "null"
+                  envelope_data:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      status:
+                        type:
+                          - string
+                          - "null"
+                      templateId:
+                        type:
+                          - string
+                          - "null"
+                      emailSubject:
+                        type:
+                          - string
+                          - "null"
+                      templateRoles:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            name:
+                              type:
+                                - string
+                                - "null"
+                            email:
+                              type:
+                                - string
+                                - "null"
+                            roleName:
+                              type:
+                                - string
+                                - "null"
+                            tabs:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                textTabs:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      value:
+                                        type:
+                                          - string
+                                          - "null"
+                                      tabLabel:
+                                        type:
+                                          - string
+                                          - "null"
+                  docusign_account_id:
+                    type:
+                      - string
+                      - "null"
+                  docusign_envelope_id:
+                    type:
+                      - string
+                      - "null"
+                  end_date:
+                    type:
+                      - string
+                      - "null"
+                  start_date:
+                    type:
+                      - string
+                      - "null"
+                  plan_id:
+                    type:
+                      - string
+                      - "null"
+                  payout_date:
+                    type:
+                      - string
+                      - "null"
+                  period_group_id:
+                    type:
+                      - string
+                      - "null"
+                  hierarchy_group:
+                    type:
+                      - string
+                      - "null"
+                  managing_employee:
+                    type:
+                      - string
+                      - "null"
+                  reporting_employee:
+                    type:
+                      - string
+                      - "null"
+              before:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  formula:
+                    type:
+                      - string
+                      - "null"
+                  sources:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        filters:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              value:
+                                anyOf:
+                                  - type: string
+                                  - type: array
+                                    items:
+                                      type: string
+                              operation:
+                                type:
+                                  - string
+                                  - "null"
+                              column_uuid:
+                                type:
+                                  - string
+                                  - "null"
+                        worksheet_name:
+                          type:
+                            - string
+                            - "null"
+                        worksheet_uuid:
+                          type:
+                            - string
+                            - "null"
+                        selected_columns:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                  data:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      OTPR:
+                        type:
+                          - string
+                          - "null"
+                      Ramp:
+                        type:
+                          - string
+                          - "null"
+                      OTC (LC):
+                        type:
+                          - string
+                          - "null"
+                      Start Date:
+                        type:
+                          - string
+                          - "null"
+                      Accel start:
+                        type:
+                          - string
+                          - "null"
+                      Employee ID:
+                        type:
+                          - string
+                          - "null"
+                      Employee Name:
+                        type:
+                          - string
+                          - "null"
+                      Local Currency:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Expansion Target:
+                        type:
+                          - string
+                          - "null"
+                      FYV Target:
+                        type:
+                          - string
+                          - "null"
+                      OTPR ARR:
+                        type:
+                          - string
+                          - "null"
+                      Template:
+                        type:
+                          - string
+                          - "null"
+                      Effective Date:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Growth Target:
+                        type:
+                          - string
+                          - "null"
+                      Vertical:
+                        type:
+                          - string
+                          - "null"
+                      MBO Weight:
+                        type:
+                          - string
+                          - "null"
+                      Vertical gate:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Growth Target Weight:
+                        type:
+                          - string
+                          - "null"
+                      Unique ID:
+                        type:
+                          - string
+                          - "null"
+                      RampUp_Days:
+                        type:
+                          - string
+                          - "null"
+                      FYV Renewals Target:
+                        type:
+                          - string
+                          - "null"
+                  transformation_columns:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        source_id:
+                          type:
+                            - string
+                            - "null"
+                        column_uuid:
+                          type:
+                            - string
+                            - "null"
+                        mapping_type:
+                          type:
+                            - string
+                            - "null"
+                        transformed_column_uuid:
+                          type:
+                            - string
+                            - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  format:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      comma:
+                        type:
+                          - boolean
+                          - "null"
+                      places:
+                        type:
+                          - string
+                          - "null"
+                  is_hidden:
+                    type:
+                      - boolean
+                      - "null"
+                  end_date:
+                    type:
+                      - string
+                      - "null"
+                  start_date:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  plan_id:
+                    type:
+                      - string
+                      - "null"
+                  payout_date:
+                    type:
+                      - string
+                      - "null"
+                  period_group_id:
+                    type:
+                      - string
+                      - "null"
+                  variant:
+                    type:
+                      - string
+                      - "null"
+                  data_type:
+                    type:
+                      - string
+                      - "null"
+                  connections:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        link:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            left:
+                              type:
+                                - string
+                                - "null"
+                            right:
+                              type:
+                                - string
+                                - "null"
+                        join_type:
+                          type:
+                            - string
+                            - "null"
+                        conditions:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              left:
+                                type:
+                                  - string
+                                  - "null"
+                              right:
+                                type:
+                                  - string
+                                  - "null"
+                              operation:
+                                type:
+                                  - string
+                                  - "null"
+                  managing_employee:
+                    type:
+                      - string
+                      - "null"
+                  reporting_employee:
+                    type:
+                      - string
+                      - "null"
+                  hierarchy_group:
+                    type:
+                      - string
+                      - "null"
+                  column:
+                    type:
+                      - string
+                      - "null"
+                  column_id:
+                    type:
+                      - string
+                      - "null"
+                  data_variable_id:
+                    type:
+                      - string
+                      - "null"
+                  period_group_name:
+                    type:
+                      - string
+                      - "null"
+                  data_variable_name:
+                    type:
+                      - string
+                      - "null"
+              source:
+                type:
+                  - string
+                  - "null"
+              is_organization_admin:
+                type:
+                  - boolean
+                  - "null"
+          object_id:
+            type:
+              - string
+              - "null"
+          object_name:
+            type:
+              - string
+              - "null"
+          object_type:
+            type:
+              - string
+              - "null"
+          parent_objects:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                object_id:
+                  type:
+                    - string
+                    - "null"
+                object_name:
+                  type:
+                    - string
+                    - "null"
+                object_type:
+                  type:
+                    - string
+                    - "null"
+        required:
+          - id
+          - created_at
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: start_date
+        inject_into: request_parameter
+    primary_key: id
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - start_date
+    properties:
+      api_token:
+        type: string
+        order: 0
+        title: API Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    users:
+      isStale: false
+      hasRecords: true
+      streamHash: d09642b484c06053644014b43d45daf8d7a1ddb6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payouts:
+      isStale: false
+      hasRecords: true
+      streamHash: 3abc3936f4a4e0f9d1045d4417fa8e2edae613d9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    uploads:
+      isStale: false
+      hasRecords: true
+      streamHash: c4f76415a428225f04fe74bb9a41de3ca6d95009
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    employees:
+      isStale: false
+      hasRecords: true
+      streamHash: 481e16d964596db66f1d8870b8f485ce0b4687cd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audit-logs:
+      isStale: false
+      hasRecords: true
+      streamHash: 2964ffcb8047d60c3ece4fa5c64e2dce9a61f58d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    report-model:
+      isStale: false
+      hasRecords: true
+      streamHash: 69c06aacb892ecbb29f01ee6580f45f495b76501
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    period-groups:
+      isStale: false
+      hasRecords: true
+      streamHash: decce2d37bf502fc81303d4dc2aba69ac0fafd2e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    data-workbooks:
+      isStale: false
+      hasRecords: true
+      streamHash: 8f31b052e0ac68b75707d8f3d9d35c532f157bbb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    data-worksheets:
+      isStale: false
+      hasRecords: true
+      streamHash: 0a1b26c43b3286b31860d52390bdb357b7fa6aa0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    commission-plans:
+      isStale: false
+      hasRecords: true
+      streamHash: bcf369aca46423d97f26c609b7a64f57df8a1b73
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    hierarchy-groups:
+      isStale: false
+      hasRecords: true
+      streamHash: 359796fc406d2030e1c37a32923fc7bfb4cfc937
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    attribute-worksheets:
+      isStale: false
+      hasRecords: true
+      streamHash: 77c399b15747115a67b4139fe3de93cabec4ed95
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    employee-assumptions:
+      isStale: false
+      hasRecords: true
+      streamHash: 004041216bcf6df1b6227c8a98172a3c2a81aaf4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transformation-worksheets:
+      isStale: false
+      hasRecords: true
+      streamHash: 94a9916dd8624070140098537b5c06e415d93380
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    users: true
+    payouts: true
+    uploads: true
+    employees: true
+    audit-logs: true
+    report-model: true
+    period-groups: true
+    data-workbooks: true
+    data-worksheets: true
+    commission-plans: true
+    hierarchy-groups: true
+    attribute-worksheets: true
+    employee-assumptions: true
+    transformation-worksheets: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
