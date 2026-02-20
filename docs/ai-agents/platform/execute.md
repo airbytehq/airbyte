@@ -92,6 +92,74 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 
 
+### Download files
+
+Some connectors support a `download` action that returns file content as a binary stream instead of JSON. This is used for entities like attachments, audio recordings, and documents. To check whether a connector supports downloads, see the connector's [reference documentation](/ai-agents/connectors).
+
+Connectors provide two methods for downloading files:
+
+- **`download()`** returns an `AsyncIterator[bytes]`, giving you full control over how and where to write the data.
+- **`download_local()`** is a convenience wrapper that downloads the file and saves it to a path you specify.
+
+#### Local mode
+
+In local mode, you provide API credentials directly. Use `download_local()` to download a file and save it to disk in one step:
+
+```python title="download.py"
+import asyncio
+from airbyte_agent_zendesk_support import ZendeskSupportConnector
+
+connector = ZendeskSupportConnector(
+    auth_config={"api_token": "your_api_token", "email": "you@example.com"},
+    config_values={"subdomain": "your_subdomain"},
+)
+
+async def main():
+    file_path = await connector.attachments.download_local(
+        attachment_id="12345",
+        path="./downloads/ticket_attachment.pdf",
+    )
+    print(f"Saved to {file_path}")
+
+asyncio.run(main())
+```
+
+If you need more control, use `download()` directly to get the raw byte stream:
+
+```python title="download_raw.py"
+async def main():
+    stream = await connector.attachments.download(attachment_id="12345")
+    with open("./downloads/ticket_attachment.pdf", "wb") as f:
+        async for chunk in stream:
+            f.write(chunk)
+```
+
+#### Hosted mode
+
+In hosted mode, credentials are managed by Airbyte Cloud. The download methods work the same way — only the connector setup differs:
+
+```python title="download_hosted.py"
+import asyncio
+from airbyte_agent_zendesk_support import ZendeskSupportConnector, AirbyteHostedAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=AirbyteHostedAuthConfig(
+        airbyte_client_id="your_client_id",
+        airbyte_client_secret="your_client_secret",
+        connector_id="your_connector_id",
+    ),
+)
+
+async def main():
+    file_path = await connector.attachments.download_local(
+        attachment_id="12345",
+        path="./downloads/ticket_attachment.pdf",
+    )
+    print(f"Saved to {file_path}")
+
+asyncio.run(main())
+```
+
 ### Introspection
 
 Connectors provide programmatic introspection methods for runtime discovery. These methods are available in the Python SDK.
@@ -197,6 +265,50 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
       "limit": 100
     }
   }'
+```
+
+### Example: Download a file
+
+Some connectors support a `download` action for entities like attachments and media files. Unlike other actions that return JSON, download responses return raw binary content with a `Content-Disposition` header.
+
+This example downloads a ticket attachment from a Zendesk Support connector:
+
+```bash title="Request"
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
+  --header 'Authorization: Bearer <your_application_token>' \
+  --header 'Content-Type: application/json' \
+  --output attachment.pdf \
+  --data '{
+    "entity": "attachments",
+    "action": "download",
+    "params": {
+      "attachment_id": "<attachment_id>"
+    }
+  }'
+```
+
+You can also stream the response in your application code. For example, using Python with `requests`:
+
+```python title="download_api.py"
+import requests
+
+response = requests.post(
+    "https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute",
+    headers={
+        "Authorization": "Bearer <your_application_token>",
+        "Content-Type": "application/json",
+    },
+    json={
+        "entity": "attachments",
+        "action": "download",
+        "params": {"attachment_id": "<attachment_id>"},
+    },
+    stream=True,
+)
+
+with open("attachment.pdf", "wb") as f:
+    for chunk in response.iter_content(chunk_size=8192):
+        f.write(chunk)
 ```
 
 ### Response format
