@@ -25,8 +25,6 @@ Optionally, enter a **Start Date** in UTC format (`YYYY-MM-DDTHH:MM:SSZ`). This 
 
 </FieldAnchor>
 
-<HideInUI>
-
 ## Supported sync modes
 
 The Pylon source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -44,11 +42,11 @@ The Pylon source connector supports the following streams:
 - [Contacts](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/contacts)
 - [Custom Fields](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/custom-fields)
 - [Issues](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/issues) (Incremental)
-- [Issue Messages](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/messages) (child of Issues)
+  - [Issue Messages](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/messages)
+  - [Issue Threads](https://docs.usepylon.com/pylon-docs/developer/api/api-reference)
 - [Issue Statuses](https://docs.usepylon.com/pylon-docs/developer/api/api-reference)
-- [Issue Threads](https://docs.usepylon.com/pylon-docs/developer/api/api-reference) (child of Issues)
-- [Knowledge Base Articles](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/knowledge-base) (child of Knowledge Bases)
 - [Knowledge Bases](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/knowledge-base)
+  - [Knowledge Base Articles](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/knowledge-base)
 - [Tags](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/tags)
 - [Teams](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/teams)
 - [Ticket Forms](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/ticket-forms)
@@ -79,5 +77,3 @@ The Pylon API enforces per-endpoint rate limits. The Issues endpoint allows 10 r
 | 0.0.1   | 2026-02-20 | [73624](https://github.com/airbytehq/airbyte/pull/73624) | Initial release of Pylon source connector |
 
 </details>
-
-</HideInUI>
