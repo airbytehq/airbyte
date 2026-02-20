@@ -24,18 +24,12 @@
         "sourceType": {
           "title": "aha",
           "const": "aha",
-          "enum": [
-            "aha"
-          ],
+          "enum": ["aha"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "api_key",
-        "url",
-        "sourceType"
-      ],
+      "required": ["api_key", "url", "sourceType"],
       "type": "object"
     },
     {
@@ -60,18 +54,12 @@
         "sourceType": {
           "title": "100ms",
           "const": "100ms",
-          "enum": [
-            "100ms"
-          ],
+          "enum": ["100ms"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "management_token",
-        "start_date",
-        "sourceType"
-      ],
+      "required": ["management_token", "start_date", "sourceType"],
       "type": "object"
     },
     {
@@ -96,18 +84,12 @@
         "sourceType": {
           "title": "7shifts",
           "const": "7shifts",
-          "enum": [
-            "7shifts"
-          ],
+          "enum": ["7shifts"],
           "order": 0,
           "type": "string"
         }
       },
-      "required": [
-        "access_token",
-        "start_date",
-        "sourceType"
-      ],
+      "required": ["access_token", "start_date", "sourceType"],
       "type": "object"
     }
   ]

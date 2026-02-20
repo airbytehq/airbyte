@@ -27,14 +27,6 @@ const SOURCE_CONFIGS_DEREFERENCED_PATH = path.join(
   "source-configs-dereferenced.json",
 );
 
-// Path to the dereferenced destination configurations (extracted at build time)
-const DESTINATION_CONFIGS_DEREFERENCED_PATH = path.join(
-  PROJECT_ROOT,
-  "src",
-  "data",
-  "destination-configs-dereferenced.json",
-);
-
 // URL for fetching the latest public API specification
 const PUBLIC_API_SPEC_BASE_URL =
   "https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/";
@@ -85,7 +77,6 @@ module.exports = {
   PROJECT_ROOT,
   PUBLIC_API_SPEC_CACHE_PATH,
   SOURCE_CONFIGS_DEREFERENCED_PATH,
-  DESTINATION_CONFIGS_DEREFERENCED_PATH,
   PUBLIC_API_SPEC_BASE_URL,
   PUBLIC_SPEC_FILE_NAMES,
   CONFIG_API_SPEC_URL,

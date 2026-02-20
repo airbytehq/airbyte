@@ -45,10 +45,7 @@ function createApiPageMD(pageData) {
     saveEndpointsData();
 
     // Replace RequestSchema based on where the configuration is found
-    const { hasRequestConfiguration, hasResponseConfiguration, isDestination } = endpointInfo;
-
-    const requestComponent = isDestination ? 'DestinationRequestSchema' : 'SourceRequestSchema';
-    const responseComponent = isDestination ? 'DestinationResponseSchema' : 'SourceResponseSchema';
+    const { hasRequestConfiguration, hasResponseConfiguration } = endpointInfo;
 
     if (hasRequestConfiguration) {
       // Replace RequestSchema imports
@@ -56,14 +53,14 @@ function createApiPageMD(pageData) {
         /import\s+RequestSchema\s+from\s+["']@theme\/RequestSchema["'];?/g;
       markdown = markdown.replace(
         importPattern,
-        `// ${requestComponent} is auto-registered in MDXComponents`,
+        "// SourceRequestSchema is auto-registered in MDXComponents",
       );
 
       // Replace <RequestSchema ... /> components
       const componentPattern = /<RequestSchema\s+[^>]*\/>/gs;
       markdown = markdown.replace(
         componentPattern,
-        `<${requestComponent} pageId="${pageId}" />`,
+        `<SourceRequestSchema pageId="${pageId}" />`,
       );
 
       // Replace <RequestSchema ... > ... </RequestSchema> components
@@ -71,7 +68,7 @@ function createApiPageMD(pageData) {
         /<RequestSchema\s+[^>]*>[\s\S]*?<\/RequestSchema>/g;
       markdown = markdown.replace(
         multilinePattern,
-        `<${requestComponent} pageId="${pageId}" />`,
+        `<SourceRequestSchema pageId="${pageId}" />`,
       );
     }
 
@@ -82,19 +79,19 @@ function createApiPageMD(pageData) {
         /import\s+StatusCodes\s+from\s+["']@theme\/StatusCodes["'];?\n?/g;
       markdown = markdown.replace(statusCodesImportPattern, "");
 
-      // Replace <StatusCodes ... /> components
+      // Replace <StatusCodes ... /> components with SourceResponseSchema
       const statusCodesComponentPattern = /<StatusCodes\s+[^>]*\/>/gs;
       markdown = markdown.replace(
         statusCodesComponentPattern,
-        `<${responseComponent} pageId="${pageId}" />`,
+        `<SourceResponseSchema pageId="${pageId}" />`,
       );
 
-      // Replace <StatusCodes ... > ... </StatusCodes> components
+      // Replace <StatusCodes ... > ... </StatusCodes> components with SourceResponseSchema
       const statusCodesMultilinePattern =
         /<StatusCodes\s+[^>]*>[\s\S]*?<\/StatusCodes>/g;
       markdown = markdown.replace(
         statusCodesMultilinePattern,
-        `<${responseComponent} pageId="${pageId}" />`,
+        `<SourceResponseSchema pageId="${pageId}" />`,
       );
     }
 
@@ -205,9 +202,6 @@ function extractEndpointInfo(pageData) {
       delete responsesByStatus[statusCode]._schema;
     }
 
-    const configInfo = requestInfo || responseInfo;
-    const isDestination = configInfo ? configInfo.isDestination : false;
-
     // If we found configuration in either request or response, return the data
     if (requestInfo) {
       return {
@@ -217,8 +211,7 @@ function extractEndpointInfo(pageData) {
         requestBodyProperties: requestInfo.properties,
         responsesByStatus: responsesByStatus,
         hasRequestConfiguration: true,
-        hasResponseConfiguration: !!responseInfo,
-        isDestination
+        hasResponseConfiguration: !!responseInfo
       };
     }
 
@@ -231,8 +224,7 @@ function extractEndpointInfo(pageData) {
         requestBodyProperties: [],
         responsesByStatus: responsesByStatus,
         hasRequestConfiguration: false,
-        hasResponseConfiguration: true,
-        isDestination
+        hasResponseConfiguration: true
       };
     }
 
@@ -279,8 +271,7 @@ function extractConfigurationInfo(schema, source) {
 
   return {
     configProp,
-    properties,
-    isDestination: isDestConfig
+    properties
   };
 }
 
