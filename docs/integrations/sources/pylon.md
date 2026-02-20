@@ -47,7 +47,7 @@ The Pylon API enforces rate limits. The connector uses exponential backoff to ha
 | Parameter    | Type   | Required | Description                                                                 |
 | :----------- | :----- | :------- | :-------------------------------------------------------------------------- |
 | `api_token`  | string | Yes      | Your Pylon API token.                                                       |
-| `start_date` | string | Yes      | The date from which to start syncing data, in UTC. Format: YYYY-MM-DDTHH:MM:SSZ |
+| `start_date` | string | No       | The date from which to start syncing data, in UTC. Format: YYYY-MM-DDTHH:MM:SSZ. Defaults to 1 month ago. |
 
 ## Changelog
 
@@ -56,6 +56,7 @@ The Pylon API enforces rate limits. The connector uses exponential backoff to ha
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.0.2   | 2026-02-20 | [73693](https://github.com/airbytehq/airbyte/pull/73693) | Make start_date optional, default to 1 month ago |
 | 0.0.1   | 2026-02-18 | [73624](https://github.com/airbytehq/airbyte/pull/73624) | Initial release of Pylon source connector |
 
 </details>
