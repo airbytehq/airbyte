@@ -76,7 +76,7 @@ from airbyte_agent_tiktok_marketing import TiktokMarketingConnector, AirbyteAuth
 
 connector = TiktokMarketingConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -120,7 +120,7 @@ See the official [Tiktok-Marketing API reference](https://business-api.tiktok.co
 
 ## Version information
 
-- **Package version:** 0.1.5
+- **Package version:** 0.1.6
 - **Connector version:** 1.1.2
-- **Generated with Connector SDK commit SHA:** 7cda3ed155d2c6891df692405aa8ab29bd7119cd
+- **Generated with Connector SDK commit SHA:** cb4380e76ac5cbc67b9089f94522be1bbe9f8d73
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/tiktok-marketing/CHANGELOG.md)

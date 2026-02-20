@@ -66,7 +66,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "external_user_id": "<EXTERNAL_USER_ID>",
+    "customer_name": "<CUSTOMER_NAME>",
     "connector_type": "Orb",
     "name": "My Orb Connector",
     "credentials": {
@@ -90,7 +90,7 @@ from airbyte_agent_orb import OrbConnector, AirbyteAuthConfig
 
 connector = OrbConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
