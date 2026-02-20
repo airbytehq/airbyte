@@ -15,7 +15,7 @@ api_budget:
         - limit: 10
           interval: PT1M
       matchers:
-        - url_path_pattern: "^incremental/"
+        - url_path_pattern: "^/incremental/*"
 
 definitions:
   bearer_authenticator:
