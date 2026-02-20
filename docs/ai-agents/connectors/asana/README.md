@@ -1,4 +1,6 @@
-# Asana agent connector
+# Asana
+
+The Asana agent connector is a Python package that equips AI agents to interact with Asana through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Asana is a work management platform that helps teams organize, track, and manage
 projects and tasks. This connector provides access to tasks, projects, workspaces,
@@ -64,16 +66,20 @@ async def asana_execute(entity: str, action: str, params: dict | None = None):
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_asana import AsanaConnector
+from airbyte_agent_asana import AsanaConnector, AirbyteAuthConfig
 
 connector = AsanaConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -90,33 +96,33 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Search](./REFERENCE.md#tasks-search) |
 | Project Tasks | [List](./REFERENCE.md#project-tasks-list) |
 | Workspace Task Search | [List](./REFERENCE.md#workspace-task-search-list) |
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Search](./REFERENCE.md#projects-search) |
 | Task Projects | [List](./REFERENCE.md#task-projects-list) |
 | Team Projects | [List](./REFERENCE.md#team-projects-list) |
 | Workspace Projects | [List](./REFERENCE.md#workspace-projects-list) |
-| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
+| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Search](./REFERENCE.md#workspaces-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
 | Workspace Users | [List](./REFERENCE.md#workspace-users-list) |
 | Team Users | [List](./REFERENCE.md#team-users-list) |
-| Teams | [Get](./REFERENCE.md#teams-get) |
+| Teams | [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
 | Workspace Teams | [List](./REFERENCE.md#workspace-teams-list) |
 | User Teams | [List](./REFERENCE.md#user-teams-list) |
-| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
+| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download), [Search](./REFERENCE.md#attachments-search) |
 | Workspace Tags | [List](./REFERENCE.md#workspace-tags-list) |
-| Tags | [Get](./REFERENCE.md#tags-get) |
+| Tags | [Get](./REFERENCE.md#tags-get), [Search](./REFERENCE.md#tags-search) |
 | Project Sections | [List](./REFERENCE.md#project-sections-list) |
-| Sections | [Get](./REFERENCE.md#sections-get) |
+| Sections | [Get](./REFERENCE.md#sections-get), [Search](./REFERENCE.md#sections-search) |
 | Task Subtasks | [List](./REFERENCE.md#task-subtasks-list) |
 | Task Dependencies | [List](./REFERENCE.md#task-dependencies-list) |
 | Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Asana API docs
 
@@ -124,7 +130,7 @@ See the official [Asana API reference](https://developers.asana.com/reference/re
 
 ## Version information
 
-- **Package version:** 0.19.83
-- **Connector version:** 0.1.12
-- **Generated with Connector SDK commit SHA:** 7aef2bc05710e208111456010b6971a2ad8ed112
+- **Package version:** 0.19.109
+- **Connector version:** 0.1.15
+- **Generated with Connector SDK commit SHA:** cb4380e76ac5cbc67b9089f94522be1bbe9f8d73
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/asana/CHANGELOG.md)

@@ -9,6 +9,9 @@ on:
       - "airbyte-cdk/bulk/core/base/**"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: publish-bulk-cdk-base
   cancel-in-progress: false
