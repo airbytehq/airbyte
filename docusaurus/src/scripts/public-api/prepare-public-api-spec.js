@@ -170,97 +170,6 @@ function mergeSpecs(specs) {
 }
 
 /**
- * Recursively dereferences $ref values in a schema, tracking visited schemas by name to avoid infinite loops
- */
-function dereferenceSchema(schema, schemas, visitedRefs = new Set(), depth = 0, maxDepth = 50) {
-  if (depth > maxDepth) {
-    return schema; // Prevent infinite recursion
-  }
-
-  if (!schema || typeof schema !== "object") {
-    return schema;
-  }
-
-  // Handle $ref
-  if (schema.$ref && typeof schema.$ref === "string") {
-    const refName = schema.$ref.split("/").pop(); // Extract name from "#/components/schemas/Name"
-    // Check if we've already started dereferencing this schema (circular reference)
-    if (visitedRefs.has(refName)) {
-      return schema; // Keep the $ref to break the circular dependency
-    }
-
-    if (schemas[refName]) {
-      // Add to visited before dereferencing to prevent circular loops
-      visitedRefs.add(refName);
-
-      const resolved = dereferenceSchema(
-        JSON.parse(JSON.stringify(schemas[refName])), // Deep clone to avoid object references
-        schemas,
-        visitedRefs,
-        depth + 1,
-        maxDepth
-      );
-
-      // Remove from visited after processing (for sibling branches)
-      visitedRefs.delete(refName);
-
-      // Merge the resolved schema with other properties from the original schema
-      // but remove the $ref since we've now dereferenced it
-      const { $ref, ...schemaWithoutRef } = schema;
-      return { ...schemaWithoutRef, ...resolved };
-    }
-    return schema; // Ref not found, keep as-is
-  }
-
-  // Make a shallow copy of the object to avoid mutating original
-  const result = Array.isArray(schema) ? [...schema] : { ...schema };
-
-  // Recursively process arrays (like oneOf, anyOf, allOf)
-  if (result.oneOf && Array.isArray(result.oneOf)) {
-    result.oneOf = result.oneOf.map((item) =>
-      dereferenceSchema(item, schemas, new Set(visitedRefs), depth + 1, maxDepth)
-    );
-  }
-  if (result.anyOf && Array.isArray(result.anyOf)) {
-    result.anyOf = result.anyOf.map((item) =>
-      dereferenceSchema(item, schemas, new Set(visitedRefs), depth + 1, maxDepth)
-    );
-  }
-  if (result.allOf && Array.isArray(result.allOf)) {
-    result.allOf = result.allOf.map((item) =>
-      dereferenceSchema(item, schemas, new Set(visitedRefs), depth + 1, maxDepth)
-    );
-  }
-  if (result.items) {
-    result.items = dereferenceSchema(result.items, schemas, new Set(visitedRefs), depth + 1, maxDepth);
-  }
-  if (result.properties && typeof result.properties === "object") {
-    const newProps = {};
-    for (const key in result.properties) {
-      newProps[key] = dereferenceSchema(
-        result.properties[key],
-        schemas,
-        new Set(visitedRefs),
-        depth + 1,
-        maxDepth
-      );
-    }
-    result.properties = newProps;
-  }
-  if (result.additionalProperties && typeof result.additionalProperties === "object") {
-    result.additionalProperties = dereferenceSchema(
-      result.additionalProperties,
-      schemas,
-      new Set(visitedRefs),
-      depth + 1,
-      maxDepth
-    );
-  }
-
-  return result;
-}
-
-/**
  * Mapping from operation path + method to the new display tag.
  * Built from the curated tag mapping spreadsheet.
  * Operations not in this mapping will be excluded from the docs.
@@ -492,7 +401,7 @@ function filterSourceConfigurationToCertified(spec, certifiedSourceNames) {
 
 function filterDestinationConfigurationToCertified(spec, certifiedDestinationNames) {
   if (!spec.components?.schemas?.DestinationConfiguration?.oneOf) {
-    console.warn('⚠️  DestinationConfiguration.oneOf not found in spec - skipping filtering');
+    console.warn('\u26a0\ufe0f  DestinationConfiguration.oneOf not found in spec - skipping filtering');
     return spec;
   }
 
@@ -505,7 +414,7 @@ function filterDestinationConfigurationToCertified(spec, certifiedDestinationNam
 
   const filteredCount = destConfig.oneOf.length;
 
-  console.log(`✅ Filtered DestinationConfiguration.oneOf: ${originalCount} → ${filteredCount} certified destinations`);
+  console.log(`\u2705 Filtered DestinationConfiguration.oneOf: ${originalCount} \u2192 ${filteredCount} certified destinations`);
 
   return spec;
 }
@@ -648,7 +557,7 @@ function extractAndDereferenceSourceSchemas(spec) {
 
 function extractAndDereferenceDestinationSchemas(spec) {
   if (!spec.components?.schemas?.DestinationConfiguration?.oneOf) {
-    console.warn('⚠️  DestinationConfiguration.oneOf not found - skipping extraction');
+    console.warn('\u26a0\ufe0f  DestinationConfiguration.oneOf not found - skipping extraction');
     return [];
   }
 
@@ -656,11 +565,11 @@ function extractAndDereferenceDestinationSchemas(spec) {
   const allSchemas = spec.components.schemas;
   const destConfigs = [];
 
-  console.log(`🔍 Extracting ${destConfig.oneOf.length} destination configurations...`);
+  console.log(`\ud83d\udd0d Extracting ${destConfig.oneOf.length} destination configurations...`);
 
   for (const destRef of destConfig.oneOf) {
     if (!destRef.title) {
-      console.warn('⚠️  Destination config without title found, skipping');
+      console.warn('\u26a0\ufe0f  Destination config without title found, skipping');
       continue;
     }
 
@@ -668,7 +577,7 @@ function extractAndDereferenceDestinationSchemas(spec) {
     const destSchema = allSchemas[destId];
 
     if (!destSchema) {
-      console.warn(`⚠️  Could not find schema for ${destId}`);
+      console.warn(`\u26a0\ufe0f  Could not find schema for ${destId}`);
       continue;
     }
 
@@ -681,13 +590,13 @@ function extractAndDereferenceDestinationSchemas(spec) {
         schema: dereferenced
       });
     } catch (error) {
-      console.warn(`⚠️  Error dereferencing ${destId}:`, error instanceof Error ? error.message : String(error));
+      console.warn(`\u26a0\ufe0f  Error dereferencing ${destId}:`, error instanceof Error ? error.message : String(error));
     }
   }
 
   destConfigs.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-  console.log(`✅ Extracted and dereferenced ${destConfigs.length} destination configurations`);
+  console.log(`\u2705 Extracted and dereferenced ${destConfigs.length} destination configurations`);
 
   return destConfigs;
 }
@@ -766,13 +675,11 @@ async function main() {
     try {
       const registry = await fetchRegistry();
       const certifiedSourceNames = extractCertifiedSourceNames(registry);
-      const certifiedDestinationNames = extractCertifiedDestinationNames(registry);
       console.log(`📦 Fetched registry with ${registry.length} connectors`);
       specToUseFiltered = filterSourceConfigurationToCertified(specToUseFiltered, certifiedSourceNames);
-      specToUseFiltered = filterDestinationConfigurationToCertified(specToUseFiltered, certifiedDestinationNames);
     } catch (error) {
       console.warn('⚠️  Could not filter to certified connectors:', error.message);
-      console.log('   Using all configuration items instead');
+      console.log('   Using all SourceConfiguration items instead');
     }
 
     // Apply tags from curated public_api_tags.json and filter to public endpoints only
@@ -789,39 +696,26 @@ async function main() {
     // Extract and dereference source schemas for the component
     console.time("EXTRACT_SCHEMAS");
     const sourceConfigsDeref = extractAndDereferenceSourceSchemas(processedSpec);
-    const destConfigsDeref = extractAndDereferenceDestinationSchemas(processedSpec);
     console.timeEnd("EXTRACT_SCHEMAS");
     console.log(`   📊 Extracted ${sourceConfigsDeref.length} source configurations`);
-    console.log(`   📊 Extracted ${destConfigsDeref.length} destination configurations`);
-
-    // Ensure the data directory exists
-    const dataDir = path.dirname(SOURCE_CONFIGS_DEREFERENCED_PATH);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
 
     // Save dereferenced source configurations to JSON file
     if (sourceConfigsDeref.length > 0) {
-      console.time("SAVE_SOURCE_JSON");
+      console.time("SAVE_JSON");
       const sourceConfigsJson = JSON.stringify(sourceConfigsDeref, null, 2);
+
+      // Ensure the data directory exists
+      const dataDir = path.dirname(SOURCE_CONFIGS_DEREFERENCED_PATH);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+
       fs.writeFileSync(SOURCE_CONFIGS_DEREFERENCED_PATH, sourceConfigsJson);
-      console.timeEnd("SAVE_SOURCE_JSON");
+      console.timeEnd("SAVE_JSON");
       console.log(
         `✅ Source configurations extracted and saved to ${SOURCE_CONFIGS_DEREFERENCED_PATH}`
       );
       console.log(`   📦 JSON file size: ${(sourceConfigsJson.length / 1024).toFixed(2)} KB`);
-    }
-
-    // Save dereferenced destination configurations to JSON file
-    if (destConfigsDeref.length > 0) {
-      console.time("SAVE_DEST_JSON");
-      const destConfigsJson = JSON.stringify(destConfigsDeref, null, 2);
-      fs.writeFileSync(DESTINATION_CONFIGS_DEREFERENCED_PATH, destConfigsJson);
-      console.timeEnd("SAVE_DEST_JSON");
-      console.log(
-        `✅ Destination configurations extracted and saved to ${DESTINATION_CONFIGS_DEREFERENCED_PATH}`
-      );
-      console.log(`   📦 JSON file size: ${(destConfigsJson.length / 1024).toFixed(2)} KB`);
     }
 
     // Ensure the data directory exists

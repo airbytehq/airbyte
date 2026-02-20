@@ -205,8 +205,11 @@ function extractEndpointInfo(pageData) {
       delete responsesByStatus[statusCode]._schema;
     }
 
-    const configInfo = requestInfo || responseInfo;
-    const isDestination = configInfo ? configInfo.isDestination : false;
+    // Determine if this is a destination endpoint
+    const isDestination = !!(
+      (requestInfo && requestInfo.isDestination) ||
+      (responseInfo && responseInfo.isDestination)
+    );
 
     // If we found configuration in either request or response, return the data
     if (requestInfo) {

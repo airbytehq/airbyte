@@ -4050,28 +4050,68 @@ components:
       example:
         user: charles
       oneOf:
+        - title: destination-google-sheets
+          $ref: "#/components/schemas/destination-google-sheets"
+        - title: destination-astra
+          $ref: "#/components/schemas/destination-astra"
+        - title: destination-aws-datalake
+          $ref: "#/components/schemas/destination-aws-datalake"
         - title: destination-azure-blob-storage
           $ref: "#/components/schemas/destination-azure-blob-storage"
         - title: destination-bigquery
           $ref: "#/components/schemas/destination-bigquery"
         - title: destination-clickhouse
           $ref: "#/components/schemas/destination-clickhouse"
+        - title: destination-convex
+          $ref: "#/components/schemas/destination-convex"
         - title: destination-customer-io
           $ref: "#/components/schemas/destination-customer-io"
         - title: destination-databricks
           $ref: "#/components/schemas/destination-databricks"
+        - title: destination-deepset
+          $ref: "#/components/schemas/destination-deepset"
+        - title: destination-dev-null
+          $ref: "#/components/schemas/destination-dev-null"
+        - title: destination-duckdb
+          $ref: "#/components/schemas/destination-duckdb"
+        - title: destination-dynamodb
+          $ref: "#/components/schemas/destination-dynamodb"
+        - title: destination-elasticsearch
+          $ref: "#/components/schemas/destination-elasticsearch"
+        - title: destination-firebolt
+          $ref: "#/components/schemas/destination-firebolt"
+        - title: destination-firestore
+          $ref: "#/components/schemas/destination-firestore"
+        - title: destination-gcs
+          $ref: "#/components/schemas/destination-gcs"
         - title: destination-hubspot
           $ref: "#/components/schemas/destination-hubspot"
         - title: destination-milvus
           $ref: "#/components/schemas/destination-milvus"
+        - title: destination-mongodb
+          $ref: "#/components/schemas/destination-mongodb"
+        - title: destination-motherduck
+          $ref: "#/components/schemas/destination-motherduck"
         - title: destination-mssql
           $ref: "#/components/schemas/destination-mssql"
+        - title: destination-mssql-v2
+          $ref: "#/components/schemas/destination-mssql-v2"
+        - title: destination-mysql
+          $ref: "#/components/schemas/destination-mysql"
+        - title: destination-oracle
+          $ref: "#/components/schemas/destination-oracle"
         - title: destination-pgvector
           $ref: "#/components/schemas/destination-pgvector"
         - title: destination-pinecone
           $ref: "#/components/schemas/destination-pinecone"
         - title: destination-postgres
           $ref: "#/components/schemas/destination-postgres"
+        - title: destination-pubsub
+          $ref: "#/components/schemas/destination-pubsub"
+        - title: destination-qdrant
+          $ref: "#/components/schemas/destination-qdrant"
+        - title: destination-redis
+          $ref: "#/components/schemas/destination-redis"
         - title: destination-redshift
           $ref: "#/components/schemas/destination-redshift"
         - title: destination-s3
@@ -4080,12 +4120,26 @@ components:
           $ref: "#/components/schemas/destination-s3-data-lake"
         - title: destination-salesforce
           $ref: "#/components/schemas/destination-salesforce"
+        - title: destination-sftp-json
+          $ref: "#/components/schemas/destination-sftp-json"
         - title: destination-snowflake
           $ref: "#/components/schemas/destination-snowflake"
         - title: destination-snowflake-cortex
           $ref: "#/components/schemas/destination-snowflake-cortex"
+        - title: destination-surrealdb
+          $ref: "#/components/schemas/destination-surrealdb"
+        - title: destination-teradata
+          $ref: "#/components/schemas/destination-teradata"
+        - title: destination-timeplus
+          $ref: "#/components/schemas/destination-timeplus"
+        - title: destination-typesense
+          $ref: "#/components/schemas/destination-typesense"
+        - title: destination-vectara
+          $ref: "#/components/schemas/destination-vectara"
         - title: destination-weaviate
           $ref: "#/components/schemas/destination-weaviate"
+        - title: destination-yellowbrick
+          $ref: "#/components/schemas/destination-yellowbrick"
     OAuthCredentialsConfiguration:
       description: The values required to configure the source.
       example:
