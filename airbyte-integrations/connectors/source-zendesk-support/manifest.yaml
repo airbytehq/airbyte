@@ -10,9 +10,10 @@ check:
 api_budget:
   type: HTTPAPIBudget
   policies:
-    - type: FixedWindowCallRatePolicy
-      period: PT1M
-      call_limit: 10
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1M
       matchers:
         - url_path_pattern: "^incremental/"
 
