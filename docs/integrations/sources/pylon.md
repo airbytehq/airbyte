@@ -56,6 +56,6 @@ The Pylon API enforces rate limits. The connector uses exponential backoff to ha
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.1.0   | 2026-02-18 | [73624](https://github.com/airbytehq/airbyte/pull/73624) | Initial release of Pylon source connector |
+| 0.0.1   | 2026-02-18 | [73624](https://github.com/airbytehq/airbyte/pull/73624) | Initial release of Pylon source connector |
 
 </details>
