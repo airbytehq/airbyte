@@ -910,10 +910,10 @@ definitions:
         error_handler:
           type: DefaultErrorHandler
           backoff_strategies:
-            - type: ExponentialBackoffStrategy
-              factor: 10
             - type: WaitTimeFromHeader
               header: Retry-After
+            - type: ExponentialBackoffStrategy
+              factor: 10
           response_filters:
             - http_codes: [504]
               action: RETRY
