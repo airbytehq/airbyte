@@ -69,6 +69,7 @@ async def shopify_execute(entity: str, action: str, params: dict | None = None):
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -78,6 +79,7 @@ from airbyte_agent_shopify import ShopifyConnector, AirbyteAuthConfig
 connector = ShopifyConnector(
     auth_config=AirbyteAuthConfig(
         external_user_id="<your_external_user_id>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -141,7 +143,7 @@ See the official [Shopify API reference](https://shopify.dev/docs/api/admin-rest
 
 ## Version information
 
-- **Package version:** 0.1.55
+- **Package version:** 0.1.56
 - **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** 3f4da97b971360f39e879a898fabe79b5362a117
+- **Generated with Connector SDK commit SHA:** 7cda3ed155d2c6891df692405aa8ab29bd7119cd
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/shopify/CHANGELOG.md)
