@@ -105,6 +105,7 @@ const renderBodyProperties = (properties: ResponseBodyProperty[], endpointData: 
 );
 
 export const DestinationResponseSchema = ({ pageId }: DestinationResponseSchemaProps) => {
+  const [selectedStatusIndex, setSelectedStatusIndex] = React.useState(0);
   const endpointData = pageId ? apiEndpointsData[pageId] : null;
   const responsesByStatus = endpointData?.responsesByStatus || {};
 
@@ -113,8 +114,6 @@ export const DestinationResponseSchema = ({ pageId }: DestinationResponseSchemaP
   if (statusCodes.length === 0) {
     return null;
   }
-
-  const [selectedStatusIndex, setSelectedStatusIndex] = React.useState(0);
 
   return (
     <div className={styles.responseSchema}>
