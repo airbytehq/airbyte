@@ -191,7 +191,8 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.3 | 2026-02-10 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
+| 5.1.4 | 2026-02-20 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
+| 5.1.3 | 2026-02-17 | [73508](https://github.com/airbytehq/airbyte/pull/73508) | Update dependencies |
 | 5.1.2 | 2026-02-10 | [72624](https://github.com/airbytehq/airbyte/pull/72624) | Update dependencies |
 | 5.1.1 | 2026-02-03 | [72783](https://github.com/airbytehq/airbyte/pull/72783) | Upgrade CDK version to 7.8.1 |
 | 5.1.0 | 2026-02-02 | [71752](https://github.com/airbytehq/airbyte/pull/71752) | Add user-configurable page_size option for ticket_comments stream |

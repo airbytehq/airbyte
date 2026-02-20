@@ -1,4 +1,6 @@
-# Airtable agent connector
+# Airtable
+
+The Airtable agent connector is a Python package that equips AI agents to interact with Airtable through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Airtable is a cloud-based platform that combines the simplicity of a spreadsheet with the 
 power of a database. This connector provides access to bases, tables, and records for 
@@ -62,6 +64,7 @@ async def airtable_execute(entity: str, action: str, params: dict | None = None)
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -70,7 +73,8 @@ from airbyte_agent_airtable import AirtableConnector, AirbyteAuthConfig
 
 connector = AirtableConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -95,9 +99,9 @@ This connector supports the following entities and actions. For more details, se
 | Records | [List](./REFERENCE.md#records-list), [Get](./REFERENCE.md#records-get) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Airtable API docs
 
@@ -105,7 +109,7 @@ See the official [Airtable API reference](https://airtable.com/developers/web/ap
 
 ## Version information
 
-- **Package version:** 0.1.25
-- **Connector version:** 1.0.4
-- **Generated with Connector SDK commit SHA:** 04691d063af9e36703f1d2a66e2a1df8e9e52dbe
+- **Package version:** 0.1.35
+- **Connector version:** 1.0.5
+- **Generated with Connector SDK commit SHA:** cb4380e76ac5cbc67b9089f94522be1bbe9f8d73
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/airtable/CHANGELOG.md)
