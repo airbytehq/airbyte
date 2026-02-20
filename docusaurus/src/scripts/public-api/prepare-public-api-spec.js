@@ -20,6 +20,7 @@ const {
   PUBLIC_SPEC_FILE_NAMES,
   CONFIG_API_SPEC_URL,
   SOURCE_CONFIGS_DEREFERENCED_PATH,
+  DESTINATION_CONFIGS_DEREFERENCED_PATH,
   PUBLIC_API_TAGS_PATH,
 } = require("./constants");
 
@@ -358,6 +359,18 @@ function extractCertifiedSourceNames(registry) {
   return new Set(certifiedSources);
 }
 
+function extractCertifiedDestinationNames(registry) {
+  const certifiedDestinations = registry
+    .filter(connector =>
+      connector.supportLevel === 'certified' &&
+      connector.dockerRepository_oss &&
+      connector.dockerRepository_oss.includes('destination-')
+    )
+    .map(connector => connector.dockerRepository_oss.replace('airbyte/', ''));
+
+  return new Set(certifiedDestinations);
+}
+
 /**
  * Filters SourceConfiguration.oneOf to include only certified connectors
  * @param {Object} spec - The OpenAPI specification
@@ -382,6 +395,26 @@ function filterSourceConfigurationToCertified(spec, certifiedSourceNames) {
   const filteredCount = sourceConfig.oneOf.length;
 
   console.log(`✅ Filtered SourceConfiguration.oneOf: ${originalCount} → ${filteredCount} certified sources`);
+
+  return spec;
+}
+
+function filterDestinationConfigurationToCertified(spec, certifiedDestinationNames) {
+  if (!spec.components?.schemas?.DestinationConfiguration?.oneOf) {
+    console.warn('\u26a0\ufe0f  DestinationConfiguration.oneOf not found in spec - skipping filtering');
+    return spec;
+  }
+
+  const destConfig = spec.components.schemas.DestinationConfiguration;
+  const originalCount = destConfig.oneOf.length;
+
+  destConfig.oneOf = destConfig.oneOf.filter(item =>
+    item.title && certifiedDestinationNames.has(item.title)
+  );
+
+  const filteredCount = destConfig.oneOf.length;
+
+  console.log(`\u2705 Filtered DestinationConfiguration.oneOf: ${originalCount} \u2192 ${filteredCount} certified destinations`);
 
   return spec;
 }
@@ -457,6 +490,18 @@ function formatSourceName(name) {
     .join(' ');
 }
 
+function formatDestinationName(name) {
+  if (!name.startsWith('destination-')) {
+    return name;
+  }
+
+  const withoutPrefix = name.substring(12);
+  return withoutPrefix
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 /**
  * Extract and dereference all source schemas from SourceConfiguration
  * @param {Object} spec - The OpenAPI specification
@@ -508,6 +553,52 @@ function extractAndDereferenceSourceSchemas(spec) {
   console.log(`✅ Extracted and dereferenced ${sourceConfigs.length} source configurations`);
 
   return sourceConfigs;
+}
+
+function extractAndDereferenceDestinationSchemas(spec) {
+  if (!spec.components?.schemas?.DestinationConfiguration?.oneOf) {
+    console.warn('\u26a0\ufe0f  DestinationConfiguration.oneOf not found - skipping extraction');
+    return [];
+  }
+
+  const destConfig = spec.components.schemas.DestinationConfiguration;
+  const allSchemas = spec.components.schemas;
+  const destConfigs = [];
+
+  console.log(`\ud83d\udd0d Extracting ${destConfig.oneOf.length} destination configurations...`);
+
+  for (const destRef of destConfig.oneOf) {
+    if (!destRef.title) {
+      console.warn('\u26a0\ufe0f  Destination config without title found, skipping');
+      continue;
+    }
+
+    const destId = destRef.title;
+    const destSchema = allSchemas[destId];
+
+    if (!destSchema) {
+      console.warn(`\u26a0\ufe0f  Could not find schema for ${destId}`);
+      continue;
+    }
+
+    try {
+      const dereferenced = dereferenceSchema(destSchema, allSchemas);
+
+      destConfigs.push({
+        id: destId,
+        displayName: formatDestinationName(destId),
+        schema: dereferenced
+      });
+    } catch (error) {
+      console.warn(`\u26a0\ufe0f  Error dereferencing ${destId}:`, error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  destConfigs.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+  console.log(`\u2705 Extracted and dereferenced ${destConfigs.length} destination configurations`);
+
+  return destConfigs;
 }
 
 /**
@@ -580,7 +671,7 @@ async function main() {
 
     let specToUseFiltered = publicSpec;
 
-    // Filter SourceConfiguration to certified connectors only
+    // Filter SourceConfiguration and DestinationConfiguration to certified connectors only
     try {
       const registry = await fetchRegistry();
       const certifiedSourceNames = extractCertifiedSourceNames(registry);

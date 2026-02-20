@@ -44,6 +44,28 @@ function SourceResponseSchema(props) {
   );
 }
 
+function DestinationRequestSchema(props) {
+  return (
+    <BrowserOnly fallback={<div>Loading...</div>}>
+      {() => {
+        const { DestinationRequestSchema: Component } = require("@site/src/components/DestinationRequestSchema");
+        return <Component {...props} />;
+      }}
+    </BrowserOnly>
+  );
+}
+
+function DestinationResponseSchema(props) {
+  return (
+    <BrowserOnly fallback={<div>Loading...</div>}>
+      {() => {
+        const { DestinationResponseSchema: Component } = require("@site/src/components/DestinationResponseSchema");
+        return <Component {...props} />;
+      }}
+    </BrowserOnly>
+  );
+}
+
 export default {
   // Re-use the default mapping
   ...MDXComponents,
@@ -57,6 +79,8 @@ export default {
   SpecSchema,
   SourceRequestSchema,
   SourceResponseSchema,
+  DestinationRequestSchema,
+  DestinationResponseSchema,
   PyAirbyteExample,
   ProductInformation,
   Details,
