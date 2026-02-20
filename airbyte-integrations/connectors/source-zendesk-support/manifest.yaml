@@ -907,6 +907,21 @@ definitions:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
           include: "comment_events"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 10
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          response_filters:
+            - http_codes: [504]
+              action: RETRY
+              error_message: "Gateway timeout waiting for response from stream `{{ parameters.get('name') }}`. Retrying with exponential backoff..."
+            - http_codes: [403, 404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
       record_selector:
         type: RecordSelector
         extractor:
