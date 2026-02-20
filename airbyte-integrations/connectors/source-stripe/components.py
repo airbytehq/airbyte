@@ -3,6 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Iterable, Mapping, MutableMapping
 
 import dpath
@@ -48,7 +49,8 @@ class InvoiceLineItemsEventExtractor(RecordExtractor):
             return
 
         is_deleted = event.get("type", "").endswith(".deleted")
-        invoice_updated = int(event.get("updated", event.get("created", 0)))
+        now_ts = int(datetime.now(timezone.utc).timestamp())
+        invoice_updated = int(event.get("updated", event.get("created", now_ts)))
         invoice_id = invoice.get("id")
         invoice_created = invoice.get("created")
 
