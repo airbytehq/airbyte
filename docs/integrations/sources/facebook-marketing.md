@@ -336,6 +336,7 @@ The primary key for Custom Insights streams depends on the configured **Level** 
 Built-in Ads Insights streams and Prebuilt Ads Insights Reports use `level=ad` by default and always include `ad_id` in the primary key.
 
 ### Entity-Relationship Diagram (ERD)
+
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Facebook Marketing Attribution Reporting
