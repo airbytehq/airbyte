@@ -330,7 +330,7 @@ class MsSqlServerDebeziumOperations(
 
         if (!isLsnValid) {
             return abortCdcSync(
-                "Saved LSN '${savedLsn}' is no longer available in SQL Server transaction logs"
+                "Saved LSN '${savedLsn}' is no longer available in SQL Server CDC data"
             )
         }
 
