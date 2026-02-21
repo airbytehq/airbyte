@@ -6,11 +6,11 @@ package io.airbyte.integrations.destination.gcs_data_lake.spec
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
+import io.airbyte.cdk.spec.annotations.JsonSchemaDescription
+import io.airbyte.cdk.spec.annotations.JsonSchemaInject
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 

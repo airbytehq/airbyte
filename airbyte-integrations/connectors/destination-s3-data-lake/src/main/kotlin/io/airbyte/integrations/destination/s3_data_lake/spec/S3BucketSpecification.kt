@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.s3_data_lake.spec
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonValue
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.spec.annotations.JsonSchemaInject
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 
 // This file is copied from legacy CDK to avoid legacy toolkit dependency
 

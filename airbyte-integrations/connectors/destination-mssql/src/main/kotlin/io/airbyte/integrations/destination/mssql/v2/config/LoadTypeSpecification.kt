@@ -10,10 +10,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientSpecification
+import io.airbyte.cdk.spec.annotations.JsonSchemaDescription
+import io.airbyte.cdk.spec.annotations.JsonSchemaInject
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 
 /**
  * Describes a specification for configuring how data should be loaded into MSSQL (e.g., via INSERT
