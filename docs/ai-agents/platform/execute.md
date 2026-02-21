@@ -107,9 +107,7 @@ for comment in comments.data:
 
 Once you have the attachment ID, you can download the file.
 
-#### Local mode
-
-In local mode, you provide API credentials directly. You can stream the file content and write it to disk:
+You can stream the file content and write it to disk:
 
 ```python
 with open("./downloads/ticket_attachment.pdf", "wb") as f:
@@ -120,25 +118,6 @@ with open("./downloads/ticket_attachment.pdf", "wb") as f:
 Or use `download_local()` to save to a path in one step:
 
 ```python
-file_path = await zendesk_support.attachments.download_local(
-    attachment_id="12345",
-    path="./downloads/ticket_attachment.pdf",
-)
-```
-
-#### Hosted mode
-
-In hosted mode, credentials are managed by Airbyte Cloud. The download methods work the same way — only the connector setup differs:
-
-```python
-from airbyte_agent_zendesk_support import ZendeskSupportConnector
-
-zendesk_support = ZendeskSupportConnector(
-    connector_id="your_connector_id",
-    airbyte_client_id="your_client_id",
-    airbyte_client_secret="your_client_secret",
-)
-
 file_path = await zendesk_support.attachments.download_local(
     attachment_id="12345",
     path="./downloads/ticket_attachment.pdf",
@@ -256,9 +235,24 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 
 Some connectors support a `download` action for entities like attachments and media files. Unlike other actions that return JSON, download responses return raw binary content with a `Content-Disposition` header.
 
-This example downloads a ticket attachment from a Zendesk Support connector:
+To find downloadable files, first list the relevant entity to discover IDs. For example, list a ticket's comments to find attachment metadata, then download a specific attachment:
 
-```bash title="Request"
+```bash title="Step 1: Discover attachments"
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
+  --header 'Authorization: Bearer <your_application_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "entity": "ticket_comments",
+    "action": "list",
+    "params": {
+      "ticket_id": "<ticket_id>"
+    }
+  }'
+```
+
+The response includes attachment metadata (IDs, filenames, content types) within each comment. Use the attachment ID to download the file:
+
+```bash title="Step 2: Download the file"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_application_token>' \
   --header 'Content-Type: application/json' \
