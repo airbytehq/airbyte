@@ -50,6 +50,7 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 - [Formulas](https://coda.io/developers/apis/v1#tag/Formulas/operation/listFormulas)
 - [Controls](https://coda.io/developers/apis/v1#tag/Controls/operation/listControls)
 - [Rows](https://coda.io/developers/apis/v1#tag/Rows/operation/listRows)
+- [Content](https://coda.io/developers/apis/v1#tag/Pages/operation/listPageContent)
 
 ## Data type map
 
@@ -65,8 +66,9 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                     |
-| :------ | :--------- | :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.4.0  | 2026-02-17 | [72530](https://github.com/airbytehq/airbyte/pull/72530) | Add content stream                                                                                                                                                     |
 | 1.3.46 | 2026-02-17 | [73451](https://github.com/airbytehq/airbyte/pull/73451) | Update dependencies |
 | 1.3.45 | 2026-02-10 | [72992](https://github.com/airbytehq/airbyte/pull/72992) | Update dependencies |
 | 1.3.44 | 2026-01-20 | [72146](https://github.com/airbytehq/airbyte/pull/72146) | Update dependencies |
