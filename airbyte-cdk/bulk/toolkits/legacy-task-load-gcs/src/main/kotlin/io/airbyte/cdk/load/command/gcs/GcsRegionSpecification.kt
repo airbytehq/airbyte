@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.command.gcs
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonValue
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 
 /**
  * Separate mixin for GCS region. This is separate from [GcsCommonConfiguration] because some
