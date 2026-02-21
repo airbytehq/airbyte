@@ -101,7 +101,7 @@ Typically, you first need to discover which files are available before downloadi
 ```python
 comments = await zendesk_support.ticket_comments.list(ticket_id="456")
 for comment in comments.data:
-    for attachment in comment.get("attachments", []):
+    for attachment in comment.attachments or []:
         print(f"Attachment: {attachment['id']} - {attachment['file_name']}")
 ```
 
@@ -110,8 +110,9 @@ Once you have the attachment ID, you can download the file.
 You can stream the file content and write it to disk:
 
 ```python
+stream = await zendesk_support.attachments.download(attachment_id="12345")
 with open("./downloads/ticket_attachment.pdf", "wb") as f:
-    async for chunk in zendesk_support.attachments.download(attachment_id="12345"):
+    async for chunk in stream:
         f.write(chunk)
 ```
 
