@@ -15,9 +15,6 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.gcs.GcsAuthSpecification
 import io.airbyte.cdk.load.command.gcs.GcsCommonSpecification
@@ -25,6 +22,9 @@ import io.airbyte.cdk.load.command.gcs.GcsHmacKeySpecification
 import io.airbyte.cdk.load.command.gcs.GcsRegion
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.spec.annotations.JsonSchemaDescription
+import io.airbyte.cdk.spec.annotations.JsonSchemaInject
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 import java.io.IOException
