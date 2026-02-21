@@ -108,7 +108,7 @@ Once initialized, the connector works the same way as in [open source mode](open
 
 To execute operations via the API, first obtain an application token using your Airbyte client credentials, then call the execute endpoint with the connector ID.
 
-**Step 1: Get an application token**
+### Step 1: Get an application token
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
@@ -119,7 +119,7 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
   }'
 ```
 
-**Step 2: Execute an operation**
+### Step 2: Execute an operation
 
 Use the application token to execute operations against the connector. The `<connector_id>` is the ID returned when you created the connector.
 
