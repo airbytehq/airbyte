@@ -132,7 +132,19 @@ class PostgresAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        execute(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
+        try {
+            execute(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
+        } catch (e: org.postgresql.util.PSQLException) {
+            if (e.sqlState == "42809" && e.message?.contains("is not a table") == true) {
+                log.info {
+                    "Target ${targetTableName.namespace}.${targetTableName.name} appears to be a view, dropping it before retrying"
+                }
+                execute(sqlGenerator.dropView(targetTableName))
+                execute(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
+            } else {
+                throw e
+            }
+        }
     }
 
     override suspend fun copyTable(
