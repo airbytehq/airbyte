@@ -94,68 +94,55 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 Some connectors support a `download` action that returns file content as a binary stream instead of JSON. This is used for entities like attachments, audio recordings, and documents. To check whether a connector supports downloads, see the connector's [reference documentation](/ai-agents/connectors).
 
-Connectors provide two methods for downloading files:
+Download operations return an `AsyncIterator[bytes]` for memory-efficient streaming. Use `async for` to process chunks as they arrive. To save a file to disk, you can either stream the chunks directly or use the `download_local()` convenience method.
 
-- **`download()`** returns an `AsyncIterator[bytes]`, giving you full control over how and where to write the data.
-- **`download_local()`** is a convenience wrapper that downloads the file and saves it to a path you specify.
+Typically, you first need to discover which files are available before downloading them. For example, you might list ticket comments to find attachment IDs, then download a specific attachment:
+
+```python
+comments = await zendesk_support.ticket_comments.list(ticket_id="456")
+for comment in comments.data:
+    for attachment in comment.get("attachments", []):
+        print(f"Attachment: {attachment['id']} - {attachment['file_name']}")
+```
+
+Once you have the attachment ID, you can download the file.
 
 #### Local mode
 
-In local mode, you provide API credentials directly. Use `download_local()` to download a file and save it to disk in one step:
+In local mode, you provide API credentials directly. You can stream the file content and write it to disk:
 
-```python title="download.py"
-import asyncio
-from airbyte_agent_zendesk_support import ZendeskSupportConnector
-
-connector = ZendeskSupportConnector(
-    auth_config={"api_token": "your_api_token", "email": "you@example.com"},
-    config_values={"subdomain": "your_subdomain"},
-)
-
-async def main():
-    file_path = await connector.attachments.download_local(
-        attachment_id="12345",
-        path="./downloads/ticket_attachment.pdf",
-    )
-    print(f"Saved to {file_path}")
-
-asyncio.run(main())
+```python
+with open("./downloads/ticket_attachment.pdf", "wb") as f:
+    async for chunk in zendesk_support.attachments.download(attachment_id="12345"):
+        f.write(chunk)
 ```
 
-If you need more control, use `download()` directly to get the raw byte stream:
+Or use `download_local()` to save to a path in one step:
 
-```python title="download_raw.py"
-async def main():
-    stream = await connector.attachments.download(attachment_id="12345")
-    with open("./downloads/ticket_attachment.pdf", "wb") as f:
-        async for chunk in stream:
-            f.write(chunk)
+```python
+file_path = await zendesk_support.attachments.download_local(
+    attachment_id="12345",
+    path="./downloads/ticket_attachment.pdf",
+)
 ```
 
 #### Hosted mode
 
 In hosted mode, credentials are managed by Airbyte Cloud. The download methods work the same way — only the connector setup differs:
 
-```python title="download_hosted.py"
-import asyncio
-from airbyte_agent_zendesk_support import ZendeskSupportConnector, AirbyteHostedAuthConfig
+```python
+from airbyte_agent_zendesk_support import ZendeskSupportConnector
 
-connector = ZendeskSupportConnector(
-    auth_config=AirbyteHostedAuthConfig(
-        airbyte_client_id="your_client_id",
-        airbyte_client_secret="your_client_secret",
-        connector_id="your_connector_id",
-    ),
+zendesk_support = ZendeskSupportConnector(
+    connector_id="your_connector_id",
+    airbyte_client_id="your_client_id",
+    airbyte_client_secret="your_client_secret",
 )
 
-async def main():
-    file_path = await connector.attachments.download_local(
-        attachment_id="12345",
-        path="./downloads/ticket_attachment.pdf",
-    )
-    print(f"Saved to {file_path}")
-
-asyncio.run(main())
+file_path = await zendesk_support.attachments.download_local(
+    attachment_id="12345",
+    path="./downloads/ticket_attachment.pdf",
+)
 ```
 
 ### Introspection
@@ -285,28 +272,27 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
   }'
 ```
 
-You can also stream the response in your application code. For example, using Python with `requests`:
+You can also stream the response in your application code. For example, using JavaScript with `fetch`:
 
-```python title="download_api.py"
-import requests
-
-response = requests.post(
-    "https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute",
-    headers={
-        "Authorization": "Bearer <your_application_token>",
-        "Content-Type": "application/json",
+```javascript title="download.js"
+const response = await fetch(
+  `https://api.airbyte.ai/api/v1/integrations/connectors/${connectorId}/execute`,
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${applicationToken}`,
+      "Content-Type": "application/json",
     },
-    json={
-        "entity": "attachments",
-        "action": "download",
-        "params": {"attachment_id": "<attachment_id>"},
-    },
-    stream=True,
-)
+    body: JSON.stringify({
+      entity: "attachments",
+      action: "download",
+      params: { attachment_id: attachmentId },
+    }),
+  }
+);
 
-with open("attachment.pdf", "wb") as f:
-    for chunk in response.iter_content(chunk_size=8192):
-        f.write(chunk)
+const blob = await response.blob();
+const url = URL.createObjectURL(blob);
 ```
 
 ### Response format
