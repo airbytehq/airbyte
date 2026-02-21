@@ -2,6 +2,9 @@
 sidebar_position: 1
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Agent Engine authentication
 
 When you subscribe to the Agent Engine, you authenticate with Airbyte Cloud using your Airbyte credentials, and Airbyte manages your end-users' credentials securely. This approach is ideal for production B2B applications where you need centralized credential management across multiple customers. When your agent executes operations, your proxy API calls through Airbyte Cloud.
@@ -74,6 +77,70 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 ### With your own OAuth flow
 
 You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints to handle the token exchange. This allows you to show your own branding on the OAuth consent screen. See [Build your own OAuth flow](build-auth/build-your-own.md) for details.
+
+## Using connectors with your Airbyte credentials
+
+After you create a connector and store your end-user's credentials, you use your Airbyte client credentials to execute operations. API calls are proxied through Airbyte Cloud, so you never handle the end-user's credentials directly at runtime.
+
+<Tabs>
+<TabItem value="python" label="Python" default>
+
+Instead of providing the end-user's API credentials directly, provide your Airbyte client credentials and the external user ID. The SDK handles token exchange and refresh automatically.
+
+```python title="agent.py"
+from airbyte_agent_github import GithubConnector, AirbyteAuthConfig
+
+connector = GithubConnector(
+    auth_config=AirbyteAuthConfig(
+        external_user_id="<your_external_user_id>",
+        airbyte_client_id="<your_client_id>",
+        airbyte_client_secret="<your_client_secret>",
+    )
+)
+
+result = await connector.execute("issues", "list", {"owner": "airbytehq", "repo": "airbyte"})
+```
+
+Once initialized, the connector works the same way as in [open source mode](open-source.md). You can register it as an agent tool, execute operations, and use introspection methods. The only difference is the authentication configuration.
+
+</TabItem>
+<TabItem value="api" label="API">
+
+To execute operations via the API, first obtain an application token using your Airbyte client credentials, then call the execute endpoint with the connector ID.
+
+**Step 1: Get an application token**
+
+```bash title="Request"
+curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_id": "<your_client_id>",
+    "client_secret": "<your_client_secret>"
+  }'
+```
+
+**Step 2: Execute an operation**
+
+Use the application token to execute operations against the connector. The `<connector_id>` is the ID returned when you created the connector.
+
+```bash title="Request"
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute" \
+  -H "Authorization: Bearer <application_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "entity": "issues",
+    "action": "list",
+    "params": {
+      "owner": "airbytehq",
+      "repo": "airbyte"
+    }
+  }'
+```
+
+Application tokens expire after 15 minutes. The Python SDK handles token refresh automatically, but when using the API directly, you must request a new token when the current one expires.
+
+</TabItem>
+</Tabs>
 
 ## Security considerations
 
