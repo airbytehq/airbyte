@@ -447,56 +447,70 @@ class MsSqlServerDebeziumOperations(
     }
 
     /**
-     * Validates if the given LSN is still available in SQL Server transaction logs. Returns true if
-     * the LSN is available, false otherwise.
+     * Validates if the given LSN is still available in SQL Server CDC data. Returns true if the LSN
+     * is available, false otherwise.
+     *
+     * This uses cdc.lsn_time_mapping to determine the minimum LSN that CDC still has data for,
+     * rather than sys.fn_cdc_get_min_lsn() which reflects the transaction log state. The
+     * lsn_time_mapping table is immune to aggressive transaction log recycling (e.g., on Azure SQL
+     * geo-replicas where log_reuse_wait_desc = NOTHING), making validation reliable even when the
+     * raw transaction log has already been truncated.
+     *
+     * Only the lower bound is checked (saved LSN >= CDC min LSN). The upper bound check
+     * (saved LSN <= max LSN) was removed because the transaction log max LSN can cycle ahead of
+     * CDC data on fast-cycling environments, causing false negatives.
      */
     private fun validateLsnStillAvailable(lsn: Lsn): Boolean {
         // Use jdbcConnectionFactory which handles SSH tunneling
         jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { statement ->
-                // Check if the LSN is within the available range
-                // sys.fn_cdc_get_min_lsn returns the minimum available LSN for a capture instance
-                // sys.fn_cdc_get_max_lsn returns the current maximum LSN
+                // Query the minimum LSN from cdc.lsn_time_mapping, which reflects the actual
+                // CDC-retained data range rather than the raw transaction log state.
+                // This is immune to Azure SQL's aggressive VLF recycling.
                 val query =
                     """
-                    SELECT
-                        MIN(sys.fn_cdc_get_min_lsn(capture_instance)) as min_lsn,
-                        sys.fn_cdc_get_max_lsn() as max_lsn
-                    FROM cdc.change_tables
+                    SELECT MIN(start_lsn) as min_lsn
+                    FROM cdc.lsn_time_mapping
                 """.trimIndent()
 
                 statement.executeQuery(query).use { resultSet ->
                     if (resultSet.next()) {
                         val minLsnBytes = resultSet.getBytes("min_lsn")
-                        val maxLsnBytes = resultSet.getBytes("max_lsn")
 
-                        if (minLsnBytes == null || maxLsnBytes == null) {
-                            log.warn { "CDC is not enabled or no LSN range available" }
+                        if (minLsnBytes == null) {
+                            log.warn {
+                                "No entries in cdc.lsn_time_mapping — CDC may not be enabled " +
+                                    "or no changes have been captured yet."
+                            }
                             return false
                         }
 
                         val minLsn = Lsn.valueOf(minLsnBytes)
-                        val maxLsn = Lsn.valueOf(maxLsnBytes)
 
-                        log.info { "LSN range parsed - min: $minLsn, max: $maxLsn, saved: $lsn" }
+                        log.info { "CDC LSN range - min (from lsn_time_mapping): $minLsn, saved: $lsn" }
 
                         // Lsn.ZERO indicates no valid CDC data is available (e.g., no capture
                         // instances exist or insufficient permissions).
                         if (minLsn == Lsn.ZERO) {
                             log.warn {
-                                "Min LSN is zero, no CDC capture instances found or insufficient permissions. " +
+                                "Min LSN is zero from cdc.lsn_time_mapping — " +
+                                    "no CDC data available or insufficient permissions. " +
                                     "Treating saved LSN as invalid."
                             }
                             return false
                         }
 
-                        // Check if saved LSN is within the valid range
-                        val isValid = lsn.compareTo(minLsn) >= 0 && lsn.compareTo(maxLsn) <= 0
+                        // Only check that saved LSN >= CDC min LSN (lower bound).
+                        // We intentionally do NOT check an upper bound because
+                        // the transaction log max LSN can cycle ahead of CDC data
+                        // on fast-cycling environments (e.g., Azure SQL geo-replicas),
+                        // causing false negatives.
+                        val isValid = lsn.compareTo(minLsn) >= 0
 
                         if (!isValid) {
                             log.warn {
-                                "Saved LSN '$lsn' is outside the available range [min: $minLsn, max: $maxLsn]. " +
-                                    "Transaction logs may have been truncated."
+                                "Saved LSN '$lsn' is below the CDC minimum '$minLsn'. " +
+                                    "CDC change data may have been cleaned up."
                             }
                         }
 
@@ -519,7 +533,7 @@ class MsSqlServerDebeziumOperations(
             InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
                 AbortDebeziumWarmStartState(
                     "Saved offset no longer present on the server, please reset the connection. " +
-                        "To prevent this, increase transaction log retention and/or increase sync frequency. " +
+                        "To prevent this, increase CDC data retention and/or increase sync frequency. " +
                         "$reason."
                 )
             InvalidCdcCursorPositionBehavior.RESET_SYNC ->
