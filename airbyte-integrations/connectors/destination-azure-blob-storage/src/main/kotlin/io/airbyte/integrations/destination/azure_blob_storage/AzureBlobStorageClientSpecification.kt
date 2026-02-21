@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.azure_blob_storage
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.spec.annotations.JsonSchemaInject
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientSpecification
 import io.airbyte.cdk.load.command.object_storage.JsonFormatSpecification

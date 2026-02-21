@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.spec.annotations.JsonSchemaInject
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
 import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification

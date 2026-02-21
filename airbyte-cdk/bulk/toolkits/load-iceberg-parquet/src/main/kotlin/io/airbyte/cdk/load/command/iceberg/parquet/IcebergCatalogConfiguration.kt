@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.command.iceberg.parquet
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.spec.annotations.JsonSchemaDescription
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 
