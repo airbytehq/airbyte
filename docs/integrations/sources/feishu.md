@@ -44,17 +44,6 @@ The Feishu source connector syncs records from a [Feishu/Lark Bitable](https://w
 5. Optionally adjust the **Page Size** (default: 100, maximum: 500).
 6. Click **Set up source**.
 
-## Configuration
-
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `app_id` | `string` | The unique identifier for your custom app. Found under **Credentials & Basic Info** in the Feishu/Lark Developer Console. |  |
-| `app_secret` | `string` | The secret key for your custom app. Found alongside the App ID. |  |
-| `app_token` | `string` | The unique identifier of the Bitable (Base). Found in the URL path: `/base/{app_token}`. |  |
-| `lark_host` | `string` | Base URL of the Feishu/Lark Open Platform API. Use `https://open.feishu.cn` for Feishu (China mainland) or `https://open.larksuite.com` for Lark (international). | `https://open.feishu.cn` |
-| `table_id` | `string` | The unique identifier of the table to sync. Found in the URL query parameter: `table={table_id}`. |  |
-| `page_size` | `number` | Number of records to fetch per API request. Maximum: 500. | 100 |
-
 ## Supported sync modes
 
 The Feishu source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
