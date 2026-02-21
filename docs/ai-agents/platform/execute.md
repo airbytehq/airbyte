@@ -232,7 +232,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
   }'
 ```
 
-### Download a file
+### Download files
 
 Some connectors support a `download` action for entities like attachments and media files. Unlike other actions that return JSON, download responses return raw binary content with a `Content-Disposition` header.
 
