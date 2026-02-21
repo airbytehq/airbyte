@@ -5,10 +5,15 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.contains
-import com.kjetland.jackson.jsonSchema.JsonSchemaConfig
-import com.kjetland.jackson.jsonSchema.JsonSchemaDraft
-import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator
+import com.github.victools.jsonschema.generator.Option
+import com.github.victools.jsonschema.generator.OptionPreset
+import com.github.victools.jsonschema.generator.SchemaGenerator
+import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder
+import com.github.victools.jsonschema.generator.SchemaVersion
+import com.github.victools.jsonschema.module.jackson.JacksonModule
+import com.github.victools.jsonschema.module.jackson.JacksonOption
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.spec.AirbyteSchemaModule
 import io.airbyte.cdk.util.Jsons
 import org.openapi4j.core.validation.ValidationException
 import org.openapi4j.core.validation.ValidationResults
@@ -51,7 +56,7 @@ object ValidatedJsonUtils {
         tree: JsonNode,
     ): List<T> {
         val jsonList: List<JsonNode> = if (tree.isArray) tree.toList() else listOf(tree)
-        val schemaNode: JsonNode = generator.generateJsonSchema(elementClass)
+        val schemaNode: JsonNode = generator.generateSchema(elementClass)
         val schemaValidator = SchemaValidator(null, schemaNode)
         for (element in jsonList) {
             val validationData = ValidationData<Void>()
@@ -91,12 +96,25 @@ object ValidatedJsonUtils {
             throw ConfigErrorException("failed to map valid json to $klazz ", e)
         }
 
-    val generatorConfig: JsonSchemaConfig =
-        JsonSchemaConfig.vanillaJsonSchemaDraft4()
-            .withJsonSchemaDraft(JsonSchemaDraft.DRAFT_07)
-            .withFailOnUnknownProperties(false)
+    private val generatorConfig =
+        SchemaGeneratorConfigBuilder(
+                Jsons,
+                SchemaVersion.DRAFT_7,
+                OptionPreset.PLAIN_JSON,
+            )
+            .with(Option.DEFINITIONS_FOR_ALL_OBJECTS)
+            .with(Option.FLATTENED_ENUMS)
+            .with(
+                JacksonModule(
+                    JacksonOption.RESPECT_JSONPROPERTY_REQUIRED,
+                    JacksonOption.FLATTENED_ENUMS_FROM_JSONVALUE,
+                ),
+            )
+            .with(AirbyteSchemaModule())
+            .without(Option.SCHEMA_VERSION_INDICATOR)
+            .build()
 
-    private val generator = JsonSchemaGenerator(Jsons, generatorConfig)
+    private val generator = SchemaGenerator(generatorConfig)
 
     /**
      * Generates a JSON schema suitable for use by the Airbyte Platform.
@@ -105,15 +123,12 @@ object ValidatedJsonUtils {
      * contains `"type": "object"`.
      */
     fun <T> generateAirbyteJsonSchema(klazz: Class<T>): JsonNode {
-        // Generate the real JSON schema for the class object.
-        val root: ObjectNode = generator.generateJsonSchema(klazz) as ObjectNode
-        // Now perform any post-processing required by Airbyte.
-        if (!root.contains("definitions")) {
-            // Nothing needs to be done where there are no "$ref" fields anywhere.
-            // This implies that there will be no "oneOf"s either.
+        val root: ObjectNode = generator.generateSchema(klazz) as ObjectNode
+        if (!root.contains("\$defs") && !root.contains("definitions")) {
             return root
         }
-        val definitions: ObjectNode = root["definitions"] as ObjectNode
+        val defsKey = if (root.contains("\$defs")) "\$defs" else "definitions"
+        val definitions: ObjectNode = root[defsKey] as ObjectNode
 
         fun walk(
             node: JsonNode,
@@ -137,8 +152,11 @@ object ValidatedJsonUtils {
                         }
                         return
                     }
-                    // Inline the type referenced by the "$ref" field.
-                    val ref: String = node["\$ref"].textValue().removePrefix("#/definitions/")
+                    val ref: String =
+                        node["\$ref"]
+                            .textValue()
+                            .removePrefix("#/\$defs/")
+                            .removePrefix("#/definitions/")
                     if (ref in visitedRefs) {
                         throw ConfigErrorException("circular \$ref '$ref' found in JSON schema")
                     }
@@ -166,13 +184,9 @@ object ValidatedJsonUtils {
                     return
             }
         }
-        // Flatten the definitions first, to check for circular references.
         walk(definitions)
-        // Remove the definitions, as they will be inlined.
-        root.remove("definitions")
-        // Inline the definitions.
+        root.remove(defsKey)
         walk(root)
-        // Return the transformed object.
         return root
     }
 }
