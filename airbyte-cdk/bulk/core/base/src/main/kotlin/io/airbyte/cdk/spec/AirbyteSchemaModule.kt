@@ -52,8 +52,7 @@ class AirbyteSchemaModule : Module {
         method.getAnnotation(JsonSchemaDescription::class.java)?.value
 
     private fun resolveMethodDefault(method: MethodScope): Any? {
-        val defaultValue =
-            method.getAnnotation(JsonSchemaDefault::class.java)?.value ?: return null
+        val defaultValue = method.getAnnotation(JsonSchemaDefault::class.java)?.value ?: return null
         return parseDefaultValue(defaultValue)
     }
 
@@ -66,7 +65,8 @@ class AirbyteSchemaModule : Module {
     private fun overrideFieldAttributes(
         node: ObjectNode,
         field: FieldScope,
-        @Suppress("UNUSED_PARAMETER") context: com.github.victools.jsonschema.generator.SchemaGenerationContext,
+        @Suppress("UNUSED_PARAMETER")
+        context: com.github.victools.jsonschema.generator.SchemaGenerationContext,
     ) {
         applyInject(
             node,
@@ -83,7 +83,8 @@ class AirbyteSchemaModule : Module {
     private fun overrideMethodAttributes(
         node: ObjectNode,
         method: MethodScope,
-        @Suppress("UNUSED_PARAMETER") context: com.github.victools.jsonschema.generator.SchemaGenerationContext,
+        @Suppress("UNUSED_PARAMETER")
+        context: com.github.victools.jsonschema.generator.SchemaGenerationContext,
     ) {
         applyInject(node, method.getAnnotation(JsonSchemaInject::class.java))
         applyUniqueItems(node, method.getAnnotation(JsonSchemaArrayWithUniqueItems::class.java))
@@ -92,7 +93,8 @@ class AirbyteSchemaModule : Module {
     private fun overrideTypeAttributes(
         node: ObjectNode,
         scope: TypeScope,
-        @Suppress("UNUSED_PARAMETER") context: com.github.victools.jsonschema.generator.SchemaGenerationContext,
+        @Suppress("UNUSED_PARAMETER")
+        context: com.github.victools.jsonschema.generator.SchemaGenerationContext,
     ) {
         applyInject(
             node,
@@ -104,9 +106,7 @@ class AirbyteSchemaModule : Module {
         if (annotation == null) return
         val injected: JsonNode = Jsons.readTree(annotation.json)
         if (injected is ObjectNode) {
-            injected.fields().forEach { (key, value) ->
-                node.set<JsonNode>(key, value)
-            }
+            injected.fields().forEach { (key, value) -> node.set<JsonNode>(key, value) }
         }
     }
 
