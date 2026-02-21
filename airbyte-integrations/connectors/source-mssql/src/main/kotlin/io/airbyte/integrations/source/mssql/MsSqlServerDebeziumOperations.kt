@@ -456,9 +456,9 @@ class MsSqlServerDebeziumOperations(
      * geo-replicas where log_reuse_wait_desc = NOTHING), making validation reliable even when the
      * raw transaction log has already been truncated.
      *
-     * Only the lower bound is checked (saved LSN >= CDC min LSN). The upper bound check
-     * (saved LSN <= max LSN) was removed because the transaction log max LSN can cycle ahead of
-     * CDC data on fast-cycling environments, causing false negatives.
+     * Only the lower bound is checked (saved LSN >= CDC min LSN). The upper bound check (saved LSN
+     * <= max LSN) was removed because the transaction log max LSN can cycle ahead of CDC data on
+     * fast-cycling environments, causing false negatives.
      */
     private fun validateLsnStillAvailable(lsn: Lsn): Boolean {
         // Use jdbcConnectionFactory which handles SSH tunneling
@@ -487,7 +487,9 @@ class MsSqlServerDebeziumOperations(
 
                         val minLsn = Lsn.valueOf(minLsnBytes)
 
-                        log.info { "CDC LSN range - min (from lsn_time_mapping): $minLsn, saved: $lsn" }
+                        log.info {
+                            "CDC LSN range - min (from lsn_time_mapping): $minLsn, saved: $lsn"
+                        }
 
                         // Lsn.ZERO indicates no valid CDC data is available (e.g., no capture
                         // instances exist or insufficient permissions).
