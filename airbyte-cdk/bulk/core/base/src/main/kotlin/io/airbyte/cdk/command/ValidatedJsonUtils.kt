@@ -92,9 +92,10 @@ object ValidatedJsonUtils {
         }
 
     val generatorConfig: JsonSchemaConfig =
-        JsonSchemaConfig.vanillaJsonSchemaDraft4()
-            .withJsonSchemaDraft(JsonSchemaDraft.DRAFT_07)
-            .withFailOnUnknownProperties(false)
+        JsonSchemaConfig.builder()
+            .jsonSchemaDraft(JsonSchemaDraft.DRAFT_07)
+            .failOnUnknownProperties(false)
+            .build()
 
     private val generator = JsonSchemaGenerator(Jsons, generatorConfig)
 
