@@ -6,10 +6,10 @@ package io.airbyte.cdk.load.command.s3
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import io.airbyte.cdk.spec.annotations.JsonSchemaInject
-import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.data.Transformations
+import io.airbyte.cdk.spec.annotations.JsonSchemaInject
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 
 /**
  * Mix-in to provide S3 path configuration fields as properties.

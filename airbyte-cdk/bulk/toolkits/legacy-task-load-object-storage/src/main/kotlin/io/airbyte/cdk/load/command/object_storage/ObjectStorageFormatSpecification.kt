@@ -9,11 +9,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
-import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.avro.AvroCompressionConfiguration
 import io.airbyte.cdk.load.command.avro.AvroCompressionConfigurationProvider
 import io.airbyte.cdk.load.file.parquet.ParquetWriterConfiguration
 import io.airbyte.cdk.load.file.parquet.ParquetWriterConfigurationProvider
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 
 interface ObjectStorageFormatSpecificationProvider {
     @get:JsonSchemaTitle("Output Format")

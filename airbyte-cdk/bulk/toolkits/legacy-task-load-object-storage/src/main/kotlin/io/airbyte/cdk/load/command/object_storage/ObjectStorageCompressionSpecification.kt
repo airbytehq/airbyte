@@ -9,10 +9,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
-import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 

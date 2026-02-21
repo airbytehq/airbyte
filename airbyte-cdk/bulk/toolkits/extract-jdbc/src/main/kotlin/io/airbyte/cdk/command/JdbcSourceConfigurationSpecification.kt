@@ -4,11 +4,11 @@ package io.airbyte.cdk.command
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.spec.annotations.JsonSchemaDefault
 import io.airbyte.cdk.spec.annotations.JsonSchemaDescription
 import io.airbyte.cdk.spec.annotations.JsonSchemaInject
 import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 
 /**
  * Base ConfigurationSpecification for JDBC sources with common properties.
