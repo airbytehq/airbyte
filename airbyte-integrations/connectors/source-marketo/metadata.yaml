@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.mktorest.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.9.2@sha256:94ddf0cfd5acf1179e7830e9b5da7affc7f697c3a1581a55895b16384b39cc8a
   connectorSubtype: api
   connectorType: source
   definitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
-  dockerImageTag: 1.4.39
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-marketo
   documentationUrl: https://docs.airbyte.com/integrations/sources/marketo
   githubIssueLabel: source-marketo
@@ -20,7 +20,7 @@ data:
   name: Marketo
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-marketo
   registryOverrides:
     cloud:
@@ -30,7 +30,7 @@ data:
   releaseStage: generally_available
   supportLevel: community
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
