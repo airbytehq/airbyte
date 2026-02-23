@@ -18,30 +18,41 @@ final var baseVersionFile = file("core/base/version.properties")
 final var extractVersionFile = file("core/extract/version.properties")
 final var loadVersionFile = file("core/load/version.properties")
 
-final var cdkVersion = {
+// Optional pre-release suffix, e.g. -PprereleaseSuffix=preview.abc1234
+// When set, all CDK versions will be suffixed: 1.0.0-preview.abc1234
+final var prereleaseSuffix = project.findProperty('prereleaseSuffix') ?: ''
+
+def applyPrereleaseSuffix(String version) {
+    if (prereleaseSuffix) {
+        return "${version}-${prereleaseSuffix}"
+    }
+    return version
+}
+
+final var cdkVersion = applyPrereleaseSuffix({
     var props = new Properties()
     versionFile.withInputStream(props::load)
     return props.getProperty('version', 'undefined')
-}()
+}())
 
 // Base, extract, and load packages have their own independent versions
-final var baseVersion = {
+final var baseVersion = applyPrereleaseSuffix({
     var props = new Properties()
     baseVersionFile.withInputStream(props::load)
     return props.getProperty('version', 'undefined')
-}()
+}())
 
-final var extractVersion = {
+final var extractVersion = applyPrereleaseSuffix({
     var props = new Properties()
     extractVersionFile.withInputStream(props::load)
     return props.getProperty('version', 'undefined')
-}()
+}())
 
-final var loadVersion = {
+final var loadVersion = applyPrereleaseSuffix({
     var props = new Properties()
     loadVersionFile.withInputStream(props::load)
     return props.getProperty('version', 'undefined')
-}()
+}())
 
 
 allprojects {
@@ -204,7 +215,12 @@ tasks.register('dokkaGenerate') {
 }
 
 // Helper function to check if a version exists in the Maven repository
+// Pre-release versions (containing '-') are always considered new and skip this check.
 def checkVersionExists(String artifactName, String versionToCheck) {
+    if (versionToCheck.contains('-')) {
+        println "Skipping version existence check for pre-release version: ${versionToCheck}"
+        return
+    }
     var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
     var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
     var artifactUrl = "${groupIdUrl}/${artifactName}"
@@ -379,9 +395,12 @@ class BumpBulkCdkVersionTask extends DefaultTask {
         def versionParts = currentVersion.split('\\.')
         def majorNum = Integer.parseInt(versionParts[0])
         def minorNum = Integer.parseInt(versionParts[1])
-        // TODO This will break on any `-whatever` suffix, but we're not currently doing that.
-        //   If we ever want to get fancier with how we release the CDK, we should probably handle this better.
-        def patchNum = Integer.parseInt(versionParts[2])
+        // Strip any pre-release suffix (e.g., "-preview.abc1234") before parsing patch number
+        def patchStr = versionParts[2]
+        if (patchStr.contains('-')) {
+            patchStr = patchStr.substring(0, patchStr.indexOf('-'))
+        }
+        def patchNum = Integer.parseInt(patchStr)
         def newVersion
         if (patch) {
             newVersion = "${majorNum}.${minorNum}.${patchNum + 1}"

@@ -25,8 +25,9 @@ class AirbyteBulkConnectorExtension {
         if (cdk == null) {
             throw new IllegalArgumentException("Project should set the cdkVersion property in gradle.properties")
         }
-        if (cdk != "local" && !(cdk.matches("^[0-9]+\\.[0-9]+") || cdk.matches("^[0-9]+\\.[0-9]+\\.[0-9]+"))) {
-            throw new IllegalArgumentException("'cdk' should be either a well-formed version number or 'local'")
+        // Accept: "local", "X.Y", "X.Y.Z", or "X.Y.Z-suffix" (e.g., "1.0.0-preview.abc1234")
+        if (cdk != "local" && !(cdk.matches("^[0-9]+\\.[0-9]+") || cdk.matches("^[0-9]+\\.[0-9]+\\.[0-9]+") || cdk.matches("^[0-9]+\\.[0-9]+\\.[0-9]+-[a-zA-Z0-9._]+"))) {
+            throw new IllegalArgumentException("'cdk' should be either a well-formed version number (X.Y, X.Y.Z, or X.Y.Z-suffix) or 'local'")
         }
     }
 
