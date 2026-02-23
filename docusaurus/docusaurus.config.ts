@@ -365,48 +365,8 @@ const config: Config = {
         height: 40,
       },
       items: [
-        {
-          type: "docSidebar",
-          position: "left",
-          docsPluginId: "platform",
-          sidebarId: "platform",
-          label: "Platform",
-        },
-        {
-          type: "docSidebar",
-          position: "left",
-          docsPluginId: "connectors",
-          sidebarId: "connectors",
-          label: "Connectors",
-        },
-        {
-          type: "docSidebar",
-          position: "left",
-          docsPluginId: "release_notes",
-          sidebarId: "releaseNotes",
-          label: "Release notes",
-        },
-        {
-          type: "doc",
-          position: "left",
-          docsPluginId: "ai-agents",
-          docId: "README",
-          label: "AI agents",
-        },
-        {
-          type: "docSidebar",
-          position: "left",
-          docsPluginId: "developers",
-          sidebarId: "developers",
-          label: "Developers",
-        },
-        {
-          type: "docSidebar",
-          position: "left",
-          docsPluginId: "community",
-          sidebarId: "community",
-          label: "Community",
-        },
+        // Left side items removed - they now live in the secondary nav bar.
+        // The primary navbar only shows the logo + right-side utilities.
         {
           href: "https://status.airbyte.com",
           label: "Status",
