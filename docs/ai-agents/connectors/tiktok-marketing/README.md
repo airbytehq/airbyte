@@ -2,7 +2,7 @@
 
 The Tiktok-Marketing agent connector is a Python package that equips AI agents to interact with Tiktok-Marketing through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
-Connector for the TikTok Marketing API (Business API v1.3). Provides access to advertiser accounts, campaigns, ad groups, ads, audiences, and creative assets (images and videos). Requires an Access Token from the TikTok for Business platform. All list operations require an advertiser_id parameter to scope results to a specific advertiser account.
+Connector for the TikTok Marketing API (Business API v1.3). Provides access to advertiser accounts, campaigns, ad groups, ads, audiences, creative assets (images and videos), and daily performance reports at the advertiser, campaign, ad group, and ad levels. Requires an Access Token from the TikTok for Business platform. All list operations require an advertiser_id parameter to scope results to a specific advertiser account.
 
 ## Example questions
 
@@ -15,10 +15,16 @@ The Tiktok-Marketing connector is optimized to handle prompts like these.
 - List my custom audiences
 - Show me all creative asset images
 - List creative asset videos
+- Show me daily ad performance reports
+- Get campaign performance metrics for the last 30 days
+- Show me advertiser spend reports
 - Which campaigns have the highest budget?
 - Find all paused ad groups
 - What ads were created last month?
 - Show campaigns with lifetime budget mode
+- Which ads had the most impressions yesterday?
+- What is my total ad spend this month?
+- Which campaigns have the highest click-through rate?
 
 ## Unsupported questions
 
@@ -27,8 +33,6 @@ The Tiktok-Marketing connector isn't currently able to handle prompts like these
 - Create a new campaign
 - Update ad group targeting
 - Delete an ad
-- Show me ad performance reports
-- What is my ad spend this month?
 
 ## Installation
 
@@ -63,6 +67,7 @@ async def tiktok_marketing_execute(entity: str, action: str, params: dict | None
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -71,7 +76,8 @@ from airbyte_agent_tiktok_marketing import TiktokMarketingConnector, AirbyteAuth
 
 connector = TiktokMarketingConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -98,6 +104,10 @@ This connector supports the following entities and actions. For more details, se
 | Audiences | [List](./REFERENCE.md#audiences-list), [Search](./REFERENCE.md#audiences-search) |
 | Creative Assets Images | [List](./REFERENCE.md#creative-assets-images-list), [Search](./REFERENCE.md#creative-assets-images-search) |
 | Creative Assets Videos | [List](./REFERENCE.md#creative-assets-videos-list), [Search](./REFERENCE.md#creative-assets-videos-search) |
+| Advertisers Reports Daily | [List](./REFERENCE.md#advertisers-reports-daily-list), [Search](./REFERENCE.md#advertisers-reports-daily-search) |
+| Campaigns Reports Daily | [List](./REFERENCE.md#campaigns-reports-daily-list), [Search](./REFERENCE.md#campaigns-reports-daily-search) |
+| Ad Groups Reports Daily | [List](./REFERENCE.md#ad-groups-reports-daily-list), [Search](./REFERENCE.md#ad-groups-reports-daily-search) |
+| Ads Reports Daily | [List](./REFERENCE.md#ads-reports-daily-list), [Search](./REFERENCE.md#ads-reports-daily-search) |
 
 
 ### Authentication
@@ -110,7 +120,7 @@ See the official [Tiktok-Marketing API reference](https://business-api.tiktok.co
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** c68d41e9af24b5aab46c18089d7151d3c540d0f4
+- **Package version:** 0.1.6
+- **Connector version:** 1.1.2
+- **Generated with Connector SDK commit SHA:** cb4380e76ac5cbc67b9089f94522be1bbe9f8d73
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/tiktok-marketing/CHANGELOG.md)
