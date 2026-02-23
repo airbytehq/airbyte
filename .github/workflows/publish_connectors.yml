@@ -81,6 +81,15 @@ jobs:
           ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+      - name: Restore poe-tasks from default branch
+        if: inputs.gitref != ''
+        shell: bash
+        run: |
+          # When building from a PR branch, the poe-tasks/ scripts may be outdated
+          # and incompatible with the workflow YAML (which always comes from master).
+          # Restore from the default branch to ensure compatibility.
+          git fetch origin ${{ github.event.repository.default_branch }} --depth=1
+          git checkout origin/${{ github.event.repository.default_branch }} -- poe-tasks/
       - name: List connectors to publish [manual]
         id: list-connectors-manual
         if: github.event_name == 'workflow_dispatch'
@@ -161,6 +170,16 @@ jobs:
           ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+
+      - name: Restore poe-tasks from default branch
+        if: inputs.gitref != ''
+        shell: bash
+        run: |
+          # When building from a PR branch, the poe-tasks/ scripts may be outdated
+          # and incompatible with the workflow YAML (which always comes from master).
+          # Restore from the default branch to ensure compatibility.
+          git fetch origin ${{ github.event.repository.default_branch }} --depth=1
+          git checkout origin/${{ github.event.repository.default_branch }} -- poe-tasks/
 
       - name: Create docker buildx builder
         id: create-buildx-builder
@@ -356,6 +375,16 @@ jobs:
           ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+
+      - name: Restore poe-tasks from default branch
+        if: inputs.gitref != ''
+        shell: bash
+        run: |
+          # When building from a PR branch, the poe-tasks/ scripts may be outdated
+          # and incompatible with the workflow YAML (which always comes from master).
+          # Restore from the default branch to ensure compatibility.
+          git fetch origin ${{ github.event.repository.default_branch }} --depth=1
+          git checkout origin/${{ github.event.repository.default_branch }} -- poe-tasks/
 
       - name: Set up Python
         # v5
