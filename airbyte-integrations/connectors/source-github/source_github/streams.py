@@ -734,11 +734,21 @@ class Commits(IncrementalMixin, GithubStream):
         return current_stream_state
 
     def _validate_branches_to_pull(self):
+        """
+        Validates and builds the mapping of repositories to branches for pulling commits.
+
+        This method handles empty repositories gracefully by:
+        1. Detecting repositories that have no default branch (empty repos)
+        2. Logging a warning for empty repositories
+        3. Skipping them instead of failing the entire sync
+        """
         # Get the default branch for each repository
         default_branches = {}
         for stream_slice in self.repositories_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             for repo_stats in self.repositories_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh):
-                default_branches[repo_stats["full_name"]] = repo_stats["default_branch"]
+                # Only add repos that have a default branch (non-empty repos)
+                if repo_stats.get("default_branch"):
+                    default_branches[repo_stats["full_name"]] = repo_stats["default_branch"]
 
         all_branches = []
         for stream_slice in self.branches_stream.stream_slices(sync_mode=SyncMode.full_refresh):
@@ -747,14 +757,29 @@ class Commits(IncrementalMixin, GithubStream):
 
         # Create mapping of repository to list of branches to pull commits for
         # If no branches are specified for a repo, use its default branch
+        # Skip empty repositories that have no branches
         for repo in self.repositories:
+            # Skip empty repositories - they have no default branch and no branches to pull commits from
+            if repo not in default_branches:
+                self.logger.warning(
+                    f"Repository `{repo}` appears to be empty (no default branch found). " f"Skipping commits for this repository."
+                )
+                continue
+
             repo_branches = []
             for branch in self.branches_to_pull:
                 branch_parts = branch.split("/", 2)
                 if "/".join(branch_parts[:2]) == repo and branch in all_branches:
                     repo_branches.append(branch_parts[-1])
             if not repo_branches:
-                repo_branches = [default_branches[repo]]
+                # Use .get() for safety, though we already checked repo exists in default_branches
+                default_branch = default_branches.get(repo)
+                if default_branch:
+                    repo_branches = [default_branch]
+                else:
+                    # This shouldn't happen since we checked above, but just in case
+                    self.logger.warning(f"Repository `{repo}` has no default branch. Skipping commits for this repository.")
+                    continue
             self.branches_to_repos[repo] = repo_branches
 
 
