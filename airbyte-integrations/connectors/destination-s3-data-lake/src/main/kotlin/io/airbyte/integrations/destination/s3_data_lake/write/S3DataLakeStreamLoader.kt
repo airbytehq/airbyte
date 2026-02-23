@@ -37,6 +37,9 @@ class S3DataLakeStreamLoader(
     private lateinit var table: Table
     private lateinit var targetSchema: Schema
 
+    /** Tracks whether the staging branch has already been merged to main via onStreamFlushed. */
+    private var mergedToMain = false
+
     // If we're executing a truncate, then force the schema change.
     internal val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
         if (stream.isSingleGenerationTruncate()) {
@@ -91,35 +94,77 @@ class S3DataLakeStreamLoader(
         streamStateStore.put(stream.mappedDescriptor, state)
     }
 
+    /**
+     * Called when this stream is fully flushed (all records received and all aggregates written to
+     * the staging branch). Immediately merges the staging branch into the main branch so this
+     * stream's Iceberg metadata becomes visible to downstream consumers without waiting for the
+     * entire sync to complete.
+     */
+    override suspend fun onStreamFlushed() {
+        if (!icebergConfiguration.eagerStreamMerge) {
+            logger.info {
+                "Stream ${stream.mappedDescriptor} fully flushed but eagerStreamMerge is " +
+                    "disabled. Deferring merge to teardown."
+            }
+            return
+        }
+        logger.info {
+            "Stream ${stream.mappedDescriptor} fully flushed. Merging staging branch " +
+                "'$stagingBranchName' to main branch '$mainBranchName'."
+        }
+        mergeStagingToMain()
+        mergedToMain = true
+        logger.info {
+            "Stream ${stream.mappedDescriptor} staging branch merged to main."
+        }
+    }
+
     override suspend fun teardown(completedSuccessfully: Boolean) {
         if (completedSuccessfully) {
-            // Doing it first to make sure that data coming in the current batch is written to the
-            // main branch
-            logger.info {
-                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
+            if (mergedToMain) {
+                logger.info {
+                    "Stream ${stream.mappedDescriptor} already merged to main via " +
+                        "onStreamFlushed. Skipping redundant merge in teardown."
+                }
+            } else {
+                // Fallback: if onStreamFlushed was never called (e.g., the stream didn't receive
+                // a completion message), perform the merge during teardown as before.
+                logger.info {
+                    "No stream failure detected. Committing changes from staging branch " +
+                        "'$stagingBranchName' to main branch '$mainBranchName."
+                }
+                mergeStagingToMain()
             }
-            // We've modified the table over the sync (i.e. adding new snapshots)
-            // so we need to refresh here to get the latest table metadata.
-            // In principle, this doesn't matter, but the iceberg SDK throws an error about
-            // stale table metadata without this.
-            table.refresh()
-            // Commit all pending schema updates in order (important for two-phase commits)
-            computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
-            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+        }
+    }
 
-            if (stream.isSingleGenerationTruncate()) {
-                logger.info {
-                    "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
-                }
-                val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
-                icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
-                //  Doing it again to push the deletes from the staging to main branch
-                logger.info {
-                    "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
-                        "Pushing these updates to the '$mainBranchName' branch."
-                }
-                table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+    /**
+     * Merges the staging branch into the main branch. Handles schema updates and truncate
+     * cleanup.
+     */
+    private fun mergeStagingToMain() {
+        // We've modified the table over the sync (i.e. adding new snapshots)
+        // so we need to refresh here to get the latest table metadata.
+        // In principle, this doesn't matter, but the iceberg SDK throws an error about
+        // stale table metadata without this.
+        table.refresh()
+        // Commit all pending schema updates in order (important for two-phase commits)
+        computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
+        table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
+
+        if (stream.isSingleGenerationTruncate()) {
+            logger.info {
+                "Detected a minimum generation ID (${stream.minimumGenerationId}). " +
+                    "Preparing to delete obsolete generation IDs."
             }
+            val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
+            icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
+            //  Doing it again to push the deletes from the staging to main branch
+            logger.info {
+                "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
+                    "Pushing these updates to the '$mainBranchName' branch."
+            }
+            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
         }
     }
 

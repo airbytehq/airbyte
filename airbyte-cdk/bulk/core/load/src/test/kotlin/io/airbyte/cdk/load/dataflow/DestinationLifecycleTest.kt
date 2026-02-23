@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.PipelineRunner
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamLoaderStore
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -24,6 +25,7 @@ class DestinationLifecycleTest {
     private val destinationCatalog: DestinationCatalog = mockk(relaxed = true)
     private val pipeline: PipelineRunner = mockk(relaxed = true)
     private val completionTracker: StreamCompletionTracker = mockk(relaxed = true)
+    private val streamLoaderStore: StreamLoaderStore = StreamLoaderStore()
     private val streamInitDispatcher = Dispatchers.Default
     private val streamFinalizeDispatcher = Dispatchers.Default
 
@@ -33,6 +35,7 @@ class DestinationLifecycleTest {
             destinationCatalog,
             pipeline,
             completionTracker,
+            streamLoaderStore,
             streamInitDispatcher,
             streamFinalizeDispatcher,
         )
