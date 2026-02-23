@@ -1,3 +1,9 @@
+/* Give the primary navbar the same bottom-border style as the secondary nav */
+.primaryNavBorder :global(.navbar) {
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+  box-shadow: none;
+}
+
 .secondaryNavWrapper {
   position: sticky;
   top: var(--ifm-navbar-height);

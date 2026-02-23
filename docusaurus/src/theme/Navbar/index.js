@@ -56,7 +56,7 @@ export default function NavbarWrapper(props) {
   }
 
   return (
-    <>
+    <div className={styles.primaryNavBorder}>
       <Navbar {...props} />
       <div className={styles.secondaryNavWrapper}>
         <div className={styles.secondaryNav}>
@@ -71,6 +71,6 @@ export default function NavbarWrapper(props) {
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 }
