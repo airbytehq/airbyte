@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.PipelineRunner
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.cdk.load.write.StreamLoaderStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -25,7 +24,6 @@ class DestinationLifecycle(
     private val destinationCatalog: DestinationCatalog,
     private val pipeline: PipelineRunner,
     private val completionTracker: StreamCompletionTracker,
-    private val streamLoaderStore: StreamLoaderStore,
     @Named("streamInitDispatcher") private val streamInitDispatcher: CoroutineDispatcher,
     @Named("streamFinalizeDispatcher") private val streamFinalizeDispatcher: CoroutineDispatcher,
 ) {
@@ -42,9 +40,9 @@ class DestinationLifecycle(
         // Move data
         runBlocking { pipeline.run() }
 
-        // Notify per-stream flush completion for each input-complete stream.
-        // At this point all pipelines have completed and all aggregates have been flushed,
-        // so every input-complete stream is also fully flushed.
+        // At this point all pipelines have completed and all aggregates have been flushed.
+        // Notify each input-complete stream so connectors can perform per-stream finalization
+        // (e.g., merging a staging branch into main in Iceberg) before teardown.
         notifyPerStreamFlushCompletion(streamLoaders)
 
         finalizeIndividualStreams(streamLoaders)
@@ -73,7 +71,6 @@ class DestinationLifecycle(
                             }
                             val streamLoader = destinationInitializer.createStreamLoader(it)
                             streamLoader.start()
-                            streamLoaderStore.put(it.mappedDescriptor, streamLoader)
                             log.info {
                                 "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started"
                             }
@@ -87,10 +84,9 @@ class DestinationLifecycle(
     }
 
     /**
-     * After all pipelines have completed (all records received and all aggregates flushed), notify
-     * each input-complete stream that it is fully flushed. This allows connectors to perform
-     * per-stream finalization (e.g., merging a staging branch into the main branch in Iceberg)
-     * before the overall teardown.
+     * After all pipelines have completed (all records received and all aggregates flushed), call
+     * [StreamLoader.onStreamFlushed] for each stream whose source sent a completion message. This
+     * allows connectors to perform per-stream finalization before the overall teardown.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun notifyPerStreamFlushCompletion(streamLoaders: List<StreamLoader>) {
@@ -100,15 +96,13 @@ class DestinationLifecycle(
                 .map {
                     async(streamFinalizeDispatcher) {
                         val desc = it.stream.mappedDescriptor
-                        if (completionTracker.markFullyFlushed(desc)) {
-                            log.info {
-                                "Stream ${desc.namespace}:${desc.name} is fully flushed. " +
-                                    "Invoking onStreamFlushed callback."
-                            }
-                            it.onStreamFlushed()
-                            log.info {
-                                "Stream ${desc.namespace}:${desc.name} onStreamFlushed completed."
-                            }
+                        log.info {
+                            "Stream ${desc.namespace}:${desc.name} is fully flushed. " +
+                                "Invoking onStreamFlushed callback."
+                        }
+                        it.onStreamFlushed()
+                        log.info {
+                            "Stream ${desc.namespace}:${desc.name} onStreamFlushed completed."
                         }
                     }
                 }
