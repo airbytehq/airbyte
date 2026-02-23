@@ -259,26 +259,13 @@ GO
 
 #### 5. Ensure the SQL Server Agent is running
 
-- MSSQL uses the SQL Server Agent
-
-  to
-  [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs)
-
-  for CDC. It is therefore vital that the Agent is operational in order for CDC to work
-  effectively. You can check
-
-  the status of the SQL Server Agent as follows:
+- MSSQL uses the SQL Server Agent to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs) for CDC. It is therefore vital that the Agent is operational in order for CDC to work effectively. You can check the status of the SQL Server Agent as follows:
 
 ```text
   EXEC xp_servicecontrol 'QueryState', N'SQLServerAGENT';
 ```
 
-- If you see something other than 'Running.' please follow
-
-  the
-  [Microsoft docs](https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15)
-
-  to start the service.
+- If you see something other than 'Running.' please follow the [Microsoft docs](https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15) to start the service.
 
 ## Connection to MSSQL via an SSH Tunnel
 
@@ -455,7 +442,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.3.5       | 2026-02-19 | [73606](https://github.com/airbytehq/airbyte/pull/73606)                                                          | Fix CDC cursor overflow.                                                                                                                        |
+| 4.3.5       | 2026-02-23 | [73606](https://github.com/airbytehq/airbyte/pull/73606)                                                          | Fix CDC cursor overflow.                                                                                                                        |
 | 4.3.4       | 2026-02-17 | [72935](https://github.com/airbytehq/airbyte/pull/72935)                                                          | Update LSN validation to correctly detect when saved offset has been truncated.                                                                 |
 | 4.3.3       | 2026-02-03 | [71821](https://github.com/airbytehq/airbyte/pull/71821)                                                          | Require a manual refresh when schema history is missing, bump CDK version.                                                                      |
 | 4.3.2       | 2025-12-11 | [70836](https://github.com/airbytehq/airbyte/pull/70836)                                                          | Add Azure SQL Database compatibility for SQL Server Agent check                                                                                 |
