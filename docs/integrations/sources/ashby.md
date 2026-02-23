@@ -1,14 +1,49 @@
 # Ashby
 
-## Sync overview
+<HideInUI>
 
-The Ashby source supports both Full Refresh only.
+This page contains the setup guide and reference information for the [Ashby](https://www.ashbyhq.com/) source connector.
 
-This source can sync data for the [Ashby API](https://developers.ashbyhq.com/reference).
+</HideInUI>
 
-### Output schema
+## Prerequisites
 
-This Source is capable of syncing the following core Streams:
+- An Ashby account
+- An Ashby API key with the appropriate permissions for the streams you want to sync. See the [Ashby authentication docs](https://developers.ashbyhq.com/reference/authentication) for details on how to create an API key.
+
+Your API key must have read permissions enabled for the modules that correspond to the streams you want to sync:
+
+| Ashby permission module | Streams |
+| :--- | :--- |
+| Candidates | `applications`, `application_criteria_evaluations`, `candidates` |
+| Interviews | `interviews`, `interview_stages`, `interview_schedules` |
+| Jobs | `jobs`, `job_postings` |
+| Hiring Process | `archive_reasons`, `candidate_tags`, `custom_fields`, `feedback_form_definitions`, `sources` |
+| Organization | `departments`, `locations`, `users` |
+| Offers | `offers` |
+
+:::note
+The `application_criteria_evaluations` stream requires the AI Application Review feature to be enabled for your Ashby organization. If this feature is not enabled, the stream returns empty results.
+:::
+
+## Setup guide
+
+1. Log in to your Ashby account.
+2. Generate an API key following the [Ashby authentication guide](https://developers.ashbyhq.com/reference/authentication). Grant the API key read permissions for the modules listed in the prerequisites.
+3. In Airbyte, create a new Ashby source.
+4. Enter your **API key**.
+5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector only replicates data created on or after this date for the `applications` and `interview_schedules` streams.
+
+## Supported sync modes
+
+| Feature | Supported |
+| :--- | :--- |
+| Full Refresh | Yes |
+| Incremental - Append | No |
+
+## Supported streams
+
+This source syncs the following streams:
 
 - [applications](https://developers.ashbyhq.com/reference/applicationlist)
 - [application_criteria_evaluations](https://developers.ashbyhq.com/reference/applicationlistcriteriaevaluations) (substream of applications)
@@ -28,21 +63,11 @@ This Source is capable of syncing the following core Streams:
 - [sources](https://developers.ashbyhq.com/reference/sourcelist)
 - [users](https://developers.ashbyhq.com/reference/userlist)
 
-### Features
+The `application_criteria_evaluations` stream fetches AI-generated criteria evaluations for applications that are in the Application Review interview stage and have an active status. It uses the `applicationId` from the parent `applications` stream.
 
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | No                   |       |
-| Namespaces                | No                   |       |
-
-### Performance considerations
+## Performance considerations
 
 The Ashby connector should not run into Ashby API limitations under normal usage.
-
-## Requirements
-
-- **Ashby API key**. See the [Ashby docs](https://developers.ashbyhq.com/reference/authentication) for information on how to obtain an API key.
 
 ## Changelog
 
@@ -52,7 +77,7 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
 | 0.3.1 | 2026-02-17 | [60692](https://github.com/airbytehq/airbyte/pull/60692) | Update dependencies |
-| 0.3.0 | 2026-02-11 | [73244](https://github.com/airbytehq/airbyte/pull/73244) | Add interviews, interview_stages, and application_criteria_evaluations streams |
+| 0.3.0 | 2026-02-13 | [73244](https://github.com/airbytehq/airbyte/pull/73244) | Add interviews, interview_stages, and application_criteria_evaluations streams |
 | 0.2.23 | 2025-05-10 | [59853](https://github.com/airbytehq/airbyte/pull/59853) | Update dependencies |
 | 0.2.22 | 2025-05-03 | [59322](https://github.com/airbytehq/airbyte/pull/59322) | Update dependencies |
 | 0.2.21 | 2025-04-26 | [58746](https://github.com/airbytehq/airbyte/pull/58746) | Update dependencies |

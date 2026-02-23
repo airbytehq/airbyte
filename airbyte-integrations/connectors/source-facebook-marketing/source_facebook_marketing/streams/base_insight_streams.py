@@ -109,10 +109,24 @@ class AdsInsights(FBMarketingIncrementalStream):
         name = self._new_class_name or self.__class__.__name__
         return casing.camel_to_snake(name)
 
+    # Mapping from level to the corresponding entity ID field
+    # Note: "account" level is not included because account_id is already in the base primary key
+    LEVEL_TO_ID_FIELD = {
+        "ad": "ad_id",
+        "adset": "adset_id",
+        "campaign": "campaign_id",
+    }
+
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        """Build complex PK based on slices and breakdowns"""
+        """Build complex PK based on level and breakdowns.
 
+        The primary key includes:
+        - date_start: The date of the insight data
+        - account_id: The Facebook ad account ID
+        - entity_id: The ID field corresponding to the configured level (ad_id, adset_id, campaign_id)
+        - breakdown fields: Any additional breakdown dimensions
+        """
         breakdowns_pks = []
 
         for breakdown in self.breakdowns:
@@ -121,7 +135,16 @@ class AdsInsights(FBMarketingIncrementalStream):
             else:
                 breakdowns_pks.append(breakdown)
 
-        return ["date_start", "account_id", "ad_id"] + breakdowns_pks
+        # Determine the entity ID field based on the configured level
+        # For "account" level (or any unknown level), no additional entity ID is needed
+        # since account_id is already in the base primary key
+        entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level)
+
+        base_pk = ["date_start", "account_id"]
+        if entity_id_field:
+            base_pk.append(entity_id_field)
+
+        return base_pk + breakdowns_pks
 
     @property
     def insights_lookback_period(self):
@@ -422,7 +445,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         schema = loader.get_schema("ads_insights")
         if self._custom_fields:
             # 'date_stop' and 'account_id' are also returned by default, even if they are not requested
-            custom_fields = set(self._custom_fields + [self.cursor_field, "date_stop", "account_id", "ad_id"])
+            # Include the appropriate entity ID field based on the configured level
+            # For "account" level, no additional entity ID is needed since account_id is already included
+            entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level)
+            required_fields = [self.cursor_field, "date_stop", "account_id"]
+            if entity_id_field:
+                required_fields.append(entity_id_field)
+            custom_fields = set(self._custom_fields + required_fields)
             schema["properties"] = {k: v for k, v in schema["properties"].items() if k in custom_fields}
 
             # Load extra fields for custom insights that are not in the base ads_insights schema
