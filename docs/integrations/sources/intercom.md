@@ -97,7 +97,6 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.14.0 | 2026-02-23 | [73717](https://github.com/airbytehq/airbyte/pull/73717) | Add configurable concurrency, HTTPAPIBudget, and ErrorHandlerWithRateLimiter for conversation_parts |
 | 0.14.0-rc.1 | 2026-02-23 | [73717](https://github.com/airbytehq/airbyte/pull/73717) | Add configurable concurrency, HTTPAPIBudget, and ErrorHandlerWithRateLimiter for conversation_parts |
 | 0.13.16-rc.2 | 2026-02-18 | [73635](https://github.com/airbytehq/airbyte/pull/73635) | fix(source-intercom): bump heartbeat timeout from 6h to 9h |
 | 0.13.16-rc.1 | 2025-12-11 | [70335](https://github.com/airbytehq/airbyte/pull/70335) | Fix pagination on companies stream |
