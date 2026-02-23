@@ -122,7 +122,7 @@ definitions:
               }}{% elif stream_partition.media_insights_info.media_type ==
               "VIDEO" and
               stream_partition.media_insights_info.media_product_type == "FEED"
-              %}{{  'reach,saved,views'}}{% elif
+              %}{{  'reach,saved'}}{% elif
               stream_partition.media_insights_info.media_type == "VIDEO" %}{{
               'reach,saved,likes,comments,shares,follows,profile_visits'
               }}{%elif stream_partition.media_insights_info.media_type ==
