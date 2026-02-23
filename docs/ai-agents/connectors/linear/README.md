@@ -1,4 +1,6 @@
-# Linear agent connector
+# Linear
+
+The Linear agent connector is a Python package that equips AI agents to interact with Linear through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Linear is a modern issue tracking and project management tool built for software
 development teams. This connector provides access to issues, projects, and teams
@@ -72,6 +74,7 @@ async def linear_execute(entity: str, action: str, params: dict | None = None):
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -80,7 +83,8 @@ from airbyte_agent_linear import LinearConnector, AirbyteAuthConfig
 
 connector = LinearConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -107,9 +111,9 @@ This connector supports the following entities and actions. For more details, se
 | Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Create](./REFERENCE.md#comments-create), [Update](./REFERENCE.md#comments-update), [Search](./REFERENCE.md#comments-search) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Linear API docs
 
@@ -117,7 +121,7 @@ See the official [Linear API reference](https://linear.app/developers/graphql).
 
 ## Version information
 
-- **Package version:** 0.19.93
+- **Package version:** 0.19.103
 - **Connector version:** 0.1.10
-- **Generated with Connector SDK commit SHA:** df1e8094b5b2d94e172536ce7f33fb98f2c3fdc1
+- **Generated with Connector SDK commit SHA:** cb4380e76ac5cbc67b9089f94522be1bbe9f8d73
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/linear/CHANGELOG.md)
