@@ -366,10 +366,12 @@ const config: Config = {
       },
       items: [
         // "Data Replication" dropdown groups the five sub-sections
+        // `to` makes the label itself clickable (navigates to Platform)
         {
           type: "dropdown",
           position: "left",
           label: "Data Replication",
+          to: "/platform/",
           items: [
             {
               type: "docSidebar",
