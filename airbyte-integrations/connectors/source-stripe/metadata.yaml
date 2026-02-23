@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.15.19
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
@@ -45,6 +45,12 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["refunds"]
+      6.0.0:
+        message: "Version 6.0.0 fixes the `invoice_line_items` incremental stream to correctly emit individual line item records instead of full invoice objects. The record shape changes from invoice-shaped to line-item-shaped. A reset of the `invoice_line_items` stream is required."
+        upgradeDeadline: "2026-03-23"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["invoice_line_items"]
   suggestedStreams:
     streams:
       - customers

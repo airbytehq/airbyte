@@ -1,5 +1,27 @@
 # Stripe Migration Guide
 
+## Upgrading to 6.0.0
+
+Version 6.0.0 fixes the `invoice_line_items` incremental stream to correctly emit individual line item records instead of full invoice objects. Previously, the incremental sync path emitted invoice-shaped records rather than line items due to a bug in event processing. The record shape now matches the `invoice_line_items` schema.
+
+### Summary of changes
+
+- The `invoice_line_items` stream now correctly emits individual line item records during incremental syncs.
+- Each line item record includes parent invoice metadata: `invoice_id`, `invoice_created`, and `invoice_updated`.
+- The record shape changes from invoice-shaped to line-item-shaped for incremental syncs.
+
+### Migration Steps
+
+1. Upgrade the Stripe connector to version 6.0.0.
+2. Navigate to the connection's **Schema** tab.
+3. Select **Refresh source schema** and review the changes.
+4. Save the connection and ensure the **Clear affected streams** option is checked for `invoice_line_items`.
+5. Trigger a new sync to pull in data with the corrected record shape.
+
+:::note
+Only the `invoice_line_items` stream is affected. No other streams require a reset.
+:::
+
 ###  Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
