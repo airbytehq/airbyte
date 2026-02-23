@@ -3,7 +3,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - accounts_check
+    - products
 definitions:
   streams:
     accounts:
@@ -3262,47 +3262,6 @@ definitions:
     type: HttpRequester
     url_base: https://restapi.e-conomic.com/
 streams:
-  - type: DeclarativeStream
-    name: accounts_check
-    primary_key: []
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://restapi.e-conomic.com/
-        path: accounts
-        http_method: GET
-        request_parameters:
-          pagesize: "1"
-        request_headers:
-          X-AppSecretToken: "{{config['app_secret_token']}}"
-          X-AgreementGrantToken: "{{config['agreement_grant_token']}}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - collection
-      paginator:
-        type: NoPagination
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: https://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        description: Lightweight stream for connection check - fetches a single account record.
-        properties:
-          accountNumber:
-            type: integer
-            description: The account number.
-          name:
-            type: string
-            description: The name of the account.
-          self:
-            type: string
-            description: A unique reference to the account resource.
-            format: uri
   - type: DeclarativeStream
     name: accounts
     primary_key:
