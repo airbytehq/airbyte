@@ -100,7 +100,7 @@ data class CdcIncrementalConfiguration(
     val replicationSlot: String,
     val publication: String,
     val debeziumCommitsLsn: Boolean,
-    val heartbeatActionQuery: String,
+    val heartbeatActionQuery: String?,
     val airbyteHeartbeatTimeout: Duration,
 // TODO: Support this configuration:
 //  initial waiting time in seconds
@@ -156,7 +156,7 @@ constructor(
         // Configure SSH tunneling.
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val sshOpts: SshConnectionOptions =
-            SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
+            SshConnectionOptions.fromAdditionalProperties(pojo.additionalPropertiesMap)
 
         // Configure SSL encryption.
         if (
@@ -191,8 +191,6 @@ constructor(
         if (!checkpointTargetInterval.isPositive) {
             throw ConfigErrorException("Checkpoint Target Interval should be positive")
         }
-
-        // TODO: only use username from <username>@azure.com when checking privileges
 
         val maxDBConnections: Int? = pojo.maxDbConnections
 
@@ -246,7 +244,8 @@ constructor(
             XminReplicationMethodConfigurationSpecification -> XminIncrementalConfiguration
             is CdcReplicationMethodConfigurationSpecification -> {
                 val initialLoadTimeout: Duration =
-                    Duration.ofHours(incrementalSpec.initialLoadTimeoutHours!!.toLong())
+                // TODO: Default value is duplicated here and in ConfigurationSpecification
+                Duration.ofHours(incrementalSpec.initialLoadTimeoutHours?.toLong() ?: 8)
                 val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior =
                     if (incrementalSpec.invalidCdcCursorPositionBehavior == "Fail sync") {
                         InvalidCdcCursorPositionBehavior.FAIL_SYNC
@@ -254,9 +253,11 @@ constructor(
                         InvalidCdcCursorPositionBehavior.RESET_SYNC
                     }
                 val initialWaitingDuration =
-                    Duration.ofSeconds(incrementalSpec.initialWaitingSeconds.toLong())
+                // TODO: Default value is duplicated here and in ConfigurationSpecification
+                Duration.ofSeconds(incrementalSpec.initialWaitingSeconds?.toLong() ?: 1200)
                 val shutdownTimeout: Duration =
-                    Duration.ofSeconds(incrementalSpec.debeziumShutdownTimeoutSeconds!!.toLong())
+                // TODO: Default value is duplicated here and in ConfigurationSpecification
+                Duration.ofSeconds(incrementalSpec.debeziumShutdownTimeoutSeconds?.toLong() ?: 60)
                 CdcIncrementalConfiguration(
                     initialLoadTimeout = initialLoadTimeout,
                     invalidCdcCursorPositionBehavior = invalidCdcCursorPositionBehavior,
@@ -384,7 +385,7 @@ constructor(
     }
 
     private fun passwordOrToken(pojo: PostgresSourceConfigurationSpecification): String? {
-        if (pojo.servicePrincipalAuth) {
+        if (pojo.servicePrincipalAuth ?: false) {
             val credential =
                 ClientSecretCredentialBuilder()
                     .clientId(pojo.entraClientId)
