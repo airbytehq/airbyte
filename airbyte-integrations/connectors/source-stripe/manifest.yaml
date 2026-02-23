@@ -1910,12 +1910,16 @@ spec:
                 path: ["num_workers"]
                 value: "2"
             condition: "{{ config.get('num_workers', 25) == 1 }}"
-# Concurrency level controls how many partition slices are processed in parallel.
-# Each worker handles a different time slice, preventing overlap.
-concurrency_level:
-  type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 25) }}"
-  max_concurrency: 100
+# concurrency_level removed: The high concurrency (25 workers) introduced in
+# https://github.com/airbytehq/airbyte/pull/72461 causes intermittent hangs on
+# first sync attempts due to a suspected race condition in the CDK's concurrent
+# partition processing. Reverting to CDK default (2 workers) until the underlying
+# issue is resolved. See https://github.com/airbytehq/oncall/issues/11399
+#
+# concurrency_level:
+#   type: ConcurrencyLevel
+#   default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 25) }}"
+#   max_concurrency: 100
 
 api_budget:
   type: HTTPAPIBudget
