@@ -339,42 +339,6 @@ const config: Config = {
         };
       },
     }),
-    // MDX Debug Plugin - logs which files are being processed
-    () => ({
-      name: "MDX Debug Plugin",
-      configureWebpack(config, isServer) {
-        const plugin = {
-          apply(compiler) {
-            let processedCount = 0;
-            const startTime = Date.now();
-
-            // Track module processing
-            compiler.hooks.thisCompilation.tap(
-              "MDXDebugPlugin",
-              (compilation) => {
-                compilation.hooks.buildModule.tap(
-                  "MDXDebugPlugin",
-                  (module) => {
-                    if (module.resource && module.resource.endsWith(".mdx")) {
-                      processedCount++;
-                      const elapsed = Date.now() - startTime;
-                      const fileName = module.resource.split("/").pop();
-                      console.log(
-                        `📄 [${elapsed}ms] Processing #${processedCount}: ${fileName}`,
-                      );
-                    }
-                  },
-                );
-              },
-            );
-          },
-        };
-
-        return {
-          plugins: [plugin],
-        };
-      },
-    }),
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
