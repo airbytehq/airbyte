@@ -25,7 +25,6 @@ def _make_extractor() -> InvoiceLineItemsEventExtractor:
 def _make_event(
     event_type: str = "invoice.updated",
     event_id: str = "evt_1",
-    updated: int = 1700000000,
     created: int = 1699000000,
     invoice_id: str = "in_123",
     invoice_created: int = 1698000000,
@@ -50,7 +49,6 @@ def _make_event(
         "id": event_id,
         "type": event_type,
         "created": created,
-        "updated": updated,
         "data": {"object": invoice},
     }
 
@@ -75,7 +73,7 @@ def _make_line_item(line_item_id: str = "il_1", amount: int = 1000) -> dict:
                     "amount": 1000,
                     "invoice_id": "in_123",
                     "invoice_created": 1698000000,
-                    "invoice_updated": 1700000000,
+                    "invoice_updated": 1699000000,
                 },
                 {
                     "id": "il_2",
@@ -83,7 +81,7 @@ def _make_line_item(line_item_id: str = "il_1", amount: int = 1000) -> dict:
                     "amount": 2000,
                     "invoice_id": "in_123",
                     "invoice_created": 1698000000,
-                    "invoice_updated": 1700000000,
+                    "invoice_updated": 1699000000,
                 },
             ],
             id="multiple_line_items_from_single_event",
@@ -117,7 +115,7 @@ def _make_line_item(line_item_id: str = "il_1", amount: int = 1000) -> dict:
                     "amount": 1000,
                     "invoice_id": "in_123",
                     "invoice_created": 1698000000,
-                    "invoice_updated": 1700000000,
+                    "invoice_updated": 1699000000,
                     "is_deleted": True,
                 },
             ],
@@ -148,7 +146,7 @@ def _make_line_item(line_item_id: str = "il_1", amount: int = 1000) -> dict:
                     "amount": 1000,
                     "invoice_id": "in_A",
                     "invoice_created": 1698000000,
-                    "invoice_updated": 1700000000,
+                    "invoice_updated": 1699000000,
                 },
                 {
                     "id": "il_B1",
@@ -156,7 +154,7 @@ def _make_line_item(line_item_id: str = "il_1", amount: int = 1000) -> dict:
                     "amount": 1000,
                     "invoice_id": "in_B",
                     "invoice_created": 1698000000,
-                    "invoice_updated": 1700000000,
+                    "invoice_updated": 1699000000,
                 },
                 {
                     "id": "il_B2",
@@ -164,7 +162,7 @@ def _make_line_item(line_item_id: str = "il_1", amount: int = 1000) -> dict:
                     "amount": 1000,
                     "invoice_id": "in_B",
                     "invoice_created": 1698000000,
-                    "invoice_updated": 1700000000,
+                    "invoice_updated": 1699000000,
                 },
             ],
             id="multiple_events_yield_all_line_items",
@@ -192,7 +190,7 @@ def _make_line_item(line_item_id: str = "il_1", amount: int = 1000) -> dict:
                     "amount": 1000,
                     "invoice_id": "in_123",
                     "invoice_created": 1698000000,
-                    "invoice_updated": 1700000000,
+                    "invoice_updated": 1699000000,
                 },
                 {
                     "id": "il_2",
@@ -200,7 +198,7 @@ def _make_line_item(line_item_id: str = "il_1", amount: int = 1000) -> dict:
                     "amount": 1000,
                     "invoice_id": "in_123",
                     "invoice_created": 1698000000,
-                    "invoice_updated": 1700000000,
+                    "invoice_updated": 1699000000,
                 },
             ],
             id="non_dict_line_items_are_skipped",
@@ -214,27 +212,17 @@ def test_extract_records(events, expected_records):
     assert records == expected_records
 
 
-def test_invoice_updated_uses_event_updated():
+def test_invoice_updated_uses_event_created():
     extractor = _make_extractor()
-    event = _make_event(updated=1700000000, created=1699000000, lines_data=[_make_line_item()])
+    event = _make_event(created=1699000000, lines_data=[_make_line_item()])
     response = _make_response({"data": [event]})
     records = list(extractor.extract_records(response))
-    assert records[0]["invoice_updated"] == 1700000000
-
-
-def test_invoice_updated_falls_back_to_created():
-    extractor = _make_extractor()
-    event = _make_event(lines_data=[_make_line_item()])
-    del event["updated"]
-    response = _make_response({"data": [event]})
-    records = list(extractor.extract_records(response))
-    assert records[0]["invoice_updated"] == event["created"]
+    assert records[0]["invoice_updated"] == 1699000000
 
 
 def test_invoice_updated_falls_back_to_now():
     extractor = _make_extractor()
     event = _make_event(lines_data=[_make_line_item()])
-    del event["updated"]
     del event["created"]
     response = _make_response({"data": [event]})
     records = list(extractor.extract_records(response))

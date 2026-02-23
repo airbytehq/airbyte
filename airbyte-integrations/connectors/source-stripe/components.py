@@ -50,7 +50,7 @@ class InvoiceLineItemsEventExtractor(RecordExtractor):
 
         is_deleted = event.get("type", "").endswith(".deleted")
         now_ts = int(datetime.now(timezone.utc).timestamp())
-        invoice_updated = int(event.get("updated", event.get("created", now_ts)))
+        invoice_updated = int(event.get("created", now_ts))
         invoice_id = invoice.get("id")
         invoice_created = invoice.get("created")
 

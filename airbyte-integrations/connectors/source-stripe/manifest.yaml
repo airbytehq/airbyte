@@ -12031,6 +12031,11 @@ schemas:
         type:
           - "null"
           - integer
+      is_deleted:
+        description: Indicates if the parent invoice was deleted
+        type:
+          - "null"
+          - boolean
   invoices:
     type:
       - "null"
