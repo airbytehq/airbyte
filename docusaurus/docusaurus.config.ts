@@ -377,7 +377,7 @@ const config: Config = {
               type: "docSidebar",
               docsPluginId: "platform",
               sidebarId: "platform",
-              label: "Platform",
+              label: "Data replication platform",
             },
             {
               type: "docSidebar",

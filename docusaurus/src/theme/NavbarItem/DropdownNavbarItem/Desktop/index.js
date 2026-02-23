@@ -49,8 +49,12 @@ export default function DropdownNavbarItemDesktop({
   const dropdownRef = useRef(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Detect whether any child page is active so we can highlight the parent.
-  const containsActivePage = useIsDataReplicationActive();
+  // Always call the hook (React rules of hooks) but only use the result
+  // for the "Data Replication" dropdown so other dropdowns (e.g. version
+  // selector) are not affected.
+  const isOnDataReplicationRoute = useIsDataReplicationActive();
+  const containsActivePage =
+    props.label === "Data Replication" && isOnDataReplicationRoute;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -80,6 +84,7 @@ export default function DropdownNavbarItemDesktop({
       className={clsx("navbar__item", "dropdown", "dropdown--hoverable", {
         "dropdown--right": position === "right",
         "dropdown--show": showDropdown,
+        "dropdown--active-route": containsActivePage,
       })}
     >
       <NavbarNavLink
@@ -87,9 +92,7 @@ export default function DropdownNavbarItemDesktop({
         aria-expanded={showDropdown}
         role="button"
         href={props.to ? undefined : "#"}
-        className={clsx("navbar__link", className, {
-          "navbar__link--active": containsActivePage,
-        })}
+        className={clsx("navbar__link", className)}
         {...props}
         onClick={props.to ? undefined : (e) => e.preventDefault()}
         onKeyDown={(e) => {
