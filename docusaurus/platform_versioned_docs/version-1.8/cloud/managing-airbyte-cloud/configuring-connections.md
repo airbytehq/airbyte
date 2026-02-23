@@ -50,7 +50,7 @@ Deleting a connection is irreversible. Your source and destination connector rem
 Airbyte has other options to manage connections, too.
 
 - [Airbyte API](https://reference.airbyte.com/reference/createsource#/)
-- [Terraform](/platform/terraform-documentation)
+- [Terraform](/developers/terraform-documentation)
 
 ## Connection Settings
 

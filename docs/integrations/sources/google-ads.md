@@ -291,6 +291,10 @@ Follow Google's guidance on [Selectability between segments and metrics](https:/
 :::info
 For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also subsequently refresh your source schema to pull in any changes.
 :::
+
+:::note
+Custom queries that use `click_view` as the resource are subject to the same limitations as the built-in `click_view` stream: data can only be retrieved for the past 90 days, and syncs are performed one day at a time.
+:::
 </FieldAnchor>
 
 <HideInUI>
@@ -335,16 +339,29 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.0-rc.6 | 2025-09-25 | [66701](https://github.com/airbytehq/airbyte/pull/66701) | Enables progressive rollouts |
-| 4.1.0-rc.5 | 2025-09-25 | [66569](https://github.com/airbytehq/airbyte/pull/66569) | Bumps to CDK v7, adds retry/backoff logic to custom schema loader |
-| 4.1.0-rc.4 | 2025-09-18 | [66522](https://github.com/airbytehq/airbyte/pull/66522) | Revert to CDK v6.60.12 |
-| 4.1.0-rc.3 | 2025-09-17 | [65535](https://github.com/airbytehq/airbyte/pull/65535) | Update custom query dynamic streams to use regex for conditional incremental sync component mapping |
-| 4.1.0-rc.2 | 2025-08-22 | [65149](https://github.com/airbytehq/airbyte/pull/65149) | Update custom query URL to use Google Ads API v20 |
-| 4.1.0-rc.1 | 2025-08-19 | [63344](https://github.com/airbytehq/airbyte/pull/63344) | Migrate `custom_queries` streams to low-code           |
-| 4.0.2 | 2025-08-16 | [64987](https://github.com/airbytehq/airbyte/pull/64987) | Update dependencies |
-| 4.0.1 | 2025-08-09 | [64612](https://github.com/airbytehq/airbyte/pull/64612) | Update dependencies |
-| 4.0.0 | 2025-08-06 | [64512](https://github.com/airbytehq/airbyte/pull/64512) | Update API version to v20 |
-| 3.15.0 | 2025-08-04 | [64495](https://github.com/airbytehq/airbyte/pull/64495) | Promoting release candidate 3.15.0-rc.1 to a main version. |
+| 4.1.6 | 2026-02-18 | [73636](https://github.com/airbytehq/airbyte/pull/73636) | Promoting release candidate 4.1.6-rc.1 to a main version. |
+| 4.1.6-rc.1 | 2026-02-16 | [72953](https://github.com/airbytehq/airbyte/pull/72953) | Add HTTPAPIBudget and configurable concurrency level |
+| 4.1.5 | 2026-02-16 | [73363](https://github.com/airbytehq/airbyte/pull/73363) | Promoting release candidate 4.1.5-rc.2 to a main version. |
+| 4.1.5-rc.2  | 2026-02-11 | [73269](https://github.com/airbytehq/airbyte/pull/73269) | Fix decoder wiring to prevent OOM when using CustomRetriever |
+| 4.1.5-rc.1  | 2026-02-10 | [72840](https://github.com/airbytehq/airbyte/pull/72840) | Add retry for ChunkedEncodingError in response streaming |
+| 4.1.4       | 2026-01-29 | [72453](https://github.com/airbytehq/airbyte/pull/72453) | Promoting release candidate 4.1.4-rc.1 to a main version. |
+| 4.1.4-rc.1  | 2025-12-17 | [70228](https://github.com/airbytehq/airbyte/pull/70228) | Fix custom queries with tab characters and click_view custom queries                                                                                                   |
+| 4.1.3       | 2025-11-25 | [69844](https://github.com/airbytehq/airbyte/pull/69844) | Fix custom queries regular expression to be case-insensitive                                                                                                           |
+| 4.1.2       | 2025-11-24 | [69837](https://github.com/airbytehq/airbyte/pull/69837) | Fix schema loader for custom queries                                                                                                                                   |
+| 4.1.1       | 2025-11-24 | [69802](https://github.com/airbytehq/airbyte/pull/69802) | Fix custom query regex conditions                                                                                                                                      |
+| 4.1.0       | 2025-11-20 | [69776](https://github.com/airbytehq/airbyte/pull/69776) | Promoting release candidate 4.1.0-rc.8 to a main version.                                                                                                              |
+| 4.1.0-rc.8  | 2025-10-29 | [69084](https://github.com/airbytehq/airbyte/pull/69084) | Fix criterion streams                                                                                                                                                  |
+| 4.1.0-rc.7  | 2025-10-16 | [68030](https://github.com/airbytehq/airbyte/pull/68030) | Fix schema loader for `custom_queries` streams                                                                                                                         |
+| 4.1.0-rc.6  | 2025-09-25 | [66701](https://github.com/airbytehq/airbyte/pull/66701) | Enables progressive rollouts                                                                                                                                           |
+| 4.1.0-rc.5  | 2025-09-25 | [66569](https://github.com/airbytehq/airbyte/pull/66569) | Bumps to CDK v7, adds retry/backoff logic to custom schema loader                                                                                                      |
+| 4.1.0-rc.4  | 2025-09-18 | [66522](https://github.com/airbytehq/airbyte/pull/66522) | Revert to CDK v6.60.12                                                                                                                                                 |
+| 4.1.0-rc.3  | 2025-09-17 | [65535](https://github.com/airbytehq/airbyte/pull/65535) | Update custom query dynamic streams to use regex for conditional incremental sync component mapping                                                                    |
+| 4.1.0-rc.2  | 2025-08-22 | [65149](https://github.com/airbytehq/airbyte/pull/65149) | Update custom query URL to use Google Ads API v20                                                                                                                      |
+| 4.1.0-rc.1  | 2025-08-19 | [63344](https://github.com/airbytehq/airbyte/pull/63344) | Migrate `custom_queries` streams to low-code                                                                                                                           |
+| 4.0.2       | 2025-08-16 | [64987](https://github.com/airbytehq/airbyte/pull/64987) | Update dependencies                                                                                                                                                    |
+| 4.0.1       | 2025-08-09 | [64612](https://github.com/airbytehq/airbyte/pull/64612) | Update dependencies                                                                                                                                                    |
+| 4.0.0       | 2025-08-07 | [64512](https://github.com/airbytehq/airbyte/pull/64512) | Update API version to v20                                                                                                                                              |
+| 3.15.0      | 2025-08-04 | [64495](https://github.com/airbytehq/airbyte/pull/64495) | Promoting release candidate 3.15.0-rc.1 to a main version.                                                                                                             |
 | 3.15.0-rc.1 | 2025-07-20 | [64124](https://github.com/airbytehq/airbyte/pull/64124) | Switch all streams to paginated endpoints for improved reliability                                                                                                     |
 | 3.14.2      | 2025-07-28 | [63753](https://github.com/airbytehq/airbyte/pull/63753) | Switching `click_view` to paginated endpoint for improved reliability                                                                                                  |
 | 3.14.1      | 2025-07-26 | [61472](https://github.com/airbytehq/airbyte/pull/61472) | Update dependencies                                                                                                                                                    |

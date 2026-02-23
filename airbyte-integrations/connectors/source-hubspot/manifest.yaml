@@ -88,6 +88,55 @@ definitions:
         error_message: >-
           Bad request (400). Please verify your credentials and try again.
 
+  error_handler_ignore_403:
+    # Same as the base error handler, but ignores 403 errors
+    # to avoid failing the sync when fetching dynamic streams.
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      # HubSpot API does not always return Retry-After value for 429 HTTP error
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        error_message: >-
+          Bad request (400). Please verify your credentials and try again.
+
   offset_paginator:
     type: DefaultPaginator
     page_token_option:
@@ -138,12 +187,12 @@ definitions:
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: updatedAt
+    allow_catalog_defined_cursor_field: true
     start_datetime:
       type: MinMaxDatetime
       datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    lookback_window: P{{ config.get('lookback_window', 0) }}D
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%fZ"
       - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -317,7 +366,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -408,7 +456,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -531,7 +578,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -612,42 +658,19 @@ definitions:
         $ref: "#/schemas/email_subscriptions"
 
   deals_stream:
-    type: StateDelegatingStream
-    full_refresh_stream:
-      $ref: "#/definitions/base_crm_search_full_refresh_stream"
-      transformations:
-        - type: AddFields
-          fields:
-            - path: ["updatedAt"]
-              value: "{{ record.get('updatedAt') or record['createdAt'] }}"
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.HubspotFlattenAssociationsTransformation
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-          field_mapping:
-            hs_date_entered_: "hs_v2_date_entered_"
-            hs_date_exited_: "hs_v2_date_exited_"
-            hs_time_in_: "hs_v2_latest_time_in_"
-        - type: DpathFlattenFields
-          field_path:
-            - properties
-          key_transformation:
-            type: KeyTransformation
-            prefix: properties_
-    incremental_stream:
-      $ref: "#/definitions/base_crm_search_incremental_stream"
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-          field_mapping:
-            hs_date_entered_: "hs_v2_date_entered_"
-            hs_date_exited_: "hs_v2_date_exited_"
-            hs_time_in_: "hs_v2_latest_time_in_"
-        - type: DpathFlattenFields
-          field_path: ["properties"]
-          key_transformation:
-            type: KeyTransformation
-            prefix: properties_
+    $ref: "#/definitions/base_crm_search_incremental_stream"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
     $parameters:
       name: deals
       entity: deal
@@ -657,20 +680,20 @@ definitions:
         - line_items
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.deals.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/deals"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
-          schema_transformations:
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-              field_mapping:
-                hs_date_entered_: "hs_v2_date_entered_"
-                hs_date_exited_: "hs_v2_date_exited_"
-                hs_time_in_: "hs_v2_latest_time_in_"
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
+        schema_transformations:
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+            field_mapping:
+              hs_date_entered_: "hs_v2_date_entered_"
+              hs_date_exited_: "hs_v2_date_exited_"
+              hs_time_in_: "hs_v2_latest_time_in_"
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   deals_archived_stream:
     primary_key:
@@ -879,7 +902,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%ms') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1051,7 +1073,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1126,7 +1147,6 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
         - "%ms" # support previous state format
@@ -1178,7 +1198,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1227,7 +1246,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1289,9 +1307,8 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: created
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       step: P30D
-      cursor_granularity: PT1S
+      cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
         - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -1371,7 +1388,6 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: lastUpdated
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
         - "%ms"
@@ -1405,67 +1421,6 @@ definitions:
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: lastUpdated
         cursor_format: "%ms"
-
-  base_crm_search_full_refresh_stream:
-    primary_key:
-      - id
-    $ref: "#/definitions/stream_base"
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: "/crm/v3/objects/{{ parameters['entity'] }}"
-        request_parameters:
-          archived: "false"
-          associations: "{{ parameters['associations'] }}"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path:
-                - name
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  $ref: "#/definitions/base_requester"
-                  path: "/properties/v2/{{ parameters['entity'] }}/properties"
-                decoder:
-                  type: JsonDecoder
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
-              record_merge_strategy:
-                type: GroupByKeyMergeStrategy
-                key: id
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
-      record_selector:
-        $ref: "#/definitions/base_selector"
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_declarative_manifest.components.EntitySchemaNormalization
-    transformations:
-      - type: AddFields
-        fields:
-          - path: ["updatedAt"]
-            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.HubspotFlattenAssociationsTransformation
-      - type: DpathFlattenFields
-        field_path:
-          - properties
-        key_transformation:
-          type: KeyTransformation
-          prefix: properties_
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-      is_client_side_incremental: true
 
   base_crm_search_incremental_stream:
     primary_key:
@@ -1537,12 +1492,12 @@ definitions:
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      is_client_side_incremental: true
+      step: P30D
+      cursor_granularity: PT0.001S
+      lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
   companies_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: companies
       entity: company
@@ -1550,16 +1505,14 @@ definitions:
         - contacts
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, crm.objects.companies.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/companies"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_calls_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_calls
       entity: calls
@@ -1570,16 +1523,14 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_calls"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_calls"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_emails_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_emails
       entity: emails
@@ -1590,16 +1541,14 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, sales-email-read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_emails"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_emails"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_meetings_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_meetings
       entity: meetings
@@ -1610,16 +1559,14 @@ definitions:
         - tickets
       required_scopes: crm.objects.contacts.read
       cursor_filter_property_field: hs_lastmodifieddate
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_meetings"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_meetings"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_notes_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_notes
       entity: notes
@@ -1630,16 +1577,14 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_notes"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_notes"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_tasks_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_tasks
       entity: tasks
@@ -1650,11 +1595,11 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_tasks"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_tasks"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
@@ -1693,9 +1638,8 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: timestamp
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       step: P30D
-      cursor_granularity: PT1S
+      cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
       start_datetime:
@@ -1765,7 +1709,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
         - "%ms"
@@ -1869,42 +1812,19 @@ definitions:
           $ref: "#/schemas/line_items"
 
   contacts_stream:
-    type: StateDelegatingStream
-    full_refresh_stream:
-      $ref: "#/definitions/base_crm_search_full_refresh_stream"
-      transformations:
-        - type: AddFields
-          fields:
-            - path: ["updatedAt"]
-              value: "{{ record.get('updatedAt') or record['createdAt'] }}"
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.HubspotFlattenAssociationsTransformation
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-          field_mapping:
-            hs_lifecyclestage_: "hs_v2_date_entered_"
-            hs_date_exited_: "hs_v2_date_exited_"
-            hs_time_in_: "hs_v2_latest_time_in_"
-        - type: DpathFlattenFields
-          field_path:
-            - properties
-          key_transformation:
-            type: KeyTransformation
-            prefix: properties_
-    incremental_stream:
-      $ref: "#/definitions/base_crm_search_incremental_stream"
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-          field_mapping:
-            hs_lifecyclestage_: "hs_v2_date_entered_"
-            hs_date_exited_: "hs_v2_date_exited_"
-            hs_time_in_: "hs_v2_latest_time_in_"
-        - type: DpathFlattenFields
-          field_path: ["properties"]
-          key_transformation:
-            type: KeyTransformation
-            prefix: properties_
+    $ref: "#/definitions/base_crm_search_incremental_stream"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_lifecyclestage_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
     $parameters:
       name: contacts
       entity: contact
@@ -1913,40 +1833,36 @@ definitions:
         - companies
       cursor_filter_property_field: lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/contacts"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
-          schema_transformations:
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-              field_mapping:
-                hs_lifecyclestage_: "hs_v2_date_entered_"
-                hs_date_exited_: "hs_v2_date_exited_"
-                hs_time_in_: "hs_v2_latest_time_in_"
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
+        schema_transformations:
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+            field_mapping:
+              hs_lifecyclestage_: "hs_v2_date_entered_"
+              hs_date_exited_: "hs_v2_date_exited_"
+              hs_time_in_: "hs_v2_latest_time_in_"
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   deal_splits_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: deal_splits
       entity: deal_split
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.deals.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/deal_splits"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deal_splits"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   leads_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: leads
       entity: leads
@@ -1955,16 +1871,14 @@ definitions:
         - contacts
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, crm.objects.companies.read, crm.objects.leads.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/leads"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   tickets_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: tickets
       entity: ticket
@@ -1974,11 +1888,59 @@ definitions:
         - deals
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: tickets
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/tickets"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
+
+  properties_stream:
+    type: DeclarativeStream
+    name: properties
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/properties/{{ stream_partition['objectType'] }}
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/error_handler_ignore_403"
+      record_selector:
+        $ref: "#/definitions/base_selector"
+      partition_router:
+        type: ListPartitionRouter
+        values:
+          - company
+          - contact
+          - deal
+          - ticket
+          - call
+          - communication
+          - email
+          - lead
+          - meeting
+          - note
+          - order
+          - product
+          - quote
+          - service
+          - subscription
+          - task
+          - user
+        cursor_field: objectType
+      decoder:
+        type: JsonDecoder
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - objectType
+            value: "{{ stream_partition['objectType'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/properties"
 
 streams:
   - "#/definitions/campaigns_stream"
@@ -2013,6 +1975,7 @@ streams:
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
+  - "#/definitions/properties_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -2133,53 +2096,7 @@ dynamic_streams:
           path: /crm/v3/schemas
           http_method: GET
           error_handler:
-            # Same as the base error handler, but ignores 403 errors
-            # to avoid failing the sync when fetching dynamic streams.
-            type: DefaultErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-              # HubSpot API does not always return Retry-After value for 429 HTTP error
-              - type: ExponentialBackoffStrategy
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 429
-                error_message: >-
-                  HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 502
-                  - 503
-                error_message: >-
-                  HubSpot server error (5xx). Retrying with exponential backoff...
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 401
-                error_message: >-
-                  Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
-              # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 530
-                error_message: >-
-                  The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 403
-                error_message: >-
-                  Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 400
-                error_message: >-
-                  Bad request (400). Please verify your credentials and try again.
+            $ref: "#/definitions/error_handler_ignore_403"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2251,6 +2168,18 @@ spec:
         examples:
           - "2017-01-25T00:00:00Z"
         format: date-time
+      lookback_window:
+        default: 0
+        description: >-
+          How far back (in minutes) to re-fetch records during incremental syncs. 
+          Set this if you notice missing records in CRMSearch streams to recover data 
+          that may be delayed by the HubSpot API.
+        examples:
+          - 60
+        maximum: 576000
+        minimum: 0
+        title: Lookback window
+        type: integer
       credentials:
         title: Authentication
         description: Choose how to authenticate to HubSpot.
@@ -2329,7 +2258,7 @@ spec:
         title: Number of concurrent workers
         minimum: 1
         maximum: 40
-        default: 3
+        default: 10
         examples: [ 1, 2, 3 ]
         description: The number of worker threads to use for the sync.
   advanced_auth:
@@ -2371,10 +2300,34 @@ spec:
               - credentials
               - client_secret
 
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # 1) CRM Search: special cap, separate from the global burst
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 5         # 5 req/second
+          interval: PT1S
+        - limit: 300       # 300 req/min (same ceiling)
+          interval: PT1M
+      matchers:
+        - method: POST
+          url_path_pattern: "^/crm/v3/objects/[^/]+/search$"
+    # 2) General: public app burst = 110 per 10s per installed account
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1S
+        - limit: 100
+          interval: PT10S
+      matchers: [ ]
+  status_codes_for_ratelimit_hit: [429]
+
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
   max_concurrency: 40
 
 schemas:
@@ -4609,6 +4562,18 @@ schemas:
         type:
           - "null"
           - string
+      allEmailCampaignIds:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      primaryEmailCampaignId:
+        type:
+          - "null"
+          - string
       feedbackSurveyId:
         type:
           - "null"
@@ -4910,6 +4875,10 @@ schemas:
               - "null"
               - string
           subscriptionId:
+            type:
+              - "null"
+              - string
+          subscriptionName:
             type:
               - "null"
               - string
@@ -7545,3 +7514,155 @@ schemas:
         type:
           - "null"
           - boolean
+
+  properties:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      calculated:
+        type:
+          - boolean
+          - "null"
+      calculationFormula:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdUserId:
+        type:
+          - string
+          - "null"
+      dataSensitivity:
+        type:
+          - string
+          - "null"
+      dateDisplayHint:
+        type:
+          - string
+          - "null"
+      displayOrder:
+        type:
+          - number
+          - "null"
+      externalOptions:
+        type:
+          - boolean
+          - "null"
+      fieldType:
+        type:
+          - string
+          - "null"
+      formField:
+        type:
+          - boolean
+          - "null"
+      groupName:
+        type:
+          - string
+          - "null"
+      hasUniqueValue:
+        type:
+          - boolean
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      hubspotDefined:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      modificationMetadata:
+        type:
+          - object
+          - "null"
+        properties:
+          archivable:
+            type:
+              - boolean
+              - "null"
+          readOnlyDefinition:
+            type:
+              - boolean
+              - "null"
+          readOnlyOptions:
+            type:
+              - boolean
+              - "null"
+          readOnlyValue:
+            type:
+              - boolean
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      objectType:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            displayOrder:
+              type:
+                - number
+                - "null"
+            hidden:
+              type:
+                - boolean
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      referencedObjectType:
+        type:
+          - string
+          - "null"
+      showCurrencySymbol:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedUserId:
+        type:
+          - string
+          - "null"

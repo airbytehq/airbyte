@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.state
@@ -57,27 +57,6 @@ class StateStoreTest {
         // Then
         verify { keyClient.getStateKey(checkpointMessage) }
         verify { histogramStore.acceptExpectedCounts(stateKey, 100L) }
-    }
-
-    @Test
-    fun `remove should return and remove the checkpoint message for given key`() {
-        // Given
-        val checkpointMessage = mockk<CheckpointMessage>()
-        val sourceStats = mockk<CheckpointMessage.Stats>()
-        val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
-
-        every { checkpointMessage.sourceStats } returns sourceStats
-        every { sourceStats.recordCount } returns 100L
-        every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
-
-        stateStore.accept(checkpointMessage)
-
-        // When
-        val removedMessage = stateStore.remove(stateKey)
-
-        // Then
-        assertEquals(checkpointMessage, removedMessage)
     }
 
     @Test
@@ -203,7 +182,7 @@ class StateStoreTest {
         val sourceStats = CheckpointMessage.Stats(recordCount = 150L)
         val checkpointMessage =
             StreamCheckpoint(
-                checkpoint = mockk(),
+                checkpoint = CheckpointMessage.Checkpoint("namespace", "name", mockk()),
                 sourceStats = sourceStats,
                 serializedSizeBytes = 1L,
             )

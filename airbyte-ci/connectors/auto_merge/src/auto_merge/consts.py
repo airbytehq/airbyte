@@ -10,5 +10,8 @@ CONNECTOR_PATH_PREFIXES = {
     "airbyte-integrations/connectors",
     "docs/integrations/sources",
     "docs/integrations/destinations",
+    "docs/ai-agents/connectors",
+    "docs/developers/pyairbyte",
+    "docusaurus/src/data",
 }
 MERGE_METHOD = "squash"

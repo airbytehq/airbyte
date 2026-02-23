@@ -1,0 +1,16 @@
+[
+  {
+    "id": 34,
+    "name": "Sale",
+    "slug": "sale",
+    "description": "Products on sale",
+    "count": 15
+  },
+  {
+    "id": 35,
+    "name": "New Arrival",
+    "slug": "new-arrival",
+    "description": "Newly arrived products",
+    "count": 8
+  }
+]

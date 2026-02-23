@@ -52,7 +52,7 @@ jobs:
     steps:
       - name: Append start comment
         id: post-start-comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
@@ -95,7 +95,7 @@ jobs:
     steps:
       - name: Append success comment
         if: needs.call-connector-ci-tests.outputs.result == 'success'
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ needs.post-start-comment.outputs.comment-id }}
           issue-number: ${{ inputs.pr }}
@@ -104,7 +104,7 @@ jobs:
 
       - name: Append failure comment
         if: needs.call-connector-ci-tests.outputs.result != 'success'
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ needs.post-start-comment.outputs.comment-id }}
           issue-number: ${{ inputs.pr }}

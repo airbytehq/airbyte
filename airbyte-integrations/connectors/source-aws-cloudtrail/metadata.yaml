@@ -52,4 +52,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: CloudTrail API reference
+      url: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-authentication.html
+      type: authentication_guide
+    - title: Service quotas
+      url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/WhatIsCloudTrail-Limits.html
+      type: rate_limits
 metadataSpecVersion: "1.0"

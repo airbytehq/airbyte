@@ -35,4 +35,11 @@ data:
     - suite: acceptanceTests
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: PrestaShop Web Service API
+      url: https://devdocs.prestashop-project.org/8/webservice/
+      type: api_reference
+    - title: PrestaShop authentication
+      url: https://devdocs.prestashop-project.org/8/webservice/tutorials/creating-access/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

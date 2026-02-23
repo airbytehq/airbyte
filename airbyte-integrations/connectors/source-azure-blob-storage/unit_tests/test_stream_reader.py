@@ -61,9 +61,18 @@ def test_stream_reader_files_read_and_filter_by_date():
     reader.config = config
     with patch.object(ContainerClient, "list_blobs") as blobs:
         blobs.return_value = [
-            BlobProperties(name="sample_file_1.csv", **{"Last-Modified": datetime.datetime(2023, 1, 1, 1, 1, 0)}),
-            BlobProperties(name="sample_file_2.csv", **{"Last-Modified": datetime.datetime(2024, 1, 1, 1, 1, 0)}),
-            BlobProperties(name="sample_file_3.csv", **{"Last-Modified": datetime.datetime(2024, 1, 5, 1, 1, 0)}),
+            BlobProperties(
+                name="sample_file_1.csv",
+                **{"Last-Modified": datetime.datetime(2023, 1, 1, 1, 1, 0), "x-ms-creation-time": datetime.datetime(2020, 1, 1, 1, 1, 0)},
+            ),
+            BlobProperties(
+                name="sample_file_2.csv",
+                **{"Last-Modified": datetime.datetime(2024, 1, 1, 1, 1, 0), "x-ms-creation-time": datetime.datetime(2020, 1, 1, 1, 1, 0)},
+            ),
+            BlobProperties(
+                name="sample_file_3.csv",
+                **{"Last-Modified": datetime.datetime(2024, 1, 5, 1, 1, 0), "x-ms-creation-time": datetime.datetime(2020, 1, 1, 1, 1, 0)},
+            ),
         ]
         files = list(reader.get_matching_files(globs=["**"], prefix=None, logger=logger))
         assert len(files) == 2

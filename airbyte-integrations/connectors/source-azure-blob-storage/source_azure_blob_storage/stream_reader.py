@@ -9,11 +9,11 @@ import pytz
 from azure.core.credentials import AccessToken, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient, ContainerClient
-from smart_open import open
+from smart_open import open as so_open
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.remote_file import UploadableRemoteFile
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 from .spec import SourceAzureBlobStorageSpec
@@ -68,6 +68,26 @@ class AzureOauth2Authenticator(Oauth2Authenticator, TokenCredential):
         `expires_on` is ignored and set to year 2222 to align with protocol.
         """
         return AccessToken(token=self.get_access_token(), expires_on=7952342400)
+
+
+class AzureBlobStorageUploadableRemoteFile(UploadableRemoteFile):
+    blob_client: Any
+    blob_properties: Any
+
+    def __init__(self, blob_client: Any, blob_properties: Any, **kwargs):
+        super().__init__(**kwargs)
+        self.blob_client = blob_client
+        self.blob_properties = blob_properties
+
+    @property
+    def size(self) -> int:
+        return self.blob_properties.size
+
+    def download_to_local_directory(self, local_file_path: str) -> None:
+        blob_client = self.blob_client.get_blob_client(container=self.blob_properties.container, blob=self.uri)
+        with open(file=local_file_path, mode="wb") as f:
+            download_stream = blob_client.download_blob()
+            f.write(download_stream.readall())
 
 
 class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
@@ -127,20 +147,29 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
         globs: List[str],
         prefix: Optional[str],
         logger: logging.Logger,
-    ) -> Iterable[RemoteFile]:
+    ) -> Iterable[AzureBlobStorageUploadableRemoteFile]:
         prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         prefixes = prefixes or [None]
         try:
             for prefix in prefixes:
                 for blob in self.azure_container_client.list_blobs(name_starts_with=prefix):
-                    remote_file = RemoteFile(uri=blob.name, last_modified=blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None))
+                    remote_file = AzureBlobStorageUploadableRemoteFile(
+                        uri=blob.name,
+                        last_modified=blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None),
+                        blob_client=self.azure_blob_service_client,
+                        blob_properties=blob,
+                        created_at=blob.creation_time.astimezone(pytz.utc).replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        updated_at=blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                     yield from self.filter_files_by_globs_and_start_date([remote_file], globs)
         except ResourceNotFoundError as e:
             raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=e.message, message=e.reason or e.message)
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+    def open_file(
+        self, file: AzureBlobStorageUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger
+    ) -> IOBase:
         try:
-            result = open(
+            result = so_open(
                 f"azure://{self.config.azure_blob_storage_container_name}/{file.uri}",
                 transport_params={"client": self.azure_blob_service_client},
                 mode=mode.value,

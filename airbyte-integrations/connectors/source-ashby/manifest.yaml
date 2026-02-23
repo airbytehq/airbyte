@@ -1547,6 +1547,175 @@ streams:
               - "null"
               - string
   - type: DeclarativeStream
+    name: interviews
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /interview.list
+        http_method: POST
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: per_page
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.nextCursor }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          applicationId:
+            type:
+              - "null"
+              - string
+          interviewScheduleId:
+            type:
+              - "null"
+              - string
+          interviewStageId:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          cancelledAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          startTime:
+            type:
+              - "null"
+              - string
+            format: date-time
+          endTime:
+            type:
+              - "null"
+              - string
+            format: date-time
+          feedbackLink:
+            type:
+              - "null"
+              - string
+          interviewerUserIds:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          meetingLink:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: interview_stages
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /interviewStage.list
+        http_method: POST
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: per_page
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.nextCursor }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          orderInInterviewPlan:
+            type:
+              - "null"
+              - integer
+          interviewPlanId:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+  - type: DeclarativeStream
     name: job_postings
     primary_key:
       - id
@@ -1964,6 +2133,123 @@ streams:
             type:
               - "null"
               - string
+  - type: DeclarativeStream
+    name: application_criteria_evaluations
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /application.listCriteriaEvaluations
+        http_method: POST
+        request_body_json:
+          applicationId: "{{ stream_partition.application_id }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              type: DeclarativeStream
+              name: applications_for_criteria
+              primary_key:
+                - id
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://api.ashbyhq.com
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    username: "{{ config['api_key'] }}"
+                    password: "{{ config['api_key'] }}"
+                  path: /application.list
+                  http_method: POST
+                  request_body_json:
+                    createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path:
+                      - results
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ (record.get('currentInterviewStage') or {}).get('type') == 'PreInterviewScreen' and record.get('status') not in ['Archived', 'Hired'] }}"
+                paginator:
+                  type: DefaultPaginator
+                  page_token_option:
+                    type: RequestOption
+                    inject_into: body_json
+                    field_name: cursor
+                  page_size_option:
+                    type: RequestOption
+                    inject_into: body_json
+                    field_name: per_page
+                  pagination_strategy:
+                    type: CursorPagination
+                    page_size: 100
+                    cursor_value: "{{ response.nextCursor }}"
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  type: object
+                  $schema: http://json-schema.org/draft-07/schema#
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type: string
+            parent_key: id
+            partition_field: application_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - application_id
+            value: "{{ stream_partition.application_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          application_id:
+            type:
+              - "null"
+              - string
+          criterionName:
+            type:
+              - "null"
+              - string
+          outcome:
+            type:
+              - "null"
+              - string
+          reasoning:
+            type:
+              - "null"
+              - string
+          assessmentType:
+            type:
+              - "null"
+              - string
+          jobId:
+            type:
+              - "null"
+              - string
 spec:
   type: Spec
   connection_specification:
@@ -2009,6 +2295,9 @@ metadata:
     offers: false
     sources: false
     users: false
+    interviews: false
+    interview_stages: false
+    application_criteria_evaluations: false
 schemas:
   applications:
     type: object

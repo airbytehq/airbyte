@@ -30,4 +30,8 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: TiDB documentation
+      url: https://docs.pingcap.com/tidb/stable
+      type: api_reference
 metadataSpecVersion: "1.0"

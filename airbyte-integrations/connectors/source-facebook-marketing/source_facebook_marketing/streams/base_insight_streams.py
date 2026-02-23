@@ -36,8 +36,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         "7d_click",
         "28d_click",
         "1d_view",
-        "7d_view",
-        "28d_view",
     ]
 
     breakdowns = []
@@ -111,10 +109,24 @@ class AdsInsights(FBMarketingIncrementalStream):
         name = self._new_class_name or self.__class__.__name__
         return casing.camel_to_snake(name)
 
+    # Mapping from level to the corresponding entity ID field
+    # Note: "account" level is not included because account_id is already in the base primary key
+    LEVEL_TO_ID_FIELD = {
+        "ad": "ad_id",
+        "adset": "adset_id",
+        "campaign": "campaign_id",
+    }
+
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        """Build complex PK based on slices and breakdowns"""
+        """Build complex PK based on level and breakdowns.
 
+        The primary key includes:
+        - date_start: The date of the insight data
+        - account_id: The Facebook ad account ID
+        - entity_id: The ID field corresponding to the configured level (ad_id, adset_id, campaign_id)
+        - breakdown fields: Any additional breakdown dimensions
+        """
         breakdowns_pks = []
 
         for breakdown in self.breakdowns:
@@ -123,7 +135,16 @@ class AdsInsights(FBMarketingIncrementalStream):
             else:
                 breakdowns_pks.append(breakdown)
 
-        return ["date_start", "account_id", "ad_id"] + breakdowns_pks
+        # Determine the entity ID field based on the configured level
+        # For "account" level (or any unknown level), no additional entity ID is needed
+        # since account_id is already in the base primary key
+        entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level)
+
+        base_pk = ["date_start", "account_id"]
+        if entity_id_field:
+            base_pk.append(entity_id_field)
+
+        return base_pk + breakdowns_pks
 
     @property
     def insights_lookback_period(self):
@@ -143,6 +164,36 @@ class AdsInsights(FBMarketingIncrementalStream):
         for breakdown in self.breakdowns:
             if breakdown in self.object_breakdowns.keys():
                 record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
+        return record
+
+    def _transform_objective_results(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Transform 'results' field to 'objective_results' in API responses.
+
+        Facebook API returns 'results' field when 'objective_results' is requested.
+        This method renames the field when conditions are met:
+        1. Custom fields are configured (custom insights stream)
+        2. 'objective_results' is in the schema
+        3. 'objective_results' is in custom fields but 'results' is not
+        4. Record contains 'results' but not 'objective_results'
+
+        See: https://github.com/airbytehq/oncall/issues/10126
+        """
+        if not self._custom_fields:
+            return record
+
+        schema = self.get_json_schema()
+        properties = schema.get("properties", {})
+
+        has_objective_results_in_schema = "objective_results" in properties
+        has_objective_results_in_fields = "objective_results" in self._custom_fields
+        has_results_in_fields = "results" in self._custom_fields
+
+        should_rename = has_objective_results_in_schema and has_objective_results_in_fields and not has_results_in_fields
+
+        if should_rename and "results" in record and "objective_results" not in record:
+            record["objective_results"] = record.pop("results")
+
         return record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
@@ -168,7 +219,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 data = obj.export_all_data()
                 if self._response_data_is_valid(data):
                     self._add_account_id(data, account_id)
-                    yield self._transform_breakdown(data)
+                    data = self._transform_breakdown(data)
+                    data = self._transform_objective_results(data)
+                    yield data
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
@@ -392,8 +445,24 @@ class AdsInsights(FBMarketingIncrementalStream):
         schema = loader.get_schema("ads_insights")
         if self._custom_fields:
             # 'date_stop' and 'account_id' are also returned by default, even if they are not requested
-            custom_fields = set(self._custom_fields + [self.cursor_field, "date_stop", "account_id", "ad_id"])
+            # Include the appropriate entity ID field based on the configured level
+            # For "account" level, no additional entity ID is needed since account_id is already included
+            entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level)
+            required_fields = [self.cursor_field, "date_stop", "account_id"]
+            if entity_id_field:
+                required_fields.append(entity_id_field)
+            custom_fields = set(self._custom_fields + required_fields)
             schema["properties"] = {k: v for k, v in schema["properties"].items() if k in custom_fields}
+
+            # Load extra fields for custom insights that are not in the base ads_insights schema
+            extra_schema = loader.get_schema("ads_insights_custom_fields")
+            extra_properties = extra_schema.get("properties", {})
+
+            # Enrich schema with any missing custom fields defined in the extra schema
+            for field in self._custom_fields:
+                if field not in schema["properties"] and field in extra_properties:
+                    schema["properties"][field] = extra_properties[field]
+
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
             schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
