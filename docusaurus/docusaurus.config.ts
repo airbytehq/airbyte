@@ -7,6 +7,7 @@ import {
   replaceApiReferenceCategory,
 } from "./src/scripts/agent-engine-api/sidebar-generator";
 import { generateDevelopersSidebar } from "./src/scripts/public-api/sidebar-generator";
+import type { PluginOptions as LLmPluginOptions } from "@signalwire/docusaurus-plugin-llms-txt";
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -295,22 +296,22 @@ const config: Config = {
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
-    // [
-    //   "@signalwire/docusaurus-plugin-llms-txt",
-    //   {
-    //     siteTitle: "docs.airbyte.com llms.txt",
-    //     siteDescription:
-    //       "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
-    //     depth: 4,
-    //     content: {
-    //       includePages: true,
-    //       excludeRoutes: [
-    //         "./ai-agents/embedded/api-reference/**",
-    //         "./developers/api-reference/**",
-    //       ],
-    //     },
-    //   } satisfies LLmPluginOptions,
-    // ],
+    [
+      "@signalwire/docusaurus-plugin-llms-txt",
+      {
+        siteTitle: "docs.airbyte.com llms.txt",
+        siteDescription:
+          "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
+        depth: 4,
+        content: {
+          includePages: true,
+          excludeRoutes: [
+            "./ai-agents/embedded/api-reference/**",
+            "./developers/api-reference/**",
+          ],
+        },
+      } satisfies LLmPluginOptions,
+    ],
     () => ({
       name: "Yaml loader",
       configureWebpack(config, isServer) {
