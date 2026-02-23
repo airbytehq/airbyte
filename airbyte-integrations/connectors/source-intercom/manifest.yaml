@@ -1022,7 +1022,7 @@ metadata:
 # - Both private and public apps: 10,000 API calls/min per app, 25,000/min per workspace
 # - Rate limit headers: X-RateLimit-Limit (per 10s window), X-RateLimit-Remaining, X-RateLimit-Reset
 # Two rate windows to match Intercom's enforcement:
-#   - 1000 req/min: stays well within the 10,000/min per-app limit, leaves headroom for other apps on the workspace (25,000/min shared)
+#   - 2500 req/min: 25% of the 10,000/min per-app limit, leaves headroom for other apps on the workspace (25,000/min shared)
 #   - 100 req/10s: matches the per-window limit reported by X-RateLimit-Limit headers
 # The ErrorHandlerWithRateLimiter custom component also proactively throttles based on remaining capacity headers.
 api_budget:
@@ -1030,7 +1030,7 @@ api_budget:
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 1000
+        - limit: 2500
           interval: PT1M
         - limit: 100
           interval: PT10S
