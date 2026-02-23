@@ -59,11 +59,7 @@ const PUBLIC_SPEC_FILE_NAMES = [
   "api_documentation_workspaces.yaml",
 ];
 
-// URL for fetching the configuration API specification (which contains tags)
-const CONFIG_API_SPEC_URL =
-  "https://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/config.yaml";
-
-// API documentation output directory (relative to project root)
+// API documentation output directory(relative to project root)
 const PUBLIC_API_DOCS_OUTPUT_DIR = "../docs/developers/api-reference";
 
 // Sidebar file path for generated API docs
@@ -88,7 +84,6 @@ module.exports = {
   DESTINATION_CONFIGS_DEREFERENCED_PATH,
   PUBLIC_API_SPEC_BASE_URL,
   PUBLIC_SPEC_FILE_NAMES,
-  CONFIG_API_SPEC_URL,
   PUBLIC_API_DOCS_OUTPUT_DIR,
   PUBLIC_API_SIDEBAR_PATH,
   PUBLIC_API_TAGS_PATH,

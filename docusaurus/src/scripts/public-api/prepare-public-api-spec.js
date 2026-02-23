@@ -1,10 +1,6 @@
 /**
- * This script fetches the public API OpenAPI spec and the config API spec,
- * injects the tags from config into public API, and caches the result.
- *
- * The public API spec lacks a top-level tags array, but the Airbyte Configuration API
- * (which the public API is a subset of) has comprehensive tags with display names.
- * This script merges the tags from the config spec into the public spec.
+ * This script fetches the public API OpenAPI spec files, merges them,
+ * applies curated tags, and caches the result as YAML for the OpenAPI plugin.
  */
 
 const fs = require("fs");
@@ -18,7 +14,6 @@ const {
   PUBLIC_API_SPEC_CACHE_PATH,
   PUBLIC_API_SPEC_BASE_URL,
   PUBLIC_SPEC_FILE_NAMES,
-  CONFIG_API_SPEC_URL,
   SOURCE_CONFIGS_DEREFERENCED_PATH,
   DESTINATION_CONFIGS_DEREFERENCED_PATH,
   PUBLIC_API_TAGS_PATH,
@@ -621,28 +616,20 @@ async function main() {
     );
 
     console.log(
-      `📥 Fetching ${PUBLIC_SPEC_FILE_NAMES.length} public API spec files and config spec...`
+      `📥 Fetching ${PUBLIC_SPEC_FILE_NAMES.length} public API spec files...`
     );
 
-    // Fetch all public spec files and config spec in parallel
+    // Fetch all public spec files in parallel
     console.time("FETCH_SPECS");
-    const allPromises = [
-      ...publicSpecUrls.map((url) => fetchSpec(url)),
-      fetchSpec(CONFIG_API_SPEC_URL),
-    ];
-
-    const allResults = await Promise.all(allPromises);
+    const publicSpecResults = await Promise.all(
+      publicSpecUrls.map((url) => fetchSpec(url))
+    );
     console.timeEnd("FETCH_SPECS");
-
-    // Last result is the config spec
-    const configResult = allResults[allResults.length - 1];
-    const publicSpecResults = allResults.slice(0, -1);
 
     // Merge all public API specs into one
     console.time("MERGE_SPECS");
     const publicSpecs = publicSpecResults.map((result) => result.spec);
     const publicSpec = mergeSpecs(publicSpecs);
-    const configSpec = configResult.spec;
     console.timeEnd("MERGE_SPECS");
 
     // Override info.title to avoid collision with tag names
@@ -656,18 +643,6 @@ async function main() {
     console.log(
       `📦 Merged Public API spec with ${publicSpecs.length} components`
     );
-    console.log(
-      `📦 Config spec: ${configSpec.info?.title} v${configSpec.info?.version}`
-    );
-
-    // SKIP dereferencing for now - keep all $ref pointers intact
-    // This allows us to get a working baseline to debug the Docusaurus build issue
-    console.log("⏭️  Skipping dereferencing - keeping all $ref pointers intact");
-    console.log("   Reason: Testing if dereferencing is causing the Docusaurus build to hang");
-
-    // Use the publicSpec directly without any dereferencing
-    console.log('✅ Using SourceConfiguration in spec');
-    console.log('   docusaurus-plugin-llms-txt has been disabled');
 
     let specToUseFiltered = publicSpec;
 
