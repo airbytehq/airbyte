@@ -12,6 +12,7 @@ This source syncs the following streams:
 | :----- | :-------- | :---------- |
 | [answered scorecards](https://gong.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards) | Incremental | Scorecard responses with review timestamps |
 | [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps |
+| [call transcripts](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Full Refresh | Call transcript segments with speaker IDs, topics, and timestamped sentences |
 | [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including transcripts, topics, and interaction stats |
 | [scorecards](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
 | [users](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
@@ -47,7 +48,7 @@ Additionally, you can configure:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.5.4 | 2026-02-11 | [71754](https://github.com/airbytehq/airbyte/pull/71754) | Add callTranscripts stream to sync call transcripts |
+| 0.5.4 | 2026-02-17 | [71754](https://github.com/airbytehq/airbyte/pull/71754) | Add callTranscripts stream to sync call transcripts |
 | 0.5.3 | 2026-02-10 | [73037](https://github.com/airbytehq/airbyte/pull/73037) | Update dependencies |
 | 0.5.2 | 2026-02-03 | [72579](https://github.com/airbytehq/airbyte/pull/72579) | Update dependencies |
 | 0.5.1 | 2026-01-20 | [65382](https://github.com/airbytehq/airbyte/pull/65382) | Update dependencies |

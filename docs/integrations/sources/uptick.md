@@ -157,6 +157,8 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.5.3 | 2026-02-20 | [72302](https://github.com/airbytehq/airbyte/pull/72302) | Add fields to defectquotes and projects streams |
+| 0.5.3 | 2026-02-20 | [72302](https://github.com/airbytehq/airbyte/pull/72302) | feat(source-uptick): add more fields to defect quote and projects (0.5.3) |
 | 0.5.2 | 2026-02-17 | [73433](https://github.com/airbytehq/airbyte/pull/73433) | Update dependencies |
 | 0.5.1 | 2026-02-10 | [73007](https://github.com/airbytehq/airbyte/pull/73007) | Update dependencies |
 | 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems, and add 6 new streams: servicetasks, routineservices, routineservicelevels, routineservicetypes, routineserviceleveltypes, subtasks |

@@ -1,6 +1,5 @@
 const visit = require("unist-util-visit").visit;
 const { toAttributes } = require("../helpers/objects");
-const fs = require("fs");
 
 const ICON_BASE_URL =
   "https://connectors.airbyte.com/files/metadata/airbyte";
@@ -12,10 +11,6 @@ const isAgentConnectorPage = (vfile) => {
   );
 };
 
-const isAgentConnectorIndex = (vfile) => {
-  return vfile.path.toLowerCase().endsWith("ai-agents/connectors/readme.md");
-};
-
 const getConnectorSlug = (vfile) => {
   const parts = vfile.path.split("/");
   const connectorsIdx = parts.indexOf("connectors");
@@ -23,42 +18,8 @@ const getConnectorSlug = (vfile) => {
   return parts[connectorsIdx + 1];
 };
 
-const getConnectorsDir = (vfile) => {
-  const idx = vfile.path.indexOf("ai-agents/connectors/");
-  if (idx === -1) return null;
-  return vfile.path.substring(0, idx) + "ai-agents/connectors";
-};
-
-const discoverConnectorSlugs = (connectorsDir) => {
-  try {
-    return fs
-      .readdirSync(connectorsDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name)
-      .sort();
-  } catch {
-    return [];
-  }
-};
-
 const plugin = () => {
   const transformer = async (ast, vfile) => {
-    if (isAgentConnectorIndex(vfile)) {
-      const connectorsDir = getConnectorsDir(vfile);
-      if (!connectorsDir) return;
-
-      const slugs = discoverConnectorSlugs(connectorsDir);
-
-      visit(ast, "mdxJsxFlowElement", (node) => {
-        if (node.name === "AgentConnectorRegistry") {
-          node.attributes = toAttributes({
-            connectors: JSON.stringify(slugs),
-          });
-        }
-      });
-      return;
-    }
-
     if (!isAgentConnectorPage(vfile)) return;
 
     const slug = getConnectorSlug(vfile);
