@@ -13,48 +13,7 @@
   align-items: center;
   padding: 0 1rem;
   height: 40px;
-  gap: 2rem;
-}
-
-.platformTabs {
-  display: flex;
-  align-items: center;
   gap: 0;
-  height: 100%;
-  flex-shrink: 0;
-}
-
-.platformTab {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  padding: 0 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--ifm-navbar-link-color);
-  text-decoration: none;
-  border-bottom: 3px solid transparent;
-  transition: color 0.2s ease, border-color 0.2s ease;
-}
-
-.platformTab:hover {
-  color: var(--ifm-color-primary);
-  text-decoration: none;
-}
-
-.platformTabActive {
-  color: var(--ifm-color-primary);
-  border-bottom-color: var(--ifm-color-primary);
-}
-
-/* Vertical divider between platform tabs and secondary items */
-.secondaryItems {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  height: 100%;
-  border-left: 1px solid var(--ifm-toc-border-color);
-  padding-left: 1rem;
 }
 
 .secondaryItem {

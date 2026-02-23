@@ -365,8 +365,23 @@ const config: Config = {
         height: 40,
       },
       items: [
-        // Left side items removed - they now live in the secondary nav bar.
-        // The primary navbar only shows the logo + right-side utilities.
+        // Top-level product tabs in the primary navbar row
+        {
+          type: "doc",
+          position: "left",
+          docsPluginId: "platform",
+          docId: "readme",
+          label: "Data Replication",
+          className: "navbar__product-tab",
+        },
+        {
+          type: "doc",
+          position: "left",
+          docsPluginId: "ai-agents",
+          docId: "README",
+          label: "Agent Engine",
+          className: "navbar__product-tab",
+        },
         {
           href: "https://status.airbyte.com",
           label: "Status",

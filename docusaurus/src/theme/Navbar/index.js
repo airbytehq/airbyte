@@ -33,11 +33,9 @@ function isDataReplicationPath(pathname) {
 }
 
 function isSecondaryItemActive(href, pathname) {
-  // Exact match for trailing-slash items
   if (pathname === href || pathname === href.replace(/\/$/, "")) {
     return true;
   }
-  // Prefix match
   return pathname.startsWith(href);
 }
 
@@ -47,48 +45,30 @@ export default function NavbarWrapper(props) {
   const isDataReplication = isDataReplicationPath(pathname);
   const isHome = pathname === "/";
 
-  // Determine which top-level tab is active
-  const activeTopTab = isAgentEngine
-    ? "agent-engine"
-    : isDataReplication || isHome
-      ? "data-replication"
-      : "data-replication";
+  // Show secondary nav only for Data Replication pages and homepage.
+  // "Data Replication" and "Agent Engine" tabs are now in the primary
+  // navbar row (configured in docusaurus.config.ts), so the secondary
+  // row only contains section-level links.
+  const showSecondaryNav = !isAgentEngine && (isDataReplication || isHome);
+
+  if (!showSecondaryNav) {
+    return <Navbar {...props} />;
+  }
 
   return (
     <>
       <Navbar {...props} />
       <div className={styles.secondaryNavWrapper}>
         <div className={styles.secondaryNav}>
-          {/* Top-level platform tabs */}
-          <div className={styles.platformTabs}>
+          {dataReplicationItems.map((item) => (
             <a
-              href="/platform/"
-              className={`${styles.platformTab} ${activeTopTab === "data-replication" ? styles.platformTabActive : ""}`}
+              key={item.href}
+              href={item.href}
+              className={`${styles.secondaryItem} ${isSecondaryItemActive(item.href, pathname) ? styles.secondaryItemActive : ""}`}
             >
-              Data Replication
+              {item.label}
             </a>
-            <a
-              href="/ai-agents/"
-              className={`${styles.platformTab} ${activeTopTab === "agent-engine" ? styles.platformTabActive : ""}`}
-            >
-              Agent Engine
-            </a>
-          </div>
-
-          {/* Secondary nav items - only shown for Data Replication */}
-          {activeTopTab === "data-replication" && (
-            <div className={styles.secondaryItems}>
-              {dataReplicationItems.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={`${styles.secondaryItem} ${isSecondaryItemActive(item.href, pathname) ? styles.secondaryItemActive : ""}`}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </div>
-          )}
+          ))}
         </div>
       </div>
     </>
