@@ -398,6 +398,8 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["invoice.created", "invoice.deleted", "invoice.finalization_failed", "invoice.finalized", "invoice.marked_uncollectible", "invoice.overdue", "invoice.paid", "invoice.payment_action_required", "invoice.payment_failed", "invoice.payment_succeeded", "invoice.sent", "invoice.updated", "invoice.voided", "invoice.will_be_due"]}}'
+            record_filter:
+              condition: "{{ record.get('updated', 0) | int > (stream_state.get('updated', 0) | int) }}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
