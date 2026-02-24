@@ -18,6 +18,7 @@ Before you begin, have the following ready.
 - A [registered SurveyMonkey app](https://developer.surveymonkey.com/apps/)
 - A SurveyMonkey access token, found on the Settings page of your SurveyMonkey app
 - If your SurveyMonkey app is a Public app, you also need a Client ID and Client Secret, found on the Settings page of your SurveyMonkey app
+- Your SurveyMonkey app must have the following [scopes](https://developer.surveymonkey.com/api/v3/#scopes) enabled: `surveys_read`, `responses_read_detail`, and `users_read`
 <!-- /env:oss -->
 
 <!-- env:cloud -->
@@ -60,7 +61,7 @@ You may want to review SurveyMonkey's [API docs](https://developer.surveymonkey.
     - **Start Date**: Any data before this date will not be extracted.
     - **Origin datacenter of the SurveyMonkey account**: Airbyte needs to know this because API access URLs may depend on the origin datacenter's location.
     - **Survey Monkey survey IDs**: If you want to extract specific surveys, enter the IDs of those surveys. If you want to extract all survey data, leave this blank.
-6. Click **Set up source**. Wait a moment while Airbyte tests the connection.
+5. Click **Set up source**. Wait a moment while Airbyte tests the connection.
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
