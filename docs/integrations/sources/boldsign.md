@@ -28,6 +28,7 @@ API Reference: https://developers.boldsign.com/api-overview/getting-started/?reg
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2026-02-24 | [73790](https://github.com/airbytehq/airbyte/pull/73790) | Update dependencies |
 | 0.0.22 | 2026-02-03 | [72062](https://github.com/airbytehq/airbyte/pull/72062) | Update dependencies |
 | 0.0.21 | 2026-01-14 | [71470](https://github.com/airbytehq/airbyte/pull/71470) | Update dependencies |
 | 0.0.20 | 2025-12-18 | [70661](https://github.com/airbytehq/airbyte/pull/70661) | Update dependencies |
