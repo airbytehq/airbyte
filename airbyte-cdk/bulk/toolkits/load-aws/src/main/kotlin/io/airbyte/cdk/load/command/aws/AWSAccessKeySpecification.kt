@@ -6,8 +6,8 @@ package io.airbyte.cdk.load.command.aws
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.spec.annotations.JsonSchemaInject
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 
 /**
  * Mix-in to a configuration to add AWS access key id and secret access key fields as properties.

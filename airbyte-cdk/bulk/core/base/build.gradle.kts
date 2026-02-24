@@ -61,7 +61,8 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-annotations")
     api("com.fasterxml.jackson.core:jackson-databind")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    api("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
+    api("com.github.victools:jsonschema-generator:4.38.0")
+    api("com.github.victools:jsonschema-module-jackson:4.38.0")
     api("io.airbyte.airbyte-protocol:protocol-models:0.19.0") {
         exclude(group="com.google.guava", module="guava")
         exclude(group="com.google.api-client")

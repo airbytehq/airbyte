@@ -6,8 +6,8 @@ package io.airbyte.cdk.load.command.gcs
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.spec.annotations.JsonSchemaInject
+import io.airbyte.cdk.spec.annotations.JsonSchemaTitle
 
 /** Represents basic GCS options. You may also want to extend [GcsRegionSpecification]. */
 interface GcsCommonSpecification {
