@@ -138,11 +138,7 @@ class ShopifyAuthenticator(TokenAuthenticator):
 
     def __init__(self, config: Mapping[str, Any]):
         self.config = config
-        credentials = config.get("credentials", {})
-        auth_method = credentials.get("auth_method", "")
-        self._client_credentials_authenticator: Optional[ClientCredentialsAuthenticator] = (
-            ClientCredentialsAuthenticator(config) if auth_method == "client_credentials" else None
-        )
+        self._client_credentials_authenticator: Optional[ClientCredentialsAuthenticator] = None
 
     def get_auth_header(self) -> Mapping[str, Any]:
         auth_header: str = "X-Shopify-Access-Token"
@@ -158,6 +154,8 @@ class ShopifyAuthenticator(TokenAuthenticator):
         elif auth_method == "api_password":
             return {auth_header: credentials.get("api_password")}
         elif auth_method == "client_credentials":
+            if self._client_credentials_authenticator is None:
+                self._client_credentials_authenticator = ClientCredentialsAuthenticator(self.config)
             access_token = self._client_credentials_authenticator.get_access_token()
             return {auth_header: access_token}
         else:
