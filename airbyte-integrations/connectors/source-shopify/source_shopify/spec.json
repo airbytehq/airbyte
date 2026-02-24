@@ -79,7 +79,7 @@
             "title": "Client Credentials",
             "description": "OAuth 2.0 Client Credentials Grant for apps created via the Shopify Dev Dashboard. Tokens are automatically refreshed every 24 hours.",
             "type": "object",
-            "required": ["auth_method", "client_id", "client_secret"],
+            "required": ["auth_method", "client_id", "client_secret", "shop"],
             "properties": {
               "auth_method": {
                 "type": "string",
@@ -99,6 +99,14 @@
                 "description": "The Client Secret from your Shopify Dev Dashboard app.",
                 "airbyte_secret": true,
                 "order": 2
+              },
+              "shop": {
+                "type": "string",
+                "title": "Shopify Store",
+                "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME' or 'NAME.myshopify.com'.",
+                "pattern": "^(?!https://)(?!https://).*",
+                "examples": ["my-store", "my-store.myshopify.com"],
+                "order": 3
               }
             }
           }

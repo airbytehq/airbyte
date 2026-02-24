@@ -54,8 +54,16 @@ class ShopifyAuthenticator(TokenAuthenticator):
         self._token_expiry: Optional[float] = None
 
     def _get_shop_name(self) -> str:
-        """Extract the shop name from the config, removing .myshopify.com suffix if present."""
+        """Extract the shop name from the config, removing .myshopify.com suffix if present.
+
+        For client_credentials auth, the shop may be provided inside the credentials object
+        since the top-level shop field is populated by the OAuth 2.0 flow which doesn't run
+        for client credentials.
+        """
         shop = self.config.get("shop", "")
+        if not shop:
+            credentials = self.config.get("credentials", {})
+            shop = credentials.get("shop", "")
         return shop.replace(".myshopify.com", "")
 
     def _exchange_credentials_for_token(self) -> tuple:
