@@ -21,6 +21,14 @@ definitions:
           error_message: Request contains invalid/deprecated field.
         - http_codes: [400]
           action: RETRY
+        - action: FAIL
+          failure_type: config_error
+          error_message_contains: Please reduce the amount of data you're asking for, then retry your request
+          error_message: >-
+            Received error from the server "Please reduce the amount of data you're asking for,
+            then retry your request". To fix this go on Schema Tab and unselect fields for stream
+            you don't need/want to sync, this will remove these fields from request parameters
+            reducing amount of requested data.
         - http_codes: [500]
           action: FAIL
           error_message: "{{ response.error.message if response.error else response }}"
