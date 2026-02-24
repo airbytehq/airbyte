@@ -21,6 +21,15 @@ application {
 }
 
 dependencies {
+    // Include security patches since transitive dependency versions
+    // pulled in by `mbknor-jackson-jsonschema`.
+    constraints {
+        // Patched from `2.13.1`
+        implementation("org.scala-lang:scala-library:2.13.9")
+        // Patched from `4.8.21`
+        implementation("io.github.classgraph:classgraph:4.8.112")
+    }
+
     implementation 'net.snowflake:snowflake-jdbc:3.23.1'
     implementation 'org.apache.commons:commons-lang3:3.17.0'
 

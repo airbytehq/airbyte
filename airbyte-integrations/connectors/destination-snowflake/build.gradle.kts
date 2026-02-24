@@ -40,6 +40,15 @@ val junitPlatformVersion = "1.13.4"
 val snowflakeJdbcThinVersion = "3.26.1"
 
 dependencies {
+    // Include security patches since transitive dependency versions
+    // pulled in by `mbknor-jackson-jsonschema`.
+    constraints {
+        // Patched from `2.13.1`
+        implementation("org.scala-lang:scala-library:2.13.9")
+        // Patched from `4.8.21`
+        implementation("io.github.classgraph:classgraph:4.8.112")
+    }
+
     implementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
