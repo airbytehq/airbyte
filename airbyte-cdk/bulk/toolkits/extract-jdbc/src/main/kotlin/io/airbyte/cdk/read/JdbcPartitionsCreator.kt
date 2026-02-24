@@ -80,6 +80,7 @@ abstract class JdbcPartitionsCreator<
                 if (it.hasNext()) it.next().data.toJson() else null
             }
         if (record == null) {
+            log.warn { "Cursor upper bound query for '${stream.label}' returned no rows." }
             streamState.cursorUpperBound = Jsons.nullNode()
             return
         }
@@ -91,6 +92,7 @@ abstract class JdbcPartitionsCreator<
         }
         if (cursorUpperBound.isNull) {
             log.warn { "Maximum cursor column value in '${stream.label}' is NULL." }
+            streamState.cursorUpperBound = Jsons.nullNode()
             return
         }
         log.info { "Maximum cursor column value in '${stream.label}' is '$cursorUpperBound'." }

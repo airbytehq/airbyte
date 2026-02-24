@@ -7,9 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request | Subject                                                                                                                                                           |
-|---------|------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376) | Initial independent release of bulk-cdk-core-extract. Separate versioning for extract package begins. |
+| Version | Date       | Pull Request | Subject                                                                                                                                              |
+|---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.1   | 2026-02-24 | []() | Fix infinite loop when cursor-based incremental sync encounters an empty table with prior state by caching NULL cursor upper bound values (toolkit). |
+| 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376) | Initial independent release of bulk-cdk-core-extract. Separate versioning for extract package begins.                                                |
 
 </details>
 
