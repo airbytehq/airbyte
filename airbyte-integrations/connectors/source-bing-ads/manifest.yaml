@@ -550,7 +550,7 @@ definitions:
                 Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
                 Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
                 Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+              "ReportTimeZone": "{{ stream_partition.extra_fields['TimeZone'] }}"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
@@ -2631,6 +2631,7 @@ definitions:
         stream: "#/definitions/accounts_stream"
         extra_fields:
           - - ParentCustomerId
+          - - TimeZone
 
   # cursors section
   incremental_sync_report_datetime_cursor:
@@ -2650,9 +2651,9 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      # we need the end time to include the time part as well to distinguish from the start time
-      # if we are syncing in same day, then we can evaluate boundaries effectively like lower >= upper
-      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S%z') }}"
+      # Use day_delta(1) instead of now_utc() to ensure accounts in timezones ahead of UTC
+      # get today's data included in the sync range.
+      datetime: "{{ day_delta(1, format='%Y-%m-%dT%H:%M:%S') }}+0000"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   incremental_sync_budget_summary_report_datetime_cursor:
     type: DatetimeBasedCursor
@@ -2672,9 +2673,9 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      # we need the end time to include the time part as well to distinguish from the start time
-      # if we are syncing in same day, then we can evaluate boundaries effectively like lower >= upper
-      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S%z') }}"
+      # Use day_delta(1) instead of now_utc() to ensure accounts in timezones ahead of UTC
+      # get today's data included in the sync range.
+      datetime: "{{ day_delta(1, format='%Y-%m-%dT%H:%M:%S') }}+0000"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   incremental_sync_report_hourly_datetime_cursor:
     type: DatetimeBasedCursor
@@ -2693,9 +2694,9 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      # we need the end time to include the time part as well to distinguish from the start time
-      # if we are syncing in same day, then we can evaluate boundaries effectively like lower >= upper
-      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S+00:00') }}"
+      # Use day_delta(1) instead of now_utc() to ensure accounts in timezones ahead of UTC
+      # get today's data included in the sync range.
+      datetime: "{{ day_delta(1, format='%Y-%m-%dT%H:%M:%S') }}+00:00"
       datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
   incremental_bulk_datetime_cursor:
     type: DatetimeBasedCursor
@@ -5228,7 +5229,9 @@ dynamic_streams:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(now_utc(), parameters['end_date_time_format']) }}"
+          # Use day_delta(1) instead of now_utc() to ensure accounts in timezones ahead of UTC
+          # get today's data included in the sync range.
+          datetime: "{{ format_datetime(day_delta(1), parameters['end_date_time_format']) }}"
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomReportTransformation

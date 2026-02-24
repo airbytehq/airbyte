@@ -1,5 +1,28 @@
 # Bing Ads Migration Guide
 
+## Upgrading to 3.0.0
+
+Version 3.0.0 changes the `ReportTimeZone` used in all report API requests from the hardcoded value `GreenwichMeanTimeDublinEdinburghLisbonLondon` (GMT) to each advertiser account's actual timezone. This aligns daily report data with what users see in the Microsoft Advertising dashboard, but it shifts historical date boundaries for accounts not in GMT.
+
+### Who is affected
+
+All users syncing report streams (performance reports, audience reports, geographic reports, goals and funnels reports, product dimension reports, and budget summary reports). The impact is greatest for accounts in timezones significantly ahead of or behind GMT.
+
+### What changed
+
+- **ReportTimeZone**: Previously hardcoded to GMT for all accounts. Now dynamically set to the account's configured timezone (e.g., `OsakaSapporoTokyo` for a Japan-based account).
+- **end_datetime**: Extended by one day (`day_delta(1)`) to ensure accounts in timezones ahead of UTC receive today's data.
+
+### Required actions
+
+1. Refresh the source schema in your Airbyte connection settings.
+2. Clear data and reset all report streams to re-sync with the correct timezone alignment.
+
+### Notes
+
+- Aggregate totals over multi-day periods will remain the same; only the daily breakdown alignment changes.
+- Accounts already configured with the GMT timezone will see no change in behavior.
+
 ## Upgrading to 2.0.0
 
 This version update affects all hourly reports (end in report_hourly) and the following streams:

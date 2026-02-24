@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.23.11
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   externalDocumentationUrls:
@@ -49,6 +49,74 @@ data:
       1.0.0:
         message: Version 1.0.0 removes the primary keys from the geographic performance report streams. This will prevent the connector from losing data in the incremental append+dedup sync mode because of deduplication and incorrect primary keys. A data reset and schema refresh of all the affected streams is required for the changes to take effect.
         upgradeDeadline: "2023-10-25"
+      3.0.0:
+        message: >
+          Version 3.0.0 changes the ReportTimeZone from hardcoded GMT to the
+          advertiser account's actual timezone for all report streams. This aligns
+          daily report data with the Microsoft Advertising dashboard but shifts
+          historical date boundaries. Users must refresh the source schema and
+          reset all report streams after upgrading.
+        upgradeDeadline: "2026-03-10"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - account_performance_report_hourly
+              - account_performance_report_daily
+              - account_performance_report_weekly
+              - account_performance_report_monthly
+              - account_impression_performance_report_hourly
+              - account_impression_performance_report_daily
+              - account_impression_performance_report_weekly
+              - account_impression_performance_report_monthly
+              - ad_group_performance_report_hourly
+              - ad_group_performance_report_daily
+              - ad_group_performance_report_weekly
+              - ad_group_performance_report_monthly
+              - ad_group_impression_performance_report_hourly
+              - ad_group_impression_performance_report_daily
+              - ad_group_impression_performance_report_weekly
+              - ad_group_impression_performance_report_monthly
+              - ad_performance_report_hourly
+              - ad_performance_report_daily
+              - ad_performance_report_weekly
+              - ad_performance_report_monthly
+              - campaign_performance_report_hourly
+              - campaign_performance_report_daily
+              - campaign_performance_report_weekly
+              - campaign_performance_report_monthly
+              - campaign_impression_performance_report_hourly
+              - campaign_impression_performance_report_daily
+              - campaign_impression_performance_report_weekly
+              - campaign_impression_performance_report_monthly
+              - keyword_performance_report_hourly
+              - keyword_performance_report_daily
+              - keyword_performance_report_weekly
+              - keyword_performance_report_monthly
+              - geographic_performance_report_hourly
+              - geographic_performance_report_daily
+              - geographic_performance_report_weekly
+              - geographic_performance_report_monthly
+              - age_gender_audience_report_hourly
+              - age_gender_audience_report_daily
+              - age_gender_audience_report_weekly
+              - age_gender_audience_report_monthly
+              - search_query_performance_report_hourly
+              - search_query_performance_report_daily
+              - search_query_performance_report_weekly
+              - search_query_performance_report_monthly
+              - audience_performance_report_hourly
+              - audience_performance_report_daily
+              - audience_performance_report_weekly
+              - audience_performance_report_monthly
+              - goals_and_funnels_report_hourly
+              - goals_and_funnels_report_daily
+              - goals_and_funnels_report_weekly
+              - goals_and_funnels_report_monthly
+              - product_dimension_performance_report_hourly
+              - product_dimension_performance_report_daily
+              - product_dimension_performance_report_weekly
+              - product_dimension_performance_report_monthly
+              - budget_summary_report
       2.0.0:
         message: >
           Version 2.0.0 updates schemas for all hourly reports (end in report_hourly),

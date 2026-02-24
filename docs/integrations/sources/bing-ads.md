@@ -319,6 +319,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.0 | 2026-02-24 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Use account timezone for ReportTimeZone instead of hardcoded GMT, and extend end_datetime to cover UTC+ accounts |
 | 2.23.11 | 2026-02-17 | [69578](https://github.com/airbytehq/airbyte/pull/69578) | Update dependencies |
 | 2.23.10 | 2026-02-05 | [72264](https://github.com/airbytehq/airbyte/pull/72264) | Update CDK version from 7.4.1 to 7.6.5 |
 | 2.23.9 | 2025-10-29 | [68883](https://github.com/airbytehq/airbyte/pull/68883) | Update dependencies |
