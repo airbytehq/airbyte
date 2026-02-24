@@ -59,6 +59,7 @@ By leveraging the OPUSWatch Airbyte connector, horticultural businesses can brea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.26 | 2026-02-24 | [73575](https://github.com/airbytehq/airbyte/pull/73575) | Update dependencies |
 | 0.0.25 | 2026-02-10 | [73070](https://github.com/airbytehq/airbyte/pull/73070) | Update dependencies |
 | 0.0.24 | 2026-02-03 | [72584](https://github.com/airbytehq/airbyte/pull/72584) | Update dependencies |
 | 0.0.23 | 2026-01-20 | [72183](https://github.com/airbytehq/airbyte/pull/72183) | Update dependencies |
