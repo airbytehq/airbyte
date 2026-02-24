@@ -291,6 +291,12 @@ definitions:
         name: shipping_rates
     balance_transactions:
       $ref: "#/definitions/created_stream"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        $parameters:
+          path: balance_transactions
+          record_filter:
+            condition: "{{ record.get('created', 0) | int > (stream_state.get('created', 0) | int) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
