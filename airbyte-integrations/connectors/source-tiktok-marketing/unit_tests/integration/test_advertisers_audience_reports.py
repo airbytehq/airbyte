@@ -39,7 +39,7 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
             "dimensions": '["advertiser_id", "gender", "age"]',
             "metrics": str(self.metrics).replace("'", '"'),
             "start_date": self.config()["start_date"],
-            "end_date": "2024-12-13",
+            "end_date": self.config()["end_date"],
             "lifetime": "true",
             "page_size": 1000,
             "advertiser_id": self.advertiser_id,

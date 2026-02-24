@@ -1974,7 +1974,7 @@ definitions:
           dimensions: '{{ parameters["dimensions"] | string }}'
           metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]) | string  }}'
           start_date: '{{ day_delta(-365, "%Y-%m-%d") if config.get("start_date", "2016-09-01") < day_delta(-365, "%Y-%m-%d") else config["start_date"] }}'
-          end_date: "{{ format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
+          end_date: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
           lifetime: "true"
           filtering: '{{ [{
               "filter_value": "[\\\"STATUS_ALL\\\"]",
