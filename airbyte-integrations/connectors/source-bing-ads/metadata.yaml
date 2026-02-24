@@ -46,9 +46,6 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
-      1.0.0:
-        message: Version 1.0.0 removes the primary keys from the geographic performance report streams. This will prevent the connector from losing data in the incremental append+dedup sync mode because of deduplication and incorrect primary keys. A data reset and schema refresh of all the affected streams is required for the changes to take effect.
-        upgradeDeadline: "2023-10-25"
       3.0.0:
         message: >
           Version 3.0.0 changes the ReportTimeZone from hardcoded GMT to the
@@ -56,7 +53,7 @@ data:
           daily report data with the Microsoft Advertising dashboard but shifts
           historical date boundaries. Users must refresh the source schema and
           reset all report streams after upgrading.
-        upgradeDeadline: "2026-03-10"
+        upgradeDeadline: "2026-03-24"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
@@ -116,6 +113,14 @@ data:
               - product_dimension_performance_report_daily
               - product_dimension_performance_report_weekly
               - product_dimension_performance_report_monthly
+              - user_location_performance_report_hourly
+              - user_location_performance_report_daily
+              - user_location_performance_report_weekly
+              - user_location_performance_report_monthly
+              - product_search_query_performance_report_hourly
+              - product_search_query_performance_report_daily
+              - product_search_query_performance_report_weekly
+              - product_search_query_performance_report_monthly
               - budget_summary_report
       2.0.0:
         message: >
@@ -126,6 +131,9 @@ data:
           Users will need to refresh the source schema and reset affected streams
           after upgrading.
         upgradeDeadline: "2023-12-11"
+      1.0.0:
+        message: Version 1.0.0 removes the primary keys from the geographic performance report streams. This will prevent the connector from losing data in the incremental append+dedup sync mode because of deduplication and incorrect primary keys. A data reset and schema refresh of all the affected streams is required for the changes to take effect.
+        upgradeDeadline: "2023-10-25"
   suggestedStreams:
     streams:
       - campaigns
