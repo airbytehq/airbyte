@@ -60,14 +60,12 @@ class ClientCredentialsAuthenticator:
     def _get_shop_name(self) -> str:
         """Extract the shop name, removing .myshopify.com suffix if present.
 
-        The shop is read from the credentials object since the top-level shop field
-        is populated by the OAuth 2.0 flow which doesn't run for client credentials.
-        Falls back to the top-level shop field if present.
+        The shop is read from the credentials object since it is a required field
+        in the client credentials spec. The top-level shop field is populated by the
+        OAuth 2.0 flow which doesn't run for client credentials.
         """
         credentials = self.config.get("credentials", {})
         shop = credentials.get("shop", "")
-        if not shop:
-            shop = self.config.get("shop", "")
         return shop.replace(".myshopify.com", "")
 
     def _exchange_credentials_for_token(self) -> tuple:

@@ -103,21 +103,6 @@ def test_raises_missing_access_token(config_missing_access_token):
             id="shop_from_credentials_strips_suffix",
         ),
         pytest.param(
-            {"shop": "top-level", "credentials": {"shop": "cred-shop"}},
-            "cred-shop",
-            id="credentials_shop_takes_priority_over_top_level",
-        ),
-        pytest.param(
-            {"shop": "top-level", "credentials": {}},
-            "top-level",
-            id="falls_back_to_top_level_shop",
-        ),
-        pytest.param(
-            {"shop": "top-level.myshopify.com", "credentials": {}},
-            "top-level",
-            id="top_level_fallback_strips_suffix",
-        ),
-        pytest.param(
             {"credentials": {}},
             "",
             id="empty_shop_returns_empty_string",
