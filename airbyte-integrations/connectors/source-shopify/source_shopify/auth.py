@@ -40,10 +40,13 @@ class NotImplementedAuth(Exception):
         super().__init__(self.logger.error(self.message))
 
 
-class ShopifyAuthenticator(TokenAuthenticator):
+class ClientCredentialsAuthenticator:
     """
-    Making Authenticator to be able to accept Header-Based authentication.
-    Supports OAuth2.0, API Password, and Client Credentials Grant authentication methods.
+    Handles OAuth 2.0 Client Credentials Grant authentication for Shopify apps
+    created via the Dev Dashboard. Manages token exchange, caching, and automatic
+    refresh before the 24-hour expiry.
+
+    See: https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/client-credentials-grant
     """
 
     TOKEN_REFRESH_BUFFER_SECONDS = 300
@@ -54,22 +57,21 @@ class ShopifyAuthenticator(TokenAuthenticator):
         self._token_expiry: Optional[float] = None
 
     def _get_shop_name(self) -> str:
-        """Extract the shop name from the config, removing .myshopify.com suffix if present.
+        """Extract the shop name, removing .myshopify.com suffix if present.
 
-        For client_credentials auth, the shop may be provided inside the credentials object
-        since the top-level shop field is populated by the OAuth 2.0 flow which doesn't run
-        for client credentials.
+        The shop is read from the credentials object since the top-level shop field
+        is populated by the OAuth 2.0 flow which doesn't run for client credentials.
+        Falls back to the top-level shop field if present.
         """
-        shop = self.config.get("shop", "")
+        credentials = self.config.get("credentials", {})
+        shop = credentials.get("shop", "")
         if not shop:
-            credentials = self.config.get("credentials", {})
-            shop = credentials.get("shop", "")
+            shop = self.config.get("shop", "")
         return shop.replace(".myshopify.com", "")
 
     def _exchange_credentials_for_token(self) -> tuple:
         """
         Exchange client credentials for an access token using Shopify's Client Credentials Grant.
-        See: https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/client-credentials-grant
         """
         credentials = self.config.get("credentials", {})
         client_id = credentials.get("client_id")
@@ -112,7 +114,7 @@ class ShopifyAuthenticator(TokenAuthenticator):
         except (KeyError, ValueError):
             raise ClientCredentialsTokenError("Invalid response from Shopify token endpoint. Missing or malformed access_token.")
 
-    def _get_client_credentials_token(self) -> str:
+    def get_access_token(self) -> str:
         """
         Get a valid access token, refreshing if necessary.
         Tokens are refreshed proactively before expiry to avoid mid-sync failures.
@@ -126,6 +128,21 @@ class ShopifyAuthenticator(TokenAuthenticator):
             self._access_token, self._token_expiry = self._exchange_credentials_for_token()
 
         return self._access_token
+
+
+class ShopifyAuthenticator(TokenAuthenticator):
+    """
+    Making Authenticator to be able to accept Header-Based authentication.
+    Supports OAuth2.0, API Password, and Client Credentials Grant authentication methods.
+    """
+
+    def __init__(self, config: Mapping[str, Any]):
+        self.config = config
+        credentials = config.get("credentials", {})
+        auth_method = credentials.get("auth_method", "")
+        self._client_credentials_authenticator: Optional[ClientCredentialsAuthenticator] = (
+            ClientCredentialsAuthenticator(config) if auth_method == "client_credentials" else None
+        )
 
     def get_auth_header(self) -> Mapping[str, Any]:
         auth_header: str = "X-Shopify-Access-Token"
@@ -141,7 +158,7 @@ class ShopifyAuthenticator(TokenAuthenticator):
         elif auth_method == "api_password":
             return {auth_header: credentials.get("api_password")}
         elif auth_method == "client_credentials":
-            access_token = self._get_client_credentials_token()
+            access_token = self._client_credentials_authenticator.get_access_token()
             return {auth_header: access_token}
         else:
             raise NotImplementedAuth(auth_method)
