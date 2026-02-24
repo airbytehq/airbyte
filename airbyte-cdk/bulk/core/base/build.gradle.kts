@@ -58,9 +58,11 @@ tasks.withType<Copy>().configureEach {
 
 dependencies {
 
+    // Include security patches since transitive dependency versions pulled in by
+    // mbknor-jackson-jsonschema (scala-library:2.13.1, classgraph:4.8.21) have known vulnerabilities.
     constraints {
-        api("org.scala-lang:scala-library:2.13.9") // fix CVE-2022-36944
-        api("io.github.classgraph:classgraph:4.8.112") // fix CVE-2021-47621
+        api("org.scala-lang:scala-library:2.13.9")
+        api("io.github.classgraph:classgraph:4.8.112")
     }
 
     api("com.fasterxml.jackson.core:jackson-annotations")
