@@ -4,7 +4,7 @@
 
 This version fixes a typo in the `enviroments` stream name. The stream has been renamed to `environments`.
 
-### Summary of changes:
+### Summary of changes
 
 - The `enviroments` stream has been renamed to `environments`.
 
