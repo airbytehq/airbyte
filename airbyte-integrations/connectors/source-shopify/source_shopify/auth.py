@@ -50,6 +50,7 @@ class ClientCredentialsAuthenticator:
     """
 
     TOKEN_REFRESH_BUFFER_SECONDS = 300
+    DEFAULT_TOKEN_EXPIRY_SECONDS = 86399
 
     def __init__(self, config: Mapping[str, Any]):
         self.config = config
@@ -108,7 +109,7 @@ class ClientCredentialsAuthenticator:
         try:
             result = response.json()
             access_token = result["access_token"]
-            expires_in = result.get("expires_in", 86399)
+            expires_in = result.get("expires_in", self.DEFAULT_TOKEN_EXPIRY_SECONDS)
             expiry_time = time.time() + expires_in
             return access_token, expiry_time
         except (KeyError, ValueError):
