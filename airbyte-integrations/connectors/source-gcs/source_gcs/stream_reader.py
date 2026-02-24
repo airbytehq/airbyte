@@ -109,7 +109,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                             uri=uri, blob=blob, last_modified=last_modified, mime_type=".".join(blob.name.split(".")[1:])
                         )
 
-                        if remote_file.mime_type == "zip" and self.config.delivery_method.delivery_type != DeliverRawFiles.delivery_type:
+                        if remote_file.mime_type == "zip" and not isinstance(self.config.delivery_method, DeliverRawFiles):
                             yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
                         else:
                             yield remote_file
