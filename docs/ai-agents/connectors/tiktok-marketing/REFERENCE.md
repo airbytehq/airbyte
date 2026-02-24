@@ -15,6 +15,10 @@ The Tiktok-Marketing connector supports the following entities and actions.
 | Audiences | [List](#audiences-list), [Search](#audiences-search) |
 | Creative Assets Images | [List](#creative-assets-images-list), [Search](#creative-assets-images-search) |
 | Creative Assets Videos | [List](#creative-assets-videos-list), [Search](#creative-assets-videos-search) |
+| Advertisers Reports Daily | [List](#advertisers-reports-daily-list), [Search](#advertisers-reports-daily-search) |
+| Campaigns Reports Daily | [List](#campaigns-reports-daily-list), [Search](#campaigns-reports-daily-search) |
+| Ad Groups Reports Daily | [List](#ad-groups-reports-daily-list), [Search](#ad-groups-reports-daily-search) |
+| Ads Reports Daily | [List](#ads-reports-daily-list), [Search](#ads-reports-daily-search) |
 
 ## Advertisers
 
@@ -1250,6 +1254,1018 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].video_cover_url` | `string` | URL for the cover image of the video. |
 | `data[].video_id` | `string` | ID of the video. |
 | `data[].width` | `integer` | Width of the video in pixels. |
+
+</details>
+
+## Advertisers Reports Daily
+
+### Advertisers Reports Daily List
+
+Get daily performance reports at the advertiser level
+
+#### Python SDK
+
+```python
+await tiktok_marketing.advertisers_reports_daily.list(
+    advertiser_id="<str>",
+    service_type="<str>",
+    report_type="<str>",
+    data_level="<str>",
+    dimensions="<str>",
+    metrics="<str>",
+    start_date="<str>",
+    end_date="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "advertisers_reports_daily",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>",
+        "service_type": "<str>",
+        "report_type": "<str>",
+        "data_level": "<str>",
+        "dimensions": "<str>",
+        "metrics": "<str>",
+        "start_date": "<str>",
+        "end_date": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `service_type` | `string` | Yes | Service type |
+| `report_type` | `string` | Yes | Report type |
+| `data_level` | `string` | Yes | Data level for the report |
+| `dimensions` | `string` | Yes | Dimensions for the report (JSON array) |
+| `metrics` | `string` | Yes | Metrics to retrieve (JSON array) |
+| `start_date` | `string` | Yes | Report start date (YYYY-MM-DD) |
+| `end_date` | `string` | Yes | Report end date (YYYY-MM-DD) |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `advertiser_id` | `null \| integer` |  |
+| `stat_time_day` | `null \| string` |  |
+| `spend` | `null \| string` |  |
+| `cash_spend` | `null \| string` |  |
+| `voucher_spend` | `null \| string` |  |
+| `cpc` | `null \| string` |  |
+| `cpm` | `null \| string` |  |
+| `impressions` | `null \| string` |  |
+| `clicks` | `null \| string` |  |
+| `ctr` | `null \| string` |  |
+| `reach` | `null \| string` |  |
+| `cost_per_1000_reached` | `null \| string` |  |
+| `frequency` | `null \| string` |  |
+| `video_play_actions` | `null \| number` |  |
+| `video_watched_2s` | `null \| number` |  |
+| `video_watched_6s` | `null \| number` |  |
+| `average_video_play` | `null \| number` |  |
+| `average_video_play_per_user` | `null \| number` |  |
+| `video_views_p25` | `null \| number` |  |
+| `video_views_p50` | `null \| number` |  |
+| `video_views_p75` | `null \| number` |  |
+| `video_views_p100` | `null \| number` |  |
+| `profile_visits` | `null \| number` |  |
+| `likes` | `null \| number` |  |
+| `comments` | `null \| number` |  |
+| `shares` | `null \| number` |  |
+| `follows` | `null \| number` |  |
+| `clicks_on_music_disc` | `null \| number` |  |
+| `real_time_app_install` | `null \| number` |  |
+| `real_time_app_install_cost` | `null \| number` |  |
+| `app_install` | `null \| number` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Advertisers Reports Daily Search
+
+Search and filter advertisers reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await tiktok_marketing.advertisers_reports_daily.search(
+    query={"filter": {"eq": {"advertiser_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "advertisers_reports_daily",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"advertiser_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `advertiser_id` | `integer` | The unique identifier for the advertiser. |
+| `stat_time_day` | `string` | The date for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `spend` | `string` | Total amount of money spent. |
+| `cash_spend` | `string` | The amount of money spent in cash. |
+| `voucher_spend` | `string` | Amount spent using vouchers. |
+| `cpc` | `string` | Cost per click. |
+| `cpm` | `string` | Cost per thousand impressions. |
+| `impressions` | `string` | Number of times the ad was displayed. |
+| `clicks` | `string` | Number of clicks on the ad. |
+| `ctr` | `string` | Click-through rate. |
+| `reach` | `string` | Total number of unique users reached. |
+| `cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `frequency` | `string` | Average number of times each person saw the ad. |
+| `video_play_actions` | `number` | Number of video play actions. |
+| `video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `average_video_play` | `number` | Average video play duration. |
+| `average_video_play_per_user` | `number` | Average video play duration per user. |
+| `video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `profile_visits` | `number` | Number of profile visits. |
+| `likes` | `number` | Number of likes. |
+| `comments` | `number` | Number of comments. |
+| `shares` | `number` | Number of shares. |
+| `follows` | `number` | Number of follows. |
+| `clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `real_time_app_install` | `number` | Real-time app installations. |
+| `real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `app_install` | `number` | Number of app installations. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].advertiser_id` | `integer` | The unique identifier for the advertiser. |
+| `data[].stat_time_day` | `string` | The date for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `data[].spend` | `string` | Total amount of money spent. |
+| `data[].cash_spend` | `string` | The amount of money spent in cash. |
+| `data[].voucher_spend` | `string` | Amount spent using vouchers. |
+| `data[].cpc` | `string` | Cost per click. |
+| `data[].cpm` | `string` | Cost per thousand impressions. |
+| `data[].impressions` | `string` | Number of times the ad was displayed. |
+| `data[].clicks` | `string` | Number of clicks on the ad. |
+| `data[].ctr` | `string` | Click-through rate. |
+| `data[].reach` | `string` | Total number of unique users reached. |
+| `data[].cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `data[].frequency` | `string` | Average number of times each person saw the ad. |
+| `data[].video_play_actions` | `number` | Number of video play actions. |
+| `data[].video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `data[].video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `data[].average_video_play` | `number` | Average video play duration. |
+| `data[].average_video_play_per_user` | `number` | Average video play duration per user. |
+| `data[].video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `data[].video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `data[].video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `data[].video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `data[].profile_visits` | `number` | Number of profile visits. |
+| `data[].likes` | `number` | Number of likes. |
+| `data[].comments` | `number` | Number of comments. |
+| `data[].shares` | `number` | Number of shares. |
+| `data[].follows` | `number` | Number of follows. |
+| `data[].clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `data[].real_time_app_install` | `number` | Real-time app installations. |
+| `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+## Campaigns Reports Daily
+
+### Campaigns Reports Daily List
+
+Get daily performance reports at the campaign level
+
+#### Python SDK
+
+```python
+await tiktok_marketing.campaigns_reports_daily.list(
+    advertiser_id="<str>",
+    service_type="<str>",
+    report_type="<str>",
+    data_level="<str>",
+    dimensions="<str>",
+    metrics="<str>",
+    start_date="<str>",
+    end_date="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns_reports_daily",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>",
+        "service_type": "<str>",
+        "report_type": "<str>",
+        "data_level": "<str>",
+        "dimensions": "<str>",
+        "metrics": "<str>",
+        "start_date": "<str>",
+        "end_date": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `service_type` | `string` | Yes | Service type |
+| `report_type` | `string` | Yes | Report type |
+| `data_level` | `string` | Yes | Data level for the report |
+| `dimensions` | `string` | Yes | Dimensions for the report (JSON array) |
+| `metrics` | `string` | Yes | Metrics to retrieve (JSON array) |
+| `start_date` | `string` | Yes | Report start date (YYYY-MM-DD) |
+| `end_date` | `string` | Yes | Report end date (YYYY-MM-DD) |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `campaign_id` | `null \| integer` |  |
+| `stat_time_day` | `null \| string` |  |
+| `campaign_name` | `null \| string` |  |
+| `spend` | `null \| string` |  |
+| `cpc` | `null \| string` |  |
+| `cpm` | `null \| string` |  |
+| `impressions` | `null \| string` |  |
+| `clicks` | `null \| string` |  |
+| `ctr` | `null \| string` |  |
+| `reach` | `null \| string` |  |
+| `cost_per_1000_reached` | `null \| string` |  |
+| `frequency` | `null \| string` |  |
+| `video_play_actions` | `null \| number` |  |
+| `video_watched_2s` | `null \| number` |  |
+| `video_watched_6s` | `null \| number` |  |
+| `average_video_play` | `null \| number` |  |
+| `average_video_play_per_user` | `null \| number` |  |
+| `video_views_p25` | `null \| number` |  |
+| `video_views_p50` | `null \| number` |  |
+| `video_views_p75` | `null \| number` |  |
+| `video_views_p100` | `null \| number` |  |
+| `profile_visits` | `null \| number` |  |
+| `likes` | `null \| number` |  |
+| `comments` | `null \| number` |  |
+| `shares` | `null \| number` |  |
+| `follows` | `null \| number` |  |
+| `clicks_on_music_disc` | `null \| number` |  |
+| `real_time_app_install` | `null \| number` |  |
+| `real_time_app_install_cost` | `null \| number` |  |
+| `app_install` | `null \| number` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Campaigns Reports Daily Search
+
+Search and filter campaigns reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await tiktok_marketing.campaigns_reports_daily.search(
+    query={"filter": {"eq": {"campaign_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns_reports_daily",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"campaign_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `campaign_id` | `integer` | The unique identifier for the campaign. |
+| `stat_time_day` | `string` | The date for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `campaign_name` | `string` | The name of the marketing campaign. |
+| `spend` | `string` | Total amount of money spent. |
+| `cpc` | `string` | Cost per click. |
+| `cpm` | `string` | Cost per thousand impressions. |
+| `impressions` | `string` | Number of times the ad was displayed. |
+| `clicks` | `string` | Number of clicks on the ad. |
+| `ctr` | `string` | Click-through rate. |
+| `reach` | `string` | Total number of unique users reached. |
+| `cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `frequency` | `string` | Average number of times each person saw the ad. |
+| `video_play_actions` | `number` | Number of video play actions. |
+| `video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `average_video_play` | `number` | Average video play duration. |
+| `average_video_play_per_user` | `number` | Average video play duration per user. |
+| `video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `profile_visits` | `number` | Number of profile visits. |
+| `likes` | `number` | Number of likes. |
+| `comments` | `number` | Number of comments. |
+| `shares` | `number` | Number of shares. |
+| `follows` | `number` | Number of follows. |
+| `clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `real_time_app_install` | `number` | Real-time app installations. |
+| `real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `app_install` | `number` | Number of app installations. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].campaign_id` | `integer` | The unique identifier for the campaign. |
+| `data[].stat_time_day` | `string` | The date for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `data[].campaign_name` | `string` | The name of the marketing campaign. |
+| `data[].spend` | `string` | Total amount of money spent. |
+| `data[].cpc` | `string` | Cost per click. |
+| `data[].cpm` | `string` | Cost per thousand impressions. |
+| `data[].impressions` | `string` | Number of times the ad was displayed. |
+| `data[].clicks` | `string` | Number of clicks on the ad. |
+| `data[].ctr` | `string` | Click-through rate. |
+| `data[].reach` | `string` | Total number of unique users reached. |
+| `data[].cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `data[].frequency` | `string` | Average number of times each person saw the ad. |
+| `data[].video_play_actions` | `number` | Number of video play actions. |
+| `data[].video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `data[].video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `data[].average_video_play` | `number` | Average video play duration. |
+| `data[].average_video_play_per_user` | `number` | Average video play duration per user. |
+| `data[].video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `data[].video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `data[].video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `data[].video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `data[].profile_visits` | `number` | Number of profile visits. |
+| `data[].likes` | `number` | Number of likes. |
+| `data[].comments` | `number` | Number of comments. |
+| `data[].shares` | `number` | Number of shares. |
+| `data[].follows` | `number` | Number of follows. |
+| `data[].clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `data[].real_time_app_install` | `number` | Real-time app installations. |
+| `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+## Ad Groups Reports Daily
+
+### Ad Groups Reports Daily List
+
+Get daily performance reports at the ad group level
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ad_groups_reports_daily.list(
+    advertiser_id="<str>",
+    service_type="<str>",
+    report_type="<str>",
+    data_level="<str>",
+    dimensions="<str>",
+    metrics="<str>",
+    start_date="<str>",
+    end_date="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_groups_reports_daily",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>",
+        "service_type": "<str>",
+        "report_type": "<str>",
+        "data_level": "<str>",
+        "dimensions": "<str>",
+        "metrics": "<str>",
+        "start_date": "<str>",
+        "end_date": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `service_type` | `string` | Yes | Service type |
+| `report_type` | `string` | Yes | Report type |
+| `data_level` | `string` | Yes | Data level for the report |
+| `dimensions` | `string` | Yes | Dimensions for the report (JSON array) |
+| `metrics` | `string` | Yes | Metrics to retrieve (JSON array) |
+| `start_date` | `string` | Yes | Report start date (YYYY-MM-DD) |
+| `end_date` | `string` | Yes | Report end date (YYYY-MM-DD) |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `adgroup_id` | `null \| integer` |  |
+| `stat_time_day` | `null \| string` |  |
+| `campaign_name` | `null \| string` |  |
+| `campaign_id` | `null \| integer` |  |
+| `adgroup_name` | `null \| string` |  |
+| `placement_type` | `null \| string` |  |
+| `spend` | `null \| string` |  |
+| `cpc` | `null \| string` |  |
+| `cpm` | `null \| string` |  |
+| `impressions` | `null \| string` |  |
+| `clicks` | `null \| string` |  |
+| `ctr` | `null \| string` |  |
+| `reach` | `null \| string` |  |
+| `cost_per_1000_reached` | `null \| string` |  |
+| `conversion` | `null \| string` |  |
+| `cost_per_conversion` | `null \| string` |  |
+| `conversion_rate` | `null \| string` |  |
+| `real_time_conversion` | `null \| string` |  |
+| `real_time_cost_per_conversion` | `null \| string` |  |
+| `real_time_conversion_rate` | `null \| string` |  |
+| `result` | `null \| string` |  |
+| `cost_per_result` | `null \| string` |  |
+| `result_rate` | `null \| string` |  |
+| `real_time_result` | `null \| string` |  |
+| `real_time_cost_per_result` | `null \| string` |  |
+| `real_time_result_rate` | `null \| string` |  |
+| `secondary_goal_result` | `null \| string` |  |
+| `cost_per_secondary_goal_result` | `null \| string` |  |
+| `secondary_goal_result_rate` | `null \| string` |  |
+| `frequency` | `null \| string` |  |
+| `video_play_actions` | `null \| number` |  |
+| `video_watched_2s` | `null \| number` |  |
+| `video_watched_6s` | `null \| number` |  |
+| `average_video_play` | `null \| number` |  |
+| `average_video_play_per_user` | `null \| number` |  |
+| `video_views_p25` | `null \| number` |  |
+| `video_views_p50` | `null \| number` |  |
+| `video_views_p75` | `null \| number` |  |
+| `video_views_p100` | `null \| number` |  |
+| `profile_visits` | `null \| number` |  |
+| `likes` | `null \| number` |  |
+| `comments` | `null \| number` |  |
+| `shares` | `null \| number` |  |
+| `follows` | `null \| number` |  |
+| `clicks_on_music_disc` | `null \| number` |  |
+| `real_time_app_install` | `null \| number` |  |
+| `real_time_app_install_cost` | `null \| number` |  |
+| `app_install` | `null \| number` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Ad Groups Reports Daily Search
+
+Search and filter ad groups reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ad_groups_reports_daily.search(
+    query={"filter": {"eq": {"adgroup_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_groups_reports_daily",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"adgroup_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `stat_time_day` | `string` | The date for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `campaign_name` | `string` | The name of the marketing campaign. |
+| `campaign_id` | `integer` | The unique identifier for the campaign. |
+| `adgroup_name` | `string` | The name of the ad group. |
+| `placement_type` | `string` | Type of ad placement. |
+| `spend` | `string` | Total amount of money spent. |
+| `cpc` | `string` | Cost per click. |
+| `cpm` | `string` | Cost per thousand impressions. |
+| `impressions` | `string` | Number of times the ad was displayed. |
+| `clicks` | `string` | Number of clicks on the ad. |
+| `ctr` | `string` | Click-through rate. |
+| `reach` | `string` | Total number of unique users reached. |
+| `cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `conversion` | `string` | Number of conversions. |
+| `cost_per_conversion` | `string` | Cost per conversion. |
+| `conversion_rate` | `string` | Rate of conversions. |
+| `real_time_conversion` | `string` | Real-time conversions. |
+| `real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `result` | `string` | Number of results. |
+| `cost_per_result` | `string` | Cost per result. |
+| `result_rate` | `string` | Rate of results. |
+| `real_time_result` | `string` | Real-time results. |
+| `real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `real_time_result_rate` | `string` | Real-time result rate. |
+| `secondary_goal_result` | `string` | Results for secondary goals. |
+| `cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `frequency` | `string` | Average number of times each person saw the ad. |
+| `video_play_actions` | `number` | Number of video play actions. |
+| `video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `average_video_play` | `number` | Average video play duration. |
+| `average_video_play_per_user` | `number` | Average video play duration per user. |
+| `video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `profile_visits` | `number` | Number of profile visits. |
+| `likes` | `number` | Number of likes. |
+| `comments` | `number` | Number of comments. |
+| `shares` | `number` | Number of shares. |
+| `follows` | `number` | Number of follows. |
+| `clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `real_time_app_install` | `number` | Real-time app installations. |
+| `real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `app_install` | `number` | Number of app installations. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `data[].stat_time_day` | `string` | The date for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `data[].campaign_name` | `string` | The name of the marketing campaign. |
+| `data[].campaign_id` | `integer` | The unique identifier for the campaign. |
+| `data[].adgroup_name` | `string` | The name of the ad group. |
+| `data[].placement_type` | `string` | Type of ad placement. |
+| `data[].spend` | `string` | Total amount of money spent. |
+| `data[].cpc` | `string` | Cost per click. |
+| `data[].cpm` | `string` | Cost per thousand impressions. |
+| `data[].impressions` | `string` | Number of times the ad was displayed. |
+| `data[].clicks` | `string` | Number of clicks on the ad. |
+| `data[].ctr` | `string` | Click-through rate. |
+| `data[].reach` | `string` | Total number of unique users reached. |
+| `data[].cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `data[].conversion` | `string` | Number of conversions. |
+| `data[].cost_per_conversion` | `string` | Cost per conversion. |
+| `data[].conversion_rate` | `string` | Rate of conversions. |
+| `data[].real_time_conversion` | `string` | Real-time conversions. |
+| `data[].real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `data[].real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `data[].result` | `string` | Number of results. |
+| `data[].cost_per_result` | `string` | Cost per result. |
+| `data[].result_rate` | `string` | Rate of results. |
+| `data[].real_time_result` | `string` | Real-time results. |
+| `data[].real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `data[].real_time_result_rate` | `string` | Real-time result rate. |
+| `data[].secondary_goal_result` | `string` | Results for secondary goals. |
+| `data[].cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `data[].secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `data[].frequency` | `string` | Average number of times each person saw the ad. |
+| `data[].video_play_actions` | `number` | Number of video play actions. |
+| `data[].video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `data[].video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `data[].average_video_play` | `number` | Average video play duration. |
+| `data[].average_video_play_per_user` | `number` | Average video play duration per user. |
+| `data[].video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `data[].video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `data[].video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `data[].video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `data[].profile_visits` | `number` | Number of profile visits. |
+| `data[].likes` | `number` | Number of likes. |
+| `data[].comments` | `number` | Number of comments. |
+| `data[].shares` | `number` | Number of shares. |
+| `data[].follows` | `number` | Number of follows. |
+| `data[].clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `data[].real_time_app_install` | `number` | Real-time app installations. |
+| `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+## Ads Reports Daily
+
+### Ads Reports Daily List
+
+Get daily performance reports at the ad level
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_daily.list(
+    advertiser_id="<str>",
+    service_type="<str>",
+    report_type="<str>",
+    data_level="<str>",
+    dimensions="<str>",
+    metrics="<str>",
+    start_date="<str>",
+    end_date="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_daily",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>",
+        "service_type": "<str>",
+        "report_type": "<str>",
+        "data_level": "<str>",
+        "dimensions": "<str>",
+        "metrics": "<str>",
+        "start_date": "<str>",
+        "end_date": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `service_type` | `string` | Yes | Service type |
+| `report_type` | `string` | Yes | Report type |
+| `data_level` | `string` | Yes | Data level for the report |
+| `dimensions` | `string` | Yes | Dimensions for the report (JSON array) |
+| `metrics` | `string` | Yes | Metrics to retrieve (JSON array) |
+| `start_date` | `string` | Yes | Report start date (YYYY-MM-DD) |
+| `end_date` | `string` | Yes | Report end date (YYYY-MM-DD) |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `null \| integer` |  |
+| `stat_time_day` | `null \| string` |  |
+| `campaign_name` | `null \| string` |  |
+| `campaign_id` | `null \| integer` |  |
+| `adgroup_name` | `null \| string` |  |
+| `adgroup_id` | `null \| integer` |  |
+| `ad_name` | `null \| string` |  |
+| `ad_text` | `null \| string` |  |
+| `placement_type` | `null \| string` |  |
+| `spend` | `null \| string` |  |
+| `cpc` | `null \| string` |  |
+| `cpm` | `null \| string` |  |
+| `impressions` | `null \| string` |  |
+| `clicks` | `null \| string` |  |
+| `ctr` | `null \| string` |  |
+| `reach` | `null \| string` |  |
+| `cost_per_1000_reached` | `null \| string` |  |
+| `conversion` | `null \| string` |  |
+| `cost_per_conversion` | `null \| string` |  |
+| `conversion_rate` | `null \| string` |  |
+| `real_time_conversion` | `null \| string` |  |
+| `real_time_cost_per_conversion` | `null \| string` |  |
+| `real_time_conversion_rate` | `null \| string` |  |
+| `result` | `null \| string` |  |
+| `cost_per_result` | `null \| string` |  |
+| `result_rate` | `null \| string` |  |
+| `real_time_result` | `null \| string` |  |
+| `real_time_cost_per_result` | `null \| string` |  |
+| `real_time_result_rate` | `null \| string` |  |
+| `secondary_goal_result` | `null \| string` |  |
+| `cost_per_secondary_goal_result` | `null \| string` |  |
+| `secondary_goal_result_rate` | `null \| string` |  |
+| `frequency` | `null \| string` |  |
+| `video_play_actions` | `null \| number` |  |
+| `video_watched_2s` | `null \| number` |  |
+| `video_watched_6s` | `null \| number` |  |
+| `average_video_play` | `null \| number` |  |
+| `average_video_play_per_user` | `null \| number` |  |
+| `video_views_p25` | `null \| number` |  |
+| `video_views_p50` | `null \| number` |  |
+| `video_views_p75` | `null \| number` |  |
+| `video_views_p100` | `null \| number` |  |
+| `profile_visits` | `null \| number` |  |
+| `likes` | `null \| number` |  |
+| `comments` | `null \| number` |  |
+| `shares` | `null \| number` |  |
+| `follows` | `null \| number` |  |
+| `clicks_on_music_disc` | `null \| number` |  |
+| `real_time_app_install` | `null \| number` |  |
+| `real_time_app_install_cost` | `null \| number` |  |
+| `app_install` | `null \| number` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Ads Reports Daily Search
+
+Search and filter ads reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_daily.search(
+    query={"filter": {"eq": {"ad_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_daily",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"ad_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `integer` | The unique identifier for the ad. |
+| `stat_time_day` | `string` | The date for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `campaign_name` | `string` | The name of the marketing campaign. |
+| `campaign_id` | `integer` | The unique identifier for the campaign. |
+| `adgroup_name` | `string` | The name of the ad group. |
+| `adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `ad_name` | `string` | The name of the ad. |
+| `ad_text` | `string` | The text content of the ad. |
+| `placement_type` | `string` | Type of ad placement. |
+| `spend` | `string` | Total amount of money spent. |
+| `cpc` | `string` | Cost per click. |
+| `cpm` | `string` | Cost per thousand impressions. |
+| `impressions` | `string` | Number of times the ad was displayed. |
+| `clicks` | `string` | Number of clicks on the ad. |
+| `ctr` | `string` | Click-through rate. |
+| `reach` | `string` | Total number of unique users reached. |
+| `cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `conversion` | `string` | Number of conversions. |
+| `cost_per_conversion` | `string` | Cost per conversion. |
+| `conversion_rate` | `string` | Rate of conversions. |
+| `real_time_conversion` | `string` | Real-time conversions. |
+| `real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `result` | `string` | Number of results. |
+| `cost_per_result` | `string` | Cost per result. |
+| `result_rate` | `string` | Rate of results. |
+| `real_time_result` | `string` | Real-time results. |
+| `real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `real_time_result_rate` | `string` | Real-time result rate. |
+| `secondary_goal_result` | `string` | Results for secondary goals. |
+| `cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `frequency` | `string` | Average number of times each person saw the ad. |
+| `video_play_actions` | `number` | Number of video play actions. |
+| `video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `average_video_play` | `number` | Average video play duration. |
+| `average_video_play_per_user` | `number` | Average video play duration per user. |
+| `video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `profile_visits` | `number` | Number of profile visits. |
+| `likes` | `number` | Number of likes. |
+| `comments` | `number` | Number of comments. |
+| `shares` | `number` | Number of shares. |
+| `follows` | `number` | Number of follows. |
+| `clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `real_time_app_install` | `number` | Real-time app installations. |
+| `real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `app_install` | `number` | Number of app installations. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].ad_id` | `integer` | The unique identifier for the ad. |
+| `data[].stat_time_day` | `string` | The date for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `data[].campaign_name` | `string` | The name of the marketing campaign. |
+| `data[].campaign_id` | `integer` | The unique identifier for the campaign. |
+| `data[].adgroup_name` | `string` | The name of the ad group. |
+| `data[].adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `data[].ad_name` | `string` | The name of the ad. |
+| `data[].ad_text` | `string` | The text content of the ad. |
+| `data[].placement_type` | `string` | Type of ad placement. |
+| `data[].spend` | `string` | Total amount of money spent. |
+| `data[].cpc` | `string` | Cost per click. |
+| `data[].cpm` | `string` | Cost per thousand impressions. |
+| `data[].impressions` | `string` | Number of times the ad was displayed. |
+| `data[].clicks` | `string` | Number of clicks on the ad. |
+| `data[].ctr` | `string` | Click-through rate. |
+| `data[].reach` | `string` | Total number of unique users reached. |
+| `data[].cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `data[].conversion` | `string` | Number of conversions. |
+| `data[].cost_per_conversion` | `string` | Cost per conversion. |
+| `data[].conversion_rate` | `string` | Rate of conversions. |
+| `data[].real_time_conversion` | `string` | Real-time conversions. |
+| `data[].real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `data[].real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `data[].result` | `string` | Number of results. |
+| `data[].cost_per_result` | `string` | Cost per result. |
+| `data[].result_rate` | `string` | Rate of results. |
+| `data[].real_time_result` | `string` | Real-time results. |
+| `data[].real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `data[].real_time_result_rate` | `string` | Real-time result rate. |
+| `data[].secondary_goal_result` | `string` | Results for secondary goals. |
+| `data[].cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `data[].secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `data[].frequency` | `string` | Average number of times each person saw the ad. |
+| `data[].video_play_actions` | `number` | Number of video play actions. |
+| `data[].video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `data[].video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `data[].average_video_play` | `number` | Average video play duration. |
+| `data[].average_video_play_per_user` | `number` | Average video play duration per user. |
+| `data[].video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `data[].video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `data[].video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `data[].video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `data[].profile_visits` | `number` | Number of profile visits. |
+| `data[].likes` | `number` | Number of likes. |
+| `data[].comments` | `number` | Number of comments. |
+| `data[].shares` | `number` | Number of shares. |
+| `data[].follows` | `number` | Number of follows. |
+| `data[].clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `data[].real_time_app_install` | `number` | Real-time app installations. |
+| `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `data[].app_install` | `number` | Number of app installations. |
 
 </details>
 

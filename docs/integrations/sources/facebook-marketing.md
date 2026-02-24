@@ -196,7 +196,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.level">
-   2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default.
+   2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default. The level you select determines the primary key used for deduplication in Incremental Append + Deduped sync mode. For details, see the [primary key behavior by level](#custom-insights-primary-keys) section.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.fields">
@@ -322,7 +322,21 @@ For more information, see the [Facebook Insights API documentation.](https://dev
 Please be aware that some fields, such as `conversions` and `conversion_values`, may not be directly accessible when querying Ad Insights. For comprehensive access to all available fields, we recommend using a Custom Insight and specifying the necessary **breakdowns**.
 ::: -->
 
+### Custom Insights primary keys {#custom-insights-primary-keys}
+
+The primary key for Custom Insights streams depends on the configured **Level** setting. This determines how the connector deduplicates records when using Incremental Append + Deduped sync mode.
+
+| Level | Primary Key Fields |
+| :---- | :----------------- |
+| `ad` (default) | `date_start`, `account_id`, `ad_id`, plus any configured breakdowns |
+| `adset` | `date_start`, `account_id`, `adset_id`, plus any configured breakdowns |
+| `campaign` | `date_start`, `account_id`, `campaign_id`, plus any configured breakdowns |
+| `account` | `date_start`, `account_id`, plus any configured breakdowns |
+
+Built-in Ads Insights streams and Prebuilt Ads Insights Reports use `level=ad` by default and always include `ad_id` in the primary key.
+
 ### Entity-Relationship Diagram (ERD)
+
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Facebook Marketing Attribution Reporting
@@ -350,7 +364,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 ### Missing data for 7-day and 28-day view-through attribution windows
 
-Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. As a result, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
+Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. In v4.1.3, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. In v5.0.0, the `7d_view` and `28d_view` columns were also removed from stream schemas. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
 
 #### What data is still available
 
@@ -398,11 +412,12 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.0      | 2026-02-20 | [72779](https://github.com/airbytehq/airbyte/pull/72779) | Custom Insights streams now use level-based primary keys; removed deprecated `7d_view` and `28d_view` attribution window columns; removed `wish_bid` field. All users should refresh schema and reset affected streams.                                                                           |
 | 4.2.1 | 2026-02-09 | [72952](https://github.com/airbytehq/airbyte/pull/72952) | fix(source-facebook-marketing): classify 'Invalid OAuth access token' as config_error (AI-Triage PR) |
-| 4.2.0 | 2026-01-07 | [71029](https://github.com/airbytehq/airbyte/pull/71029) | Add 98 missing fields for custom insights streams including objective_results transformation |
-| 4.1.3 | 2026-01-06 | [70349](https://github.com/airbytehq/airbyte/pull/70349) | Remove deprecated `7d_view` and `28d_view` attribution windows (Facebook API deprecation effective January 12, 2026) |
-| 4.1.2 | 2025-11-10 | [69204](https://github.com/airbytehq/airbyte/pull/69204) | Add config migration that adds default action breakdowns |
-| 4.1.1 | 2025-11-04 | [69169](https://github.com/airbytehq/airbyte/pull/69169) | Finalize progressive rollout. |
+| 4.2.0      | 2026-01-07 | [71029](https://github.com/airbytehq/airbyte/pull/71029) | Add 98 missing fields for custom insights streams including objective_results transformation                                                                                                                                                                                                      |
+| 4.1.3      | 2026-01-06 | [70349](https://github.com/airbytehq/airbyte/pull/70349) | Remove deprecated `7d_view` and `28d_view` attribution windows (Facebook API deprecation effective January 12, 2026)                                                                                                                                                                              |
+| 4.1.2      | 2025-11-10 | [69204](https://github.com/airbytehq/airbyte/pull/69204) | Add config migration that adds default action breakdowns                                                                                                                                                                                                                                          |
+| 4.1.1      | 2025-11-04 | [69169](https://github.com/airbytehq/airbyte/pull/69169) | Finalize progressive rollout.                                                                                                                                                                                                                                                                     |
 | 4.1.1-rc.1 | 2025-10-27 | [68632](https://github.com/airbytehq/airbyte/pull/68632) | Performance improvement on normalization                                                                                                                                                                                                                                                          |
 | 4.1.0      | 2025-10-06 | [67081](https://github.com/airbytehq/airbyte/pull/67081) | Promoting release candidate 4.1.0-rc.2 to a main version.                                                                                                                                                                                                                                         |
 | 4.1.0-rc.2 | 2025-10-02 | [66976](https://github.com/airbytehq/airbyte/pull/66976) | Add missing breakdown `user_segment_key`                                                                                                                                                                                                                                                          |

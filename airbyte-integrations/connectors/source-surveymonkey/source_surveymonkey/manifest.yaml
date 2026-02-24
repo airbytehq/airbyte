@@ -19,7 +19,7 @@ definitions:
         http_method: GET
         request_parameters:
           sort_by: date_modified
-          sort_order: ASC
+          sort_order: asc
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
@@ -149,7 +149,7 @@ streams:
         path: surveys/{{ stream_partition.survey_id }}/responses/bulk
         http_method: GET
         request_parameters:
-          sort_order: ASC
+          sort_order: asc
           sort_by: date_modified
         request_headers: {}
         authenticator:

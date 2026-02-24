@@ -125,7 +125,7 @@ Requires a bearer token or scoped token.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `external_user_id` | string | Yes | Your customer identifier. Maps to a customer in Airbyte. |
+| `customer_name` | string | Yes | Your customer identifier. Maps to a customer in Airbyte. |
 | `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`, `Intercom`. |
 | `redirect_url` | string | Yes | Your callback URL. After OAuth consent, Airbyte auto-creates the connector and redirects the user here with `?connector_id=<value>`. |
 | `name` | string | No | Display name for the connector. Auto-generated if not provided. |
@@ -140,7 +140,7 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiat
   -H 'Authorization: Bearer <operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "external_user_id": "user_12345",
+    "customer_name": "user_12345",
     "connector_type": "hubspot",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -165,7 +165,7 @@ const response = await fetch('https://api.airbyte.ai/api/v1/integrations/connect
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    external_user_id: userId,
+    customer_name: userId,
     connector_type: 'hubspot',
     redirect_url: 'https://yourapp.com/oauth/callback'
   })
@@ -251,7 +251,7 @@ app.post('/api/connect/:connectorType', async (req, res) => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      external_user_id: userId,
+      customer_name: userId,
       connector_type: connectorType,
       redirect_url: redirectUrl.toString()
     })
@@ -313,7 +313,7 @@ app.listen(3000);
 
 **"Workspace not found" or "customer not found" error:**
 
-- Ensure the `external_user_id` you provide in the initiate step is correct. Airbyte creates the customer automatically on first use.
+- Ensure the `customer_name` you provide in the initiate step is correct. Airbyte creates the customer automatically on first use.
 
 **OAuth consent URL returns an error:**
 
