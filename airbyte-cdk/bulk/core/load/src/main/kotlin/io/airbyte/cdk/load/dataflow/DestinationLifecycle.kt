@@ -92,7 +92,7 @@ class DestinationLifecycle(
     private fun notifyPerStreamFlushCompletion(streamLoaders: List<StreamLoader>) {
         runBlocking {
             streamLoaders
-                .filter { completionTracker.isInputComplete(it.stream.mappedDescriptor) }
+                .filter { completionTracker.isStreamComplete(it.stream.mappedDescriptor) }
                 .map {
                     async(streamFinalizeDispatcher) {
                         val desc = it.stream.mappedDescriptor

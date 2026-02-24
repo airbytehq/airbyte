@@ -114,9 +114,7 @@ class S3DataLakeStreamLoader(
         }
         mergeStagingToMain()
         mergedToMain = true
-        logger.info {
-            "Stream ${stream.mappedDescriptor} staging branch merged to main."
-        }
+        logger.info { "Stream ${stream.mappedDescriptor} staging branch merged to main." }
     }
 
     override suspend fun teardown(completedSuccessfully: Boolean) {
@@ -139,8 +137,7 @@ class S3DataLakeStreamLoader(
     }
 
     /**
-     * Merges the staging branch into the main branch. Handles schema updates and truncate
-     * cleanup.
+     * Merges the staging branch into the main branch. Handles schema updates and truncate cleanup.
      */
     private fun mergeStagingToMain() {
         // We've modified the table over the sync (i.e. adding new snapshots)

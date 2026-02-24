@@ -22,10 +22,10 @@ data class S3DataLakeConfiguration(
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
     /**
-     * When true, each stream's staging branch is merged to the main branch as soon as the stream
-     * is fully flushed, without waiting for the entire sync to complete. This makes Iceberg
-     * metadata visible to downstream consumers sooner. When false, all streams are merged during
-     * teardown (the original behavior).
+     * When true, each stream's staging branch is merged to the main branch as soon as the stream is
+     * fully flushed, without waiting for the entire sync to complete. This makes Iceberg metadata
+     * visible to downstream consumers sooner. When false, all streams are merged during teardown
+     * (the original behavior).
      */
     val eagerStreamMerge: Boolean = true,
 ) :
