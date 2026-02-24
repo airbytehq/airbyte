@@ -65,6 +65,7 @@ The Chartmogul connector should not run into Chartmogul API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.44 | 2026-02-24 | [73793](https://github.com/airbytehq/airbyte/pull/73793) | Update dependencies |
 | 1.1.43 | 2026-02-10 | [72995](https://github.com/airbytehq/airbyte/pull/72995) | Update dependencies |
 | 1.1.42 | 2026-02-03 | [72699](https://github.com/airbytehq/airbyte/pull/72699) | Update dependencies |
 | 1.1.41 | 2026-01-20 | [72144](https://github.com/airbytehq/airbyte/pull/72144) | Update dependencies |
