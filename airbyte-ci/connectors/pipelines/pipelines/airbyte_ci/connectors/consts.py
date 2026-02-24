@@ -18,8 +18,6 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     QA_CHECKS = "qa_checks"
     UNIT = "unit"
     VERSION_INC_CHECK = "version_inc_check"
-    TEST_ORCHESTRATOR = "test_orchestrator"
-    DEPLOY_ORCHESTRATOR = "deploy_orchestrator"
     CONNECTOR_LIVE_TESTS = "connector_live_tests"
     REGRESSION_TEST = "common.regression_test"
     ADD_CHANGELOG_ENTRY = "bump_version.changelog"

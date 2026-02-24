@@ -19,12 +19,9 @@ def setup_sentry():
     from sentry_sdk.integrations.argv import ArgvIntegration
     from sentry_sdk.integrations.atexit import AtexitIntegration
     from sentry_sdk.integrations.dedupe import DedupeIntegration
-    from sentry_sdk.integrations.logging import LoggingIntegration, ignore_logger
+    from sentry_sdk.integrations.logging import LoggingIntegration
     from sentry_sdk.integrations.modules import ModulesIntegration
     from sentry_sdk.integrations.stdlib import StdlibIntegration
-
-    # We ignore the Dagster internal logging to prevent a single error from being logged per node in the job graph
-    ignore_logger("dagster")
 
     SENTRY_DSN = os.environ.get("SENTRY_DSN")
     SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT")
