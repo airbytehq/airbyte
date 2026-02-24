@@ -808,7 +808,15 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
                 record["repository"] = self._get_repository_name(repository)
                 if record.get("author"):
                     record["author"]["type"] = record["author"].pop("__typename", "User")
-                assets = record.get("assets", {}).get("nodes", [])
+                assets_data = record.get("assets", {})
+                if assets_data.get("pageInfo", {}).get("hasNextPage"):
+                    self.logger.warning(
+                        "Release %s in %s has >100 assets; only the first 100 were synced. "
+                        "Sub-pagination for release assets is not yet implemented.",
+                        record.get("id"),
+                        record.get("repository"),
+                    )
+                assets = assets_data.get("nodes", [])
                 for asset in assets:
                     uploader = asset.pop("uploader", None)
                     asset["uploader_id"] = uploader.get("id") if uploader else None
@@ -817,8 +825,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
                 if mentions_connection is not None:
                     record["mentions_count"] = mentions_connection.get("totalCount", 0)
                 tag_commit = record.pop("tagCommit", record.pop("tag_commit", None))
-                if tag_commit:
-                    record["target_commitish"] = tag_commit.get("target_commitish", tag_commit.get("oid"))
+                record["target_commitish"] = tag_commit.get("target_commitish") if tag_commit else None
                 yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:

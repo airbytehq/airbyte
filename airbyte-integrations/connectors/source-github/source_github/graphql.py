@@ -205,6 +205,7 @@ def get_query_releases(owner, name, first, after, direction):
         url=True,
     )
     release_assets.nodes.uploaded_by(__alias__="uploader").__as__(_schema_root.User).__fields__(database_id="id")
+    release_assets.page_info.__fields__(has_next_page=True)
     releases.nodes.mentions(first=0, __alias__="mentions_connection").total_count()
     releases.page_info.__fields__(has_next_page=True, end_cursor=True)
     return str(op)
