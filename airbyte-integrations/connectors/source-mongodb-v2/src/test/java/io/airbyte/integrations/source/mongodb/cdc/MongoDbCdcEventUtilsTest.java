@@ -313,8 +313,8 @@ class MongoDbCdcEventUtilsTest {
    * The following tests verify the dynamic object wrapping functionality. If discovery identifies a
    * field as an object, the schema expects an object. Since MongoDB is dynamic, users can store
    * string, int, or other primitive values in that field. To prevent destinations from raising
-   * DESTINATION_SERIALIZATION_ERROR and nulling out these values due to type mismatch, we wrap
-   * them in objects.
+   * DESTINATION_SERIALIZATION_ERROR and nulling out these values due to type mismatch, we wrap them
+   * in objects.
    */
   @Test
   void testTransformDataTypesWrapsStringInObjectWhenSchemaExpectsObject() {
