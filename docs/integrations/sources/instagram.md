@@ -9,14 +9,11 @@ This page contains the setup guide and reference information for the [Instagram]
 ## Prerequisites
 
 - [Meta for Developers account](https://developers.facebook.com)
-- [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your
-  Facebook page
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll
-  use this to configure Instagram as a source in Airbyte
+- [Instagram business account](https://www.facebook.com/business/help/898752960195806) linked to your Facebook page
 
 <!-- env:oss -->
 
-- [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
+- [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) enabled on your Facebook app
 - [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-platform/reference/oauth-authorize/)
 
 <!-- /env:oss -->
@@ -35,9 +32,9 @@ This page contains the setup guide and reference information for the [Instagram]
 4. Enter a name for the Instagram connector.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
-   date will be replicated. If left blank, the start date will be set to 2 years before the present
-   date.
+7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. Data for the User Insights
+   stream generated after this date will be replicated. If left blank, the start date will be set to
+   2 years before the present date.
 8. Click **Set up source**.
 
 <!-- /env:cloud -->
@@ -52,12 +49,12 @@ This page contains the setup guide and reference information for the [Instagram]
 4. Enter a name for your source.
 5. Enter **Access Token** generated
    using [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
-   or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-basic-display-api/getting-started/)
-   with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list,
-   pages_read_engagement.
-6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
-   date will be replicated. If left blank, the start date will be set to 2 years before the present
-   date.
+   or [by creating a Facebook app](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-facebook-login/)
+   with the required permissions: `instagram_basic`, `instagram_manage_insights`, `pages_show_list`,
+   `pages_read_engagement`.
+6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. Data for the User Insights
+   stream generated after this date will be replicated. If left blank, the start date will be set to
+   2 years before the present date.
 7. Click **Set up source**.
 
 <!-- /env:oss -->
@@ -89,16 +86,35 @@ and [Instagram Insights API documentation](https://developers.facebook.com/docs/
 
 - [User](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
     - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
+    - [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
-    - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+    - [Media Insights](https://developers.facebook.com/docs/instagram-platform/reference/instagram-media/insights/)
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
-    - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+    - [Story Insights](https://developers.facebook.com/docs/instagram-platform/reference/instagram-media/insights/)
 
 :::info
 The Instagram connector syncs data related to Users, Media, and Stories and their insights from
 the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data
 related to Instagram Ads, use the Facebook Marketing source.
 :::
+
+### Media Insights metrics by media type
+
+The metrics available in the `media_insights` stream vary depending on the media type:
+
+| Media type | Available metrics |
+|:-----------|:------------------|
+| REELS | `comments`, `ig_reels_avg_watch_time`, `ig_reels_video_view_total_time`, `likes`, `reach`, `saved`, `shares`, `views` |
+| VIDEO (FEED) | `reach`, `saved` |
+| VIDEO (non-FEED) | `reach`, `saved`, `likes`, `comments`, `shares`, `follows`, `profile_visits` |
+| CAROUSEL_ALBUM | `reach`, `saved`, `shares`, `follows`, `profile_visits` |
+| IMAGE | `reach`, `saved`, `likes`, `comments`, `shares`, `follows`, `profile_visits` |
+
+The `media_insights` stream also includes a `timestamp` field indicating when the media was posted.
+
+### Story Insights limitations
+
+Story insights data is only available for 24 hours after the story is posted. The `story_insights` stream includes the following metrics: `reach`, `replies`, `follows`, `profile_visits`, `shares`, `total_interactions`, `views`.
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
