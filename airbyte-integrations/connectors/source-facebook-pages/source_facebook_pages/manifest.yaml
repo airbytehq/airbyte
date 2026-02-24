@@ -29,9 +29,7 @@ definitions:
             then retry your request". To fix this go on Schema Tab and unselect fields for stream
             you don't need/want to sync, this will remove these fields from request parameters
             reducing amount of requested data.
-        - http_codes: [500]
-          action: FAIL
-          error_message: "{{ response.error.message if response.error else response }}"
+
     authenticator:
       type: CustomAuthenticator
       class_name: source_facebook_pages.components.AuthenticatorFacebookPageAccessToken
