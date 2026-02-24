@@ -212,6 +212,7 @@ class AirbyteSchemaHistoryStorage(
         )
         props.setProperty("schema.history.internal.file.filename", path.toString())
         props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true")
+        props.setProperty("schema.history.internal.store.only.captured.tables.ddl", "true")
     }
 
     companion object {
