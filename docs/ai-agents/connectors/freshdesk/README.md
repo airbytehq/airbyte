@@ -66,6 +66,7 @@ async def freshdesk_execute(entity: str, action: str, params: dict | None = None
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -74,7 +75,8 @@ from airbyte_agent_freshdesk import FreshdeskConnector, AirbyteAuthConfig
 
 connector = FreshdeskConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -116,7 +118,7 @@ See the official [Freshdesk API reference](https://developers.freshdesk.com/api/
 
 ## Version information
 
-- **Package version:** 0.1.0
+- **Package version:** 0.1.4
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** dfd45cc7a63a666980d342dd3476b3be151a1e29
+- **Generated with Connector SDK commit SHA:** 62fbfc1f7b4889639e5a0245203b250cbd0315ae
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/freshdesk/CHANGELOG.md)

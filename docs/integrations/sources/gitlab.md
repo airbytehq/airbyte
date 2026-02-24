@@ -112,6 +112,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.22 | 2026-02-24 | [73774](https://github.com/airbytehq/airbyte/pull/73774) | Update dependencies |
 | 4.4.21 | 2026-02-17 | [73401](https://github.com/airbytehq/airbyte/pull/73401) | Update dependencies |
 | 4.4.20 | 2026-02-10 | [71398](https://github.com/airbytehq/airbyte/pull/71398) | Update dependencies |
 | 4.4.19 | 2026-02-05 | [72262](https://github.com/airbytehq/airbyte/pull/72262) | Update CDK version from 7.6.1 to 7.6.5 |
