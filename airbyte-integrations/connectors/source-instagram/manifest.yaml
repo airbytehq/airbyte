@@ -594,7 +594,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ today_with_timezone(config['timezone']).strftime('%Y-%m-%dT23:59:59Z') if config.get('timezone') else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
         cursor_datetime_formats:
@@ -776,6 +776,20 @@ spec:
         description: The Client Secret for your Oauth application
         airbyte_secret: true
         type: string
+      timezone:
+        title: Instagram Account Timezone
+        description: >-
+          The timezone of your Instagram account, in IANA format (e.g.,
+          "America/Los_Angeles", "Asia/Tokyo"). This ensures the User Insights
+          stream fetches complete data for the current day in your account's
+          timezone. If left blank, UTC is used, which may result in partial
+          data for accounts in timezones ahead of UTC.
+        type: string
+        examples:
+          - "America/Los_Angeles"
+          - "Asia/Tokyo"
+          - "Europe/London"
+        order: 2
       num_workers:
         type: integer
         title: Number of concurrent workers
