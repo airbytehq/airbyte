@@ -309,4 +309,94 @@ class MongoDbCdcEventUtilsTest {
     assertEquals(50, transformed.get("scores").get(0).asInt());
   }
 
+  /*
+   * The following tests verify the dynamic object wrapping functionality. If discovery identifies a
+   * field as an object, the schema expects an object. Since MongoDB is dynamic, users can store
+   * string, int, or other primitive values in that field. To prevent destinations from raising
+   * DESTINATION_SERIALIZATION_ERROR and nulling out these values due to type mismatch, we wrap
+   * them in objects.
+   */
+  @Test
+  void testTransformDataTypesWrapsStringInObjectWhenSchemaExpectsObject() {
+    // Document has a string in "ps", but schema expects object
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("ps", new BsonString("some plain text value"));
+
+    final String documentAsJson = document.toJson();
+
+    // Schema says "ps" should be an object
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "ps", Jsons.jsonNode(Map.of("type", "object")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("ps").isObject());
+    assertEquals("some plain text value", transformed.get("ps").get("value").asText());
+  }
+
+  @Test
+  void testTransformDataTypesWrapsIntInObjectWhenSchemaExpectsObject() {
+    // Document has an int in "data", but schema expects object
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("data", new BsonInt32(42));
+
+    final String documentAsJson = document.toJson();
+
+    // Schema says "data" should be an object
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "data", Jsons.jsonNode(Map.of("type", "object")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("data").isObject());
+    assertEquals(42, transformed.get("data").get("value").asInt());
+  }
+
+  @Test
+  void testTransformDataTypesDoesNotWrapObjectWhenSchemaExpectsObject() {
+    // Document has an actual object in "ps" and schema expects object - no wrapping needed
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("ps", new Document("key", "value"));
+
+    final String documentAsJson = document.toJson();
+
+    // Schema says "ps" should be an object
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "ps", Jsons.jsonNode(Map.of("type", "object")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("ps").isObject());
+    assertEquals("value", transformed.get("ps").get("key").asText());
+    // Should NOT have a "value" wrapper
+    assertFalse(transformed.get("ps").has("value") && transformed.get("ps").size() == 1
+        && transformed.get("ps").get("value").isTextual());
+  }
+
+  @Test
+  void testTransformDataTypesWrapsBooleanInObjectWhenSchemaExpectsObject() {
+    // Document has a boolean in "metadata", but schema expects object
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("metadata", new BsonBoolean(true));
+
+    final String documentAsJson = document.toJson();
+
+    // Schema says "metadata" should be an object
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "metadata", Jsons.jsonNode(Map.of("type", "object")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("metadata").isObject());
+    assertEquals(true, transformed.get("metadata").get("value").asBoolean());
+  }
+
 }
