@@ -42,12 +42,12 @@ def config_missing_access_token():
 @pytest.fixture
 def config_client_credentials():
     return {
+        "shop": TEST_SHOP,
         "credentials": {
             "auth_method": "client_credentials",
             "client_id": TEST_CLIENT_ID,
             "client_secret": TEST_CLIENT_SECRET,
-            "shop": TEST_SHOP,
-        }
+        },
     }
 
 
@@ -93,17 +93,17 @@ def test_raises_missing_access_token(config_missing_access_token):
     "config, expected_shop",
     [
         pytest.param(
-            {"credentials": {"shop": "my-store"}},
+            {"shop": "my-store"},
             "my-store",
-            id="shop_from_credentials",
+            id="shop_from_top_level",
         ),
         pytest.param(
-            {"credentials": {"shop": "my-store.myshopify.com"}},
+            {"shop": "my-store.myshopify.com"},
             "my-store",
-            id="shop_from_credentials_strips_suffix",
+            id="strips_myshopify_suffix",
         ),
         pytest.param(
-            {"credentials": {}},
+            {},
             "",
             id="empty_shop_returns_empty_string",
         ),
@@ -138,12 +138,12 @@ def test_exchange_token_uses_default_expiry_when_missing(config_client_credentia
     "credentials, expected_error_match",
     [
         pytest.param(
-            {"client_secret": TEST_CLIENT_SECRET, "shop": TEST_SHOP},
+            {"client_secret": TEST_CLIENT_SECRET},
             "Missing client_id or client_secret",
             id="missing_client_id",
         ),
         pytest.param(
-            {"client_id": TEST_CLIENT_ID, "shop": TEST_SHOP},
+            {"client_id": TEST_CLIENT_ID},
             "Missing client_id or client_secret",
             id="missing_client_secret",
         ),

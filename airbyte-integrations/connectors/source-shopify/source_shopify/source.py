@@ -140,12 +140,6 @@ class SourceShopify(AbstractSource):
     def get_shop_name(config) -> str:
         split_pattern = ".myshopify.com"
         shop_name = config.get("shop")
-        # For client_credentials auth, shop is provided inside the credentials object
-        # since the top-level shop field is populated by the OAuth 2.0 flow which doesn't run
-        # for client credentials.
-        if not shop_name:
-            credentials = config.get("credentials", {})
-            shop_name = credentials.get("shop", "")
         return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
 
     @staticmethod
