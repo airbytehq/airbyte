@@ -21,6 +21,9 @@ definitions:
           error_message: Request contains invalid/deprecated field.
         - http_codes: [400]
           action: RETRY
+        - http_codes: [500]
+          action: FAIL
+          error_message: "{{ response.error.message if response.error else response }}"
     authenticator:
       type: CustomAuthenticator
       class_name: source_facebook_pages.components.AuthenticatorFacebookPageAccessToken
