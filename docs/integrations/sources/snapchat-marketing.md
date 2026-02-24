@@ -1,6 +1,6 @@
 # Snapchat Marketing
 
-This page guides you through the process of setting up the [Snapchat Marketing](https://marketingapi.snapchat.com/docs/) source connector.
+This page guides you through the process of setting up the [Snapchat Marketing](https://developers.snap.com/api/marketing-api) source connector.
 
 ## Prerequisites
 
@@ -55,10 +55,10 @@ This page guides you through the process of setting up the [Snapchat Marketing](
       -d "client_secret={client_secret}"  \
       -d "grant_type=authorization_code"  \
       -d "redirect_uri=redirect_uri"
-      https://accounts.snapchat.com/login/oauth2/access_token`
+      https://accounts.snapchat.com/login/oauth2/access_token
    ```
 
-For more information on authenticating into the Snapchat API, read their documentation [here](https://marketingapi.snapchat.com/docs/#authentication)
+For more information on authenticating into the Snapchat API, read the [Snapchat authentication documentation](https://developers.snap.com/api/marketing-api/Ads-API/authentication).
    You will receive the API key and refresh token in the response. Use this refresh token for the connector.
    <!-- /env:oss -->
 
@@ -76,13 +76,15 @@ For more information on authenticating into the Snapchat API, read their documen
 6. (Optional) Choose a Start Date. All data created on or after this date will be synced. If left blank, all records will be synced.
 
 :::tip
-The `Start Date` is required for the all streams that use `start_time` as a key (see Supported Streams section below).
+The `Start Date` is required for all streams that use `start_time` as a key (see Supported Streams section below).
 :::
 7. (Optional) Choose an End Date. All data created on or before this date will be synced. If left blank, all records will be synced.
-8. (Optional) Choose the `Action Report Time`, which specifies how conversions are reported. The default is set to `conversion`, and can be modified to `impression`.
-9. (Optional) Choose the 'Swip Up Attribution Window', which specifies the length of the attribution window for swipe up actions. The default is 28 days and can be adjusted.
-10. (Optional) Choose the `View Attribution Window`, which specifies the length of the attribution window for views. The default is 28 days and can be adjusted.
-11. Click 'Set up source'
+8. (Optional) Choose the `Action Report Time`, which specifies how conversions are reported. The default is `conversion`, and can be set to `impression`.
+9. (Optional) Choose the `Swipe Up Attribution Window`, which specifies the attribution window for swipe up actions. Possible values are `1_DAY`, `7_DAY`, and `28_DAY` (default).
+10. (Optional) Choose the `View Attribution Window`, which specifies the attribution window for views. Possible values are `1_HOUR`, `3_HOUR`, `6_HOUR`, `1_DAY` (default), and `7_DAY`.
+11. (Optional) Enter **Organization IDs** to limit the sync to specific organizations. If left blank, all accessible organizations are synced.
+12. (Optional) Enter **Ad Account IDs** to limit the sync to specific ad accounts. If left blank, all accessible ad accounts are synced.
+13. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -96,13 +98,15 @@ The `Start Date` is required for the all streams that use `start_time` as a key 
 5. (Optional) Choose a Start Date. All data created on or after this date will be synced. If left blank, all records will be synced.
 
 :::tip
-The `Start Date` is required for the all streams that use `start_time` as a key (see Supported Streams section below).
+The `Start Date` is required for all streams that use `start_time` as a key (see Supported Streams section below).
 :::
 6. (Optional) Choose an End Date. All data created on or before this date will be synced.
-7. (Optional) Choose the `Action Report Time`, which specifies how conversions are reported. The default is set to `conversion`, and can be modified to `impression`.
-8. (Optional) Choose the 'Swip Up Attribution Window', which specifies the length of the attribution window for swipe up actions. The default is 28 days and can be adjusted.
-9. (Optional) Choose the `View Attribution Window`, which specifies the length of the attribution window for views. The default is 28 days and can be adjusted.
-10. Click 'Set up source'
+7. (Optional) Choose the `Action Report Time`, which specifies how conversions are reported. The default is `conversion`, and can be set to `impression`.
+8. (Optional) Choose the `Swipe Up Attribution Window`, which specifies the attribution window for swipe up actions. Possible values are `1_DAY`, `7_DAY`, and `28_DAY` (default).
+9. (Optional) Choose the `View Attribution Window`, which specifies the attribution window for views. Possible values are `1_HOUR`, `3_HOUR`, `6_HOUR`, `1_DAY` (default), and `7_DAY`.
+10. (Optional) Enter **Organization IDs** to limit the sync to specific organizations. If left blank, all accessible organizations are synced.
+11. (Optional) Enter **Ad Account IDs** to limit the sync to specific ad accounts. If left blank, all accessible ad accounts are synced.
+12. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
@@ -134,7 +138,9 @@ The `Start Date` is required for the all streams that use `start_time` as a key 
 
 The Snapchat Marketing API limits requests to 1,000 items per page.
 
-Syncing data with an hourly granularity often generates large data volumes and can take longer times to sync. We recommend syncing at a day granularity.
+Syncing data with an hourly granularity often generates large data volumes and can take longer to sync. We recommend syncing at a daily granularity.
+
+All incremental streams use a 2-day lookback window. This means each sync re-reads the previous 2 days of data to account for timezone differences between the Snapchat ad account's local timezone and UTC. This may result in some duplicate records being emitted during incremental syncs, which are deduplicated by the destination.
 
 ## Changelog
 
@@ -143,7 +149,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.5.29 | 2026-02-24 | [73634](https://github.com/airbytehq/airbyte/pull/73634) | fix(source-snapchat-marketing): add lookback_window P2D to mitigate UTC timezone mismatch (AI-Triage PR) |
+| 1.5.29 | 2026-02-24 | [73634](https://github.com/airbytehq/airbyte/pull/73634) | Add 2-day lookback window to all incremental streams to mitigate UTC timezone mismatch |
 | 1.5.28 | 2026-01-20 | [70672](https://github.com/airbytehq/airbyte/pull/70672) | Update dependencies |
 | 1.5.27 | 2025-11-25 | [70083](https://github.com/airbytehq/airbyte/pull/70083) | Update dependencies |
 | 1.5.26 | 2025-11-18 | [69489](https://github.com/airbytehq/airbyte/pull/69489) | Update dependencies |
