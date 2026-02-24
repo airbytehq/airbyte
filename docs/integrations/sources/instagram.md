@@ -9,10 +9,7 @@ This page contains the setup guide and reference information for the [Instagram]
 ## Prerequisites
 
 - [Meta for Developers account](https://developers.facebook.com)
-- [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your
-  Facebook page
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll
-  use this to configure Instagram as a source in Airbyte
+- [Instagram business or creator account](https://www.facebook.com/business/help/898752960195806) connected to your Facebook page
 
 <!-- env:oss -->
 
@@ -52,9 +49,9 @@ This page contains the setup guide and reference information for the [Instagram]
 4. Enter a name for your source.
 5. Enter **Access Token** generated
    using [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
-   or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-basic-display-api/getting-started/)
-   with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list,
-   pages_read_engagement.
+   or [by creating a Facebook app](https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/get-started/)
+   with the required permissions: `instagram_basic`, `instagram_manage_insights`, `pages_show_list`,
+   `pages_read_engagement`.
 6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
    date will be replicated. If left blank, the start date will be set to 2 years before the present
    date.
@@ -89,6 +86,7 @@ and [Instagram Insights API documentation](https://developers.facebook.com/docs/
 
 - [User](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
     - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
+    - [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
     - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
@@ -131,6 +129,10 @@ Expand to see details about Instagram connector limitations and troubleshooting.
 Instagram limits the number of requests that can be made at a time. See
 Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api)
 for more information.
+
+#### User Insights data range
+
+The Instagram API only returns User Insights data for the last 30 days. The connector enforces this limit regardless of the **Start Date** you configure. If you set a start date older than 30 days, the connector automatically adjusts to 30 days before the current date.
 
 ### Troubleshooting
 
