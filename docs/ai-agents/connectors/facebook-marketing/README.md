@@ -3,8 +3,9 @@
 The Facebook-Marketing agent connector is a Python package that equips AI agents to interact with Facebook-Marketing through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Facebook Marketing API connector for managing ad campaigns, ad sets, ads, creatives,
-and accessing performance insights. This connector provides read access to Facebook
-Ads Manager data for analytics and reporting purposes.
+and accessing performance insights, pixel configuration, and event quality data.
+This connector provides read access to Facebook Ads Manager data for analytics
+and reporting purposes.
 
 
 ## Example questions
@@ -25,6 +26,12 @@ The Facebook-Marketing connector is optimized to handle prompts like these.
 - Rename my most recent ad set to 'Holiday Promo'
 - Create a new ad in my latest ad set
 - Pause all ads in my most recent ad set
+- List all pixels in my ad account
+- Show me the event stats for my pixel
+- What events is my Facebook pixel tracking?
+- Search the Ad Library for political ads in the US
+- Find ads about climate change in the Ad Library
+- Show me Ad Library ads from a specific Facebook page
 - Show me the ad sets with the highest daily budget
 - Show me the performance insights for the last 7 days
 - Which campaigns have the most spend this month?
@@ -72,6 +79,7 @@ async def facebook_marketing_execute(entity: str, action: str, params: dict | No
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -80,7 +88,8 @@ from airbyte_agent_facebook_marketing import FacebookMarketingConnector, Airbyte
 
 connector = FacebookMarketingConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -111,6 +120,9 @@ This connector supports the following entities and actions. For more details, se
 | Custom Conversions | [List](./REFERENCE.md#custom-conversions-list), [Search](./REFERENCE.md#custom-conversions-search) |
 | Images | [List](./REFERENCE.md#images-list), [Search](./REFERENCE.md#images-search) |
 | Videos | [List](./REFERENCE.md#videos-list), [Search](./REFERENCE.md#videos-search) |
+| Pixels | [List](./REFERENCE.md#pixels-list), [Get](./REFERENCE.md#pixels-get) |
+| Pixel Stats | [List](./REFERENCE.md#pixel-stats-list) |
+| Ad Library | [List](./REFERENCE.md#ad-library-list) |
 
 
 ### Authentication
@@ -123,7 +135,7 @@ See the official [Facebook-Marketing API reference](https://developers.facebook.
 
 ## Version information
 
-- **Package version:** 0.1.36
-- **Connector version:** 1.0.16
-- **Generated with Connector SDK commit SHA:** 64ac3a66e77864c942825e7f9491a0a46e704d21
+- **Package version:** 0.1.44
+- **Connector version:** 1.0.18
+- **Generated with Connector SDK commit SHA:** 62fbfc1f7b4889639e5a0245203b250cbd0315ae
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/facebook-marketing/CHANGELOG.md)
