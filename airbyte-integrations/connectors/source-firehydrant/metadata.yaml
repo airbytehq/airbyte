@@ -27,14 +27,15 @@ data:
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/firehydrant
-  breaking_changes:
-    1.0.0:
-      message: "The `enviroments` stream has been renamed to `environments` to fix a typo. Users must refresh their schema and reset the affected stream after upgrading."
-      upgradeDeadline: "2026-03-26"
-      scopedImpact:
-        - scopeType: stream
-          impactedScopes:
-            - "environments"
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "The `enviroments` stream has been renamed to `environments` to fix a typo. Users must refresh their schema and reset the affected stream after upgrading."
+        upgradeDeadline: "2026-03-26"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "environments"
   tags:
     - language:manifest-only
     - cdk:low-code
