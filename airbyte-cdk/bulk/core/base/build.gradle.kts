@@ -58,6 +58,11 @@ tasks.withType<Copy>().configureEach {
 
 dependencies {
 
+    constraints {
+        api("org.scala-lang:scala-library:2.13.9") // fix CVE-2022-36944
+        api("io.github.classgraph:classgraph:4.8.112") // fix CVE-2021-47621
+    }
+
     api("com.fasterxml.jackson.core:jackson-annotations")
     api("com.fasterxml.jackson.core:jackson-databind")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
