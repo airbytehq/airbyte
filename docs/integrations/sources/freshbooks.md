@@ -37,6 +37,7 @@ Read [this](https://documenter.getpostman.com/view/3322108/S1ERwwza#intro) secti
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.49 | 2026-02-24 | [73760](https://github.com/airbytehq/airbyte/pull/73760) | Update dependencies |
 | 0.0.48 | 2026-02-17 | [73375](https://github.com/airbytehq/airbyte/pull/73375) | Update dependencies |
 | 0.0.47 | 2026-02-10 | [73141](https://github.com/airbytehq/airbyte/pull/73141) | Update dependencies |
 | 0.0.46 | 2026-02-03 | [72543](https://github.com/airbytehq/airbyte/pull/72543) | Update dependencies |
