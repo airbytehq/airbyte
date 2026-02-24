@@ -159,7 +159,7 @@ class SurveyIds(IncrementalSurveymonkeyStream):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params["sort_order"] = "ASC"
+        params["sort_order"] = "asc"
         params["sort_by"] = self.cursor_field
         params["per_page"] = 1000  # maybe as user input or bigger value
         since_value = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state.get(self.cursor_field) else self._start_date
