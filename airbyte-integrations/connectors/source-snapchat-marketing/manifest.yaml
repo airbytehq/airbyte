@@ -62,10 +62,10 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -141,10 +141,10 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -211,10 +211,10 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -281,10 +281,10 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -351,10 +351,10 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -421,10 +421,10 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -491,10 +491,10 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -561,10 +561,10 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -642,10 +642,10 @@ definitions:
         type: DatetimeBasedCursor
         step: P1W
         cursor_field: start_time
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -756,10 +756,10 @@ definitions:
         type: DatetimeBasedCursor
         step: P1M
         cursor_field: start_time
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -941,10 +941,10 @@ definitions:
         type: DatetimeBasedCursor
         step: P1W
         cursor_field: start_time
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1379,10 +1379,10 @@ definitions:
         type: DatetimeBasedCursor
         step: P1M
         cursor_field: start_time
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -2271,10 +2271,10 @@ definitions:
         type: DatetimeBasedCursor
         step: P1W
         cursor_field: start_time
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -2709,10 +2709,10 @@ definitions:
         type: DatetimeBasedCursor
         step: P1M
         cursor_field: start_time
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -3601,10 +3601,10 @@ definitions:
         type: DatetimeBasedCursor
         step: P1W
         cursor_field: start_time
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -4039,10 +4039,10 @@ definitions:
         type: DatetimeBasedCursor
         step: P1M
         cursor_field: start_time
-        lookback_window: P3D
+        lookback_window: P2D
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', day_delta(2, format='%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
