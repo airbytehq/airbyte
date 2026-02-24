@@ -703,7 +703,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final boolean oplogTracePresent = traceMessages
         .stream()
         .anyMatch(trace -> trace.getTrace().getType().equals(AirbyteTraceMessage.Type.ERROR)
-            && trace.getTrace().getError().getMessage().contains("Saved offset is not valid"));
+            && trace.getTrace().getError().getMessage().contains("Saved offset is no longer valid"));
     assertTrue(oplogTracePresent);
   }
 

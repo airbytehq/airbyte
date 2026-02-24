@@ -816,7 +816,7 @@ class PostgresSourceTest {
         catchThrowable(() -> MoreIterators.toSet(source().read(getConfig(), configuredAirbyteCatalog, null)));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class)
         .hasMessageContaining(
-            "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER, cause=Unsupported cursor type}");
+            "Invalid cursor column selected. Column must have a well-defined ordering with no null values. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER, cause=Unsupported cursor type}");
   }
 
   private ConfiguredAirbyteStream createTableWithInvalidCursorType(final Database database) throws SQLException {
@@ -874,7 +874,7 @@ class PostgresSourceTest {
 
     final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(source().read(getConfig(), catalog, null)));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class).hasMessageContaining(
-        "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+        "Invalid cursor column selected. Column must have a well-defined ordering with no null values. {tableName='public.test_table_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
   }
 
   private ConfiguredAirbyteStream createTableWithNullValueCursor(final Database database) throws SQLException {
@@ -905,7 +905,7 @@ class PostgresSourceTest {
     final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(source().read(getConfig(), catalog, null)));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class)
         .hasMessageContaining(
-            "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+            "Invalid cursor column selected. Column must have a well-defined ordering with no null values. {tableName='public.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
   }
 
   private ConfiguredAirbyteStream createViewWithNullValueCursor(final Database database) throws SQLException {

@@ -333,7 +333,7 @@ class TestFullRefresh:
         http_mocker.post(_create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN))
 
         output = self._read(stream_name, config())
-        message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
+        message_on_access_forbidden = "Source's API denied access. Configured credentials have insufficient permissions."
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert message_on_access_forbidden in output.errors[0].trace.error.message
 
@@ -776,7 +776,7 @@ class TestVendorSalesReportsFullRefresh:
         )
 
         output = self._read(stream_name, config())
-        message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
+        message_on_access_forbidden = "Source's API denied access. Configured credentials have insufficient permissions."
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert message_on_access_forbidden in output.errors[0].trace.error.message
 

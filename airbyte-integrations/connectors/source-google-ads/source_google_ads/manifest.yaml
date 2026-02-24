@@ -54,7 +54,7 @@ definitions:
         http_codes:
           - 500
         error_message: >-
-          Unable to fetch data from Google Ads API due to temporal error on the Google Ads server. Please retry again later.
+          Google Ads API transient server error.
       - type: HttpResponseFilter
         action: IGNORE
         http_codes:

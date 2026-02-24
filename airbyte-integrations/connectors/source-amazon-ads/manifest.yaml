@@ -60,7 +60,7 @@ definitions:
         http_codes: [ 425 ]
         action: FAIL
         failure_type: config_error
-        error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
+        error_message: "Duplicate Amazon Ads report request detected. Concurrent syncs with different time granularities conflict."
 
   report_polling_error_handler:
     type: DefaultErrorHandler

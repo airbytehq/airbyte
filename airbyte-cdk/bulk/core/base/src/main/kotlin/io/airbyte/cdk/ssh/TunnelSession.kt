@@ -132,8 +132,7 @@ fun createTunnelSession(
 }
 
 const val SSH_TIMEOUT_DISPLAY_MESSAGE: String =
-    "Timed out while opening a SSH Tunnel. " +
-        "Please double check the given SSH configurations and try again."
+    "SSH tunnel connection timed out."
 
 private val tunnelSessionTimeout: Duration = Duration.ofMillis(15_000)
 

@@ -73,7 +73,7 @@ def test_check(response, status_code, check_passed):
         #     403,
         #     38,
         #     [
-        #         "An exception occurred while trying to access TicketForms stream: Forbidden. You don't have permission to access this resource.. Skipping this stream."
+        #         "An exception occurred while trying to access TicketForms stream: Forbidden. Insufficient permissions for this resource.. Skipping this stream."
         #     ],
         #     None,
         #     id="forms_inaccessible",
@@ -83,7 +83,7 @@ def test_check(response, status_code, check_passed):
         #     404,
         #     38,
         #     [
-        #         "An exception occurred while trying to access TicketForms stream: Not found. The requested resource was not found on the server.. Skipping this stream."
+        #         "An exception occurred while trying to access TicketForms stream: Requested resource not found.. Skipping this stream."
         #     ],
         #     "Not Found",
         #     id="forms_not_exists",

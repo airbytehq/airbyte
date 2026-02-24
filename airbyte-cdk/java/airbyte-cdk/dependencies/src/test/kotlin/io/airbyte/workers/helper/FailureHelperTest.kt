@@ -177,7 +177,7 @@ internal class FailureHelperTest {
         val attemptNumber = 1
         val failureReason = FailureHelper.unknownOriginFailure(t, jobId, attemptNumber)
         Assertions.assertEquals(FailureReason.FailureOrigin.UNKNOWN, failureReason.failureOrigin)
-        Assertions.assertEquals("An unknown failure occurred", failureReason.externalMessage)
+        Assertions.assertEquals("Sync failed. Failure could not be attributed to source, destination, or platform.", failureReason.externalMessage)
     }
 
     companion object {

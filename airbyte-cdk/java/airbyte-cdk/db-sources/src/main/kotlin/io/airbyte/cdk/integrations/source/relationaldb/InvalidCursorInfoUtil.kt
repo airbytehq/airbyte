@@ -5,7 +5,7 @@ package io.airbyte.cdk.integrations.source.relationaldb
 
 object InvalidCursorInfoUtil {
     fun getInvalidCursorConfigMessage(tablesWithInvalidCursor: List<InvalidCursorInfo>): String {
-        return ("The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. " +
+        return ("Invalid cursor column selected. Column must have a well-defined ordering with no null values. " +
             tablesWithInvalidCursor.joinToString(",") { obj: InvalidCursorInfo -> obj.toString() })
     }
 

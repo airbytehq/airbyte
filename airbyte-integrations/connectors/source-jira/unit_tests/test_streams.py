@@ -22,7 +22,7 @@ def test_application_roles_stream_401_error(config, caplog):
 
     with pytest.raises(
         AirbyteTracedException,
-        match="Unauthorized. Please ensure you are authenticated correctly.",
+        match="Authentication failed on source's API. Credentials may be invalid, expired, or lack required access.",
     ):
         list(read_full_refresh(stream))
 
@@ -47,7 +47,7 @@ def test_application_roles_stream_http_error(config, application_roles_response)
     responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/applicationrole", json={"error": "not found"}, status=404)
 
     stream = find_stream("application_roles", config)
-    with pytest.raises(AirbyteTracedException, match="Not found. The requested resource was not found on the server"):
+    with pytest.raises(AirbyteTracedException, match="Requested resource not found."):
         list(read_full_refresh(stream))
 
 
@@ -77,7 +77,7 @@ def test_board_stream_forbidden(config, boards_response, caplog):
     )
     stream = find_stream("boards", config)
 
-    with pytest.raises(AirbyteTracedException, match="Forbidden. You don't have permission to access this resource."):
+    with pytest.raises(AirbyteTracedException, match="Source's API denied access. Configured credentials have insufficient permissions."):
         list(read_full_refresh(stream))
 
 
@@ -575,7 +575,7 @@ def test_avatars_stream_should_retry(config, caplog):
     records = list(read_full_refresh(stream))
 
     assert len(records) == 0
-    assert "Bad request. Please check your request parameters" in caplog.text
+    assert "Bad request." in caplog.text
 
 
 @responses.activate
@@ -801,28 +801,28 @@ def test_project_versions_stream(config, mock_non_deleted_projects_responses, pr
             "issue_custom_field_contexts",
             2,
             4,
-            "Not found. The requested resource was not found on the server.",
+            "Requested resource not found.",
             # "Stream `issue_custom_field_contexts`. An error occurred, details: ['Not found issue custom field context for issue fields issuetype2']. Skipping for now. ",
         ),
         (
             "issue_custom_field_options",
             1,
             6,
-            "Not found. The requested resource was not found on the server.",
+            "Requested resource not found.",
             # "Stream `issue_custom_field_options`. An error occurred, details: ['Not found issue custom field options for issue fields issuetype3']. Skipping for now. ",
         ),
         (
             "issue_watchers",
             1,
             6,
-            "Not found. The requested resource was not found on the server.",
+            "Requested resource not found.",
             # "Stream `issue_watchers`. An error occurred, details: ['Not found watchers for issue TESTKEY13-2']. Skipping for now. ",
         ),
         (
             "project_email",
             4,
             4,
-            "Forbidden. You don't have permission to access this resource.",
+            "Source's API denied access. Configured credentials have insufficient permissions.",
             # "Stream `project_email`. An error occurred, details: ['No access to emails for project 3']. Skipping for now. ",
         ),
     ],

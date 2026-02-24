@@ -169,12 +169,12 @@ class TestAllStreams:
             (
                 400,
                 ConnectionStatus.FAILED,
-                "Stream accounts is not available: HTTP Status Code: 400. Error: Bad request. Please check your request parameters.",
+                "Stream accounts is not available: Stream 'accounts': HTTP 400. Bad request response from source's API.",
             ),
             (
                 403,
                 ConnectionStatus.FAILED,
-                "Stream accounts is not available: HTTP Status Code: 403. Error: Forbidden. You don't have permission to access this resource.",
+                "Stream accounts is not available: Stream 'accounts': HTTP 403. Source's API denied access. Configured credentials have insufficient permissions.",
             ),
             (200, ConnectionStatus.SUCCEEDED, None),
         ),

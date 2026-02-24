@@ -30,7 +30,7 @@ def on_give_up(details):
         raise AirbyteTracedException(
             failure_type=FailureType.transient_error,
             message=f"{error.message} {error.details}",
-            internal_message=f"{error.message} Unable to fetch data from Google Ads API due to temporal error on the Google Ads server. Please retry again later. ",
+            internal_message=f"{error.message} Google Ads API transient server error.",
         )
 
 

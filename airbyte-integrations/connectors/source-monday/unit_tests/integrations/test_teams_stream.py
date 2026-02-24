@@ -118,7 +118,7 @@ class TestTeamsStreamFullRefresh(TestCase):
         error_logs = [
             error
             for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-            if "Backing off _send(...) for 0.0s (airbyte_cdk.sources.streams.http.exceptions.UserDefinedBackoffException: HTTP Status Code: 500. Error: Internal server error.)"
+            if "Backing off _send(...) for 0.0s (airbyte_cdk.sources.streams.http.exceptions.UserDefinedBackoffException: Stream 'teams': HTTP 500. Internal server error from source's API.)"
             in error
         ]
         assert len(error_logs) == 5

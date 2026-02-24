@@ -400,7 +400,7 @@ constructor(
     companion object {
 
         const val SSH_TIMEOUT_DISPLAY_MESSAGE: String =
-            "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again."
+            "SSH tunnel connection timed out."
 
         const val CONNECTION_OPTIONS_KEY: String = "ssh_connection_options"
         const val SESSION_HEARTBEAT_INTERVAL_KEY: String = "session_heartbeat_interval"

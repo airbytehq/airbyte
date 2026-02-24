@@ -91,7 +91,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
     companion object {
 
         const val logMessage: String =
-            "Something went wrong in the connector. See the logs for more details."
+            "Unhandled connector error."
 
         // Basic deinterpolation helpers to avoid doing _really_ dumb deinterpolation.
         // E.g. if "id" is in the list of strings to remove, we don't want to modify the message

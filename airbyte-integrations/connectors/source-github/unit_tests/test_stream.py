@@ -133,9 +133,9 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             ResponseAction.RATE_LIMITED,
             f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
         ),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, "", ResponseAction.RETRY, "HTTP Status Code: 500. Error: Internal server error."),
-        (HTTPStatus.BAD_GATEWAY, {}, "", ResponseAction.RETRY, "HTTP Status Code: 502. Error: Bad gateway."),
-        (HTTPStatus.SERVICE_UNAVAILABLE, {}, "", ResponseAction.RETRY, "HTTP Status Code: 503. Error: Service unavailable."),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, "", ResponseAction.RETRY, "Internal server error from source's API."),
+        (HTTPStatus.BAD_GATEWAY, {}, "", ResponseAction.RETRY, "Bad gateway response from source's API."),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, "", ResponseAction.RETRY, "Source's API is temporarily unavailable."),
     ],
 )
 def test_error_handler(http_status, response_headers, text, response_action, error_message):

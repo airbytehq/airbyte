@@ -60,7 +60,7 @@ ad_creative_response = {
 CONFIG_ERRORS = [
     (
         "error_400_validating_access_token_session_expired",
-        "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions",
+        "Facebook access token is invalid.",
         {
             "status_code": 400,
             "json": {
@@ -75,7 +75,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_validating_access_token_user_changed_their_password",
-        "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions",
+        "Facebook access token is invalid.",
         {
             "status_code": 400,
             "json": {
@@ -90,7 +90,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_validating_access_token_not_authorized_application",
-        "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions",
+        "Facebook access token is invalid.",
         {
             "status_code": 400,
             "json": {
@@ -106,7 +106,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_missing_permission",
-        "Credentials don't have enough permissions. Check if correct Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh access token with all required permissions",
+        "Insufficient Facebook API permissions for the specified Ad Account.",
         {
             "status_code": 400,
             "json": {
@@ -129,7 +129,7 @@ CONFIG_ERRORS = [
         # One of possible reasons why this error happen is an attempt to access `owner` field:
         #   GET /act_<account-id>?fields=<field-1>,owner,...<field-n>
         "error_403_requires_permission",
-        "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token with all required permissions.",
+        "Insufficient Facebook API permissions.",
         {
             "status_code": 403,
             "json": {
@@ -142,7 +142,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_permission_must_be_granted",
-        "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token with all required permissions.",
+        "Insufficient Facebook API permissions.",
         {
             "status_code": 400,
             "json": {
@@ -156,7 +156,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_unsupported_get_request",
-        "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token with all required permissions.",
+        "Insufficient Facebook API permissions.",
         {
             "json": {
                 "error": {
@@ -172,7 +172,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_unknown_profile_is_no_linked",
-        "Current profile is not linked to delegate page. Check if correct business (not personal) Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh access token with all required permissions.",
+        "Current profile is not linked to delegate page. A business Ad Account is required.",
         {
             "status_code": 400,
             "json": {
@@ -192,7 +192,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_unknown_profile_is_no_linked_es",
-        "Current profile is not linked to delegate page. Check if correct business (not personal) Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh access token with all required permissions.",
+        "Current profile is not linked to delegate page. A business Ad Account is required.",
         {
             "status_code": 400,
             "json": {
@@ -210,7 +210,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_start_date_not_within_three_years",
-        "Please set the start date of your sync to be within the last 3 years.",
+        "Start date exceeds the 37-month lookback limit.",
         {
             "status_code": 400,
             "json": {
@@ -241,10 +241,7 @@ CONFIG_ERRORS = [
     ),
     (
         "error_400_invalid_oauth_access_token_cannot_parse",
-        "The access token for this connection is invalid or corrupted. "
-        "Please re-authenticate your Facebook connection in Airbyte. "
-        "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
-        "remove the Airbyte app, and then re-authenticate again.",
+        "Facebook OAuth access token is invalid or corrupted.",
         {
             "status_code": 400,
             "json": {
@@ -449,14 +446,13 @@ class TestRealErrors:
         [
             (
                 REDUCE_FIELDS_ERROR_TEST_NAME,
-                "Please reduce the number of fields requested. Go to the schema tab, "
-                "select your source, and unselect the fields you do not need.",
+                "Facebook API field count limit exceeded. Reduce the number of selected fields.",
                 REDUCE_FIELDS_ERROR_RESPONSE,
                 FailureType.config_error,
             ),
             (
                 SERVICE_TEMPORARILY_UNAVAILABLE_TEST_NAME,
-                "The Facebook API service is temporarily unavailable. This issue should resolve itself, and does not require further action.",
+                "Facebook API service temporarily unavailable.",
                 SERVICE_TEMPORARILY_UNAVAILABLE_RESPONSE,
                 FailureType.transient_error,
             ),
@@ -644,7 +640,7 @@ def test_traced_exception_with_api_error():
 
     assert isinstance(result, AirbyteTracedException)
     assert (
-        result.message == "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
+        result.message == "Facebook access token is invalid."
     )
     assert result.failure_type == FailureType.config_error
 

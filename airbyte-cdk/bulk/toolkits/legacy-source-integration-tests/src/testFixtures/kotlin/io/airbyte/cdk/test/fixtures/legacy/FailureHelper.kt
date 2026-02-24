@@ -74,7 +74,7 @@ object FailureHelper {
     fun sourceFailure(t: Throwable, jobId: Long, attemptNumber: Int): FailureReason {
         return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.READ)
             .withFailureOrigin(FailureReason.FailureOrigin.SOURCE)
-            .withExternalMessage("Something went wrong within the source connector")
+            .withExternalMessage("Source connector failed with an unexpected error. See logs for details.")
     }
 
     fun sourceFailure(m: AirbyteTraceMessage, jobId: Long?, attemptNumber: Int?): FailureReason {
@@ -85,7 +85,7 @@ object FailureHelper {
     fun destinationFailure(t: Throwable, jobId: Long, attemptNumber: Int): FailureReason {
         return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.WRITE)
             .withFailureOrigin(FailureReason.FailureOrigin.DESTINATION)
-            .withExternalMessage("Something went wrong within the destination connector")
+            .withExternalMessage("Destination connector failed with an unexpected error. See logs for details.")
     }
 
     fun destinationFailure(
@@ -109,7 +109,7 @@ object FailureHelper {
             .withRetryable(false)
             .withExternalMessage(
                 String.format(
-                    "Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing",
+                    "%s connection check failed.",
                     origin
                 )
             )
@@ -118,7 +118,7 @@ object FailureHelper {
     fun unknownOriginFailure(t: Throwable, jobId: Long, attemptNumber: Int): FailureReason {
         return genericFailure(t, jobId, attemptNumber)
             .withFailureOrigin(FailureReason.FailureOrigin.UNKNOWN)
-            .withExternalMessage("An unknown failure occurred")
+            .withExternalMessage("Sync failed. Failure could not be attributed to source, destination, or platform.")
     }
 
     private fun jobAndAttemptMetadata(jobId: Long, attemptNumber: Int): Metadata {

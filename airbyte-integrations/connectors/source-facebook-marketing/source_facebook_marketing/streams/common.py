@@ -163,55 +163,37 @@ def traced_exception(fb_exception: FacebookRequestError):
 
     if "Invalid OAuth access token" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = (
-            "The access token for this connection is invalid or corrupted. "
-            "Please re-authenticate your Facebook connection in Airbyte. "
-            "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
-            "remove the Airbyte app, and then re-authenticate again."
-        )
+        friendly_msg = "Facebook OAuth access token is invalid or corrupted."
 
     elif "Error validating access token" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
+        friendly_msg = "Facebook access token is invalid."
 
     elif "(#100) Missing permissions" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = (
-            "Credentials don't have enough permissions. Check if correct Ad Account Id is used (as in Ads Manager), "
-            "re-authenticate if FB oauth is used or refresh access token with all required permissions"
-        )
+        friendly_msg = "Insufficient Facebook API permissions for the specified Ad Account."
 
     elif "permission" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = (
-            "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token "
-            "with all required permissions."
-        )
+        friendly_msg = "Insufficient Facebook API permissions."
 
     elif "An unknown error occurred" in msg and "error_user_title" in fb_exception._error:
         msg = fb_exception._error["error_user_title"]
         if "profile is not linked to delegate page" in msg or "el perfil no est" in msg:
             failure_type = FailureType.config_error
-            friendly_msg = (
-                "Current profile is not linked to delegate page. Check if correct business (not personal) "
-                "Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh "
-                "access token with all required permissions."
-            )
+            friendly_msg = "Current profile is not linked to delegate page. A business Ad Account is required."
     elif "reduce the amount of data" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = (
-            "Please reduce the number of fields requested. Go to the schema tab, select your source, "
-            "and unselect the fields you do not need."
-        )
+        friendly_msg = "Facebook API field count limit exceeded. Reduce the number of selected fields."
     elif "The start date of the time range cannot be beyond 37 months from the current date" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = "Please set the start date of your sync to be within the last 3 years."
+        friendly_msg = "Start date exceeds the 37-month lookback limit."
     elif (fb_exception.api_error_code(), fb_exception.api_error_subcode()) in FACEBOOK_CONFIG_ERRORS_TO_CATCH:
         failure_type = FailureType.config_error
         friendly_msg = msg
     elif fb_exception.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
         return AirbyteTracedException(
-            message="The maximum number of requests on the Facebook API has been reached. See https://developers.facebook.com/docs/graph-api/overview/rate-limiting/ for more information",
+            message="Facebook API rate limit exceeded.",
             internal_message=str(fb_exception),
             failure_type=FailureType.transient_error,
             exception=fb_exception,
@@ -219,7 +201,7 @@ def traced_exception(fb_exception: FacebookRequestError):
 
     elif fb_exception.http_status() == 503:
         return AirbyteTracedException(
-            message="The Facebook API service is temporarily unavailable. This issue should resolve itself, and does not require further action.",
+            message="Facebook API service temporarily unavailable.",
             internal_message=str(fb_exception),
             failure_type=FailureType.transient_error,
             exception=fb_exception,

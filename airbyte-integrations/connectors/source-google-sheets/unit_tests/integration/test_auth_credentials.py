@@ -78,7 +78,7 @@ class TestCredentials(GoogleSheetsBaseTest):
             type=TraceType.ERROR,
             emitted_at=ANY,
             error=AirbyteErrorTraceMessage(
-                message="Something went wrong in the connector. See the logs for more details.",
+                message="Unhandled connector error. See logs for details.",
                 internal_message="401 Client Error: None for url: https://www.googleapis.com/oauth2/v4/token",
                 failure_type=FailureType.system_error,
                 stack_trace=ANY,
@@ -105,7 +105,7 @@ class TestCredentials(GoogleSheetsBaseTest):
             type=TraceType.ERROR,
             emitted_at=ANY,
             error=AirbyteErrorTraceMessage(
-                message="Something went wrong in the connector. See the logs for more details.",
+                message="Unhandled connector error. See logs for details.",
                 internal_message="401 Client Error: None for url: https://www.googleapis.com/oauth2/v4/token",
                 failure_type=FailureType.system_error,
                 stack_trace=ANY,
