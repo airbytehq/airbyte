@@ -51,14 +51,24 @@ def config_client_credentials():
     }
 
 
-def test_shopify_authenticator_access_token(config_access_token):
+@pytest.fixture
+def expected_auth_header_access_token():
+    return {"X-Shopify-Access-Token": TEST_ACCESS_TOKEN}
+
+
+@pytest.fixture
+def expected_auth_header_api_password():
+    return {"X-Shopify-Access-Token": TEST_API_PASSWORD}
+
+
+def test_shopify_authenticator_access_token(config_access_token, expected_auth_header_access_token):
     authenticator = ShopifyAuthenticator(config=config_access_token)
-    assert authenticator.get_auth_header() == {"X-Shopify-Access-Token": TEST_ACCESS_TOKEN}
+    assert authenticator.get_auth_header() == expected_auth_header_access_token
 
 
-def test_shopify_authenticator_api_password(config_api_password):
+def test_shopify_authenticator_api_password(config_api_password, expected_auth_header_api_password):
     authenticator = ShopifyAuthenticator(config=config_api_password)
-    assert authenticator.get_auth_header() == {"X-Shopify-Access-Token": TEST_API_PASSWORD}
+    assert authenticator.get_auth_header() == expected_auth_header_api_password
 
 
 def test_raises_notimplemented_auth(config_not_implemented_auth_method):
