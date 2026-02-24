@@ -30,6 +30,7 @@ API Reference: https://developers.yousign.com/reference/oas-specification
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2026-02-24 | [73890](https://github.com/airbytehq/airbyte/pull/73890) | Update dependencies |
 | 0.0.33 | 2026-02-17 | [73504](https://github.com/airbytehq/airbyte/pull/73504) | Update dependencies |
 | 0.0.32 | 2026-02-10 | [73176](https://github.com/airbytehq/airbyte/pull/73176) | Update dependencies |
 | 0.0.31 | 2026-02-03 | [72622](https://github.com/airbytehq/airbyte/pull/72622) | Update dependencies |
