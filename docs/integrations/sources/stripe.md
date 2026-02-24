@@ -158,6 +158,12 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
 
+#### Cursor age validation and automatic full refresh
+
+To prevent data loss caused by the 30-day Events API retention limit, the connector validates the age of each stream's cursor before choosing between incremental and full refresh sync. If a stream's cursor is older than 30 days, the connector automatically falls back to a full refresh for that stream instead of using the Events API, which would only return the last 30 days of data.
+
+This means that streams with no new records in the source within the last 30 days will perform a full refresh on subsequent syncs. This is expected behavior and ensures that all records are read from the source, given the Events API's 30-day data limitation. The impact is low, as it only affects streams where no records have been created or updated in the last 30 days.
+
 ### Troubleshooting
 
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
