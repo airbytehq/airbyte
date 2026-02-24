@@ -10,7 +10,7 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| enviroments | id | DefaultPaginator | ✅ |  ❌  |
+| environments | id | DefaultPaginator | ✅ |  ❌  |
 | services | id | DefaultPaginator | ✅ |  ❌  |
 | functionalities | id | DefaultPaginator | ✅ |  ❌  |
 | teams | id | DefaultPaginator | ✅ |  ❌  |
