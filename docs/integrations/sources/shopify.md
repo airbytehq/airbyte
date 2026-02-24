@@ -81,7 +81,7 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 
 #### Connect using Client Credentials
 
-This method uses the [OAuth 2.0 Client Credentials Grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials) and is intended for apps created via the [Shopify Dev Dashboard](https://partners.shopify.com). Access tokens are automatically fetched and refreshed every 24 hours.
+This method uses the [OAuth 2.0 Client Credentials Grant](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/client-credentials-grant) and is intended for apps created via the [Shopify Dev Dashboard](https://partners.shopify.com). Access tokens are automatically fetched and refreshed every 24 hours.
 
 1. Enter a **Source name**.
 2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings (e.g., `my-store` from `https://my-store.myshopify.com`).
