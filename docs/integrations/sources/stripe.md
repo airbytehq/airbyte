@@ -164,6 +164,45 @@ To prevent data loss caused by the 30-day Events API retention limit, the connec
 
 This means that streams with no new records in the source within the last 30 days will perform a full refresh on subsequent syncs. This is expected behavior and ensures that all records are read from the source, given the Events API's 30-day data limitation. The impact is low, as it only affects streams where no records have been created or updated in the last 30 days.
 
+The following streams are affected by cursor age validation:
+
+- `Accounts`
+- `Application Fees`
+- `Application Fee Refunds`
+- `Authorizations`
+- `Bank Accounts`
+- `Cardholders`
+- `Cards`
+- `Charges`
+- `Checkout Sessions`
+- `Coupons`
+- `Credit Notes`
+- `Customers`
+- `Disputes`
+- `Early Fraud Warnings`
+- `External Account Bank Accounts`
+- `External Account Cards`
+- `Invoice Items`
+- `Invoice Line Items`
+- `Invoices`
+- `Payment Intents`
+- `Payment Methods`
+- `Payouts`
+- `Persons`
+- `Plans`
+- `Prices`
+- `Products`
+- `Promotion Codes`
+- `Refunds`
+- `Reviews`
+- `Setup Intents`
+- `Subscription Items`
+- `Subscription Schedule`
+- `Subscriptions`
+- `Top Ups`
+- `Transactions`
+- `Transfers`
+
 ### Troubleshooting
 
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
