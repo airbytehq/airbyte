@@ -100,9 +100,10 @@ class CdcPartitionReaderMySQLTest :
             return DebeziumOffset(mapOf(key to value))
         }
 
-        /** Common Debezium properties shared between cold and warm start.
-         *  Does NOT include withStreams() — matching the production MySQL connector
-         *  pattern where table.include.list is only set during warm start.
+        /**
+         * Common Debezium properties shared between cold and warm start. Does NOT include
+         * withStreams() — matching the production MySQL connector pattern where table.include.list
+         * is only set during warm start.
          */
         private fun commonProperties(): Map<String, String> =
             DebeziumPropertiesBuilder()
@@ -131,10 +132,7 @@ class CdcPartitionReaderMySQLTest :
                 .buildMap()
 
         override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
-            DebeziumPropertiesBuilder()
-                .with(commonProperties())
-                .withStreams(streams)
-                .buildMap()
+            DebeziumPropertiesBuilder().with(commonProperties()).withStreams(streams).buildMap()
 
         private fun currentPosition(): Position =
             container.withStatement { statement: Statement ->
