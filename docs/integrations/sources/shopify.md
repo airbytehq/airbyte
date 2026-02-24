@@ -16,7 +16,7 @@ This page contains the setup guide and reference information for the [Shopify](h
 
 ## Setup guide
 
-This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
+This connector supports **OAuth2.0**, **API Password** (for private applications), and **Client Credentials** (for apps created via the Shopify Dev Dashboard) authentication methods.
 
 ### Set up Shopify
 
@@ -78,6 +78,18 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 3. For **API Password**, enter your custom application's Admin API access token.
 4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
 5. Click **Set up source** and wait for the connection test to complete.
+
+#### Connect using Client Credentials
+
+This method uses the [OAuth 2.0 Client Credentials Grant](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials) and is intended for apps created via the [Shopify Dev Dashboard](https://partners.shopify.com). Access tokens are automatically fetched and refreshed every 24 hours.
+
+1. Enter a **Source name**.
+2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings (e.g., `my-store` from `https://my-store.myshopify.com`).
+3. Select **Client Credentials** as the authentication method.
+4. For **Client ID**, enter the Client ID from your Shopify Dev Dashboard app.
+5. For **Client Secret**, enter the Client Secret from your Shopify Dev Dashboard app.
+6. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
+7. Click **Set up source** and wait for the connection test to complete.
 
 ### Custom app scopes
 
