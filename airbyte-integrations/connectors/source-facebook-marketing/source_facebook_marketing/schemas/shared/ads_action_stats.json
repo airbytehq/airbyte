@@ -15,12 +15,6 @@
       "1d_view": {
         "type": ["null", "number"]
       },
-      "7d_view": {
-        "type": ["null", "number"]
-      },
-      "28d_view": {
-        "type": ["null", "number"]
-      },
       "action_destination": {
         "type": ["null", "string"]
       },

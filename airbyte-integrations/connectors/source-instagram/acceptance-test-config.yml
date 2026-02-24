@@ -21,10 +21,16 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         empty_streams:
+          - name: media
+            bypass_reason: "No Instagram Business Account linked to the test Facebook Page (see: https://github.com/airbytehq/oncall/issues/11217)"
           - name: media_insights
             bypass_reason: Media statistic changed frequently
+          - name: users
+            bypass_reason: "No Instagram Business Account linked to the test Facebook Page (see: https://github.com/airbytehq/oncall/issues/11217)"
           - name: user_insights
             bypass_reason: User statistic changed frequently
+          - name: user_lifetime_insights
+            bypass_reason: "No Instagram Business Account linked to the test Facebook Page (see: https://github.com/airbytehq/oncall/issues/11217)"
           - name: stories
             bypass_reason: Stories available only 24 hours
           - name: story_insights

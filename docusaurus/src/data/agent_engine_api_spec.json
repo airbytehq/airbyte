@@ -364,266 +364,6 @@
         }
       }
     },
-    "/api/v1/embedded/scoped-token": {
-      "post": {
-        "tags": ["Authentication"],
-        "summary": "Create Scoped Token",
-        "description": "**Requires an Access Token as the bearer token.**\n\nGenerate a new scoped token.\n\nYou can safely share it with your end users and it will allow them to manage their configured sources.",
-        "operationId": "deprecated_create_embedded_scoped_token",
-        "deprecated": true,
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/app__api__embedded__schemas__ScopedTokenCreateRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ScopedTokenCreateResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/embedded/scoped-token/info": {
-      "get": {
-        "tags": [],
-        "summary": "Get Scoped Token Info",
-        "description": "**Requires a Scoped Token as the bearer token.**\n\nReturn metadata about a scoped token (workspace, organization...).",
-        "operationId": "deprecated_get_embedded_scoped_token_info",
-        "deprecated": true,
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ScopedTokenInfoGetResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/embedded/widget-token": {
-      "post": {
-        "tags": ["Authentication"],
-        "summary": "Create Widget Token",
-        "description": "**Requires an Access Token as the bearer token.**\n\nGenerate a new widget token.\n\nYou can safely pass it to your front-end application to instantiate a widget instance.",
-        "operationId": "deprecated_create_embedded_widget_token",
-        "deprecated": true,
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/app__api__embedded__schemas__WidgetTokenCreateRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WidgetTokenCreateResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/integrations/connectors": {
       "post": {
         "tags": ["Connectors"],
@@ -743,6 +483,24 @@
             "description": "The workspace ID to list sources for."
           },
           {
+            "name": "customer_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Customer name to list sources for. Previously named external_user_id.",
+              "title": "Customer Name"
+            },
+            "description": "Customer name to list sources for. Previously named external_user_id."
+          },
+          {
             "name": "external_user_id",
             "in": "query",
             "required": false,
@@ -755,10 +513,12 @@
                   "type": "null"
                 }
               ],
-              "description": "The external user ID to list sources for.",
+              "description": "Deprecated. Use customer_name instead.",
+              "deprecated": true,
               "title": "External User Id"
             },
-            "description": "The external user ID to list sources for."
+            "description": "Deprecated. Use customer_name instead.",
+            "deprecated": true
           },
           {
             "name": "definition_id",
@@ -3354,7 +3114,7 @@
       "put": {
         "tags": ["Customers"],
         "summary": "Update Workspace",
-        "description": "Update an external user's name and/or status.\n- Set `name` to update the external user name\n- Set `status` to 'active' or 'inactive' to change the external user status\n- When setting status to 'inactive', all active connections for the external user will be automatically disabled",
+        "description": "Update an external user's name, status, and/or cache setting.\n- Set `name` to update the external user name\n- Set `status` to 'active' or 'inactive' to change the external user status\n- When setting status to 'inactive', all active connections for the external user will be automatically disabled\n- Set `cache_enabled` to true/false to enable or disable Context Store caching for this external user",
         "operationId": "update_workspaces_workspace_id",
         "security": [
           {
@@ -4125,10 +3885,10 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "External user identifier (maps to workspace name)."
+            "title": "Customer Name",
+            "description": "Customer name (maps to workspace name). Previously named external_user_id."
           },
           "connector_type": {
             "anyOf": [
@@ -4234,7 +3994,7 @@
           }
         },
         "type": "object",
-        "required": ["external_user_id"],
+        "required": ["customer_name"],
         "title": "ConnectorSourceCheckConfigRequest",
         "description": "Request model for checking connector source configuration before creation."
       },
@@ -4326,10 +4086,10 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "External user identifier (maps to workspace name)."
+            "title": "Customer Name",
+            "description": "Customer name (maps to workspace name). Previously named external_user_id."
           },
           "connector_type": {
             "anyOf": [
@@ -4435,7 +4195,7 @@
           }
         },
         "type": "object",
-        "required": ["external_user_id"],
+        "required": ["customer_name"],
         "title": "ConnectorSourceCreateRequest",
         "description": "Request model for creating a connector source.\n\nUses `replication_config` instead of `source_config` for clearer semantics.\nFor REPLICATION mode: pass the full config in `replication_config`\nFor MULTI/DIRECT mode: pass `credentials` + `environment` + optional `replication_config` overrides\nFor OAuth: pass `secret_id` from OAuth callback instead of credentials"
       },
@@ -5521,14 +5281,14 @@
             "format": "uuid",
             "title": "Workspace Id"
           },
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "The external user identifier (workspace name)."
+            "title": "Customer Name",
+            "description": "Customer name (workspace name). Previously named external_user_id."
           }
         },
         "type": "object",
-        "required": ["organization_id", "workspace_id", "external_user_id"],
+        "required": ["organization_id", "workspace_id", "customer_name"],
         "title": "ScopedTokenInfoGetResponse"
       },
       "SonarCatalogSchemaType": {
@@ -5593,6 +5353,17 @@
             ],
             "title": "Name",
             "description": "Optional name for the cloned template. If not provided, uses the original template's name"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceConfigTemplateMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Mode for the cloned template. If not provided, inherits from the original template."
           }
         },
         "type": "object",
@@ -6735,6 +6506,16 @@
             "$ref": "#/components/schemas/WorkspaceStatus",
             "description": "The status of the external user (active or inactive)"
           },
+          "cache_enabled": {
+            "type": "boolean",
+            "title": "Cache Enabled",
+            "description": "Whether Context Store caching is enabled for this external user"
+          },
+          "tombstone": {
+            "type": "boolean",
+            "title": "Tombstone",
+            "description": "Whether this external user has been deleted"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -6754,6 +6535,8 @@
           "name",
           "organization_id",
           "status",
+          "cache_enabled",
+          "tombstone",
           "created_at",
           "updated_at"
         ],
@@ -6782,6 +6565,16 @@
             "$ref": "#/components/schemas/WorkspaceStatus",
             "description": "The status of the external user (active or inactive)"
           },
+          "cache_enabled": {
+            "type": "boolean",
+            "title": "Cache Enabled",
+            "description": "Whether Context Store caching is enabled for this external user"
+          },
+          "tombstone": {
+            "type": "boolean",
+            "title": "Tombstone",
+            "description": "Whether this external user has been deleted"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -6801,6 +6594,8 @@
           "name",
           "organization_id",
           "status",
+          "cache_enabled",
+          "tombstone",
           "created_at",
           "updated_at"
         ],
@@ -6884,6 +6679,18 @@
               }
             ],
             "description": "Set status to active or inactive"
+          },
+          "cache_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Enabled",
+            "description": "Enable or disable Context Store for this external user"
           }
         },
         "type": "object",
@@ -6912,6 +6719,16 @@
             "$ref": "#/components/schemas/WorkspaceStatus",
             "description": "The status of the external user (active or inactive)"
           },
+          "cache_enabled": {
+            "type": "boolean",
+            "title": "Cache Enabled",
+            "description": "Whether Context Store caching is enabled for this external user"
+          },
+          "tombstone": {
+            "type": "boolean",
+            "title": "Tombstone",
+            "description": "Whether this external user has been deleted"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -6931,6 +6748,8 @@
           "name",
           "organization_id",
           "status",
+          "cache_enabled",
+          "tombstone",
           "created_at",
           "updated_at"
         ],
@@ -6938,10 +6757,10 @@
       },
       "app__api__account__applications__schemas__ScopedTokenCreateRequest": {
         "properties": {
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "The external user identifier."
+            "title": "Customer Name",
+            "description": "Customer name (workspace name). Previously named external_user_id."
           },
           "region_id": {
             "anyOf": [
@@ -6962,15 +6781,15 @@
           }
         },
         "type": "object",
-        "required": ["external_user_id"],
+        "required": ["customer_name"],
         "title": "ScopedTokenCreateRequest"
       },
       "app__api__account__applications__schemas__WidgetTokenCreateRequest": {
         "properties": {
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "The external user identifier."
+            "title": "Customer Name",
+            "description": "Customer name (workspace name). Previously named external_user_id."
           },
           "region_id": {
             "anyOf": [
@@ -7022,96 +6841,7 @@
           }
         },
         "type": "object",
-        "required": ["external_user_id", "allowed_origin"],
-        "title": "WidgetTokenCreateRequest"
-      },
-      "app__api__embedded__schemas__ScopedTokenCreateRequest": {
-        "properties": {
-          "workspace_name": {
-            "type": "string",
-            "title": "Workspace Name",
-            "description": "The name of the workspace to create or use."
-          },
-          "region_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Region Id",
-            "description": "The region in which to create the workspace. If not provided, the default US region will be used. US region: 645a183f-b12b-4c6e-8ad3-99e165603450, EU region: b9e48d61-f082-4a14-a8d0-799a907938cb.",
-            "examples": [
-              "645a183f-b12b-4c6e-8ad3-99e165603450",
-              "b9e48d61-f082-4a14-a8d0-799a907938cb"
-            ]
-          }
-        },
-        "type": "object",
-        "required": ["workspace_name"],
-        "title": "ScopedTokenCreateRequest"
-      },
-      "app__api__embedded__schemas__WidgetTokenCreateRequest": {
-        "properties": {
-          "workspace_name": {
-            "type": "string",
-            "title": "Workspace Name",
-            "description": "The name of the workspace to create or use."
-          },
-          "region_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Region Id",
-            "description": "The region in which to create the workspace. If not provided, the default US region will be used. US region: 645a183f-b12b-4c6e-8ad3-99e165603450, EU region: b9e48d61-f082-4a14-a8d0-799a907938cb.",
-            "examples": [
-              "645a183f-b12b-4c6e-8ad3-99e165603450",
-              "b9e48d61-f082-4a14-a8d0-799a907938cb"
-            ]
-          },
-          "allowed_origin": {
-            "type": "string",
-            "title": "Allowed Origin",
-            "description": "The allowed origin for the widget."
-          },
-          "selected_source_template_tags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Selected Source Template Tags",
-            "description": "Optional list of tags to filter which source templates will be available in the widget."
-          },
-          "selected_source_template_tags_mode": {
-            "$ref": "#/components/schemas/TagSelectionMode",
-            "description": "Tag selection mode for source templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
-            "default": "any"
-          },
-          "selected_connection_template_tags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Selected Connection Template Tags",
-            "description": "Optional list of tags to filter which connection templates will be available in the widget."
-          },
-          "selected_connection_template_tags_mode": {
-            "$ref": "#/components/schemas/TagSelectionMode",
-            "description": "Tag selection mode for connection templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
-            "default": "any"
-          }
-        },
-        "type": "object",
-        "required": ["workspace_name", "allowed_origin"],
+        "required": ["customer_name", "allowed_origin"],
         "title": "WidgetTokenCreateRequest"
       }
     },

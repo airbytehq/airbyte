@@ -11,7 +11,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
-  dockerImageTag: 0.10.5
+  dockerImageTag: 0.10.6
   dockerRepository: airbyte/source-gcs
   documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   githubIssueLabel: source-gcs
@@ -39,6 +39,27 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-GCS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GCS_JSONL__CREDS
+          fileName: config_jsonl.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GCS_GLOB__CREDS
+          fileName: config_glob.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GCS_OAUTH
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
     - suite: liveTests
       testConnections:
         - name: gcs_old_config_dev_null

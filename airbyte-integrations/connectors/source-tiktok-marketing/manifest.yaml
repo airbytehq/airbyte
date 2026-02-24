@@ -413,7 +413,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc(), '%Y-%m-%d') }}"
+      datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
 
   report_hourly_incremental_sync:
@@ -1973,8 +1973,8 @@ definitions:
           data_level: '{{ parameters["data_level"] }}'
           dimensions: '{{ parameters["dimensions"] | string }}'
           metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]) | string  }}'
-          start_date: '{{ day_delta(-365, "%Y-%m-%d") if config.get("start_date", "2016-09-01") < day_delta(-365, "%Y-%m-%d") else config["start_date"] }}'
-          end_date: "{{ today_utc() }}"
+          start_date: '{{ day_delta(-364, "%Y-%m-%d") if config.get("start_date", "2016-09-01") < day_delta(-364, "%Y-%m-%d") else config["start_date"] }}'
+          end_date: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
           lifetime: "true"
           filtering: '{{ [{
               "filter_value": "[\\\"STATUS_ALL\\\"]",
@@ -2120,6 +2120,22 @@ definitions:
         $ref: "#/definitions/requester"
         path: pixel/instant_page/event/
         http_method: GET
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - predicate: "{{ response.get('code') == 40100 }}"
+              action: RATE_LIMITED
+              error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
+            # The pixel_instant_page_events and pixel_events_statistics streams iterate over all
+            # objective_type x optimization_goal combinations, but TikTok's API only supports a subset.
+            # Unsupported combinations return an error with "one or more value of the param(s) is not acceptable".
+            # We match both plural ("params") and singular ("param") variants of the message.
+            - predicate: "{{ 'one or more value of the params is not acceptable' in response.get('message', '').lower() or 'one or more value of the param is not acceptable' in response.get('message', '').lower() }}"
+              action: IGNORE
+              error_message: "Unsupported objective_type/optimization_goal combination, skipping. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') != 0 }}"
+              action: FAIL
+              error_message: "{{ response['message'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -2202,7 +2218,7 @@ definitions:
         http_method: GET
         request_parameters:
           pixel_ids: "{{ [stream_partition['pixel_id']] | string}}"
-          date_range: "{{ {'start_date': day_delta(-29, format='%Y-%m-%d'), 'end_date': format_datetime(now_utc(), '%Y-%m-%d')} | string }}"
+          date_range: "{{ {'start_date': day_delta(-29, format='%Y-%m-%d'), 'end_date': format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d')} | string }}"
         error_handler:
           type: DefaultErrorHandler
           response_filters:
@@ -5525,7 +5541,7 @@ definitions:
                 description: Event corresponding currency.
                 type:
                   - "null"
-                  - boolean
+                  - string
               name:
                 description: Event name.
                 type:
