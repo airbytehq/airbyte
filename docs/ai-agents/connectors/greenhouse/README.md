@@ -1,4 +1,6 @@
-# Greenhouse agent connector
+# Greenhouse
+
+The Greenhouse agent connector is a Python package that equips AI agents to interact with Greenhouse through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Greenhouse is an applicant tracking system (ATS) that helps companies manage their
 hiring process. This connector provides access to candidates, applications, jobs,
@@ -10,14 +12,15 @@ for recruiting analytics and talent acquisition insights.
 
 The Greenhouse connector is optimized to handle prompts like these.
 
+- List all open jobs
+- Show me upcoming interviews this week
+- Show me recent job offers
+- List recent applications
 - Show me candidates from \{company\} who applied last month
 - What are the top 5 sources for our job applications this quarter?
-- List all open jobs in the Sales department
 - Analyze the interview schedules for our engineering candidates this week
-- Get details of recent job offers for \{team_member\}
 - Compare the number of applications across different offices
 - Identify candidates who have multiple applications in our system
-- Show me upcoming scheduled interviews for our marketing positions
 - Summarize the candidate pipeline for our latest job posting
 - Find the most active departments in recruiting this month
 
@@ -65,16 +68,20 @@ async def greenhouse_execute(entity: str, action: str, params: dict | None = Non
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_greenhouse import GreenhouseConnector
+from airbyte_agent_greenhouse import GreenhouseConnector, AirbyteAuthConfig
 
 connector = GreenhouseConnector(
-    external_user_id="<your-scoped-token>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -83,35 +90,39 @@ async def greenhouse_execute(entity: str, action: str, params: dict | None = Non
     return await connector.execute(entity, action, params or {})
 ```
 
-
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get) |
-| Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get) |
-| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get) |
-| Offers | [List](./REFERENCE.md#offers-list), [Get](./REFERENCE.md#offers-get) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
-| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get) |
-| Offices | [List](./REFERENCE.md#offices-list), [Get](./REFERENCE.md#offices-get) |
-| Job Posts | [List](./REFERENCE.md#job-posts-list), [Get](./REFERENCE.md#job-posts-get) |
-| Sources | [List](./REFERENCE.md#sources-list) |
+| Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get), [Search](./REFERENCE.md#candidates-search) |
+| Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get), [Search](./REFERENCE.md#applications-search) |
+| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get), [Search](./REFERENCE.md#jobs-search) |
+| Offers | [List](./REFERENCE.md#offers-list), [Get](./REFERENCE.md#offers-get), [Search](./REFERENCE.md#offers-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
+| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Search](./REFERENCE.md#departments-search) |
+| Offices | [List](./REFERENCE.md#offices-list), [Get](./REFERENCE.md#offices-get), [Search](./REFERENCE.md#offices-search) |
+| Job Posts | [List](./REFERENCE.md#job-posts-list), [Get](./REFERENCE.md#job-posts-get), [Search](./REFERENCE.md#job-posts-search) |
+| Sources | [List](./REFERENCE.md#sources-list), [Search](./REFERENCE.md#sources-search) |
 | Scheduled Interviews | [List](./REFERENCE.md#scheduled-interviews-list), [Get](./REFERENCE.md#scheduled-interviews-get) |
 | Application Attachment | [Download](./REFERENCE.md#application-attachment-download) |
 | Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
 
 
+### Authentication
+
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Greenhouse API docs
 
-For the service's official API docs, see the [Greenhouse API reference](https://developers.greenhouse.io/harvest.html).
+See the official [Greenhouse API reference](https://developers.greenhouse.io/harvest.html).
 
 ## Version information
 
-- **Package version:** 0.17.57
-- **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** 609c1d86c76b36ff699b57123a5a8c2050d958c3
+- **Package version:** 0.17.102
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** 62fbfc1f7b4889639e5a0245203b250cbd0315ae
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/greenhouse/CHANGELOG.md)

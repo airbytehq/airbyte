@@ -282,7 +282,18 @@ spec:
         default: 2
         minimum: 1
         order: 15
-
+      financial_events_max_results_per_page:
+        title: Financial Events Max Results Per Page
+        description: >-
+          The maximum number of results to return per page for the ListFinancialEvents
+          stream. If the response exceeds the maximum number of transactions or 10 MB,
+          the API returns an InvalidInput error. Lower this value if you encounter
+          InvalidInput errors during sync. Valid range is 1-100.
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 100
+        order: 16
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -999,6 +1010,18 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 400
+                    predicate: "{{ 'InvalidInput' in response.get('errors', [{}])[0].get('code', '') }}"
+                    error_message: >-
+                      The API returned an InvalidInput error. This typically occurs when the response
+                      exceeds the maximum number of transactions or 10 MB per page. To resolve this,
+                      lower the 'Financial Events Max Results Per Page' setting in your connector
+                      configuration. Current value: {{ config.get('financial_events_max_results_per_page', 100) }}.
+                      Try reducing it to a smaller value (e.g., 50, 25, 10, or even 1 for very high-volume accounts).
                 backoff_strategies:
                   - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
@@ -1021,7 +1044,7 @@ definitions:
             field_name: MaxResultsPerPage
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: "{{ config.get('financial_events_max_results_per_page', 100) }}"
             cursor_value: "{{ response.payload.NextToken }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -2761,6 +2784,61 @@ definitions:
               value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}"
             - path: ["queryEndDate"]
               value: "{{ stream_slice.cursor_slice.end_time }}"
+            - path: ["marketplaceId"]
+              value: "{{ config['marketplace_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_sales_and_traffic_report"
+
+    # Monthly granularity version of Sales and Traffic Report
+    get_sales_and_traffic_report_by_month:
+      type: DeclarativeStream
+      name: GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: queryEndDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1M"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_SALES_AND_TRAFFIC_REPORT
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              dateGranularity: "MONTH"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["salesAndTrafficByAsin"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["date"]
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}"
+            - path: ["queryEndDate"]
+              value: "{{ stream_slice.cursor_slice.end_time }}"
+            - path: ["marketplaceId"]
+              value: "{{ config['marketplace_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3176,6 +3254,7 @@ streams:
   - $ref: "#/definitions/streams/get_brand_analytics_item_comparison_report"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_date"
+  - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_month"
   - $ref: "#/definitions/streams/get_vendor_sales_report"
   - $ref: "#/definitions/streams/get_vendor_inventory_report"
 
@@ -8499,6 +8578,10 @@ schemas:
         - 'null'
         - string
         format: date-time
+      marketplaceId:
+        type:
+        - 'null'
+        - string
       parentAsin:
         type:
         - 'null'

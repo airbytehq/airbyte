@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.pipeline
 
-import io.airbyte.cdk.load.dataflow.config.ConnectorInputStreams
+import io.airbyte.cdk.load.dataflow.config.model.ConnectorInputStreams
 import io.airbyte.cdk.load.dataflow.state.StateReconciler
 import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.github.oshai.kotlinlogging.KotlinLogging

@@ -47,10 +47,8 @@ class TestTopicsStreamFullRefresh(TestCase):
         # Use a recent updated_at to pass the semi_incremental_stream record filter
         recent_updated_at = "2025-01-01T00:00:00Z"
         http_mocker.get(
-            self._base_topics_request(api_token_authenticator).build(),
-            TopicsResponseBuilder.topics_response()
-            .with_record(TopicsRecordBuilder.topics_record().with_updated_at(recent_updated_at))
-            .build(),
+            self._base_topics_request(api_token_authenticator).with_any_query_params().build(),
+            TopicsResponseBuilder.topics_response().with_record(TopicsRecordBuilder.topics_record()).build(),
         )
 
         output = read_stream("topics", SyncMode.incremental, self._config)
@@ -72,7 +70,7 @@ class TestTopicsStreamFullRefresh(TestCase):
         recent_updated_at = "2025-01-01T00:00:00Z"
 
         http_mocker.get(
-            self._base_topics_request(api_token_authenticator).build(),
+            self._base_topics_request(api_token_authenticator).with_any_query_params().build(),
             TopicsResponseBuilder.topics_response(next_page_http_request)
             .with_record(TopicsRecordBuilder.topics_record().with_updated_at(recent_updated_at))
             .with_pagination()

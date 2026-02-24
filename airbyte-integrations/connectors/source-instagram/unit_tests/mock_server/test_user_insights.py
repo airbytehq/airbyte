@@ -121,7 +121,7 @@ class TestFullRefresh(TestCase):
             _build_user_insights_response(),
         )
 
-        test_config = ConfigBuilder().with_start_date("2024-01-15T00:00:00Z")
+        test_config = ConfigBuilder().with_start_date("2024-01-15T12:00:00Z")
         output = self._read(config_=test_config)
         assert len(output.records) == 1
         record = output.records[0].record.data
@@ -151,7 +151,7 @@ class TestFullRefresh(TestCase):
             _build_user_insights_response(),
         )
 
-        test_config = ConfigBuilder().with_start_date("2024-01-15T00:00:00Z")
+        test_config = ConfigBuilder().with_start_date("2024-01-15T12:00:00Z")
         output = self._read(config_=test_config)
 
         # Verify we get records from both accounts
@@ -202,7 +202,7 @@ class TestIncremental(TestCase):
             _build_user_insights_response(),
         )
 
-        test_config = ConfigBuilder().with_start_date("2024-01-15T00:00:00Z")
+        test_config = ConfigBuilder().with_start_date("2024-01-15T12:00:00Z")
         output = self._read(config_=test_config)
         assert len(output.records) == 1
         assert len(output.state_messages) >= 1
@@ -217,14 +217,17 @@ class TestIncremental(TestCase):
         We verify the outbound request includes the expected since parameter derived from state
         by mocking specific query params for each QueryProperties chunk.
 
-        The DatetimeBasedCursor uses the state value as the starting point, and the frozen time
-        determines the end datetime. With step P1D, there's only one time slice from state to now.
+        The DatetimeBasedCursor uses the state value as the starting point, and day_delta(1)
+        determines the end datetime. With step P1D, there are two time slices from state to
+        end_datetime (frozen_time + 1 day).
         """
         prior_state_value = "2024-01-15T00:00:00+00:00"
         # Expected since value derived from state - the API uses the state value format directly
-        expected_since = "2024-01-15T00:00:00+00:00"
-        # Expected until value is the frozen time (in the same format as the API expects)
-        expected_until = "2024-01-15T12:00:00+00:00"
+        expected_since_slice1 = "2024-01-15T00:00:00+00:00"
+        expected_until_slice1 = "2024-01-16T00:00:00+00:00"
+        # Second slice covers the remainder up to day_delta(1) from frozen time
+        expected_since_slice2 = "2024-01-16T00:00:00+00:00"
+        expected_until_slice2 = "2024-01-16T12:00:00+00:00"
 
         state = (
             StateBuilder()
@@ -247,52 +250,39 @@ class TestIncremental(TestCase):
             get_account_response(),
         )
 
-        # Mock each QueryProperties chunk with specific params to validate the since parameter
-        # Chunk 1: period=day, metric=follower_count,reach
-        http_mocker.get(
-            _get_user_insights_request_with_params(
-                BUSINESS_ACCOUNT_ID, since=expected_since, until=expected_until, period="day", metric="follower_count,reach"
-            ).build(),
-            _build_user_insights_response(),
-        )
-        # Chunk 2: period=week, metric=reach
-        http_mocker.get(
-            _get_user_insights_request_with_params(
-                BUSINESS_ACCOUNT_ID, since=expected_since, until=expected_until, period="week", metric="reach"
-            ).build(),
-            _build_user_insights_response(),
-        )
-        # Chunk 3: period=days_28, metric=reach
-        http_mocker.get(
-            _get_user_insights_request_with_params(
-                BUSINESS_ACCOUNT_ID, since=expected_since, until=expected_until, period="days_28", metric="reach"
-            ).build(),
-            _build_user_insights_response(),
-        )
-        # Chunk 4: period=lifetime, metric=online_followers
-        http_mocker.get(
-            _get_user_insights_request_with_params(
-                BUSINESS_ACCOUNT_ID, since=expected_since, until=expected_until, period="lifetime", metric="online_followers"
-            ).build(),
-            _build_user_insights_response(),
-        )
+        # Mock each QueryProperties chunk for slice 1 to validate the since parameter from state
+        for period, metric in [("day", "follower_count,reach"), ("week", "reach"), ("days_28", "reach"), ("lifetime", "online_followers")]:
+            http_mocker.get(
+                _get_user_insights_request_with_params(
+                    BUSINESS_ACCOUNT_ID, since=expected_since_slice1, until=expected_until_slice1, period=period, metric=metric
+                ).build(),
+                _build_user_insights_response(),
+            )
+
+        # Mock each QueryProperties chunk for slice 2
+        for period, metric in [("day", "follower_count,reach"), ("week", "reach"), ("days_28", "reach"), ("lifetime", "online_followers")]:
+            http_mocker.get(
+                _get_user_insights_request_with_params(
+                    BUSINESS_ACCOUNT_ID, since=expected_since_slice2, until=expected_until_slice2, period=period, metric=metric
+                ).build(),
+                _build_user_insights_response(),
+            )
 
         test_config = ConfigBuilder().with_start_date("2024-01-14T00:00:00Z")
         output = self._read(config_=test_config, state=state)
 
-        # With specific mocks for each chunk, we can now assert exact record count
-        # The merge strategy groups by date, and all chunks return the same date (2024-01-15T07:00:00+0000)
-        # so records should be merged into 1 record
-        assert len(output.records) == 1
+        # With day_delta(1), two P1D slices are generated from state to end_datetime.
+        # Each slice returns records merged by date, producing 1 record per slice.
+        # Both slices return mock data with the same date, yielding 2 records total.
+        assert len(output.records) == 2
         assert len(output.state_messages) >= 1
 
-        # Verify the record has the expected business_account_id
-        record = output.records[0].record.data
-        assert record.get("business_account_id") == BUSINESS_ACCOUNT_ID
-
-        # Verify the record date matches the expected date from our response
-        # Note: The date is normalized to RFC 3339 format (+00:00) by the schema normalization
-        assert record.get("date") == "2024-01-15T07:00:00+00:00"
+        # Verify the records have the expected business_account_id
+        for record_msg in output.records:
+            record = record_msg.record.data
+            assert record.get("business_account_id") == BUSINESS_ACCOUNT_ID
+            # Note: The date is normalized to RFC 3339 format (+00:00) by the schema normalization
+            assert record.get("date") == "2024-01-15T07:00:00+00:00"
 
 
 class TestErrorHandling(TestCase):

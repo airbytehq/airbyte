@@ -29,7 +29,8 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
 6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
 7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
-8. Click **Set up source**.
+8. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
+9. Click **Set up source**.
 
 ### For Airbyte Open Source:
 
@@ -51,15 +52,39 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 - [Campaigns](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
 - [Campaigns Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
+- [Campaign Values Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_campaign_values) - Analytics stream for campaign performance metrics
 - [Email Templates](https://developers.klaviyo.com/en/v2024-10-15/reference/get_templates)
 - [Events](https://developers.klaviyo.com/en/v2024-10-15/reference/get_events)
 - [Events Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_event)
 - [Flows](https://developers.klaviyo.com/en/v2024-10-15/reference/get_flows)
+- [Flow Series Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_flow_series) - Analytics stream for automated flow performance over time
 - [GlobalExclusions](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
 - [Lists](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
 - [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
 - [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
 - [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
+
+### Analytics streams
+
+The **Campaign Values Reports** and **Flow Series Reports** streams provide performance analytics from Klaviyo's [Reporting API](https://developers.klaviyo.com/en/reference/reporting_api_overview). Campaign Values Reports returns aggregated campaign performance metrics, while Flow Series Reports returns daily time-series data for automated flow performance.
+
+These streams require the following API key scopes:
+
+- **Campaign Values Reports**: `campaigns:read`
+- **Flow Series Reports**: `flows:read`
+
+Both streams partition data by conversion metric. By default, the connector fetches reports for all metrics in your account. You can use the optional **Conversion Metric ID(s)** configuration field to specify a comma-separated list of metric IDs (for example, `RESQ6t,ABC123`) to limit reporting to specific conversion metrics.
+
+:::warning
+These analytics endpoints have strict Klaviyo API rate limits ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)): 1 request per second burst, 2 requests per minute steady, and 225 requests per day. Because the connector makes a separate API request for each metric and each time window, syncing all metrics can take several hours and may exceed the daily rate limit. Specify only the conversion metrics you need using the **Conversion Metric ID(s)** field.
+:::
+
+To find your conversion metric IDs:
+
+1. Log into your Klaviyo account.
+2. Navigate to **Analytics** > **Metrics**.
+3. Select the metric you want to track conversions for (for example, "Placed Order").
+4. Copy the metric ID from the URL, or use the **Metrics** stream to list all available metrics and their IDs.
 
 ## Performance considerations
 
@@ -76,7 +101,7 @@ The `Events Detailed` stream contains field `name` for `metric` relationship - a
 The `Profiles` stream can experience transient API errors under heavy load. In order to mitigate this, you can use the "Disable Fetching Predictive Analytics" setting to improve the success rate of syncs.
 
 :::warning
-Using the "Disable Fetching Predictive Analytics" will stop records on the Profiles stream will no longer
+Using the "Disable Fetching Predictive Analytics" setting means records on the Profiles stream will no longer
 contain the `predictive_analytics` field and workflows depending on this field will stop working.
 :::
 
@@ -96,6 +121,10 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.17.0  | 2026-02-19 | [73642](https://github.com/airbytehq/airbyte/pull/73642) | Add new analytics streams: Flow Series Reports and Campaign Values Reports |
+| 2.16.15 | 2026-02-17 | [73540](https://github.com/airbytehq/airbyte/pull/73540) | Update dependencies |
+| 2.16.14 | 2026-02-10 | [73058](https://github.com/airbytehq/airbyte/pull/73058) | Update dependencies |
+| 2.16.13 | 2026-02-03 | [72750](https://github.com/airbytehq/airbyte/pull/72750) | Update dependencies |
 | 2.16.12 | 2026-01-20 | [72040](https://github.com/airbytehq/airbyte/pull/72040) | Update dependencies |
 | 2.16.11 | 2026-01-19 | [70208](https://github.com/airbytehq/airbyte/pull/70208) | Add chunking to events_detailed stream to fix full refresh stalling and incremental mode returning zero rows |
 | 2.16.10 | 2026-01-14 | [71461](https://github.com/airbytehq/airbyte/pull/71461) | Update dependencies |
@@ -127,7 +156,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 | 2.14.7  | 2025-04-05 | [57033](https://github.com/airbytehq/airbyte/pull/57033)   | Update dependencies                                                                                                                                                    |
 | 2.14.6  | 2025-03-29 | [56634](https://github.com/airbytehq/airbyte/pull/56634)   | Update dependencies                                                                                                                                                    |
 | 2.14.5  | 2025-03-22 | [56017](https://github.com/airbytehq/airbyte/pull/56017)   | Update dependencies                                                                                                                                                    |
-| 2.14.4  | 2025-03-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)       | Add back step to streams that can process date ranges in parallel                                                                                                      |
+| 2.14.4  | 2025-03-14 | [55772](https://github.com/airbytehq/airbyte/pull/55772)   | Add back step to streams that can process date ranges in parallel                                                                                                      |
 | 2.14.3  | 2025-03-08 | [55479](https://github.com/airbytehq/airbyte/pull/55479)   | Update dependencies                                                                                                                                                    |
 | 2.14.2  | 2025-03-03 | [54720](https://github.com/airbytehq/airbyte/pull/54720)   | Add event_properties option to events request                                                                                                                          |
 | 2.14.1  | 2025-03-01 | [54770](https://github.com/airbytehq/airbyte/pull/54770)   | Update dependencies                                                                                                                                                    |

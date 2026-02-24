@@ -19,6 +19,7 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 - `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}`) for all modified connectors in the PR.
 - `/ai-review` - AI-powered PR review for connector safety and quality gates.
+- `/force-merge reason="<A_GOOD_REASON>"` - Force merges the PR using admin privileges, bypassing CI checks. Requires a reason.
 
 ### Tips for Working with CI
 
@@ -34,6 +35,7 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 
 ### Helpful Resources
 
+- _Maintainers: [AI-SDLC Docs](https://github.com/airbytehq/ai-skills/blob/main/docs/hydra/) (internal link)_
 - [PR Guidelines](https://docs.airbyte.com/contributing-to-airbyte): Check our guidelines for contributions.
 - [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes): Guide to breaking changes, migration guides, and upgrade deadlines.
 - [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development): Learn how to set up your environment and develop connectors locally.

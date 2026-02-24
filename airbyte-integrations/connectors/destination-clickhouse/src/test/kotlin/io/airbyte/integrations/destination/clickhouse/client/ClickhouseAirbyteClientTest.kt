@@ -113,12 +113,6 @@ class ClickhouseAirbyteClientTest {
                         every { name } returns "my_table"
                         every { namespace } returns "my_namespace"
                     }
-                every { schema } returns
-                    mockk(relaxed = true) {
-                        every { isObject } returns true
-                        every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
-                    }
-                every { importType } returns Append
                 every { tableSchema } returns
                     mockk(relaxed = true) {
                         every { columnSchema } returns
@@ -126,6 +120,7 @@ class ClickhouseAirbyteClientTest {
                                 every { inputSchema } returns LinkedHashMap.newLinkedHashMap(0)
                                 every { inputToFinalColumnNames } returns emptyMap()
                             }
+                        every { importType } returns Append
                         every { getPrimaryKey() } returns emptyList()
                         every { getCursor() } returns emptyList()
                     }
@@ -179,6 +174,7 @@ class ClickhouseAirbyteClientTest {
                         every { inputSchema } returns LinkedHashMap.newLinkedHashMap(0)
                         every { inputToFinalColumnNames } returns emptyMap()
                     }
+                every { importType } returns Append
                 every { getPrimaryKey() } returns emptyList()
                 every { getCursor() } returns emptyList()
             }
@@ -189,12 +185,6 @@ class ClickhouseAirbyteClientTest {
                         every { name } returns "my_table"
                         every { namespace } returns "my_namespace"
                     }
-                every { schema } returns
-                    mockk(relaxed = true) {
-                        every { isObject } returns true
-                        every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
-                    }
-                every { importType } returns Append
                 every { tableSchema } returns tableSchema1
             }
         clickhouseAirbyteClient.applyChangeset(
@@ -272,12 +262,6 @@ class ClickhouseAirbyteClientTest {
                         every { name } returns "my_table"
                         every { namespace } returns "my_namespace"
                     }
-                every { schema } returns
-                    mockk(relaxed = true) {
-                        every { isObject } returns true
-                        every { asColumns() } returns columns
-                    }
-                every { importType } returns Append
                 every { tableSchema } returns
                     mockk(relaxed = true) {
                         every { columnSchema } returns
@@ -288,6 +272,7 @@ class ClickhouseAirbyteClientTest {
                                 every { finalSchema } returns
                                     mapOf("field_1" to ColumnType("String", true))
                             }
+                        every { importType } returns Append
                         every { getPrimaryKey() } returns emptyList()
                         every { getCursor() } returns emptyList()
                     }
