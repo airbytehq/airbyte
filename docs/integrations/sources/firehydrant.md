@@ -8,6 +8,7 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 | `api_token` | `string` | API Token. Bot token to use for authenticating with the FireHydrant API. You can find or create a bot token by logging into your organization and visiting the Bot users page at https://app.firehydrant.io/organizations/bots. |  |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | environments | id | DefaultPaginator | ✅ |  ❌  |
