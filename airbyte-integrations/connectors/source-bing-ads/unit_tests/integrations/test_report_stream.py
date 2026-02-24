@@ -12,6 +12,8 @@ from airbyte_cdk.models import SyncMode
 
 
 SECOND_READ_FREEZE_TIME = "2024-05-08"
+# day_delta(1) adds 1 day to the frozen time for end_datetime
+SECOND_READ_EXPECTED_END_TIME = "2024-05-09"
 
 
 class TestReportStream(BaseTest):
@@ -207,9 +209,9 @@ class TestSuiteReportStream(TestReportStream):
         last_successful_sync_cursor_value = provided_state[0].stream.stream_state.state[self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
         if "hourly" in self.stream_name or (hasattr(self, "custom_report_aggregation") and self.custom_report_aggregation == "Hourly"):
-            assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
+            assert job_end_time == f"{SECOND_READ_EXPECTED_END_TIME}T00:00:00+00:00"
         else:
-            assert job_end_time == SECOND_READ_FREEZE_TIME
+            assert job_end_time == SECOND_READ_EXPECTED_END_TIME
 
     @freeze_time(SECOND_READ_FREEZE_TIME)
     def test_incremental_read_with_legacy_state_returns_records_after_migration_with_records_further_state_cursor(self):
@@ -276,9 +278,9 @@ class TestSuiteReportStream(TestReportStream):
         last_successful_sync_cursor_value = vars(provided_state[0].stream.stream_state)[self.account_id][self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
         if "hourly" in self.stream_name or (hasattr(self, "custom_report_aggregation") and self.custom_report_aggregation == "Hourly"):
-            assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
+            assert job_end_time == f"{SECOND_READ_EXPECTED_END_TIME}T00:00:00+00:00"
         else:
-            assert job_end_time == SECOND_READ_FREEZE_TIME
+            assert job_end_time == SECOND_READ_EXPECTED_END_TIME
 
     @freeze_time("2024-05-06")
     def test_no_config_start_date(self):
