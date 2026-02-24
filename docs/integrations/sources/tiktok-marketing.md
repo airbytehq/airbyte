@@ -146,6 +146,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.1 | 2026-02-24 | [73633](https://github.com/airbytehq/airbyte/pull/73633) | fix(source-tiktok-marketing): Fix UTC timezone mismatch causing data loss for ahead-of-UTC accounts (AI-Triage PR) |
 | 5.0.0 | 2026-02-17 | [73357](https://github.com/airbytehq/airbyte/pull/73357) | Fix `currency` field type from `boolean` to `string` in pixels events schema |
 | 4.8.14 | 2026-02-16 | [73314](https://github.com/airbytehq/airbyte/pull/73314) | Fix pixel_instant_page_events stream failing on unsupported objective/optimization combinations (error 40002) by ignoring invalid parameter combos |
 | 4.8.13 | 2026-01-20 | [64958](https://github.com/airbytehq/airbyte/pull/64958) | Update dependencies |
