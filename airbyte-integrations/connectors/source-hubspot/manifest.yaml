@@ -1520,6 +1520,7 @@ definitions:
         - companies
         - contacts
         - deals
+        - leads
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
@@ -1538,6 +1539,7 @@ definitions:
         - companies
         - contacts
         - deals
+        - leads
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, sales-email-read
@@ -1556,6 +1558,7 @@ definitions:
         - companies
         - contacts
         - deals
+        - leads
         - tickets
       required_scopes: crm.objects.contacts.read
       cursor_filter_property_field: hs_lastmodifieddate
@@ -1574,6 +1577,7 @@ definitions:
         - companies
         - contacts
         - deals
+        - leads
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
@@ -1592,6 +1596,7 @@ definitions:
         - companies
         - contacts
         - deals
+        - leads
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
