@@ -50,6 +50,7 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.46 | 2026-02-24 | [73753](https://github.com/airbytehq/airbyte/pull/73753) | Update dependencies |
 | 0.3.45 | 2026-02-03 | [72598](https://github.com/airbytehq/airbyte/pull/72598) | Update dependencies |
 | 0.3.44 | 2026-01-20 | [71976](https://github.com/airbytehq/airbyte/pull/71976) | Update dependencies |
 | 0.3.43 | 2026-01-14 | [71409](https://github.com/airbytehq/airbyte/pull/71409) | Update dependencies |
