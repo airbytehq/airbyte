@@ -1,8 +1,6 @@
 {
-  "credentials": {
-    "auth_type": "oauth2_access_token",
-    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  },
   "start_date": "2021-01-01T00:00:00Z",
-  "tenant_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "tenant_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
