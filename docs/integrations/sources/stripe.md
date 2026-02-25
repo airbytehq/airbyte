@@ -105,7 +105,7 @@ The Stripe source connector supports the following streams:
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
-- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -196,7 +196,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `External Account Bank Accounts`
 - `External Account Cards`
 - `Invoice Items`
-- `Invoice Line Items`
+- `Invoice Line Items` (cursor field is `invoice_updated`)
 - `Invoices`
 - `Payment Intents`
 - `Payouts`
@@ -225,8 +225,9 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 - `Customers`
 - `External Account Bank Accounts`
 - `External Account Cards`
-- `Invoices`
 - `Invoice Items`
+- `Invoice Line Items`
+- `Invoices`
 - `Persons`
 - `Plans`
 - `Prices`

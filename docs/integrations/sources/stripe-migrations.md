@@ -9,6 +9,7 @@ Version 6.0.0 fixes the `invoice_line_items` incremental stream to correctly emi
 - The `invoice_line_items` stream now correctly emits individual line item records during incremental syncs.
 - Each line item record includes parent invoice metadata: `invoice_id`, `invoice_created`, and `invoice_updated`.
 - The record shape changes from invoice-shaped to line-item-shaped for incremental syncs.
+- A new optional `is_deleted` boolean field is added to mark line items from deleted invoices.
 
 ### Migration Steps
 
@@ -22,7 +23,11 @@ Version 6.0.0 fixes the `invoice_line_items` incremental stream to correctly emi
 Only the `invoice_line_items` stream is affected. No other streams require a reset.
 :::
 
-###  Upgrading to 5.6.0
+:::warning
+The Stripe events API includes only the first ~10 line items per invoice in event payloads. Invoices with more than 10 line items may have incomplete data during incremental syncs. The full-refresh sync path correctly paginates through all line items. If you have invoices with many line items, consider using full-refresh sync mode for this stream.
+:::
+
+## Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
 
