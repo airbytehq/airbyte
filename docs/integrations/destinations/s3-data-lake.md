@@ -375,6 +375,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.45  | 2026-02-25 | | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |
 | 0.3.44      | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                               |
 | 0.3.43      | 2026-01-29 | [72482](https://github.com/airbytehq/airbyte/pull/72482)   | Release on dataflow.                                                                                                            |
 | 0.3.43-rc.1 | 2026-01-28 | [72443](https://github.com/airbytehq/airbyte/pull/72443)   | Update to dataflow.                                                                                                             |
