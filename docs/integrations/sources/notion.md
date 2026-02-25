@@ -90,13 +90,13 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 
 The Notion source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Stream    | Full Refresh (Overwrite/Append) | Incremental (Append/Append + Deduped) |
-|-----------|:-------------------------------:|:-------------------------------------:|
-| Blocks    |                ✓                |                   ✓                   |
-| Comments  |                ✓                |                   ✓                   |
-| Databases |                ✓                |                   ✓                   |
-| Pages     |                ✓                |                   ✓                   |
-| Users     |                ✓                |                                       |
+| Stream       | Full Refresh (Overwrite/Append) | Incremental (Append/Append + Deduped) |
+|--------------|:-------------------------------:|:-------------------------------------:|
+| Blocks       |                ✓                |                   ✓                   |
+| Comments     |                ✓                |                   ✓                   |
+| Data Sources |                ✓                |                   ✓                   |
+| Pages        |                ✓                |                   ✓                   |
+| Users        |                ✓                |                                       |
 
 ## Supported Streams
 
@@ -104,7 +104,7 @@ The Notion source connector supports the following streams:
 
 - [Blocks](https://developers.notion.com/reference/retrieve-a-block)
 - [Comments](https://developers.notion.com/reference/retrieve-a-comment)
-- [Databases](https://developers.notion.com/reference/retrieve-a-database)
+- [Data Sources](https://developers.notion.com/reference/data-source) (replaces the former `Databases` stream as of v4.0.0)
 - [Pages](https://developers.notion.com/reference/retrieve-a-page)
 - [Users](https://developers.notion.com/reference/get-users)
 
@@ -119,6 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.0 | 2026-02-24 | [74017](https://github.com/airbytehq/airbyte/pull/74017) | Migrate to Notion API version 2025-09-03: replace `databases` stream with `data_sources`, update page parent references, and add new schema fields |
 | 3.3.14 | 2026-02-24 | [73856](https://github.com/airbytehq/airbyte/pull/73856) | Update dependencies |
 | 3.3.13 | 2026-02-10 | [73032](https://github.com/airbytehq/airbyte/pull/73032) | Update dependencies |
 | 3.3.12 | 2026-02-06 | [72925](https://github.com/airbytehq/airbyte/pull/72925) | Add client-side incremental filtering to blocks stream RecordFilter |
