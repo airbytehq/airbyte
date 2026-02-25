@@ -9,7 +9,7 @@ Airbyte's certified Postgres connector offers the following features:
 - All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 - Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshooting issues with the Postgres connector.
+The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshoot issues with the Postgres connector.
 
 </HideInUI>
 
@@ -35,13 +35,13 @@ These steps create a dedicated read-only user for replicating data. Alternativel
 
 The following commands will create a new user:
 
-```roomsql
+```sql
 CREATE USER <user_name> PASSWORD 'your_password_here';
 ```
 
 Now, provide this user with read-only access to relevant schemas and tables. Re-run this command for each schema you expect to replicate data from:
 
-```roomsql
+```sql
 GRANT USAGE ON SCHEMA <schema_name> TO <user_name>;
 GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <user_name>;
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user_name>;
@@ -174,7 +174,7 @@ ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
 ```
-CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`
+CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;
 ```
 
 The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
@@ -209,7 +209,7 @@ If your goal is to maintain a snapshot of your table in the destination but the 
 
 ### Xmin
 
-Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which (available in all Postgres databases) is used to track inserts and updates to your source data.
+Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column, which is available in all Postgres databases, is used to track inserts and updates to your source data.
 
 This is a good solution if:
 
@@ -255,7 +255,7 @@ When using an SSH tunnel, you are configuring Airbyte to connect to an intermedi
 To connect to a Postgres instance via an SSH tunnel:
 
 1. While [setting up](#step-2-create-a-new-postgres-source-in-airbyte-ui) the Postgres source connector, from the SSH tunnel dropdown, select:
-   - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
+   - SSH Key Authentication to use a private key as your secret for establishing the SSH tunnel
    - Password Authentication to use a password as your secret for establishing the SSH Tunnel
 2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
 3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
