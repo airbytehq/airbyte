@@ -106,6 +106,9 @@ The Stripe source connector supports the following streams:
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
+  :::note
+  Incremental sync for this stream uses the Stripe Events API, which does not support expanding nested line items. Invoices with more than 10 line items will only have the first 10 line items synced incrementally. Full Refresh sync is recommended for complete data.
+  :::
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -157,6 +160,51 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
 Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
+
+#### Cursor age validation and automatic full refresh
+
+To prevent data loss caused by the 30-day Events API retention limit, the connector validates the age of each stream's cursor before choosing between incremental and full refresh sync. If a stream's cursor is older than 30 days, the connector automatically falls back to a full refresh for that stream instead of using the Events API, which would only return the last 30 days of data.
+
+This means that streams with no new records in the source within the last 30 days will perform a full refresh on subsequent syncs. This is expected behavior and ensures that all records are read from the source, given the Events API's 30-day data limitation. The impact is low, as it only affects streams where no records have been created or updated in the last 30 days.
+
+The following streams are affected by cursor age validation:
+
+- `Accounts`
+- `Application Fees`
+- `Application Fee Refunds`
+- `Authorizations`
+- `Bank Accounts`
+- `Cardholders`
+- `Cards`
+- `Charges`
+- `Checkout Sessions`
+- `Coupons`
+- `Credit Notes`
+- `Customers`
+- `Disputes`
+- `Early Fraud Warnings`
+- `External Account Bank Accounts`
+- `External Account Cards`
+- `Invoice Items`
+- `Invoice Line Items`
+- `Invoices`
+- `Payment Intents`
+- `Payment Methods`
+- `Payouts`
+- `Persons`
+- `Plans`
+- `Prices`
+- `Products`
+- `Promotion Codes`
+- `Refunds`
+- `Reviews`
+- `Setup Intents`
+- `Subscription Items`
+- `Subscription Schedule`
+- `Subscriptions`
+- `Top Ups`
+- `Transactions`
+- `Transfers`
 
 ### Troubleshooting
 
@@ -248,6 +296,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 6.0.0 | 2026-02-24 | [73697](https://github.com/airbytehq/airbyte/pull/73697) | Fix `invoice_line_items` incremental stream to emit individual line items instead of invoice objects (breaking change) |
+| 5.15.21-rc.1 | 2026-02-25 | [73646](https://github.com/airbytehq/airbyte/pull/73646) | Add cursor age validation for StateDelegatingStream streams to prevent data loss when initial sync fails mid-way |
 | 5.15.20 | 2026-02-24 | [73944](https://github.com/airbytehq/airbyte/pull/73944) | Update dependencies |
 | 5.15.19 | 2026-02-17 | [73466](https://github.com/airbytehq/airbyte/pull/73466) | Update dependencies |
 | 5.15.18 | 2026-02-12 | [73318](https://github.com/airbytehq/airbyte/pull/73318) | Promoting release candidate 5.15.18-rc.1 to a main version. |
