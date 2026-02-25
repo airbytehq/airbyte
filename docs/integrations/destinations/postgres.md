@@ -33,10 +33,9 @@ You'll need the following information to configure the Postgres destination:
 - **Port** - The port number the server is listening on. Defaults to the PostgreSQL™ standard port
   number (5432).
 - **Username**
-- **Password**
-- **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in
-  the search-path. These schemas will be used to resolve unqualified object names used in statements
-  executed over this connection.
+- **Password** (optional)
+- **Default Schema Name** - The default schema where tables are written. If not specified, the
+  "public" schema is used.
 - **Database** - The database name. The default is to connect to a database with the same name as
   the user name.
 - **JDBC URL Params** (optional)
@@ -76,7 +75,7 @@ synced data from Airbyte.
 ## Naming Conventions
 
 From
-[Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
+[Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
 
 - SQL identifiers and key words must begin with a letter \(a-z, but also letters with diacritical
   marks and non-Latin letters\) or an underscore \(\_\).
@@ -118,14 +117,7 @@ When using the legacy "Raw tables only" mode, raw tables and schemas are created
 4. Enter a name for your destination.
 5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
    Postgres database.
-6. List the **Default Schemas**.
-
-   :::note
-
-   The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
-   used at one time. No schemas set explicitly - will sync all of existing.
-
-   :::
+6. Enter the **Default Schema**. The default value is `public`.
 
 7. For **User** and **Password**, enter the username and password you created in
    [Step 1](#step-1-set-up-postgres).
@@ -176,7 +168,14 @@ Mode**; otherwise, the connection will fail.
 
 :::
 
-12. Click **Set up destination**.
+12. For **CDC Deletion Mode**, select how CDC deletions are handled:
+
+    - **Hard delete** (default) to propagate source deletions to the destination by deleting the
+      corresponding rows.
+    - **Soft delete** to keep deleted records in the destination as tombstone rows instead of
+      removing them.
+
+13. Click **Set up destination**.
 
 ## Supported sync modes
 
@@ -293,8 +292,8 @@ For vendor-specific limitations and known issues, see the [Postgres Troubleshoot
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.11  | 2026-02-25 | | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |
-| 3.0.10  | 2026-02-04 | [72858](https://github.com/airbytehq/airbyte/pull/72858)   | Upgrade CDK to 0.2.8                                                                                                                                                                   |
+| 3.0.11  | 2026-02-25 | [74040](https://github.com/airbytehq/airbyte/pull/74040) | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |
+| 3.0.10  | 2026-02-09 | [72858](https://github.com/airbytehq/airbyte/pull/72858)   | Upgrade CDK to 0.2.8                                                                                                                                                                   |
 | 3.0.9   | 2026-01-28 | [72292](https://github.com/airbytehq/airbyte/pull/72292)   | Upgrade CDK to 0.2.0                                                                                                                                                                   |
 | 3.0.8 | 2026-01-28 | [72412](https://github.com/airbytehq/airbyte/pull/72412) | Promoting release candidate 3.0.8-rc1 to a main version. |
 | 3.0.8-rc1 | 2026-01-22 | [71183](https://github.com/airbytehq/airbyte/pull/71183) | Refactor schema utilities to follow CDK pattern.                                                                                                                                       |
