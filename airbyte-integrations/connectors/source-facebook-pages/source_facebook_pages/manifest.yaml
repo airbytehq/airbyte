@@ -300,7 +300,7 @@ definitions:
     $parameters:
       name: "post"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/posts"
+      path: "/{{ config['page_id'] }}/feed"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -315,7 +315,7 @@ definitions:
     $parameters:
       name: "post_insights"
       primary_key: "id"
-      path: "/{{ config['page_id'] }}/posts"
+      path: "/{{ config['page_id'] }}/feed"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
