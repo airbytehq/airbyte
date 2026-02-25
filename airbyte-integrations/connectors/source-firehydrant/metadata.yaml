@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b58c3536-7900-439c-80a8-fc2b94460781
-  dockerImageTag: 0.0.45
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-firehydrant
   githubIssueLabel: source-firehydrant
   icon: icon.svg
@@ -27,6 +27,15 @@ data:
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/firehydrant
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "The `enviroments` stream has been renamed to `environments` to fix a typo. Users must refresh their schema and reset the affected stream after upgrading."
+        upgradeDeadline: "2026-03-26"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "environments"
   tags:
     - language:manifest-only
     - cdk:low-code
