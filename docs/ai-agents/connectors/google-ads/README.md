@@ -15,6 +15,11 @@ The Google-Ads connector is optimized to handle prompts like these.
 - Show me campaign labels
 - List all ad group labels
 - What labels are applied to my ads?
+- Pause campaign 'Summer Sale 2025'
+- Enable the ad group 'Brand Keywords'
+- Create a label called 'High Priority'
+- Apply the 'Q4 Campaigns' label to my search campaign
+- Update the name of campaign 123456 to 'Winter Promo'
 - Which campaigns have the highest cost this month?
 - Show me all paused campaigns
 - Find ad groups with the most impressions
@@ -26,10 +31,9 @@ The Google-Ads connector is optimized to handle prompts like these.
 The Google-Ads connector isn't currently able to handle prompts like these.
 
 - Create a new campaign
-- Update ad group bids
 - Delete an ad
-- Pause a campaign
-- Change budget settings
+- Delete a campaign
+- Delete a label
 
 ## Installation
 
@@ -99,12 +103,13 @@ This connector supports the following entities and actions. For more details, se
 |--------|---------|
 | Accessible Customers | [List](./REFERENCE.md#accessible-customers-list) |
 | Accounts | [List](./REFERENCE.md#accounts-list), [Search](./REFERENCE.md#accounts-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Search](./REFERENCE.md#campaigns-search) |
-| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Search](./REFERENCE.md#ad-groups-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Update](./REFERENCE.md#campaigns-update), [Search](./REFERENCE.md#campaigns-search) |
+| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Update](./REFERENCE.md#ad-groups-update), [Search](./REFERENCE.md#ad-groups-search) |
 | Ad Group Ads | [List](./REFERENCE.md#ad-group-ads-list), [Search](./REFERENCE.md#ad-group-ads-search) |
-| Campaign Labels | [List](./REFERENCE.md#campaign-labels-list), [Search](./REFERENCE.md#campaign-labels-search) |
-| Ad Group Labels | [List](./REFERENCE.md#ad-group-labels-list), [Search](./REFERENCE.md#ad-group-labels-search) |
+| Campaign Labels | [List](./REFERENCE.md#campaign-labels-list), [Create](./REFERENCE.md#campaign-labels-create), [Search](./REFERENCE.md#campaign-labels-search) |
+| Ad Group Labels | [List](./REFERENCE.md#ad-group-labels-list), [Create](./REFERENCE.md#ad-group-labels-create), [Search](./REFERENCE.md#ad-group-labels-search) |
 | Ad Group Ad Labels | [List](./REFERENCE.md#ad-group-ad-labels-list), [Search](./REFERENCE.md#ad-group-ad-labels-search) |
+| Labels | [Create](./REFERENCE.md#labels-create) |
 
 
 ### Authentication
@@ -117,7 +122,7 @@ See the official [Google-Ads API reference](https://developers.google.com/google
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 8c0db5b110465ea5214514c3f5a97d1f4de89978
+- **Package version:** 0.1.1
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** a55e059529555b0bc6312df0b5a0ac58229c3ee9
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-ads/CHANGELOG.md)

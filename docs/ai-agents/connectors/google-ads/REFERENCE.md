@@ -10,12 +10,13 @@ The Google-Ads connector supports the following entities and actions.
 |--------|---------|
 | Accessible Customers | [List](#accessible-customers-list) |
 | Accounts | [List](#accounts-list), [Search](#accounts-search) |
-| Campaigns | [List](#campaigns-list), [Search](#campaigns-search) |
-| Ad Groups | [List](#ad-groups-list), [Search](#ad-groups-search) |
+| Campaigns | [List](#campaigns-list), [Update](#campaigns-update), [Search](#campaigns-search) |
+| Ad Groups | [List](#ad-groups-list), [Update](#ad-groups-update), [Search](#ad-groups-search) |
 | Ad Group Ads | [List](#ad-group-ads-list), [Search](#ad-group-ads-search) |
-| Campaign Labels | [List](#campaign-labels-list), [Search](#campaign-labels-search) |
-| Ad Group Labels | [List](#ad-group-labels-list), [Search](#ad-group-labels-search) |
+| Campaign Labels | [List](#campaign-labels-list), [Create](#campaign-labels-create), [Search](#campaign-labels-search) |
+| Ad Group Labels | [List](#ad-group-labels-list), [Create](#ad-group-labels-create), [Search](#ad-group-labels-search) |
 | Ad Group Ad Labels | [List](#ad-group-ad-labels-list), [Search](#ad-group-ad-labels-search) |
+| Labels | [Create](#labels-create) |
 
 ## Accessible Customers
 
@@ -272,6 +273,61 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Campaigns Update
+
+Updates campaign properties such as status (enable/pause), name, or other mutable fields using the Google Ads CampaignService mutate endpoint.
+
+#### Python SDK
+
+```python
+await google_ads.campaigns.update(
+    operations=[],
+    customer_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns",
+    "action": "update",
+    "params": {
+        "operations": [],
+        "customer_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `operations` | `array<object>` | Yes | List of campaign operations to perform |
+| `operations.updateMask` | `string` | No | Comma-separated list of field paths to update (e.g., name,status) |
+| `operations.update` | `object` | No | Campaign fields to update |
+| `operations.update.resourceName` | `string` | Yes | Resource name of the campaign to update (e.g., customers/1234567890/campaigns/111222333) |
+| `operations.update.name` | `string` | No | New campaign name |
+| `operations.update.status` | `"ENABLED" \| "PAUSED"` | No | Campaign status (ENABLED or PAUSED) |
+| `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `results` | `array<object>` |  |
+
+
+</details>
+
 ### Campaigns Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
@@ -446,6 +502,62 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next_page_token` | `string` |  |
+
+</details>
+
+### Ad Groups Update
+
+Updates ad group properties such as status (enable/pause), name, or bid amounts using the Google Ads AdGroupService mutate endpoint.
+
+#### Python SDK
+
+```python
+await google_ads.ad_groups.update(
+    operations=[],
+    customer_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_groups",
+    "action": "update",
+    "params": {
+        "operations": [],
+        "customer_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `operations` | `array<object>` | Yes | List of ad group operations to perform |
+| `operations.updateMask` | `string` | No | Comma-separated list of field paths to update (e.g., name,status,cpcBidMicros) |
+| `operations.update` | `object` | No | Ad group fields to update |
+| `operations.update.resourceName` | `string` | Yes | Resource name of the ad group to update (e.g., customers/1234567890/adGroups/111222333) |
+| `operations.update.name` | `string` | No | New ad group name |
+| `operations.update.status` | `"ENABLED" \| "PAUSED"` | No | Ad group status (ENABLED or PAUSED) |
+| `operations.update.cpcBidMicros` | `string` | No | CPC bid amount in micros (1,000,000 micros = 1 currency unit) |
+| `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `results` | `array<object>` |  |
+
 
 </details>
 
@@ -761,6 +873,59 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Campaign Labels Create
+
+Creates a campaign-label association, applying an existing label to a campaign for organization and filtering.
+
+#### Python SDK
+
+```python
+await google_ads.campaign_labels.create(
+    operations=[],
+    customer_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaign_labels",
+    "action": "create",
+    "params": {
+        "operations": [],
+        "customer_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `operations` | `array<object>` | Yes | List of campaign label operations to perform |
+| `operations.create` | `object` | No | Campaign label association to create |
+| `operations.create.campaign` | `string` | Yes | Resource name of the campaign (e.g., customers/1234567890/campaigns/111222333) |
+| `operations.create.label` | `string` | Yes | Resource name of the label (e.g., customers/1234567890/labels/444555666) |
+| `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `results` | `array<object>` |  |
+
+
+</details>
+
 ### Campaign Labels Search
 
 Search and filter campaign labels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
@@ -888,6 +1053,59 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next_page_token` | `string` |  |
+
+</details>
+
+### Ad Group Labels Create
+
+Creates an ad group-label association, applying an existing label to an ad group for organization and filtering.
+
+#### Python SDK
+
+```python
+await google_ads.ad_group_labels.create(
+    operations=[],
+    customer_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_group_labels",
+    "action": "create",
+    "params": {
+        "operations": [],
+        "customer_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `operations` | `array<object>` | Yes | List of ad group label operations to perform |
+| `operations.create` | `object` | No | Ad group label association to create |
+| `operations.create.adGroup` | `string` | Yes | Resource name of the ad group (e.g., customers/1234567890/adGroups/111222333) |
+| `operations.create.label` | `string` | Yes | Resource name of the label (e.g., customers/1234567890/labels/444555666) |
+| `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `results` | `array<object>` |  |
+
 
 </details>
 
@@ -1088,6 +1306,64 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].label.id` | `integer` | Label ID |
 | `data[].label.name` | `string` | Label name |
 | `data[].label.resource_name` | `string` | Resource name of the label |
+
+</details>
+
+## Labels
+
+### Labels Create
+
+Creates a new label that can be applied to campaigns, ad groups, or ads for organization and reporting purposes.
+
+#### Python SDK
+
+```python
+await google_ads.labels.create(
+    operations=[],
+    customer_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "labels",
+    "action": "create",
+    "params": {
+        "operations": [],
+        "customer_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `operations` | `array<object>` | Yes | List of label operations to perform |
+| `operations.create` | `object` | No | Label to create |
+| `operations.create.name` | `string` | Yes | Name for the new label |
+| `operations.create.description` | `string` | No | Description for the label |
+| `operations.create.textLabel` | `object` | No | Text label styling |
+| `operations.create.textLabel.backgroundColor` | `string` | No | Background color in hex format (e.g., #FF0000) |
+| `operations.create.textLabel.description` | `string` | No | Description of the text label |
+| `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `results` | `array<object>` |  |
+
 
 </details>
 
