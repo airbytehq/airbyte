@@ -18,6 +18,54 @@ import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDi
 import { Grid } from "../../components/Grid/Grid";
 import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 
+// Wrap API reference components with BrowserOnly to avoid SSR issues
+// (they use @headlessui/react which causes "Passing props on Fragment" during SSG)
+import BrowserOnly from "@docusaurus/BrowserOnly";
+
+function SourceRequestSchema(props) {
+  return (
+    <BrowserOnly fallback={<div>Loading...</div>}>
+      {() => {
+        const { SourceRequestSchema: Component } = require("@site/src/components/SourceRequestSchema");
+        return <Component {...props} />;
+      }}
+    </BrowserOnly>
+  );
+}
+
+function SourceResponseSchema(props) {
+  return (
+    <BrowserOnly fallback={<div>Loading...</div>}>
+      {() => {
+        const { SourceResponseSchema: Component } = require("@site/src/components/SourceResponseSchema");
+        return <Component {...props} />;
+      }}
+    </BrowserOnly>
+  );
+}
+
+function DestinationRequestSchema(props) {
+  return (
+    <BrowserOnly fallback={<div>Loading...</div>}>
+      {() => {
+        const { DestinationRequestSchema: Component } = require("@site/src/components/DestinationRequestSchema");
+        return <Component {...props} />;
+      }}
+    </BrowserOnly>
+  );
+}
+
+function DestinationResponseSchema(props) {
+  return (
+    <BrowserOnly fallback={<div>Loading...</div>}>
+      {() => {
+        const { DestinationResponseSchema: Component } = require("@site/src/components/DestinationResponseSchema");
+        return <Component {...props} />;
+      }}
+    </BrowserOnly>
+  );
+}
+
 export default {
   // Re-use the default mapping
   ...MDXComponents,
@@ -29,6 +77,10 @@ export default {
   HeaderDecoration,
   Navattic,
   SpecSchema,
+  SourceRequestSchema,
+  SourceResponseSchema,
+  DestinationRequestSchema,
+  DestinationResponseSchema,
   PyAirbyteExample,
   ProductInformation,
   Details,

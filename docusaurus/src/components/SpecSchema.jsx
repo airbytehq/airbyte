@@ -136,19 +136,11 @@ function JSONSchemaProperty({ propertyKey, schema, required, depth = 0 }) {
       {required && <div className={styles.tag}>required</div>}
     </>
   );
-  const typeAndPropertyName = (
-    <>
-      <div className={styles.headerItem}>{getType(schema)}</div>
-      <div className={styles.headerItem}>
-        {propertyKey && <div>{propertyKey}</div>}
-      </div>
-    </>
-  );
   if (showCollapsible(schema)) {
     return (
       <Disclosure initiallyOpen={false}>
         {({ open }) => (
-          <>
+          <div>
             <Disclosure.Button
               className={className(
                 styles.headerItem,
@@ -160,7 +152,10 @@ function JSONSchemaProperty({ propertyKey, schema, required, depth = 0 }) {
               <div className={className({ [styles.open]: open })}>›</div>
               {fieldName}
             </Disclosure.Button>
-            {typeAndPropertyName}
+            <div className={styles.headerItem}>{getType(schema)}</div>
+            <div className={styles.headerItem}>
+              {propertyKey && <div>{propertyKey}</div>}
+            </div>
             <Disclosure.Panel className={styles.contents}>
               {showDescription(schema) && (
                 <Description
@@ -178,21 +173,24 @@ function JSONSchemaProperty({ propertyKey, schema, required, depth = 0 }) {
                 <JSONSchemaObject schema={schema.items} depth={newDepth} />
               )}
             </Disclosure.Panel>
-          </>
+          </div>
         )}
       </Disclosure>
     );
   } else {
     return (
-      <>
+      <div>
         <div
           className={className(styles.headerItem, styles.propertyName)}
           style={getIndentStyle(newDepth)}
         >
           {fieldName}
         </div>
-        {typeAndPropertyName}
-      </>
+        <div className={styles.headerItem}>{getType(schema)}</div>
+        <div className={styles.headerItem}>
+          {propertyKey && <div>{propertyKey}</div>}
+        </div>
+      </div>
     );
   }
 }
