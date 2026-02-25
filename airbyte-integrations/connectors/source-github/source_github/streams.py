@@ -811,7 +811,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
         "EYES": "eyes",
     }
 
-    def _extract_assets(self, record: Mapping) -> list:
+    def _get_assets_from_release(self, record: Mapping) -> list:
         assets_data = record.get("assets", {})
         if assets_data.get("pageInfo", {}).get("hasNextPage"):
             self.logger.warning(
@@ -826,7 +826,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
             asset["uploader_id"] = uploader.get("id") if uploader else None
         return assets
 
-    def _extract_reactions(self, record: Mapping) -> Optional[Mapping]:
+    def _get_reactions_from_release(self, record: Mapping) -> Optional[Mapping]:
         reaction_groups = record.pop("reaction_groups", None)
         if reaction_groups is None:
             return None
@@ -860,8 +860,8 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
                 record["repository"] = self._get_repository_name(repository)
                 if record.get("author"):
                     record["author"]["type"] = record["author"].pop("__typename", "User")
-                record["assets"] = self._extract_assets(record)
-                record["reactions"] = self._extract_reactions(record)
+                record["assets"] = self._get_assets_from_release(record)
+                record["reactions"] = self._get_reactions_from_release(record)
                 mentions_connection = record.pop("mentions_connection", None)
                 if mentions_connection is not None:
                     record["mentions_count"] = mentions_connection.get("totalCount", 0)
