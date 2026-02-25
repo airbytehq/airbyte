@@ -972,6 +972,11 @@ def test_streams_read_full_refresh(requests_mock):
     assert len(records) == 1
     assert records[0]["id"] == 2
     assert records[0]["repository"] == "organization/repository"
+    assert records[0]["url"] == "https://api.github.com/repos/organization/repository/releases/2"
+    assert records[0]["assets_url"] == "https://api.github.com/repos/organization/repository/releases/2/assets"
+    assert records[0]["tarball_url"] == "https://api.github.com/repos/organization/repository/tarball/v2.0"
+    assert records[0]["zipball_url"] == "https://api.github.com/repos/organization/repository/zipball/v2.0"
+    assert records[0]["reactions"] == {"plus_one": 1, "minus_one": 0, "laugh": 0, "hooray": 0, "confused": 0, "heart": 0, "rocket": 0, "eyes": 0, "total_count": 1}
 
     for cls, url in [
         (Tags, "https://api.github.com/repos/organization/repository/tags"),

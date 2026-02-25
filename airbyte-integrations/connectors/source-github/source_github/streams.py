@@ -842,6 +842,16 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
         reactions["total_count"] = total
         return reactions
 
+    @staticmethod
+    def _build_rest_urls(repository: str, release_id: int, tag_name: str) -> Mapping[str, str]:
+        return {
+            "url": f"https://api.github.com/repos/{repository}/releases/{release_id}",
+            "assets_url": f"https://api.github.com/repos/{repository}/releases/{release_id}/assets",
+            "upload_url": f"https://uploads.github.com/repos/{repository}/releases/{release_id}/assets{{?name,label}}",
+            "tarball_url": f"https://api.github.com/repos/{repository}/tarball/{tag_name}",
+            "zipball_url": f"https://api.github.com/repos/{repository}/zipball/{tag_name}",
+        }
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         repository = response.json().get("data", {}).get("repository")
         if repository:
@@ -857,6 +867,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
                     record["mentions_count"] = mentions_connection.get("totalCount", 0)
                 tag_commit = record.pop("tagCommit", None)
                 record["target_commitish"] = tag_commit.get("target_commitish") if tag_commit else None
+                record.update(self._build_rest_urls(record["repository"], record.get("id"), record.get("tag_name")))
                 yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
