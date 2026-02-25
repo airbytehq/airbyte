@@ -3,7 +3,7 @@
 #
 
 import re
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from datetime import date, datetime, time, timedelta, timezone
 from typing import Any, Dict, List, Mapping, Union
 
@@ -76,7 +76,7 @@ class CustomExtractor(RecordExtractor):
     field_path: List[Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         for path_index in range(len(self.field_path)):
@@ -84,7 +84,8 @@ class CustomExtractor(RecordExtractor):
                 self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-        response_body = self.decoder.decode(response)
+        decoded = self.decoder.decode(response)
+        response_body = decoded if isinstance(decoded, Mapping) else next(decoded)
         if len(self.field_path) == 0:
             extracted = response_body
         else:
