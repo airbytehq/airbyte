@@ -79,7 +79,7 @@ The Stripe source connector supports the following [sync modes](https://docs.air
 
 The Stripe source connector supports the following streams:
 
-- [Accounts](https://stripe.com/docs/api/accounts/list)
+- [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
 - [Application Fees](https://stripe.com/docs/api/application_fees) \(Incremental\)
 - [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list) \(Incremental\)
 - [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
@@ -105,7 +105,7 @@ The Stripe source connector supports the following streams:
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
-- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -124,7 +124,7 @@ The Stripe source connector supports the following streams:
 - [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
 - [Setup Intents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Shipping Rates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
-- [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+- [Subscription Items](https://stripe.com/docs/api/subscription_items/list) \(Incremental\)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
@@ -244,6 +244,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Invoice Line Items`
 - `Invoices`
 - `Payment Intents`
+- `Payment Methods`
 - `Payouts`
 - `Payout Balance Transactions`
 - `Promotion Codes`
@@ -253,6 +254,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Products`
 - `Refunds`
 - `Reviews`
+- `Accounts`
 - `Setup Intents`
 - `Subscription Schedule`
 - `Subscription Items`
