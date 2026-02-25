@@ -85,6 +85,7 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
     fun withSchemaHistory(): DebeziumPropertiesBuilder = apply {
         with("schema.history.internal", FileSchemaHistory::class.java.canonicalName)
         with("schema.history.internal.store.only.captured.databases.ddl", "true")
+        with("schema.history.internal.store.only.captured.tables.ddl", "true")
     }
 
     val expectsSchemaHistoryFile: Boolean

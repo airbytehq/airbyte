@@ -123,7 +123,8 @@ class DebeziumPropertiesBuilderTest {
         Assertions.assertEquals(
             mapOf(
                 "schema.history.internal" to "io.debezium.storage.file.history.FileSchemaHistory",
-                "schema.history.internal.store.only.captured.databases.ddl" to "true"
+                "schema.history.internal.store.only.captured.databases.ddl" to "true",
+                "schema.history.internal.store.only.captured.tables.ddl" to "true"
             ),
             b.buildMap()
         )
@@ -133,6 +134,7 @@ class DebeziumPropertiesBuilderTest {
             mapOf(
                 "schema.history.internal" to "io.debezium.storage.file.history.FileSchemaHistory",
                 "schema.history.internal.store.only.captured.databases.ddl" to "true",
+                "schema.history.internal.store.only.captured.tables.ddl" to "true",
                 "schema.history.internal.file.filename" to ".",
             ),
             b.buildMap()
