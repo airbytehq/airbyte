@@ -11,6 +11,7 @@ from test_report_stream import TestSuiteReportStream
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
 
+
 # Freeze time used for DayOfWeek and HourOfDay custom report tests
 CUSTOM_REPORT_FREEZE_TIME = "2024-05-06"
 # day_delta(1) adds 1 day to the frozen time for end_datetime
