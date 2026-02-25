@@ -22,7 +22,7 @@ from airbyte_cdk.models import (
 CONFIG = {"page_id": "1", "access_token": "token"}
 ACCESS_TOKEN_URL = "https://graph.facebook.com/1?fields=access_token&access_token=token"
 PAGE_URL = "https://graph.facebook.com/v24.0/1"
-POSTS_URL = "https://graph.facebook.com/v24.0/1/posts"
+FEED_URL = "https://graph.facebook.com/v24.0/1/feed"
 
 
 def _make_catalog(stream_name, selected_fields):
@@ -68,9 +68,9 @@ def _get_fields_from_request(request_history, target_url_path):
         pytest.param(
             "post",
             ["id", "message", "created_time"],
-            POSTS_URL,
+            FEED_URL,
             {"data": [{"id": "1_123", "message": "Hello", "created_time": "2024-01-01T00:00:00+0000"}], "paging": {}},
-            "/v24.0/1/posts",
+            "/v24.0/1/feed",
             id="post_stream_filters_to_3_fields",
         ),
         pytest.param(
