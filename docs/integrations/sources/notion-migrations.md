@@ -14,7 +14,7 @@ Version 4.0.0 migrates the connector from Notion API version `2022-06-28` to `20
 
 ### Migration Steps
 
-A full schema refresh and data reset are required for the **Data Sources** (formerly Databases) and **Pages** streams.
+A full schema refresh and data reset are required for the **Data Sources** (formerly Databases), **Pages**, and **Blocks** streams.
 
 1. Select **Connections** in the main nav bar.
    1. Select the connection(s) affected by the update.
