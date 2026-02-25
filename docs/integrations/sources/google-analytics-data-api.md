@@ -64,8 +64,12 @@ Before you can use the service account to access Google Analytics data, you need
    :::
 
 7. (Optional) In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
-8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
-9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
+8. (Optional) In the **End Date** field, enter a date in the format `YYYY-MM-DD`. Data generated after this date will not be included in the report. Not applied to custom Cohort reports. When left empty, the connector syncs data up to today's date, using the [property's reporting timezone](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/DateRange).
+9. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
+10. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
+11. (Optional) In the **Lookback window (Days)** field, you can specify how many days in the past the connector should refresh data in every run. Since attribution changes after the event date and Google Analytics has a data processing latency, this setting helps keep data consistent. For example, if you set it to 5 days, each sync fetches data starting from the last bookmark date minus 5 days. The default is 2 days.
+12. (Optional) Toggle the switch **Keep Empty Rows** if you want each row with all metrics equal to 0 to be returned.
+13. (Optional) Toggle the switch **Convert `conversions:*` Metrics to Float** to convert `conversions:*` event metrics from integers to floats. This is useful when the API returns float values for these fields and you want to prevent data rounding.
 
 :::caution
 
@@ -75,7 +79,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 :::
 
-10. Click **Set up source** and wait for the tests to complete.
+14. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -86,7 +90,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
-4. Select **Service Account Key Authenication** dropdown list and enter **Service Account JSON Key** from Step 1.
+4. Select **Service Account Key Authentication** dropdown list and enter **Service Account JSON Key** from Step 1.
 5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
    :::note
    If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
@@ -102,10 +106,12 @@ If the start date is not provided, the default value will be used, which is two 
 Many analyses and data investigations may require 24-48 hours to process information from your website or app. To ensure the accuracy of the data, we subtract two days from the starting date. For more details, please refer to [Google's documentation](https://support.google.com/analytics/answer/9333790?hl=en).
 :::
 
-7. (Optional) Toggle the switch **Keep Empty Rows** if you want each row with all metrics equal to 0 to be returned.
-8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
-9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
-10. (Optional) In the **Lookback window (Days)** field, you can specify how many days in the past we should refresh the data in every run. Since attribution changes after the event date, and Google Analytics has a data processing latency this is key to keep up with consistent information. If you set it at 5 days, in every sync it will fetch the last bookmark date minus 5 days..
+7. (Optional) In the **End Date** field, enter a date in the format `YYYY-MM-DD`. Data generated after this date will not be included in the report. Not applied to custom Cohort reports. When left empty, the connector syncs data up to today's date, using the [property's reporting timezone](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/DateRange).
+8. (Optional) Toggle the switch **Keep Empty Rows** if you want each row with all metrics equal to 0 to be returned.
+9. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
+10. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
+11. (Optional) In the **Lookback window (Days)** field, you can specify how many days in the past the connector should refresh data in every run. Since attribution changes after the event date and Google Analytics has a data processing latency, this setting helps keep data consistent. For example, if you set it to 5 days, each sync fetches data starting from the last bookmark date minus 5 days. The default is 2 days.
+12. (Optional) Toggle the switch **Convert `conversions:*` Metrics to Float** to convert `conversions:*` event metrics from integers to floats. This is useful when the API returns float values for these fields and you want to prevent data rounding.
 
 :::caution
 
@@ -115,7 +121,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 :::
 
-11. Click **Set up source** and wait for the tests to complete.
+13. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -202,6 +208,7 @@ Custom reports in Google Analytics allow for flexibility in querying specific da
 - **Name**: The name of the custom report.
 - **Dimensions**: An array of categories for data, such as city, user type, etc.
 - **Metrics**: An array of quantitative measurements, such as active users, page views, etc.
+- **DimensionFilter**: (Optional) A filter expression to apply to dimensions. Supports `andGroup`, `orGroup`, `notExpression`, and single `filter` types. Each filter can use `stringFilter`, `inListFilter`, `numericFilter`, or `betweenFilter` to narrow results by dimension values.
 - **CohortSpec**: (Optional) An object containing specific cohort analysis settings, such as cohort size and date range. More information on this object can be found in [the GA4 documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec).
 - **Pivots**: (Optional) An array of pivot tables for data, such as page views by city, etc. More information on pivots can be found in [the GA4 documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
 
@@ -293,7 +300,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 | 2.9.16 | 2025-11-12 | [69279](https://github.com/airbytehq/airbyte/pull/69279) | Flag authentication issues as config_error |
 | 2.9.15 | 2025-10-29 | [69011](https://github.com/airbytehq/airbyte/pull/69011) | Update dependencies |
 | 2.9.14 | 2025-10-21 | [68302](https://github.com/airbytehq/airbyte/pull/68302) | Update dependencies |
-| 2.9.13 | 2025-10-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)     | Promoting release candidate 2.9.13-rc.1 to a main version. |
+| 2.9.13 | 2025-10-14 | [67722](https://github.com/airbytehq/airbyte/pull/67722) | Promoting release candidate 2.9.13-rc.1 to a main version. |
 | 2.9.13-rc.1 | 2025-10-08 | [67148](https://github.com/airbytehq/airbyte/pull/67148) | Add dimensionFilter into the body of requests for custom reports and custom DimensionFilterConfigTransformation component                                              |
 | 2.9.12 | 2025-10-07 | [67262](https://github.com/airbytehq/airbyte/pull/67262) | Update dependencies |
 | 2.9.11 | 2025-09-30 | [66306](https://github.com/airbytehq/airbyte/pull/66306) | Update dependencies |
