@@ -279,7 +279,7 @@ The Facebook Marketing source connector supports the following [sync modes](http
 **Notes on Streams:**
 
 :::info Custom Audiences
-The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data` See our Troubleshooting section for more information.
+The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data`. See our Troubleshooting section for more information.
 :::
 
 Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
@@ -338,6 +338,12 @@ Built-in Ads Insights streams and Prebuilt Ads Insights Reports use `level=ad` b
 ### Entity-Relationship Diagram (ERD)
 
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
+
+## Timezone handling for Insights streams
+
+The Facebook Insights API interprets `time_range` date filters (`since` and `until`) in the ad account's timezone, not UTC. For ad accounts in timezones ahead of UTC (such as `Asia/Tokyo` at UTC+9 or `Europe/Berlin` at UTC+1), the connector automatically detects each account's timezone and adjusts the sync date range so that the current day's data is not missed. This per-account adjustment applies to all Ads Insights streams, including built-in and custom Insights streams. No configuration is required.
+
+If you sync multiple ad accounts in different timezones within a single connection, each account's date range is computed independently based on its own timezone setting.
 
 ## Facebook Marketing Attribution Reporting
 
