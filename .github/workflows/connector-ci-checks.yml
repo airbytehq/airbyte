@@ -128,6 +128,7 @@ jobs:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
       DD_TAGS: "connector.name:${{ matrix.connector }}"
+      DOCKER_API_VERSION: "1.44"
 
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
@@ -440,13 +441,14 @@ jobs:
       - name: Install QA Checks
         if: matrix.connector
         run: |
-          uv tool install airbyte-ci/connectors/connectors_qa
+          # Install airbyte-internal-ops from PyPI (replaces local connectors_qa)
+          uv tool install airbyte-internal-ops
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
         run: |
           connector_name=${{ matrix.connector }}
-          connectors-qa run --name ${connector_name%-strict-encrypt}
+          airbyte-ops local connector qa --name ${connector_name%-strict-encrypt}
 
       - name: Detect Python CDK Prerelease Versions
         if: matrix.connector

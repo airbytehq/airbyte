@@ -68,7 +68,6 @@ jobs:
             bump-progressive-rollout-version
             bump-version
             build-connector-images
-            connector-performance
             force-merge
             format-fix
             poe

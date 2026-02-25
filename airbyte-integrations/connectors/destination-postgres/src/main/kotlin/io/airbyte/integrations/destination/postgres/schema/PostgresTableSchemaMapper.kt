@@ -23,11 +23,12 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.TableSchemaMapper
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.load.table.TypingDedupingUtil
-import io.airbyte.integrations.destination.postgres.db.toPostgresCompatibleName
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.PostgresDataType
 import jakarta.inject.Singleton
@@ -63,34 +64,59 @@ class PostgresTableSchemaMapper(
     }
 
     override fun toColumnName(name: String): String {
-        return if (config.legacyRawTablesOnly) {
-            name
-        } else {
+        return if (!config.legacyRawTablesOnly) {
             name.toPostgresCompatibleName()
+        } else {
+            // In legacy mode, column names are not transformed
+            name
         }
     }
 
     override fun toColumnType(fieldType: FieldType): ColumnType {
         val postgresType =
             when (fieldType.type) {
+                // Simple types
                 BooleanType -> PostgresDataType.BOOLEAN.typeName
-                DateType -> PostgresDataType.DATE.typeName
                 IntegerType -> PostgresDataType.BIGINT.typeName
                 NumberType -> PostgresDataType.DECIMAL.typeName
                 StringType -> PostgresDataType.VARCHAR.typeName
+
+                // Temporal types
+                DateType -> PostgresDataType.DATE.typeName
                 TimeTypeWithTimezone -> PostgresDataType.TIME_WITH_TIMEZONE.typeName
                 TimeTypeWithoutTimezone -> PostgresDataType.TIME.typeName
                 TimestampTypeWithTimezone -> PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName
                 TimestampTypeWithoutTimezone -> PostgresDataType.TIMESTAMP.typeName
+
+                // Semistructured types
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is ObjectType,
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema,
-                is UnknownType,
-                is UnionType -> PostgresDataType.JSONB.typeName
+                is UnionType,
+                is UnknownType -> PostgresDataType.JSONB.typeName
             }
 
         return ColumnType(postgresType, fieldType.nullable)
+    }
+
+    override fun toFinalSchema(tableSchema: StreamTableSchema): StreamTableSchema {
+        if (!config.legacyRawTablesOnly) {
+            return tableSchema
+        }
+
+        return StreamTableSchema(
+            tableNames = tableSchema.tableNames,
+            columnSchema =
+                tableSchema.columnSchema.copy(
+                    finalSchema =
+                        mapOf(
+                            Meta.COLUMN_NAME_DATA to
+                                ColumnType(PostgresDataType.JSONB.typeName, false)
+                        )
+                ),
+            importType = tableSchema.importType,
+        )
     }
 }

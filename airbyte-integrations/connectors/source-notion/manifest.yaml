@@ -237,7 +237,10 @@ streams:
         $ref: "#/definitions/record_selector"
         record_filter:
           type: RecordFilter
-          condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] }}'
+          # The cursor filtering (last_edited_time >= start_time) is required because CustomRetriever
+          # doesn't receive ClientSideIncrementalRecordFilterDecorator from the CDK factory,
+          # unlike SimpleRetriever. Without this, all blocks would be emitted on every incremental sync.
+          condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] and record["last_edited_time"] >= stream_slice["start_time"] }}'
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
         $parameters:

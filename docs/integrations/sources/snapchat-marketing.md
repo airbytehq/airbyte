@@ -143,6 +143,8 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.29 | 2026-02-24 | [73634](https://github.com/airbytehq/airbyte/pull/73634) | fix(source-snapchat-marketing): add lookback_window P2D to mitigate UTC timezone mismatch (AI-Triage PR) |
+| 1.5.28 | 2026-01-20 | [70672](https://github.com/airbytehq/airbyte/pull/70672) | Update dependencies |
 | 1.5.27 | 2025-11-25 | [70083](https://github.com/airbytehq/airbyte/pull/70083) | Update dependencies |
 | 1.5.26 | 2025-11-18 | [69489](https://github.com/airbytehq/airbyte/pull/69489) | Update dependencies |
 | 1.5.25 | 2025-10-29 | [68815](https://github.com/airbytehq/airbyte/pull/68815) | Update dependencies |

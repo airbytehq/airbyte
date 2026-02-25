@@ -37,6 +37,7 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
@@ -48,12 +49,10 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
-import java.time.ZoneOffset
 import javax.inject.Singleton
 
 /**
@@ -64,6 +63,7 @@ import javax.inject.Singleton
 class ProtobufConverter(
     private val coercer: ValueCoercer,
     private val validationResultHandler: ValidationResultHandler,
+    private val converterConfig: MediumConverterConfig,
 ) : MediumConverter {
 
     private val decoder = AirbyteValueProtobufDecoder()
@@ -132,9 +132,11 @@ class ProtobufConverter(
         source: DestinationRecordProtobufSource,
         parsingFailures: List<Meta.Change>
     ) {
-        val timestampValue = Instant.ofEpochMilli(source.emittedAtMs)
         result[Meta.COLUMN_NAME_AB_EXTRACTED_AT] =
-            TimestampWithTimezoneValue(OffsetDateTime.ofInstant(timestampValue, ZoneOffset.UTC))
+            Meta.getEmittedAtMs(
+                source.emittedAtMs,
+                converterConfig.extractedAtAsTimestampWithTimezone
+            )
 
         result[Meta.COLUMN_NAME_AB_GENERATION_ID] =
             IntegerValue(msg.stream.generationId.toBigInteger())

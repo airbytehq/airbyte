@@ -630,6 +630,7 @@ object DataCoercionStringFixtures {
     const val SHORT_STRING = "short string"
     const val LONG_STRING = "long string"
     const val SPECIAL_CHARS_STRING = "special chars string"
+    const val NULL_CHAR_STRING = "null char string"
 
     val strings =
         listOf(
@@ -648,6 +649,11 @@ object DataCoercionStringFixtures {
                 SPECIAL_CHARS_STRING,
                 StringValue("`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?)Δ⅀↑∀"),
                 "`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?)Δ⅀↑∀"
+            ),
+            case(
+                NULL_CHAR_STRING,
+                StringValue("asdf-\u0000-qwer"),
+                "asdf-\u0000-qwer",
             ),
         )
 

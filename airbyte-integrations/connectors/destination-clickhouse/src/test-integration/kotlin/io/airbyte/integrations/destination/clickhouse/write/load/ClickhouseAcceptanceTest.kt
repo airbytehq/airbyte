@@ -132,7 +132,6 @@ abstract class ClickhouseAcceptanceTest(
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRINGIFY,
         stringifyUnionObjects = true,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = true,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
@@ -151,7 +150,6 @@ abstract class ClickhouseAcceptanceTest(
         dedupChangeUsesDefault = true,
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
-        useDataFlowPipeline = true,
     ) {
     companion object {
         @JvmStatic
@@ -166,11 +164,6 @@ abstract class ClickhouseAcceptanceTest(
             ClickhouseContainerHelper.stop()
         }
     }
-
-    @Disabled("Clickhouse does not support file transfer, so this test is skipped.")
-    override fun testBasicWriteFile() {
-        // Clickhouse does not support file transfer, so this test is skipped.
-    }
 }
 
 class ClickhouseDataDumper : DestinationDataDumper {
@@ -181,7 +174,7 @@ class ClickhouseDataDumper : DestinationDataDumper {
         val config = Utils.specToConfig(spec)
         val client = Utils.getClickhouseClient(config)
 
-        val isDedup = stream.importType is Dedupe
+        val isDedup = stream.tableSchema.importType is Dedupe
 
         val output = mutableListOf<OutputRecord>()
 

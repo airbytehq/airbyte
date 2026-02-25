@@ -452,9 +452,10 @@ class JsonSchemaToAirbyteSchemaTypeTest {
 
     @Test
     fun testEmptySchema() {
+        // Empty schema defaults to object type (with no properties)
         val schemaNode = Jsons.readTree("{}")
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
-        assertEquals(UnknownType(Jsons.readTree("""{}""")), airbyteType)
+        assertEquals(ObjectTypeWithoutSchema, airbyteType)
     }
 
     @Test
@@ -466,11 +467,13 @@ class JsonSchemaToAirbyteSchemaTypeTest {
 
     @Test
     fun testImplicitObject() {
+        // Schema with properties but no type defaults to object
+        // Nested empty schema also defaults to object
         val schemaNode = Jsons.readTree("""{"properties": {"foo": {}}}""")
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         assertEquals(
             ObjectType(
-                linkedMapOf("foo" to FieldType(UnknownType(Jsons.readTree("{}")), nullable = true)),
+                linkedMapOf("foo" to FieldType(ObjectTypeWithoutSchema, nullable = true)),
                 additionalProperties = false
             ),
             airbyteType,

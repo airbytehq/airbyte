@@ -264,7 +264,7 @@ class StateKeyClientTest {
                 every { unmappedDescriptor } returns descriptor
                 // below is just for the catalog initialization
                 every { mappedDescriptor } returns descriptor
-                every { importType } returns Append
+                every { tableSchema } returns mockk { every { importType } returns Append }
             }
         }
     }
