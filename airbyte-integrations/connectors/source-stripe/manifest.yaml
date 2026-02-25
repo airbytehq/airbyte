@@ -1,4 +1,4 @@
-version: 6.42.1
+version: 6.42.2
 
 type: DeclarativeSource
 
@@ -319,6 +319,7 @@ definitions:
 
     customers:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: customers
       full_refresh_stream:
@@ -345,6 +346,7 @@ definitions:
 
     subscriptions:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: subscriptions
       full_refresh_stream:
@@ -375,6 +377,7 @@ definitions:
 
     invoices:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: invoices
       full_refresh_stream:
@@ -405,6 +408,7 @@ definitions:
 
     transfers:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: transfers
       full_refresh_stream:
@@ -431,6 +435,7 @@ definitions:
 
     refunds:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: refunds
       full_refresh_stream:
@@ -457,6 +462,7 @@ definitions:
 
     authorizations:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: authorizations
       full_refresh_stream:
@@ -483,6 +489,7 @@ definitions:
 
     cardholders:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: cardholders
       full_refresh_stream:
@@ -509,6 +516,7 @@ definitions:
 
     charges:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: charges
       full_refresh_stream:
@@ -539,6 +547,7 @@ definitions:
 
     coupons:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: coupons
       full_refresh_stream:
@@ -565,6 +574,7 @@ definitions:
 
     disputes:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: disputes
       full_refresh_stream:
@@ -591,6 +601,7 @@ definitions:
 
     application_fees:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: application_fees
       full_refresh_stream:
@@ -617,6 +628,7 @@ definitions:
 
     invoice_items:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: invoice_items
       full_refresh_stream:
@@ -643,6 +655,7 @@ definitions:
 
     payouts:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: payouts
       full_refresh_stream:
@@ -669,6 +682,7 @@ definitions:
 
     plans:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: plans
       full_refresh_stream:
@@ -699,6 +713,7 @@ definitions:
 
     prices:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: prices
       full_refresh_stream:
@@ -725,6 +740,7 @@ definitions:
 
     products:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: products
       full_refresh_stream:
@@ -751,6 +767,7 @@ definitions:
 
     reviews:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: reviews
       full_refresh_stream:
@@ -777,6 +794,7 @@ definitions:
 
     subscription_schedule:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: subscription_schedule
       full_refresh_stream:
@@ -803,6 +821,7 @@ definitions:
 
     payment_intents:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: payment_intents
       full_refresh_stream:
@@ -829,6 +848,7 @@ definitions:
 
     promotion_codes:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: promotion_codes
       full_refresh_stream:
@@ -855,6 +875,7 @@ definitions:
 
     setup_intents:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: setup_intents
       full_refresh_stream:
@@ -881,6 +902,7 @@ definitions:
 
     cards:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: cards
       full_refresh_stream:
@@ -907,6 +929,7 @@ definitions:
 
     transactions:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: transactions
       full_refresh_stream:
@@ -933,6 +956,7 @@ definitions:
 
     top_ups:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: top_ups
       full_refresh_stream:
@@ -959,6 +983,7 @@ definitions:
 
     accounts:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: accounts
       full_refresh_stream:
@@ -985,6 +1010,7 @@ definitions:
 
     checkout_sessions:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: checkout_sessions
       full_refresh_stream:
@@ -1011,6 +1037,7 @@ definitions:
 
     external_account_cards:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: external_account_cards
       full_refresh_stream:
@@ -1043,6 +1070,7 @@ definitions:
 
     external_account_bank_accounts:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: external_account_bank_accounts
       full_refresh_stream:
@@ -1075,6 +1103,7 @@ definitions:
 
     credit_notes:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: credit_notes
       full_refresh_stream:
@@ -1101,6 +1130,7 @@ definitions:
 
     early_fraud_warnings:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: early_fraud_warnings
       full_refresh_stream:
@@ -1289,6 +1319,7 @@ definitions:
 
     payment_methods:
       type: StateDelegatingStream
+      api_retention_period: P30D
       name: payment_methods
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
@@ -1327,6 +1358,7 @@ definitions:
 
     persons:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: persons
       full_refresh_stream:
@@ -1364,6 +1396,7 @@ definitions:
 
     invoice_line_items:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: invoice_line_items
       full_refresh_stream:
@@ -1465,6 +1498,7 @@ definitions:
 
     application_fees_refunds:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: application_fees_refunds
       full_refresh_stream:
@@ -1525,6 +1559,7 @@ definitions:
 
     subscription_items:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: subscription_items
       full_refresh_stream:
@@ -1614,6 +1649,7 @@ definitions:
 
     bank_accounts:
       type: StateDelegatingStream
+      api_retention_period: P30D
       $parameters:
         name: bank_accounts
       full_refresh_stream:
@@ -1648,6 +1684,7 @@ definitions:
                 lazy_read_pointer: ["sources"]
                 stream:
                   type: StateDelegatingStream
+                  api_retention_period: P30D
                   $parameters:
                     name: customers
                   full_refresh_stream:
