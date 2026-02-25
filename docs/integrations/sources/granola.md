@@ -76,7 +76,8 @@ The connector handles rate limiting automatically by retrying requests when a `4
 
 | Version | Date       | Pull Request | Subject         |
 | :------ | :--------- | :----------- | :-------------- |
-| 0.0.2   | 2026-02-12 | [73306](https://github.com/airbytehq/airbyte/pull/73306) | Fix pagination: set page_size to API maximum of 30 and improve stop condition |
-| 0.0.1   | 2026-02-11 | [73238](https://github.com/airbytehq/airbyte/pull/73238) | Initial release |
+| 0.0.3 | 2026-02-24 | [73377](https://github.com/airbytehq/airbyte/pull/73377) | Update dependencies |
+| 0.0.2 | 2026-02-12 | [73306](https://github.com/airbytehq/airbyte/pull/73306) | Fix pagination: set page_size to API maximum of 30 and improve stop condition |
+| 0.0.1 | 2026-02-11 | [73238](https://github.com/airbytehq/airbyte/pull/73238) | Initial release |
 
 </details>

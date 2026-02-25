@@ -70,7 +70,7 @@ app.post("/api/airbyte/widget-token", async (req, res) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        external_user_id: userId, // creates or reuses a customer for this user
+        customer_name: userId, // creates or reuses a customer for this user
         allowed_origin: process.env.ALLOWED_ORIGIN, // must match your frontend's origin exactly (including port)
       }),
     });
@@ -231,7 +231,7 @@ const widget = new AirbyteEmbeddedWidget({
 
 Once a user authenticates through the Authentication module, the following happens.
 
-- Airbyte creates that connector in that customer. If a customer with the given `external_user_id` already exists, Airbyte adds the connector to the others in that customer.
+- Airbyte creates that connector in that customer. If a customer with the given `customer_name` already exists, Airbyte adds the connector to the others in that customer.
 
 - If you configured data replication, Airbyte creates a connection between this connector and your configured destination, then replicates data on the schedule you defined.
 
@@ -248,7 +248,7 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
   -H 'Authorization: Bearer <operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "external_user_id": "user_123",
+    "customer_name": "user_123",
     "allowed_origin": "https://yourapp.com",
     "selected_source_template_tags": ["pro-tier"],
     "selected_source_template_tags_mode": "any",

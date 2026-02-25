@@ -28,6 +28,7 @@ With this connector we can extract data from EOD , Intraday and news feeds strea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-02-24 | [73942](https://github.com/airbytehq/airbyte/pull/73942) | Update dependencies |
 | 0.0.46 | 2026-02-17 | [73440](https://github.com/airbytehq/airbyte/pull/73440) | Update dependencies |
 | 0.0.45 | 2026-02-10 | [73091](https://github.com/airbytehq/airbyte/pull/73091) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [72102](https://github.com/airbytehq/airbyte/pull/72102) | Update dependencies |
