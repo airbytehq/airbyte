@@ -41,7 +41,7 @@ definitions:
       type: "CursorPagination"
       cursor_value: "{{ response.paging.get('cursors', {}).get('after') }}"
       stop_condition: "{{ response.paging == '' or not response.paging.get('next') }}"
-      page_size: 100
+      page_size: "{{ config.get('page_size', 100) }}"
     page_size_option:
       field_name: "limit"
       inject_into: "request_parameter"
@@ -264,6 +264,21 @@ definitions:
       - to
     property_selector:
       type: JsonSchemaPropertySelector
+  page_insights_query_properties:
+    type: QueryProperties
+    property_list:
+      - page_total_actions
+      - page_post_engagements
+      - page_fan_adds_by_paid_non_paid_unique
+      - page_media_view
+      - page_impressions_unique
+      - page_impressions_paid_unique
+      - page_impressions_viral_unique
+      - page_impressions_nonviral_unique
+    property_chunking:
+      type: PropertyChunking
+      property_limit_type: property_count
+      property_limit: 4
   page_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -339,19 +354,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          metric: |
-            {{
-              ','.join([
-              'page_total_actions',
-              'page_post_engagements',
-              'page_fan_adds_by_paid_non_paid_unique',
-              'page_media_view',
-              'page_impressions_unique',
-              'page_impressions_paid_unique',
-              'page_impressions_viral_unique',
-              'page_impressions_nonviral_unique',
-              ])
-            }}
+          metric: "#/definitions/page_insights_query_properties"
 streams:
   - "#/definitions/page_stream"
   - "#/definitions/post_stream"
