@@ -1942,9 +1942,9 @@ definitions:
       schema:
         $ref: "#/schemas/properties"
 
-  details_stream:
+  account_details_stream:
     $ref: "#/definitions/stream_without_pagination"
-    name: details
+    name: account_details
     retriever:
       type: SimpleRetriever
       decoder:
@@ -1961,9 +1961,9 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $ref: "#/schemas/details"
+        $ref: "#/schemas/account_details"
     $parameters:
-      name: details
+      name: account_details
       path: /account-info/v3/details
       required_scopes: oauth
 
@@ -2001,7 +2001,7 @@ streams:
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
   - "#/definitions/properties_stream"
-  - "#/definitions/details_stream"
+  - "#/definitions/account_details_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -2357,7 +2357,7 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
-  details:
+  account_details:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
     additionalProperties: true
@@ -2370,6 +2370,8 @@ schemas:
         type:
           - "array"
           - "null"
+        items:
+          type: "string"
       companyCurrency:
         type:
           - "string"

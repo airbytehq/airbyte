@@ -341,6 +341,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.3.0 | 2025-02-25 | [61703](https://github.com/airbytehq/airbyte/pull/61703) | Add new stream `account_details` |
 | 6.2.2 | 2026-02-24 | [73909](https://github.com/airbytehq/airbyte/pull/73909) | Update dependencies |
 | 6.2.1 | 2026-02-17 | [73491](https://github.com/airbytehq/airbyte/pull/73491) | Update dependencies |
 | 6.2.0 | 2026-02-10 | [61704](https://github.com/airbytehq/airbyte/pull/61704) | Add new `properties` stream |
