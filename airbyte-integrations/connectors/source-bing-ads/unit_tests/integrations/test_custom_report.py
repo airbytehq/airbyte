@@ -11,6 +11,11 @@ from test_report_stream import TestSuiteReportStream
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
 
+# Freeze time used for DayOfWeek and HourOfDay custom report tests
+CUSTOM_REPORT_FREEZE_TIME = "2024-05-06"
+# day_delta(1) adds 1 day to the frozen time for end_datetime
+CUSTOM_REPORT_EXPECTED_END_TIME = "2024-05-07"
+
 
 class TestBaseCustomReport(TestSuiteReportStream):
     stream_name = "custom_report"
@@ -431,10 +436,10 @@ class CustomReportDayOfWeek(BaseTest):
         assert len(output.records) == self.records_number
         for record in output.records:
             record = record.record.data
-            assert record["TimePeriod"] == "2024-05-06"
+            assert record["TimePeriod"] == CUSTOM_REPORT_EXPECTED_END_TIME
             assert record["DayOfWeek"]
             assert record["StartOfTimePeriod"] == self.start_date
-            assert record["EndOfTimePeriod"] == "2024-05-06"
+            assert record["EndOfTimePeriod"] == CUSTOM_REPORT_EXPECTED_END_TIME
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_from_given_csv_file(self):
@@ -442,7 +447,7 @@ class CustomReportDayOfWeek(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
+        assert output.most_recent_state.stream_state.state["TimePeriod"] == CUSTOM_REPORT_EXPECTED_END_TIME
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_with_state_from_given_csv_file(self):
@@ -451,7 +456,7 @@ class CustomReportDayOfWeek(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
+        assert output.most_recent_state.stream_state.state["TimePeriod"] == CUSTOM_REPORT_EXPECTED_END_TIME
 
 
 class CustomReportHourOfDay(BaseTest):
@@ -542,10 +547,10 @@ class CustomReportHourOfDay(BaseTest):
         assert len(output.records) == self.records_number
         for record in output.records:
             record = record.record.data
-            assert record["TimePeriod"] == "2024-05-06"
+            assert record["TimePeriod"] == CUSTOM_REPORT_EXPECTED_END_TIME
             assert record["HourOfDay"]
             assert record["StartOfTimePeriod"] == self.start_date
-            assert record["EndOfTimePeriod"] == "2024-05-06"
+            assert record["EndOfTimePeriod"] == CUSTOM_REPORT_EXPECTED_END_TIME
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_from_given_csv_file(self):
@@ -553,7 +558,7 @@ class CustomReportHourOfDay(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
+        assert output.most_recent_state.stream_state.state["TimePeriod"] == CUSTOM_REPORT_EXPECTED_END_TIME
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_with_state_from_given_csv_file(self):
@@ -562,4 +567,4 @@ class CustomReportHourOfDay(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
+        assert output.most_recent_state.stream_state.state["TimePeriod"] == CUSTOM_REPORT_EXPECTED_END_TIME
