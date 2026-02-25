@@ -84,22 +84,21 @@ class CustomExtractor(RecordExtractor):
                 self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-        decoded = self.decoder.decode(response)
-        response_body = decoded if isinstance(decoded, Mapping) else next(decoded)
-        if len(self.field_path) == 0:
-            extracted = response_body
-        else:
-            path = [path.eval(self.config) for path in self.field_path]
-            if "*" in path:
-                extracted = dpath.util.values(response_body, path)
+        all_records: List[Mapping[str, Any]] = []
+        for response_body in self.decoder.decode(response):
+            if len(self.field_path) == 0:
+                extracted = response_body
             else:
-                extracted = dpath.util.get(response_body, path, default=[])
+                path = [path.eval(self.config) for path in self.field_path]
+                if "*" in path:
+                    extracted = dpath.util.values(response_body, path)
+                else:
+                    extracted = dpath.util.get(response_body, path, default=[])
 
-        ParseDates.convert_dates(extracted)
+            ParseDates.convert_dates(extracted)
 
-        if isinstance(extracted, list):
-            return extracted
-        elif extracted:
-            return [extracted]
-        else:
-            return []
+            if isinstance(extracted, list):
+                all_records.extend(extracted)
+            elif extracted:
+                all_records.append(extracted)
+        return all_records
