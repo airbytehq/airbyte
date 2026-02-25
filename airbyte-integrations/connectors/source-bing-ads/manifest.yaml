@@ -550,7 +550,7 @@ definitions:
                 Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
                 Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
                 Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              "ReportTimeZone": "{{ stream_partition.extra_fields['TimeZone'] }}"
+              "ReportTimeZone": "{{ stream_partition.extra_fields['TimeZone'] or 'GreenwichMeanTimeDublinEdinburghLisbonLondon' }}"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
