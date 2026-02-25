@@ -146,6 +146,7 @@ for more information.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.18 | 2026-02-24 | [74006](https://github.com/airbytehq/airbyte/pull/74006) | Fix user_insights end_datetime to cover current day for UTC+ accounts |
 | 4.2.17 | 2026-02-24 | [72266](https://github.com/airbytehq/airbyte/pull/72266) | Add views metric and timestamp to media_insights stream |
 | 4.2.16 | 2026-01-20 | [71966](https://github.com/airbytehq/airbyte/pull/71966) | Update dependencies |
 | 4.2.15 | 2026-01-14 | [71406](https://github.com/airbytehq/airbyte/pull/71406) | Update dependencies |
