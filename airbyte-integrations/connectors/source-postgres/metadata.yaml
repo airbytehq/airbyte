@@ -68,7 +68,7 @@ data:
             alias: airbyte-connector-testing-secret-store
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
   externalDocumentationUrls:
     - title: PostgreSQL documentation
       url: https://www.postgresql.org/docs/
