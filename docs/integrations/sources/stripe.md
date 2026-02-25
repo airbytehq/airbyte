@@ -295,7 +295,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.0-rc.1 | 2026-02-25 | [73697](https://github.com/airbytehq/airbyte/pull/73697) | Fix `invoice_line_items` incremental stream to emit individual line items instead of invoice objects (breaking change) |
+| 6.0.0 | 2026-02-25 | [73697](https://github.com/airbytehq/airbyte/pull/73697) | Fix `invoice_line_items` incremental stream to emit individual line items instead of invoice objects (breaking change) |
 | 5.15.21-rc.1 | 2026-02-25 | [73646](https://github.com/airbytehq/airbyte/pull/73646) | Add cursor age validation for StateDelegatingStream streams to prevent data loss when initial sync fails mid-way |
 | 5.15.20 | 2026-02-24 | [73944](https://github.com/airbytehq/airbyte/pull/73944) | Update dependencies |
 | 5.15.19 | 2026-02-17 | [73466](https://github.com/airbytehq/airbyte/pull/73466) | Update dependencies |
