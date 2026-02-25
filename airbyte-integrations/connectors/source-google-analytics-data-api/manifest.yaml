@@ -953,7 +953,7 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   - path: [ "endDate" ]
-                    value: "{% raw %}{{ stream_slice.end_time or config.get('date_ranges_end_date', 'today') }}{% endraw %}"
+                    value: "{% raw %}{{ stream_slice.end_time or format_datetime(config['date_ranges_end_date'] if config.get('date_ranges_end_date') else day_delta(1), '%Y-%m-%d') }}{% endraw %}"
             {% endif %}
         # This mapping adds metrics to the request parameters, but first transforms
         # them from a list of values into a list of dicts (e.g., {'name': <metric_name>})
