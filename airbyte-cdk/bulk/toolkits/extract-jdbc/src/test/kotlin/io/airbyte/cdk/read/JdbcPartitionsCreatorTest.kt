@@ -490,9 +490,9 @@ class JdbcPartitionsCreatorTest {
     /**
      * Regression test for infinite loop when an empty table has prior cursor state.
      *
-     * Scenario: A table was previously synced (cursor state exists) but has since been
-     * truncated. SELECT MAX(cursor) returns NULL (.isNull), but the prior state causes
-     * the partition factory to keep creating new partitions each round.
+     * Scenario: A table was previously synced (cursor state exists) but has since been truncated.
+     * SELECT MAX(cursor) returns NULL (.isNull), but the prior state causes the partition factory
+     * to keep creating new partitions each round.
      *
      * Validates that when MAX(cursor) returns NULL, we cache nullNode in
      * streamState.cursorUpperBound so the stream completes instead of looping.
@@ -500,35 +500,43 @@ class JdbcPartitionsCreatorTest {
     @Test
     fun testEmptyTableWithPriorCursorState() {
         val stream = stream()
-        val sharedState = sharedState(
-            mockedQueries = arrayOf(
-                // MAX(cursor) returns NULL — empty table
-                TestFixtures.MockedQuery(
-                    expectedQuerySpec = SelectQuerySpec(
-                        SelectColumnMaxValue(ts),
-                        From(stream().name, stream().namespace),
-                    ),
-                    expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                    // single row with null value, simulating MAX() on empty table
-                    // when fieldValue is null, encode() returns NullCodec.encode(null) which is a NullNode
-                    mutableMapOf("max" to FieldValueEncoder(null, LocalDateCodec))
-                ),
+        val sharedState =
+            sharedState(
+                mockedQueries =
+                    arrayOf(
+                        // MAX(cursor) returns NULL — empty table
+                        TestFixtures.MockedQuery(
+                            expectedQuerySpec =
+                                SelectQuerySpec(
+                                    SelectColumnMaxValue(ts),
+                                    From(stream().name, stream().namespace),
+                                ),
+                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            // single row with null value, simulating MAX() on empty table
+                            // when fieldValue is null, encode() returns NullCodec.encode(null)
+                            // which is a NullNode
+                            mutableMapOf("max" to FieldValueEncoder(null, LocalDateCodec))
+                        ),
+                    )
             )
-        )
         val factory = sharedState.factory()
         // provide PRIOR cursor state (simulating a truncated table)
-        val initialPartition = factory
-            .create(stream.bootstrap(opaqueStateValue(cursor = cursorCheckpoint)))
-            .asPartition()
+        val initialPartition =
+            factory
+                .create(stream.bootstrap(opaqueStateValue(cursor = cursorCheckpoint)))
+                .asPartition()
         factory.assertFailures()
 
         val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
 
-        // Should get a single CheckpointOnlyPartitionReader, identify that the table is empty and marked
+        // Should get a single CheckpointOnlyPartitionReader, identify that the table is empty and
+        // marked
         // it as done.
         Assertions.assertEquals(1, readers.size)
         // CheckpointOnlyPartitionReader signals an empty table that needs no further reading
-        Assertions.assertTrue(readers.first() is JdbcPartitionsCreator<*, *, *>.CheckpointOnlyPartitionReader)
+        Assertions.assertTrue(
+            readers.first() is JdbcPartitionsCreator<*, *, *>.CheckpointOnlyPartitionReader
+        )
 
         // cursorUpperBound should be cached as nullNode
         Assertions.assertTrue(initialPartition.streamState.cursorUpperBound?.isNull == true)
@@ -541,38 +549,42 @@ class JdbcPartitionsCreatorTest {
     /**
      * Extension of testEmptyTableWithPriorCursorState to verify we don't enter a loop.
      *
-     * Regression test to verify that an empty table with prior cursor state does not
-     * cause an infinite loop. Simulates two rounds of the partition creation cycle:
-     * Round 1: detects the empty table and emits a nullNode state
-     * Round 2: receives that state and returns null (stream complete).
+     * Regression test to verify that an empty table with prior cursor state does not cause an
+     * infinite loop. Simulates two rounds of the partition creation cycle: Round 1: detects the
+     * empty table and emits a nullNode state Round 2: receives that state and returns null (stream
+     * complete).
      *
-     * If the fix is reverted, Round 2
-     * would create another partition instead of completing, and the test would fail.
+     * If the fix is reverted, Round 2 would create another partition instead of completing, and the
+     * test would fail.
      */
     @Test
     fun testEmptyTableWithPriorCursorStateDoesNotLoop() {
         val stream = stream()
-        val sharedState = sharedState(
-            mockedQueries = arrayOf(
-                // Round 1: MAX(cursor) returns NULL
-                TestFixtures.MockedQuery(
-                    expectedQuerySpec = SelectQuerySpec(
-                        SelectColumnMaxValue(ts),
-                        From(stream().name, stream().namespace),
-                    ),
-                    expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                    mutableMapOf("max" to FieldValueEncoder(null, LocalDateCodec))
-                ),
-                // No second MAX query should happen — if it does, the test fails
-                // because there are no more mocked queries
+        val sharedState =
+            sharedState(
+                mockedQueries =
+                    arrayOf(
+                        // Round 1: MAX(cursor) returns NULL
+                        TestFixtures.MockedQuery(
+                            expectedQuerySpec =
+                                SelectQuerySpec(
+                                    SelectColumnMaxValue(ts),
+                                    From(stream().name, stream().namespace),
+                                ),
+                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            mutableMapOf("max" to FieldValueEncoder(null, LocalDateCodec))
+                        ),
+                        // No second MAX query should happen — if it does, the test fails
+                        // because there are no more mocked queries
+                        )
             )
-        )
         val factory = sharedState.factory()
 
         // Round 1: prior cursor state, table is empty
-        val partition1 = factory
-            .create(stream.bootstrap(opaqueStateValue(cursor = cursorCheckpoint)))
-            .asPartition()
+        val partition1 =
+            factory
+                .create(stream.bootstrap(opaqueStateValue(cursor = cursorCheckpoint)))
+                .asPartition()
         val readers = JdbcConcurrentPartitionsCreator(partition1, factory).runInTest()
         // Validating that there is only one reader
         Assertions.assertEquals(1, readers.size)
