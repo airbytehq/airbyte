@@ -134,6 +134,10 @@ The results of such a report may be inaccurate due to invisible values in the re
 If you encounter this issue, use a custom report where you can define only the fields that you want to see in the report. No other fields will be included in the request.
 :::
 
+:::info Report timezone alignment
+Report data date boundaries are aligned to each advertiser account's configured timezone in Microsoft Advertising. For accounts without a timezone setting, the connector defaults to GMT (`GreenwichMeanTimeDublinEdinburghLisbonLondon`). This means daily report rows match what you see in the Microsoft Advertising dashboard for each account.
+:::
+
 - [Account Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
 - [Account Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
 - [Account Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)

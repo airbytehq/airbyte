@@ -11,7 +11,7 @@ All users syncing report streams (performance reports, audience reports, geograp
 ### What changed
 
 - **ReportTimeZone**: Previously hardcoded to GMT for all accounts. Now dynamically set to the account's configured timezone (e.g., `OsakaSapporoTokyo` for a Japan-based account).
-- **end_datetime**: Extended by one day (`day_delta(1)`) to ensure accounts in timezones ahead of UTC receive today's data.
+- **Sync date range**: The end of the sync date range is now extended by one day beyond the current UTC date. This ensures accounts in timezones ahead of UTC (for example, Asia-Pacific timezones) receive today's data in each sync.
 
 ### Required actions
 
@@ -22,6 +22,7 @@ All users syncing report streams (performance reports, audience reports, geograp
 
 - Aggregate totals over multi-day periods will remain the same; only the daily breakdown alignment changes.
 - Accounts already configured with the GMT timezone will see no change in behavior.
+- Accounts with a null or missing timezone in the Microsoft Advertising API will continue to use GMT as the fallback, matching the previous behavior.
 
 ## Upgrading to 2.0.0
 
