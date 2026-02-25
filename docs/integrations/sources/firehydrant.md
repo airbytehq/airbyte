@@ -1,11 +1,36 @@
 # FireHydrant
-The Airbyte connector for FireHydrant enables seamless data integration between FireHydrant and your data ecosystem. It allows you to efficiently extract incident management and reliability data from FireHydrant, empowering teams with valuable insights for post-incident analysis, reliability reporting, and proactive system monitoring. With this connector, users can automate the data flow and gain deeper visibility into incidents and response metrics, improving reliability and operational efficiency.
+
+<HideInUI>
+
+This page contains the setup guide and reference information for the [FireHydrant](https://firehydrant.com/) source connector.
+
+</HideInUI>
+
+The FireHydrant source connector pulls incident management and reliability data from your FireHydrant organization, including incidents, services, environments, teams, runbooks, and more. For information about the FireHydrant API, see the [FireHydrant API documentation](https://developers.firehydrant.com/).
+
+## Prerequisites
+
+- A FireHydrant account with **Owner** permissions (required to create API keys).
+- A FireHydrant API key (also called a bot token).
+
+## Setup guide
+
+To set up the FireHydrant source connector, you need a FireHydrant API key:
+
+1. Log in to your FireHydrant organization.
+2. Go to the [Bot users page](https://app.firehydrant.io/organizations/bots).
+3. Create a new bot token or copy an existing one.
+4. Use the bot token as the **API Token** when configuring the connector in Airbyte.
+
+:::note
+The FireHydrant API is rate-limited to 50 requests per 10 seconds (300 per minute) per account. All API keys on the same account share this limit. The connector handles rate limiting automatically.
+:::
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_token` | `string` | API Token. Bot token to use for authenticating with the FireHydrant API. You can find or create a bot token by logging into your organization and visiting the Bot users page at https://app.firehydrant.io/organizations/bots. |  |
+| `api_token` | `string` | API Token. Bot token for authenticating with the FireHydrant API. Create or find a bot token on the [Bot users page](https://app.firehydrant.io/organizations/bots). |  |
 
 ## Streams
 
@@ -58,7 +83,7 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
-| 1.0.0 | 2026-02-24 | [74008](https://github.com/airbytehq/airbyte/pull/74008) | Rename `enviroments` stream to `environments` |
+| 1.0.0 | 2026-02-25 | [74008](https://github.com/airbytehq/airbyte/pull/74008) | Rename `enviroments` stream to `environments` |
 | 0.0.45 | 2026-02-17 | [73410](https://github.com/airbytehq/airbyte/pull/73410) | Update dependencies |
 | 0.0.44 | 2026-02-10 | [73170](https://github.com/airbytehq/airbyte/pull/73170) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [71971](https://github.com/airbytehq/airbyte/pull/71971) | Update dependencies |
