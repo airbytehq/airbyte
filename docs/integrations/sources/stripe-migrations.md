@@ -27,7 +27,7 @@ Only the `invoice_line_items` stream is affected. No other streams require a res
 The Stripe events API includes only the first ~10 line items per invoice in event payloads. Invoices with more than 10 line items may have incomplete data during incremental syncs. The full-refresh sync path correctly paginates through all line items. If you have invoices with many line items, consider using full-refresh sync mode for this stream.
 :::
 
-## Upgrading to 5.6.0
+### Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
 
