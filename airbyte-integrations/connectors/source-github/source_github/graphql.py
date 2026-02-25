@@ -165,8 +165,8 @@ def get_query_issue_reactions(owner, name, first, after, number=None):
     return str(op)
 
 
-def get_query_releases(owner, name, first, after, direction):
-    kwargs = {"first": first, "order_by": {"field": "CREATED_AT", "direction": direction}}
+def get_query_releases(owner, name, first, after):
+    kwargs = {"first": first, "order_by": {"field": "CREATED_AT", "direction": "ASC"}}
     if after:
         kwargs["after"] = after
 
@@ -206,6 +206,8 @@ def get_query_releases(owner, name, first, after, direction):
     )
     release_assets.nodes.uploaded_by(__alias__="uploader").__as__(_schema_root.User).__fields__(database_id="id")
     release_assets.page_info.__fields__(has_next_page=True)
+    releases.nodes.reaction_groups(__alias__="reaction_groups").__fields__(content=True)
+    releases.nodes.reaction_groups(__alias__="reaction_groups").reactors.__fields__(total_count=True)
     releases.nodes.mentions(first=0, __alias__="mentions_connection").total_count()
     releases.page_info.__fields__(has_next_page=True, end_cursor=True)
     return str(op)

@@ -120,6 +120,10 @@
     "mentions_count": {
       "description": "The count of mentions in the release.",
       "type": ["null", "integer"]
+    },
+    "reactions": {
+      "description": "The reactions associated with the release.",
+      "$ref": "shared/reactions.json"
     }
   }
 }

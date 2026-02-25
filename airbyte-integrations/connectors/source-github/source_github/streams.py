@@ -800,6 +800,48 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
     cursor_field = "created_at"
     is_sorted = "asc"
 
+    GRAPHQL_REACTION_TO_REST = {
+        "THUMBS_UP": "plus_one",
+        "THUMBS_DOWN": "minus_one",
+        "LAUGH": "laugh",
+        "HOORAY": "hooray",
+        "CONFUSED": "confused",
+        "HEART": "heart",
+        "ROCKET": "rocket",
+        "EYES": "eyes",
+    }
+
+    def _extract_assets(self, record: Mapping) -> list:
+        assets_data = record.get("assets", {})
+        if assets_data.get("pageInfo", {}).get("hasNextPage"):
+            self.logger.warning(
+                "Release %s in %s has >100 assets; only the first 100 were synced. "
+                "Sub-pagination for release assets is not yet implemented.",
+                record.get("id"),
+                record.get("repository"),
+            )
+        assets = assets_data.get("nodes", [])
+        for asset in assets:
+            uploader = asset.pop("uploader", None)
+            asset["uploader_id"] = uploader.get("id") if uploader else None
+        return assets
+
+    def _extract_reactions(self, record: Mapping) -> Optional[Mapping]:
+        reaction_groups = record.pop("reaction_groups", None)
+        if reaction_groups is None:
+            return None
+        reactions = {rest_key: 0 for rest_key in self.GRAPHQL_REACTION_TO_REST.values()}
+        total = 0
+        for group in reaction_groups:
+            content = group.get("content")
+            count = group.get("reactors", {}).get("totalCount", 0)
+            rest_key = self.GRAPHQL_REACTION_TO_REST.get(content)
+            if rest_key:
+                reactions[rest_key] = count
+                total += count
+        reactions["total_count"] = total
+        return reactions
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         repository = response.json().get("data", {}).get("repository")
         if repository:
@@ -808,23 +850,12 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
                 record["repository"] = self._get_repository_name(repository)
                 if record.get("author"):
                     record["author"]["type"] = record["author"].pop("__typename", "User")
-                assets_data = record.get("assets", {})
-                if assets_data.get("pageInfo", {}).get("hasNextPage"):
-                    self.logger.warning(
-                        "Release %s in %s has >100 assets; only the first 100 were synced. "
-                        "Sub-pagination for release assets is not yet implemented.",
-                        record.get("id"),
-                        record.get("repository"),
-                    )
-                assets = assets_data.get("nodes", [])
-                for asset in assets:
-                    uploader = asset.pop("uploader", None)
-                    asset["uploader_id"] = uploader.get("id") if uploader else None
-                record["assets"] = assets
+                record["assets"] = self._extract_assets(record)
+                record["reactions"] = self._extract_reactions(record)
                 mentions_connection = record.pop("mentions_connection", None)
                 if mentions_connection is not None:
                     record["mentions_count"] = mentions_connection.get("totalCount", 0)
-                tag_commit = record.pop("tagCommit", record.pop("tag_commit", None))
+                tag_commit = record.pop("tagCommit", None)
                 record["target_commitish"] = tag_commit.get("target_commitish") if tag_commit else None
                 yield record
 
@@ -834,6 +865,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
             page_info = repository.get("releases", {}).get("pageInfo", {})
             if page_info.get("hasNextPage"):
                 return {"after": page_info["endCursor"]}
+        return None
 
     def request_body_json(
         self,
@@ -843,7 +875,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
     ) -> Optional[Mapping]:
         organization, name = stream_slice["repository"].split("/")
         after = next_page_token["after"] if next_page_token else None
-        query = get_query_releases(owner=organization, name=name, first=self.page_size, after=after, direction=self.is_sorted.upper())
+        query = get_query_releases(owner=organization, name=name, first=self.page_size, after=after)
         return {"query": query}
 
 

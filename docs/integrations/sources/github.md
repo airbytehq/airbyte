@@ -129,7 +129,7 @@ This connector outputs the following incremental streams:
 - [Pull request comment reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-a-pull-request-review-comment)
 - [Pull request stats](https://docs.github.com/en/graphql/reference/objects#pullrequest)
 - [Pull requests](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests)
-- [Releases](https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases)
+- [Releases](https://docs.github.com/en/graphql/reference/objects#release) (uses GraphQL API; release assets are capped at 100 per release)
 - [Repositories](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories)
 - [Review comments](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository)
 - [Reviews](https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request)
