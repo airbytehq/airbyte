@@ -30,6 +30,8 @@ def mock_v3_properties(requests_mock, entity, properties_list):
         f"/crm/v3/properties/{entity}",
         [{"json": {"results": properties_list}, "status_code": 200}],
     )
+
+
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
     "company",

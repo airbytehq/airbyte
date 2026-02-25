@@ -373,10 +373,14 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     test_stream_url = "https://api.hubapi.com/crm/v3/objects/company/search"
     requests_mock.register_uri("POST", test_stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
-    mock_v3_properties(requests_mock, "company", [
-        {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-        for property_name in fake_properties_list
-    ])
+    mock_v3_properties(
+        requests_mock,
+        "company",
+        [
+            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            for property_name in fake_properties_list
+        ],
+    )
     requests_mock.register_uri(
         "POST",
         "/crm/v4/associations/company/contacts/batch/read",

@@ -239,10 +239,14 @@ def test_stream_read_with_legacy_field_transformation(
 
     requests_mock.register_uri(stream_retriever.requester._http_method.value, stream_url, responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
-    mock_v3_properties(requests_mock, endpoint, [
-        {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-        for property_name in fake_properties_list
-    ])
+    mock_v3_properties(
+        requests_mock,
+        endpoint,
+        [
+            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            for property_name in fake_properties_list
+        ],
+    )
 
     # Also mock v2/v3 properties for all other entities (needed by dynamic schema loader)
     mock_dynamic_schema_requests_with_skip(requests_mock, [endpoint])
@@ -335,10 +339,14 @@ def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_
     ]
     requests_mock.register_uri("POST", endpoint_path, responses)
     requests_mock.register_uri("GET", properties_path, properties_response)
-    mock_v3_properties(requests_mock, "deal_split", [
-        {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-        for property_name in fake_properties_list
-    ])
+    mock_v3_properties(
+        requests_mock,
+        "deal_split",
+        [
+            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            for property_name in fake_properties_list
+        ],
+    )
     mock_dynamic_schema_requests_with_skip(requests_mock, ["deal_split"])
 
     records = run_read(stream)
@@ -407,10 +415,14 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
     ]
     stream._sync_mode = SyncMode.incremental
     requests_mock.register_uri("GET", properties_path, properties_response)
-    mock_v3_properties(requests_mock, "deal_split", [
-        {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-        for property_name in fake_properties_list
-    ])
+    mock_v3_properties(
+        requests_mock,
+        "deal_split",
+        [
+            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            for property_name in fake_properties_list
+        ],
+    )
     mock_dynamic_schema_requests_with_skip(requests_mock, ["deal_split"])
     records = run_read(stream)
 
