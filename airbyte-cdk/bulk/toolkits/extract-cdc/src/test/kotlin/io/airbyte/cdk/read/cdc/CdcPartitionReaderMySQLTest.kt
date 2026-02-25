@@ -107,10 +107,7 @@ class CdcPartitionReaderMySQLTest :
                 .buildMap()
 
         override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
-            DebeziumPropertiesBuilder()
-                .with(commonProperties())
-                .withStreams(streams)
-                .buildMap()
+            DebeziumPropertiesBuilder().with(commonProperties()).withStreams(streams).buildMap()
 
         private fun commonProperties(): Map<String, String> =
             DebeziumPropertiesBuilder()
