@@ -9,6 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                           |
 |---------|------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.1   | 2026-02-24 | | Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944). |
 | 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376) | Initial independent release of bulk-cdk-core-extract. Separate versioning for extract package begins. |
 
 </details>
