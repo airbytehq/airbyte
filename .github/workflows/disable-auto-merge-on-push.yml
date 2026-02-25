@@ -1,0 +1,34 @@
+name: Disable Auto-Merge on New Commits
+
+on:
+  pull_request_target:
+    types:
+      - synchronize
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  disable-auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check and disable auto-merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPO="${{ github.repository }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+
+          AUTO_MERGE_ENABLED=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json autoMergeRequest --jq '.autoMergeRequest != null')
+
+          if [[ "$AUTO_MERGE_ENABLED" != "true" ]]; then
+            echo "Auto-merge is not enabled. Nothing to do."
+            exit 0
+          fi
+
+          echo "Auto-merge is enabled. Disabling due to new commits."
+          gh pr merge "$PR_NUMBER" --repo "$REPO" --disable-auto
+
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body \
+            "Auto-merge has been disabled because new commits were pushed to this PR. Please re-enable auto-merge manually after reviewing the new changes."
