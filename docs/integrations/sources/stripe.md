@@ -167,6 +167,7 @@ This means that streams with no new records in the source within the last 30 day
 The following streams are affected by cursor age validation:
 
 - `Accounts`
+- `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
 - `Bank Accounts`
@@ -174,8 +175,11 @@ The following streams are affected by cursor age validation:
 - `Cards`
 - `Charges`
 - `Checkout Sessions`
+- `Coupons`
+- `Credit Notes`
 - `Customers`
 - `Disputes`
+- `Early Fraud Warnings`
 - `External Account Bank Accounts`
 - `External Account Cards`
 - `Invoice Items`
@@ -185,10 +189,17 @@ The following streams are affected by cursor age validation:
 - `Payment Methods`
 - `Payouts`
 - `Persons`
+- `Plans`
+- `Prices`
+- `Products`
+- `Promotion Codes`
 - `Refunds`
+- `Reviews`
 - `Setup Intents`
 - `Subscription Items`
+- `Subscription Schedule`
 - `Subscriptions`
+- `Top Ups`
 - `Transactions`
 - `Transfers`
 
