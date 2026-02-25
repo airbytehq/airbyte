@@ -47,7 +47,7 @@ data:
             impactedScopes: ["refunds"]
       6.0.0:
         message: "Version 6.0.0 fixes the `invoice_line_items` incremental stream to correctly emit individual line item records instead of full invoice objects. The record shape changes from invoice-shaped to line-item-shaped. A reset of the `invoice_line_items` stream is required."
-        upgradeDeadline: "2026-03-23"
+        upgradeDeadline: "2026-03-11"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["invoice_line_items"]
