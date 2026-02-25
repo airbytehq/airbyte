@@ -22,6 +22,8 @@ The unique needs of a destination account for why setting up some connections is
 
 ## Create an ELT connection
 
+<Navattic id="cmhfholey000504ic07qla001" />
+
 Follow these steps to create a connection to a database, warehouse, lake, or similar type of destination.
 
 1. Click **Connections** in the navigation.

@@ -36,4 +36,11 @@ data:
     #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  externalDocumentationUrls:
+    - title: RabbitMQ documentation
+      url: https://www.rabbitmq.com/documentation.html
+      type: api_reference
+    - title: Access control
+      url: https://www.rabbitmq.com/access-control.html
+      type: permissions_scopes
 metadataSpecVersion: "1.0"

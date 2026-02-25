@@ -41,4 +41,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: FastBill API documentation
+      url: https://apidocs.fastbill.com/
+      type: api_reference
+    - title: FastBill authentication
+      url: https://apidocs.fastbill.com/fastbill/en/fundamentals.html#authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

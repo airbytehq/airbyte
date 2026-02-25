@@ -537,6 +537,172 @@ class TestBaseInsightsStream:
             ]
         )
 
+    @pytest.mark.parametrize(
+        "custom_fields, expected_in_schema, expected_not_in_schema",
+        [
+            pytest.param(
+                ["conversion_leads", "cost_per_objective_result"],
+                ["conversion_leads", "cost_per_objective_result", "date_start", "date_stop", "account_id", "ad_id"],
+                [],
+                id="extra_fields_from_custom_schema",
+            ),
+            pytest.param(
+                ["account_id", "impressions", "conversion_leads"],
+                ["account_id", "impressions", "conversion_leads", "date_start", "date_stop", "ad_id"],
+                [],
+                id="mix_of_base_and_extra_fields",
+            ),
+            pytest.param(
+                ["video_thruplay_watched_actions", "objective_result_rate"],
+                ["video_thruplay_watched_actions", "objective_result_rate", "date_start", "date_stop", "account_id", "ad_id"],
+                [],
+                id="ads_action_stats_and_ads_insights_result_fields",
+            ),
+            pytest.param(
+                ["marketing_messages_delivered", "adset_end"],
+                ["marketing_messages_delivered", "adset_end", "date_start", "date_stop", "account_id", "ad_id"],
+                [],
+                id="numeric_and_string_extra_fields",
+            ),
+        ],
+    )
+    def test_get_json_schema_custom_with_extra_fields(self, api, some_config, custom_fields, expected_in_schema, expected_not_in_schema):
+        """Test that custom insights streams include extra fields from ads_insights_custom_fields.json"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=custom_fields,
+            insights_lookback_window=28,
+        )
+
+        schema = stream.get_json_schema()
+
+        for field in expected_in_schema:
+            assert field in schema["properties"], f"Expected field '{field}' to be in schema"
+        for field in expected_not_in_schema:
+            assert field not in schema["properties"], f"Expected field '{field}' to NOT be in schema"
+
+    def test_get_json_schema_builtin_not_changed(self, api, some_config):
+        """Test that built-in Ads Insights stream (no custom fields) does not include extra fields"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+
+        schema = stream.get_json_schema()
+
+        # These fields should NOT be in the built-in schema (they are only in ads_insights_custom_fields.json)
+        extra_fields = ["conversion_leads", "cost_per_objective_result", "video_thruplay_watched_actions"]
+        for field in extra_fields:
+            assert field not in schema["properties"], f"Extra field '{field}' should NOT be in built-in schema"
+
+        # But standard fields should still be present
+        assert "account_id" in schema["properties"]
+        assert "impressions" in schema["properties"]
+        assert "actions" in schema["properties"]
+
+    def test_fields_custom_with_objective_results(self, api, some_config):
+        """Test that objective_results field is included in schema when requested in custom fields"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["objective_results", "impressions"],
+            insights_lookback_window=28,
+        )
+
+        schema = stream.get_json_schema()
+        assert "objective_results" in schema["properties"], "objective_results should be in schema when requested"
+        assert "impressions" in schema["properties"], "impressions should be in schema when requested"
+
+    @pytest.mark.parametrize(
+        "custom_fields, record, expected_record",
+        [
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="rename_results_to_objective_results",
+            ),
+            pytest.param(
+                ["objective_results", "results", "impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_results_also_requested",
+            ),
+            pytest.param(
+                ["impressions", "clicks"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_objective_results_not_requested",
+            ),
+            pytest.param(
+                None,
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_for_builtin_stream",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"impressions": 100, "clicks": 50},
+                {"impressions": 100, "clicks": 50},
+                id="no_rename_when_results_not_in_record",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_objective_results_already_in_record",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100, "spend": 50.5},
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100, "spend": 50.5},
+                id="rename_preserves_other_fields",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [], "impressions": 100},
+                {"objective_results": [], "impressions": 100},
+                id="rename_empty_results_array",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [{"action_type": "a", "value": "1"}, {"action_type": "b", "value": "2"}], "impressions": 100},
+                {"objective_results": [{"action_type": "a", "value": "1"}, {"action_type": "b", "value": "2"}], "impressions": 100},
+                id="rename_multiple_results_items",
+            ),
+            pytest.param(
+                ["impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_objective_results_not_in_custom_fields",
+            ),
+        ],
+    )
+    def test_objective_results_renamed_from_results(self, api, some_config, custom_fields, record, expected_record):
+        """Test that results field is renamed to objective_results when appropriate conditions are met.
+
+        See: https://github.com/airbytehq/oncall/issues/10126
+        """
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=custom_fields,
+            insights_lookback_window=28,
+        )
+
+        transformed_record = stream._transform_objective_results(record)
+        assert transformed_record == expected_record
+
     def test_level_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,
@@ -718,6 +884,78 @@ class TestBaseInsightsStream:
             breakdowns=breakdowns,
         )
         assert stream.primary_key == expect_pks
+
+    @pytest.mark.parametrize(
+        "level, expect_pks",
+        (
+            ("ad", ["date_start", "account_id", "ad_id"]),
+            ("adset", ["date_start", "account_id", "adset_id"]),
+            ("campaign", ["date_start", "account_id", "campaign_id"]),
+            ("account", ["date_start", "account_id"]),
+        ),
+    )
+    def test_primary_keys_by_level(self, api, some_config, level, expect_pks):
+        start_date = ab_datetime_parse("2024-01-01")
+        end_date = start_date + timedelta(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            level=level,
+        )
+        assert stream.primary_key == expect_pks
+
+    @pytest.mark.parametrize(
+        "level, breakdowns, expect_pks",
+        (
+            ("ad", ["country"], ["date_start", "account_id", "ad_id", "country"]),
+            ("adset", ["country"], ["date_start", "account_id", "adset_id", "country"]),
+            ("campaign", ["age", "gender"], ["date_start", "account_id", "campaign_id", "age", "gender"]),
+            ("account", ["country"], ["date_start", "account_id", "country"]),
+        ),
+    )
+    def test_primary_keys_by_level_with_breakdowns(self, api, some_config, level, breakdowns, expect_pks):
+        start_date = ab_datetime_parse("2024-01-01")
+        end_date = start_date + timedelta(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            level=level,
+            breakdowns=breakdowns,
+        )
+        assert stream.primary_key == expect_pks
+
+    @pytest.mark.parametrize(
+        "level, entity_id_field",
+        (
+            ("ad", "ad_id"),
+            ("adset", "adset_id"),
+            ("campaign", "campaign_id"),
+            ("account", None),
+        ),
+    )
+    def test_custom_schema_includes_level_entity_id(self, api, some_config, level, entity_id_field):
+        start_date = ab_datetime_parse("2024-01-01")
+        end_date = start_date + timedelta(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            level=level,
+            fields=["impressions", "clicks"],
+        )
+        schema = stream.get_json_schema()
+        if entity_id_field:
+            assert entity_id_field in schema["properties"], f"{entity_id_field} should be in schema for level={level}"
+        assert "account_id" in schema["properties"], "account_id should always be in schema"
+        assert "date_start" in schema["properties"], "date_start should always be in schema"
 
     @pytest.mark.parametrize(
         "breakdowns, expect_pks",

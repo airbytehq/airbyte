@@ -372,6 +372,25 @@ In some cases the array of actual records is nested multiple levels deep in the 
 
 In this case, **setting the Field Path to `response`,`docs`** selects the nested array.
 
+#### Nested array with metadata
+
+Some APIs return records nested within a response body alongside metadata fields. For example, an analytics API might return:
+
+```json
+{
+  "status": 200,
+  "body": {
+    "results": [
+      { "id": 1, "name": "record_one" },
+      { "id": 2, "name": "record_two" }
+    ],
+    "total": { "count": 2 }
+  }
+}
+```
+
+In this case, **setting the Download Extractor Field Path in the Advanced options to `results`** extracts each object in the `results` array as an individual record. The `status` and `total` fields are discarded, and each item in the `results` array becomes a separate record.
+
 #### Root array
 
 In some cases, the response body itself is an array of records, like in the [CoinAPI API](https://docs.coinapi.io/market-data/rest-api/quotes):

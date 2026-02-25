@@ -231,7 +231,7 @@ def test_upload_prerelease(mocker, valid_metadata_yaml_files, tmp_path):
     mocker.patch.object(commands.click, "secho")
     mocker.patch.object(commands, "upload_metadata_to_gcs")
 
-    prerelease_tag = "0.3.0-dev.6d33165120"
+    prerelease_tag = "0.3.0-preview.6d33165"
     bucket = "my-bucket"
     metadata_file_path = valid_metadata_yaml_files[0]
     validator_opts = ValidatorOptions(docs_path=str(tmp_path), prerelease_tag=prerelease_tag)

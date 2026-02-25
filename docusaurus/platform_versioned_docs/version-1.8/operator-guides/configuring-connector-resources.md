@@ -58,7 +58,7 @@ You can use SQL to configure connector definitions, affecting all connectors of 
    select * from actor_definition where actor_definition.docker_repository like '%<image-name>';
    ```
 
-2. Run the following commend with the resource requirements and the connection definition id filled in.
+2. Run the following command with the resource requirements and the connection definition id filled in.
 
    ```sql
    update actor_definition set resource_requirements = '{"jobSpecific": [{"jobType": "sync", "resourceRequirements": {"cpu_limit": "2", "cpu_request": "2", "memory_limit": "2048Mi", "memory_request": "2048Mi"}}]}' where id = '<id-from-step-1>';

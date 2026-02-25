@@ -1,0 +1,14 @@
+[
+  {
+    "slug": "standard",
+    "name": "Standard rate"
+  },
+  {
+    "slug": "reduced-rate",
+    "name": "Reduced rate"
+  },
+  {
+    "slug": "zero-rate",
+    "name": "Zero rate"
+  }
+]

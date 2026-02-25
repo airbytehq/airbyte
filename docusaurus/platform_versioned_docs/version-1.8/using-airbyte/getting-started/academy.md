@@ -14,6 +14,6 @@ Airbyte Academy is your home for concise, structured training courses. These fre
     <CardWithIcon title="Build an AI chatbot" description="In this course, you will use Stripe, Airbyte, Supabase, PGVector, and OpenAI to build an AI-powered chatbot to allow users to interact with e-commerce data. They will be able to ask natural language questions to uncover insights in the data." ctaText ="Start building AI apps" ctaLink="https://airbyteacademy.thinkific.com/courses/ai-chatbot?utm_source=airbytedocs" icon="fa-robot" />
 </Grid>
 <Grid columns="2">
-    <CardWithIcon title="API" description="Coming soon!" icon="fa-lock" />
-    <CardWithIcon title="Python" description="Coming soon!" icon="fa-lock" />
+    <CardWithIcon title="API fundamentals" description="Build a strong foundation in API concepts, designs, and integration techniques to enhance your development skills and boost project efficiency." ctaText="Start learning APIs" ctaLink="https://airbyteacademy.thinkific.com/courses/api-fundamentals?utm_source=airbytedocs" icon="fa-plug" />
+    <CardWithIcon title="PyAirbyte fundamentals" description="Master PyAirbyte to streamline data integration in your projects. Build, configure, and manage your data pipelines with ease." ctaText="Start learning PyAirbyte" ctaLink="https://airbyteacademy.thinkific.com/courses/pyairbyte-fundamentals?utm_source=airbytedocs" icon="fa-python" />
 </Grid>

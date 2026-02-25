@@ -1,0 +1,37 @@
+{
+  "users": [
+    {
+      "id": 1782884,
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john.doe@example.com",
+      "telephone": "555-1234",
+      "timezone": "America/New_York",
+      "has_access_to_all_future_projects": false,
+      "is_contractor": false,
+      "is_admin": true,
+      "is_project_manager": false,
+      "can_see_rates": true,
+      "can_create_projects": true,
+      "can_create_invoices": true,
+      "is_active": true,
+      "weekly_capacity": 144000,
+      "default_hourly_rate": 100.0,
+      "cost_rate": 50.0,
+      "roles": ["Admin"],
+      "avatar_url": "https://example.com/avatar.jpg",
+      "created_at": "2023-01-05T10:00:00Z",
+      "updated_at": "2024-01-10T15:30:00Z"
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {
+    "first": "https://api.harvestapp.com/v2/users?page=1&per_page=50",
+    "last": "https://api.harvestapp.com/v2/users?page=1&per_page=50",
+    "previous": null,
+    "next": null
+  }
+}

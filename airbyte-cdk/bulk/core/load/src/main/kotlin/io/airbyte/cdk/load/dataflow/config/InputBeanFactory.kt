@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.config
@@ -7,6 +7,9 @@ package io.airbyte.cdk.load.dataflow.config
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStoreFactory
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.ConnectorInputStreams
+import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.input.DataFlowPipelineInputFlow
 import io.airbyte.cdk.load.dataflow.input.JsonDestinationMessageInputFlow
@@ -25,11 +28,13 @@ import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlin.math.min
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 
@@ -39,6 +44,8 @@ import kotlinx.coroutines.flow.Flow
  */
 @Factory
 class InputBeanFactory {
+    private val log = KotlinLogging.logger {}
+
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
     @Singleton
     fun sockets(
@@ -47,14 +54,29 @@ class InputBeanFactory {
         bufferSizeBytes: Int,
         @Value("\${airbyte.destination.core.data-channel.socket-connection-timeout-ms}")
         socketConnectionTimeoutMs: Long,
-    ): List<ClientSocket> =
-        socketPaths.map {
+        socketConfig: DataFlowSocketConfig? = null,
+    ): List<ClientSocket> {
+        val effectiveSocketPaths =
+            if (socketConfig != null) {
+                val effectiveCount = min(socketConfig.numSockets, socketPaths.size)
+                log.info {
+                    "Connector requested ${socketConfig.numSockets} sockets, " +
+                        "platform provided ${socketPaths.size}, using $effectiveCount"
+                }
+                socketPaths.take(effectiveCount)
+            } else {
+                log.info { "Using all ${socketPaths.size} sockets provided by platform" }
+                socketPaths
+            }
+
+        return effectiveSocketPaths.map {
             ClientSocket(
                 socketPath = it,
                 bufferSizeBytes = bufferSizeBytes,
                 connectTimeoutMs = socketConnectionTimeoutMs,
             )
         }
+    }
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
     @Named("inputStreams")
@@ -94,7 +116,6 @@ class InputBeanFactory {
                     )
                 }
             }
-            else -> TODO("Not supported yet")
         }
 
     @Singleton
@@ -118,11 +139,11 @@ class InputBeanFactory {
     @Singleton
     fun aggregateStoreFactory(
         aggFactory: AggregateFactory,
-        memoryAndParallelismConfig: MemoryAndParallelismConfig,
+        aggregatePublishingConfig: AggregatePublishingConfig,
     ) =
         AggregateStoreFactory(
             aggFactory,
-            memoryAndParallelismConfig,
+            aggregatePublishingConfig,
         )
 
     @Singleton
@@ -134,9 +155,10 @@ class InputBeanFactory {
         aggregateStoreFactory: AggregateStoreFactory,
         stateHistogramStore: StateHistogramStore,
         statsStore: CommittedStatsStore,
-        memoryAndParallelismConfig: MemoryAndParallelismConfig,
+        aggregatePublishingConfig: AggregatePublishingConfig,
         @Named("aggregationDispatcher") aggregationDispatcher: CoroutineDispatcher,
         @Named("flushDispatcher") flushDispatcher: CoroutineDispatcher,
+        @Named("finalFlushDispatcher") finalFlushDispatcher: CoroutineDispatcher,
     ): List<DataFlowPipeline> =
         inputFlows.map {
             val aggStore = aggregateStoreFactory.make()
@@ -146,6 +168,7 @@ class InputBeanFactory {
                     aggStore,
                     stateHistogramStore,
                     statsStore,
+                    finalFlushDispatcher,
                 )
 
             DataFlowPipeline(
@@ -155,7 +178,7 @@ class InputBeanFactory {
                 flush = flush,
                 state = state,
                 completionHandler = completionHandler,
-                memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregatePublishingConfig = aggregatePublishingConfig,
                 aggregationDispatcher = aggregationDispatcher,
                 flushDispatcher = flushDispatcher,
             )

@@ -1,0 +1,42 @@
+name: Promote Draft on Auto-Merge Label
+
+# This workflow automatically marks draft PRs as ready for review
+# when an auto-merge label is added. This complements the
+# enforce-draft-pr-status workflow: if a PR is converted to draft
+# before its auto-merge label is applied, this workflow will
+# promote it back to ready once the label arrives.
+
+on:
+  pull_request_target:
+    types:
+      - labeled
+
+jobs:
+  promote-draft:
+    name: Mark PR as Ready for Review
+    if: |
+      github.event.pull_request.draft == true &&
+      (
+        github.event.label.name == 'auto-merge' ||
+        github.event.label.name == 'auto-merge/bypass-ci-checks'
+      )
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Mark PR as ready for review
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr ready "$PR_NUMBER" --repo "${{ github.repository }}"

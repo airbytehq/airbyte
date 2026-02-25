@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.spec
@@ -173,7 +173,7 @@ class KeyPairAuthSpecification(
     @get:JsonSchemaTitle("Passphrase")
     @get:JsonPropertyDescription("Passphrase for private key")
     @get:JsonProperty("private_key_password")
-    @get:JsonSchemaInject(json = """{"order": 0}""")
+    @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val privateKeyPassword: String? = null
 ) : CredentialsSpecification(Type.PRIVATE_KEY)
 
