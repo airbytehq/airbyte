@@ -79,7 +79,7 @@ The Stripe source connector supports the following [sync modes](https://docs.air
 
 The Stripe source connector supports the following streams:
 
-- [Accounts](https://stripe.com/docs/api/accounts/list)
+- [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
 - [Application Fees](https://stripe.com/docs/api/application_fees) \(Incremental\)
 - [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list) \(Incremental\)
 - [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
@@ -105,7 +105,7 @@ The Stripe source connector supports the following streams:
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
-- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -114,7 +114,7 @@ The Stripe source connector supports the following streams:
   :::note
   This stream is built with a call using payout_id from the payout stream (parent) as a parameter to the balance transaction API to get balance transactions that comprised the actual amount of the payout. Check [the Stripe docs](https://docs.stripe.com/api/balance_transactions/list) for more details.
   :::
-- [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
+- [Promotion Codes](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
 - [Prices](https://stripe.com/docs/api/prices/list) \(Incremental\)
@@ -124,11 +124,11 @@ The Stripe source connector supports the following streams:
 - [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
 - [Setup Intents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Shipping Rates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
-- [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+- [Subscription Items](https://stripe.com/docs/api/subscription_items/list) \(Incremental\)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
-- [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+- [Transactions](https://stripe.com/docs/api/issuing/transactions/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Usage Records](https://stripe.com/docs/api/usage_records)
@@ -223,6 +223,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 
 :::
 
+- `Accounts`
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
@@ -244,6 +245,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Invoice Line Items`
 - `Invoices`
 - `Payment Intents`
+- `Payment Methods`
 - `Payouts`
 - `Payout Balance Transactions`
 - `Promotion Codes`
