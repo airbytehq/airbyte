@@ -106,8 +106,9 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
-10. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Stream Slice Step**, enter an ISO 8601 duration to control the size of the time window used for slicing incremental sync requests. The default is `P30D` (30 days). This setting only applies to incremental syncs.
+10. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -124,8 +125,9 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
-10. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Stream Slice Step**, enter an ISO 8601 duration to control the size of the time window used for slicing incremental sync requests. The default is `P30D` (30 days). This setting only applies to incremental syncs.
+10. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
@@ -274,10 +276,10 @@ The lookback window uses the ISO 8601 duration format. The format is `PT<number>
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | fix(source-salesforce): skip time-based slicing for full_refresh syncs (AI-Triage PR) |
+| 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | Skip time-based slicing for full_refresh syncs to improve performance |
 | 2.7.17 | 2026-02-10 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
-| 2.7.16-rc.1 | 2025-10-27 | [66136](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning|
+| 2.7.16-rc.1 | 2025-10-28 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
 | 2.7.15      | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records|
 | 2.7.14      | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
 | 2.7.13      | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
