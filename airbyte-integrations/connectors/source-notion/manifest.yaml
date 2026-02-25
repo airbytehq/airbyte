@@ -1,4 +1,4 @@
-version: 7.0.3
+version: 7.0.4
 type: DeclarativeSource
 
 check:
@@ -95,7 +95,7 @@ definitions:
         $ref: "#/definitions/authenticator"
       http_method: GET
       request_headers:
-        Notion-Version: "2022-06-28"
+        Notion-Version: "2025-09-03"
       error_handler:
         $ref: "#/definitions/error_handler"
     record_selector:
@@ -153,7 +153,7 @@ streams:
       schema:
         $ref: "#/schemas/users"
   - type: DeclarativeStream
-    name: databases
+    name: data_sources
     primary_key:
       - id
     retriever:
@@ -165,7 +165,7 @@ streams:
         request_parameters: {}
         request_body_json:
           sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
-          filter: '{ "property": "object", "value": "database" }'
+          filter: '{ "property": "object", "value": "data_source" }'
       paginator:
         $ref: "#/definitions/body_json_paginator"
       partition_router: []
@@ -177,7 +177,7 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $ref: "#/schemas/databases"
+        $ref: "#/schemas/data_sources"
   - type: DeclarativeStream
     name: comments
     primary_key:
@@ -448,26 +448,36 @@ schemas:
               - "null"
               - string
   
-  databases:
+  data_sources:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
     additionalProperties: true
     properties:
       object:
-        description: The type of object represented by the database.
+        description: The type of object represented by the data source.
         enum:
-          - database
+          - data_source
       id:
-        description: Unique identifier of the database.
+        description: Unique identifier of the data source.
         type: string
+      name:
+        description: The name of the data source.
+        type:
+          - "null"
+          - string
       created_time:
-        description: The timestamp when the database was created.
+        description: The timestamp when the data source was created.
         type: string
         format: date-time
       last_edited_time:
-        description: The timestamp when the database was last edited.
+        description: The timestamp when the data source was last edited.
         type: string
         format: date-time
+      in_trash:
+        description: Indicates whether the data source is in trash or not.
+        type:
+          - "null"
+          - boolean
       title:
         description: Title or name of the database.
         type: array
@@ -1117,25 +1127,33 @@ schemas:
                 type: string
                 format: date-time
       parent:
-        description: Indicates the parent database if it exists.
+        description: The immediate parent of the data source (the database container).
         type: object
         properties:
           type:
             enum:
-              - block_id
               - database_id
+          database_id:
+            type: string
+      database_parent:
+        description: The grandparent of the data source (the parent of the database container).
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            enum:
+              - block_id
               - page_id
               - workspace
           block_id:
-            type: string
-          database_id:
             type: string
           page_id:
             type: string
           workspace:
             type: boolean
       url:
-        description: URL or reference to access the database.
+        description: URL or reference to access the data source.
         type: string
       is_inline:
         description: Indicates if the database is displayed inline.
@@ -1143,10 +1161,30 @@ schemas:
           - "null"
           - boolean
       public_url:
-        description: Public URL to access the database.
+        description: Public URL to access the data source.
         type:
           - "null"
           - string
+      unique_id:
+        description: The unique ID configuration for the data source.
+        type:
+          - "null"
+          - object
+        properties:
+          prefix:
+            type:
+              - "null"
+              - string
+      workspace_name:
+        description: The name of the workspace containing the data source.
+        type:
+          - "null"
+          - string
+      is_locked:
+        description: Indicates whether the data source schema is locked.
+        type:
+          - "null"
+          - boolean
       properties:
         description:
           List of key-value pairs defining additional properties of the
@@ -1408,7 +1446,13 @@ schemas:
                     name:
                       type: string
                     database_id:
-                      type: string
+                      type:
+                        - "null"
+                        - string
+                    data_source_id:
+                      type:
+                        - "null"
+                        - string
                     synced_property_name:
                       type:
                         - "null"
@@ -2010,10 +2054,13 @@ schemas:
           type:
             enum:
               - block_id
+              - data_source_id
               - database_id
               - page_id
               - workspace
           block_id:
+            type: string
+          data_source_id:
             type: string
           database_id:
             type: string
@@ -3118,10 +3165,13 @@ schemas:
           type:
             enum:
               - block_id
+              - data_source_id
               - database_id
               - page_id
               - workspace
           block_id:
+            type: string
+          data_source_id:
             type: string
           database_id:
             type: string
@@ -3306,6 +3356,11 @@ schemas:
       archived:
         description: Indicates if the block is archived or not.
         type: boolean
+      in_trash:
+        description: Indicates whether the block is in trash or not.
+        type:
+          - "null"
+          - boolean
       has_children:
         description: Indicates if the block has children or not.
         type:
