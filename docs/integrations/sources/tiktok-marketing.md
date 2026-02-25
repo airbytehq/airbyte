@@ -19,7 +19,7 @@ This page contains the setup guide and reference information for the [TikTok Mar
 
 **For Airbyte Open Source:**
 
-For the Production environment:
+For the Production environment (OAuth2.0):
 
 - Access token
 - Secret
@@ -50,10 +50,13 @@ To access the Sandbox environment:
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select TikTok Marketing from the Source type dropdown.
 4. Enter a name for the TikTok Marketing connector.
-5. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
-6. Log in and Authorize to the Tiktok account
-7. Choose required Start date
-8. click `Set up source`.
+5. Select `OAuth2.0` as the authorization method, then click `Authenticate your account`.
+6. Log in and authorize the TikTok account.
+7. Choose a **Start date**. Any data before this date is not replicated.
+8. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
+9. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
+10. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
+11. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -63,9 +66,12 @@ To access the Sandbox environment:
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
-4. Select `Production Access Token` or `Sandbox Access Token` Authorization method, then copy and paste info from step 1.
-5. Choose required Start date
-6. Click `Set up source`.
+4. Select `OAuth2.0` or `Sandbox Access Token` as the authorization method, then enter the credentials from step 1.
+5. Choose a **Start date**. Any data before this date is not replicated.
+6. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
+7. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
+8. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
+9. Click `Set up source`.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -139,6 +145,10 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 The connector is restricted by [requests limitation](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## Upgrading
+
+For information on breaking changes and migration steps, see the [TikTok Marketing Migration Guide](./tiktok-marketing-migrations.md).
+
 ## Changelog
 
 <details>
@@ -176,7 +186,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 | 4.5.0      | 2025-03-07 | [45081](https://github.com/airbytehq/airbyte/pull/45081)  | Add SparkAds stream                                                                                                                                                    |
 | 4.4.0      | 2025-03-07 | [55242](https://github.com/airbytehq/airbyte/pull/55242)  | Promoting release candidate 4.4.0-rc3 to a main version.                                                                                                               |
 | 4.4.0-rc3  | 2025-03-04 | [55194](https://github.com/airbytehq/airbyte/pull/55194)  | Resolve state format issue                                                                                                                                             |
-| 4.4.0-rc2  | 2025-02-20 | [53645)](https://github.com/airbytehq/airbyte/pull/53645) | Remove stream_state interpolation and custom cursors                                                                                                                   |
+| 4.4.0-rc2  | 2025-02-20 | [53645](https://github.com/airbytehq/airbyte/pull/53645) | Remove stream_state interpolation and custom cursors                                                                                                                   |
 | 4.4.0-rc1  | 2025-01-29 | [51584](https://github.com/airbytehq/airbyte/pull/51584)  | Update to concurrent CDK                                                                                                                                               |
 | 4.3.7      | 2025-01-11 | [47118](https://github.com/airbytehq/airbyte/pull/47118)  | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 4.3.6      | 2024-10-12 | [46855](https://github.com/airbytehq/airbyte/pull/46855)  | Update dependencies                                                                                                                                                    |
