@@ -91,7 +91,7 @@ class RedshiftGenerationIdMigration(
                 database.execute(
                     """
                     ALTER TABLE "${stream.id.finalNamespace}"."${stream.id.finalName}" 
-                    ADD COLUMN "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" BIGINT NULL;
+                    ADD COLUMN "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" BIGINT;
                     """.trimIndent()
                 )
             }
