@@ -23,6 +23,9 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-granola
+  suggestedStreams:
+    streams:
+      - detailed_notes
   supportLevel: community
   tags:
     - cdk:low-code
