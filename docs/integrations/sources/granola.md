@@ -41,21 +41,34 @@ The Granola source connector supports the following sync modes:
 
 ## Supported streams
 
-The Granola source connector supports the following stream:
+The Granola source connector supports the following streams:
 
-| Stream  | Sync mode   | Primary key |
-| :------ | :---------- | :---------- |
-| `notes` | Incremental | `id`        |
-
-### Notes
-
-The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation timestamp. The API may return additional fields beyond those listed here, and the connector captures them automatically.
-
-For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows.
+| Stream           | Sync mode    | Primary key |
+| :--------------- | :----------- | :---------- |
+| `notes`          | Incremental  | `id`        |
+| `detailed_notes` | Full Refresh | `id`        |
 
 The Granola Enterprise API only provides access to notes that have been shared in workspace-wide folders. Private notes are not accessible through the API. For more information, refer to the [Granola Enterprise API documentation](https://docs.granola.ai/help-center/sharing/integrations/enterprise-api).
 
-This connector does not use the single-note detail endpoint (`GET /v1/notes/{note_id}`), so fields available only on that endpoint, such as summaries, transcripts, attendees, calendar events, and folder membership, are not included.
+### Notes
+
+The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner information, and creation and update timestamps. The API may return additional fields beyond those listed here, and the connector captures them automatically.
+
+For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows.
+
+### Detailed notes
+
+The `detailed_notes` stream retrieves full note content for each note in your workspace using the [`GET /v1/notes/{note_id}`](https://docs.granola.ai/api-reference/get-note) endpoint. It fetches the ID of each note from the `notes` stream and then requests the complete details for that note, including:
+
+- AI-generated summaries (plain text and Markdown)
+- Meeting transcript with speaker identification and timestamps
+- Attendee list
+- Calendar event details (title, invitees, organizer, scheduled times)
+- Folder membership
+
+The connector always requests transcript data by passing the `include=transcript` query parameter. This may increase sync volume for workspaces with many notes.
+
+This stream syncs in Full Refresh mode only. It does not support incremental syncs.
 
 ## Performance considerations
 
