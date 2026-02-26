@@ -6,7 +6,7 @@ sidebar_position: 4
 
 In Agent Engine, a **customer** represents an end-user of your service who connects their own data sources. Each customer gets an isolated environment that stores their credentials, connectors, and data separately from other customers. You may occasionally see the terms `workspace` or `external_customer` in the Agent Engine API. These terms are essentially interchangeable. All of them map to a customer.
 
-The `external_user_id` you provide when creating scoped tokens serves as the unique customer identifier within your organization. Use any string that makes sense for your service, like an internal customer ID or customer name.
+The `customer_name` you provide when creating scoped tokens serves as the unique customer identifier within your organization. Use any string that makes sense for your service, like an internal customer ID or company name.
 
 ## Why customers exist
 
@@ -20,14 +20,14 @@ Agent Engine uses a hierarchical token system where each token type has a differ
 
 ## Create a new customer
 
-You create a new customer when you generate a scoped token with a new `external_user_id`. If the customer doesn't exist, Airbyte creates it automatically.
+You create a new customer when you generate a scoped token with a new `customer_name`. If the customer doesn't exist, Airbyte creates it automatically.
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/scoped-token \
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "external_user_id": "customer_acme_corp"
+    "customer_name": "customer_acme_corp"
   }'
 ```
 
@@ -104,7 +104,7 @@ curl -X DELETE https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
 
 ## Best practices
 
-- Use meaningful, consistent naming for `external_user_id`. Your internal customer ID or customer name works well, and makes it easy to correlate Agent Engine customers with your own customer records.
+- Use meaningful, consistent naming for `customer_name`. Your internal customer ID or company name works well, and makes it easy to correlate Agent Engine customers with your own customer records.
 
 - Handle token expiration appropriately. Application tokens expire after 15 minutes and scoped tokens expire after 20 minutes.
 
