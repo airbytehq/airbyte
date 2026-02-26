@@ -1,22 +1,21 @@
 # Incident.io
 
-This is the Incident.io source connector which ingests data from the incident API.
-The important streams are `incidents`, `follow-ups` and `severities`
+The Incident.io source connector syncs data from the [incident.io API](https://api-docs.incident.io/). Incident.io is an incident management, on-call, and status pages tool.
 
 ## Prerequisites
 
-An API key is required for authentication and using this connector. In order to obtain an API key, you must first create an Incident.io account.
-You can create an account here https://incident.io/
-Once you create an account and log in , you will find your API keys section in the settings sidebar under the `extends` heading. Make sure to provide all of the appropriate permissions.
-You can find more about their API here https://api-docs.incident.io/
+- An incident.io account. You can create one at [incident.io](https://incident.io/).
+- An incident.io API key. To create one, go to **Settings > API keys** in your [incident.io dashboard](https://app.incident.io/settings/api-keys). For more information, see the [incident.io authentication documentation](https://api-docs.incident.io/#section/Authentication).
 
-## Set up the Adjust source connector
+The API key you create determines what data this connector can access. Ensure it has the permissions required for the streams you want to sync.
+
+## Set up the Incident.io source connector
 
 1. Click **Sources** and then click **+ New source**.
-2. On the Set up the source page, select **Incdient.io** from the Source type dropdown.
+2. On the Set up the source page, select **Incident.io** from the Source type dropdown.
 3. Enter a name for your new source.
-4. For **API Key**, enter your API key obtained in the previous step.
-7. Click **Set up source**.
+4. For **API Key**, enter your API key.
+5. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -34,19 +33,20 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | actions | id | No pagination | ✅ |  ❌  |
+| alerts | id | DefaultPaginator | ✅ |  ❌  |
 | catalog_types | id | No pagination | ✅ |  ❌  |
 | custom_fields | id | No pagination | ✅ |  ❌  |
+| escalations | id | DefaultPaginator | ✅ |  ❌  |
 | follow-ups | id | No pagination | ✅ |  ❌  |
 | incident_roles | id | No pagination | ✅ |  ❌  |
+| incident_statuses | id | No pagination | ✅ |  ❌  |
 | incident_timestamps | id | No pagination | ✅ |  ❌  |
 | incident_updates | id | DefaultPaginator | ✅ |  ❌  |
-| incident_statuses | id | No pagination | ✅ |  ❌  |
-| workflows | id | No pagination | ✅ |  ❌  |
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| severities | id | No pagination | ✅ |  ❌  |
-| schedules | id | DefaultPaginator | ✅ |  ❌  |
 | incidents | id | DefaultPaginator | ✅ |  ❌  |
-| alerts | id | DefaultPaginator | ✅ |  ❌  |
+| schedules | id | DefaultPaginator | ✅ |  ❌  |
+| severities | id | No pagination | ✅ |  ❌  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
+| workflows | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
