@@ -125,6 +125,6 @@ The Shiftbase API has rate limiting in place. The connector handles rate limits 
 
 | Version | Date | Pull Request | Subject |
 |:---|:---|:---|:---|
-| 0.1.47 | 2026-02-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Initial release |
+| 0.0.1 | 2026-02-03 | [72899](https://github.com/airbytehq/airbyte/pull/72899) | Initial release |
 
 </details>

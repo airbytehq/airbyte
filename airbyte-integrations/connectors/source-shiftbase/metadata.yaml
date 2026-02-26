@@ -15,7 +15,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4d338322-bf11-4eeb-93b7-7aae9e92bcf7
-  dockerImageTag: 0.1.47
+  dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-shiftbase
   githubIssueLabel: source-shiftbase
   icon: icon.svg
