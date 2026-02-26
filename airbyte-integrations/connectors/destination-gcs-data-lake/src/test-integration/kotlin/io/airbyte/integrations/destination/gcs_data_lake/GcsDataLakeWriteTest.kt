@@ -97,13 +97,11 @@ class BigLakeWriteTest :
             DestinationStream(
                 unmappedNamespace = randomizedNamespace + namespaceSuffix,
                 unmappedName = name,
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema
+                tableSchema = makeTableSchema(ObjectType(linkedMapOf("id" to intType)), Append),
             )
         // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
         // So these two streams will collide.
@@ -141,13 +139,11 @@ class BigLakeWriteTest :
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Append,
-                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
-                syncId,
+                syncId = syncId,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema
+                tableSchema = makeTableSchema(ObjectType(schema), Append),
             )
         val firstStream =
             makeStream(

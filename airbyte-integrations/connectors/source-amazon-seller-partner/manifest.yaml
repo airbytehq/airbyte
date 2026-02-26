@@ -2784,6 +2784,61 @@ definitions:
               value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}"
             - path: ["queryEndDate"]
               value: "{{ stream_slice.cursor_slice.end_time }}"
+            - path: ["marketplaceId"]
+              value: "{{ config['marketplace_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_sales_and_traffic_report"
+
+    # Monthly granularity version of Sales and Traffic Report
+    get_sales_and_traffic_report_by_month:
+      type: DeclarativeStream
+      name: GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: queryEndDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1M"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_SALES_AND_TRAFFIC_REPORT
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              dateGranularity: "MONTH"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["salesAndTrafficByAsin"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["date"]
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}"
+            - path: ["queryEndDate"]
+              value: "{{ stream_slice.cursor_slice.end_time }}"
+            - path: ["marketplaceId"]
+              value: "{{ config['marketplace_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3152,6 +3207,7 @@ streams:
   - $ref: "#/definitions/streams/get_brand_analytics_alternate_purchase_report"
   - $ref: "#/definitions/streams/get_brand_analytics_item_comparison_report"
   - $ref: "#/definitions/streams/get_sales_and_traffic_report"
+  - $ref: "#/definitions/streams/get_sales_and_traffic_report_by_month"
   - $ref: "#/definitions/streams/get_vendor_sales_report"
   - $ref: "#/definitions/streams/get_vendor_inventory_report"
 
@@ -8475,6 +8531,10 @@ schemas:
         - 'null'
         - string
         format: date-time
+      marketplaceId:
+        type:
+        - 'null'
+        - string
       parentAsin:
         type:
         - 'null'

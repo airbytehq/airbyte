@@ -204,6 +204,7 @@ If compaction runs simultaneously with the sync, it would delete files from the 
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 1.0.7   | 2026-02-04 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
 | 1.0.6   | 2026-01-23 | [72300](https://github.com/airbytehq/airbyte/pull/72300)     | Upgrade CDK to 0.2.0                                                                  |
 | 1.0.5   | 2026-01-14 | [71760](https://github.com/airbytehq/airbyte/pull/71760)     | Restore integration tests in CI. Workaround DI error.                                 |
 | 1.0.4   | 2026-01-12 | [71227](https://github.com/airbytehq/airbyte/pull/71227)     | Add speed mode support with PROTOBUF serialization                                    |

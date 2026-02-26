@@ -403,7 +403,9 @@ export const HeaderDecoration = ({
           isArchived={isArchived}
           enterpriseConnector={enterpriseConnector}
         />
-        <CopyPageButton />
+        <div className={styles.connectorHeaderActions}>
+          <CopyPageButton />
+        </div>
       </div>
       <ConnectorMetadataCallout
         isCloud={isCloud}
