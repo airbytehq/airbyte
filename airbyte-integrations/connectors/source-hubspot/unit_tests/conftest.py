@@ -17,6 +17,21 @@ from airbyte_cdk.test.state_builder import StateBuilder
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 NUMBER_OF_PROPERTIES = 2000
+
+
+def mock_v3_properties(requests_mock, entity, properties_list):
+    """Register a v3 properties mock for a CRM search entity.
+
+    CRM search streams discover properties via v3 API (/crm/v3/properties/{entity}).
+    Call this alongside any v2 property mock registration for CRM search entities.
+    """
+    requests_mock.register_uri(
+        "GET",
+        f"/crm/v3/properties/{entity}",
+        [{"json": {"results": properties_list}, "status_code": 200}],
+    )
+
+
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
     "company",
@@ -156,18 +171,26 @@ def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exceptio
 
 @pytest.fixture()
 def mock_dynamic_schema_requests(requests_mock):
+    properties = [
+        {
+            "name": "hs__migration_soft_delete",
+            "label": "migration_soft_delete_deprecated",
+            "description": "Describes if the goal target can be treated as deleted.",
+            "groupName": "goal_target_information",
+            "type": "enumeration",
+        }
+    ]
     for entity in OBJECTS_WITH_DYNAMIC_SCHEMA:
+        # v2 URL (used by dynamic schema loader)
         requests_mock.get(
             f"https://api.hubapi.com/properties/v2/{entity}/properties",
-            json=[
-                {
-                    "name": "hs__migration_soft_delete",
-                    "label": "migration_soft_delete_deprecated",
-                    "description": "Describes if the goal target can be treated as deleted.",
-                    "groupName": "goal_target_information",
-                    "type": "enumeration",
-                }
-            ],
+            json=properties,
+            status_code=200,
+        )
+        # v3 URL (used by CRM search streams for property discovery)
+        requests_mock.get(
+            f"https://api.hubapi.com/crm/v3/properties/{entity}",
+            json={"results": properties},
             status_code=200,
         )
 
@@ -180,12 +203,20 @@ def mock_dynamic_schema_requests_with_skip(requests_mock, object_to_skip: list):
         status_code=200,
     )
 
+    properties = [{"name": "hs__test_field", "type": "enumeration"}]
     for object_name in OBJECTS_WITH_DYNAMIC_SCHEMA:
         if object_name in object_to_skip:
             continue
+        # v2 URL (used by dynamic schema loader)
         requests_mock.get(
             f"https://api.hubapi.com/properties/v2/{object_name}/properties",
-            json=[{"name": "hs__test_field", "type": "enumeration"}],
+            json=properties,
+            status_code=200,
+        )
+        # v3 URL (used by CRM search streams for property discovery)
+        requests_mock.get(
+            f"https://api.hubapi.com/crm/v3/properties/{object_name}",
+            json={"results": properties},
             status_code=200,
         )
 

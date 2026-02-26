@@ -1440,14 +1440,13 @@ definitions:
             type: SimpleRetriever
             requester:
               $ref: "#/definitions/base_requester"
-              path: "/properties/v2/{{ parameters['entity'] }}/properties"
-            decoder:
-              type: JsonDecoder
+              path: "/crm/v3/properties/{{ parameters['entity'] }}"
             record_selector:
               type: RecordSelector
               extractor:
                 type: DpathExtractor
-                field_path: []
+                field_path:
+                  - results
         request_body_json:
           limit: 200
           sorts:
