@@ -14,7 +14,6 @@ import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterat
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
@@ -42,6 +41,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.CheckForNull;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +83,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private final long tableSize;
   private final int maxTuple;
   private final boolean useTestPageSize;
+  private final DataSource dataSource;
 
   private AutoCloseableIterator<RowDataWithCtid> currentIterator;
   private Long lastKnownFileNode;
@@ -102,6 +103,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
 
   public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
                                  final JdbcDatabase database,
+                                 final DataSource dataSource,
                                  final CtidPostgresSourceOperations sourceOperations,
                                  final String quoteString,
                                  final List<String> columnNames,
@@ -121,6 +123,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     this.columnNames = columnNames;
     this.ctidStateManager = ctidStateManager;
     this.database = database;
+    this.dataSource = dataSource;
     this.fileNodeHandler = fileNodeHandler;
     this.quoteString = quoteString;
     this.schemaName = schemaName;
@@ -249,14 +252,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private void openSnapshotConnection() throws SQLException {
     closeSnapshotConnection();
 
-    if (database instanceof DefaultJdbcDatabase) {
-      snapshotConnection =
-          ((DefaultJdbcDatabase) database).getDataSource().getConnection();
-    } else {
-      throw new IllegalStateException(
-          "CTID snapshot scanning requires a DefaultJdbcDatabase (or subclass) but got: "
-              + database.getClass().getName());
-    }
+    snapshotConnection = dataSource.getConnection();
     snapshotConnection.setAutoCommit(false);
     snapshotConnection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
     LOGGER.info(

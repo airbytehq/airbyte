@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.sql.DataSource;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +61,11 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
   final Optional<Map<AirbyteStreamNameNamespacePair, Integer>> tablesMaxTuple;
   private final boolean tidRangeScanCapableDBServer;
+  private final DataSource dataSource;
 
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
+                             final DataSource dataSource,
                              final CtidPostgresSourceOperations sourceOperations,
                              final String quoteString,
                              final FileNodeHandler fileNodeHandler,
@@ -71,6 +74,7 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
                              final CtidStateManager ctidStateManager) {
     this.config = config;
     this.database = database;
+    this.dataSource = dataSource;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
     this.fileNodeHandler = fileNodeHandler;
@@ -160,7 +164,8 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
                                                                 @NotNull final Optional<Duration> cdcInitialLoadTimeout) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize,
+    return new InitialSyncCtidIterator(ctidStateManager, database, dataSource, sourceOperations, quoteString, columnNames, schemaName, tableName,
+        tableSize,
         blockSize, maxTuple, fileNodeHandler, tidRangeScanCapableDBServer,
         config.has(USE_TEST_CHUNK_SIZE) && config.get(USE_TEST_CHUNK_SIZE).asBoolean(), emittedAt,
         cdcInitialLoadTimeout);

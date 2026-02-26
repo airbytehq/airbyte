@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +81,7 @@ public class CtidUtils {
   }
 
   public static PostgresCtidHandler createInitialLoader(final JdbcDatabase database,
+                                                        final DataSource dataSource,
                                                         final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid,
                                                         final FileNodeHandler fileNodeHandler,
                                                         final String quoteString,
@@ -99,6 +101,7 @@ public class CtidUtils {
 
     return new PostgresCtidHandler(sourceConfig,
         database,
+        dataSource,
         new CtidPostgresSourceOperations(optionalMetadataInjector),
         quoteString,
         fileNodeHandler,

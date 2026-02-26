@@ -60,6 +60,7 @@ import java.util.OptionalLong;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,6 +136,7 @@ public class PostgresCdcCtidInitializer {
   }
 
   public static List<AutoCloseableIterator<AirbyteMessage>> cdcCtidIteratorsCombined(final JdbcDatabase database,
+                                                                                     final DataSource dataSource,
                                                                                      final ConfiguredAirbyteCatalog catalog,
                                                                                      final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
                                                                                      final StateManager stateManager,
@@ -231,7 +233,7 @@ public class PostgresCdcCtidInitializer {
 
       try {
         ctidHandler =
-            createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, quoteString, ctidStateManager,
+            createInitialLoader(database, dataSource, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, quoteString, ctidStateManager,
                 Optional.of(
                     new PostgresCdcConnectorMetadataInjector(emittedAt.toString(), io.airbyte.cdk.db.PostgresUtils.getLsn(database).asLong())));
       } catch (SQLException e) {

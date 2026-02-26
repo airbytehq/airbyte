@@ -177,6 +177,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
   private int stateEmissionFrequency;
   private final FeatureFlags featureFlags;
+  private DataSource currentDataSource;
 
   public static Source sshWrappedSource(PostgresSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
@@ -396,6 +397,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         getConnectionTimeout(connectionProperties, driverClassName));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
+    this.currentDataSource = dataSource;
 
     final JdbcDatabase database = new StreamingJdbcDatabase(
         dataSource,
@@ -558,7 +560,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("Using ctid + CDC");
-      return cdcCtidIteratorsCombined(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString(),
+      return cdcCtidIteratorsCombined(database, currentDataSource, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString(),
           (CtidGlobalStateManager) ctidStateManager, savedOffsetAfterReplicationSlotLSN);
     }
 
@@ -586,7 +588,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(xminStatus));
       final PostgresCtidHandler ctidHandler =
-          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager,
+          createInitialLoader(database, currentDataSource, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager,
               Optional.empty());
 
       if (!xminStreamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
@@ -653,7 +655,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)));
       final PostgresCtidHandler cursorBasedCtidHandler =
-          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
+          createInitialLoader(database, currentDataSource, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager,
+              Optional.empty());
 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(
           cursorBasedCtidHandler.getInitialSyncCtidIterator(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
@@ -956,7 +959,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             List.of(stream),
             getQuoteString());
 
-    return createInitialLoader(database, List.of(stream), fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
+    return createInitialLoader(database, currentDataSource, List.of(stream), fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
   }
 
   protected String toSslJdbcParam(final SslMode sslMode) {
