@@ -2,7 +2,7 @@
 
 ## Upgrading to 4.0.0
 
-Version 4.0.0 migrates the connector from Notion API version `2022-06-28` to `2025-09-03`. This is a major update driven by Notion's introduction of multi-source databases, where the concept of a "database" has been split into "databases" (containers) and "data sources" (individual schemas/property sets).
+Version 4.0.0 migrates the connector from Notion API version `2022-06-28` to `2025-09-03`. This is a major update driven by Notion's introduction of [multi-source databases](https://developers.notion.com/guides/get-started/upgrade-guide-2025-09-03), where the concept of a "database" has been split into "databases" (containers) and "data sources" (individual schemas/property sets). A "data source" now represents what was previously called a "database" — the table containing pages and properties.
 
 ### Breaking Changes
 
