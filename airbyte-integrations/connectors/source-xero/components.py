@@ -5,7 +5,7 @@
 import re
 from dataclasses import InitVar, dataclass, field
 from datetime import date, datetime, time, timedelta, timezone
-from typing import Any, Dict, Iterable, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping, Union
 
 import dpath.util
 import requests
