@@ -15,7 +15,6 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     SyncMode,
-    Type,
 )
 
 
