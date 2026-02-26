@@ -212,9 +212,11 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
    * lifecycle.
    */
   private static <T> Stream<T> toStream(
-      final ResultSet resultSet, final ResultSetMapper<T> mapper) {
+                                        final ResultSet resultSet,
+                                        final ResultSetMapper<T> mapper) {
     return StreamSupport.stream(
         new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE, java.util.Spliterator.ORDERED) {
+
           @Override
           public boolean tryAdvance(final Consumer<? super T> action) {
             try {
@@ -228,6 +230,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
               throw new RuntimeException(e);
             }
           }
+
         },
         false);
   }
@@ -236,6 +239,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   interface ResultSetMapper<T> {
 
     T apply(ResultSet rs) throws SQLException;
+
   }
 
   /**
