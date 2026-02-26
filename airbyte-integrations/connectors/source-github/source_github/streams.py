@@ -854,8 +854,8 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
             "url": f"https://api.github.com/repos/{repository}/releases/{release_id}",
             "assets_url": f"https://api.github.com/repos/{repository}/releases/{release_id}/assets",
             "upload_url": f"https://uploads.github.com/repos/{repository}/releases/{release_id}/assets{{?name,label}}",
-            "tarball_url": f"https://api.github.com/repos/{repository}/tarball/{tag_name}",
-            "zipball_url": f"https://api.github.com/repos/{repository}/zipball/{tag_name}",
+            "tarball_url": f"https://api.github.com/repos/{repository}/tarball/{tag_name}" if tag_name else None,
+            "zipball_url": f"https://api.github.com/repos/{repository}/zipball/{tag_name}" if tag_name else None,
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
