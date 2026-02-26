@@ -200,19 +200,20 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
    * all batches see the same MVCC snapshot.
    */
   private Stream<RowDataWithCtid> getStream(final Pair<Ctid, Ctid> p) throws SQLException {
-    final PreparedStatement statement = getCtidStatement(snapshotConnection, p.getLeft(), p.getRight());
+    final PreparedStatement statement =
+        getCtidStatement(snapshotConnection, p.getLeft(), p.getRight());
     statement.setFetchSize(SNAPSHOT_FETCH_SIZE);
     final ResultSet resultSet = statement.executeQuery();
     return toStream(resultSet, sourceOperations::recordWithCtid);
   }
 
   /**
-   * Converts a {@link ResultSet} into a {@link Stream} of mapped records.
-   * The stream does NOT close the underlying connection on close — the snapshot connection
-   * is managed by this iterator's lifecycle.
+   * Converts a {@link ResultSet} into a {@link Stream} of mapped records. The stream does NOT close
+   * the underlying connection on close — the snapshot connection is managed by this iterator's
+   * lifecycle.
    */
-  private static <T> Stream<T> toStream(final ResultSet resultSet,
-                                         final ResultSetMapper<T> mapper) {
+  private static <T> Stream<T> toStream(
+      final ResultSet resultSet, final ResultSetMapper<T> mapper) {
     return StreamSupport.stream(
         new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE, java.util.Spliterator.ORDERED) {
           @Override
@@ -236,25 +237,27 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   interface ResultSetMapper<T> {
 
     T apply(ResultSet rs) throws SQLException;
-
   }
 
   /**
-   * Opens a fresh snapshot connection with REPEATABLE READ isolation.
-   * If a previous snapshot connection exists (e.g. after a VACUUM reset), it is closed first.
+   * Opens a fresh snapshot connection with REPEATABLE READ isolation. If a previous snapshot
+   * connection exists (e.g. after a VACUUM reset), it is closed first.
    */
   private void openSnapshotConnection() throws SQLException {
     closeSnapshotConnection();
 
     if (database instanceof DefaultJdbcDatabase) {
-      snapshotConnection = ((DefaultJdbcDatabase) database).getDataSource().getConnection();
+      snapshotConnection =
+          ((DefaultJdbcDatabase) database).getDataSource().getConnection();
     } else {
       throw new IllegalStateException(
-          "CTID snapshot scanning requires a DefaultJdbcDatabase (or subclass) but got: " + database.getClass().getName());
+          "CTID snapshot scanning requires a DefaultJdbcDatabase (or subclass) but got: "
+              + database.getClass().getName());
     }
     snapshotConnection.setAutoCommit(false);
     snapshotConnection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-    LOGGER.info("Opened REPEATABLE READ snapshot connection for CTID scan of stream {}", airbyteStream);
+    LOGGER.info(
+        "Opened REPEATABLE READ snapshot connection for CTID scan of stream {}", airbyteStream);
   }
 
   private void closeSnapshotConnection() {
