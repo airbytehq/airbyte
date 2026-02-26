@@ -104,7 +104,7 @@ The Notion source connector supports the following streams:
 
 - [Blocks](https://developers.notion.com/reference/retrieve-a-block)
 - [Comments](https://developers.notion.com/reference/retrieve-a-comment)
-- [Data Sources](https://developers.notion.com/reference/data-source) (replaces the former `Databases` stream as of v4.0.0)
+- [Data Sources](https://developers.notion.com/reference/data-source) (replaces the former `Databases` stream as of v4.0.0; in Notion's API version `2025-09-03`, a "data source" represents what was previously called a "database" — the table containing pages and properties — while "database" now refers to a container that can hold multiple data sources)
 - [Pages](https://developers.notion.com/reference/retrieve-a-page)
 - [Users](https://developers.notion.com/reference/get-users)
 
@@ -119,7 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.0 | 2026-02-24 | [74017](https://github.com/airbytehq/airbyte/pull/74017) | Migrate to Notion API version 2025-09-03: replace `databases` stream with `data_sources`, update page parent references, and add new schema fields |
+| 4.0.0 | 2026-02-25 | [74017](https://github.com/airbytehq/airbyte/pull/74017) | Migrate to Notion API version 2025-09-03: replace `databases` stream with `data_sources`, update page parent references, and add new schema fields |
 | 3.3.14 | 2026-02-24 | [73856](https://github.com/airbytehq/airbyte/pull/73856) | Update dependencies |
 | 3.3.13 | 2026-02-10 | [73032](https://github.com/airbytehq/airbyte/pull/73032) | Update dependencies |
 | 3.3.12 | 2026-02-06 | [72925](https://github.com/airbytehq/airbyte/pull/72925) | Add client-side incremental filtering to blocks stream RecordFilter |
@@ -164,7 +164,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 | 2.1.0       | 2024-02-19 | [35409](https://github.com/airbytehq/airbyte/pull/35409) | Update users stream schema with bot type info fields and block schema with mention type info fields.                                                                   |
 | 2.0.9       | 2024-02-12 | [35155](https://github.com/airbytehq/airbyte/pull/35155) | Manage dependencies with Poetry.                                                                                                                                       |
 | 2.0.8       | 2023-11-01 | [31899](https://github.com/airbytehq/airbyte/pull/31899) | Fix `table_row.cells` property in `Blocks` stream                                                                                                                      |
-| 2.0.7       | 2023-10-31 | [32004](https://github.com/airtybehq/airbyte/pull/32004) | Reduce page_size on 504 errors                                                                                                                                         |
+| 2.0.7       | 2023-10-31 | [32004](https://github.com/airbytehq/airbyte/pull/32004) | Reduce page_size on 504 errors                                                                                                                                         |
 | 2.0.6       | 2023-10-25 | [31825](https://github.com/airbytehq/airbyte/pull/31825) | Increase max_retries on retryable errors                                                                                                                               |
 | 2.0.5       | 2023-10-23 | [31742](https://github.com/airbytehq/airbyte/pull/31742) | Add 'synced_block' property to Blocks schema                                                                                                                           |
 | 2.0.4       | 2023-10-19 | [31625](https://github.com/airbytehq/airbyte/pull/31625) | Fix check_connection method                                                                                                                                            |
