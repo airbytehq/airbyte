@@ -218,7 +218,7 @@
     },
     {
       "stream": {
-        "name": "details",
+        "name": "account_details",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

@@ -2371,7 +2371,9 @@ schemas:
           - "array"
           - "null"
         items:
-          type: "string"
+          type:
+            - "string"
+            - "null"
       companyCurrency:
         type:
           - "string"
