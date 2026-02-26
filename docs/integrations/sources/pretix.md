@@ -41,6 +41,7 @@
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.48 | 2026-02-17 | [73496](https://github.com/airbytehq/airbyte/pull/73496) | Update dependencies |
 | 0.0.47 | 2026-02-10 | [73198](https://github.com/airbytehq/airbyte/pull/73198) | Update dependencies |
 | 0.0.46 | 2026-02-03 | [72652](https://github.com/airbytehq/airbyte/pull/72652) | Update dependencies |
 | 0.0.45 | 2026-01-20 | [72179](https://github.com/airbytehq/airbyte/pull/72179) | Update dependencies |
