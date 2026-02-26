@@ -36,23 +36,36 @@ class SnowflakeSourceOperationsTest {
         ColumnMetadata(
             name = "test_col",
             label = "test_col",
-            type = SystemType(typeName = typeName, typeCode = typeCode, precision = precision, scale = scale),
+            type =
+                SystemType(
+                    typeName = typeName,
+                    typeCode = typeCode,
+                    precision = precision,
+                    scale = scale
+                ),
             nullable = true,
         )
 
     /**
      * Verifies that all Snowflake numeric type aliases (NUMBER, DECIMAL, NUMERIC, INT, INTEGER,
-     * BIGINT, SMALLINT, TINYINT, BYTEINT) produce the same [LeafAirbyteSchemaType] when they
-     * share the same scale value. This prevents the type mismatch that caused streams to be
-     * silently dropped when the Snowflake JDBC driver returned different type name strings
-     * for the same column via different metadata APIs.
+     * BIGINT, SMALLINT, TINYINT, BYTEINT) produce the same [LeafAirbyteSchemaType] when they share
+     * the same scale value. This prevents the type mismatch that caused streams to be silently
+     * dropped when the Snowflake JDBC driver returned different type name strings for the same
+     * column via different metadata APIs.
      *
      * See: https://github.com/airbytehq/airbyte/issues/74064
      */
     @ParameterizedTest
     @CsvSource(
-        "NUMBER", "DECIMAL", "NUMERIC", "INT", "INTEGER",
-        "BIGINT", "SMALLINT", "TINYINT", "BYTEINT"
+        "NUMBER",
+        "DECIMAL",
+        "NUMERIC",
+        "INT",
+        "INTEGER",
+        "BIGINT",
+        "SMALLINT",
+        "TINYINT",
+        "BYTEINT"
     )
     fun `all numeric type aliases with scale 0 map to INTEGER`(typeName: String) {
         val fieldType = ops.toFieldType(columnMetadata(typeName, precision = 38, scale = 0))
@@ -62,8 +75,15 @@ class SnowflakeSourceOperationsTest {
 
     @ParameterizedTest
     @CsvSource(
-        "NUMBER", "DECIMAL", "NUMERIC", "INT", "INTEGER",
-        "BIGINT", "SMALLINT", "TINYINT", "BYTEINT"
+        "NUMBER",
+        "DECIMAL",
+        "NUMERIC",
+        "INT",
+        "INTEGER",
+        "BIGINT",
+        "SMALLINT",
+        "TINYINT",
+        "BYTEINT"
     )
     fun `all numeric type aliases with scale greater than 0 map to NUMBER`(typeName: String) {
         val fieldType = ops.toFieldType(columnMetadata(typeName, precision = 38, scale = 6))
@@ -73,8 +93,15 @@ class SnowflakeSourceOperationsTest {
 
     @ParameterizedTest
     @CsvSource(
-        "NUMBER", "DECIMAL", "NUMERIC", "INT", "INTEGER",
-        "BIGINT", "SMALLINT", "TINYINT", "BYTEINT"
+        "NUMBER",
+        "DECIMAL",
+        "NUMERIC",
+        "INT",
+        "INTEGER",
+        "BIGINT",
+        "SMALLINT",
+        "TINYINT",
+        "BYTEINT"
     )
     fun `all numeric type aliases with null scale map to INTEGER`(typeName: String) {
         val fieldType = ops.toFieldType(columnMetadata(typeName, precision = 38, scale = null))

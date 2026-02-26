@@ -85,13 +85,13 @@ class SnowflakeSourceOperations() :
      * Snowflake treats NUMBER, DECIMAL, NUMERIC, INT, INTEGER, BIGINT, SMALLINT, TINYINT, and
      * BYTEINT as aliases for the same underlying NUMBER(precision, scale) type. The Snowflake JDBC
      * driver can return different type name strings for the same column depending on whether
-     * metadata is queried via DatabaseMetaData.getColumns() or ResultSetMetaData (from a
-     * SELECT ... LIMIT 0 query). For example, a NUMBER(38,0) column may be reported as "NUMBER"
-     * by one API and "INTEGER" by the other.
+     * metadata is queried via DatabaseMetaData.getColumns() or ResultSetMetaData (from a SELECT ...
+     * LIMIT 0 query). For example, a NUMBER(38,0) column may be reported as "NUMBER" by one API and
+     * "INTEGER" by the other.
      *
-     * To ensure consistent type mapping regardless of which metadata API is used, all numeric
-     * type aliases are normalized based on scale: scale == 0 (or null) maps to an integer type,
-     * and scale > 0 maps to BigDecimalFieldType.
+     * To ensure consistent type mapping regardless of which metadata API is used, all numeric type
+     * aliases are normalized based on scale: scale == 0 (or null) maps to an integer type, and
+     * scale > 0 maps to BigDecimalFieldType.
      */
     private fun leafType(typeName: String?, scale: Int?): JdbcFieldType<*> {
         return when (typeName?.uppercase()) {
@@ -141,8 +141,8 @@ class SnowflakeSourceOperations() :
 
     /**
      * Returns a consistent [JdbcFieldType] for all Snowflake numeric type aliases based on scale.
-     * Scale == 0 (or scale == null with no fractional digits) indicates an integer type;
-     * scale > 0 indicates a decimal type.
+     * Scale == 0 (or scale == null with no fractional digits) indicates an integer type; scale > 0
+     * indicates a decimal type.
      */
     private fun numericType(scale: Int?): JdbcFieldType<*> =
         if (scale != null && scale > 0) BigDecimalFieldType else BigIntegerFieldType
