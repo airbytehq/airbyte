@@ -777,12 +777,12 @@ streams:
 # Intercom private apps have a default rate limit of 10,000 API calls per minute per app.
 # Some workspaces may have higher limits (e.g. 50k/min). The custom ErrorHandlerWithRateLimiter
 # already provides proactive backoff based on X-RateLimit-Remaining headers.
-# Without an explicit concurrency_level, the CDK defaults to 2 worker threads which severely
-# underutilizes the available rate limit capacity, especially for substream-heavy syncs
+# The num_workers config option allows users with higher rate limits to increase throughput
+# by running more concurrent worker threads, especially for substream-heavy syncs
 # like conversation_parts (N+1 pattern with one API call per conversation).
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
   max_concurrency: 25
 
 spec:
@@ -838,12 +838,26 @@ spec:
         minimum: 0
         examples:
           - 60
+      num_workers:
+        type: integer
+        description: >-
+          The number of worker threads to use for syncing data. Increase this
+          value to improve sync throughput when your Intercom app has a higher
+          API rate limit. The default matches the previous connector behavior.
+        order: 5
+        title: Number of workers
+        default: 2
+        minimum: 1
+        maximum: 25
+        examples:
+          - 2
+          - 10
       start_date:
         type: string
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated.
-        order: 5
+        order: 6
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
