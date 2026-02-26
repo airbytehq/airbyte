@@ -774,6 +774,17 @@ streams:
   - $ref: "#/definitions/streams/company_segments"
   - $ref: "#/definitions/streams/tickets"
 
+# Intercom private apps have a default rate limit of 10,000 API calls per minute per app.
+# Some workspaces may have higher limits (e.g. 50k/min). The custom ErrorHandlerWithRateLimiter
+# already provides proactive backoff based on X-RateLimit-Remaining headers.
+# Without an explicit concurrency_level, the CDK defaults to 2 worker threads which severely
+# underutilizes the available rate limit capacity, especially for substream-heavy syncs
+# like conversation_parts (N+1 pattern with one API call per conversation).
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
+  max_concurrency: 25
+
 spec:
   type: Spec
   connection_specification:
