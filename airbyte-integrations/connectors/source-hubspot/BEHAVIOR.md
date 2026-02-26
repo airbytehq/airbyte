@@ -18,16 +18,7 @@ Associations v4 batch read endpoint, passing in the record IDs from the primary 
 fundamental limitation of HubSpot's API design -- there is no way to include association data in a
 single search request.
 
-**Why this matters:**
-- Each page of CRM search results triggers N additional API calls (one per association type). For
-  example, the `deals` stream fetches associations for `companies`, `contacts`, and `line_items`, so
-  every page of deal results triggers 3 extra API calls.
-- The `build_associations_retriever()` function manually constructs a full `SimpleRetriever` with its
-  own `SelectiveAuthenticator`, `HttpRequester`, error handler, and `ListPartitionRouter` entirely in
-  Python code. This is because the low-code framework does not support instantiating a
-  `SimpleRetriever` outside of a `DeclarativeStream` context.
-- Adding a new association to a stream's `associations` list adds an extra API call per page. Consider
-  rate limit impact.
+**Why this matters:** Each page of CRM search results silently triggers N additional API calls -- one per association type configured on that stream. For example, the `deals` stream fetches associations for companies, contacts, and line items, so every single page of deals costs 4 HTTP requests total (1 search + 3 association batches). Adding a new association to a stream's config quietly increases API usage across every page of every sync.
 
 ---
 
@@ -46,14 +37,7 @@ returns every engagement ever created, requiring client-side filtering. HubSpot 
 v1 endpoint that efficiently handles both cases, which is why the connector implements this switching
 logic.
 
-**Why this matters:**
-- On the first request, `should_use_recent_api()` makes a **probe request** to the Recent API to check
-  the `total` field in the response. This is an extra API call before any data is fetched.
-- The Recent API silently clamps page size to 100 even though the stream requests 250 (the All API
-  max).
-- The decision is cached for the entire sync, so it cannot switch mid-sync.
-- The stream uses a single slice from start_date to now (no step/windowing), which is required for
-  the dual-endpoint logic to work. **Do not add `step` to the incremental sync config.**
+**Why this matters:** The connector makes a hidden probe request at the start of every sync to decide which endpoint to use, and that decision is locked in for the entire sync. The two endpoints have different page size limits (100 vs 250) and different data coverage (30-day window vs all-time). **Do not add `step` to the incremental sync config** -- the dual-endpoint logic requires a single slice from start_date to now.
 
 ---
 
@@ -76,14 +60,7 @@ The custom pagination strategy works around this by:
 This is necessary because HubSpot's search endpoint was designed for filtered discovery, not bulk
 export. The 10,000 limit is intentional on HubSpot's side and cannot be increased.
 
-**Why this matters:**
-- The pagination token is a dict (`{"after": N}` or `{"after": N, "id": M}`), not a simple cursor
-  string. Code that inspects or manipulates page tokens must handle both shapes.
-- The search request body in the manifest references `next_page_token['next_page_token'].get('id', 0)`
-  and `next_page_token['next_page_token']['after']`, which is tightly coupled to this strategy.
-- This applies to all streams inheriting from `base_crm_search_incremental_stream` (contacts,
-  companies, deals, tickets, leads, engagements_calls/emails/meetings/notes/tasks, deal_splits) as
-  well as the incremental sub-stream for custom objects.
+**Why this matters:** Without this workaround, any CRM object type with more than 10,000 modified records since the last sync would silently stop paginating and miss data. The pagination token is a dict with two possible shapes (`{"after": N}` or `{"after": N, "id": M}`), not a simple cursor string, so any code touching page tokens must handle both. This affects all CRM search streams: contacts, companies, deals, tickets, leads, all engagement subtypes, deal_splits, and custom objects.
 
 ---
 
@@ -102,11 +79,7 @@ cursor position (i.e., state). On first sync with no state, it is more reliable 
 list endpoint which returns all objects without needing filter constraints. The search endpoint is more
 efficient for incremental syncs because it supports `lastmodifieddate` filters, avoiding full scans.
 
-**Why this matters:**
-- The two sub-streams have different requesters, paginators, and record selectors. Changes to one do
-  not automatically apply to the other.
-- The `HttpComponentsResolver` fetches custom object schemas from `/crm/v3/schemas` and dynamically
-  injects the object name, entity identifier, and property list into both sub-stream templates.
+**Why this matters:** These are two completely independent stream implementations that happen to share a name. They have different requesters, paginators, and record selectors, so a fix applied to one sub-stream will not carry over to the other. If you change how custom objects sync, you need to verify both the full-refresh and incremental paths separately.
 
 ---
 
@@ -124,16 +97,7 @@ the connector uses a 15,000 character threshold as a conservative safe maximum b
 failures. Properties are fetched dynamically from `/properties/v2/{entity}/properties` and then split
 into character-bounded chunks.
 
-**Why this matters:**
-- Streams that use chunking with `record_merge_strategy: GroupByKeyMergeStrategy` make **multiple API
-  requests per page** and merge results client-side by record `id`. This multiplies API call volume
-  proportionally to the number of property chunks. An account with many custom properties will consume
-  significantly more API quota.
-- The CRM search streams handle properties differently: they send all properties in the POST request
-  body rather than URL params, avoiding the URL length issue entirely. This is why search streams do
-  not need property chunking.
-- If you're adding a stream that uses HubSpot's CRM list endpoints (GET), you likely need property
-  chunking. If you're using search endpoints (POST), you don't.
+**Why this matters:** This means what looks like a single page of 100 records may actually require N parallel HTTP requests behind the scenes (one per property chunk), all stitched together before being emitted. If a user adds many custom properties to their HubSpot objects, the number of HTTP calls per page silently multiplies. CRM search streams (POST) send properties in the request body and don't need chunking -- only GET-based list endpoints are affected.
 
 ---
 
@@ -150,11 +114,7 @@ Two streams make **additional API calls during record transformation** to enrich
   different endpoints. For every email record, the connector makes a GET request to
   `/marketing/v3/emails/{emailId}/statistics` to fetch performance metrics.
 
-**Why this matters:**
-- These streams make **1 additional API call per record** (not per page). For large datasets, this
-  results in thousands of extra API calls and is the most API-intensive pattern in the connector.
-- The marketing emails enrichment has error handling that logs warnings but doesn't fail the sync if
-  statistics are unavailable. The campaigns enrichment does not have this safety net.
+**Why this matters:** Unlike the association extractor (which batches per page), these enrichments make one extra HTTP call per individual record. A sync of 50,000 campaigns means 50,000 additional API calls on top of the pagination calls. This is the most API-intensive pattern in the connector and the most likely to hit rate limits on large accounts.
 
 ---
 
@@ -181,10 +141,7 @@ current API responses and legacy state values. The `MigrateEmptyStringState` mig
 every incremental stream) also handles a legacy bug where previous connector versions stored empty
 strings as cursor values.
 
-**Why this matters:**
-- When adding a new stream, you must check which datetime format the HubSpot endpoint actually returns
-  and configure `cursor_datetime_formats` accordingly. Getting this wrong will cause silent data loss
-  or sync failures.
+**Why this matters:** If you add a new stream and configure the wrong datetime format, cursor comparisons will silently break -- either skipping records or re-syncing everything on every run. Most streams list multiple `cursor_datetime_formats` to handle both current API responses and legacy state values from older connector versions.
 
 ---
 
