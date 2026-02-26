@@ -79,6 +79,13 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 ## Limitations & Troubleshooting
 
+### "Please reduce the amount of data you're asking for" error
+
+This error occurs when the Facebook Graph API considers the total response data too large. There are two ways to resolve it:
+
+- **Remove fields from the request via the Schema Tab.** Go to your connection's Schema Tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
+- **Reduce page size.** Set the **Page Size** configuration parameter to a lower value (e.g., 25 or 50). This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
+
 ### Product catalogs field not available
 
 Starting from version 2.0.4, the `product_catalogs` field is no longer synced in the Page stream and will always be `null`. This is because the Facebook Graph API only returns product catalogs that are owned directly by the Page, not catalogs owned by a Business. Since most product catalogs are now created as Business-owned catalogs (Page-owned catalogs are a legacy feature), and this connector uses Page access tokens, the `product_catalogs` field would not return meaningful data for most users.
