@@ -12,8 +12,7 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - 🛠️ Quick Fixes
   - `/format-fix` - Fixes most formatting issues.
   - `/bump-version` - Bumps connector versions, scraping `changelog` description from the PR title.
-- ❇️ AI Testing and Review:
-  - `/ai-docs-review` - Provides AI-powered documentation recommendations for PRs with connector changes.
+- ❇️ AI Testing and Review (internal link: [AI-SDLC Docs](https://github.com/airbytehq/ai-skills/blob/main/docs/hydra/)):
   - `/ai-prove-fix` - Runs prerelease readiness checks, including testing against customer connections.
   - `/ai-canary-prerelease` - Rolls out prerelease to 5-10 connections for canary testing.
   - `/ai-review` - AI-powered PR review for connector safety and quality gates.

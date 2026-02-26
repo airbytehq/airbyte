@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "source-xero-tests"
-version = "2.1.0"
+version = "2.1.5"
 description = "Unit tests for source-xero"
 authors = ["Airbyte <contact@airbyte.io>"]
 

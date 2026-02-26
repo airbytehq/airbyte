@@ -57,6 +57,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `title` | `string \| null` |  |
 | `owner` | `object \| any` |  |
 | `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
 | `calendar_event` | `object \| any` |  |
 | `attendees` | `array \| null` |  |
 | `attendees[].name` | `string \| null` |  |
@@ -131,6 +132,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `title` | `string \| null` |  |
 | `owner` | `object \| any` |  |
 | `created_at` | `string \| null` |  |
+| `updated_at` | `string \| null` |  |
 | `calendar_event` | `object \| any` |  |
 | `attendees` | `array \| null` |  |
 | `attendees[].name` | `string \| null` |  |
