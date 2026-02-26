@@ -199,6 +199,7 @@ definitions:
       - image_copyrights
       - indexed_videos
       - likes
+      - live_videos
       - photos
       - posts
       - published_posts
