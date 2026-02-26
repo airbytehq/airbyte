@@ -25,4 +25,4 @@ APIs.
 - Custom objects use `StateDelegatingStream` with two different sub-stream implementations. See
   `BEHAVIOR.md` section 4.
 - Many streams use character-based property chunking (15,000 char limit). See `BEHAVIOR.md` section 5.
-- Authentication retries on 401 to handle mid-sync token expiration. See `BEHAVIOR.md` section 10.
+- Authentication retries on 401 to handle mid-sync token expiration. See `BEHAVIOR.md` section 8.
