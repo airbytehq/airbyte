@@ -14,6 +14,7 @@ import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterat
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
@@ -27,6 +28,7 @@ import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -35,7 +37,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -45,12 +50,24 @@ import org.slf4j.LoggerFactory;
  * This class is responsible to divide the data of the stream into chunks based on the ctid and
  * dynamically create iterator and keep processing them one after another. The class also makes sure
  * to check for VACUUM in between processing chunks and if VACUUM happens then re-start syncing the
- * data
+ * data.
+ *
+ * <p>All CTID batch queries within a single scan are executed on a single connection using
+ * {@code REPEATABLE READ} isolation. This guarantees that every batch sees the same MVCC snapshot,
+ * preventing rows updated by concurrent transactions from being silently dropped.
  */
 public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> implements AutoCloseableIterator<RowDataWithCtid> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSyncCtidIterator.class);
   public static final int MAX_TUPLES_IN_QUERY = 5_000_000;
+
+  /**
+   * Default fetch size for streaming results from the snapshot connection.
+   * This value matches PostgreSQL JDBC driver best practices for cursor-based streaming.
+   */
+  @VisibleForTesting
+  static final int SNAPSHOT_FETCH_SIZE = 10_000;
+
   private final AirbyteStreamNameNamespacePair airbyteStream;
   private final long blockSize;
   private final List<String> columnNames;
@@ -75,6 +92,13 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private final Instant startInstant;
   private Optional<Duration> cdcInitialLoadTimeout;
   private boolean isCdcSync;
+
+  /**
+   * A dedicated connection held open for the duration of the CTID scan.
+   * Opened with REPEATABLE READ isolation so that all batch queries see
+   * the same consistent MVCC snapshot.
+   */
+  private Connection snapshotConnection;
 
   public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
                                  final JdbcDatabase database,
@@ -169,13 +193,82 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     }
   }
 
+  /**
+   * Executes a CTID batch query on the shared snapshot connection.
+   * Unlike the previous implementation that called {@code database.unsafeQuery()} (which opens a
+   * new connection per batch), this method reuses the single {@link #snapshotConnection} so that
+   * all batches see the same MVCC snapshot.
+   */
   private Stream<RowDataWithCtid> getStream(final Pair<Ctid, Ctid> p) throws SQLException {
-    return database.unsafeQuery(
-        connection -> getCtidStatement(connection, p.getLeft(), p.getRight()),
-        sourceOperations::recordWithCtid);
+    final PreparedStatement statement = getCtidStatement(snapshotConnection, p.getLeft(), p.getRight());
+    statement.setFetchSize(SNAPSHOT_FETCH_SIZE);
+    final ResultSet resultSet = statement.executeQuery();
+    return toStream(resultSet, sourceOperations::recordWithCtid);
   }
 
-  private void initSubQueries() {
+  /**
+   * Converts a {@link ResultSet} into a {@link Stream} of mapped records.
+   * The stream does NOT close the underlying connection on close — the snapshot connection
+   * is managed by this iterator's lifecycle.
+   */
+  private static <T> Stream<T> toStream(final ResultSet resultSet,
+                                         final ResultSetMapper<T> mapper) {
+    return StreamSupport.stream(
+        new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE, java.util.Spliterator.ORDERED) {
+          @Override
+          public boolean tryAdvance(final Consumer<? super T> action) {
+            try {
+              if (!resultSet.next()) {
+                resultSet.close();
+                return false;
+              }
+              action.accept(mapper.apply(resultSet));
+              return true;
+            } catch (final SQLException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        },
+        false);
+  }
+
+  @FunctionalInterface
+  interface ResultSetMapper<T> {
+
+    T apply(ResultSet rs) throws SQLException;
+
+  }
+
+  /**
+   * Opens a fresh snapshot connection with REPEATABLE READ isolation.
+   * If a previous snapshot connection exists (e.g. after a VACUUM reset), it is closed first.
+   */
+  private void openSnapshotConnection() throws SQLException {
+    closeSnapshotConnection();
+
+    if (database instanceof DefaultJdbcDatabase) {
+      snapshotConnection = ((DefaultJdbcDatabase) database).getDataSource().getConnection();
+    } else {
+      throw new IllegalStateException(
+          "CTID snapshot scanning requires a DefaultJdbcDatabase (or subclass) but got: " + database.getClass().getName());
+    }
+    snapshotConnection.setAutoCommit(false);
+    snapshotConnection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+    LOGGER.info("Opened REPEATABLE READ snapshot connection for CTID scan of stream {}", airbyteStream);
+  }
+
+  private void closeSnapshotConnection() {
+    if (snapshotConnection != null) {
+      try {
+        snapshotConnection.close();
+      } catch (final SQLException e) {
+        LOGGER.warn("Failed to close snapshot connection for stream {}", airbyteStream, e);
+      }
+      snapshotConnection = null;
+    }
+  }
+
+  private void initSubQueries() throws SQLException {
     if (useTestPageSize) {
       LOGGER.warn("Using test page size");
     }
@@ -184,6 +277,9 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
 
     subQueriesPlan.addAll(getQueryPlan(currentCtidStatus));
     lastKnownFileNode = currentCtidStatus != null ? currentCtidStatus.getRelationFilenode() : null;
+
+    // Open the snapshot connection that will be shared across all batch queries.
+    openSnapshotConnection();
   }
 
   private PreparedStatement getCtidStatement(final Connection connection,
@@ -203,7 +299,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     return queryPlan;
   }
 
-  private void resetSubQueries(final Long latestFileNode) {
+  private void resetSubQueries(final Long latestFileNode) throws SQLException {
     LOGGER.warn(
         "The latest file node {} for stream {} is not equal to the last file node {} known to Airbyte. Airbyte will sync this table from scratch again",
         latestFileNode,
@@ -216,6 +312,10 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     subQueriesPlan.clear();
     subQueriesPlan.addAll(getQueryPlan(null));
     numberOfTimesReSynced++;
+
+    // VACUUM invalidates the physical layout. Re-open a fresh snapshot connection
+    // so that the new scan operates on a consistent view of the new file layout.
+    openSnapshotConnection();
   }
 
   /**
@@ -356,6 +456,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     if (currentIterator != null) {
       currentIterator.close();
     }
+    closeSnapshotConnection();
   }
 
   private boolean isCdcSync(CtidStateManager initialLoadStateManager) {

@@ -25,6 +25,9 @@ constructor(
     protected val dataSource: DataSource,
     sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations
 ) : JdbcDatabase(sourceOperations) {
+    /** Returns the underlying [DataSource] used by this database. */
+    open fun getDataSource(): DataSource = dataSource
+
     @Throws(SQLException::class)
     override fun execute(query: CheckedConsumer<Connection, SQLException>) {
         dataSource.connection.use { connection -> query.accept(connection) }
