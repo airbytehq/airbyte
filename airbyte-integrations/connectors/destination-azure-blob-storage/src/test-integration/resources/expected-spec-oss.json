@@ -67,6 +67,18 @@
         "title" : "Azure Blob Storage Target Blob Size (MB)",
         "default" : 500
       },
+      "destination_path_format" : {
+        "type" : "string",
+        "description" : "Format of the output directory/path inside the container. You can use the following variables: ${NAMESPACE}, ${STREAM_NAME}, ${YEAR}, ${MONTH}, ${DAY}, ${HOUR}, ${MINUTE}, ${SECOND}, ${MILLISECOND}, ${EPOCH}, ${UUID}. Leave empty to use the default: ${NAMESPACE}/${STREAM_NAME}/",
+        "title" : "Output Path Format",
+        "examples" : [ "${NAMESPACE}/${STREAM_NAME}/", "${NAMESPACE}/${STREAM_NAME}/${YEAR}/${MONTH}/${DAY}/", "${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}/" ]
+      },
+      "file_name_pattern" : {
+        "type" : "string",
+        "description" : "Pattern for the output file names. You can use the following variables: {date}, {date:yyyy_MM}, {timestamp}, {part_number}, {sync_id}, {format_extension}. Leave empty to use the default: {date}_{timestamp}_{part_number}{format_extension}",
+        "title" : "File Name Pattern",
+        "examples" : [ "{date}_{timestamp}_{part_number}{format_extension}", "{sync_id}_{date}_{part_number}{format_extension}" ]
+      },
       "format" : {
         "oneOf" : [ {
           "title" : "CSV: Comma-Separated Values",

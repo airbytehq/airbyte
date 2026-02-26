@@ -93,6 +93,15 @@ class InputConsumerTask(
                         }
                     }
                 }
+                // After all input consumed (EOF), synthesize PipelineEndOfStream
+                // for streams that didn't receive STREAM_STATUS COMPLETE.
+                // This handles older sources (protocol < v2) that don't emit
+                // stream status messages. Must happen before close() and while
+                // the pipeline queue is still open.
+                for (descriptor in pipelineEventBookkeepingRouter.synthesizeMissingCompletions()) {
+                    log.info { "Broadcasting synthesized PipelineEndOfStream for $descriptor" }
+                    pipelineInputQueue.broadcast(PipelineEndOfStream(descriptor))
+                }
             }
         }
     }

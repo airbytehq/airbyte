@@ -14,6 +14,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class AzurePathSpecificationTest {
@@ -59,5 +60,74 @@ class AzurePathSpecificationTest {
             "namespace9/!_.*')(&\$@=;:+,?-__/stream_name7/!_.*')(&\$@=;:+,?-_/2020_01_02_1577934245679_123",
             pathToFile,
         )
+    }
+
+    // -------------------------------------------------------------------------
+    // Path-pattern normalization tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun testPathPatternDefaultWhenNull() {
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), pathFormat = null)
+        assertEquals(AzureBlobStorageConfiguration.DEFAULT_PATH_PATTERN, config.objectStoragePathConfiguration.pathPattern)
+    }
+
+    @Test
+    fun testPathPatternDefaultWhenBlankString() {
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), pathFormat = "   ")
+        assertEquals(AzureBlobStorageConfiguration.DEFAULT_PATH_PATTERN, config.objectStoragePathConfiguration.pathPattern)
+    }
+
+    @Test
+    fun testPathPatternNormalizesLowercaseBraces() {
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), pathFormat = "{namespace}/{stream_name}/{year}/")
+        assertEquals("\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/", config.objectStoragePathConfiguration.pathPattern)
+    }
+
+    @Test
+    fun testPathPatternNormalizesMixedCase() {
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), pathFormat = "\${Namespace}/\${Stream_Name}/")
+        assertEquals("\${NAMESPACE}/\${STREAM_NAME}/", config.objectStoragePathConfiguration.pathPattern)
+    }
+
+    @Test
+    fun testPathPatternPassesThroughAlreadyCorrectFormat() {
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), pathFormat = "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/")
+        assertEquals("\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/", config.objectStoragePathConfiguration.pathPattern)
+    }
+
+    @Test
+    fun testPathPatternAddsTrailingSlash() {
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), pathFormat = "\${NAMESPACE}/\${STREAM_NAME}")
+        assertEquals("\${NAMESPACE}/\${STREAM_NAME}/", config.objectStoragePathConfiguration.pathPattern)
+    }
+
+    // -------------------------------------------------------------------------
+    // File-name pattern normalization tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun testFileNamePatternDefaultWhenNull() {
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), fileNamePattern = null)
+        assertEquals(AzureBlobStorageConfiguration.DEFAULT_FILE_NAME_PATTERN, config.objectStoragePathConfiguration.fileNamePattern)
+    }
+
+    @Test
+    fun testFileNamePatternDefaultWhenBlankString() {
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), fileNamePattern = "   ")
+        assertEquals(AzureBlobStorageConfiguration.DEFAULT_FILE_NAME_PATTERN, config.objectStoragePathConfiguration.fileNamePattern)
+    }
+
+    @Test
+    fun testFileNamePatternPassesThroughCustomPattern() {
+        val pattern = "{sync_id}_{date}_{part_number}{format_extension}"
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), fileNamePattern = pattern)
+        assertEquals(pattern, config.objectStoragePathConfiguration.fileNamePattern)
+    }
+
+    @Test
+    fun testFileNamePatternTrimmed() {
+        val config = AzureBlobStorageConfiguration<BufferedOutputStream>(mockk(), mockk(), mockk(), fileNamePattern = "  {date}_{part_number}{format_extension}  ")
+        assertEquals("{date}_{part_number}{format_extension}", config.objectStoragePathConfiguration.fileNamePattern)
     }
 }

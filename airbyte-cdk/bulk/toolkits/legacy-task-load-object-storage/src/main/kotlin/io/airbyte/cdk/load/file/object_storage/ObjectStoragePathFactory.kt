@@ -313,7 +313,8 @@ class ObjectStoragePathFactory(
     ): String {
         val pattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
         val context = VariableContext(stream)
-        return variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
+        val resolved = variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
+        return resolved.replace(Regex("/+"), "/").removePrefix("/")
     }
 
     private fun getFormattedFileName(context: VariableContext): String {
