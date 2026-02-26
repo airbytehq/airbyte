@@ -1012,6 +1012,190 @@ def test_streams_read_full_refresh(requests_mock):
     assert records == [{"repository": "organization/repository", "starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}, "user_id": 2}]
 
 
+def test_releases_draft_release_null_tag(requests_mock):
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-01-01T00:00:00Z",
+    }
+    graphql_response = {
+        "data": {
+            "repository": {
+                "name": "repository",
+                "owner": {"login": "organization"},
+                "releases": {
+                    "nodes": [
+                        {
+                            "id": 10,
+                            "node_id": "R_draft",
+                            "created_at": "2022-03-01T00:00:00Z",
+                            "published_at": None,
+                            "updated_at": "2022-03-01T00:00:00Z",
+                            "name": "Draft Release",
+                            "tag_name": None,
+                            "draft": True,
+                            "prerelease": False,
+                            "body": "WIP",
+                            "body_html": "<p>WIP</p>",
+                            "html_url": "https://github.com/organization/repository/releases/tag/untagged",
+                            "author": {
+                                "id": 1,
+                                "login": "dev",
+                                "avatar_url": "",
+                                "html_url": "",
+                                "site_admin": False,
+                                "__typename": "User",
+                            },
+                            "assets": {"nodes": [], "pageInfo": {"hasNextPage": False}},
+                            "mentions_connection": {"totalCount": 0},
+                            "tagCommit": None,
+                            "reaction_groups": [],
+                        },
+                    ],
+                    "pageInfo": {"hasNextPage": False, "endCursor": None},
+                },
+            }
+        }
+    }
+    requests_mock.post("https://api.github.com/graphql", json=graphql_response)
+    stream = Releases(**repository_args)
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    record = records[0]
+    assert record["tag_name"] is None
+    assert record["draft"] is True
+    assert record["target_commitish"] is None
+    assert record["tarball_url"] is None
+    assert record["zipball_url"] is None
+    assert record["url"] == "https://api.github.com/repos/organization/repository/releases/10"
+    assert record["assets_url"] == "https://api.github.com/repos/organization/repository/releases/10/assets"
+
+
+def test_releases_asset_truncation_warning(requests_mock, caplog):
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-01-01T00:00:00Z",
+    }
+    graphql_response = {
+        "data": {
+            "repository": {
+                "name": "repository",
+                "owner": {"login": "organization"},
+                "releases": {
+                    "nodes": [
+                        {
+                            "id": 20,
+                            "node_id": "R_many_assets",
+                            "created_at": "2022-04-01T00:00:00Z",
+                            "published_at": "2022-04-01T00:00:00Z",
+                            "updated_at": "2022-04-01T00:00:00Z",
+                            "name": "v3.0",
+                            "tag_name": "v3.0",
+                            "draft": False,
+                            "prerelease": False,
+                            "body": "",
+                            "body_html": "",
+                            "html_url": "https://github.com/organization/repository/releases/tag/v3.0",
+                            "author": None,
+                            "assets": {
+                                "nodes": [
+                                    {
+                                        "node_id": f"A_{i}",
+                                        "name": f"asset_{i}.zip",
+                                        "content_type": "application/zip",
+                                        "size": 1024,
+                                        "download_count": 0,
+                                        "created_at": "2022-04-01T00:00:00Z",
+                                        "updated_at": "2022-04-01T00:00:00Z",
+                                        "browser_download_url": f"https://example.com/asset_{i}.zip",
+                                        "url": f"https://api.github.com/repos/organization/repository/releases/assets/{i}",
+                                        "uploader": {"id": 1},
+                                    }
+                                    for i in range(100)
+                                ],
+                                "pageInfo": {"hasNextPage": True},
+                            },
+                            "mentions_connection": {"totalCount": 0},
+                            "tagCommit": {"target_commitish": "abc"},
+                            "reaction_groups": [],
+                        },
+                    ],
+                    "pageInfo": {"hasNextPage": False, "endCursor": None},
+                },
+            }
+        }
+    }
+    requests_mock.post("https://api.github.com/graphql", json=graphql_response)
+    stream = Releases(**repository_args)
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    assert len(records[0]["assets"]) == 100
+    assert any(">100 assets" in msg for msg in caplog.messages)
+
+
+def test_releases_pagination(requests_mock):
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-01-01T00:00:00Z",
+    }
+
+    def make_release(release_id, tag, date):
+        return {
+            "id": release_id,
+            "node_id": f"R_{release_id}",
+            "created_at": date,
+            "published_at": date,
+            "updated_at": date,
+            "name": tag,
+            "tag_name": tag,
+            "draft": False,
+            "prerelease": False,
+            "body": "",
+            "body_html": "",
+            "html_url": f"https://github.com/organization/repository/releases/tag/{tag}",
+            "author": None,
+            "assets": {"nodes": [], "pageInfo": {"hasNextPage": False}},
+            "mentions_connection": {"totalCount": 0},
+            "tagCommit": {"target_commitish": "abc"},
+            "reaction_groups": [],
+        }
+
+    page1 = {
+        "data": {
+            "repository": {
+                "name": "repository",
+                "owner": {"login": "organization"},
+                "releases": {
+                    "nodes": [make_release(1, "v1.0", "2022-02-01T00:00:00Z")],
+                    "pageInfo": {"hasNextPage": True, "endCursor": "cursor_1"},
+                },
+            }
+        }
+    }
+    page2 = {
+        "data": {
+            "repository": {
+                "name": "repository",
+                "owner": {"login": "organization"},
+                "releases": {
+                    "nodes": [make_release(2, "v2.0", "2022-03-01T00:00:00Z")],
+                    "pageInfo": {"hasNextPage": False, "endCursor": None},
+                },
+            }
+        }
+    }
+    requests_mock.post("https://api.github.com/graphql", [{"json": page1}, {"json": page2}])
+    stream = Releases(**repository_args)
+    records = list(read_full_refresh(stream))
+    assert len(records) == 2
+    assert records[0]["id"] == 1
+    assert records[0]["tag_name"] == "v1.0"
+    assert records[1]["id"] == 2
+    assert records[1]["tag_name"] == "v2.0"
+
+
 def test_stream_reviews_incremental_read(requests_mock):
     repository_args_with_start_date = {
         "start_date": "2000-01-01T00:00:00Z",
