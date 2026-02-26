@@ -8,9 +8,10 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 | `api_token` | `string` | API Token. Bot token to use for authenticating with the FireHydrant API. You can find or create a bot token by logging into your organization and visiting the Bot users page at https://app.firehydrant.io/organizations/bots. |  |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| enviroments | id | DefaultPaginator | ✅ |  ❌  |
+| environments | id | DefaultPaginator | ✅ |  ❌  |
 | services | id | DefaultPaginator | ✅ |  ❌  |
 | functionalities | id | DefaultPaginator | ✅ |  ❌  |
 | teams | id | DefaultPaginator | ✅ |  ❌  |
@@ -57,6 +58,7 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 1.0.0 | 2026-02-24 | [74008](https://github.com/airbytehq/airbyte/pull/74008) | Rename `enviroments` stream to `environments` |
 | 0.0.45 | 2026-02-17 | [73410](https://github.com/airbytehq/airbyte/pull/73410) | Update dependencies |
 | 0.0.44 | 2026-02-10 | [73170](https://github.com/airbytehq/airbyte/pull/73170) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [71971](https://github.com/airbytehq/airbyte/pull/71971) | Update dependencies |
