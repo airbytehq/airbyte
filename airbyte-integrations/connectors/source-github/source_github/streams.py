@@ -842,20 +842,21 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
         reactions["total_count"] = total
         return reactions
 
-    @staticmethod
-    def _build_rest_urls(repository: str, release_id: int, tag_name: str) -> Mapping[str, str]:
+    def _build_rest_urls(self, repository: str, release_id: int, tag_name: str) -> Mapping[str, str]:
         """Synthesize REST-compatible URL fields from GraphQL data.
 
         The GraphQL API does not return reference URLs the way the REST API does,
         but we can construct them from the repository, release ID, and tag name
         to retain backwards compatibility with the previous REST-based schema.
         """
+        api_url = self.api_url.rstrip("/")
+        upload_url = api_url.replace("api.github.com", "uploads.github.com")
         return {
-            "url": f"https://api.github.com/repos/{repository}/releases/{release_id}",
-            "assets_url": f"https://api.github.com/repos/{repository}/releases/{release_id}/assets",
-            "upload_url": f"https://uploads.github.com/repos/{repository}/releases/{release_id}/assets{{?name,label}}",
-            "tarball_url": f"https://api.github.com/repos/{repository}/tarball/{tag_name}" if tag_name else None,
-            "zipball_url": f"https://api.github.com/repos/{repository}/zipball/{tag_name}" if tag_name else None,
+            "url": f"{api_url}/repos/{repository}/releases/{release_id}",
+            "assets_url": f"{api_url}/repos/{repository}/releases/{release_id}/assets",
+            "upload_url": f"{upload_url}/repos/{repository}/releases/{release_id}/assets{{?name,label}}",
+            "tarball_url": f"{api_url}/repos/{repository}/tarball/{tag_name}" if tag_name else None,
+            "zipball_url": f"{api_url}/repos/{repository}/zipball/{tag_name}" if tag_name else None,
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
