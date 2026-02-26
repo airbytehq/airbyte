@@ -218,7 +218,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -240,21 +240,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `integer` | Unique agent identifier |
-| `hits[].data.email` | `string` | Agent email address |
-| `hits[].data.display_name` | `string` | Agent display name |
-| `hits[].data.first_name` | `string` | Agent first name |
-| `hits[].data.last_name` | `string` | Agent last name |
-| `hits[].data.enabled` | `boolean` | Whether agent is enabled |
-| `hits[].data.role_id` | `integer` | Agent role ID |
-| `hits[].data.departments` | `array` | Department IDs agent belongs to |
-| `hits[].data.create_date` | `string` | When agent was created |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique agent identifier |
+| `data[].email` | `string` | Agent email address |
+| `data[].display_name` | `string` | Agent display name |
+| `data[].first_name` | `string` | Agent first name |
+| `data[].last_name` | `string` | Agent last name |
+| `data[].enabled` | `boolean` | Whether agent is enabled |
+| `data[].role_id` | `integer` | Agent role ID |
+| `data[].departments` | `array` | Department IDs agent belongs to |
+| `data[].create_date` | `string` | When agent was created |
 
 </details>
 
@@ -664,7 +663,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -686,21 +685,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Unique chat identifier |
-| `hits[].data.timestamp` | `string` | Chat start timestamp |
-| `hits[].data.update_timestamp` | `string` | Last update timestamp |
-| `hits[].data.department_id` | `integer` | Department ID |
-| `hits[].data.department_name` | `string` | Department name |
-| `hits[].data.duration` | `integer` | Chat duration in seconds |
-| `hits[].data.rating` | `string` | Satisfaction rating |
-| `hits[].data.missed` | `boolean` | Whether chat was missed |
-| `hits[].data.agent_ids` | `array` | IDs of agents in chat |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique chat identifier |
+| `data[].timestamp` | `string` | Chat start timestamp |
+| `data[].update_timestamp` | `string` | Last update timestamp |
+| `data[].department_id` | `integer` | Department ID |
+| `data[].department_name` | `string` | Department name |
+| `data[].duration` | `integer` | Chat duration in seconds |
+| `data[].rating` | `string` | Satisfaction rating |
+| `data[].missed` | `boolean` | Whether chat was missed |
+| `data[].agent_ids` | `array` | IDs of agents in chat |
 
 </details>
 
@@ -834,7 +832,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -851,16 +849,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `integer` | Department ID |
-| `hits[].data.name` | `string` | Department name |
-| `hits[].data.enabled` | `boolean` | Whether department is enabled |
-| `hits[].data.members` | `array` | Agent IDs in department |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Department ID |
+| `data[].name` | `string` | Department name |
+| `data[].enabled` | `boolean` | Whether department is enabled |
+| `data[].members` | `array` | Agent IDs in department |
 
 </details>
 
@@ -1235,7 +1232,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1252,16 +1249,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `integer` | Shortcut ID |
-| `hits[].data.name` | `string` | Shortcut name/trigger |
-| `hits[].data.message` | `string` | Shortcut message content |
-| `hits[].data.tags` | `array` | Tags applied when shortcut is used |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Shortcut ID |
+| `data[].name` | `string` | Shortcut name/trigger |
+| `data[].message` | `string` | Shortcut message content |
+| `data[].tags` | `array` | Tags applied when shortcut is used |
 
 </details>
 
@@ -1439,7 +1435,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1455,15 +1451,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `integer` | Trigger ID |
-| `hits[].data.name` | `string` | Trigger name |
-| `hits[].data.enabled` | `boolean` | Whether trigger is enabled |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Trigger ID |
+| `data[].name` | `string` | Trigger name |
+| `data[].enabled` | `boolean` | Whether trigger is enabled |
 
 </details>
 

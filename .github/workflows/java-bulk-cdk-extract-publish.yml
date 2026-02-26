@@ -2,6 +2,14 @@
 
 name: Publish Bulk CDK Extract
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - "airbyte-cdk/bulk/core/extract/**"
+      - "airbyte-cdk/bulk/toolkits/extract-*/**"
+      - "airbyte-cdk/bulk/toolkits/legacy-source-integration-tests/**"
+      - "airbyte-cdk/bulk/toolkits/source-tests/**"
   workflow_dispatch:
 
 permissions:
