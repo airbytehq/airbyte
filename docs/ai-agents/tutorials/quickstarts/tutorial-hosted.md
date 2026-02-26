@@ -76,6 +76,28 @@ curl --location 'https://api.airbyte.ai/api/v1/account/applications/scoped-token
   }'
 ```
 
+## Configure your own OAuth app (optional)
+
+By default, Airbyte uses its own OAuth app credentials for connectors that support OAuth. If you want the OAuth consent screen to show your company's branding instead of Airbyte's, you can override these credentials before creating connectors.
+
+```python
+from airbyte_hubspot import HubspotConnector, AirbyteAuthConfig
+from airbyte_hubspot.models import HubspotOAuthCredentials
+
+await HubspotConnector.configure_oauth_app_parameters(
+    airbyte_config=AirbyteAuthConfig(
+        airbyte_client_id="<your_client_id>",
+        airbyte_client_secret="<your_client_secret>",
+    ),
+    credentials=HubspotOAuthCredentials(
+        client_id="<your_hubspot_oauth_client_id>",
+        client_secret="<your_hubspot_oauth_client_secret>",
+    ),
+)
+```
+
+To revert to Airbyte-managed defaults, pass `credentials=None`. For more details, see [Customize OAuth app credentials](/ai-agents/platform/authenticate/hosted#with-your-own-oauth-app-credentials).
+
 ## Create a connector
 
 Once you have a scoped token, create a connector with your API credentials. Airbyte stores these credentials securely in the Agent Engine. You need the following values.
