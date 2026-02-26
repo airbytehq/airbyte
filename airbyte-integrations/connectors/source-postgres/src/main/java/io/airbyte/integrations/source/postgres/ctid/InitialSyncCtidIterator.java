@@ -52,7 +52,8 @@ import org.slf4j.LoggerFactory;
  * to check for VACUUM in between processing chunks and if VACUUM happens then re-start syncing the
  * data.
  *
- * <p>All CTID batch queries within a single scan are executed on a single connection using
+ * <p>
+ * All CTID batch queries within a single scan are executed on a single connection using
  * {@code REPEATABLE READ} isolation. This guarantees that every batch sees the same MVCC snapshot,
  * preventing rows updated by concurrent transactions from being silently dropped.
  */
@@ -62,8 +63,8 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   public static final int MAX_TUPLES_IN_QUERY = 5_000_000;
 
   /**
-   * Default fetch size for streaming results from the snapshot connection.
-   * This value matches PostgreSQL JDBC driver best practices for cursor-based streaming.
+   * Default fetch size for streaming results from the snapshot connection. This value matches
+   * PostgreSQL JDBC driver best practices for cursor-based streaming.
    */
   @VisibleForTesting
   static final int SNAPSHOT_FETCH_SIZE = 10_000;
@@ -94,9 +95,8 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private boolean isCdcSync;
 
   /**
-   * A dedicated connection held open for the duration of the CTID scan.
-   * Opened with REPEATABLE READ isolation so that all batch queries see
-   * the same consistent MVCC snapshot.
+   * A dedicated connection held open for the duration of the CTID scan. Opened with REPEATABLE READ
+   * isolation so that all batch queries see the same consistent MVCC snapshot.
    */
   private Connection snapshotConnection;
 
@@ -194,10 +194,9 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   /**
-   * Executes a CTID batch query on the shared snapshot connection.
-   * Unlike the previous implementation that called {@code database.unsafeQuery()} (which opens a
-   * new connection per batch), this method reuses the single {@link #snapshotConnection} so that
-   * all batches see the same MVCC snapshot.
+   * Executes a CTID batch query on the shared snapshot connection. Unlike the previous implementation
+   * that called {@code database.unsafeQuery()} (which opens a new connection per batch), this method
+   * reuses the single {@link #snapshotConnection} so that all batches see the same MVCC snapshot.
    */
   private Stream<RowDataWithCtid> getStream(final Pair<Ctid, Ctid> p) throws SQLException {
     final PreparedStatement statement =
