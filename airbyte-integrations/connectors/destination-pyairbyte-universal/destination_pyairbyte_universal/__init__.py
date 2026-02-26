@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 """Universal destination using PyAirbyte caches as backends."""
 
-from airbyte.destinations.universal import DestinationPyAirbyteUniversal
+from airbyte.cli.universal_connector import DestinationPyAirbyteUniversal
 
 __all__ = [
     "DestinationPyAirbyteUniversal",
