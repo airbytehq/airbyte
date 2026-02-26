@@ -34,6 +34,7 @@ Sendinblue APIs are under rate limits for the number of API calls allowed per AP
 
 | Version | Date       | Pull Request                                              | Subject                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------ |
+| 0.2.24 | 2026-02-24 | [73936](https://github.com/airbytehq/airbyte/pull/73936) | Update dependencies |
 | 0.2.23 | 2026-02-17 | [73463](https://github.com/airbytehq/airbyte/pull/73463) | Update dependencies |
 | 0.2.22 | 2026-02-10 | [73155](https://github.com/airbytehq/airbyte/pull/73155) | Update dependencies |
 | 0.2.21 | 2026-02-03 | [72560](https://github.com/airbytehq/airbyte/pull/72560) | Update dependencies |

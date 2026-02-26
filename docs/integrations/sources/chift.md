@@ -23,6 +23,7 @@ Chift is a tool that allows for the integration of financial data into SaaS prod
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.8 | 2026-02-24 | [73822](https://github.com/airbytehq/airbyte/pull/73822) | Update dependencies |
 | 0.0.7 | 2026-02-17 | [73447](https://github.com/airbytehq/airbyte/pull/73447) | Update dependencies |
 | 0.0.6 | 2026-02-10 | [73000](https://github.com/airbytehq/airbyte/pull/73000) | Update dependencies |
 | 0.0.5 | 2026-02-03 | [72704](https://github.com/airbytehq/airbyte/pull/72704) | Update dependencies |

@@ -886,6 +886,78 @@ class TestBaseInsightsStream:
         assert stream.primary_key == expect_pks
 
     @pytest.mark.parametrize(
+        "level, expect_pks",
+        (
+            ("ad", ["date_start", "account_id", "ad_id"]),
+            ("adset", ["date_start", "account_id", "adset_id"]),
+            ("campaign", ["date_start", "account_id", "campaign_id"]),
+            ("account", ["date_start", "account_id"]),
+        ),
+    )
+    def test_primary_keys_by_level(self, api, some_config, level, expect_pks):
+        start_date = ab_datetime_parse("2024-01-01")
+        end_date = start_date + timedelta(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            level=level,
+        )
+        assert stream.primary_key == expect_pks
+
+    @pytest.mark.parametrize(
+        "level, breakdowns, expect_pks",
+        (
+            ("ad", ["country"], ["date_start", "account_id", "ad_id", "country"]),
+            ("adset", ["country"], ["date_start", "account_id", "adset_id", "country"]),
+            ("campaign", ["age", "gender"], ["date_start", "account_id", "campaign_id", "age", "gender"]),
+            ("account", ["country"], ["date_start", "account_id", "country"]),
+        ),
+    )
+    def test_primary_keys_by_level_with_breakdowns(self, api, some_config, level, breakdowns, expect_pks):
+        start_date = ab_datetime_parse("2024-01-01")
+        end_date = start_date + timedelta(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            level=level,
+            breakdowns=breakdowns,
+        )
+        assert stream.primary_key == expect_pks
+
+    @pytest.mark.parametrize(
+        "level, entity_id_field",
+        (
+            ("ad", "ad_id"),
+            ("adset", "adset_id"),
+            ("campaign", "campaign_id"),
+            ("account", None),
+        ),
+    )
+    def test_custom_schema_includes_level_entity_id(self, api, some_config, level, entity_id_field):
+        start_date = ab_datetime_parse("2024-01-01")
+        end_date = start_date + timedelta(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            level=level,
+            fields=["impressions", "clicks"],
+        )
+        schema = stream.get_json_schema()
+        if entity_id_field:
+            assert entity_id_field in schema["properties"], f"{entity_id_field} should be in schema for level={level}"
+        assert "account_id" in schema["properties"], "account_id should always be in schema"
+        assert "date_start" in schema["properties"], "date_start should always be in schema"
+
+    @pytest.mark.parametrize(
         "breakdowns, expect_pks",
         (
             (["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]),
