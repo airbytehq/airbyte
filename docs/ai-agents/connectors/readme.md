@@ -1,4 +1,8 @@
-import DocCardList from '@theme/DocCardList';
+---
+sidebar_position: 5
+---
+
+import AgentConnectorRegistry from '@site/src/components/AgentConnectorRegistry';
 
 # Agent connectors
 
@@ -56,11 +60,8 @@ Use Airbyte agent Connectors when you want:
 
 ## How to work with agent connectors
 
-Two options exist to work with an agent connector: Airbyte's MCP server and Python SDK.
-
-- [Python SDK tutorial](../quickstarts/tutorial-python) (recommended)
-- [MCP tutorial](../quickstarts/tutorial-mcp) (experimental)
+To get started with agent connectors, follow the [Python SDK tutorial](../tutorials/quickstarts/tutorial-python).
 
 ## All agent connectors
 
-<DocCardList />
+<AgentConnectorRegistry />

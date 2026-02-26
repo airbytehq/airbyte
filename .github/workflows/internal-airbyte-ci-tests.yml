@@ -39,7 +39,6 @@ jobs:
             - airbyte-ci/connectors/ci_credentials/**
             - airbyte-ci/connectors/erd/**
             - airbyte-ci/connectors/metadata_service/lib/**
-            - airbyte-ci/connectors/metadata_service/orchestrator/**
             - airbyte-integrations/bases/connector-acceptance-test/**
 
   run-tests:

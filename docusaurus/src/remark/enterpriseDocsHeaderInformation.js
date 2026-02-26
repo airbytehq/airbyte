@@ -3,9 +3,15 @@ const { toAttributes } = require("../helpers/objects");
 const visit = require("unist-util-visit").visit;
 const { fetchRegistry } = require("../scripts/fetch-registry");
 
-const getEnterpriseConnectorVersion = async (dockerRepository) => {
+const FALLBACK_VERSION = "No version information available";
+const FALLBACK_DEFINITION_ID = "No definition ID available.";
+
+const getEnterpriseConnectorRegistryInfo = async (dockerRepository) => {
   if (!dockerRepository) {
-    return "No version information available";
+    return {
+      version: FALLBACK_VERSION,
+      definitionId: FALLBACK_DEFINITION_ID,
+    };
   }
   try {
     const registry = await fetchRegistry();
@@ -16,16 +22,24 @@ const getEnterpriseConnectorVersion = async (dockerRepository) => {
         r.dockerRepository_cloud === dockerRepository,
     );
     if (!registryEntry) {
-      return "No version information available";
+      return {
+        version: FALLBACK_VERSION,
+        definitionId: FALLBACK_DEFINITION_ID,
+      };
     }
-    return (
-      registryEntry.dockerImageTag_oss || registryEntry.dockerImageTag_cloud
-    );
+    return {
+      version:
+        registryEntry.dockerImageTag_oss || registryEntry.dockerImageTag_cloud,
+      definitionId: registryEntry.definitionId || FALLBACK_DEFINITION_ID,
+    };
   } catch (error) {
     console.warn(`[Enterprise Connector Debug] Error fetching version:`, error);
   }
 
-  return "No version information available";
+  return {
+    version: FALLBACK_VERSION,
+    definitionId: FALLBACK_DEFINITION_ID,
+  };
 };
 
 const plugin = () => {
@@ -33,7 +47,7 @@ const plugin = () => {
     const isDocsPage = isEnterpriseConnectorDocsPage(vfile);
     if (!isDocsPage) return;
 
-    const version = await getEnterpriseConnectorVersion(
+    const { version, definitionId } = await getEnterpriseConnectorRegistryInfo(
       vfile.data.frontMatter.dockerRepository,
     );
 
@@ -52,7 +66,9 @@ const plugin = () => {
           dockerImageTag: version,
           github_url: undefined,
           originalTitle,
-          "enterprise-connector": vfile.data.frontMatter["enterprise-connector"] || true,
+          "enterprise-connector":
+            vfile.data.frontMatter["enterprise-connector"] || true,
+          definitionId,
         };
 
         firstHeading = false;
