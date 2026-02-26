@@ -30,7 +30,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources.source import Source
-
 from source_smoke_test.scenarios import (
     _DEFAULT_LARGE_BATCH_COUNT,
     PREDEFINED_SCENARIOS,
@@ -86,9 +85,7 @@ class SourceSmokeTest(Source):
                         "type": "array",
                         "title": "Custom Test Scenarios",
                         "description": (
-                            "Additional test scenarios to inject "
-                            "at runtime. Each scenario defines a "
-                            "stream name, JSON schema, and records."
+                            "Additional test scenarios to inject at runtime. Each scenario defines a stream name, JSON schema, and records."
                         ),
                         "items": {
                             "type": "object",
@@ -117,11 +114,7 @@ class SourceSmokeTest(Source):
                                 },
                                 "primary_key": {
                                     "type": ["array", "null"],
-                                    "description": (
-                                        "Primary key definition "
-                                        "(list of key paths) "
-                                        "or null."
-                                    ),
+                                    "description": ("Primary key definition (list of key paths) or null."),
                                     "items": {
                                         "type": "array",
                                         "items": {"type": "string"},
@@ -134,20 +127,13 @@ class SourceSmokeTest(Source):
                     "large_batch_record_count": {
                         "type": "integer",
                         "title": "Large Batch Record Count",
-                        "description": (
-                            "Number of records to generate for "
-                            "the large_batch_stream scenario. "
-                            "Set to 0 to skip this stream."
-                        ),
+                        "description": ("Number of records to generate for the large_batch_stream scenario. Set to 0 to skip this stream."),
                         "default": 1000,
                     },
                     "all_fast_streams": {
                         "type": "boolean",
                         "title": "All Fast Streams",
-                        "description": (
-                            "Include all fast (non-high-volume) "
-                            "predefined streams."
-                        ),
+                        "description": ("Include all fast (non-high-volume) predefined streams."),
                         "default": True,
                     },
                     "all_slow_streams": {
@@ -209,9 +195,7 @@ class SourceSmokeTest(Source):
             name = scenario["name"]
             is_high_volume = scenario.get("high_volume", False)
 
-            included_by_flag = (include_high_volume and is_high_volume) or (
-                include_default and not is_high_volume
-            )
+            included_by_flag = (include_high_volume and is_high_volume) or (include_default and not is_high_volume)
             if not included_by_flag and name not in explicit_names:
                 continue
 

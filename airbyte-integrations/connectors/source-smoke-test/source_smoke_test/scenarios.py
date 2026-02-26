@@ -77,10 +77,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "large_decimals_and_numbers",
-        "description": (
-            "Tests handling of very large numbers, "
-            "high precision decimals, and boundary values."
-        ),
+        "description": ("Tests handling of very large numbers, high precision decimals, and boundary values."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -224,10 +221,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "column_naming_edge_cases",
-        "description": (
-            "Tests special characters, casing, "
-            "and reserved words in column names."
-        ),
+        "description": ("Tests special characters, casing, and reserved words in column names."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -264,10 +258,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "table_naming_edge_cases",
-        "description": (
-            "Stream with special characters in the name "
-            "to test table naming."
-        ),
+        "description": ("Stream with special characters in the name to test table naming."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -322,10 +313,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "empty_stream",
-        "description": (
-            "A stream that emits zero records, "
-            "testing empty dataset handling."
-        ),
+        "description": ("A stream that emits zero records, testing empty dataset handling."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -355,10 +343,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "large_batch_stream",
-        "description": (
-            "A stream that generates a configurable "
-            "number of records for batch testing."
-        ),
+        "description": ("A stream that generates a configurable number of records for batch testing."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -376,10 +361,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "unicode_and_special_strings",
-        "description": (
-            "Tests unicode characters, emoji, escape "
-            "sequences, and special string values."
-        ),
+        "description": ("Tests unicode characters, emoji, escape sequences, and special string values."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -415,10 +397,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "schema_with_no_primary_key",
-        "description": (
-            "A stream without a primary key, "
-            "testing append-only behavior."
-        ),
+        "description": ("A stream without a primary key, testing append-only behavior."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -441,10 +420,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "long_column_names",
-        "description": (
-            "Tests handling of very long column names "
-            "that may exceed database limits."
-        ),
+        "description": ("Tests handling of very long column names that may exceed database limits."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
