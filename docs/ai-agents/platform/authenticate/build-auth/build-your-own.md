@@ -83,7 +83,7 @@ Requires a bearer token.
 <Tabs>
 <TabItem value="python" label="Python SDK" default>
 
-```python
+```python title="agent.py"
 from airbyte_hubspot import HubspotConnector, AirbyteAuthConfig
 from airbyte_hubspot.models import HubspotOAuthCredentials
 
@@ -140,7 +140,7 @@ To revert to the default Airbyte-managed OAuth app, remove the override:
 <Tabs>
 <TabItem value="python" label="Python SDK" default>
 
-```python
+```python title="agent.py"
 await HubspotConnector.configure_oauth_app_parameters(
     airbyte_config=AirbyteAuthConfig(
         airbyte_client_id="<your_airbyte_client_id>",
