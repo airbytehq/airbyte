@@ -1,5 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""Entry point for the universal destination connector."""
+"""Entry point for the smoke test destination connector."""
 
 import sys
 

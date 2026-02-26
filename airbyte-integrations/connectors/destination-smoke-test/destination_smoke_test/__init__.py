@@ -1,5 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""Universal destination using PyAirbyte caches as backends."""
+"""Smoke test destination using PyAirbyte caches as backends."""
 
 from airbyte.cli.universal_connector import DestinationPyAirbyteUniversal
 
