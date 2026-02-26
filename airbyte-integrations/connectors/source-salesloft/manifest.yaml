@@ -1619,6 +1619,24 @@ definitions:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['api_key'] }}"
 
+# Salesloft API rate limit: 600 cost per minute (team-level).
+# Default cost per request is 1, but requests with high page numbers cost more:
+#   Page 101-150: 3 points, Page 151-250: 8 points, Page 251-500: 10 points, Page 501+: 30 points
+# We use a FixedWindowCallRatePolicy so the x-ratelimit-remaining-minute response header
+# dynamically adjusts the remaining budget each minute. When high-page requests consume
+# more points per call, the API reports fewer remaining points and the connector
+# automatically throttles to stay within the budget.
+# See: https://developers.salesloft.com/docs/platform/api-basics/rate-limits/
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT1M
+      call_limit: 600
+      matchers: []
+  ratelimit_remaining_header: x-ratelimit-remaining-minute
+  status_codes_for_ratelimit_hit: [429]
+
 streams:
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/account_tiers"
