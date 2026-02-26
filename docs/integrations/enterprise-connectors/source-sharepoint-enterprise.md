@@ -267,7 +267,6 @@ When setting up this permissions for this connector, ensure that the following p
 - User.Read.All
 - Group.Read.All
 - Application.Read.All
-- Device.Read.All
 
 #### Preserve Sub-Directories in File Paths
 
@@ -317,6 +316,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                           | Subject                                                                   |
 |:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.3.2 | 2026-02-26 | [384](https://github.com/airbytehq/airbyte-enterprise/pull/384) | Migrate site users/groups to Graph API, add sharePointGroup identity type, restrict permissions streams to Full Refresh only |
 | 0.3.0 | 2025-05-21 | [161](https://github.com/airbytehq/airbyte-enterprise/pull/161) | Add permissions sync support |
 | 0.2.0 | 2025-04-30 | [144](https://github.com/airbytehq/airbyte-enterprise/pull/144) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
 | 0.1.0 | 2025-04-10 | [134](https://github.com/airbytehq/airbyte-enterprise/pull/134) | New source |
