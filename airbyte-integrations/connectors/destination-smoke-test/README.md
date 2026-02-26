@@ -1,6 +1,6 @@
-# PyAirbyte Universal Destination
+# Smoke Test Destination
 
-This is a universal destination connector that uses PyAirbyte's cache system to write data to various backends.
+This is a smoke test destination connector that uses PyAirbyte's cache system to write data to various backends. It is designed for testing and validation purposes.
 
 ## Supported Backends
 

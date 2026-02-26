@@ -5,11 +5,11 @@ data:
   connectorType: destination
   definitionId: 4f07663f-1b3e-4eea-945c-ffe4b406b28f
   dockerImageTag: 0.1.0
-  dockerRepository: airbyte/destination-pyairbyte-universal
-  githubIssueLabel: destination-pyairbyte-universal
+  dockerRepository: airbyte/destination-smoke-test
+  githubIssueLabel: destination-smoke-test
   icon: airbyte.svg
   license: ELv2
-  name: PyAirbyte Universal
+  name: Smoke Test Destination
   registryOverrides:
     cloud:
       enabled: false
@@ -26,7 +26,7 @@ data:
         resourceRequirements:
           memory_limit: 2Gi
           memory_request: 2Gi
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/pyairbyte-universal
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/smoke-test
   tags:
     - language:python
     - cdk:python
