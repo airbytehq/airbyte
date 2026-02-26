@@ -895,9 +895,13 @@ When a user sets up a connection using your connector, Airbyte runs a **discover
 
 Airbyte then detects schema changes over time. If the API starts returning new fields, Airbyte can detect and propagate those changes depending on the connection's [schema change management](/platform/using-airbyte/schema-change-management) settings.
 
-#### Recommended approach
+#### Recommended approach: metadata endpoint
 
-For most connectors targeting APIs with variable schemas, the `Automatically import detected schema` toggle is the right starting point:
+Some APIs expose an endpoint that lists all available fields and their types, such as `GET /custom-fields` or `GET /properties`. If the API you're building a connector for has one, this is the preferred approach: switch to the YAML editor and use a `DynamicSchemaLoader` component to query that endpoint at discover time and build the schema dynamically. This produces an accurate, complete schema for each user's account without relying on sampling records.
+
+#### Fallback approach: auto-detected schema
+
+When no metadata endpoint is available, the `Automatically import detected schema` toggle is the right starting point:
 
 1. **During development**, connect the Builder to a test account and run a test read. The Builder infers the schema from the returned records and auto-imports it as the declared schema.
 2. **At connection setup**, when a user configures a connection with their own credentials, Airbyte runs discover using the declared schema. The fields present in the declared schema are available for column selection and destination table creation.
@@ -905,12 +909,11 @@ For most connectors targeting APIs with variable schemas, the `Automatically imp
 
 If your test account has a representative set of fields, this approach works well. The declared schema serves as a baseline, and Airbyte's schema change management handles variations from there.
 
-#### When the detected schema is not enough
+#### Limitations of the auto-detected schema
 
 In some cases, the auto-detected schema might not cover all scenarios:
 
 - **The test account has few custom fields.** If the test account doesn't represent typical usage, the declared schema misses fields that most users have. Those fields won't appear in syncs until Airbyte detects a schema change.
-- **The API has a metadata endpoint.** Some APIs expose endpoints that list all available fields and their types, such as `GET /custom-fields` or `GET /properties`. If such an endpoint exists, switching to the YAML editor and using a `DynamicSchemaLoader` component lets the connector query that endpoint at discover time and build the schema dynamically. This is the most robust approach for APIs with highly variable schemas.
 - **Fields have inconsistent types.** If the same field appears as a string for one record and a number for another, the auto-detected schema may choose too narrow a type. In these cases, manually edit the declared schema to use a broader type such as `["string", "number"]`.
 
 For the common case where the API returns a mix of known and unknown fields, the auto-detected schema combined with Airbyte's schema change management provides the right balance between structured typing and flexibility.
