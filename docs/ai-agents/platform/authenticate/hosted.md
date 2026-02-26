@@ -71,60 +71,6 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   }'
 ```
 
-### With your own OAuth app credentials
-
-By default, Airbyte uses its own OAuth app credentials for each connector, so the OAuth consent screen shows "Airbyte" as the requesting application. You can override these with your own credentials to show your company's branding, use custom scopes, or meet compliance requirements.
-
-**Python SDK:**
-
-```python
-from airbyte_hubspot import HubspotConnector, AirbyteAuthConfig
-from airbyte_hubspot.models import HubspotOAuthCredentials
-
-# Set your own OAuth app credentials
-await HubspotConnector.configure_oauth_app_parameters(
-    airbyte_config=AirbyteAuthConfig(
-        airbyte_client_id="<your_airbyte_client_id>",
-        airbyte_client_secret="<your_airbyte_client_secret>",
-    ),
-    credentials=HubspotOAuthCredentials(
-        client_id="<your_hubspot_oauth_client_id>",
-        client_secret="<your_hubspot_oauth_client_secret>",
-    ),
-)
-
-# Remove the override (revert to Airbyte-managed defaults)
-await HubspotConnector.configure_oauth_app_parameters(
-    airbyte_config=AirbyteAuthConfig(
-        airbyte_client_id="<your_airbyte_client_id>",
-        airbyte_client_secret="<your_airbyte_client_secret>",
-    ),
-    credentials=None,
-)
-```
-
-**API:**
-
-```bash
-# Set your own OAuth app credentials
-curl -X PUT "https://api.airbyte.ai/api/v1/oauth/credentials" \
-  -H "Authorization: Bearer <operator_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "connector_type": "hubspot",
-    "configuration": {
-      "client_id": "<your_hubspot_oauth_client_id>",
-      "client_secret": "<your_hubspot_oauth_client_secret>"
-    }
-  }'
-
-# Remove the override
-curl -X DELETE "https://api.airbyte.ai/api/v1/oauth/credentials/connector_type/hubspot" \
-  -H "Authorization: Bearer <operator_token>"
-```
-
-For a full walkthrough of implementing your own OAuth flow end-to-end, see [Build your own OAuth flow](build-auth/build-your-own.md).
-
 ### With your own OAuth flow
 
 You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints to handle the token exchange. This allows you to show your own branding on the OAuth consent screen. See [Build your own OAuth flow](build-auth/build-your-own.md) for details.
