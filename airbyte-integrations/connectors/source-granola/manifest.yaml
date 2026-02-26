@@ -11,19 +11,18 @@ check:
   stream_names:
     - notes
 
-streams:
-    - type: DeclarativeStream
+definitions:
+  streams:
+    notes:
+      type: DeclarativeStream
       name: notes
       primary_key:
         - id
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url: https://public-api.granola.ai/v1/notes
-          authenticator:
-            type: BearerAuthenticator
-            api_token: "{{ config['api_key'] }}"
+          $ref: "#/definitions/base_requester"
+          path: /v1/notes
           http_method: GET
           request_parameters:
             page_size: "30"
@@ -73,6 +72,48 @@ streams:
         schema:
           $ref: "#/schemas/notes"
 
+    detailed_notes:
+      type: DeclarativeStream
+      name: detailed_notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/notes/{{ stream_partition.note_id }}
+          http_method: GET
+          request_parameters:
+            include: transcript
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: note_id
+              stream:
+                $ref: "#/definitions/streams/notes"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/detailed_notes"
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://public-api.granola.ai
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+
+streams:
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/detailed_notes"
+
 spec:
   type: Spec
   connection_specification:
@@ -106,6 +147,7 @@ spec:
 metadata:
   autoImportSchema:
     notes: false
+    detailed_notes: false
 
 schemas:
   notes:
@@ -143,6 +185,188 @@ schemas:
         type: string
         description: The creation time of the note in ISO 8601 format.
         format: date-time
+    additionalProperties: true
+    required:
+      - id
+
+  detailed_notes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type: string
+        description: The unique identifier of the note.
+      object:
+        type:
+          - "null"
+          - string
+        description: The object type, always "note".
+      title:
+        type:
+          - "null"
+          - string
+        description: The title of the note.
+      owner:
+        type:
+          - "null"
+          - object
+        description: The owner of the note.
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the note owner.
+          email:
+            type:
+              - "null"
+              - string
+            description: The email address of the note owner.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The creation time of the note in ISO 8601 format.
+        format: date-time
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The last update time of the note in ISO 8601 format.
+        format: date-time
+      calendar_event:
+        type:
+          - "null"
+          - object
+        description: Associated calendar event details.
+        properties:
+          event_title:
+            type:
+              - "null"
+              - string
+            description: Title of the calendar event.
+          invitees:
+            type:
+              - "null"
+              - array
+            description: List of calendar event invitees.
+            items:
+              type: object
+              properties:
+                email:
+                  type:
+                    - "null"
+                    - string
+                  description: Email of the invitee.
+          organiser:
+            type:
+              - "null"
+              - string
+            description: Email of the event organiser.
+          calendar_event_id:
+            type:
+              - "null"
+              - string
+            description: Calendar event identifier.
+          scheduled_start_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description: Scheduled start time of the event.
+          scheduled_end_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description: Scheduled end time of the event.
+      attendees:
+        type:
+          - "null"
+          - array
+        description: The attendees of the meeting.
+        items:
+          type: object
+          properties:
+            name:
+              type:
+                - "null"
+                - string
+              description: Name of the attendee.
+            email:
+              type:
+                - "null"
+                - string
+              description: Email of the attendee.
+      folder_membership:
+        type:
+          - "null"
+          - array
+        description: The folder membership of the note.
+        items:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+              description: Unique folder identifier.
+            object:
+              type:
+                - "null"
+                - string
+              description: Object type (folder).
+            name:
+              type:
+                - "null"
+                - string
+              description: Name of the folder.
+      summary_text:
+        type:
+          - "null"
+          - string
+        description: Plain text summary of the note.
+      summary_markdown:
+        type:
+          - "null"
+          - string
+        description: Markdown formatted summary of the note.
+      transcript:
+        type:
+          - "null"
+          - array
+        description: Transcript of the meeting.
+        items:
+          type: object
+          properties:
+            speaker:
+              type:
+                - "null"
+                - object
+              description: Speaker information.
+              properties:
+                source:
+                  type:
+                    - "null"
+                    - string
+                  description: Source of the speaker (microphone or speaker).
+            text:
+              type:
+                - "null"
+                - string
+              description: Transcript text content.
+            start_time:
+              type:
+                - "null"
+                - string
+              format: date-time
+              description: Start time of the transcript segment.
+            end_time:
+              type:
+                - "null"
+                - string
+              format: date-time
+              description: End time of the transcript segment.
     additionalProperties: true
     required:
       - id
