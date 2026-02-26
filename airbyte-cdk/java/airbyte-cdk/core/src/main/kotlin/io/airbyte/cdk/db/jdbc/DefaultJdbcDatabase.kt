@@ -22,7 +22,7 @@ private val LOGGER = KotlinLogging.logger {}
 open class DefaultJdbcDatabase
 @JvmOverloads
 constructor(
-    val dataSource: DataSource,
+    protected val dataSource: DataSource,
     sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations
 ) : JdbcDatabase(sourceOperations) {
     @Throws(SQLException::class)
