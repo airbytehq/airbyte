@@ -121,11 +121,18 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         return if (!catalog.tableExists(tableIdentifier)) {
             logger.info { "Creating Iceberg table '$tableIdentifier'...." }
-            catalog
-                .buildTable(tableIdentifier, schema)
-                .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
-                .withSortOrder(getSortOrder(schema = schema))
-                .create()
+            try {
+                catalog
+                    .buildTable(tableIdentifier, schema)
+                    .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+                    .withSortOrder(getSortOrder(schema = schema))
+                    .create()
+            } catch (e: AlreadyExistsException) {
+                logger.info {
+                    "Table '$tableIdentifier' was likely created by another thread or a previous attempt. Loading existing table."
+                }
+                catalog.loadTable(tableIdentifier)
+            }
         } else {
             logger.info { "Loading Iceberg table $tableIdentifier ..." }
             catalog.loadTable(tableIdentifier)
