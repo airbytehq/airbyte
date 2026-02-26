@@ -511,9 +511,12 @@ def generate_and_persist_registry_entry(
         overridden_metadata_data["spec"] = spec_cache.download_spec(cached_spec)
         logger.info("Spec file parsed and added to metadata.")
 
-        # If we have RC metadata, also add the spec to it
+        # If we have RC metadata, fetch the spec using the RC version's dockerImageTag
         if rc_overridden_metadata_data is not None:
-            rc_overridden_metadata_data["spec"] = overridden_metadata_data["spec"]
+            rc_cached_spec = spec_cache.find_spec_cache_with_fallback(
+                rc_overridden_metadata_data["dockerRepository"], rc_overridden_metadata_data["dockerImageTag"], registry_type
+            )
+            rc_overridden_metadata_data["spec"] = spec_cache.download_spec(rc_cached_spec)
 
         logger.info("Parsing registry entry model.")
         _, RegistryEntryModel = _get_connector_type_from_registry_entry(overridden_metadata_data)
