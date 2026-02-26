@@ -844,6 +844,12 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
 
     @staticmethod
     def _build_rest_urls(repository: str, release_id: int, tag_name: str) -> Mapping[str, str]:
+        """Synthesize REST-compatible URL fields from GraphQL data.
+
+        The GraphQL API does not return reference URLs the way the REST API does,
+        but we can construct them from the repository, release ID, and tag name
+        to retain backwards compatibility with the previous REST-based schema.
+        """
         return {
             "url": f"https://api.github.com/repos/{repository}/releases/{release_id}",
             "assets_url": f"https://api.github.com/repos/{repository}/releases/{release_id}/assets",
