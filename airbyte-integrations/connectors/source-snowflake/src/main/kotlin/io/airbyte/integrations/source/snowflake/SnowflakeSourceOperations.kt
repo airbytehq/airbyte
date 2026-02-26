@@ -90,8 +90,8 @@ class SnowflakeSourceOperations() :
      * by one API and "INTEGER" by the other.
      *
      * To ensure consistent type mapping regardless of which metadata API is used, all numeric
-     * type aliases are normalized based on scale: scale == 0 maps to an integer type, and
-     * scale > 0 (or null) maps to BigDecimalFieldType.
+     * type aliases are normalized based on scale: scale == 0 (or null) maps to an integer type,
+     * and scale > 0 maps to BigDecimalFieldType.
      */
     private fun leafType(typeName: String?, scale: Int?): JdbcFieldType<*> {
         return when (typeName?.uppercase()) {
