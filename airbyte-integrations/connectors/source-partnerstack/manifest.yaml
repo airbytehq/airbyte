@@ -829,7 +829,7 @@ schemas:
       product_key:
         type:
           - "null"
-          - string
+          - object
       test:
         type:
           - "null"
