@@ -195,8 +195,8 @@ export default function Home() {
             <h1 className={styles.heroTitle}>Airbyte documentation</h1>
             <p className={styles.heroDescription}>
               Airbyte is an open source data integration, activation, and agentic data platform.
-              Replicate data from hundreds of sources into warehouses, lakes, and databases
-              {' '}&mdash; then equip AI agents to explore and act on that data.
+              Replicate data from hundreds of sources into warehouses, lakes, and databases,
+              and equip AI agents to query, search, and act on that data in real-time.
             </p>
           </div>
         </section>

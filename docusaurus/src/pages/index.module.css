@@ -71,7 +71,7 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
-  color: var(--ifm-color-primary);
+  color: var(--ifm-font-color-base);
 }
 
 /* Connectors row */
@@ -203,7 +203,7 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
-  color: var(--ifm-color-primary);
+  color: var(--ifm-font-color-base);
 }
 
 .aeSectionSubtitle {
