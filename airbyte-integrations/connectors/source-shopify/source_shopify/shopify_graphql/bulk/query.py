@@ -2660,6 +2660,7 @@ class ProductVariant(ShopifyBulkQuery):
                     weightUnit
                     inventoryQuantity
                     requiresShipping
+                    requiresComponents
                     availableForSale
                     displayName
                     taxCode
@@ -2697,6 +2698,21 @@ class ProductVariant(ShopifyBulkQuery):
                     }
                     inventoryItem {
                         inventory_item_id: id
+                    }
+                    productVariantComponents {
+                        edges {
+                            node {
+                                __typename
+                                id
+                                quantity
+                                productVariant {
+                                    component_variant_id: id
+                                    product {
+                                        component_product_id: id
+                                    }
+                                }
+                            }
+                        }
                     }
                     presentmentPrices {
                     edges {
@@ -2757,6 +2773,30 @@ class ProductVariant(ShopifyBulkQuery):
             [Field(name="presentmentPrices", fields=presentment_prices_fields)] if self._should_include_presentment_prices else []
         )
 
+        variant_component_fields: List[Field] = [
+            Field(
+                name="edges",
+                fields=[
+                    Field(
+                        name="node",
+                        fields=[
+                            "__typename",
+                            "id",
+                            "quantity",
+                            Field(
+                                name="productVariant",
+                                fields=[
+                                    Field(name="id", alias="component_variant_id"),
+                                    Field(name="product", fields=[Field(name="id", alias="component_product_id")]),
+                                ],
+                            ),
+                        ],
+                    )
+                ],
+            )
+        ]
+        variant_components = [Field(name="productVariantComponents", fields=variant_component_fields)]
+
         image_fields = [
             Field(name="id", alias="image_id"),
             Field(name="src", alias="image_src"),
@@ -2785,6 +2825,7 @@ class ProductVariant(ShopifyBulkQuery):
             "taxable",
             "barcode",
             "inventoryQuantity",
+            "requiresComponents",
             "availableForSale",
             "displayName",
             "taxCode",
@@ -2799,14 +2840,14 @@ class ProductVariant(ShopifyBulkQuery):
                 ],
             ),
             Field(name="inventoryItem", fields=inventory_item_fields),
-        ] + presentment_prices
+        ] + variant_components + presentment_prices
 
         return query_nodes
 
     record_composition = {
         "new_record": "ProductVariant",
-        # each `ProductVariant` could have `ProductVariantPricePair` associated with the product variant.
-        "record_components": ["ProductVariantPricePair"],
+        # each `ProductVariant` could have `ProductVariantPricePair` and `ProductVariantComponent` associated with the product variant.
+        "record_components": ["ProductVariantPricePair", "ProductVariantComponent"],
     }
 
     def _process_presentment_prices(self, entity: List[dict]) -> List[dict]:
@@ -2839,6 +2880,28 @@ class ProductVariant(ShopifyBulkQuery):
             item.pop("compareAtPrice", None)
 
         return entity
+
+    def _process_variant_components(self, entity: List[dict]) -> List[dict]:
+        processed = []
+        for item in entity:
+            # remove the `__parentId` from the object
+            if BULK_PARENT_KEY in item:
+                item.pop(BULK_PARENT_KEY)
+
+            component = {}
+            # resolve the component id
+            component["id"] = self.tools.resolve_str_id(item.get("id"))
+            component["quantity"] = item.get("quantity")
+
+            # unnest the component variant and product ids
+            variant_data = item.get("productVariant", {}) or {}
+            component["variant_id"] = self.tools.resolve_str_id(variant_data.get("component_variant_id"))
+
+            product_data = variant_data.get("product", {}) or {}
+            component["product_id"] = self.tools.resolve_str_id(product_data.get("component_product_id"))
+
+            processed.append(component)
+        return processed
 
     def _unnest_and_resolve_id(self, record: MutableMapping[str, Any], from_property: str, id_field: str) -> int:
         entity = record.get(from_property, {})
@@ -2882,7 +2945,12 @@ class ProductVariant(ShopifyBulkQuery):
         # process record components
         if record_components:
             record["presentment_prices"] = self._process_presentment_prices(record_components.get("ProductVariantPricePair", []))
+            record["product_variant_components"] = self._process_variant_components(record_components.get("ProductVariantComponent", []))
             record.pop("record_components")
+
+        # ensure product_variant_components is always set (empty list for non-bundle variants)
+        if "product_variant_components" not in record:
+            record["product_variant_components"] = []
 
         # enrich options with id and position from product options (must be done before product is removed)
         self._enrich_options_with_product_options(record)
