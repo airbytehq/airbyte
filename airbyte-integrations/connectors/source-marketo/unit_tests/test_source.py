@@ -339,11 +339,7 @@ def test_parse_response_with_unicode_line_separator(send_email_stream):
     do not cause CSV column misalignment. This was the root cause of
     https://github.com/airbytehq/oncall/issues/11468.
     """
-    response_text = (
-        "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant\n"
-        "1,\u2028test,true,10,15\n"
-        "2,3,false,11,16"
-    )
+    response_text = "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant\n" "1,\u2028test,true,10,15\n" "2,3,false,11,16"
 
     def iter_lines(*args, **kwargs):
         yield from response_text.split("\n")
