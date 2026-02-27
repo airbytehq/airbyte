@@ -25,6 +25,12 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-visma-economic
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   supportLevel: community
   tags:
     - cdk:low-code
