@@ -187,11 +187,6 @@
   opacity: 0.8;
 }
 
-/* Navattic demo container */
-.demoContainer {
-  margin-top: 1rem;
-}
-
 /* ===========================
    Section 3: Agent Engine
    =========================== */
@@ -221,7 +216,7 @@
 
 .aeNavGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1.5rem;
 }
 
@@ -337,7 +332,7 @@
   }
 
   .aeNavGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.25rem;
   }
 

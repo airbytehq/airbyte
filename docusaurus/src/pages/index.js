@@ -1,7 +1,6 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import styles from './index.module.css';
-import { Navattic } from '../components/Navattic';
 
 export default function Home() {
   const PlatformIcon = () => (
@@ -58,7 +57,7 @@ export default function Home() {
     </svg>
   );
 
-  const AgentToolsIcon = () => (
+  const TutorialsIcon = () => (
     <svg
       width="48"
       height="48"
@@ -66,7 +65,7 @@ export default function Home() {
       xmlns="http://www.w3.org/2000/svg"
       className={styles.aeNavIconSvg}
     >
-      <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+      <path d="M12 0L1 5l11 5 9-4.09V17h2V5M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
     </svg>
   );
 
@@ -153,28 +152,34 @@ export default function Home() {
 
   const aeNavLinks = [
     {
-      title: 'Get started',
-      link: '/ai-agents/',
-      description: 'Learn about Airbyte\'s Agent Engine and how to equip your AI agents to explore and act on your data.',
+      title: 'About Agent Engine',
+      link: '/ai-agents/about/',
+      description: 'Learn what Agent Engine is, how it works, and who it\'s for.',
       icon: AIAgentsIcon,
+    },
+    {
+      title: 'Tutorials',
+      link: '/ai-agents/tutorials/',
+      description: 'Step-by-step guides and quickstarts to get your agents up and running.',
+      icon: TutorialsIcon,
     },
     {
       title: 'Platform',
       link: '/ai-agents/platform/',
       description: 'Authenticate, configure connectors, manage context stores, and execute agent workflows.',
-      icon: AgentToolsIcon,
-    },
-    {
-      title: 'Connectors',
-      link: '/ai-agents/connectors/',
-      description: 'Browse the growing catalog of agent-optimized connectors for popular platforms.',
-      icon: AgentConnectorsIcon,
+      icon: PlatformIcon,
     },
     {
       title: 'API reference',
       link: '/ai-agents/api/',
       description: 'Integrate Agent Engine into your applications with the REST API.',
       icon: AgentApiIcon,
+    },
+    {
+      title: 'Connectors',
+      link: '/ai-agents/connectors/',
+      description: 'Browse the growing catalog of agent-optimized connectors for popular platforms.',
+      icon: AgentConnectorsIcon,
     },
   ];
 
@@ -289,13 +294,6 @@ export default function Home() {
               })}
             </div>
 
-            {/* Interactive Demo */}
-            <div className={styles.demoContainer}>
-              <Navattic
-                id="cmhfnvz6w000004jrbwla348h"
-                title="Airbyte Interactive Product Tour"
-              />
-            </div>
           </div>
         </section>
 
@@ -335,7 +333,7 @@ export default function Home() {
           <div className={styles.badgesContainer}>
             <a href="https://GitHub.com/airbytehq/airbyte/stargazers/">
               <img 
-                src="https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000" 
+                src="https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star" 
                 alt="GitHub stars" 
               />
             </a>{' '}

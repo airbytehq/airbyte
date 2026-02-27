@@ -12,6 +12,10 @@ Use Airbyte's data replication platform to consolidate data from hundreds of sou
 
 Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data, Airbyte works for you. Airbyte offers flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise solutions.
 
+## Interactive product tour
+
+<Navattic id="cmhfnvz6w000004jrbwla348h" title="Airbyte Interactive Product Tour" />
+
 ## Why Airbyte?
 
 Teams and organizations need efficient and timely data access to an ever-growing list of data sources. In-house data pipelines are brittle and costly to build and maintain. Airbyte's unique open source approach enables your data stack to adapt as your data needs evolve.
