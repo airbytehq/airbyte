@@ -195,6 +195,7 @@ Retries described above operate **within a single job execution**. However, cert
 4. Retry counters (successive failures, total failures) are reset because they are scoped to a single workflow execution.
 
 Common causes of workflow restarts include:
+
 - Platform upgrades or deployments that restart Temporal workers
 - Temporal server maintenance or failovers
 - Temporal workflow history reaching its event limit, triggering a continue-as-new
