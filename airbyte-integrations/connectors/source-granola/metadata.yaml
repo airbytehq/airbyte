@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9023923c-002f-4131-9554-3ebdf56540a4
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-granola
   documentationUrl: https://docs.airbyte.com/integrations/sources/granola
   githubIssueLabel: source-granola
@@ -23,6 +23,9 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-granola
+  suggestedStreams:
+    streams:
+      - detailed_notes
   supportLevel: community
   tags:
     - cdk:low-code

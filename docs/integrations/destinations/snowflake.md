@@ -260,6 +260,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                 | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.38 | 2026-02-25 | | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |
 | 4.0.37          | 2026-02-04 | [72854](https://github.com/airbytehq/airbyte/pull/72854) | Internal interface changes                                                                                                                                                                 |
 | 4.0.36 | 2026-01-29 | [72417](https://github.com/airbytehq/airbyte/pull/72417) | Handle exception in countTable correctly                                                                                                                                                            |
 | 4.0.35 | 2026-01-26 | [72295](https://github.com/airbytehq/airbyte/pull/72295) | Upgrade CDK to 0.2.0                                                                                                                                                                                |
