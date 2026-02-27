@@ -44,9 +44,6 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
         "shares",
         "follows",
         "clicks_on_music_disc",
-        "real_time_app_install",
-        "real_time_app_install_cost",
-        "app_install",
     ]
 
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
