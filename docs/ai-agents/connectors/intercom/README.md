@@ -3,9 +3,11 @@
 The Intercom agent connector is a Python package that equips AI agents to interact with Intercom through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Intercom is a customer messaging platform that enables businesses to communicate with
-customers through chat, email, and in-app messaging. This connector provides read-only
-access to core Intercom entities including contacts, conversations, companies, teams,
-admins, tags, and segments for customer support analytics and insights.
+customers through chat, email, and in-app messaging. This connector provides access
+to core Intercom entities including contacts, conversations, companies, teams,
+admins, tags, and segments for customer support analytics and insights. It also supports
+creating and updating contacts, creating notes, creating internal articles, creating
+and updating companies, and creating tags.
 
 
 ## Example questions
@@ -21,6 +23,12 @@ The Intercom connector is optimized to handle prompts like these.
 - Show me details for a recent contact
 - Show me details for a recent company
 - Show me details for a recent conversation
+- Create a new lead contact named 'Jane Smith' with email jane@example.com
+- Create an internal article titled 'Onboarding Guide' with instructions for new team members
+- Create a company named 'Acme Corp' with company_id 'acme-001'
+- Create a tag named 'VIP Customer'
+- Update the name of contact \{id\} to 'John Updated'
+- Add a note to contact \{id\} saying 'Followed up on support request'
 - Show me conversations from the last week
 - List conversations assigned to team \{team_id\}
 - Show me open conversations
@@ -29,12 +37,11 @@ The Intercom connector is optimized to handle prompts like these.
 
 The Intercom connector isn't currently able to handle prompts like these.
 
-- Create a new contact in Intercom
 - Send a message to a customer
 - Delete a conversation
-- Update company information
+- Delete a contact
+- Delete a company
 - Assign a conversation to an admin
-- Create a new tag
 
 ## Installation
 
@@ -99,13 +106,15 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Search](./REFERENCE.md#contacts-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Search](./REFERENCE.md#contacts-search) |
 | Conversations | [List](./REFERENCE.md#conversations-list), [Get](./REFERENCE.md#conversations-get), [Search](./REFERENCE.md#conversations-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [Search](./REFERENCE.md#companies-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Search](./REFERENCE.md#companies-search) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
 | Admins | [List](./REFERENCE.md#admins-list), [Get](./REFERENCE.md#admins-get) |
-| Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get) |
+| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get) |
+| Notes | [Create](./REFERENCE.md#notes-create) |
 | Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get) |
+| Internal Articles | [Create](./REFERENCE.md#internal-articles-create) |
 
 
 ### Authentication
@@ -118,7 +127,7 @@ See the official [Intercom API reference](https://developers.intercom.com/docs/r
 
 ## Version information
 
-- **Package version:** 0.1.77
+- **Package version:** 0.1.79
 - **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** 62fbfc1f7b4889639e5a0245203b250cbd0315ae
+- **Generated with Connector SDK commit SHA:** 39690c8e4097a393e4f6a8df586af5002bc93095
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/intercom/CHANGELOG.md)

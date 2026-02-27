@@ -160,7 +160,7 @@ Search and filter notes records powered by Airbyte's data sync. This often provi
 
 ```python
 await granola.notes.search(
-    query={"filter": {"eq": {"created_at": "<str>"}}}
+    query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
 
@@ -174,7 +174,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "notes",
     "action": "search",
     "params": {
-        "query": {"filter": {"eq": {"created_at": "<str>"}}}
+        "query": {"filter": {"eq": {"id": "<str>"}}}
     }
 }'
 ```
@@ -194,11 +194,18 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `created_at` | `string` | The creation time of the note in ISO 8601 format. |
 | `id` | `string` | The unique identifier of the note. |
 | `object` | `string` | The object type, always "note". |
-| `owner` | `object` | The owner of the note. |
 | `title` | `string` | The title of the note. |
+| `owner` | `object` | The owner of the note. |
+| `created_at` | `string` | The creation time of the note in ISO 8601 format. |
+| `updated_at` | `string` | The last update time of the note in ISO 8601 format. |
+| `summary_text` | `string` | Plain text summary of the note. |
+| `summary_markdown` | `string` | Markdown formatted summary of the note. |
+| `attendees` | `array` | The attendees of the meeting. |
+| `calendar_event` | `object` | Associated calendar event details. |
+| `folder_membership` | `array` | The folder membership of the note. |
+| `transcript` | `array` | Transcript of the meeting. |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -210,11 +217,18 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.has_more` | `boolean` | Whether additional pages are available |
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
-| `data[].created_at` | `string` | The creation time of the note in ISO 8601 format. |
 | `data[].id` | `string` | The unique identifier of the note. |
 | `data[].object` | `string` | The object type, always "note". |
-| `data[].owner` | `object` | The owner of the note. |
 | `data[].title` | `string` | The title of the note. |
+| `data[].owner` | `object` | The owner of the note. |
+| `data[].created_at` | `string` | The creation time of the note in ISO 8601 format. |
+| `data[].updated_at` | `string` | The last update time of the note in ISO 8601 format. |
+| `data[].summary_text` | `string` | Plain text summary of the note. |
+| `data[].summary_markdown` | `string` | Markdown formatted summary of the note. |
+| `data[].attendees` | `array` | The attendees of the meeting. |
+| `data[].calendar_event` | `object` | Associated calendar event details. |
+| `data[].folder_membership` | `array` | The folder membership of the note. |
+| `data[].transcript` | `array` | Transcript of the meeting. |
 
 </details>
 
