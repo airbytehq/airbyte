@@ -2811,36 +2811,40 @@ class ProductVariant(ShopifyBulkQuery):
             Field(name="requiresShipping", alias="requires_shipping"),
             Field(name="measurement", alias="measurement", fields=measurement_fields),
         ]
-        query_nodes: List[Field] = [
-            "__typename",
-            "id",
-            "title",
-            "price",
-            "sku",
-            "position",
-            "inventoryPolicy",
-            "compareAtPrice",
-            "createdAt",
-            "updatedAt",
-            "taxable",
-            "barcode",
-            "inventoryQuantity",
-            "requiresComponents",
-            "availableForSale",
-            "displayName",
-            "taxCode",
-            Field(name="selectedOptions", alias="options", fields=option_fields),
-            Field(name="image", fields=image_fields),
-            Field(name="inventoryQuantity", alias="old_inventory_quantity"),
-            Field(
-                name="product",
-                fields=[
-                    Field(name="id", alias="product_id"),
-                    Field(name="options", alias="product_options", fields=["id", "name", "position"]),
-                ],
-            ),
-            Field(name="inventoryItem", fields=inventory_item_fields),
-        ] + variant_components + presentment_prices
+        query_nodes: List[Field] = (
+            [
+                "__typename",
+                "id",
+                "title",
+                "price",
+                "sku",
+                "position",
+                "inventoryPolicy",
+                "compareAtPrice",
+                "createdAt",
+                "updatedAt",
+                "taxable",
+                "barcode",
+                "inventoryQuantity",
+                "requiresComponents",
+                "availableForSale",
+                "displayName",
+                "taxCode",
+                Field(name="selectedOptions", alias="options", fields=option_fields),
+                Field(name="image", fields=image_fields),
+                Field(name="inventoryQuantity", alias="old_inventory_quantity"),
+                Field(
+                    name="product",
+                    fields=[
+                        Field(name="id", alias="product_id"),
+                        Field(name="options", alias="product_options", fields=["id", "name", "position"]),
+                    ],
+                ),
+                Field(name="inventoryItem", fields=inventory_item_fields),
+            ]
+            + variant_components
+            + presentment_prices
+        )
 
         return query_nodes
 
