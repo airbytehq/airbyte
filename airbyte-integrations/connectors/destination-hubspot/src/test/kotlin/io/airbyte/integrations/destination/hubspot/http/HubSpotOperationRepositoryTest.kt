@@ -214,10 +214,7 @@ class HubSpotOperationRepositoryTest {
             aResponse(
                 200,
                 HubSpotPropertiesApiResponseBuilder()
-                    .withProperty(
-                        anAvailableProperty("custom_deal_id")
-                            .withHasUniqueValue(true)
-                    )
+                    .withProperty(anAvailableProperty("custom_deal_id").withHasUniqueValue(true))
                     .withProperty(anAvailableProperty("dealname"))
                     .build()
             )
@@ -243,9 +240,7 @@ class HubSpotOperationRepositoryTest {
     }
 
     private fun aPropertiesApiResponseWithEmailProperty(): InputStream =
-        HubSpotPropertiesApiResponseBuilder()
-            .withProperty(anAvailableProperty("email"))
-            .build()
+        HubSpotPropertiesApiResponseBuilder().withProperty(anAvailableProperty("email")).build()
 
     private fun anEmptyPropertiesApiResponse(): InputStream =
         HubSpotPropertiesApiResponseBuilder().build()

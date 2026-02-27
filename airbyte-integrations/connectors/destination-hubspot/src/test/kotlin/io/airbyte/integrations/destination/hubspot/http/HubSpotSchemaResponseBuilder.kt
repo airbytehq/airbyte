@@ -51,8 +51,8 @@ class HubSpotSchemaResponseBuilder {
 }
 
 /**
- * Builder for HubSpot Properties API responses (GET /crm/v3/properties/{objectType}).
- * Properties API returns properties under a "results" array instead of "properties".
+ * Builder for HubSpot Properties API responses (GET /crm/v3/properties/{objectType}). Properties
+ * API returns properties under a "results" array instead of "properties".
  */
 class HubSpotPropertiesApiResponseBuilder {
     private val response = Jsons.objectNode()
