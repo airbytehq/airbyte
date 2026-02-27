@@ -483,6 +483,24 @@
             "description": "The workspace ID to list sources for."
           },
           {
+            "name": "customer_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Customer name to list sources for. Previously named external_user_id.",
+              "title": "Customer Name"
+            },
+            "description": "Customer name to list sources for. Previously named external_user_id."
+          },
+          {
             "name": "external_user_id",
             "in": "query",
             "required": false,
@@ -495,10 +513,12 @@
                   "type": "null"
                 }
               ],
-              "description": "The external user ID to list sources for.",
+              "description": "Deprecated. Use customer_name instead.",
+              "deprecated": true,
               "title": "External User Id"
             },
-            "description": "The external user ID to list sources for."
+            "description": "Deprecated. Use customer_name instead.",
+            "deprecated": true
           },
           {
             "name": "definition_id",
@@ -3094,7 +3114,7 @@
       "put": {
         "tags": ["Customers"],
         "summary": "Update Workspace",
-        "description": "Update an external user's name and/or status.\n- Set `name` to update the external user name\n- Set `status` to 'active' or 'inactive' to change the external user status\n- When setting status to 'inactive', all active connections for the external user will be automatically disabled",
+        "description": "Update an external user's name, status, and/or cache setting.\n- Set `name` to update the external user name\n- Set `status` to 'active' or 'inactive' to change the external user status\n- When setting status to 'inactive', all active connections for the external user will be automatically disabled\n- Set `cache_enabled` to true/false to enable or disable Context Store caching for this external user",
         "operationId": "update_workspaces_workspace_id",
         "security": [
           {
@@ -3865,10 +3885,10 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "External user identifier (maps to workspace name)."
+            "title": "Customer Name",
+            "description": "Customer name (maps to workspace name). Previously named external_user_id."
           },
           "connector_type": {
             "anyOf": [
@@ -3974,7 +3994,7 @@
           }
         },
         "type": "object",
-        "required": ["external_user_id"],
+        "required": ["customer_name"],
         "title": "ConnectorSourceCheckConfigRequest",
         "description": "Request model for checking connector source configuration before creation."
       },
@@ -4066,10 +4086,10 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "External user identifier (maps to workspace name)."
+            "title": "Customer Name",
+            "description": "Customer name (maps to workspace name). Previously named external_user_id."
           },
           "connector_type": {
             "anyOf": [
@@ -4175,7 +4195,7 @@
           }
         },
         "type": "object",
-        "required": ["external_user_id"],
+        "required": ["customer_name"],
         "title": "ConnectorSourceCreateRequest",
         "description": "Request model for creating a connector source.\n\nUses `replication_config` instead of `source_config` for clearer semantics.\nFor REPLICATION mode: pass the full config in `replication_config`\nFor MULTI/DIRECT mode: pass `credentials` + `environment` + optional `replication_config` overrides\nFor OAuth: pass `secret_id` from OAuth callback instead of credentials"
       },
@@ -5261,14 +5281,14 @@
             "format": "uuid",
             "title": "Workspace Id"
           },
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "The external user identifier (workspace name)."
+            "title": "Customer Name",
+            "description": "Customer name (workspace name). Previously named external_user_id."
           }
         },
         "type": "object",
-        "required": ["organization_id", "workspace_id", "external_user_id"],
+        "required": ["organization_id", "workspace_id", "customer_name"],
         "title": "ScopedTokenInfoGetResponse"
       },
       "SonarCatalogSchemaType": {
@@ -5333,6 +5353,17 @@
             ],
             "title": "Name",
             "description": "Optional name for the cloned template. If not provided, uses the original template's name"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceConfigTemplateMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Mode for the cloned template. If not provided, inherits from the original template."
           }
         },
         "type": "object",
@@ -6475,6 +6506,11 @@
             "$ref": "#/components/schemas/WorkspaceStatus",
             "description": "The status of the external user (active or inactive)"
           },
+          "cache_enabled": {
+            "type": "boolean",
+            "title": "Cache Enabled",
+            "description": "Whether Context Store caching is enabled for this external user"
+          },
           "tombstone": {
             "type": "boolean",
             "title": "Tombstone",
@@ -6499,6 +6535,7 @@
           "name",
           "organization_id",
           "status",
+          "cache_enabled",
           "tombstone",
           "created_at",
           "updated_at"
@@ -6528,6 +6565,11 @@
             "$ref": "#/components/schemas/WorkspaceStatus",
             "description": "The status of the external user (active or inactive)"
           },
+          "cache_enabled": {
+            "type": "boolean",
+            "title": "Cache Enabled",
+            "description": "Whether Context Store caching is enabled for this external user"
+          },
           "tombstone": {
             "type": "boolean",
             "title": "Tombstone",
@@ -6552,6 +6594,7 @@
           "name",
           "organization_id",
           "status",
+          "cache_enabled",
           "tombstone",
           "created_at",
           "updated_at"
@@ -6636,6 +6679,18 @@
               }
             ],
             "description": "Set status to active or inactive"
+          },
+          "cache_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Enabled",
+            "description": "Enable or disable Context Store for this external user"
           }
         },
         "type": "object",
@@ -6664,6 +6719,11 @@
             "$ref": "#/components/schemas/WorkspaceStatus",
             "description": "The status of the external user (active or inactive)"
           },
+          "cache_enabled": {
+            "type": "boolean",
+            "title": "Cache Enabled",
+            "description": "Whether Context Store caching is enabled for this external user"
+          },
           "tombstone": {
             "type": "boolean",
             "title": "Tombstone",
@@ -6688,6 +6748,7 @@
           "name",
           "organization_id",
           "status",
+          "cache_enabled",
           "tombstone",
           "created_at",
           "updated_at"
@@ -6696,10 +6757,10 @@
       },
       "app__api__account__applications__schemas__ScopedTokenCreateRequest": {
         "properties": {
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "The external user identifier."
+            "title": "Customer Name",
+            "description": "Customer name (workspace name). Previously named external_user_id."
           },
           "region_id": {
             "anyOf": [
@@ -6720,15 +6781,15 @@
           }
         },
         "type": "object",
-        "required": ["external_user_id"],
+        "required": ["customer_name"],
         "title": "ScopedTokenCreateRequest"
       },
       "app__api__account__applications__schemas__WidgetTokenCreateRequest": {
         "properties": {
-          "external_user_id": {
+          "customer_name": {
             "type": "string",
-            "title": "External User Id",
-            "description": "The external user identifier."
+            "title": "Customer Name",
+            "description": "Customer name (workspace name). Previously named external_user_id."
           },
           "region_id": {
             "anyOf": [
@@ -6780,7 +6841,7 @@
           }
         },
         "type": "object",
-        "required": ["external_user_id", "allowed_origin"],
+        "required": ["customer_name", "allowed_origin"],
         "title": "WidgetTokenCreateRequest"
       }
     },
