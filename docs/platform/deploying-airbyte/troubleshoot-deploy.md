@@ -2,6 +2,54 @@
 
 This guide helps you navigate any issues when you deploy Airbyte with `abctl`.
 
+## Installer Script Errors
+
+These errors occur when running the `curl -LsfS https://get.airbyte.com | bash -` installer script to install the `abctl` binary itself. For errors that occur when running `abctl local install`, see [Common Errors](#common-errors).
+
+### "Is a directory"
+
+- Error: `main: line 179: /tmp/abctl_install.XXXX/: Is a directory`
+
+The installer creates a temporary directory, downloads the `abctl` release archive into it, and extracts the binary. This error occurs when the extraction produces a directory structure that doesn't match what the script expects, causing it to try to execute a directory path instead of the binary.
+
+**Workarounds:**
+
+1. Re-run the installer with debug output enabled to see the exact failure point.
+
+    ```shell
+    DEBUG=1 curl -LsfS https://get.airbyte.com | bash -
+    ```
+
+2. Install abctl using an alternative method instead of the curl installer. See the [abctl installation options](/platform/deploying-airbyte/abctl/#install-abctl) for Homebrew, Go, and manual download instructions.
+
+---
+
+### Permission denied during installation
+
+- Error: `Permission denied` or `Neither root or sudo`
+
+The installer needs write access to the install directory (default `/usr/local/bin`). If you don't have `sudo` access or want to install to a different location, set the `DIR_INSTALL` environment variable.
+
+```shell
+DIR_INSTALL=$HOME/bin curl -LsfS https://get.airbyte.com | bash -
+```
+
+Make sure the target directory exists and is in your `PATH`.
+
+---
+
+### Installer environment variables
+
+The installer script supports the following environment variables for customization.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DIR_INSTALL` | `/usr/local/bin` | Directory where the `abctl` binary is placed. |
+| `RELEASE_TAG` | latest | Specific abctl release tag to install (e.g. `v0.19.0`). |
+| `DEBUG` | unset | Set to any value to enable verbose installer output. |
+
+---
+
 ## Common Errors
 
 ### Airbyte Bootloader failed to start
@@ -172,6 +220,10 @@ Version `0.15.0` had a bug when users have `secrets.yaml` file. You must upgrade
 - Fix 2: Deploy Airbyte again and set the `--insecure-cookies` flag. For example, `abctl local install --host example.com --insecure-cookies`.
 
 ## FAQ
+
+### Can I use abctl with an existing Kubernetes cluster?
+
+No. abctl creates and manages its own [kind](https://kind.sigs.k8s.io/) cluster inside Docker. It cannot target an existing Kubernetes cluster. If you already have a Kubernetes cluster, use the [Helm chart deployment guide](/platform/deploying-airbyte/chart-v2-community) to install Airbyte directly.
 
 ### Using standard tools to interact with an Airbyte instance that was installed with `abctl`
 

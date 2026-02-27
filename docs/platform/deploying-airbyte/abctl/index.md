@@ -19,6 +19,10 @@ Airbyte runs on Kubernetes. People run Airbyte in a diverse set of environments 
 
 You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. Normally, you don't use abctl to manage enterprise deployments, because they use dedicated Kubernetes infrastructure. However, it's possible to use abctl this way if you want to.
 
+:::warning
+abctl only manages its own kind cluster. It cannot install Airbyte on an existing Kubernetes cluster. If you already have a Kubernetes cluster, use the [Helm chart deployment guide](../chart-v2-community.mdx) instead.
+:::
+
 ### What abctl does
 
 abctl uses [kind](https://kind.sigs.k8s.io/) to create a [Kubernetes](https://kubernetes.io/) cluster inside a [Docker](https://www.docker.com/) container. Then, it uses [Helm](https://helm.sh/) to install the latest Airbyte and [NGINX Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/) Helm charts. It also helps you manage and understand that infrastructure.
@@ -36,6 +40,26 @@ Before you use abctl, install Docker Desktop on your machine:
 ## Install abctl
 
 To install abctl, follow the instructions for your operating system.
+
+### Customize the install location
+
+By default, the curl installer places the `abctl` binary in `/usr/local/bin`. To install the binary elsewhere, set the `DIR_INSTALL` environment variable before running the installer.
+
+```shell
+DIR_INSTALL=/apps/bin curl -LsfS https://get.airbyte.com | bash -
+```
+
+The installer script also supports the following environment variables.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DIR_INSTALL` | `/usr/local/bin` | Directory where the `abctl` binary is placed. |
+| `RELEASE_TAG` | latest | Specific abctl release tag to install (e.g. `v0.19.0`). |
+| `DEBUG` | unset | Set to any value to enable verbose installer output. |
+
+:::note
+`DIR_INSTALL` controls only where the **abctl binary** lives. Airbyte state data (kubeconfig, cluster data) is stored separately at `~/.airbyte/abctl/` and is not affected by this setting. There is currently no flag to relocate the data directory.
+:::
 
 <Tabs defaultValue="abctl-curl">
 
@@ -184,6 +208,24 @@ abctl local install --secret YOUR_SECRET --values values.yaml
 ```
 
 For a list of all flags, see the [full reference](#reference).
+
+#### Pin a specific Helm chart version
+
+To install a specific version of the Airbyte Helm chart instead of the latest, use the `--chart-version` flag. This is useful when you need to reproduce a known-good deployment or stay on a tested version.
+
+```bash
+abctl local install --chart-version 0.422.2 --values values.yaml --secret secret.yaml --port 8000
+```
+
+The `--chart-version` value is the Helm chart version, not the Airbyte platform version. To find available versions, see the [Airbyte Helm chart releases](https://github.com/airbytehq/airbyte-platform/releases).
+
+#### Install from a local Helm chart
+
+To install from a local chart directory (for example, in air-gapped environments), use the `--chart` flag. When `--chart` is set, `--chart-version` is ignored.
+
+```bash
+abctl local install --chart ./path/to/local/airbyte-chart
+```
 
 :::note
 Depending on your internet speed, `abctl local install` may take up to 30 minutes.
@@ -352,8 +394,8 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
 
     | Name                | Default | Description                                                                                                                                                                                                                                            | Example                    |
     | ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
-    | --chart             | ""      | Path to chart.                                                                                                                                                                                                                                         | ./my-chart                 |
-    | --chart-version     | latest  | Which Airbyte helm-chart version to install.                                                                                                                                                                                                          | 0.422.2                    |
+    | --chart             | ""      | Path to a local Helm chart directory. Use this to install from a local chart (for example, in air-gapped environments or during development). When set, `--chart-version` is ignored.                                                                  | ./my-chart                 |
+    | --chart-version     | latest  | The version of the Airbyte Helm chart to install. This is the **Helm chart version**, not the Airbyte platform version. Omit this flag to install the latest version. To find available versions, see the [Airbyte Helm chart releases](https://github.com/airbytehq/airbyte-platform/releases). | 0.422.2                    |
     | --docker-email      | ""      | Docker email address to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_EMAIL`.                                                                                               | user@example.com          |
     | --docker-password   | ""      | Docker password to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_PASSWORD`.                                                                                                 | mypassword                 |
     | --docker-server     | ""      | Docker server to authenticate against. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_SERVER`.                                                                                                                       | docker.io                 |
