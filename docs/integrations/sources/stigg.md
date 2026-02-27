@@ -47,6 +47,7 @@ The Stigg source connector supports the following sync modes:
 
 | Version | Date       | Pull Request                                                 | Subject         |
 | :------ | :--------- | :----------------------------------------------------------- | :-------------- |
+| 0.0.5 | 2026-02-24 | [73946](https://github.com/airbytehq/airbyte/pull/73946) | Update dependencies |
 | 0.0.4 | 2026-02-17 | [72773](https://github.com/airbytehq/airbyte/pull/72773) | Update dependencies |
 | 0.0.3 | 2026-01-20 | [72136](https://github.com/airbytehq/airbyte/pull/72136) | Update dependencies |
 | 0.0.2 | 2026-01-14 | [71590](https://github.com/airbytehq/airbyte/pull/71590) | Update dependencies |

@@ -24,6 +24,7 @@ The Airbyte connector for [Campayn](https://campayn.com/) enables seamless data 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2026-02-24 | [73788](https://github.com/airbytehq/airbyte/pull/73788) | Update dependencies |
 | 0.0.41 | 2026-02-17 | [73434](https://github.com/airbytehq/airbyte/pull/73434) | Update dependencies |
 | 0.0.40 | 2026-02-10 | [73148](https://github.com/airbytehq/airbyte/pull/73148) | Update dependencies |
 | 0.0.39 | 2026-02-03 | [72088](https://github.com/airbytehq/airbyte/pull/72088) | Update dependencies |
