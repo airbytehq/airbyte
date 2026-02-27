@@ -1,22 +1,22 @@
-# Paypal
+# PayPal Transaction
 
-This page contains the setup guide and reference information for the Paypal source connector.
+This page contains the setup guide and reference information for the PayPal Transaction source connector.
 
 This connector uses [PayPal APIs](https://developer.paypal.com/api/rest/authentication/) OAuth 2.0 access token to authenticate requests.
 
 ## Prerequisites
 
-You will need a Paypal account, which you can get following [these steps](https://developer.paypal.com/docs/platforms/get-started/)
+You need a PayPal account, which you can get by following [these steps](https://developer.paypal.com/docs/platforms/get-started/).
 
-In the same page, you will also find how to setup a Sandbox so you can test the connector before using it in production.
+On the same page, you can also find how to set up a sandbox so you can test the connector before using it in production.
 
 ## Setup guide
 
-### Step 1: Get your Paypal secrets
+### Step 1: Get your PayPal credentials
 
-After creating your account you will be able to get your `Client ID` and `Secret`. You can find them in your [Apps & Credentials page](https://developer.paypal.com/dashboard/applications/live).
+After creating your account, you can get your `Client ID` and `Secret` from the [Apps & Credentials page](https://developer.paypal.com/dashboard/applications/live).
 
-### Step 2: Set up the Paypal Transaction connector in Airbyte
+### Step 2: Set up the PayPal Transaction connector in Airbyte
 
 1. Log into your Airbyte account
 
@@ -26,25 +26,25 @@ After creating your account you will be able to get your `Client ID` and `Secret
 
    a. If this is your first time creating a source, use the search bar and enter **Paypal Transaction** and select it.
 
-   b. If you already have sources configured, go to the top-right corner and click **+new source**. Then enter **Paypal Transaction** in the searech bar and select the connector.
+   b. If you already have sources configured, go to the top-right corner and click **+new source**. Then enter **Paypal Transaction** in the search bar and select the connector.
 
 3. Set the name for your source
 4. Enter your `Client ID`
 5. Enter your `Client secret`
 6. `Start Date`: Use the provided datepicker or enter manually a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`.
-7. Switch ON/Off the Sandbox toggle. By defaukt the toggle is OFF, meaning it work only in a produciton environment.
-8. \_(Optional) `Dispute Start Date Range`: Use the provided datepicker or enter manually a UTC date and time in the format `YYYY-MM-DDTHH:MM:SS.sssZ`. - If you don't add a date and you sync the `lists_disputes stream`, it will use the default value of 180 days in the past to retrieve data - It is mandatory to add the milliseconds is you enter a datetime. - This option only works for `lists_disputes stream`
+7. Toggle **Sandbox** on or off. By default, the toggle is off, meaning the connector works with the production environment.
+8. _(Optional)_ `Dispute Start Date Range`: Use the provided datepicker or enter a UTC date and time in the format `YYYY-MM-DDTHH:MM:SS.sssZ`. The milliseconds are required. If you don't set a date, the `list_disputes` stream defaults to 180 days in the past. This option only applies to the `list_disputes` stream.
 
-9. _(Optional)`Refresh Token`:_ You can enter manually a refresh token. Right now the stream does this automatically.
-10. _(Optional)`Number of days per request`:_ You can specify the days used by the connector when requesting data from the Paypal API. This helps in cases when you have a rate limit and you want to lower the window of retrieving data. - Paypal has a 10K record limit per request. This option is useful if your sync is every week and you have more than 10K per week - The default value is 7 - This Max value you can enter is 31 days
+9. _(Optional)_ `Refresh Token`: You can enter a refresh token manually. The connector handles token refresh automatically.
+10. _(Optional)_ `Number of days per request`: The number of days of data to request per API call. This helps avoid hitting rate limits. PayPal has a 10K record limit per request, so this option is useful if your sync frequency is weekly and you have more than 10K records per week. The default value is 7, and the maximum is 31 days.
 11. Click **Set up source**
 
 :::info
 
 By default, syncs are run with a slice period of 7 days. If you see errors with the message `Result set size is greater than the maximum limit` or an error code like `RESULTSET_TOO_LARGE`:
 
-- Try lower the size of the slice period in your optional parameters in your connection configuration.
-- You can try to lower the scheduling sync window in case a day slice period is not enough. Lowering the sync period it may help avoid reaching the 10K limit.
+- Try lowering the size of the slice period in the optional parameters of your connection configuration.
+- You can try lowering the scheduling sync window in case a single-day slice period is not enough. Lowering the sync period may help avoid reaching the 10K limit.
 
 :::
 
@@ -72,7 +72,7 @@ This Source is capable of syncing the following core Streams:
 
 ### Transactions Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The following table contains the configuration parameters and default values for this stream.
 
 | **Param/Feature**            | `Transactions`            |
 | :--------------------------- | :------------------------ |
@@ -93,7 +93,7 @@ The below table contains the configuraiton parameters available for this connect
 
 ### Balances Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The following table contains the configuration parameters and default values for this stream.
 
 | **Param/Feature**            | `Balances`                |
 | :--------------------------- | :------------------------ |
@@ -114,7 +114,7 @@ The below table contains the configuraiton parameters available for this connect
 
 ### List Products Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The following table contains the configuration parameters and default values for this stream.
 
 | **Param/Feature**            | `List Products`        |
 | :--------------------------- | :--------------------- |
@@ -133,7 +133,7 @@ The below table contains the configuraiton parameters available for this connect
 
 :::caution
 
-When configuring your stream take in consideration that the way the API works limits the speed on retreiving data. In some cases a +30K catalog retrieval could take between 10-15 minutes.
+The API limits the speed of data retrieval. A catalog with 30K or more products could take 10-15 minutes to retrieve.
 
 :::
 
@@ -141,7 +141,7 @@ When configuring your stream take in consideration that the way the API works li
 
 ### Show Products Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The following table contains the configuration parameters and default values for this stream.
 
 | **Param/Feature**            | `Show Prod. Details`   |
 | :--------------------------- | :--------------------- |
@@ -160,9 +160,7 @@ The below table contains the configuraiton parameters available for this connect
 
 :::caution
 
-When configuring this stream consider that the parent stream paginates with 20 number of items (Max alowed page size). The Paypal API calls are not concurrent, so the time it takes depends entirely on the server side.
-This stream could take a considerable time syncing, so you should consider running the sync of this and the parent stream (`list_products`) at the end of the day.
-Depending on the size of the catalog it could take several hours to sync.
+The parent stream (`list_products`) paginates with a maximum page size of 20 items. PayPal API calls are not concurrent, so the time depends entirely on the server. This stream could take a considerable time to sync. Depending on the size of the catalog, it could take several hours.
 
 :::
 
@@ -170,7 +168,7 @@ Depending on the size of the catalog it could take several hours to sync.
 
 ### List Disputes Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The following table contains the configuration parameters and default values for this stream.
 
 | **Param/Feature**            | `List Disputes`          |
 | :--------------------------- | :----------------------- |
@@ -191,7 +189,7 @@ The below table contains the configuraiton parameters available for this connect
 
 ### Search Invoices Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The following table contains the configuration parameters and default values for this stream.
 
 | **Param/Feature**            | `Search Invoices`         |
 | :--------------------------- | :------------------------ |
@@ -212,7 +210,7 @@ The below table contains the configuraiton parameters available for this connect
 
 :::info
 
-The `start_end` from the configuration, is passed to the body of the request and uses the `creation_date_range.start` and `creation_date_range.end`. More information in the [Paypal Developer API documentation](https://developer.paypal.com/docs/api/invoicing/v2/#invoices_search-invoices).
+The `start_date` from the configuration is passed to the body of the request as `creation_date_range.start` and `creation_date_range.end`. For more information, see the [PayPal Invoicing API documentation](https://developer.paypal.com/docs/api/invoicing/v2/#invoices_search-invoices).
 
 :::
 
@@ -220,7 +218,11 @@ The `start_end` from the configuration, is passed to the body of the request and
 
 ### List Payments Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features.
+The following table contains the configuration parameters and default values for this stream.
+
+:::info
+The PayPal [Payments API v1](https://developer.paypal.com/docs/api/payments/v1/) is deprecated by PayPal. This stream continues to work, but PayPal recommends using the Orders API v2 for new integrations.
+:::
 
 | **Param/Feature**            | `List Payments`           |
 | :--------------------------- | :------------------------ |
@@ -243,10 +245,10 @@ The below table contains the configuraiton parameters available for this connect
 
 - **Data Availability:** It takes a maximum of 3 hours for executed transactions to appear in the list transactions call.
 - **Number of days per request:** The maximum supported date range is 31 days.
-- **Historical Data:** You can't retrieve more than 3yrs of data for the `transactions` stream. For `dispute_start_date` you can only retrieve 180 days of data (see specifications per stream)
-- `records_per_request`: The maximum number of records in a single request are 10K (API Server restriction)
-- `page_size`: The number of records per page is differs per stream. `source-paypal-transaction` sets maximum allowed page size for each stream by default.
-- `requests_per_minute`: The maximum limit is 50 requests per minute from IP address to all endpoint (API Server restriction).
+- **Historical Data:** You can't retrieve more than 3 years of data for the `transactions` stream. For `dispute_start_date`, you can only retrieve 180 days of data (see specifications per stream).
+- `records_per_request`: The maximum number of records in a single request is 10K (API server restriction).
+- `page_size`: The number of records per page differs per stream. The connector sets the maximum allowed page size for each stream by default.
+- `requests_per_minute`: The maximum limit is 50 requests per minute from a single IP address to all endpoints (API server restriction).
 
 ## Data type map
 
@@ -264,7 +266,7 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| 2.6.26 | 2026-02-26 | [74027](https://github.com/airbytehq/airbyte/pull/74027) | Fix INVALID_DATE_TIME_FORMAT error on disputes stream by using 3-digit milliseconds |
+| 2.6.26 | 2026-02-27 | [74027](https://github.com/airbytehq/airbyte/pull/74027) | Fix INVALID_DATE_TIME_FORMAT error on disputes stream by using 3-digit milliseconds |
 | 2.6.25 | 2026-02-17 | [73574](https://github.com/airbytehq/airbyte/pull/73574) | Update dependencies |
 | 2.6.24 | 2026-02-10 | [73171](https://github.com/airbytehq/airbyte/pull/73171) | Update dependencies |
 | 2.6.23 | 2026-02-03 | [72637](https://github.com/airbytehq/airbyte/pull/72637) | Update dependencies |
