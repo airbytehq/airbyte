@@ -213,7 +213,11 @@ class DefaultJdbcPartitionFactory(
         opaqueStateValues: List<OpaqueStateValue>
     ): List<DefaultJdbcPartition> {
         val splitPartitionBoundaries: List<DefaultJdbcStreamStateValue> by lazy {
-            opaqueStateValues.map { Jsons.treeToValue(it, DefaultJdbcStreamStateValue::class.java) }
+            opaqueStateValues
+                .filter { !it.isNull }
+                .mapNotNull {
+                    Jsons.treeToValue(it, DefaultJdbcStreamStateValue::class.java)
+                }
         }
         return when (unsplitPartition) {
             is DefaultJdbcSplittableSnapshotPartition ->
