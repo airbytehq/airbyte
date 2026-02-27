@@ -133,8 +133,6 @@ definitions:
                     http_codes:
                       - 404
           request_body_json:
-            filter:
-              fromDateTime: "{{ config['start_date'] }}"
             contentSelector:
               exposedFields:
                 media: true
@@ -202,8 +200,10 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
-          field_name: fromDateTime
+          inject_into: body_json
+          field_path:
+            - filter
+            - fromDateTime
       transformations:
         - type: AddFields
           fields:
@@ -275,8 +275,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /stats/activity/scorecards
           http_method: POST
-          request_parameters:
-            fromDateTime: "{{ config['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -350,9 +348,6 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
-          request_body_json:
-            filter:
-              fromDateTime: "{{ config['start_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -369,6 +364,25 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: started
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_path:
+            - filter
+            - fromDateTime
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -623,6 +637,7 @@ metadata:
         - errorHandler
       callTranscripts:
         - errorHandler
+        - incrementalSync
   testedStreams:
     users:
       streamHash: c6b2bab08397024790447b2ea909e5e2056b3778
