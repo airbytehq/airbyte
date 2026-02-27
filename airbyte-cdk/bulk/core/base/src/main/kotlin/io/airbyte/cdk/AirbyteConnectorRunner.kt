@@ -185,6 +185,11 @@ class PicocliCommandLineFactory(
         command("discover", "outputs a catalog describing the source's catalog")
     val read: OptionSpec = command("read", "reads the source and outputs messages to STDOUT")
     val write: OptionSpec = command("write", "writes messages from STDIN to the integration")
+    val discoverWritten: OptionSpec =
+        command(
+            "discover-written",
+            "discovers the schema of tables written by this destination, outputting a catalog JSON",
+        )
 
     val commands: ArgGroupSpec =
         ArgGroupSpec.builder()
@@ -196,7 +201,10 @@ class PicocliCommandLineFactory(
             .apply {
                 when (runner) {
                     is AirbyteSourceRunner -> addArg(read)
-                    is AirbyteDestinationRunner -> addArg(write)
+                    is AirbyteDestinationRunner -> {
+                        addArg(write)
+                        addArg(discoverWritten)
+                    }
                 }
             }
             .build()
@@ -215,13 +223,13 @@ class PicocliCommandLineFactory(
         fileOption(
             "config",
             "path to the json configuration file",
-            "Required by the following commands: check, discover, read, write",
+            "Required by the following commands: check, discover, read, write, discover-written",
         )
     val catalog: OptionSpec =
         fileOption(
             "catalog",
             "input path for the catalog",
-            "Required by the following commands: read, write",
+            "Required by the following commands: read, write, discover-written",
         )
     val state: OptionSpec =
         fileOption(
