@@ -786,10 +786,18 @@ schemas:
         type:
           - "null"
           - boolean
+      archived:
+        type:
+          - "null"
+          - boolean
       category_key:
         type:
           - "null"
           - string
+      company:
+        type:
+          - "null"
+          - object
       created_at:
         type:
           - "null"
@@ -814,10 +822,18 @@ schemas:
         type:
           - "null"
           - string
-      product_key:
+      metadata:
         type:
           - "null"
           - object
+      product_key:
+        type:
+          - "null"
+          - string
+      test:
+        type:
+          - "null"
+          - boolean
       updated_at:
         type:
           - "null"
