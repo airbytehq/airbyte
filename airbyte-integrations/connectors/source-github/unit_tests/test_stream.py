@@ -1134,6 +1134,20 @@ def test_releases_asset_truncation_warning(requests_mock, caplog):
     assert any(">100 assets" in msg for msg in caplog.messages)
 
 
+@pytest.mark.parametrize(
+    "node_id,expected_id",
+    [
+        pytest.param("RA_kwDODKw3uc4Vg-A4", 360964152, id="valid_release_asset_node_id"),
+        pytest.param("RA_kwDODKw3uc4Vg-A6", 360964154, id="valid_release_asset_node_id_2"),
+        pytest.param(None, None, id="none_node_id"),
+        pytest.param("", None, id="empty_string"),
+        pytest.param("no_underscore_prefix", None, id="malformed_no_prefix"),
+    ],
+)
+def test_releases_extract_database_id_from_node_id(node_id, expected_id):
+    assert Releases._extract_database_id_from_node_id(node_id) == expected_id
+
+
 def test_releases_pagination(requests_mock):
     repository_args = {
         "repositories": ["organization/repository"],

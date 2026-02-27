@@ -96,6 +96,10 @@
             "description": "The URL for downloading the asset linked to this release.",
             "type": ["null", "string"]
           },
+          "id": {
+            "description": "The unique numeric identifier of the asset (extracted from the GraphQL Node ID).",
+            "type": ["null", "integer"]
+          },
           "node_id": {
             "description": "The node ID of the asset.",
             "type": ["null", "string"]

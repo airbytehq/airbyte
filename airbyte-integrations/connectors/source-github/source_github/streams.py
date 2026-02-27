@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import re
+import struct
 from abc import ABC, abstractmethod
 from datetime import timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -811,6 +813,25 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
         "EYES": "eyes",
     }
 
+    @staticmethod
+    def _extract_database_id_from_node_id(node_id: str) -> Optional[int]:
+        """Extract the numeric database ID from a GitHub GraphQL Node ID.
+
+        GitHub Node IDs with type prefixes (e.g. 'RA_...') are URL-safe base64
+        encodings of a msgpack array: [type_flag, repo_database_id, entity_database_id].
+        The last 4 bytes encode the entity's numeric database ID as a big-endian uint32.
+        """
+        if not node_id or "_" not in node_id:
+            return None
+        try:
+            encoded = node_id.split("_", 1)[1]
+            decoded = base64.urlsafe_b64decode(encoded + "==")
+            if len(decoded) >= 4:
+                return struct.unpack(">I", decoded[-4:])[0]
+        except Exception:
+            return None
+        return None
+
     def _get_assets_from_release(self, record: Mapping) -> list:
         assets_data = record.get("assets", {})
         if assets_data.get("pageInfo", {}).get("hasNextPage"):
@@ -824,6 +845,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
         for asset in assets:
             uploader = asset.pop("uploader", None)
             asset["uploader_id"] = uploader.get("id") if uploader else None
+            asset["id"] = self._extract_database_id_from_node_id(asset.get("node_id"))
         return assets
 
     def _get_reactions_from_release(self, record: Mapping) -> Optional[Mapping]:
