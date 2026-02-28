@@ -33,14 +33,15 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
-      - name: Publish stale metadata report
+      - name: Check for unpublished connector versions
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         # TK-TODO: Revert to GA version of airbyte-internal-ops before merging. # IGNORE:TK
         run: |
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask" \
-            airbyte-ops registry publish-stale-metadata-report \
-            --bucket prod-airbyte-cloud-connector-metadata-service
+            airbyte-ops local connector list \
+            --repo-path "${{ github.workspace }}" \
+            --unpublished \
+            --bucket prod \
+            --fail-on-unpublished
