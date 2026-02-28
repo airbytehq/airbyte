@@ -14,7 +14,7 @@ on:
         options: ["promote", "rollback"]
 jobs:
   finalize_rollout:
-    name: Finalize connector rollout for ${{ github.event.inputs.connector_name }}
+    name: Finalize connector rollout for ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
     runs-on: ubuntu-24.04
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
@@ -46,30 +46,15 @@ jobs:
         with:
           github-token: ${{ steps.get-app-token.outputs.token }}
 
-      - name: Promote ${{ env.CONNECTOR_NAME }} release candidate
-        id: promote-release-candidate
-        if: ${{ env.ACTION == 'promote' }}
+      - name: ${{ env.ACTION }} ${{ env.CONNECTOR_NAME }} release candidate
+        id: finalize-release-candidate
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         run: |
           # TK-TODO: Revert to GA version before merging: # IGNORE:TK
-          #   uvx --from airbyte-internal-ops airbyte-ops registry rc promote ...
+          #   uvx --from airbyte-internal-ops airbyte-ops registry rc <promote|rollback> ...
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
-            airbyte-ops registry rc promote \
-            --name "${CONNECTOR_NAME}" \
-            --bucket prod
-
-      - name: Rollback ${{ env.CONNECTOR_NAME }} release candidate
-        id: rollback-release-candidate
-        if: ${{ env.ACTION == 'rollback' }}
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-        run: |
-          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
-          #   uvx --from airbyte-internal-ops airbyte-ops registry rc rollback ...
-          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
-            airbyte-ops registry rc rollback \
+            airbyte-ops registry rc "${ACTION}" \
             --name "${CONNECTOR_NAME}" \
             --bucket prod
