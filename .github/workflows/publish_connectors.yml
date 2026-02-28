@@ -223,16 +223,6 @@ jobs:
         # v2.1.5
         uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
 
-      - name: Validate connector metadata
-        id: validate-connector-metadata
-        shell: bash
-        run: |
-          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
-          #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version metadata validate ...
-          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
-            airbyte-ops registry connector-version metadata validate \
-            --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml"
-
       - name: Publish to Python Registry
         id: publish-python-registry
         if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
@@ -304,29 +294,6 @@ jobs:
           dry-run: ${{ needs.publish_options.outputs.dry-run }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
-      - name: Upload connector metadata
-        id: upload-connector-metadata
-        if: needs.publish_options.outputs.dry-run != 'true'
-        shell: bash
-        run: |
-          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
-          #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version metadata upload ...
-          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
-            airbyte-ops registry connector-version metadata upload \
-            --name "${{ matrix.connector }}" \
-            --version "${{ steps.connector-metadata.outputs.connector-version }}" \
-            --with-semver-suffix "${{ needs.publish_options.outputs.with-semver-suffix }}" \
-            --bucket prod
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-
-      - name: "[DRY-RUN] Skip Upload connector metadata"
-        if: needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping connector metadata upload for ${{ matrix.connector }}"
 
   # The connector registries are generated from the spec cache,
   # and in some cases, there are cross-connector dependencies.
@@ -441,7 +408,8 @@ jobs:
             airbyte-ops registry connector-version artifacts generate \
             --metadata-file "${{ env.CONNECTOR_DIR }}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
-            --output-dir ./registry-artifacts
+            --output-dir ./registry-artifacts \
+            --with-validate
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
@@ -465,7 +433,8 @@ jobs:
             --name "${{ matrix.connector }}" \
             --version "${{ steps.connector-metadata.outputs.docker-image-tag }}" \
             --artifacts-dir ./registry-artifacts \
-            --bucket prod
+            --bucket prod \
+            --with-validate
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
