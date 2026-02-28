@@ -58,8 +58,11 @@ jobs:
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
       - name: Generate connector registry report
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         shell: bash
+        # TK-TODO: Revert to GA version before merging. # IGNORE:TK
         run: |
-          # TK-TODO: Replace with ops CLI equivalent once available. # IGNORE:TK
-          # Expected: uvx --from airbyte-internal-ops airbyte-ops registry generate-report --bucket prod
-          echo "Skipping connector registry report generation (ops CLI equivalent not yet available)."
+          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
+            airbyte-ops registry generate-report \
+            --bucket prod-airbyte-cloud-connector-metadata-service

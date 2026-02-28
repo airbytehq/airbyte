@@ -372,11 +372,8 @@ jobs:
         working-directory: ${{ env.CONNECTOR_DIR }}
         run: |
           set -euo pipefail
-          echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
-          echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
           CONNECTOR_VERSION=$(poe -qq get-version)
           SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
-
           DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' metadata.yaml)
 
           # Generate docker image tag based on semver suffix mode

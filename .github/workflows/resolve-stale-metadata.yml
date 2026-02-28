@@ -30,12 +30,8 @@ jobs:
         with:
           ref: ${{ github.event.inputs.gitref || github.ref }}
 
-      - name: Set up Python
-        uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
-        with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Publish stale metadata report
         env:
@@ -45,6 +41,6 @@ jobs:
         shell: bash
         # TK-TODO: Revert to GA version of airbyte-internal-ops before merging. # IGNORE:TK
         run: |
-          uvx --from 'git+https://github.com/airbytehq/airbyte-ops-mcp.git@devin/1772263418-compile-with-secrets-mask' \
-            airbyte-internal-ops registry publish-stale-metadata-report \
+          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask" \
+            airbyte-ops registry publish-stale-metadata-report \
             --bucket prod-airbyte-cloud-connector-metadata-service
