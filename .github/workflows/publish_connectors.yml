@@ -223,15 +223,15 @@ jobs:
         # v2.1.5
         uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
 
-      - name: Install metadata_service
-        # TODO: Remove once `metadata_service validate` and `metadata_service upload`
-        # are migrated to the ops CLI (airbyte-internal-ops).
-        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
-
       - name: Validate connector metadata
         id: validate-connector-metadata
         shell: bash
-        run: ./poe-tasks/validate-connector-metadata.sh --name ${{ matrix.connector }}
+        run: |
+          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
+          #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version metadata validate ...
+          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
+            airbyte-ops registry connector-version metadata validate \
+            --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml"
 
       - name: Publish to Python Registry
         id: publish-python-registry
@@ -306,12 +306,18 @@ jobs:
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Upload connector metadata
-        # TODO: Migrate to ops CLI once metadata upload (metadata, SBOM, spec cache)
-        # is implemented in airbyte-internal-ops.
         id: upload-connector-metadata
         if: needs.publish_options.outputs.dry-run != 'true'
         shell: bash
-        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
+        run: |
+          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
+          #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version metadata upload ...
+          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
+            airbyte-ops registry connector-version metadata upload \
+            --name "${{ matrix.connector }}" \
+            --version "${{ steps.connector-metadata.outputs.connector-version }}" \
+            --with-semver-suffix "${{ needs.publish_options.outputs.with-semver-suffix }}" \
+            --bucket prod
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
@@ -439,8 +445,8 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
-      - name: Upload Registry Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload Registry CI Artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.docker-image-tag }}
           path: ./registry-artifacts/
@@ -466,7 +472,7 @@ jobs:
       - name: "[DRY-RUN] Skip Publish Registry Artifacts"
         if: needs.publish_options.outputs.dry-run == 'true'
         run: |
-          echo "DRY-RUN: Skipping registry artifact publish for ${{ matrix.connector }} (artifacts were generated and uploaded above)"
+          echo "DRY-RUN: Skipping registry artifact publish for ${{ matrix.connector }} (CI artifacts were generated and uploaded above)"
 
   generate_connector_registry:
     name: Generate connector registry

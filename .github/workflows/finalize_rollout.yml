@@ -12,6 +12,10 @@ on:
         description: "Action to perform"
         required: true
         options: ["promote", "rollback"]
+
+permissions:
+  contents: read
+
 jobs:
   finalize_rollout:
     name: Finalize connector rollout for ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}

@@ -41,9 +41,9 @@ jobs:
         shell: bash
         run: |
           # TK-TODO: Revert to GA version before merging: # IGNORE:TK
-          #   uvx --from airbyte-internal-ops airbyte-ops registry compile --bucket prod
-          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
-            airbyte-ops registry compile --bucket prod
+          #   uvx --from airbyte-internal-ops airbyte-ops registry compile --bucket prod --with-secrets-mask
+          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask" \
+            airbyte-ops registry compile --bucket prod --with-secrets-mask
 
   post-registry-generation:
     name: Post registry generation steps
@@ -57,16 +57,9 @@ jobs:
           ref: ${{ github.event.inputs.gitref || github.ref }}
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
-      - name: Generate Specs Secrets Mask (TODO)
+      - name: Generate connector registry report
         shell: bash
         run: |
           # TK-TODO: Replace with ops CLI equivalent once available. # IGNORE:TK
-          # Expected: uvx --from airbyte-internal-ops airbyte-ops registry <TBD>
-          echo "Skipping specs secrets mask generation (ops CLI equivalent not yet available)."
-
-      - name: Generate connector registry report (TODO)
-        shell: bash
-        run: |
-          # TK-TODO: Replace with ops CLI equivalent once available. # IGNORE:TK
-          # Expected: uvx --from airbyte-internal-ops airbyte-ops registry <TBD>
+          # Expected: uvx --from airbyte-internal-ops airbyte-ops registry generate-report --bucket prod
           echo "Skipping connector registry report generation (ops CLI equivalent not yet available)."
