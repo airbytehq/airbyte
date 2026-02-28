@@ -178,7 +178,9 @@ namespace with `n` for converted namespaces.
 | OBJECT                              | JSON          |
 | ARRAY                               | JSON          |
 
-## Troubleshooting permission issues
+## Troubleshooting
+
+### Permission errors
 
 The service account does not have the proper permissions.
 
@@ -192,6 +194,61 @@ The HMAC key is wrong.
 
 - Make sure the HMAC key is created for the BigQuery service account, and the service account has
   permission to access the GCS bucket and path.
+
+### "Socket file not created" timeout
+
+_Applies to connector version 3.0.7 and later (socket data-channel mode)._
+
+If your sync fails with an error containing `Socket file ... not created after 900000 ms`:
+
+- This indicates the Airbyte platform sidecar did not create the inter-process communication
+  channel in time. The connector itself is not at fault.
+- **Self-hosted deployments:** Verify the platform version supports socket-mode destinations.
+  Check worker pod logs for sidecar startup failures or OOM events.
+- **Running multiple connections to the same destination simultaneously** can cause resource
+  contention. Try staggering connection schedules.
+- If the error persists, contact [Airbyte Support](https://support.airbyte.com) with the full
+  destination logs.
+
+### HTTP 400 "Request had invalid euc header" during upload
+
+If your sync fails with `BigQueryException: 400 Bad Request` and the message
+`Request had invalid euc header`:
+
+- This is a transient error from the Google BigQuery resumable-upload API. The upload session
+  was invalidated mid-stream.
+- **Retry the sync.** In most cases the error resolves on the next attempt.
+- If the error recurs on every sync:
+  - Check whether a proxy, VPN, or firewall is modifying HTTP headers on requests to
+    `bigquery.googleapis.com`.
+  - Verify the service account key has not been rotated or revoked since the connection was
+    configured.
+  - Try reducing the **Google BigQuery Client Chunk Size** from the default 15 MiB to a
+    smaller value (for example, 5 MiB). Smaller chunks reduce the window for session
+    corruption.
+
+### Broken pipe errors
+
+If your sync fails with a `Broken pipe` error on the destination side:
+
+- This is a transport-level error caused by a network interruption between the Airbyte worker
+  and the BigQuery API.
+- **Reduce chunk size:** In the connector settings, decrease the **Google BigQuery Client Chunk
+  Size** to 5 MiB or less. Smaller uploads complete faster and are less susceptible to
+  connection timeouts.
+- **Check network infrastructure:** Firewalls, NAT gateways, and cloud load balancers may
+  terminate idle or long-lived connections. Ensure outbound HTTPS to `*.googleapis.com` is not
+  subject to aggressive idle timeouts.
+- **Retry the sync.** Broken pipe errors are typically transient.
+
+### Load job timeouts
+
+If your sync fails with `Fail to complete a load job in big query`:
+
+- BigQuery load jobs have a 30-minute wait timeout. Very large batches or high BigQuery queue
+  contention can exceed this limit.
+- Try reducing the volume per sync by using incremental sync mode or reducing the number of
+  streams per connection.
 
 ## Tutorials
 
