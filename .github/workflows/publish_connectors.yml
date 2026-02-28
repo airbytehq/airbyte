@@ -335,6 +335,8 @@ jobs:
     name: Publish connector registry entries
     needs: [publish_options, publish_connectors]
     runs-on: ubuntu-24.04
+    env:
+      CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
     strategy:
       matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
       max-parallel: 5
@@ -382,7 +384,7 @@ jobs:
 
       - name: Enable progressive rollout for RC builds
         if: needs.publish_options.outputs.with-semver-suffix == 'rc'
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        working-directory: ${{ env.CONNECTOR_DIR }}
         run: |
           echo "Enabling progressive rollout for RC build..."
           echo "=== enableProgressiveRollout BEFORE update ==="
@@ -395,7 +397,7 @@ jobs:
 
       - name: Get connector metadata
         id: connector-metadata
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        working-directory: ${{ env.CONNECTOR_DIR }}
         run: |
           set -euo pipefail
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
@@ -431,7 +433,7 @@ jobs:
           #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version artifacts generate ...
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops registry connector-version artifacts generate \
-            --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --metadata-file "${{ env.CONNECTOR_DIR }}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
             --output-dir ./registry-artifacts
         env:
