@@ -38,6 +38,8 @@ jobs:
           update-environment: true
 
       - name: Install Poetry
+        # TODO: Remove Poetry once publish-stale-metadata-report is migrated
+        # to the ops CLI (airbyte-internal-ops).
         uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
         with:
           version: latest
@@ -45,10 +47,14 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Install metadata_service
+        # TODO: Remove once publish-stale-metadata-report is migrated
+        # to the ops CLI (airbyte-internal-ops).
         working-directory: airbyte-ci/connectors/metadata_service/lib
         run: poetry install
 
       - name: Run stale metadata report task
+        # TODO: Migrate to ops CLI once publish-stale-metadata-report is
+        # implemented in airbyte-internal-ops.
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
