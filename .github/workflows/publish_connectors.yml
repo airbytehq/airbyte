@@ -423,7 +423,6 @@ jobs:
 
       - name: Generate Registry Artifacts
         id: generate-registry-artifacts
-        if: needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         run: |
           echo "Generating registry artifacts for ${{ matrix.connector }}"
@@ -437,6 +436,13 @@ jobs:
             --output-dir ./registry-artifacts
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+
+      - name: Upload Registry Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.docker-image-tag }}
+          path: ./registry-artifacts/
+          retention-days: 7
 
       - name: Publish Registry Artifacts
         id: publish-registry-artifacts
@@ -455,10 +461,10 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
-      - name: "[DRY-RUN] Skip Generate and Publish Registry Artifacts"
+      - name: "[DRY-RUN] Skip Publish Registry Artifacts"
         if: needs.publish_options.outputs.dry-run == 'true'
         run: |
-          echo "DRY-RUN: Skipping registry artifact generation and publish for ${{ matrix.connector }}"
+          echo "DRY-RUN: Skipping registry artifact publish for ${{ matrix.connector }} (artifacts were generated and uploaded above)"
 
   generate_connector_registry:
     name: Generate connector registry
