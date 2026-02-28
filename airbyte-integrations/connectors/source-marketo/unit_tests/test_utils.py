@@ -19,6 +19,13 @@ test_data = [
     ("15", {"type": "integer"}, int),
     ("true", {"type": "boolean"}, bool),
     ("test_custom", {"type": "custom_type"}, str),
+    # Test error handling for non-numeric strings in number fields
+    ("Engineering & Technical", {"type": ["number", "null"]}, type(None)),
+    ("2026-01-15T21:16:09Z", {"type": ["number", "null"]}, type(None)),
+    ("not_a_number", {"type": "number"}, type(None)),
+    # Test error handling for non-numeric strings in integer fields
+    ("Engineering & Technical", {"type": ["integer", "null"]}, type(None)),
+    ("not_an_integer", {"type": "integer"}, type(None)),
 ]
 
 

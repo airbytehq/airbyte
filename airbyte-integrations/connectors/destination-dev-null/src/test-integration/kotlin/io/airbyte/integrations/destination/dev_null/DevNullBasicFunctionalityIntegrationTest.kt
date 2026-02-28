@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dev_null
@@ -25,8 +25,6 @@ class DevNullBasicFunctionalityIntegrationTest :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
-        useDataFlowPipeline = true,
     )

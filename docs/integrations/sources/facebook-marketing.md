@@ -196,7 +196,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.level">
-   2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default.
+   2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default. The level you select determines the primary key used for deduplication in Incremental Append + Deduped sync mode. For details, see the [primary key behavior by level](#custom-insights-primary-keys) section.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.fields">
@@ -279,7 +279,7 @@ The Facebook Marketing source connector supports the following [sync modes](http
 **Notes on Streams:**
 
 :::info Custom Audiences
-The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data` See our Troubleshooting section for more information.
+The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data`. See our Troubleshooting section for more information.
 :::
 
 Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
@@ -322,8 +322,28 @@ For more information, see the [Facebook Insights API documentation.](https://dev
 Please be aware that some fields, such as `conversions` and `conversion_values`, may not be directly accessible when querying Ad Insights. For comprehensive access to all available fields, we recommend using a Custom Insight and specifying the necessary **breakdowns**.
 ::: -->
 
+### Custom Insights primary keys {#custom-insights-primary-keys}
+
+The primary key for Custom Insights streams depends on the configured **Level** setting. This determines how the connector deduplicates records when using Incremental Append + Deduped sync mode.
+
+| Level | Primary Key Fields |
+| :---- | :----------------- |
+| `ad` (default) | `date_start`, `account_id`, `ad_id`, plus any configured breakdowns |
+| `adset` | `date_start`, `account_id`, `adset_id`, plus any configured breakdowns |
+| `campaign` | `date_start`, `account_id`, `campaign_id`, plus any configured breakdowns |
+| `account` | `date_start`, `account_id`, plus any configured breakdowns |
+
+Built-in Ads Insights streams and Prebuilt Ads Insights Reports use `level=ad` by default and always include `ad_id` in the primary key.
+
 ### Entity-Relationship Diagram (ERD)
+
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
+
+## Timezone handling for Insights streams
+
+The Facebook Insights API interprets `time_range` date filters (`since` and `until`) in the ad account's timezone, not UTC. For ad accounts in timezones ahead of UTC (such as `Asia/Tokyo` at UTC+9 or `Europe/Berlin` at UTC+1), the connector automatically detects each account's timezone and adjusts the sync date range so that the current day's data is not missed. This per-account adjustment applies to all Ads Insights streams, including built-in and custom Insights streams. No configuration is required.
+
+If you sync multiple ad accounts in different timezones within a single connection, each account's date range is computed independently based on its own timezone setting.
 
 ## Facebook Marketing Attribution Reporting
 
@@ -350,7 +370,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 ### Missing data for 7-day and 28-day view-through attribution windows
 
-Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. As a result, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
+Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. In v4.1.3, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. In v5.0.0, the `7d_view` and `28d_view` columns were also removed from stream schemas. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
 
 #### What data is still available
 
@@ -398,16 +418,19 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.0      | 2026-01-02 | [71029](https://github.com/airbytehq/airbyte/pull/71029) | Add 98 missing fields for custom insights streams including objective_results transformation                                                                                                                                                                                                      |
-| 4.1.3      | 2025-12-30 | [70349](https://github.com/airbytehq/airbyte/pull/70349) | Remove deprecated `7d_view` and `28d_view` attribution windows (Facebook API deprecation effective January 12, 2026)                                                                                                                                                                              |
-| 4.1.2      | 2025-11-05 | [69204](https://github.com/airbytehq/airbyte/pull/69204) | Add config migration that adds default action breakdowns                                                                                                                                                                                                                                          |
+| 5.0.1 | 2026-02-24 | [73281](https://github.com/airbytehq/airbyte/pull/73281) | fix(source-facebook-marketing): Fix Facebook Marketing UTC hardcoding with per-account timezone detection |
+| 5.0.0      | 2026-02-20 | [72779](https://github.com/airbytehq/airbyte/pull/72779) | Custom Insights streams now use level-based primary keys; removed deprecated `7d_view` and `28d_view` attribution window columns; removed `wish_bid` field. All users should refresh schema and reset affected streams.                                                                           |
+| 4.2.1 | 2026-02-09 | [72952](https://github.com/airbytehq/airbyte/pull/72952) | fix(source-facebook-marketing): classify 'Invalid OAuth access token' as config_error (AI-Triage PR) |
+| 4.2.0      | 2026-01-07 | [71029](https://github.com/airbytehq/airbyte/pull/71029) | Add 98 missing fields for custom insights streams including objective_results transformation                                                                                                                                                                                                      |
+| 4.1.3      | 2026-01-06 | [70349](https://github.com/airbytehq/airbyte/pull/70349) | Remove deprecated `7d_view` and `28d_view` attribution windows (Facebook API deprecation effective January 12, 2026)                                                                                                                                                                              |
+| 4.1.2      | 2025-11-10 | [69204](https://github.com/airbytehq/airbyte/pull/69204) | Add config migration that adds default action breakdowns                                                                                                                                                                                                                                          |
 | 4.1.1      | 2025-11-04 | [69169](https://github.com/airbytehq/airbyte/pull/69169) | Finalize progressive rollout.                                                                                                                                                                                                                                                                     |
 | 4.1.1-rc.1 | 2025-10-27 | [68632](https://github.com/airbytehq/airbyte/pull/68632) | Performance improvement on normalization                                                                                                                                                                                                                                                          |
 | 4.1.0      | 2025-10-06 | [67081](https://github.com/airbytehq/airbyte/pull/67081) | Promoting release candidate 4.1.0-rc.2 to a main version.                                                                                                                                                                                                                                         |
 | 4.1.0-rc.2 | 2025-10-02 | [66976](https://github.com/airbytehq/airbyte/pull/66976) | Add missing breakdown `user_segment_key`                                                                                                                                                                                                                                                          |
 | 4.1.0-rc.1 | 2025-09-25 | [66000](https://github.com/airbytehq/airbyte/pull/66000) | Add field-based splitting for failed Ad-level async jobs; Upgrade to CDK v7                                                                                                                                                                                                                       |
 | 4.0.1      | 2025-09-15 | [66182](https://github.com/airbytehq/airbyte/pull/66182) | Classify subcode 2446289 error as config error                                                                                                                                                                                                                                                    |
-| 4.0.0      | 2025-08-25 | [65533](https://github.com/airbytehq/airbyte/pull/65533) | Migrate to Marketing API v23                                                                                                                                                                                                                                                                      |
+| 4.0.0      | 2025-08-27 | [65533](https://github.com/airbytehq/airbyte/pull/65533) | Migrate to Marketing API v23                                                                                                                                                                                                                                                                      |
 | 3.5.12     | 2025-08-23 | [65288](https://github.com/airbytehq/airbyte/pull/65288) | Update dependencies                                                                                                                                                                                                                                                                               |
 | 3.5.11     | 2025-08-19 | [64911](https://github.com/airbytehq/airbyte/pull/64911) | Allow overriding action breakdowns for default Ads Insights stream.                                                                                                                                                                                                                               |
 | 3.5.10     | 2025-08-16 | [65010](https://github.com/airbytehq/airbyte/pull/65010) | Update dependencies                                                                                                                                                                                                                                                                               |
@@ -489,7 +512,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 1.3.2      | 2024-02-12 | [35178](https://github.com/airbytehq/airbyte/pull/35178) | Manage dependencies with Poetry                                                                                                                                                                                                                                                                   |
 | 1.3.1      | 2024-02-05 | [34845](https://github.com/airbytehq/airbyte/pull/34845) | Add missing fields to schemas                                                                                                                                                                                                                                                                     |
 | 1.3.0      | 2024-01-09 | [33538](https://github.com/airbytehq/airbyte/pull/33538) | Updated the `Ad Account ID(s)` property to support multiple IDs                                                                                                                                                                                                                                   |
-| 1.2.3      | 2024-01-04 | [33934](https://github.com/airbytehq/airbyte/pull/33828) | Make ready for airbyte-lib                                                                                                                                                                                                                                                                        |
+| 1.2.3      | 2024-01-04 | [33828](https://github.com/airbytehq/airbyte/pull/33828) | Make ready for airbyte-lib                                                                                                                                                                                                                                                                        |
 | 1.2.2      | 2024-01-02 | [33828](https://github.com/airbytehq/airbyte/pull/33828) | Add insights job timeout to be an option, so a user can specify their own value                                                                                                                                                                                                                   |
 | 1.2.1      | 2023-11-22 | [32731](https://github.com/airbytehq/airbyte/pull/32731) | Removed validation that blocked personal ad accounts during `check`                                                                                                                                                                                                                               |
 | 1.2.0      | 2023-10-31 | [31999](https://github.com/airbytehq/airbyte/pull/31999) | Extend the `AdCreatives` stream schema                                                                                                                                                                                                                                                            |
@@ -578,7 +601,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 0.2.37     | 2022-02-28 | [10655](https://github.com/airbytehq/airbyte/pull/10655) | Add Activities stream                                                                                                                                                                                                                                                                             |
 | 0.2.36     | 2022-02-24 | [10588](https://github.com/airbytehq/airbyte/pull/10588) | Fix `execute_in_batch` for large amount of requests                                                                                                                                                                                                                                               |
 | 0.2.35     | 2022-02-18 | [10348](https://github.com/airbytehq/airbyte/pull/10348) | Add error code 104 to backoff triggers                                                                                                                                                                                                                                                            |
-| 0.2.34     | 2022-02-17 | [10180](https://github.com/airbytehq/airbyte/pull/9805)  | Performance and reliability fixes                                                                                                                                                                                                                                                                 |
+| 0.2.34     | 2022-02-17 | [9805](https://github.com/airbytehq/airbyte/pull/9805)  | Performance and reliability fixes                                                                                                                                                                                                                                                                 |
 | 0.2.33     | 2021-12-28 | [10180](https://github.com/airbytehq/airbyte/pull/10180) | Add AdAccount and Images streams                                                                                                                                                                                                                                                                  |
 | 0.2.32     | 2022-01-07 | [10138](https://github.com/airbytehq/airbyte/pull/10138) | Add `primary_key` for all insights streams.                                                                                                                                                                                                                                                       |
 | 0.2.31     | 2021-12-29 | [9138](https://github.com/airbytehq/airbyte/pull/9138)   | Fix videos stream format field incorrect type                                                                                                                                                                                                                                                     |

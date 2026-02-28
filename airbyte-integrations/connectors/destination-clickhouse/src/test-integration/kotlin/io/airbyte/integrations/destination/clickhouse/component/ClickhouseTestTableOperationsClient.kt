@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse.component
@@ -14,8 +14,10 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.withContext
 
 private val logger = KotlinLogging.logger {}
 
@@ -45,21 +47,19 @@ class ClickhouseTestTableOperationsClient(
     override suspend fun readTable(table: TableName): List<Map<String, Any>> {
         waitForPendingOperations(table)
         val qualifiedTableName = "`${table.namespace}`.`${table.name}`"
-        val resp = client.query("SELECT * FROM $qualifiedTableName").await()
-        val schema = client.getTableSchema(qualifiedTableName)
-
-        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(resp, schema)
-
-        val records = mutableListOf<Map<String, Any>>()
-        while (reader.hasNext()) {
-            // get next record
-            val cursor = reader.next()
-            // create immutable copy
-            val record = cursor.toMap()
-
-            records.add(record)
+        client.query("SELECT * FROM $qualifiedTableName").await().use { resp ->
+            val schema = client.getTableSchema(qualifiedTableName)
+            val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(resp, schema)
+            val records = mutableListOf<Map<String, Any>>()
+            while (reader.hasNext()) {
+                // get next record
+                val cursor = reader.next()
+                // create immutable copy
+                val record = cursor.toMap()
+                records.add(record)
+            }
+            return records
         }
-        return records
     }
 
     /**
@@ -68,31 +68,40 @@ class ClickhouseTestTableOperationsClient(
      * its "latest" version.
      */
     private suspend fun waitForPendingOperations(table: TableName) {
+        // force clickhouse to populate the operation into system.mutations
+        client.execute("SYSTEM FLUSH LOGS")
         while (true) {
-            val operations =
+            val pendingOperations =
                 client
                     .queryRecords(
                         """
-                SELECT *
-                FROM system.mutations
-                WHERE database = {database:String}
-                  AND table = {table:String}
-            """.trimIndent(),
+                    SELECT *
+                    FROM system.mutations
+                    WHERE database = {database:String}
+                      AND table = {table:String}
+                    """.trimIndent(),
                         mapOf(
                             "database" to table.namespace,
                             "table" to table.name,
-                        )
+                        ),
                     )
                     .await()
-            val pendingOperations =
-                operations.filter { !it.getBoolean("is_done") }.map { it.getString("command") }
+                    .use { operations ->
+                        operations
+                            .filter { !it.getBoolean("is_done") }
+                            .map { it.getString("command") }
+                    }
             if (pendingOperations.isEmpty()) {
+                logger.info { "No pending operations for table ${table.toPrettyString()}" }
                 break
             } else {
                 logger.info {
                     "Table ${table.toPrettyString()} has pending operations ($pendingOperations). Sleeping."
                 }
-                delay(1000)
+                // we're probably calling this from within a runTest scope,
+                // but we want to actually delay for real (since we're just waiting for clickhouse).
+                // force this delay to run on a normal dispatcher.
+                withContext(Dispatchers.IO) { delay(1000) }
             }
         }
     }

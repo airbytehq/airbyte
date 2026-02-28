@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.config
@@ -7,6 +7,9 @@ package io.airbyte.cdk.load.dataflow.config
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStoreFactory
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.ConnectorInputStreams
+import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.input.DataFlowPipelineInputFlow
 import io.airbyte.cdk.load.dataflow.input.JsonDestinationMessageInputFlow
@@ -91,7 +94,8 @@ class InputBeanFactoryTest {
             factory.sockets(
                 socketPaths = socketPaths,
                 bufferSizeBytes = bufferSizeBytes,
-                socketConnectionTimeoutMs = socketConnectionTimeoutMs
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = null
             )
 
         // Then
@@ -113,12 +117,92 @@ class InputBeanFactoryTest {
             factory.sockets(
                 socketPaths = socketPaths,
                 bufferSizeBytes = bufferSizeBytes,
-                socketConnectionTimeoutMs = socketConnectionTimeoutMs
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = null
             )
 
         // Then
         assertEquals(1, result.size)
         assertEquals("/tmp/single.socket", result[0].socketPath)
+    }
+
+    @Test
+    fun `sockets should limit to configured numSockets when less than available`() {
+        // Given
+        val socketPaths = listOf("/tmp/socket1", "/tmp/socket2", "/tmp/socket3", "/tmp/socket4")
+        val bufferSizeBytes = 8192
+        val socketConnectionTimeoutMs = 5000L
+        val socketConfig =
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = 2
+            }
+
+        // When
+        val result =
+            factory.sockets(
+                socketPaths = socketPaths,
+                bufferSizeBytes = bufferSizeBytes,
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = socketConfig
+            )
+
+        // Then
+        assertEquals(2, result.size)
+        assertEquals("/tmp/socket1", result[0].socketPath)
+        assertEquals("/tmp/socket2", result[1].socketPath)
+    }
+
+    @Test
+    fun `sockets should use all available when configured numSockets exceeds available`() {
+        // Given
+        val socketPaths = listOf("/tmp/socket1", "/tmp/socket2")
+        val bufferSizeBytes = 8192
+        val socketConnectionTimeoutMs = 5000L
+        val socketConfig =
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = 10
+            }
+
+        // When
+        val result =
+            factory.sockets(
+                socketPaths = socketPaths,
+                bufferSizeBytes = bufferSizeBytes,
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = socketConfig
+            )
+
+        // Then
+        assertEquals(2, result.size)
+        assertEquals("/tmp/socket1", result[0].socketPath)
+        assertEquals("/tmp/socket2", result[1].socketPath)
+    }
+
+    @Test
+    fun `sockets should use exact count when configured numSockets equals available`() {
+        // Given
+        val socketPaths = listOf("/tmp/socket1", "/tmp/socket2", "/tmp/socket3")
+        val bufferSizeBytes = 8192
+        val socketConnectionTimeoutMs = 5000L
+        val socketConfig =
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = 3
+            }
+
+        // When
+        val result =
+            factory.sockets(
+                socketPaths = socketPaths,
+                bufferSizeBytes = bufferSizeBytes,
+                socketConnectionTimeoutMs = socketConnectionTimeoutMs,
+                socketConfig = socketConfig
+            )
+
+        // Then
+        assertEquals(3, result.size)
+        assertEquals("/tmp/socket1", result[0].socketPath)
+        assertEquals("/tmp/socket2", result[1].socketPath)
+        assertEquals("/tmp/socket3", result[2].socketPath)
     }
 
     @Test

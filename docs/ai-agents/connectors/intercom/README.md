@@ -1,9 +1,13 @@
-# Intercom agent connector
+# Intercom
+
+The Intercom agent connector is a Python package that equips AI agents to interact with Intercom through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Intercom is a customer messaging platform that enables businesses to communicate with
-customers through chat, email, and in-app messaging. This connector provides read-only
-access to core Intercom entities including contacts, conversations, companies, teams,
-admins, tags, and segments for customer support analytics and insights.
+customers through chat, email, and in-app messaging. This connector provides access
+to core Intercom entities including contacts, conversations, companies, teams,
+admins, tags, and segments for customer support analytics and insights. It also supports
+creating and updating contacts, creating notes, creating internal articles, creating
+and updating companies, and creating tags.
 
 
 ## Example questions
@@ -11,28 +15,33 @@ admins, tags, and segments for customer support analytics and insights.
 The Intercom connector is optimized to handle prompts like these.
 
 - List all contacts in my Intercom workspace
-- Show me conversations from the last week
 - List all companies in Intercom
 - What teams are configured in my workspace?
 - Show me all admins in my Intercom account
 - List all tags used in Intercom
-- Get details for contact \{contact_id\}
 - Show me all customer segments
-- Get company details for \{company_id\}
+- Show me details for a recent contact
+- Show me details for a recent company
+- Show me details for a recent conversation
+- Create a new lead contact named 'Jane Smith' with email jane@example.com
+- Create an internal article titled 'Onboarding Guide' with instructions for new team members
+- Create a company named 'Acme Corp' with company_id 'acme-001'
+- Create a tag named 'VIP Customer'
+- Update the name of contact \{id\} to 'John Updated'
+- Add a note to contact \{id\} saying 'Followed up on support request'
+- Show me conversations from the last week
 - List conversations assigned to team \{team_id\}
 - Show me open conversations
-- Get conversation details for \{conversation_id\}
 
 ## Unsupported questions
 
 The Intercom connector isn't currently able to handle prompts like these.
 
-- Create a new contact in Intercom
 - Send a message to a customer
 - Delete a conversation
-- Update company information
+- Delete a contact
+- Delete a company
 - Assign a conversation to an admin
-- Create a new tag
 
 ## Installation
 
@@ -42,39 +51,83 @@ uv pip install airbyte-agent-intercom
 
 ## Usage
 
+Connectors can run in open source or hosted mode.
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
 ```python
-from airbyte_agent_intercom import IntercomConnector, IntercomAuthConfig
+from airbyte_agent_intercom import IntercomConnector
+from airbyte_agent_intercom.models import IntercomAuthConfig
 
 connector = IntercomConnector(
-  auth_config=IntercomAuthConfig(
-    access_token="..."
-  )
+    auth_config=IntercomAuthConfig(
+        access_token="<Your Intercom API Access Token>"
+    )
 )
-result = await connector.contacts.list()
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@IntercomConnector.tool_utils
+async def intercom_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
 ```
 
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+
+```python
+from airbyte_agent_intercom import IntercomConnector, AirbyteAuthConfig
+
+connector = IntercomConnector(
+    auth_config=AirbyteAuthConfig(
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@IntercomConnector.tool_utils
+async def intercom_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
 
 ## Full documentation
 
-This connector supports the following entities and actions.
+### Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get) |
-| Conversations | [List](./REFERENCE.md#conversations-list), [Get](./REFERENCE.md#conversations-get) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Search](./REFERENCE.md#contacts-search) |
+| Conversations | [List](./REFERENCE.md#conversations-list), [Get](./REFERENCE.md#conversations-get), [Search](./REFERENCE.md#conversations-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Search](./REFERENCE.md#companies-search) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
 | Admins | [List](./REFERENCE.md#admins-list), [Get](./REFERENCE.md#admins-get) |
-| Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get) |
+| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get) |
+| Notes | [Create](./REFERENCE.md#notes-create) |
 | Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get) |
+| Internal Articles | [Create](./REFERENCE.md#internal-articles-create) |
 
 
-For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
+### Authentication
 
-For the service's official API docs, see the [Intercom API reference](https://developers.intercom.com/docs/references/rest-api/api.intercom.io).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
+### Intercom API docs
+
+See the official [Intercom API reference](https://developers.intercom.com/docs/references/rest-api/api.intercom.io).
 
 ## Version information
 
-- **Package version:** 0.1.3
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 3c7bfdfd1100dd20420a61cec56549b65820ea0f
+- **Package version:** 0.1.81
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** a735c402798904c84a7f4df7969653341d95b11d
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/intercom/CHANGELOG.md)

@@ -146,7 +146,7 @@ jobs:
     uses: ./.github/workflows/publish_connectors.yml
     with:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
-      release-type: pre-release
+      with-semver-suffix: preview
       gitref: refs/pull/${{ inputs.pr }}/head
     secrets: inherit
 

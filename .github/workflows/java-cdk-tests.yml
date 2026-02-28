@@ -114,3 +114,18 @@ jobs:
           concurrent: true
           # TODO: be able to remove the skipSlowTests property
           arguments: --scan :airbyte-cdk:check -DskipSlowTests=true
+
+  bulk-cdk-version-check-result:
+    name: Bulk CDK version check result
+    runs-on: ubuntu-24.04
+    if: always()
+    needs:
+      - run-check-bulk-cdk-version
+    steps:
+      - name: Report status
+        run: |
+          if [[ "${{ needs.run-check-bulk-cdk-version.result }}" == "success" || "${{ needs.run-check-bulk-cdk-version.result }}" == "skipped" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
