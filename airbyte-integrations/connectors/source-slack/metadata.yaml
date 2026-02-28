@@ -84,7 +84,7 @@ data:
         - name: slack_config_dev_null
           id: b6e9e649-2899-4589-81c4-79df81a7a210
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: smokeTests
       testSecrets:
         - name: SECRET_SOURCE-SLACK_OAUTH__CREDS
           fileName: config_oauth.json
@@ -96,4 +96,15 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+      scenarios:
+        - name: default
+          configFile: secrets/config.json
+        - name: oauth_config
+          configFile: secrets/config_oauth.json
+        - name: invalid_config
+          configFile: integration_tests/invalid_config.json
+          expectFailure: true
+        - name: invalid_oauth_config
+          configFile: integration_tests/invalid_oauth_config.json
+          expectFailure: true
 metadataSpecVersion: "1.0"

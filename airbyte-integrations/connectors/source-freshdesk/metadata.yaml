@@ -50,11 +50,17 @@ data:
         - name: freshdesk_config_dev_null
           id: 5232fac1-675b-4138-abd7-f0ff04a40a8c
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: smokeTests
       testSecrets:
         - name: SECRET_SOURCE-FRESHDESK__CREDS
           fileName: config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+      scenarios:
+        - name: default
+          configFile: secrets/config.json
+        - name: invalid_config
+          configFile: integration_tests/invalid_config.json
+          expectFailure: true
 metadataSpecVersion: "1.0"

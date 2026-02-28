@@ -72,7 +72,7 @@ data:
         - name: notion_config_dev_null
           id: 8af67fe8-a20e-4eae-816a-2a3c893c0360
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: smokeTests
       testSecrets:
         - name: SECRET_SOURCE-NOTION__CREDS
           fileName: config.json
@@ -84,4 +84,12 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+      scenarios:
+        - name: default
+          configFile: secrets/config.json
+        - name: oauth_config
+          configFile: secrets/config_oauth.json
+        - name: invalid_config
+          configFile: integration_tests/invalid_config.json
+          expectFailure: true
 metadataSpecVersion: "1.0"

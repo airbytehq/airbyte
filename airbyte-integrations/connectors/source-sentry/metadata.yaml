@@ -60,7 +60,7 @@ data:
         - name: sentry_config_limited_scopes_dev_null
           id: aa4573bd-4681-4906-9877-d6afe4060a28
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: smokeTests
       testSecrets:
         - name: SECRET_SOURCE-SENTRY_LIMITED_SCOPE__CREDS
           fileName: config_limited_scopes.json
@@ -72,4 +72,10 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+      scenarios:
+        - name: default
+          configFile: secrets/config.json
+        - name: invalid_config
+          configFile: integration_tests/invalid_config.json
+          expectFailure: true
 metadataSpecVersion: "1.0"

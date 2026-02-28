@@ -94,7 +94,7 @@ data:
         - name: harvest_config_dev_null
           id: 833888cc-1bc4-4126-970a-47edff5e0f00
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: smokeTests
       testSecrets:
         - name: SECRET_SOURCE_HARVEST_CREDS_OAUTH
           fileName: config_oauth.json
@@ -106,4 +106,7 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+      scenarios:
+        - name: default
+          configFile: secrets/config_oauth.json
 metadataSpecVersion: "1.0"

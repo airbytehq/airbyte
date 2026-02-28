@@ -56,13 +56,19 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-    - suite: acceptanceTests
+    - suite: smokeTests
       testSecrets:
         - name: SECRET_SOURCE-AMPLITUDE__CREDS
           fileName: config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+      scenarios:
+        - name: default
+          configFile: secrets/config.json
+        - name: invalid_config
+          configFile: integration_tests/invalid_config.json
+          expectFailure: true
   externalDocumentationUrls:
     - title: Analytics API
       url: https://www.docs.developers.amplitude.com/analytics/apis/http-v2-api/
