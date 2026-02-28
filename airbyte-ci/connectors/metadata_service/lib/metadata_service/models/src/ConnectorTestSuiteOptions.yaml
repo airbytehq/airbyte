@@ -16,6 +16,7 @@ properties:
       - "integrationTests"
       - "acceptanceTests"
       - "liveTests"
+      - "smokeTests"
   testSecrets:
     description: "List of secrets required to run the test suite"
     type: array
@@ -26,3 +27,8 @@ properties:
     type: array
     items:
       "$ref": "TestConnections.yaml"
+  scenarios:
+    description: "List of smoke test scenarios (only applicable when suite is 'smokeTests')"
+    type: array
+    items:
+      "$ref": "SmokeTestScenario.yaml"

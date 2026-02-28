@@ -4,10 +4,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 from pydantic import BaseModel, Extra, Field
-from typing_extensions import Literal
 
 
 class GitInfo(BaseModel):

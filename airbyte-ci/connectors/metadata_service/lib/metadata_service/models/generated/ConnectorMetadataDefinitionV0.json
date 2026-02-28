@@ -72,7 +72,8 @@
                   "unitTests",
                   "integrationTests",
                   "acceptanceTests",
-                  "liveTests"
+                  "liveTests",
+                  "smokeTests"
                 ]
               },
               "testSecrets": {
@@ -144,6 +145,64 @@
                     "id": {
                       "type": "string",
                       "description": "The connection ID"
+                    }
+                  }
+                }
+              },
+              "scenarios": {
+                "description": "List of smoke test scenarios (only applicable when suite is 'smokeTests')",
+                "type": "array",
+                "items": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$id": "https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/SmokeTestScenario.yaml",
+                  "title": "SmokeTestScenario",
+                  "description": "A single smoke test scenario configuration for a connector.",
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "description": "Name of the test scenario (e.g., 'default', 'invalid_config', 'oauth_config')",
+                      "type": "string"
+                    },
+                    "configFile": {
+                      "description": "Relative path to the config file to use for this scenario",
+                      "type": "string"
+                    },
+                    "configSettings": {
+                      "description": "Optional dictionary of config settings to override or supplement configFile settings",
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "expectFailure": {
+                      "description": "Whether the scenario is expected to fail",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "onlyStreams": {
+                      "description": "List of stream names to include in the scenario (if specified, only these streams will be tested)",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "excludeStreams": {
+                      "description": "List of stream names to exclude from the scenario",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "suggestedStreamsOnly": {
+                      "description": "Whether to limit testing to the connector's suggested streams list (from data.suggestedStreams)",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "configuredCatalogPath": {
+                      "description": "Path to a pre-configured catalog file for the scenario",
+                      "type": "string"
                     }
                   }
                 }

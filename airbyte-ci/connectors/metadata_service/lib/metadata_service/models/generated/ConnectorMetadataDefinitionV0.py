@@ -4,11 +4,10 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
-from typing_extensions import Literal
 
 
 class ExternalDocumentationUrl(BaseModel):
@@ -65,6 +64,40 @@ class TestConnections(BaseModel):
 
     name: str = Field(..., description="The connection name")
     id: str = Field(..., description="The connection ID")
+
+
+class SmokeTestScenario(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    name: str = Field(
+        ...,
+        description="Name of the test scenario (e.g., 'default', 'invalid_config', 'oauth_config')",
+    )
+    configFile: Optional[str] = Field(
+        None, description="Relative path to the config file to use for this scenario"
+    )
+    configSettings: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional dictionary of config settings to override or supplement configFile settings",
+    )
+    expectFailure: Optional[bool] = Field(
+        False, description="Whether the scenario is expected to fail"
+    )
+    onlyStreams: Optional[List[str]] = Field(
+        None,
+        description="List of stream names to include in the scenario (if specified, only these streams will be tested)",
+    )
+    excludeStreams: Optional[List[str]] = Field(
+        None, description="List of stream names to exclude from the scenario"
+    )
+    suggestedStreamsOnly: Optional[bool] = Field(
+        False,
+        description="Whether to limit testing to the connector's suggested streams list (from data.suggestedStreams)",
+    )
+    configuredCatalogPath: Optional[str] = Field(
+        None, description="Path to a pre-configured catalog file for the scenario"
+    )
 
 
 class ReleaseStage(BaseModel):
@@ -307,15 +340,19 @@ class ConnectorTestSuiteOptions(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    suite: Literal["unitTests", "integrationTests", "acceptanceTests", "liveTests"] = (
-        Field(..., description="Name of the configured test suite")
-    )
+    suite: Literal[
+        "unitTests", "integrationTests", "acceptanceTests", "liveTests", "smokeTests"
+    ] = Field(..., description="Name of the configured test suite")
     testSecrets: Optional[List[Secret]] = Field(
         None, description="List of secrets required to run the test suite"
     )
     testConnections: Optional[List[TestConnections]] = Field(
         None,
         description="List of sandbox cloud connections that tests can be run against",
+    )
+    scenarios: Optional[List[SmokeTestScenario]] = Field(
+        None,
+        description="List of smoke test scenarios (only applicable when suite is 'smokeTests')",
     )
 
 
@@ -385,7 +422,7 @@ class ConnectorBreakingChanges(BaseModel):
     )
 
 
-class RegistryOverride(BaseModel):
+class RegistryOverridesModel(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -456,7 +493,7 @@ class Data(BaseModel):
         [],
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
     )
-    registryOverrides: Optional[RegistryOverride] = None
+    registryOverrides: Optional[RegistryOverridesModel] = None
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None

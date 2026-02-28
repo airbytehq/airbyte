@@ -4,11 +4,10 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
-from typing_extensions import Literal
 
 
 class ReleaseStage(BaseModel):

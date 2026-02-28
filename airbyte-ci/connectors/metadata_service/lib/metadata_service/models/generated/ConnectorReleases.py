@@ -4,10 +4,9 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
-from typing_extensions import Literal
 
 
 class RolloutConfiguration(BaseModel):

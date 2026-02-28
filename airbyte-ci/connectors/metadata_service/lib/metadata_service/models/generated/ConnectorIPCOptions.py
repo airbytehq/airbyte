@@ -3,10 +3,9 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Literal
 
 from pydantic import BaseModel, Extra
-from typing_extensions import Literal
 
 
 class DataChannel(BaseModel):
