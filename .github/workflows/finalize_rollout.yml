@@ -53,7 +53,7 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         run: |
-          # TK-TODO: Revert to GA version before merging:
+          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
           #   uvx --from airbyte-internal-ops airbyte-ops registry rc promote ...
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops registry rc promote \
@@ -67,7 +67,7 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         run: |
-          # TK-TODO: Revert to GA version before merging:
+          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
           #   uvx --from airbyte-internal-ops airbyte-ops registry rc rollback ...
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops registry rc rollback \

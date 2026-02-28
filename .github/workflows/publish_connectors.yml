@@ -429,7 +429,7 @@ jobs:
         run: |
           echo "Generating registry artifacts for ${{ matrix.connector }}"
           DOCKER_IMAGE="${{ steps.connector-metadata.outputs.docker-repository }}:${{ steps.connector-metadata.outputs.docker-image-tag }}"
-          # TK-TODO: Revert to GA version before merging:
+          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
           #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version artifacts generate ...
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops registry connector-version artifacts generate \
@@ -452,7 +452,7 @@ jobs:
         shell: bash
         run: |
           echo "Publishing registry artifacts for ${{ matrix.connector }}"
-          # TK-TODO: Revert to GA version before merging:
+          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
           #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version artifacts publish ...
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops registry connector-version artifacts publish \
