@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import requests_cache
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -27,7 +28,7 @@ def mock_v3_properties(requests_mock, entity, properties_list):
     """
     requests_mock.register_uri(
         "GET",
-        f"/crm/v3/properties/{entity}",
+        f"https://api.hubapi.com/crm/v3/properties/{entity}",
         [{"json": {"results": properties_list}, "status_code": 200}],
     )
 
@@ -163,6 +164,21 @@ def find_stream(stream_name, config, state=None):
 @pytest.fixture(autouse=True)
 def patch_time(mocker):
     mocker.patch("time.sleep")
+
+
+@pytest.fixture(autouse=True)
+def clear_http_cache():
+    """Clear the shared in-memory SQLite HTTP cache between tests.
+
+    The CDK's HttpClient uses requests_cache with 'file::memory:?cache=shared' when
+    use_cache=True (e.g. for the fetch_properties_from_endpoint retriever). This creates
+    a process-wide shared SQLite database that persists across test functions in the same
+    pytest session. Cached HTTP responses bypass requests_mock entirely, causing tests that
+    depend on specific mocked property responses to receive stale data from earlier tests.
+    Clearing it before each test guarantees every test starts with a clean HTTP cache.
+    """
+    requests_cache.SQLiteCache("file::memory:?cache=shared").clear()
+    yield
 
 
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
