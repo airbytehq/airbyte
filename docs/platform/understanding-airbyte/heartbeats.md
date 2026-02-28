@@ -70,10 +70,4 @@ The timeout can be configured using the file `flags.yaml` through 2 entries:
 
 ## Related: Workload Monitor
 
-The heartbeat mechanisms described on this page monitor **connector-level responsiveness** within a running sync — i.e. whether the source is emitting records and whether the destination is responding to write calls.
-
-Airbyte also has a separate **platform-level Workload Monitor** that checks whether the workload pod itself is alive and progressing through its lifecycle (pending → claimed → launched → running). If the pod crashes, is OOM-killed, or never starts, the Workload Monitor fails the workload with the message:
-
-> _"Airbyte could not track the sync progress. Sync process exited without reporting status."_
-
-This error is surfaced as a `WorkloadMonitorException` and is distinct from the source/destination heartbeat errors described above. For details on how the Workload Monitor works and how to debug these errors, see [Workload Monitor](./jobs.md#workload-monitor).
+The heartbeat mechanisms described on this page monitor connector-level responsiveness within a running sync. Airbyte also has a separate platform-level monitor that checks whether the workload pod itself is alive and progressing. For details, see [Workload Monitor](./jobs.md#workload-monitor).

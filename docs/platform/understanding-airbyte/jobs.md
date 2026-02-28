@@ -79,7 +79,7 @@ When a workload is picked up by the Launcher, it passes through the following pi
 
 After the LAUNCH stage completes, the pipeline's success handler transitions the workload status to **LAUNCHED** via the Workload API.
 
-#### Why is there a delay between LAUNCH and LAUNCHED?
+#### LAUNCH to LAUNCHED delay
 
 The time between the `APPLY Stage: LAUNCH` log line and the `Attempting to update workload ... to LAUNCHED` log line is the time Kubernetes takes to accept and begin scheduling the pod. In most cases this is seconds, but it can be significantly longer when:
 
