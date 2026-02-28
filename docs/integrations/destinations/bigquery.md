@@ -197,18 +197,19 @@ The HMAC key is wrong.
 
 ### "Socket file not created" timeout
 
-_Applies to connector version 3.0.7 and later (socket data-channel mode)._
+If your sync fails with an error containing `Socket file ... not created after 900000 ms`,
+the Airbyte platform was unable to set up an internal data channel before the connector
+timed out. This is not caused by your BigQuery configuration or credentials.
 
-If your sync fails with an error containing `Socket file ... not created after 900000 ms`:
-
-- This indicates the Airbyte platform sidecar did not create the inter-process communication
-  channel in time. The connector itself is not at fault.
-- **Self-hosted deployments:** Verify the platform version supports socket-mode destinations.
-  Check worker pod logs for sidecar startup failures or OOM events.
-- **Running multiple connections to the same destination simultaneously** can cause resource
-  contention. Try staggering connection schedules.
-- If the error persists, contact [Airbyte Support](https://support.airbyte.com) with the full
-  destination logs.
+- **Retry the sync.** The issue is often caused by temporary resource pressure and resolves
+  on the next attempt.
+- **Stagger concurrent syncs.** Running many connections to the same destination at the same
+  time increases the chance of this error. Spacing out sync schedules can help.
+- **Airbyte Cloud:** If the error persists after retrying, contact
+  [Airbyte Support](https://support.airbyte.com) with the connection ID and job ID.
+- **Self-hosted (OSS / Enterprise):** Make sure your Airbyte platform is up to date. Check
+  the worker or pod logs for out-of-memory events or container restarts around the time of
+  the failure.
 
 ### HTTP 400 "Request had invalid euc header" during upload
 
