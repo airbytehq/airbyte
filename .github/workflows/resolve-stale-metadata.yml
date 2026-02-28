@@ -44,4 +44,4 @@ jobs:
             --repo-path "${{ github.workspace }}" \
             --unpublished \
             --bucket prod \
-            --fail-on-unpublished
+            --assert-none
