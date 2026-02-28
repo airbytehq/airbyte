@@ -324,10 +324,10 @@ def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_
         }
     ]
 
-    endpoint_path = "/crm/v3/objects/deal_split/search"
+    endpoint_path = "https://api.hubapi.com/crm/v3/objects/deal_split/search"
     requests_mock.register_uri("POST", endpoint_path, responses)
 
-    properties_path = f"/properties/v2/deal_split/properties"
+    properties_path = "https://api.hubapi.com/properties/v2/deal_split/properties"
     properties_response = [
         {
             "json": [
@@ -401,9 +401,9 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
             "after": 0,
         }
 
-    endpoint_path = "/crm/v3/objects/deal_split/search"
+    endpoint_path = "https://api.hubapi.com/crm/v3/objects/deal_split/search"
     requests_mock.register_uri("POST", endpoint_path, responses, additional_matcher=match_request_body)
-    properties_path = f"/properties/v2/deal_split/properties"
+    properties_path = "https://api.hubapi.com/properties/v2/deal_split/properties"
     properties_response = [
         {
             "json": [
