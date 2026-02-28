@@ -61,7 +61,7 @@ data:
         - name: typeform_incremental_config_dev_null
           id: 681b2010-52af-4d44-b2e1-1b5f50581509
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: smokeTests
       testSecrets:
         - name: SECRET_SOURCE-TYPEFORM_OAUTH__CREDS
           fileName: config_oauth.json
@@ -83,4 +83,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+      scenarios:
+        - name: default
+        - name: oauth_config
+          configFile: config_oauth.json
 metadataSpecVersion: "1.0"
