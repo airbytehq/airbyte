@@ -68,4 +68,4 @@ jobs:
         run: |
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops registry generate-report \
-            --bucket prod-airbyte-cloud-connector-metadata-service
+            --bucket prod
