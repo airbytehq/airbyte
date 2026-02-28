@@ -17,11 +17,7 @@ Airbyte runs on Kubernetes. People run Airbyte in a diverse set of environments 
 
 ### When to use abctl
 
-You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. Normally, you don't use abctl to manage enterprise deployments, because they use dedicated Kubernetes infrastructure. However, it's possible to use abctl this way if you want to.
-
-:::warning
-abctl only manages its own kind cluster. It cannot install Airbyte on an existing Kubernetes cluster. If you already have a Kubernetes cluster, use the [Helm chart deployment guide](../chart-v2-community.mdx) instead.
-:::
+You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. abctl only manages its own kind cluster. It can't install Airbyte on an existing Kubernetes cluster. If you already have a Kubernetes cluster, use the [Helm chart deployment guide](../chart-v2-community.mdx) instead.
 
 ### What abctl does
 
@@ -58,7 +54,7 @@ The installer script also supports the following environment variables.
 | `DEBUG` | unset | Set to any value to enable verbose installer output. |
 
 :::note
-`DIR_INSTALL` controls only where the **abctl binary** lives. Airbyte state data (kubeconfig, cluster data) is stored separately at `~/.airbyte/abctl/` and is not affected by this setting. There is currently no flag to relocate the data directory.
+`DIR_INSTALL` controls only where the **abctl binary** lives. Airbyte state data (kubeconfig, cluster data) is stored separately at `~/.airbyte/abctl/`. It's not affected by this setting and you can't relocate it.
 :::
 
 <Tabs defaultValue="abctl-curl">
@@ -217,7 +213,7 @@ To install a specific version of the Airbyte Helm chart instead of the latest, u
 abctl local install --chart-version 0.422.2 --values values.yaml --secret secret.yaml --port 8000
 ```
 
-The `--chart-version` value is the Helm chart version, not the Airbyte platform version. To find available versions, see the [Airbyte Helm chart releases](https://github.com/airbytehq/airbyte-platform/releases).
+The `--chart-version` value is the Helm chart version, not the Airbyte platform version. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte).
 
 #### Install from a local Helm chart
 
@@ -395,7 +391,7 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
     | Name                | Default | Description                                                                                                                                                                                                                                            | Example                    |
     | ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
     | --chart             | ""      | Path to a local Helm chart directory. Use this to install from a local chart (for example, in air-gapped environments or during development). When set, `--chart-version` is ignored.                                                                  | ./my-chart                 |
-    | --chart-version     | latest  | The version of the Airbyte Helm chart to install. This is the **Helm chart version**, not the Airbyte platform version. Omit this flag to install the latest version. To find available versions, see the [Airbyte Helm chart releases](https://github.com/airbytehq/airbyte-platform/releases). | 0.422.2                    |
+    | --chart-version     | latest  | The version of the Airbyte Helm chart to install. This is the **Helm chart version**, not the Airbyte platform version. Omit this flag to install the latest version. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte). | 0.422.2                    |
     | --docker-email      | ""      | Docker email address to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_EMAIL`.                                                                                               | user@example.com          |
     | --docker-password   | ""      | Docker password to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_PASSWORD`.                                                                                                 | mypassword                 |
     | --docker-server     | ""      | Docker server to authenticate against. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_SERVER`.                                                                                                                       | docker.io                 |
