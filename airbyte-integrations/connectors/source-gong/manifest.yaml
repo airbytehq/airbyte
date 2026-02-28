@@ -348,41 +348,24 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+          request_body_json:
+            filter:
+              callIds:
+                - "{{ stream_partition.parent_id }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - callTranscripts
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.records.cursor }}"
-            stop_condition: "{{ 'records' not in response }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: started
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%f%z"
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ config.start_date or (now_utc() -
-            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          inject_into: body_json
-          field_path:
-            - filter
-            - fromDateTime
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/calls"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -637,7 +620,6 @@ metadata:
         - errorHandler
       callTranscripts:
         - errorHandler
-        - incrementalSync
   testedStreams:
     users:
       streamHash: c6b2bab08397024790447b2ea909e5e2056b3778
