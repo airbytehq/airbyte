@@ -462,6 +462,15 @@ jobs:
             echo "Skipping CDK pre-release check for non-Python connector."
           fi
 
+      - name: Get connector metadata
+        if: matrix.connector
+        id: connector-metadata
+        env:
+          CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          set -euo pipefail
+          echo "connector-version=$(poe -qq --root "${CONNECTOR_DIR}" get-version)" | tee -a $GITHUB_OUTPUT
+
       - name: Generate and Validate Registry Artifacts
         if: matrix.connector
         shell: bash
@@ -471,8 +480,7 @@ jobs:
         # TK-TODO: Revert to GA version before merging: # IGNORE:TK
         #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version artifacts generate ...
         run: |
-          CONNECTOR_VERSION=$(poe -qq --root "${CONNECTOR_DIR}" get-version)
-          DOCKER_IMAGE="${DOCKER_REPO}:${CONNECTOR_VERSION}"
+          DOCKER_IMAGE="${DOCKER_REPO}:${{ steps.connector-metadata.outputs.connector-version }}"
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask" \
             airbyte-ops registry connector-version artifacts generate \
             --metadata-file "${CONNECTOR_DIR}/metadata.yaml" \
@@ -484,7 +492,7 @@ jobs:
         if: matrix.connector
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: registry-artifacts-${{ matrix.connector }}
+          name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.connector-version }}
           path: ./registry-artifacts/
           retention-days: 7
 
