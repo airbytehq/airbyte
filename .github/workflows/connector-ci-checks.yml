@@ -462,6 +462,32 @@ jobs:
             echo "Skipping CDK pre-release check for non-Python connector."
           fi
 
+      - name: Generate and Validate Registry Artifacts
+        if: matrix.connector
+        shell: bash
+        env:
+          CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
+        # TK-TODO: Revert to GA version before merging: # IGNORE:TK
+        #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version artifacts generate ...
+        run: |
+          CONNECTOR_VERSION=$(poe -qq --root "${CONNECTOR_DIR}" get-version)
+          DOCKER_REPO="airbyte/${{ matrix.connector }}"
+          DOCKER_IMAGE="${DOCKER_REPO}:${CONNECTOR_VERSION}"
+          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask" \
+            airbyte-ops registry connector-version artifacts generate \
+            --metadata-file "${CONNECTOR_DIR}/metadata.yaml" \
+            --docker-image "${DOCKER_IMAGE}" \
+            --output-dir ./registry-artifacts \
+            --with-validate
+
+      - name: Upload Registry Artifacts
+        if: matrix.connector
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: registry-artifacts-${{ matrix.connector }}
+          path: ./registry-artifacts/
+          retention-days: 7
+
   connector-ci-checks-summary:
     name: Aggregate Results
     if: always()
