@@ -453,8 +453,8 @@ class MsSqlServerDebeziumOperations(
      * Uses NULLIF to exclude capture instances where sys.fn_cdc_get_min_lsn returns ZERO
      * (0x00000000000000000000). Per Microsoft docs, this function returns ZERO when the caller
      * lacks authorization for the capture instance. Without NULLIF, a single unauthorized capture
-     * instance would cause MIN() to return ZERO, failing validation for the entire database even
-     * if the user has access to all other capture instances.
+     * instance would cause MIN() to return ZERO, failing validation for the entire database even if
+     * the user has access to all other capture instances.
      */
     private fun validateLsnStillAvailable(lsn: Lsn): Boolean {
         // Use jdbcConnectionFactory which handles SSH tunneling
