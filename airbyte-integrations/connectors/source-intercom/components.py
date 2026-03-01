@@ -97,6 +97,7 @@ class IntercomRateLimiter:
         """
 
         # find the requests.Response inside args list
+        headers = {}
         for arg in args:
             if isinstance(arg, requests.models.Response):
                 headers = arg.headers or {}
