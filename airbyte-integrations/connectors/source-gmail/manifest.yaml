@@ -7,7 +7,7 @@ description: Gmail is the email service provided by Google.
 check:
   type: CheckStream
   stream_names:
-    - messages
+    - profile
 
 definitions:
   streams:
@@ -129,6 +129,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{{ 'after:' + config['start_date'].replace('-', '/') if config.get('start_date') else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -178,6 +179,17 @@ definitions:
               partition_field: message_id
               stream:
                 $ref: "#/definitions/streams/messages"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: internalDate
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2005-01-01T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -195,6 +207,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{{ 'after:' + config['start_date'].replace('-', '/') if config.get('start_date') else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -307,6 +320,16 @@ spec:
         title: Include Spam & Trash
         default: false
         order: 3
+      start_date:
+        type: string
+        order: 4
+        title: Start Date
+        description: >-
+          Only sync messages and threads created after this date. Format:
+          YYYY-MM-DD. If not set, all messages and threads will be synced.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        examples:
+          - "2024-01-01"
     additionalProperties: true
 
 metadata:
