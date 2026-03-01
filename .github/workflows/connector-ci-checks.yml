@@ -438,11 +438,12 @@ jobs:
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
 
-      - name: Install QA Checks
+      - name: Install Ops CLI
         if: matrix.connector
         run: |
-          # Install airbyte-internal-ops from PyPI (replaces local connectors_qa)
-          uv tool install airbyte-internal-ops
+          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
+          #   uv tool install airbyte-internal-ops
+          uv tool install "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask"
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
@@ -477,14 +478,10 @@ jobs:
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
           DOCKER_REPO: airbyte/${{ matrix.connector }}
-        # TK-TODO: Revert to GA version before merging: # IGNORE:TK
-        #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version artifacts generate ...
         run: |
-          DOCKER_IMAGE="${DOCKER_REPO}:${{ steps.connector-metadata.outputs.connector-version }}"
-          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask" \
-            airbyte-ops registry connector-version artifacts generate \
+          airbyte-ops registry connector-version artifacts generate \
             --metadata-file "${CONNECTOR_DIR}/metadata.yaml" \
-            --docker-image "${DOCKER_IMAGE}" \
+            --docker-image "${DOCKER_REPO}:${{ steps.connector-metadata.outputs.connector-version }}" \
             --output-dir ./registry-artifacts \
             --with-validate
 
