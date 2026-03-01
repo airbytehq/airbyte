@@ -449,19 +449,28 @@ class MsSqlServerDebeziumOperations(
     /**
      * Validates if the given LSN is still available in SQL Server transaction logs. Returns true if
      * the LSN is available, false otherwise.
+     *
+     * Uses NULLIF to exclude capture instances where sys.fn_cdc_get_min_lsn returns ZERO
+     * (0x00000000000000000000). Per Microsoft docs, this function returns ZERO when the caller
+     * lacks authorization for the capture instance. Without NULLIF, a single unauthorized capture
+     * instance would cause MIN() to return ZERO, failing validation for the entire database even
+     * if the user has access to all other capture instances.
      */
     private fun validateLsnStillAvailable(lsn: Lsn): Boolean {
         // Use jdbcConnectionFactory which handles SSH tunneling
         jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { statement ->
-                // Check if the LSN is within the available range
-                // sys.fn_cdc_get_min_lsn returns the minimum available LSN for a capture instance
-                // sys.fn_cdc_get_max_lsn returns the current maximum LSN
+                // Use NULLIF to exclude ZERO values from MIN(). sys.fn_cdc_get_min_lsn()
+                // returns 0x00000000000000000000 when the caller is not authorized for a
+                // capture instance. Without NULLIF, one unauthorized instance poisons the
+                // entire MIN() result.
                 val query =
                     """
                     SELECT
-                        MIN(sys.fn_cdc_get_min_lsn(capture_instance)) as min_lsn,
-                        sys.fn_cdc_get_max_lsn() as max_lsn
+                        MIN(NULLIF(sys.fn_cdc_get_min_lsn(capture_instance), 0x00000000000000000000)) as min_lsn,
+                        sys.fn_cdc_get_max_lsn() as max_lsn,
+                        COUNT(*) as total_instances,
+                        SUM(CASE WHEN sys.fn_cdc_get_min_lsn(capture_instance) = 0x00000000000000000000 THEN 1 ELSE 0 END) as zero_lsn_instances
                     FROM cdc.change_tables
                 """.trimIndent()
 
@@ -469,26 +478,47 @@ class MsSqlServerDebeziumOperations(
                     if (resultSet.next()) {
                         val minLsnBytes = resultSet.getBytes("min_lsn")
                         val maxLsnBytes = resultSet.getBytes("max_lsn")
+                        val totalInstances = resultSet.getInt("total_instances")
+                        val zeroLsnInstances = resultSet.getInt("zero_lsn_instances")
 
-                        if (minLsnBytes == null || maxLsnBytes == null) {
-                            log.warn { "CDC is not enabled or no LSN range available" }
+                        if (maxLsnBytes == null) {
+                            log.warn { "CDC is not enabled or no max LSN available." }
+                            return false
+                        }
+
+                        val maxLsn = Lsn.valueOf(maxLsnBytes)
+
+                        // Log diagnostic info about capture instance permissions
+                        if (zeroLsnInstances > 0) {
+                            log.warn {
+                                "$zeroLsnInstances of $totalInstances CDC capture instance(s) returned " +
+                                    "LSN zero, which indicates the database user lacks authorization " +
+                                    "for those instances. Consider granting db_owner role to the " +
+                                    "replication user. Continuing validation with the ${
+                                        totalInstances - zeroLsnInstances
+                                    } accessible instance(s)."
+                            }
+                        }
+
+                        // minLsnBytes is NULL when NULLIF excluded all rows (all ZERO)
+                        // or when there are no capture instances at all.
+                        if (minLsnBytes == null) {
+                            if (totalInstances == 0) {
+                                log.warn { "No CDC capture instances found in cdc.change_tables." }
+                            } else {
+                                // All capture instances returned ZERO → permissions issue
+                                log.warn {
+                                    "All $totalInstances CDC capture instance(s) returned LSN zero. " +
+                                        "The database user lacks authorization for CDC data. " +
+                                        "Grant db_owner role to the replication user."
+                                }
+                            }
                             return false
                         }
 
                         val minLsn = Lsn.valueOf(minLsnBytes)
-                        val maxLsn = Lsn.valueOf(maxLsnBytes)
 
                         log.info { "LSN range parsed - min: $minLsn, max: $maxLsn, saved: $lsn" }
-
-                        // Lsn.ZERO indicates no valid CDC data is available (e.g., no capture
-                        // instances exist or insufficient permissions).
-                        if (minLsn == Lsn.ZERO) {
-                            log.warn {
-                                "Min LSN is zero, no CDC capture instances found or insufficient permissions. " +
-                                    "Treating saved LSN as invalid."
-                            }
-                            return false
-                        }
 
                         // Check if saved LSN is within the valid range
                         val isValid = lsn.compareTo(minLsn) >= 0 && lsn.compareTo(maxLsn) <= 0
