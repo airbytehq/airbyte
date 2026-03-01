@@ -467,11 +467,11 @@ jobs:
         shell: bash
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
+          DOCKER_REPO: airbyte/${{ matrix.connector }}
         # TK-TODO: Revert to GA version before merging: # IGNORE:TK
         #   uvx --from airbyte-internal-ops airbyte-ops registry connector-version artifacts generate ...
         run: |
           CONNECTOR_VERSION=$(poe -qq --root "${CONNECTOR_DIR}" get-version)
-          DOCKER_REPO="airbyte/${{ matrix.connector }}"
           DOCKER_IMAGE="${DOCKER_REPO}:${CONNECTOR_VERSION}"
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask" \
             airbyte-ops registry connector-version artifacts generate \
