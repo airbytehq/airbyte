@@ -10,17 +10,14 @@ These errors occur when running the `curl -LsfS https://get.airbyte.com | bash -
 
 - Error: `main: line 179: /tmp/abctl_install.XXXX/: Is a directory`
 
-The installer creates a temporary directory, downloads the `abctl` release archive into it, and extracts the binary. This error occurs when the extraction produces a directory structure that doesn't match what the script expects, causing it to try to execute a directory path instead of the binary.
+The installer script queries the GitHub Releases API for an asset matching your OS and architecture (e.g. `linux-amd64`). If no matching asset is found, the download filename variable is empty and the script tries to write to the temp directory path itself, producing this error.
 
-**Workarounds:**
+Common causes:
 
-1. Re-run the installer with debug output enabled to see the exact failure point.
+- Your OS or architecture isn't detected correctly (for example, an uncommon `uname` output that doesn't match the expected patterns).
+- The GitHub API rate limit was hit, returning an empty or error response instead of release data.
 
-    ```shell
-    DEBUG=1 curl -LsfS https://get.airbyte.com | bash -
-    ```
-
-2. Install abctl using an alternative method instead of the curl installer. See the [abctl installation options](/platform/deploying-airbyte/abctl/#install-abctl) for Homebrew, Go, and manual download instructions.
+Install abctl using an alternative method instead. See the [abctl installation options](/platform/deploying-airbyte/abctl/#install-abctl) for Homebrew, Go, and manual download instructions.
 
 ### Permission denied during installation
 
