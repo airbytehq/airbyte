@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "name": "greeting",
+    "message": "Hello! How can I help you today?",
+    "options": "",
+    "tags": ["welcome", "greeting"],
+    "scope": "department",
+    "departments": [1]
+  }
+]

@@ -3098,6 +3098,44 @@ Table "workflows" {
     "portalId" integer
 }
 
+Table "properties" {
+    "type" string
+    "description" string
+    "archived" boolean
+    "calculated" boolean
+    "calculationFormula" string
+    "createdAt" string
+    "createdUserId" string
+    "dataSensitivity" string
+    "dateDisplayHint" string
+    "displayOrder" number
+    "externalOptions" boolean
+    "fieldType" string
+    "formField" boolean
+    "groupName" string
+    "hasUniqueValue" boolean
+    "hubspotDefined" boolean
+    "label" string
+    "modificationMetadata" object
+    "name" string
+    "numberDisplayHint" string
+    "options" array
+    "optionSortStrategy" string
+    "referencedObjectType" string
+    "readOnlyDefinition" boolean
+    "readOnlyOptions" boolean
+    "readOnlyValue" boolean
+    "referencedObjectType" string
+    "searchableInGlobalSearch" boolean
+    "searchableInKnowledgeBase" boolean
+    "showCurrencySymbol" boolean
+    "sortable" boolean
+    "updatedAt" string
+    "updatedUserId" string
+    "displayMode" string
+    "objectType" string
+}
+
 Ref {
     "companies"."properties_hs_created_by_user_id" <> "owners"."userId"
 }

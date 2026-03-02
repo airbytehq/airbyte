@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs_data_lake.spec
@@ -24,8 +24,6 @@ data class GcsDataLakeConfiguration(
     val gcsEndpoint: String?,
     val namespace: String,
     val gcsCatalogConfiguration: GcsCatalogConfiguration,
-    // Partitioning is enabled, so we can run more than one worker for parallel processing
-    override val numProcessRecordsWorkers: Int = 2
 ) : DestinationConfiguration() {
 
     // Lazy-loaded credentials from service account JSON with proper OAuth scopes

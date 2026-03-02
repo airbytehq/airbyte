@@ -1,0 +1,393 @@
+{
+  "description": "Additional fields available for custom insights streams that are not in the base ads_insights schema",
+  "properties": {
+    "adset_end": {
+      "description": "The end time of the ad set",
+      "type": ["null", "string"]
+    },
+    "age_targeting": {
+      "description": "Age targeting specification for the ad",
+      "type": ["null", "string"]
+    },
+    "average_purchases_conversion_value": {
+      "description": "Average value of purchase conversions",
+      "$ref": "ads_action_stats.json"
+    },
+    "conversion_leads": {
+      "description": "Number of conversion leads",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_product_app_custom_event_fb_mobile_purchase": {
+      "description": "Converted product app custom event for mobile purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_product_app_custom_event_fb_mobile_purchase_value": {
+      "description": "Value of converted product app custom event for mobile purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_product_offline_purchase": {
+      "description": "Converted product offline purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_product_offline_purchase_value": {
+      "description": "Value of converted product offline purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_product_omni_purchase": {
+      "description": "Converted product omni-channel purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_product_omni_purchase_values": {
+      "description": "Values of converted product omni-channel purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_product_website_pixel_purchase": {
+      "description": "Converted product website pixel purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_product_website_pixel_purchase_value": {
+      "description": "Value of converted product website pixel purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_app_custom_event_fb_mobile_purchase": {
+      "description": "Converted promoted product app custom event for mobile purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_app_custom_event_fb_mobile_purchase_value": {
+      "description": "Value of converted promoted product app custom event for mobile purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_offline_purchase": {
+      "description": "Converted promoted product offline purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_offline_purchase_value": {
+      "description": "Value of converted promoted product offline purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_omni_purchase": {
+      "description": "Converted promoted product omni-channel purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_omni_purchase_values": {
+      "description": "Values of converted promoted product omni-channel purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_quantity": {
+      "description": "Quantity of converted promoted products",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_value": {
+      "description": "Value of converted promoted products",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_website_pixel_purchase": {
+      "description": "Converted promoted product website pixel purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_promoted_product_website_pixel_purchase_value": {
+      "description": "Value of converted promoted product website pixel purchase",
+      "$ref": "ads_action_stats.json"
+    },
+    "cost_per_dda_countby_convs": {
+      "description": "Cost per DDA count-by conversions",
+      "type": ["null", "number"]
+    },
+    "cost_per_objective_result": {
+      "description": "Cost per objective result",
+      "$ref": "ads_insights_result.json"
+    },
+    "cost_per_one_thousand_ad_impression": {
+      "description": "Cost per one thousand ad impressions",
+      "$ref": "ads_action_stats.json"
+    },
+    "cost_per_result": {
+      "description": "Cost per result",
+      "$ref": "ads_insights_result.json"
+    },
+    "cost_per_unique_conversion": {
+      "description": "Cost per unique conversion",
+      "$ref": "ads_action_stats.json"
+    },
+    "creative_media_type": {
+      "description": "The media type of the creative",
+      "type": ["null", "string"]
+    },
+    "dda_countby_convs": {
+      "description": "DDA count-by conversions",
+      "type": ["null", "number"]
+    },
+    "dda_results": {
+      "description": "DDA results",
+      "$ref": "ads_insights_dda_result.json"
+    },
+    "estimated_ad_recall_rate": {
+      "description": "Estimated ad recall rate",
+      "type": ["null", "number"]
+    },
+    "estimated_ad_recall_rate_lower_bound": {
+      "description": "Lower bound of estimated ad recall rate",
+      "type": ["null", "number"]
+    },
+    "estimated_ad_recall_rate_upper_bound": {
+      "description": "Upper bound of estimated ad recall rate",
+      "type": ["null", "number"]
+    },
+    "estimated_ad_recallers_lower_bound": {
+      "description": "Lower bound of estimated ad recallers",
+      "type": ["null", "number"]
+    },
+    "estimated_ad_recallers_upper_bound": {
+      "description": "Upper bound of estimated ad recallers",
+      "type": ["null", "number"]
+    },
+    "gender_targeting": {
+      "description": "Gender targeting specification for the ad",
+      "type": ["null", "string"]
+    },
+    "instagram_upcoming_event_reminders_set": {
+      "description": "Number of Instagram upcoming event reminders set",
+      "type": ["null", "number"]
+    },
+    "interactive_component_tap": {
+      "description": "Interactive component taps",
+      "$ref": "ads_action_stats.json"
+    },
+    "labels": {
+      "description": "Labels associated with the ad",
+      "type": ["null", "string"]
+    },
+    "landing_page_view_actions_per_link_click": {
+      "description": "Landing page view actions per link click",
+      "type": ["null", "number"]
+    },
+    "landing_page_view_per_link_click": {
+      "description": "Landing page views per link click",
+      "type": ["null", "number"]
+    },
+    "landing_page_view_per_purchase_rate": {
+      "description": "Landing page view per purchase rate",
+      "type": ["null", "number"]
+    },
+    "link_clicks_per_results": {
+      "description": "Link clicks per results",
+      "$ref": "ads_insights_result.json"
+    },
+    "location": {
+      "description": "Location targeting for the ad",
+      "type": ["null", "string"]
+    },
+    "marketing_messages_click_rate_benchmark": {
+      "description": "Marketing messages click rate benchmark",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_cost_per_delivered": {
+      "description": "Marketing messages cost per delivered",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_cost_per_link_btn_click": {
+      "description": "Marketing messages cost per link button click",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_delivered": {
+      "description": "Number of marketing messages delivered",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_delivery_rate": {
+      "description": "Marketing messages delivery rate",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_link_btn_click": {
+      "description": "Marketing messages link button clicks",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_link_btn_click_rate": {
+      "description": "Marketing messages link button click rate",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_media_view_rate": {
+      "description": "Marketing messages media view rate",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_phone_call_btn_click_rate": {
+      "description": "Marketing messages phone call button click rate",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_quick_reply_btn_click": {
+      "description": "Marketing messages quick reply button clicks",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_quick_reply_btn_click_rate": {
+      "description": "Marketing messages quick reply button click rate",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_read": {
+      "description": "Number of marketing messages read",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_read_rate": {
+      "description": "Marketing messages read rate",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_read_rate_benchmark": {
+      "description": "Marketing messages read rate benchmark",
+      "type": ["null", "string"]
+    },
+    "marketing_messages_sent": {
+      "description": "Number of marketing messages sent",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_spend": {
+      "description": "Marketing messages spend",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_spend_currency": {
+      "description": "Currency for marketing messages spend",
+      "type": ["null", "string"]
+    },
+    "marketing_messages_website_add_to_cart": {
+      "description": "Marketing messages website add to cart",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_website_initiate_checkout": {
+      "description": "Marketing messages website initiate checkout",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_website_purchase": {
+      "description": "Marketing messages website purchase",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_website_purchase_values": {
+      "description": "Marketing messages website purchase values",
+      "type": ["null", "number"]
+    },
+    "objective_result_rate": {
+      "description": "Objective result rate",
+      "$ref": "ads_insights_result.json"
+    },
+    "objective_results": {
+      "description": "The objective results for the ad",
+      "$ref": "ads_insights_result.json"
+    },
+    "onsite_conversion_messaging_detected_purchase_deduped": {
+      "description": "Onsite conversion messaging detected purchase (deduplicated)",
+      "$ref": "ads_action_stats.json"
+    },
+    "place_page_name": {
+      "description": "Name of the place page",
+      "type": ["null", "string"]
+    },
+    "product_brand": {
+      "description": "Product brand",
+      "type": ["null", "string"]
+    },
+    "product_category": {
+      "description": "Product category",
+      "type": ["null", "string"]
+    },
+    "product_content_id": {
+      "description": "Product content ID",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_0": {
+      "description": "Product custom label 0",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_1": {
+      "description": "Product custom label 1",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_2": {
+      "description": "Product custom label 2",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_3": {
+      "description": "Product custom label 3",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_4": {
+      "description": "Product custom label 4",
+      "type": ["null", "string"]
+    },
+    "product_group_content_id": {
+      "description": "Product group content ID",
+      "type": ["null", "string"]
+    },
+    "product_group_retailer_id": {
+      "description": "Product group retailer ID",
+      "type": ["null", "string"]
+    },
+    "product_name": {
+      "description": "Product name",
+      "type": ["null", "string"]
+    },
+    "product_retailer_id": {
+      "description": "Product retailer ID",
+      "type": ["null", "string"]
+    },
+    "product_views": {
+      "description": "Product views",
+      "type": ["null", "string"]
+    },
+    "purchase_per_landing_page_view": {
+      "description": "Purchase per landing page view",
+      "type": ["null", "number"]
+    },
+    "purchases_per_link_click": {
+      "description": "Purchases per link click",
+      "type": ["null", "number"]
+    },
+    "result_rate": {
+      "description": "Result rate",
+      "$ref": "ads_insights_result.json"
+    },
+    "results": {
+      "description": "The results for the ad based on the objective",
+      "$ref": "ads_insights_result.json"
+    },
+    "result_values_performance_indicator": {
+      "description": "Result values performance indicator",
+      "type": ["null", "string"]
+    },
+    "shops_assisted_purchases": {
+      "description": "Shops assisted purchases",
+      "type": ["null", "string"]
+    },
+    "total_card_view": {
+      "description": "Total card views",
+      "type": ["null", "string"]
+    },
+    "total_postbacks": {
+      "description": "Total postbacks",
+      "type": ["null", "string"]
+    },
+    "total_postbacks_detailed": {
+      "description": "Total postbacks detailed",
+      "$ref": "ads_action_stats.json"
+    },
+    "total_postbacks_detailed_v4": {
+      "description": "Total postbacks detailed v4",
+      "$ref": "ads_action_stats.json"
+    },
+    "unique_conversions": {
+      "description": "Unique conversions",
+      "$ref": "ads_action_stats.json"
+    },
+    "unique_video_continuous_2_sec_watched_actions": {
+      "description": "Unique video continuous 2 second watched actions",
+      "$ref": "ads_action_stats.json"
+    },
+    "unique_video_view_15_sec": {
+      "description": "Unique video views of 15 seconds",
+      "$ref": "ads_action_stats.json"
+    },
+    "video_thruplay_watched_actions": {
+      "description": "Video thruplay watched actions",
+      "$ref": "ads_action_stats.json"
+    },
+    "video_view_per_impression": {
+      "description": "Video view per impression",
+      "$ref": "ads_action_stats.json"
+    }
+  }
+}

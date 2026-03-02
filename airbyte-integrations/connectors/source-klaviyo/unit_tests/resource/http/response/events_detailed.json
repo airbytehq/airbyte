@@ -1,0 +1,49 @@
+[
+  {
+    "type": "event",
+    "id": "event_detailed_001",
+    "attributes": {
+      "timestamp": "2024-01-15T10:30:00+00:00",
+      "datetime": "2024-01-15T10:30:00+00:00",
+      "uuid": "550e8400-e29b-41d4-a716-446655440001",
+      "event_properties": {
+        "value": 149.99,
+        "currency": "USD",
+        "order_id": "order_001",
+        "items": [
+          {
+            "product_id": "prod_001",
+            "product_name": "Premium Product",
+            "quantity": 1,
+            "price": 149.99
+          }
+        ]
+      }
+    },
+    "relationships": {
+      "metric": {
+        "data": {
+          "type": "metric",
+          "id": "metric_001"
+        }
+      },
+      "attributions": {
+        "data": [
+          {
+            "type": "attribution",
+            "id": "attr_001"
+          }
+        ]
+      },
+      "profile": {
+        "data": {
+          "type": "profile",
+          "id": "profile_001"
+        }
+      }
+    },
+    "links": {
+      "self": "https://a.klaviyo.com/api/events/event_detailed_001"
+    }
+  }
+]

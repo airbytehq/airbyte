@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write.load
@@ -15,12 +15,8 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
-import io.mockk.every
-import io.mockk.mockk
-import kotlin.collections.plus
+import io.airbyte.cdk.load.schema.model.ColumnSchema
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 private val AIRBYTE_COLUMN_TYPES_MAP =
@@ -58,28 +54,16 @@ private fun createExpected(
 
 internal class SnowflakeRawRecordFormatterTest {
 
-    private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
-
-    @BeforeEach
-    fun setup() {
-        snowflakeColumnUtils = mockk {
-            every { getFormattedDefaultColumnNames(any()) } returns
-                AIRBYTE_COLUMN_TYPES_MAP.keys.toList()
-        }
-    }
-
     @Test
     fun testFormatting() {
         val columnName = "test-column-name"
         val columnValue = "test-column-value"
         val columns = AIRBYTE_COLUMN_TYPES_MAP
         val record = createRecord(columnName = columnName, columnValue = columnValue)
-        val formatter =
-            SnowflakeRawRecordFormatter(
-                columns = AIRBYTE_COLUMN_TYPES_MAP,
-                snowflakeColumnUtils = snowflakeColumnUtils
-            )
-        val formattedValue = formatter.format(record)
+        val formatter = SnowflakeRawRecordFormatter()
+        // RawRecordFormatter doesn't use columnSchema but still needs one per interface
+        val dummyColumnSchema = ColumnSchema(emptyMap(), emptyMap(), emptyMap())
+        val formattedValue = formatter.format(record, dummyColumnSchema)
         val expectedValue =
             createExpected(
                 record = record,
@@ -93,33 +77,28 @@ internal class SnowflakeRawRecordFormatterTest {
     fun testFormattingMigratedFromPreviousVersion() {
         val columnName = "test-column-name"
         val columnValue = "test-column-value"
-        val columnsMap =
-            linkedMapOf(
-                COLUMN_NAME_AB_EXTRACTED_AT to "TIMESTAMP_TZ(9)",
-                COLUMN_NAME_AB_LOADED_AT to "TIMESTAMP_TZ(9)",
-                COLUMN_NAME_AB_META to "VARIANT",
-                COLUMN_NAME_DATA to "VARIANT",
-                COLUMN_NAME_AB_RAW_ID to "VARCHAR(16777216)",
-                COLUMN_NAME_AB_GENERATION_ID to "NUMBER(38,0)",
-            )
         val record = createRecord(columnName = columnName, columnValue = columnValue)
-        val formatter =
-            SnowflakeRawRecordFormatter(
-                columns = columnsMap,
-                snowflakeColumnUtils = snowflakeColumnUtils
-            )
-        val formattedValue = formatter.format(record)
+        val formatter = SnowflakeRawRecordFormatter()
+        // RawRecordFormatter doesn't use columnSchema but still needs one per interface
+        val dummyColumnSchema = ColumnSchema(emptyMap(), emptyMap(), emptyMap())
+        val formattedValue = formatter.format(record, dummyColumnSchema)
+
+        // The formatter outputs in a fixed order regardless of input column order:
+        // 1. AB_RAW_ID
+        // 2. AB_EXTRACTED_AT
+        // 3. AB_META
+        // 4. AB_GENERATION_ID
+        // 5. AB_LOADED_AT
+        // 6. DATA (JSON with remaining columns)
         val expectedValue =
-            createExpected(
-                    record = record,
-                    columns = columnsMap,
-                    airbyteColumns = columnsMap.keys.toList(),
-                )
-                .toMutableList()
-        expectedValue.add(
-            columnsMap.keys.indexOf(COLUMN_NAME_DATA),
-            "{\"$columnName\":\"$columnValue\"}"
-        )
+            listOf(
+                record[COLUMN_NAME_AB_RAW_ID]!!.toCsvValue(),
+                record[COLUMN_NAME_AB_EXTRACTED_AT]!!.toCsvValue(),
+                record[COLUMN_NAME_AB_META]!!.toCsvValue(),
+                record[COLUMN_NAME_AB_GENERATION_ID]!!.toCsvValue(),
+                record[COLUMN_NAME_AB_LOADED_AT]!!.toCsvValue(),
+                "{\"$columnName\":\"$columnValue\"}"
+            )
         assertEquals(expectedValue, formattedValue)
     }
 }

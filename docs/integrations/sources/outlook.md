@@ -129,6 +129,9 @@ For more information about Microsoft Graph Mail API capabilities, see the [Micro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.14 | 2026-01-20 | [72166](https://github.com/airbytehq/airbyte/pull/72166) | Update dependencies |
+| 0.0.13 | 2026-01-14 | [71676](https://github.com/airbytehq/airbyte/pull/71676) | Update dependencies |
+| 0.0.12 | 2025-12-18 | [70526](https://github.com/airbytehq/airbyte/pull/70526) | Update dependencies |
 | 0.0.11 | 2025-11-25 | [70123](https://github.com/airbytehq/airbyte/pull/70123) | Update dependencies |
 | 0.0.10 | 2025-11-18 | [69707](https://github.com/airbytehq/airbyte/pull/69707) | Update dependencies |
 | 0.0.9 | 2025-10-29 | [69010](https://github.com/airbytehq/airbyte/pull/69010) | Update dependencies |
@@ -138,7 +141,7 @@ For more information about Microsoft Graph Mail API capabilities, see the [Micro
 | 0.0.5 | 2025-09-30 | [66389](https://github.com/airbytehq/airbyte/pull/66389) | Update dependencies |
 | 0.0.4 | 2025-09-09 | [65826](https://github.com/airbytehq/airbyte/pull/65826) | Update dependencies |
 | 0.0.3 | 2025-08-23 | [65161](https://github.com/airbytehq/airbyte/pull/65161) | Update dependencies |
-| 0.0.2 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.0.2 | 2025-08-15 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.1 | 2025-08-14 | | Initial release by [@saif-qureshi-341](https://github.com/saif-qureshi-341) via Connector Builder |
 
 </details>

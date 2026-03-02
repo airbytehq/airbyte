@@ -13,7 +13,9 @@ airbyte-cdk = "^6"
 pytest = "^8"
 pytest-lazy-fixtures = "^1.1.4"
 requests-mock = "^1.12.1"
+freezegun = "^1.2.2"
 [tool.pytest.ini_options]
+pythonpath = ["."]
 filterwarnings = [
     "ignore:This class is experimental*"
 ]
