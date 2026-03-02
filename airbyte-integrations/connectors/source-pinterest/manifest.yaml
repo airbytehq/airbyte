@@ -507,7 +507,7 @@ definitions:
               value,
               click_window_days,
             ]
-          value: "{{ components_values['click_window_days'] or 30 }}"
+          value: "{{ components_values['click_window_days'] if components_values['click_window_days'] is not none else 30 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -518,7 +518,7 @@ definitions:
               value,
               engagement_window_days,
             ]
-          value: "{{ components_values['engagement_window_days'] or 30 }}"
+          value: "{{ components_values['engagement_window_days'] if components_values['engagement_window_days'] is not none else 30 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -529,7 +529,7 @@ definitions:
               value,
               view_window_days,
             ]
-          value: "{{ components_values['view_window_days'] or 30 }}"
+          value: "{{ components_values['view_window_days'] if components_values['view_window_days'] is not none else 30 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -4338,14 +4338,14 @@ spec:
             engagement_window_days:
               title: "Engagement window days"
               description: "Number of days to use as the conversion attribution window for an engagement action."
-              default: [30]
+              default: 30
               enum: [0, 1, 7, 14, 30, 60]
               type: integer
               order: 5
             view_window_days:
               title: "View window days"
               description: "Number of days to use as the conversion attribution window for a view action."
-              default: [30]
+              default: 30
               enum: [0, 1, 7, 14, 30, 60]
               type: integer
               order: 6
