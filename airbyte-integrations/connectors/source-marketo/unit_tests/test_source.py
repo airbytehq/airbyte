@@ -410,6 +410,26 @@ def test_leads_stream_fields_fallback_on_no_rest_fields(config, requests_mock, c
     assert "No fields from describe endpoint, falling back to static schema fields" in caplog.text
 
 
+def test_leads_describe_http_error_falls_back_to_static_schema(config, requests_mock, caplog):
+    # If the describe endpoint returns an HTTP error, fall back to static schema gracefully
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        status_code=500,
+    )
+
+    caplog.set_level("WARNING")
+    leads_stream = Leads(config)
+    fields = leads_stream.stream_fields
+
+    # Should fall back to static schema field names
+    assert len(fields) > 0
+    assert "leads/describe.json endpoint returned an HTTP error" in caplog.text
+
+    # Schema should also fall back to static schema (no custom fields added)
+    schema = leads_stream.get_json_schema()
+    assert "email" in schema["properties"]
+
+
 def test_leads_dynamic_schema_includes_custom_fields(config, requests_mock):
     # Test that get_json_schema() dynamically adds custom fields from describe
     describe_json = {
