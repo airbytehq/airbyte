@@ -93,6 +93,21 @@ export default function Home() {
     </svg>
   );
 
+  const McpServerIcon = () => (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      className={styles.aeNavIconSvg}
+    >
+      <path d="M2 2h20v4H2V2zm0 6h20v4H2V8zm0 6h20v4H2v-4zm1 8h4v2H3v-2zm6 0h4v2H9v-2zm6 0h4v2h-4v-2zM4 4v.01M4 10v.01M4 14v.01"/>
+      <circle cx="4" cy="4" r="1"/>
+      <circle cx="4" cy="10" r="1"/>
+      <circle cx="4" cy="14" r="1"/>
+    </svg>
+  );
+
   const DevelopersIcon = () => (
     <svg
       width="48"
@@ -180,6 +195,12 @@ export default function Home() {
       link: '/ai-agents/connectors/',
       description: 'Browse the growing catalog of agent-optimized connectors for popular platforms.',
       icon: AgentConnectorsIcon,
+    },
+    {
+      title: 'MCP server',
+      link: '/ai-agents/mcp-server/',
+      description: 'Let AI agents interact with your data sources through the Model Context Protocol.',
+      icon: McpServerIcon,
     },
   ];
 
