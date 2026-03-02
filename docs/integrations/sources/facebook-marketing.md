@@ -236,7 +236,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.include_incrementality">
-   11. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. Behaves the same as the global setting but applies only to this specific custom insight. See [Include Incrementality](#include-incrementality) above for details.
+   11. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. Behaves the same as the global **Include Incrementality** setting described above, but applies only to this specific custom insight.
 </FieldAnchor>
 
 <FieldAnchor field="page_size">
@@ -255,7 +255,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 14. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"incrementality"` to the `action_attribution_windows` parameter sent to the Facebook API. Action metrics (such as `actions`, `action_values`, and `cost_per_action_type`) will then include an `incrementality` field containing the incremental lift value attributed to the ad. This field is only populated for ad accounts that have active [Conversion Lift](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) studies configured in Facebook. For accounts without lift studies, the field will be `null`. Disabled by default to preserve backward compatibility.
 </FieldAnchor>
 
-15. Click **Set up source** and wait for the tests to complete.
+1. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
