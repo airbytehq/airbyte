@@ -22,8 +22,6 @@ The installer creates a temporary directory, downloads the `abctl` release archi
 
 2. Install abctl using an alternative method instead of the curl installer. See the [abctl installation options](/platform/deploying-airbyte/abctl/#install-abctl) for Homebrew, Go, and manual download instructions.
 
----
-
 ### Permission denied during installation
 
 - Error: `Permission denied` or `Neither root or sudo`
@@ -35,8 +33,6 @@ DIR_INSTALL=$HOME/bin curl -LsfS https://get.airbyte.com | bash -
 ```
 
 Make sure the target directory exists and is in your `PATH`.
-
----
 
 ## Common Errors
 
