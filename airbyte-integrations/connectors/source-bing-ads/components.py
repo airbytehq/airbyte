@@ -2,11 +2,14 @@
 import csv
 import gzip
 import io
+import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
 from typing import Any, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional
+
+logger = logging.getLogger(__name__)
 
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
@@ -484,6 +487,9 @@ class BingAdsGzipCsvDecoder(Decoder):
         raw.auto_close = False
         try:
             yield from self._decode_stream(raw)
+        except Exception as e:
+            logger.error(f"Failed to parse response as either GZip or plain CSV: {e}")
+            yield {}
         finally:
             raw.close()
 

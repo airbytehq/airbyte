@@ -856,6 +856,7 @@ CSV_SINGLE_ROW = "name,value\nalice,1\n"
         pytest.param(b"AB", b"", 5, b"AB", id="stream_empty"),
         pytest.param(b"", b"hello", -1, b"hello", id="empty_prefix"),
         pytest.param(b"", b"hello", 3, b"hel", id="empty_prefix_bounded"),
+        pytest.param(b"\x1f\x8b", b"rest", 0, b"", id="zero_size"),
     ],
 )
 def test_prefixed_stream_read(prefix, stream_data, read_size, expected, components_module):
@@ -950,3 +951,9 @@ def test_decoder_closes_raw_stream(components_module):
     raw = response.raw
     list(components_module.BingAdsGzipCsvDecoder().decode(response))
     assert raw.closed
+
+
+def test_decoder_logs_error_and_yields_empty_on_bad_data(components_module):
+    response = _make_response(b"\x1f\x8b not valid gzip at all")
+    rows = list(components_module.BingAdsGzipCsvDecoder().decode(response))
+    assert rows == [{}]
