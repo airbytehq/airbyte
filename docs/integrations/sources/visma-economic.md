@@ -3,42 +3,43 @@
 ## Sync overview
 
 This source collects data from [Visma e-conomic](https://developer.visma.com/api/e-conomic/).
-At the moment the source only implements full refresh, meaning you will sync all records with every new sync.
+This connector only supports full refresh syncs, meaning all records are synced on every sync.
 
 ## Prerequisites
 
-- Your Visma e-conomic Agreement Grant Token
-- Your Visma e-conomic App Secret Token
+- Your Visma e-conomic **App Secret Token**
+- Your Visma e-conomic **Agreement Grant Token**
 
-[This page](https://www.e-conomic.com/developer/connect) guides you through the different ways of connecting to the api.
-In sort your options are:
+To obtain these tokens, follow the [Connecting to the APIs](https://www.e-conomic.com/developer/connect) guide. In short, your options are:
 
-- Developer agreement
-- Create a free [sandbox account](https://www.e-conomic.dk/regnskabsprogram/demo-alle), valid for 14 days.
-- Demo tokens: `app_secret_token=demo` and `agreement_grant_token=demo`
+1. [Sign up for a free developer agreement](https://www.e-conomic.com/developer/connect), create an app, and have an accounting user grant your app access.
+2. Create a free [sandbox account](https://www.e-conomic.dk/regnskabsprogram/demo-alle), valid for 14 days.
+3. Use demo tokens for testing: `app_secret_token=demo` and `agreement_grant_token=demo`.
 
 ## Set up the Visma e-conomic source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+1. Log into your Airbyte Cloud account, or navigate to your Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Stripe** from the Source type dropdown.
+3. On the Set up the source page, select **Visma e-conomic** from the Source type dropdown.
 4. Enter a name for your source.
-5. Enter **Agreement Grant Token**.
-6. Enter **Secret Key**.
+5. Enter your **App Secret Token**.
+6. Enter your **Agreement Grant Token**.
 
-## This Source Supports the Following Streams
+## Supported streams
+
+This source supports the following streams:
 
 - [accounts](https://restdocs.e-conomic.com/#get-accounts)
 - [customers](https://restdocs.e-conomic.com/#get-customers)
-- [invoices booked](https://restdocs.e-conomic.com/#get-invoices-booked)
-- [invoices booked document](https://restdocs.e-conomic.com/#get-invoices-booked-bookedinvoicenumber)
-- [invoices paid](https://restdocs.e-conomic.com/#get-invoices-paid)
-- [invoices total](https://restdocs.e-conomic.com/#get-invoices-totals)
+- [invoices_booked](https://restdocs.e-conomic.com/#get-invoices-booked)
+- [invoices_booked_document](https://restdocs.e-conomic.com/#get-invoices-booked-bookedinvoicenumber)
+- [invoices_paid](https://restdocs.e-conomic.com/#get-invoices-paid)
+- [invoices_total](https://restdocs.e-conomic.com/#get-invoices-totals)
 - [products](https://restdocs.e-conomic.com/#get-products)
 
-For more information about the api see the [E-conomic REST API Documentation](https://restdocs.e-conomic.com/#tl-dr).
+For more information, see the [e-conomic REST API documentation](https://restdocs.e-conomic.com/).
 
-### [Sync models](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes)
+### Sync modes
 
 | Feature           | Supported?\(Yes/No\) | Notes |
 | :---------------- | :------------------- | :---- |
