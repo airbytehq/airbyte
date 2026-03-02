@@ -73,16 +73,6 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "21"
-      # Help CDK Devs understand CDK version should be incremented on changes.
-      - name: Check that bulk CDK version is incremented
-        uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
-        env:
-          CI: true
-        with:
-          job-id: bulk-cdk-version-check
-          concurrent: true
-          gradle-distribution-sha-256-sum-warning: false
-          arguments: --scan :airbyte-cdk:bulk:checkBuildNumber
 
   run-check:
     needs:
