@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import os
 import sys
 from pathlib import Path
@@ -199,7 +200,8 @@ def clear_http_cache():
             try:
                 requests_cache.SQLiteCache(str(sqlite_file.with_suffix(""))).clear()
             except Exception:
-                pass
+                # Cache file may already be removed or locked; not fatal for test isolation.
+                logging.debug("Failed to clear file-based cache %s", sqlite_file)
 
     yield
 
