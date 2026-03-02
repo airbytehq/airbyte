@@ -206,7 +206,7 @@ export default function Home() {
   return (
     <Layout
       title=""
-      description="Airbyte is an open source data integration and activation platform. It helps you consolidate data from hundreds of sources into your data warehouses, data lakes, and databases."
+      description="Airbyte is an open source data integration, activation, and agentic data platform. Replicate data from hundreds of sources into warehouses, lakes, and databases, and equip AI agents to query, search, and act on your data in real-time."
     >
       <div className={styles.homePage}>
         {/* Section 1: Hero */}
@@ -216,7 +216,7 @@ export default function Home() {
             <p className={styles.heroDescription}>
               Airbyte is an open source data integration, activation, and agentic data platform.
               Replicate data from hundreds of sources into warehouses, lakes, and databases,
-              and equip AI agents to query, search, and act on that data in real-time.
+              and equip AI agents to query, search, and act on your data in real-time.
             </p>
           </div>
         </section>
