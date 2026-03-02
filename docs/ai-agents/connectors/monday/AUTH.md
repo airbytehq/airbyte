@@ -1,6 +1,6 @@
-# Amazon-Ads authentication
+# Monday authentication
 
-This page documents the authentication and configuration options for the Amazon-Ads agent connector.
+This page documents the authentication and configuration options for the Monday agent connector.
 
 ## Authentication
 
@@ -15,27 +15,45 @@ In open source mode, you provide API credentials directly to the connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `client_id` | `str` | No | The client ID of your Amazon Ads API application |
-| `client_secret` | `str` | No | The client secret of your Amazon Ads API application |
-| `refresh_token` | `str` | Yes | The refresh token obtained from the OAuth authorization flow |
+| `access_token` | `str` | Yes | Access token obtained via OAuth 2.0 flow |
+| `client_id` | `str` | Yes | The Client ID of your Monday.com OAuth application |
+| `client_secret` | `str` | Yes | The Client Secret of your Monday.com OAuth application |
 
 Example request:
 
 ```python
-from airbyte_agent_amazon_ads import AmazonAdsConnector
-from airbyte_agent_amazon_ads.models import AmazonAdsAuthConfig
+from airbyte_agent_monday import MondayConnector
+from airbyte_agent_monday.models import MondayOauth20AuthenticationAuthConfig
 
-connector = AmazonAdsConnector(
-    auth_config=AmazonAdsAuthConfig(
-        client_id="<The client ID of your Amazon Ads API application>",
-        client_secret="<The client secret of your Amazon Ads API application>",
-        refresh_token="<The refresh token obtained from the OAuth authorization flow>"
+connector = MondayConnector(
+    auth_config=MondayOauth20AuthenticationAuthConfig(
+        access_token="<Access token obtained via OAuth 2.0 flow>",
+        client_id="<The Client ID of your Monday.com OAuth application>",
+        client_secret="<The Client Secret of your Monday.com OAuth application>"
     )
 )
 ```
 
 #### Token
-This authentication method isn't available for this connector.
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `api_key` | `str` | Yes | Your Monday.com personal API token |
+
+Example request:
+
+```python
+from airbyte_agent_monday import MondayConnector
+from airbyte_agent_monday.models import MondayApiTokenAuthenticationAuthConfig
+
+connector = MondayConnector(
+    auth_config=MondayApiTokenAuthenticationAuthConfig(
+        api_key="<Your Monday.com personal API token>"
+    )
+)
+```
 
 ### Hosted execution
 
@@ -49,9 +67,9 @@ Create a connector with OAuth credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `client_id` | `str` | No | The client ID of your Amazon Ads API application |
-| `client_secret` | `str` | No | The client secret of your Amazon Ads API application |
-| `refresh_token` | `str` | Yes | The refresh token obtained from the OAuth authorization flow |
+| `access_token` | `str` | Yes | Access token obtained via OAuth 2.0 flow |
+| `client_id` | `str` | Yes | The Client ID of your Monday.com OAuth application |
+| `client_secret` | `str` | Yes | The Client Secret of your Monday.com OAuth application |
 
 Example request:
 
@@ -61,12 +79,12 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Content-Type: application/json" \
   -d '{
     "customer_name": "<CUSTOMER_NAME>",
-    "connector_type": "Amazon-Ads",
-    "name": "My Amazon-Ads Connector",
+    "connector_type": "Monday",
+    "name": "My Monday Connector",
     "credentials": {
-      "client_id": "<The client ID of your Amazon Ads API application>",
-      "client_secret": "<The client secret of your Amazon Ads API application>",
-      "refresh_token": "<The refresh token obtained from the OAuth authorization flow>"
+      "access_token": "<Access token obtained via OAuth 2.0 flow>",
+      "client_id": "<The Client ID of your Monday.com OAuth application>",
+      "client_secret": "<The Client Secret of your Monday.com OAuth application>"
     }
   }'
 ```
@@ -83,7 +101,7 @@ Request a consent URL for your user.
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `customer_name` | `string` | Yes | Your unique identifier for the customer |
-| `connector_type` | `string` | Yes | The connector type (e.g., "Amazon-Ads") |
+| `connector_type` | `string` | Yes | The connector type (e.g., "Monday") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
 Example request:
@@ -94,7 +112,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Content-Type: application/json" \
   -d '{
     "customer_name": "<CUSTOMER_NAME>",
-    "connector_type": "Amazon-Ads",
+    "connector_type": "Monday",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
 ```
@@ -112,7 +130,31 @@ https://yourapp.com/oauth/callback?connector_id=<connector_id>
 Extract the `connector_id` from the callback URL and store it for future operations. For error handling and a complete implementation example, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own#part-3-handle-the-callback).
 
 #### Token
-This authentication method isn't available for this connector.
+Create a connector with Token credentials.
+
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `api_key` | `str` | Yes | Your Monday.com personal API token |
+
+Example request:
+
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_name": "<CUSTOMER_NAME>",
+    "connector_type": "Monday",
+    "name": "My Monday Connector",
+    "credentials": {
+      "api_key": "<Your Monday.com personal API token>"
+    }
+  }'
+```
 
 #### Execution
 
@@ -122,9 +164,9 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_amazon_ads import AmazonAdsConnector, AirbyteAuthConfig
+from airbyte_agent_monday import MondayConnector, AirbyteAuthConfig
 
-connector = AmazonAdsConnector(
+connector = MondayConnector(
     auth_config=AirbyteAuthConfig(
         customer_name="<your_customer_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
@@ -134,8 +176,8 @@ connector = AmazonAdsConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@AmazonAdsConnector.tool_utils
-async def amazon_ads_execute(entity: str, action: str, params: dict | None = None):
+@MondayConnector.tool_utils
+async def monday_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -150,14 +192,3 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 ```
 
 
-## Configuration
-
-The Amazon-Ads connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
-| Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| `region` | `string` | Yes | https://advertising-api.amazon.com | The Amazon Ads API endpoint URL based on region:
-- NA (North America): https://advertising-api.amazon.com
-- EU (Europe): https://advertising-api-eu.amazon.com
-- FE (Far East): https://advertising-api-fe.amazon.com
- |
