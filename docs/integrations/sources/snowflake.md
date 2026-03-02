@@ -6,7 +6,7 @@ import KeypairExample from '@site/static/_snowflake_keypair_generation.md';
 
 The Snowflake source allows you to sync data from Snowflake. It supports both Full Refresh and Incremental syncs. You can choose whether this connector will copy only new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Snowflake source connector is built on top of the source-jdbc code base and is configured to rely on JDBC 3.23.1 [Snowflake driver](https://github.com/snowflakedb/snowflake-jdbc) as described in the Snowflake [documentation](https://docs.snowflake.com/en/user-guide/jdbc.html).
+This Snowflake source connector is built using the Airbyte Java CDK and connects to Snowflake using the [Snowflake JDBC driver](https://github.com/snowflakedb/snowflake-jdbc). For more information on Snowflake JDBC connectivity, see the Snowflake [JDBC documentation](https://docs.snowflake.com/en/developer-guide/jdbc/jdbc-configure).
 
 #### Resulting schema
 
@@ -14,11 +14,13 @@ The Snowflake source does not alter the schema present in your warehouse. Depend
 
 #### Features
 
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | Yes                  |       |
-| Namespaces                | Yes                  |       |
+| Feature                       | Supported?\(Yes/No\) | Notes |
+| :---------------------------- | :------------------- | :---- |
+| Full Refresh Sync             | Yes                  |       |
+| Incremental - Append Sync     | Yes                  |       |
+| Namespaces                    | Yes                  |       |
+| Key Pair Authentication       | Yes                  |       |
+| Username/Password Authentication | Yes               |       |
 
 ## Incremental Sync
 
@@ -116,10 +118,12 @@ You'll need the following information to configure the Snowflake source:
 2. **Role**
 3. **Warehouse**
 4. **Database**
-5. **Schema**
+5. **Schema** (Optional)
 6. **Username**
-7. **Password**
+7. **Password** or **Private Key** (depending on your chosen authentication method)
 8. **JDBC URL Params** (Optional)
+
+The connector supports two authentication methods: username/password and key pair authentication. Choose the method that best fits your organization's security requirements.
 
 Additionally, create a dedicated read-only Airbyte user and role with access to all schemas needed for replication.
 
@@ -139,28 +143,46 @@ To create a dedicated database user, run the following commands against your dat
 -- set variables (these need to be uppercase)
 SET AIRBYTE_ROLE = 'AIRBYTE_ROLE';
 SET AIRBYTE_USERNAME = 'AIRBYTE_USER';
-
--- set user password
 SET AIRBYTE_PASSWORD = '-password-';
+SET AIRBYTE_WAREHOUSE = 'AIRBYTE_WAREHOUSE';
+SET AIRBYTE_DATABASE = 'YOUR_DATABASE';
+SET AIRBYTE_SCHEMA = 'YOUR_SCHEMA';
 
 BEGIN;
 
 -- create Airbyte role
-CREATE ROLE IF NOT EXISTS $AIRBYTE_ROLE;
+CREATE ROLE IF NOT EXISTS IDENTIFIER($AIRBYTE_ROLE);
 
 -- create Airbyte user
-CREATE USER IF NOT EXISTS $AIRBYTE_USERNAME
+CREATE USER IF NOT EXISTS IDENTIFIER($AIRBYTE_USERNAME)
 PASSWORD = $AIRBYTE_PASSWORD
 DEFAULT_ROLE = $AIRBYTE_ROLE
-DEFAULT_WAREHOUSE= $AIRBYTE_WAREHOUSE;
+DEFAULT_WAREHOUSE = $AIRBYTE_WAREHOUSE;
 
--- grant Airbyte schema access
-GRANT OWNERSHIP ON SCHEMA $AIRBYTE_SCHEMA TO ROLE $AIRBYTE_ROLE;
+-- grant warehouse access
+GRANT USAGE ON WAREHOUSE IDENTIFIER($AIRBYTE_WAREHOUSE) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+
+-- grant database access
+GRANT USAGE ON DATABASE IDENTIFIER($AIRBYTE_DATABASE) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+
+-- grant schema access
+GRANT USAGE ON SCHEMA IDENTIFIER($AIRBYTE_DATABASE || '.' || $AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+
+-- grant read-only access to all tables in the schema
+GRANT SELECT ON ALL TABLES IN SCHEMA IDENTIFIER($AIRBYTE_DATABASE || '.' || $AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+GRANT SELECT ON FUTURE TABLES IN SCHEMA IDENTIFIER($AIRBYTE_DATABASE || '.' || $AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+
+-- grant read-only access to all views in the schema
+GRANT SELECT ON ALL VIEWS IN SCHEMA IDENTIFIER($AIRBYTE_DATABASE || '.' || $AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+GRANT SELECT ON FUTURE VIEWS IN SCHEMA IDENTIFIER($AIRBYTE_DATABASE || '.' || $AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+
+-- assign the role to the user
+GRANT ROLE IDENTIFIER($AIRBYTE_ROLE) TO USER IDENTIFIER($AIRBYTE_USERNAME);
 
 COMMIT;
 ```
 
-You can limit this grant to specific schemas instead of the whole database. Note that to replicate data from multiple Snowflake databases, you can re-run the command above to grant access to all the relevant schemas, but you'll need to set up multiple sources connecting to the same database on multiple schemas.
+You can limit this grant to specific schemas instead of the whole database. To replicate data from multiple schemas, re-run the schema and table grants for each schema you want to replicate.
 
 Your database user should now be ready for use with Airbyte.
 
@@ -172,12 +194,22 @@ Your database user should now be ready for use with Airbyte.
 | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
-| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
-| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                     |
-| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The schema whose tables this replication is targeting. If no schema is specified, all tables with permission will be presented regardless of their schema.                                        |
+| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created for Airbyte to access data. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
+| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created for Airbyte to access data. Example: `AIRBYTE_DATABASE`                                                                                                     |
+| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The source Snowflake schema to replicate. Leave empty to access tables from multiple schemas. The connector automatically excludes system schemas: `INFORMATION_SCHEMA`.               |
 | Username                                                                                              | The username you created to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                               |
 | Password                                                                                              | The password associated with the username.                                                                                                                                                        |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
+
+### Advanced configuration
+
+The following optional settings are available for advanced configuration:
+
+| Field | Default | Description |
+| :---- | :------ | :---------- |
+| Check Table and Column Access Privileges | `true` | When enabled, the connector queries each table individually during schema discovery to verify access privileges. Inaccessible tables, views, or columns are removed from discovery results. Disable this in large schemas if schema discovery takes too long. |
+| Concurrency | `1` | Maximum number of concurrent queries to the database. Increase this to improve sync throughput for large datasets. |
+| Checkpoint Target Time Interval | `300` | How often, in seconds, a stream should checkpoint when possible. |
 
 ### Key pair authentication
 
@@ -212,7 +244,7 @@ To read more, please check the official [Snowflake documentation](https://docs.s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.9   | 2025-09-16 | [74081](https://github.com/airbytehq/airbyte/pull/74081) | Security update                                                                                                                           |
+| 1.0.9   | 2026-03-02 | [74081](https://github.com/airbytehq/airbyte/pull/74081) | Security update                                                                                                                           |
 | 1.0.8   | 2025-09-16 | [66311](https://github.com/airbytehq/airbyte/pull/66311) | Change CDK version to 0.1.31                                                                                                              |
 | 1.0.7   | 2025-09-16 | [66200](https://github.com/airbytehq/airbyte/pull/66200) | Fix sampling bug for DefaultJdbcCursorIncrementalPartition                                                                                |
 | 1.0.6   | 2025-09-12 | [66226](https://github.com/airbytehq/airbyte/pull/66226) | Fix schema filtering functionality in versions 1.0.0+ - resolves "discovered zero tables" error and enables proper schema-level filtering |
