@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import sys
 from pathlib import Path
 
@@ -168,16 +169,38 @@ def patch_time(mocker):
 
 @pytest.fixture(autouse=True)
 def clear_http_cache():
-    """Clear the shared in-memory SQLite HTTP cache between tests.
+    """Clear all SQLite HTTP caches between tests.
 
-    The CDK's HttpClient uses requests_cache with 'file::memory:?cache=shared' when
-    use_cache=True (e.g. for the fetch_properties_from_endpoint retriever). This creates
-    a process-wide shared SQLite database that persists across test functions in the same
-    pytest session. Cached HTTP responses bypass requests_mock entirely, causing tests that
-    depend on specific mocked property responses to receive stale data from earlier tests.
-    Clearing it before each test guarantees every test starts with a clean HTTP cache.
+    The CDK's HttpClient uses requests_cache for HTTP response caching:
+    - When REQUEST_CACHE_PATH env var is NOT set: uses 'file::memory:?cache=shared' (in-memory)
+    - When REQUEST_CACHE_PATH IS set (e.g. set by AirbyteEntrypoint.run() via read_from_stream):
+      uses file-based SQLite at {REQUEST_CACHE_PATH}/*.sqlite
+
+    The REQUEST_CACHE_PATH env var, once set by a test calling read_from_stream(), persists
+    for all subsequent tests in the same pytest session. This causes CDK sessions to write to
+    file-based caches that are NOT cleared by just clearing the in-memory cache, leading to
+    stale cached responses contaminating later tests.
+
+    This fixture clears both the in-memory cache AND any file-based caches, and also removes
+    REQUEST_CACHE_PATH from the environment so that CDK sessions created during the test use
+    the in-memory cache (which is properly shared and clearable).
     """
+    # Remove REQUEST_CACHE_PATH so CDK uses in-memory cache rather than file-based SQLite.
+    # This prevents stale file-based caches from persisting across tests.
+    cache_dir = os.environ.pop("REQUEST_CACHE_PATH", None)
+
+    # Clear the in-memory shared cache.
     requests_cache.SQLiteCache("file::memory:?cache=shared").clear()
+
+    # Also clear any file-based caches from the previous cache dir, if one was set.
+    if cache_dir:
+        cache_path = Path(cache_dir)
+        for sqlite_file in cache_path.glob("*.sqlite"):
+            try:
+                requests_cache.SQLiteCache(str(sqlite_file.with_suffix(""))).clear()
+            except Exception:
+                pass
+
     yield
 
 
