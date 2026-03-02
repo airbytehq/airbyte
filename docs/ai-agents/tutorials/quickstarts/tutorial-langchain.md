@@ -1,13 +1,11 @@
 ---
-sidebar_label: "Pydantic AI"
-sidebar_position: 1
+sidebar_label: "LangChain"
+sidebar_position: 4
 ---
 
-# Agent connector tutorial: Pydantic AI
+# Agent connector tutorial: LangChain
 
-In this tutorial, you'll create a new Python project with uv, add a Pydantic AI agent, equip it to use one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
-
-Using the Python SDK is more time-consuming than the Connector MCP server, but affords you the most control over the context you send to your agent.
+In this tutorial, you'll create a new Python project with uv, add a LangChain agent, equip it to use one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
 
 ## Overview
 
@@ -16,7 +14,7 @@ This tutorial is for AI engineers and other technical users who work with data a
 The tutorial assumes you have basic knowledge of the following tools, but most software engineers shouldn't struggle with anything that follows.
 
 - Python and package management with uv
-- Pydantic AI
+- LangChain and LangGraph
 - GitHub, or a different third-party service you want to connect to
 
 ## Before you start
@@ -26,7 +24,7 @@ Before you begin this tutorial, ensure you have the following.
 - [Python](https://www.python.org/downloads/) version 3.13 or later
 - [uv](https://github.com/astral-sh/uv)
 - A [GitHub personal access token](https://github.com/settings/tokens). For this tutorial, a classic token with `repo` scope is sufficient.
-- An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but Pydantic AI supports other LLM providers if you prefer.
+- An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but LangChain supports other LLM providers if you prefer.
 
 ## Part 1: Create a new Python project
 
@@ -35,14 +33,14 @@ In this tutorial you initialize a basic Python project to work in. However, if y
 Create a new project using uv:
 
 ```bash
-uv init my-ai-agent --app
-cd my-ai-agent
+uv init my-langchain-agent --app
+cd my-langchain-agent
 ```
 
 This creates a project with the following structure:
 
 ```text
-my-ai-agent/
+my-langchain-agent/
 ├── .gitignore
 ├── .python-version
 ├── main.py
@@ -54,24 +52,22 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 
 ## Part 2: Install dependencies
 
-Install the GitHub connector and Pydantic AI. This tutorial uses OpenAI as the LLM provider, but Pydantic AI supports many other providers.
+Install the GitHub connector, LangChain with OpenAI support, and LangGraph for the agent runtime:
 
 ```bash
-uv add airbyte-agent-github pydantic-ai
+uv add airbyte-agent-github langchain langchain-openai langgraph
 ```
 
 This command installs:
 
 - `airbyte-agent-github`: The Airbyte agent connector for GitHub, which provides type-safe access to GitHub's API.
-- `pydantic-ai`: The AI agent framework, which includes support for multiple LLM providers including OpenAI, Anthropic, and Google.
+- `langchain`: The LangChain framework core.
+- `langchain-openai`: LangChain's OpenAI integration for chat models.
+- `langgraph`: The LangGraph agent runtime, which provides a `create_react_agent` function for building tool-calling agents.
 
 The GitHub connector also includes `python-dotenv`, which you can use to load environment variables from a `.env` file.
 
-:::note
-If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
-:::
-
-## Part 3: Import Pydantic AI and the GitHub agent connector
+## Part 3: Import LangChain and the GitHub agent connector
 
 1. Create an `agent.py` file for your agent definition:
 
@@ -83,18 +79,23 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
 
     ```python title="agent.py"
     import os
+    import json
 
     from dotenv import load_dotenv
-    from pydantic_ai import Agent
+    from langchain_core.tools import StructuredTool
+    from langchain_openai import ChatOpenAI
+    from langgraph.prebuilt import create_react_agent
     from airbyte_agent_github import GithubConnector
     from airbyte_agent_github.models import GithubPersonalAccessTokenAuthConfig
     ```
 
     These imports provide:
 
-    - `os`: Access environment variables for your GitHub token and LLM API key.
+    - `os` and `json`: Access environment variables and serialize connector results.
     - `load_dotenv`: Load environment variables from your `.env` file.
-    - `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
+    - `StructuredTool`: LangChain's tool class for wrapping async functions with typed parameters.
+    - `ChatOpenAI`: LangChain's OpenAI chat model integration.
+    - `create_react_agent`: LangGraph's function for creating a ReAct agent that can call tools.
     - `GithubConnector`: The Airbyte agent connector that provides type-safe access to GitHub's API.
     - `GithubPersonalAccessTokenAuthConfig`: The authentication configuration for the GitHub connector using a personal access token.
 
@@ -117,11 +118,11 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
     load_dotenv()
     ```
 
-    This makes your secrets available via `os.environ`. Pydantic AI automatically reads `OPENAI_API_KEY` from the environment, and you'll use `os.environ["GITHUB_ACCESS_TOKEN"]` to configure the connector in the next section.
+    This makes your secrets available via `os.environ`. LangChain's `ChatOpenAI` automatically reads `OPENAI_API_KEY` from the environment, and you'll use `os.environ["GITHUB_ACCESS_TOKEN"]` to configure the connector in the next section.
 
 ## Part 5: Configure your connector and agent
 
-Now that your environment is set up, add the following code to `agent.py` to create the GitHub connector and Pydantic AI agent.
+Now that your environment is set up, add the following code to `agent.py` to create the GitHub connector and LangChain agent.
 
 ### Define the connector
 
@@ -135,42 +136,37 @@ connector = GithubConnector(
 )
 ```
 
-### Define the agent
+### Define the tool
 
-Create a Pydantic AI agent with a system prompt that describes its purpose:
+Create an async function that wraps the connector's `execute` method as a LangChain tool. The `@GithubConnector.describe` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
 
 ```python title="agent.py"
-agent = Agent(
-    "openai:gpt-4o",
-    system_prompt=(
-        "You are a helpful assistant that can access GitHub repositories, issues, "
-        "and pull requests. Use the available tools to answer questions about "
-        "GitHub data. Be concise and accurate in your responses."
-    ),
+@GithubConnector.describe
+async def github_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute GitHub connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result.data if hasattr(result, "data") else result, default=str)
+
+github_tool = StructuredTool.from_function(
+    coroutine=github_execute,
+    name="github_execute",
+    description=github_execute.__doc__,
 )
 ```
 
-- The `"openai:gpt-4o"` string specifies the model to use. You can use a different model by changing the model string. For example, use `"openai:gpt-4o-mini"` to lower costs, or see the [Pydantic AI models documentation](https://ai.pydantic.dev/models/) for other providers like Anthropic or Google.
-- The `system_prompt` parameter tells the LLM what role it should play and how to behave.
+### Define the agent
 
-## Part 6: Add tools to your agent
-
-Tools let your agent fetch real data from GitHub using Airbyte's agent connector. Without tools, the agent can only respond based on its training data. By registering connector operations as tools, the agent can decide when to call them based on natural language questions.
-
-Add the following code to `agent.py`.
+Create a LangChain chat model and a LangGraph ReAct agent:
 
 ```python title="agent.py"
-@agent.tool_plain
-@GithubConnector.tool_utils
-async def github_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+llm = ChatOpenAI(model="gpt-4o")
+agent = create_react_agent(llm, [github_tool])
 ```
 
-The `@GithubConnector.tool_utils` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
+- `ChatOpenAI(model="gpt-4o")` creates an OpenAI chat model. You can use a different model by changing the model string. For example, use `"gpt-4o-mini"` to lower costs. LangChain also supports [other providers](https://python.langchain.com/docs/integrations/chat/) like Anthropic and Google.
+- `create_react_agent` creates a ReAct agent that reasons about which tools to call based on the user's input.
 
-With this single tool, your agent can access all of the connector's capabilities. The agent decides which entity and action to use based on your natural language questions.
-
-## Part 7: Run your project
+## Part 6: Run your project
 
 Now that your agent is configured with tools, update `main.py` and run your project.
 
@@ -184,15 +180,17 @@ Now that your agent is configured with tools, update `main.py` and run your proj
         print("GitHub Agent Ready! Ask questions about GitHub repositories.")
         print("Type 'quit' to exit.\n")
 
-        history = None
+        history = []
 
         while True:
             prompt = input("You: ")
-            if prompt.lower() in ('quit', 'exit', 'q'):
+            if prompt.lower() in ("quit", "exit", "q"):
                 break
-            result = await agent.run(prompt, message_history=history)
-            history = result.all_messages()  # Call the method
-            print(f"\nAgent: {result.output}\n")
+            history.append({"role": "user", "content": prompt})
+            result = await agent.ainvoke({"messages": history})
+            response = result["messages"][-1].content
+            history = result["messages"]
+            print(f"\nAgent: {response}\n")
 
     if __name__ == "__main__":
         asyncio.run(main())
@@ -227,10 +225,10 @@ If your agent fails to retrieve GitHub data, check the following:
 In this tutorial, you learned how to:
 
 - Set up a new Python project with uv
-- Add Pydantic AI and Airbyte's GitHub agent connector to your project
+- Add LangChain, LangGraph, and Airbyte's GitHub agent connector to your project
 - Configure environment variables and authentication
-- Add tools to your agent using the GitHub connector
-- Run your project and use natural language to interact with GitHub data
+- Create a LangChain tool from the GitHub connector
+- Build a ReAct agent with LangGraph and use natural language to interact with GitHub data
 
 ## Next steps
 

@@ -60,7 +60,11 @@ Use Airbyte agent Connectors when you want:
 
 ## How to work with agent connectors
 
-To get started with agent connectors, follow the [Python SDK tutorial](../tutorials/quickstarts/tutorial-python).
+To get started with agent connectors, follow one of the [quick start tutorials](../tutorials/quickstarts/):
+
+- [Pydantic AI](../tutorials/quickstarts/tutorial-python)
+- [LangChain](../tutorials/quickstarts/tutorial-langchain)
+- [FastMCP](../tutorials/quickstarts/tutorial-fastmcp)
 
 ## All agent connectors
 
