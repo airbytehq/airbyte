@@ -37,26 +37,6 @@ Before you use abctl, install Docker Desktop on your machine:
 
 To install abctl, follow the instructions for your operating system.
 
-### Customize the install location
-
-By default, the curl installer places the `abctl` binary in `/usr/local/bin`. To install the binary elsewhere, set the `DIR_INSTALL` environment variable before running the installer.
-
-```shell
-DIR_INSTALL=/apps/bin curl -LsfS https://get.airbyte.com | bash -
-```
-
-The installer script also supports the following environment variables.
-
-| Variable | Default | Description |
-| --- | --- | --- |
-| `DIR_INSTALL` | `/usr/local/bin` | Directory where the `abctl` binary is placed. |
-| `RELEASE_TAG` | latest | Specific abctl release tag to install (e.g. `v0.19.0`). |
-| `DEBUG` | unset | Set to any value to enable verbose installer output. |
-
-:::note
-`DIR_INSTALL` controls only where the **abctl binary** lives. Airbyte state data (kubeconfig, cluster data) is stored separately at `~/.airbyte/abctl/`. It's not affected by this setting and you can't relocate it.
-:::
-
 <Tabs defaultValue="abctl-curl">
 
 <TabItem value="abctl-curl" label="curl">
@@ -184,6 +164,26 @@ abctl version
 
 </TabItem>
 </Tabs>
+
+### Customize the install location
+
+By default, the curl installer places the `abctl` binary in `/usr/local/bin`. To install the binary elsewhere, set the `DIR_INSTALL` environment variable before running the installer.
+
+```shell
+DIR_INSTALL=/apps/bin curl -LsfS https://get.airbyte.com | bash -
+```
+
+The installer script also supports the following environment variables.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DIR_INSTALL` | `/usr/local/bin` | Directory where the `abctl` binary is placed. |
+| `RELEASE_TAG` | latest | Specific abctl release tag to install (e.g. `v0.19.0`). |
+| `DEBUG` | unset | Set to any value to enable verbose installer output. |
+
+:::note
+`DIR_INSTALL` controls only where the **abctl binary** lives. Airbyte state data (kubeconfig, cluster data) is stored separately at `~/.airbyte/abctl/`. It's not affected by this setting and you can't relocate it.
+:::
 
 ## Install and manage local Airbyte instances
 
