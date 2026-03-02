@@ -235,6 +235,10 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
    10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 </FieldAnchor>
 
+<FieldAnchor field="custom_insights.include_incrementality">
+   11. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. Behaves the same as the global **Include Incrementality** setting described above, but applies only to this specific custom insight.
+</FieldAnchor>
+
 <FieldAnchor field="page_size">
 11. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
 </FieldAnchor>
@@ -247,7 +251,11 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 13. (Optional) For **Insights Job Timeout**, you may set a custom value in range from 10 to 60. It establishes the maximum amount of time (in minutes) of waiting for the report job to complete.
 </FieldAnchor>
 
-14. Click **Set up source** and wait for the tests to complete.
+<FieldAnchor field="include_incrementality">
+14. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"incrementality"` to the `action_attribution_windows` parameter sent to the Facebook API. Action metrics (such as `actions`, `action_values`, and `cost_per_action_type`) will then include an `incrementality` field containing the incremental lift value attributed to the ad. This field is only populated for ad accounts that have active [Conversion Lift](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) studies configured in Facebook. For accounts without lift studies, the field will be `null`. Disabled by default to preserve backward compatibility.
+</FieldAnchor>
+
+15. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -418,13 +426,14 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.0 | 2026-03-02 | [74134](https://github.com/airbytehq/airbyte/pull/74134) | Add opt-in `include_incrementality` config option to append `incrementality` to action attribution windows |
 | 5.0.1 | 2026-02-24 | [73281](https://github.com/airbytehq/airbyte/pull/73281) | fix(source-facebook-marketing): Fix Facebook Marketing UTC hardcoding with per-account timezone detection |
-| 5.0.0      | 2026-02-20 | [72779](https://github.com/airbytehq/airbyte/pull/72779) | Custom Insights streams now use level-based primary keys; removed deprecated `7d_view` and `28d_view` attribution window columns; removed `wish_bid` field. All users should refresh schema and reset affected streams.                                                                           |
+| 5.0.0 | 2026-02-20 | [72779](https://github.com/airbytehq/airbyte/pull/72779) | Custom Insights streams now use level-based primary keys; removed deprecated `7d_view` and `28d_view` attribution window columns; removed `wish_bid` field. All users should refresh schema and reset affected streams. |
 | 4.2.1 | 2026-02-09 | [72952](https://github.com/airbytehq/airbyte/pull/72952) | fix(source-facebook-marketing): classify 'Invalid OAuth access token' as config_error (AI-Triage PR) |
-| 4.2.0      | 2026-01-07 | [71029](https://github.com/airbytehq/airbyte/pull/71029) | Add 98 missing fields for custom insights streams including objective_results transformation                                                                                                                                                                                                      |
-| 4.1.3      | 2026-01-06 | [70349](https://github.com/airbytehq/airbyte/pull/70349) | Remove deprecated `7d_view` and `28d_view` attribution windows (Facebook API deprecation effective January 12, 2026)                                                                                                                                                                              |
-| 4.1.2      | 2025-11-10 | [69204](https://github.com/airbytehq/airbyte/pull/69204) | Add config migration that adds default action breakdowns                                                                                                                                                                                                                                          |
-| 4.1.1      | 2025-11-04 | [69169](https://github.com/airbytehq/airbyte/pull/69169) | Finalize progressive rollout.                                                                                                                                                                                                                                                                     |
+| 4.2.0 | 2026-01-07 | [71029](https://github.com/airbytehq/airbyte/pull/71029) | Add 98 missing fields for custom insights streams including objective_results transformation |
+| 4.1.3 | 2026-01-06 | [70349](https://github.com/airbytehq/airbyte/pull/70349) | Remove deprecated `7d_view` and `28d_view` attribution windows (Facebook API deprecation effective January 12, 2026) |
+| 4.1.2 | 2025-11-10 | [69204](https://github.com/airbytehq/airbyte/pull/69204) | Add config migration that adds default action breakdowns |
+| 4.1.1 | 2025-11-04 | [69169](https://github.com/airbytehq/airbyte/pull/69169) | Finalize progressive rollout. |
 | 4.1.1-rc.1 | 2025-10-27 | [68632](https://github.com/airbytehq/airbyte/pull/68632) | Performance improvement on normalization                                                                                                                                                                                                                                                          |
 | 4.1.0      | 2025-10-06 | [67081](https://github.com/airbytehq/airbyte/pull/67081) | Promoting release candidate 4.1.0-rc.2 to a main version.                                                                                                                                                                                                                                         |
 | 4.1.0-rc.2 | 2025-10-02 | [66976](https://github.com/airbytehq/airbyte/pull/66976) | Add missing breakdown `user_segment_key`                                                                                                                                                                                                                                                          |
