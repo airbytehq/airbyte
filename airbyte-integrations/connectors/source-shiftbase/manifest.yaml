@@ -354,7 +354,9 @@ definitions:
     type: DeclarativeStream
     name: employee_time_distribution
     primary_key:
-      - employeeId
+      - - employeeId
+      - - year
+      - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -406,10 +408,6 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%Y-%m-%d"
       cursor_datetime_formats:
         - "%Y-%m-%d"
@@ -492,8 +490,6 @@ definitions:
       requester:
         $ref: "#/definitions/base_requester"
         path: absentees
-        request_parameters:
-          min_date: "{{ stream_interval.start_time or config.start_date }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -513,14 +509,14 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%Y-%m-%d %H:%M:%S"
       cursor_datetime_formats:
         - "%Y-%m-%d %H:%M:%S"
         - "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: min_date
       is_data_feed: true
     transformations:
       - $ref: "#/definitions/add_account_name_transformation"
@@ -728,8 +724,6 @@ definitions:
       requester:
         $ref: "#/definitions/base_requester"
         path: availabilities
-        request_parameters:
-          min_date: "{{ stream_interval.start_time or config.start_date }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -749,13 +743,13 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%Y-%m-%d"
       cursor_datetime_formats:
         - "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: min_date
       is_data_feed: true
     transformations:
       - $ref: "#/definitions/add_account_name_transformation"
@@ -1037,8 +1031,6 @@ definitions:
   employees_report_stream:
     type: DeclarativeStream
     name: employees_report
-    primary_key:
-      - userId
     retriever:
       type: SimpleRetriever
       requester:
@@ -1147,8 +1139,6 @@ definitions:
         http_method: POST
         request_body_json:
           export: json
-          from: "{{ stream_interval.start_time }}"
-          to: "{{ stream_interval.end_time }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1165,15 +1155,19 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ today_utc().strftime('%Y-%m-%d') }}"
-        datetime_format: "%Y-%m-%d"
       datetime_format: "%Y-%m-%d"
       cursor_datetime_formats:
         - "%Y-%m-%d"
       step: P1D
       cursor_granularity: P1D
+      start_time_option:
+        type: RequestOption
+        inject_into: body_json
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: body_json
+        field_name: to
       is_data_feed: true
     transformations:
       - $ref: "#/definitions/add_account_name_transformation"
@@ -1405,7 +1399,7 @@ definitions:
     type: DeclarativeStream
     name: schedule_detail_report
     primary_key:
-      - userId
+      - rosterId
     retriever:
       type: SimpleRetriever
       requester:
@@ -1414,8 +1408,6 @@ definitions:
         http_method: POST
         request_body_json:
           export: json
-          from: "{{ stream_interval.start_time }}"
-          to: "{{ stream_interval.end_time }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1432,15 +1424,19 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ today_utc().strftime('%Y-%m-%d') }}"
-        datetime_format: "%Y-%m-%d"
       datetime_format: "%Y-%m-%d"
       cursor_datetime_formats:
         - "%Y-%m-%d"
       step: P1D
       cursor_granularity: P1D
+      start_time_option:
+        type: RequestOption
+        inject_into: body_json
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: body_json
+        field_name: to
       is_data_feed: true
     transformations:
       - $ref: "#/definitions/add_account_name_transformation"
@@ -1594,6 +1590,7 @@ spec:
         title: Start Date
         description: Start date for historical data sync in YYYY-MM-DD format.
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        format: date
         examples:
           - "2024-01-01"
   documentation_url: https://docs.airbyte.com/integrations/sources/shiftbase
