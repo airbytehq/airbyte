@@ -81,14 +81,14 @@ After the LAUNCH stage completes, the pipeline's success handler transitions the
 
 #### LAUNCH to LAUNCHED delay
 
-The time between the `APPLY Stage: LAUNCH` log line and the `Attempting to update workload ... to LAUNCHED` log line is the time Kubernetes takes to accept and begin scheduling the pod. In most cases this is seconds, but it can be significantly longer when:
+The time between the `APPLY Stage: LAUNCH` log line and the `Attempting to update workload ... to LAUNCHED` log line covers pod creation, init container completion, and (optionally) main container readiness. The Launcher actively waits for the pod's init container to finish (up to 15 minutes) before marking the workload as LAUNCHED. Common causes of delay include:
 
-- **Large resource requests** require the cluster autoscaler to provision new nodes (e.g. 4 CPU / 4 GiB per container × 4 containers = 16 CPU / 16 GiB total).
+- **Large resource requests** require the cluster autoscaler to provision new nodes (e.g. 4 CPU / 4 GiB per container × 4 containers = 16 CPU / 16 GiB total). Reducing resource requests or provisioning larger nodes can help.
 - **Container images** need to be pulled for the first time on a new node.
 - **Init containers** must complete before the main containers start.
 - **Cluster capacity** is insufficient and pods remain in a `Pending` state until resources free up.
 
-A delay of several minutes in these scenarios is normal and does not indicate an Airbyte misconfiguration. To diagnose long delays, check the Kubernetes pod events (`kubectl describe pod <pod-name>`) for scheduling or image-pull issues.
+To diagnose long delays, check the Kubernetes pod events (`kubectl describe pod <pod-name> -n <namespace>`) for scheduling or image-pull issues.
 
 ### Workload Monitor
 
@@ -111,9 +111,9 @@ This is distinct from [source/destination heartbeat errors](./heartbeats.md), wh
 
 **How to debug a WorkloadMonitorException:**
 
-1. Check the Kubernetes pod status: `kubectl get pods -l airbyte=workload` — look for `CrashLoopBackOff`, `OOMKilled`, `ImagePullBackOff`, or `Pending` states.
-2. Inspect pod events: `kubectl describe pod <pod-name>` — check for scheduling failures, resource pressure, or image pull errors.
-3. Review pod logs: `kubectl logs <pod-name> -c orchestrator` — look for startup errors or uncaught exceptions.
+1. Check the Kubernetes pod status: `kubectl get pods -n <namespace>` — look for `CrashLoopBackOff`, `OOMKilled`, `ImagePullBackOff`, or `Pending` states.
+2. Inspect pod events: `kubectl describe pod <pod-name> -n <namespace>` — check for scheduling failures, resource pressure, or image pull errors.
+3. Review pod logs: `kubectl logs <pod-name> -n <namespace> -c <container-name>` — look for startup errors or uncaught exceptions.
 4. Check cluster resources: Ensure the cluster has enough CPU and memory to satisfy the pod's resource requests.
 
 ## Further configuring Jobs & Workloads
@@ -193,12 +193,6 @@ Retries described above operate **within a single job execution**. However, cert
 2. The failure message reads: _"An internal transient Airbyte error has occurred. The sync should work fine on the next retry."_
 3. **No automatic retry occurs.** The connection waits for its next scheduled sync to create a new job.
 4. Retry counters (successive failures, total failures) are reset because they are scoped to a single workflow execution.
-
-Common causes of workflow restarts include:
-
-- Platform upgrades or deployments that restart Temporal workers
-- Temporal server maintenance or failovers
-- Temporal workflow history reaching its event limit, triggering a continue-as-new
 
 :::note
 The error message says "the sync should work fine on the next retry," but this refers to the **next scheduled sync run**, not an immediate automatic retry. If the underlying issue persists (e.g. repeated platform restarts), the connection may fail on successive scheduled runs without ever completing.
