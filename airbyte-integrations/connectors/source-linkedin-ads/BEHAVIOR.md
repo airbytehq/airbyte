@@ -84,24 +84,7 @@ conflicts with reserved keywords in common destinations (Redshift, BigQuery, Sno
 
 ---
 
-## 6. Custom Analytics Reports via Dynamic Streams
-
-Users can define custom analytics reports in their connection config under `ad_analytics_reports`. These
-are rendered as `DynamicDeclarativeStream` instances using `ConfigComponentsResolver`, which maps the
-user's `pivot_by` and `time_granularity` values into the request parameters of a shared stream
-template.
-
-The custom report streams use the same `SafeEncodeHttpRequester`, property chunking, and analytics
-field list as the built-in analytics streams.
-
-**Why this matters:** Custom analytics reports share all the same constraints as built-in analytics
-streams (property chunking, safe URL encoding, pivot value transformation). Any change to the analytics
-infrastructure affects both built-in and custom reports. The stream names are prefixed with `custom_` to
-avoid collisions with built-in stream names.
-
----
-
-## 7. Unpublished Rate Limits with Per-Endpoint Daily Caps
+## 6. Unpublished Rate Limits with Per-Endpoint Daily Caps
 
 LinkedIn does not publish standard API rate limits. The connector's comments document that each endpoint
 has its own individually tracked rate limit that resets daily, with tiers that vary by account. The
@@ -115,17 +98,3 @@ from a higher default after customers experienced rate limiting issues.
 predict when a customer will hit limits. If customers report rate limiting, the `num_workers` config
 value is the primary lever to reduce pressure. The analytics property chunking (5 requests per record
 page) means the effective request rate is much higher than the visible concurrency level suggests.
-
----
-
-## 8. Analytics Streams Use NoPagination
-
-All analytics streams (ad_campaign_analytics, ad_creative_analytics, ad_impression_device_analytics,
-and all ad_member_*_analytics) use `NoPagination`. Each stream is partitioned by parent entity ID
-(campaign or creative) and sliced into 30-day date windows (`step: P30D`). The expectation is that each
-combination of entity + date window returns a single page of results.
-
-**Why this matters:** Do not add a paginator to analytics streams. LinkedIn's Ad Analytics API returns
-all matching rows for a given entity + date range in a single response. Adding pagination would break
-the property chunking merge strategy, which expects all chunks for a given entity + date slice to cover
-the same complete result set.

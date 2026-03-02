@@ -10,6 +10,4 @@ See [BEHAVIOR.md](BEHAVIOR.md) for the most important non-obvious gotchas in thi
 - DNS resolution errors treated as transient/retryable
 - Millisecond timestamp handling and multiple datetime formats across endpoints
 - Reserved keyword renaming (`pivot` -> `_pivot`) for destination compatibility
-- Custom analytics reports via dynamic streams
 - Unpublished per-endpoint rate limits with daily caps
-- Analytics streams intentionally use NoPagination

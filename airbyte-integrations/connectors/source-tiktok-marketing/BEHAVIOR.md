@@ -60,38 +60,7 @@ transformation or the stream will emit invalid metric types.
 
 ---
 
-## 4. Semi-Incremental Sync with Client-Side Filtering
-
-Entity streams (campaigns, ad_groups, ads, creative_assets_images, creative_assets_videos) use
-`is_client_side_incremental: true`, meaning the API does not support server-side filtering by
-`modify_time`. The connector fetches all records and filters them locally based on the cursor value.
-
-TikTok's entity listing endpoints (`campaign/get/`, `adgroup/get/`, `ad/get/`) do not support a
-`modified_since` or equivalent filter parameter. They only support status-based filtering.
-
-**Why this matters:** Every incremental sync of entity streams fetches the complete dataset from the
-API, regardless of cursor position. For accounts with many campaigns, ad groups, or ads, this means
-sync duration and API usage do not decrease over time -- they are always proportional to the total
-number of entities, not just recently modified ones.
-
----
-
-## 5. Report Attribution Window Lookback
-
-Report streams (daily and hourly) support a configurable `attribution_window` (default: 0 days) that
-is applied as a `lookback_window` on the `DatetimeBasedCursor`. TikTok's ad attribution can update
-conversion metrics retroactively as attribution data finalizes, meaning a report row for day X may
-change values for several days after day X.
-
-**Why this matters:** If users set `attribution_window` to a non-zero value (e.g., 7 days), the
-connector will re-fetch report data for the lookback period on every sync, even if that data was
-already synced. This is intentional to capture late-arriving attribution updates, but it means report
-syncs will always request at least `attribution_window` days of data regardless of the cursor position.
-Users must use an append-dedup sync mode in their destination to handle the re-emitted records.
-
----
-
-## 6. Rate Limit Detection via Response Body Code
+## 4. Rate Limit Detection via Response Body Code
 
 TikTok's API does not use standard HTTP 429 status codes for rate limiting. Instead, it returns HTTP
 200 with a `code` field in the JSON response body set to `40100`. The error handler uses a predicate
@@ -105,7 +74,7 @@ rate limits are per-access-token.
 
 ---
 
-## 7. Smart+ Ads Missing modify_time Filter
+## 5. Smart+ Ads Missing modify_time Filter
 
 The `ads` stream includes a `RecordFilter` that drops records where `modify_time` is `None`. This is
 specifically to handle TikTok's Smart+ Ad records, which can be returned by the API without a
@@ -115,19 +84,3 @@ this field would cause cursor comparison failures.
 **Why this matters:** This filter silently drops valid ad records from the sync output. If a user
 reports missing ads data, Smart+ ads without `modify_time` values are the likely cause. This is a known
 trade-off to maintain incremental sync reliability.
-
----
-
-## 8. Authentication via Header Injection (Not OAuth)
-
-Unlike most ad platform connectors, source-tiktok-marketing uses `ApiKeyAuthenticator` that injects the
-access token as an `Access-Token` header, not a Bearer token or OAuth flow. The token is extracted from
-either `config.credentials.access_token` or `config.access_token` (for backward compatibility).
-
-TikTok's Marketing API does not use standard OAuth 2.0 refresh token flows. Access tokens are
-long-lived and obtained through TikTok's developer portal or app authorization flow outside of Airbyte.
-
-**Why this matters:** There is no token refresh mechanism in this connector. If a user's access token
-expires or is revoked, the sync will fail with an authentication error and the user must manually
-obtain and configure a new token. Do not attempt to add an `OAuthAuthenticator` without understanding
-TikTok's specific auth requirements.
