@@ -201,13 +201,13 @@ If your sync fails with an error containing `Socket file ... not created after 9
 the Airbyte platform was unable to set up an internal data channel before the connector
 timed out. This is not caused by your BigQuery configuration or credentials.
 
-- **Retry the sync.** The issue is often caused by temporary resource pressure and resolves
+- **Retry the sync.** The issue is often transient, caused by temporary resource pressure, and resolves
   on the next attempt.
 - **Stagger concurrent syncs.** Running many connections to the same destination at the same
   time increases the chance of this error. Spacing out sync schedules can help.
 - **Airbyte Cloud:** If the error persists after retrying, contact
   [Airbyte Support](https://support.airbyte.com) with the connection ID and job ID.
-- **Self-hosted (OSS / Enterprise):** Make sure your Airbyte platform is up to date. Check
+- **Self-managed:** Make sure your Airbyte platform is up to date. Check
   the worker or pod logs for out-of-memory events or container restarts around the time of
   the failure.
 
@@ -220,7 +220,7 @@ If your sync fails with `BigQueryException: 400 Bad Request` and the message
   was invalidated mid-stream.
 - **Retry the sync.** In most cases the error resolves on the next attempt.
 - If the error recurs on every sync:
-  - Check whether a proxy, VPN, or firewall is modifying HTTP headers on requests to
+  - If you Self-manage Airbyte, check whether a proxy, VPN, or firewall is modifying HTTP headers on requests to
     `bigquery.googleapis.com`.
   - Verify the service account key has not been rotated or revoked since the connection was
     configured.
