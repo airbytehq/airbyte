@@ -356,7 +356,7 @@ def test_set_state(config):
     assert stream._state == expected_state
 
 
-def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, caplog):
+def test_leads_stream_fields_returns_rest_fields(config, requests_mock, caplog):
     # Example response with two valid rest fields and one soap-only field
     describe_json = {
         "requestId": "def456",
@@ -374,26 +374,23 @@ def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, cap
         ],
     }
 
-    # Patch the schema to include all possible fields
-    class DummyLeads(Leads):
-        def get_json_schema(self):
-            return {"properties": {"email": {}, "phone": {}, "LegacyField": {}}}
-
     requests_mock.get(
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
         json=describe_json,
     )
 
     caplog.set_level("WARNING")
-    leads_stream = DummyLeads(config)
+    leads_stream = Leads(config)
     fields = leads_stream.stream_fields
 
     # Only fields with a 'rest' key should be included
     assert set(fields) == {"email", "phone"}
     # No warning should be logged since valid fields exist
-    assert "No valid fields found in leads/describe response" not in caplog.text
+    assert "No fields from describe endpoint" not in caplog.text
 
-    # Now test with no valid rest fields
+
+def test_leads_stream_fields_fallback_on_no_rest_fields(config, requests_mock, caplog):
+    # Test with no valid rest fields — should fall back to static schema
     describe_json_no_rest = {
         "requestId": "def456",
         "success": True,
@@ -403,8 +400,57 @@ def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, cap
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
         json=describe_json_no_rest,
     )
-    leads_stream = DummyLeads(config)
+
+    caplog.set_level("WARNING")
+    leads_stream = Leads(config)
     fields = leads_stream.stream_fields
 
-    assert fields == []
-    assert "No valid fields found in leads/describe response" in caplog.text
+    # Falls back to static schema field names
+    assert len(fields) > 0
+    assert "No fields from describe endpoint, falling back to static schema fields" in caplog.text
+
+
+def test_leads_dynamic_schema_includes_custom_fields(config, requests_mock):
+    # Test that get_json_schema() dynamically adds custom fields from describe
+    describe_json = {
+        "requestId": "abc123",
+        "success": True,
+        "result": [
+            {
+                "id": 1,
+                "displayName": "Email",
+                "dataType": "email",
+                "rest": {"name": "email", "readOnly": False},
+            },
+            {
+                "id": 100,
+                "displayName": "Custom Score",
+                "dataType": "score",
+                "rest": {"name": "customScore__c", "readOnly": False},
+            },
+            {
+                "id": 101,
+                "displayName": "Custom Date",
+                "dataType": "date",
+                "rest": {"name": "customDate__c", "readOnly": False},
+            },
+        ],
+    }
+
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        json=describe_json,
+    )
+
+    leads_stream = Leads(config)
+    schema = leads_stream.get_json_schema()
+
+    # Custom fields should appear in the schema
+    assert "customScore__c" in schema["properties"]
+    assert schema["properties"]["customScore__c"]["type"] == ["integer", "null"]
+    assert "customDate__c" in schema["properties"]
+    assert schema["properties"]["customDate__c"]["type"] == ["string", "null"]
+    assert schema["properties"]["customDate__c"]["format"] == "date"
+
+    # Standard fields from static schema should still be present
+    assert "email" in schema["properties"]
