@@ -39,6 +39,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         "1d_view",
     ]
 
+    INCREMENTALITY_WINDOW = "incrementality"
+
     breakdowns = []
     action_breakdowns = [
         "action_type",
@@ -78,6 +80,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         insights_lookback_window: int = None,
         insights_job_timeout: int = 60,
         level: str = "ad",
+        include_incrementality: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -99,6 +102,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._insights_job_timeout = insights_job_timeout
         self.level = level
         self.entity_prefix = level
+
+        if include_incrementality:
+            self.action_attribution_windows = list(self.ALL_ACTION_ATTRIBUTION_WINDOWS) + [self.INCREMENTALITY_WINDOW]
 
         # state
         self._cursor_values: Optional[Mapping[str, date]] = None  # latest period that was read for each account

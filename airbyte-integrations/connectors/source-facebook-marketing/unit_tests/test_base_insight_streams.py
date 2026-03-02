@@ -94,6 +94,34 @@ class TestBaseInsightsStream:
             "test2",
         ]
 
+    @pytest.mark.parametrize(
+        "include_incrementality,expected_windows",
+        [
+            pytest.param(
+                False,
+                ["1d_click", "7d_click", "28d_click", "1d_view"],
+                id="disabled_uses_default_windows",
+            ),
+            pytest.param(
+                True,
+                ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality"],
+                id="enabled_appends_incrementality",
+            ),
+        ],
+    )
+    def test_include_incrementality(self, api, some_config, include_incrementality, expected_windows):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            include_incrementality=include_incrementality,
+        )
+
+        assert stream.action_attribution_windows == expected_windows
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+
     def test_init_statuses(self, api, some_config):
         stream = AdsInsights(
             api=api,
