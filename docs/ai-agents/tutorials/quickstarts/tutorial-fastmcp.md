@@ -133,11 +133,11 @@ connector = GithubConnector(
 
 ### Register the tool
 
-Register the connector's `execute` method as an MCP tool. The `@GithubConnector.describe` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
+Register the connector's `execute` method as an MCP tool. The `@GithubConnector.tool_utils` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
 
 ```python title="server.py"
 @mcp.tool()
-@GithubConnector.describe
+@GithubConnector.tool_utils
 async def github_execute(entity: str, action: str, params: dict | None = None) -> str:
     """Execute GitHub connector operations."""
     result = await connector.execute(entity, action, params or {})
