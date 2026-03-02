@@ -216,17 +216,16 @@ timed out. This is not caused by your BigQuery configuration or credentials.
 If your sync fails with `BigQueryException: 400 Bad Request` and the message
 `Request had invalid euc header`:
 
-- This is a transient error from the Google BigQuery resumable-upload API. The upload session
-  was invalidated mid-stream.
+- This error originates from the Google BigQuery resumable-upload API. It is usually transient.
 - **Retry the sync.** In most cases the error resolves on the next attempt.
-- If the error recurs on every sync:
-  - If you Self-manage Airbyte, check whether a proxy, VPN, or firewall is modifying HTTP headers on requests to
-    `bigquery.googleapis.com`.
+- If the error recurs on every sync, the underlying causes can be complex. Google does not
+  publicly document this specific error. The following steps may help narrow the issue:
+  - If you Self-manage Airbyte, check whether a proxy, VPN, or firewall is modifying HTTP
+    headers on requests to `bigquery.googleapis.com`.
   - Verify the service account key has not been rotated or revoked since the connection was
     configured.
   - Try reducing the **Google BigQuery Client Chunk Size** from the default 15 MiB to a
-    smaller value (for example, 5 MiB). Smaller chunks reduce the window for session
-    corruption.
+    smaller value (for example, 5 MiB).
 
 ### Broken pipe errors
 
