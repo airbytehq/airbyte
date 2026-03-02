@@ -49,7 +49,6 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
                 .addExpectedValues("1", "9223372036854775807", "0", "-9223372036854775808")
                 .build(),
         )
-
         addDataTypeTestData(
             TestDataHolder.builder()
                 .sourceType("bit")
@@ -742,15 +741,12 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
                              "weight"    => "11.2 ounces"'
                              
                              """.trimIndent(),
-                    /*null,*/
-                    // TODO: check here
-                    )
+                )
                 .addExpectedValues(
                     """
                 {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}
                 """.trimIndent(),
-                    /*null,*/
-                    )
+                )
                 .build(),
         )
     }

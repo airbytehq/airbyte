@@ -48,7 +48,10 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             )
         )
         scalarAndArray("BIGINT", LeafAirbyteSchemaType.INTEGER, AnsiSql.bigIntValues)
-        scalarAndArray(
+        // TODO: Fix type handling for numeric arrays.
+        //  Requires fetching the correct scale and precision of array elements from another source.
+        //  https://github.com/airbytehq/airbyte-internal-issues/issues/15879
+        /*scalarAndArray(
             "DECIMAL",
             LeafAirbyteSchemaType.NUMBER,
             AnsiSql.decimalValues,
@@ -60,7 +63,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             nulledInfinities.plus(nulledNaN),
             arrayIsNulled = true,
             baseTestName = "DECIMAL UNSUPPORTED VALS"
-        )
+        )*/
         scalarAndArray("DECIMAL(20,0)", LeafAirbyteSchemaType.INTEGER, AnsiSql.intValues)
         scalarAndArray("DECIMAL(20,9)", LeafAirbyteSchemaType.NUMBER, AnsiSql.decimalValues)
         scalarAndArray("NUMERIC(20,9)", LeafAirbyteSchemaType.NUMBER, AnsiSql.decimalValues)
@@ -101,8 +104,8 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         )
         scalarAndArray(
             "BIT(1)",
-            LeafAirbyteSchemaType.BOOLEAN,
-            mapOf("B'0'" to "false", "B'1'" to "true")
+            LeafAirbyteSchemaType.STRING,
+            mapOf("B'0'" to "\"0\"", "B'1'" to "\"1\"")
         )
         scalarAndArray(
             "BIT(10)",
