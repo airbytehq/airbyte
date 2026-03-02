@@ -218,7 +218,8 @@ If your sync fails with `Fail to complete a load job in big query`:
 - BigQuery load jobs have a 30-minute wait timeout. Very large batches or high BigQuery queue
   contention can exceed this limit.
 - Running concurrent syncs that load into the same BigQuery table is not supported and can
-  also trigger this timeout.
+  also trigger this timeout. See [Stream uniqueness](https://docs.airbyte.com/platform/using-airbyte/configuring-schema#stream-uniqueness)
+  for details.
 - Try reducing the volume per sync by using incremental sync mode or reducing the number of
   streams per connection.
 
