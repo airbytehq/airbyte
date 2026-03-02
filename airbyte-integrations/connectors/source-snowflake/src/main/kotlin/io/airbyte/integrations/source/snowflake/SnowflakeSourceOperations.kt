@@ -15,10 +15,8 @@ import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
-import io.airbyte.cdk.jdbc.ByteFieldType
 import io.airbyte.cdk.jdbc.BytesFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
-import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
@@ -26,7 +24,6 @@ import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
-import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
@@ -77,12 +74,26 @@ class SnowflakeSourceOperations() :
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (val type = c.type) {
             is SystemType -> {
-                leafType(type.typeName)
+                leafType(type.typeName, type.scale)
             }
             else -> PokemonFieldType
         }
 
-    private fun leafType(typeName: String?): JdbcFieldType<*> {
+    /**
+     * Maps a Snowflake SQL type name to a [JdbcFieldType].
+     *
+     * Snowflake treats NUMBER, DECIMAL, NUMERIC, INT, INTEGER, BIGINT, SMALLINT, TINYINT, and
+     * BYTEINT as aliases for the same underlying NUMBER(precision, scale) type. The Snowflake JDBC
+     * driver can return different type name strings for the same column depending on whether
+     * metadata is queried via DatabaseMetaData.getColumns() or ResultSetMetaData (from a SELECT ...
+     * LIMIT 0 query). For example, a NUMBER(38,0) column may be reported as "NUMBER" by one API and
+     * "INTEGER" by the other.
+     *
+     * To ensure consistent type mapping regardless of which metadata API is used, all numeric type
+     * aliases are normalized based on scale: scale == 0 (or null) maps to an integer type, and
+     * scale > 0 maps to BigDecimalFieldType.
+     */
+    private fun leafType(typeName: String?, scale: Int?): JdbcFieldType<*> {
         return when (typeName?.uppercase()) {
             "VARCHAR",
             "CHAR",
@@ -92,13 +103,13 @@ class SnowflakeSourceOperations() :
             "BOOLEAN", -> BooleanFieldType
             "NUMBER",
             "DECIMAL",
-            "NUMERIC", -> BigDecimalFieldType
+            "NUMERIC",
             "INT",
-            "INTEGER", -> IntFieldType
-            "BIGINT", -> BigIntegerFieldType
+            "INTEGER",
+            "BIGINT",
             "SMALLINT",
-            "TINYINT" -> ShortFieldType
-            "BYTEINT" -> ByteFieldType
+            "TINYINT",
+            "BYTEINT", -> numericType(scale)
             "FLOAT",
             "FLOAT4",
             "FLOAT8",
@@ -127,6 +138,14 @@ class SnowflakeSourceOperations() :
             else -> PokemonFieldType
         }
     }
+
+    /**
+     * Returns a consistent [JdbcFieldType] for all Snowflake numeric type aliases based on scale.
+     * Scale == 0 (or scale == null with no fractional digits) indicates an integer type; scale > 0
+     * indicates a decimal type.
+     */
+    private fun numericType(scale: Int?): JdbcFieldType<*> =
+        if (scale != null && scale > 0) BigDecimalFieldType else BigIntegerFieldType
 
     override fun generate(ast: SelectQuerySpec): SelectQuery =
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
