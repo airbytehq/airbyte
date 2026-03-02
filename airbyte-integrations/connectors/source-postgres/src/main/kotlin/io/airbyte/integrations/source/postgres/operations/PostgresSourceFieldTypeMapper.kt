@@ -50,7 +50,9 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
 
     private fun scalarType(type: PgSystemType): JdbcFieldType<*> {
         return when (type.scalarJdbcType) {
-            JDBCType.BIT -> if (type.precision == 1) BooleanFieldType else StringFieldType
+            JDBCType.BIT ->
+                // BOOLEAN reports as JDBCType.BIT
+                if ("bool" == type.scalarTypeName) BooleanFieldType else StringFieldType
             JDBCType.BOOLEAN -> BooleanFieldType
             JDBCType.SMALLINT -> ShortFieldType
             JDBCType.INTEGER ->
@@ -99,6 +101,9 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             if (isArray) systemType.typeName!!.substring(1) else systemType.typeName!!
         val scalarJdbcType: JDBCType =
             if (isArray) scalarJDBCType(systemType.typeName!!) else systemType.jdbcType!!
+        // TODO: Fix type handling for numeric arrays.
+        //  Requires fetching the correct scale and precision of array elements from another source.
+        //  https://github.com/airbytehq/airbyte-internal-issues/issues/15879
         val scale = systemType.scale
         val precision = systemType.precision
 

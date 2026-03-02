@@ -4,14 +4,6 @@
 
 package io.airbyte.cdk.test.fixtures.legacy
 
-import com.deblock.jsondiff.DiffGenerator
-import com.deblock.jsondiff.diff.JsonDiff
-import com.deblock.jsondiff.matcher.CompositeJsonMatcher
-import com.deblock.jsondiff.matcher.JsonMatcher
-import com.deblock.jsondiff.matcher.StrictJsonArrayPartialMatcher
-import com.deblock.jsondiff.matcher.StrictJsonObjectPartialMatcher
-import com.deblock.jsondiff.matcher.StrictPrimitivePartialMatcher
-import com.deblock.jsondiff.viewer.OnlyErrorDiffViewer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.Iterables

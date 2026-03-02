@@ -223,7 +223,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
     @JsonSchemaInject(json = """{"order":13,"always_show":true,"group":"performance"}""")
-    @JsonSchemaDefault("false")
+    @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +
             "will query each table or view individually to check access privileges " +
@@ -231,7 +231,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
             "In large schemas, this might cause schema discovery to take too long, " +
             "in which case it might be advisable to disable this feature.",
     )
-    var checkPrivileges: Boolean? = false
+    var checkPrivileges: Boolean? = true
 
     @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
 

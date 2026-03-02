@@ -56,7 +56,12 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
     private val limitPermissionRoleName: String
         get() = testdb.withNamespace("limit_perm_role")
 
-    private fun getConfig(username: String, password: String?, vararg schemas: String?): JsonNode {
+    private fun getConfig(
+        username: String,
+        password: String?,
+        vararg schemas: String?,
+        checkPrivileges: Boolean = false,
+    ): JsonNode {
         return testdb
             .configBuilder()
             .withResolvedHostAndPort()
@@ -69,6 +74,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
             .withSchemas(*schemas)
             .withSsl(mutableMapOf(MODE_KEY to "disable"))
             .withStandardReplication()
+            .also { if (checkPrivileges) it.with("check_privileges", true) }
             .build()
     }
 
@@ -123,6 +129,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
                 this.limitPermissionRoleName,
                 LIMIT_PERMISSION_ROLE_PASSWORD,
                 LIMIT_PERMISSION_SCHEMA,
+                checkPrivileges = true,
             )
 
         runDiscover()
