@@ -492,10 +492,7 @@ def generate_and_persist_registry_entry(
 
         # For normal (non-RC, non-prerelease) publishes, we also need metadata with the dockerImageTag
         # override applied for the latest entry. This preserves version pinning behavior.
-        is_normal_publish = (
-            not is_prerelease
-            and "-rc" not in metadata_dict["data"]["dockerImageTag"]
-        )
+        is_normal_publish = not is_prerelease and "-rc" not in metadata_dict["data"]["dockerImageTag"]
         latest_overridden_metadata_data = None
         if is_normal_publish:
             try:
