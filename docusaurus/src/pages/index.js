@@ -97,14 +97,13 @@ export default function Home() {
     <svg
       width="48"
       height="48"
-      viewBox="0 0 24 24"
+      viewBox="0 0 180 180"
       xmlns="http://www.w3.org/2000/svg"
-      className={styles.aeNavIconSvg}
+      className={styles.mcpIconSvg}
     >
-      <path d="M2 2h20v4H2V2zm0 6h20v4H2V8zm0 6h20v4H2v-4zm1 8h4v2H3v-2zm6 0h4v2H9v-2zm6 0h4v2h-4v-2zM4 4v.01M4 10v.01M4 14v.01"/>
-      <circle cx="4" cy="4" r="1"/>
-      <circle cx="4" cy="10" r="1"/>
-      <circle cx="4" cy="14" r="1"/>
+      <path d="M18 84.8528L85.8822 16.9706C95.2548 7.59798 110.451 7.59798 119.823 16.9706C129.196 26.3431 129.196 41.5391 119.823 50.9117L68.5581 102.177" strokeWidth="12" strokeLinecap="round" fill="none"/>
+      <path d="M69.2652 101.47L119.823 50.9117C129.196 41.5391 144.392 41.5391 153.765 50.9117L154.118 51.2652C163.491 60.6378 163.491 75.8338 154.118 85.2063L92.7248 146.6C89.6006 149.724 89.6006 154.789 92.7248 157.913L105.331 170.52" strokeWidth="12" strokeLinecap="round" fill="none"/>
+      <path d="M102.853 33.9411L52.6482 84.1457C43.2756 93.5183 43.2756 108.714 52.6482 118.087C62.0208 127.459 77.2167 127.459 86.5893 118.087L136.794 67.8822" strokeWidth="12" strokeLinecap="round" fill="none"/>
     </svg>
   );
 

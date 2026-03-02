@@ -266,6 +266,12 @@
   height: 28px;
 }
 
+.mcpIconSvg {
+  stroke: var(--ifm-color-primary);
+  width: 28px;
+  height: 28px;
+}
+
 .aeNavTitle {
   font-size: 1.125rem;
   font-weight: 700;
