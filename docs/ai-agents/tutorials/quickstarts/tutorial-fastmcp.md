@@ -141,7 +141,7 @@ Register the connector's `execute` method as an MCP tool. The `@GithubConnector.
 async def github_execute(entity: str, action: str, params: dict | None = None) -> str:
     """Execute GitHub connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result.data if hasattr(result, "data") else result, default=str)
+    return json.dumps(result, default=str)
 ```
 
 With this single tool, your MCP server exposes all of the connector's capabilities. The agent decides which entity and action to use based on your natural language questions.

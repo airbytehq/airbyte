@@ -82,7 +82,7 @@ The GitHub connector also includes `python-dotenv`, which you can use to load en
     import json
 
     from dotenv import load_dotenv
-    from langchain_core.tools import StructuredTool
+    from langchain_core.tools import tool
     from langchain_openai import ChatOpenAI
     from langgraph.prebuilt import create_react_agent
     from airbyte_agent_github import GithubConnector
@@ -93,7 +93,7 @@ The GitHub connector also includes `python-dotenv`, which you can use to load en
 
     - `os` and `json`: Access environment variables and serialize connector results.
     - `load_dotenv`: Load environment variables from your `.env` file.
-    - `StructuredTool`: LangChain's tool class for wrapping async functions with typed parameters.
+    - `tool`: LangChain's decorator for converting a function into a tool.
     - `ChatOpenAI`: LangChain's OpenAI chat model integration.
     - `create_react_agent`: LangGraph's function for creating a ReAct agent that can call tools.
     - `GithubConnector`: The Airbyte agent connector that provides type-safe access to GitHub's API.
@@ -138,20 +138,15 @@ connector = GithubConnector(
 
 ### Define the tool
 
-Create an async function that wraps the connector's `execute` method as a LangChain tool. The `@GithubConnector.tool_utils` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
+Create an async function that wraps the connector's `execute` method as a LangChain tool. The `@tool` decorator converts the function into a LangChain tool, and `@GithubConnector.tool_utils` automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
 
 ```python title="agent.py"
+@tool
 @GithubConnector.tool_utils
 async def github_execute(entity: str, action: str, params: dict | None = None) -> str:
     """Execute GitHub connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result.data if hasattr(result, "data") else result, default=str)
-
-github_tool = StructuredTool.from_function(
-    coroutine=github_execute,
-    name="github_execute",
-    description=github_execute.__doc__,
-)
+    return json.dumps(result, default=str)
 ```
 
 ### Define the agent
@@ -160,7 +155,7 @@ Create a LangChain chat model and a LangGraph ReAct agent:
 
 ```python title="agent.py"
 llm = ChatOpenAI(model="gpt-4o")
-agent = create_react_agent(llm, [github_tool])
+agent = create_react_agent(llm, [github_execute])
 ```
 
 - `ChatOpenAI(model="gpt-4o")` creates an OpenAI chat model. You can use a different model by changing the model string. For example, use `"gpt-4o-mini"` to lower costs. LangChain also supports [other providers](https://python.langchain.com/docs/integrations/chat/) like Anthropic and Google.
