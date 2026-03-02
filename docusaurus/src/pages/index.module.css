@@ -192,11 +192,7 @@
    =========================== */
 .aeSection {
   padding: 4rem 0;
-  background: hsl(240, 20%, 95%);
-}
-
-:global(html[data-theme="dark"]) .aeSection {
-  background: hsl(240, 18%, 16%);
+  background: var(--color-ae-bg);
 }
 
 .aeSectionTitle {
@@ -223,18 +219,13 @@
 .aeNavCard {
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid var(--ifm-color-primary-lightest);
+  border: 1px solid var(--color-ae-card-border);
   background: var(--color-white);
   transition: all 0.2s ease-out;
   text-decoration: none;
   color: inherit;
   display: flex;
   flex-direction: column;
-}
-
-:global(html[data-theme="dark"]) .aeNavCard {
-  background: var(--color-grey-40);
-  border-color: hsl(240, 15%, 25%);
 }
 
 .aeNavCard:hover {
@@ -252,18 +243,8 @@
   justify-content: center;
   width: 56px;
   height: 56px;
-  background: var(--ifm-color-primary-lightest);
+  background: var(--color-ae-icon-bg);
   border-radius: 12px;
-}
-
-:global(html[data-theme="dark"]) .aeNavIcon {
-  background: hsl(240, 20%, 25%);
-}
-
-.aeNavIconSvg {
-  fill: var(--ifm-color-primary);
-  width: 28px;
-  height: 28px;
 }
 
 .mcpIconSvg {

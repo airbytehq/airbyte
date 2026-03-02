@@ -54,6 +54,11 @@
   --color-orange-400: hsl(9, 100%, 60%);
   --modal-overlay-background: hsla(241, 51%, 20%, 50%);
   --icon-background: transparent;
+
+  /* Agent Engine homepage section */
+  --color-ae-bg: hsl(240, 20%, 95%);
+  --color-ae-card-border: var(--ifm-color-primary-lightest);
+  --color-ae-icon-bg: var(--ifm-color-primary-lightest);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -90,6 +95,11 @@ html[data-theme="dark"] {
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
+
+  /* Agent Engine homepage section */
+  --color-ae-bg: hsl(240, 18%, 16%);
+  --color-ae-card-border: hsl(240, 15%, 25%);
+  --color-ae-icon-bg: hsl(240, 20%, 25%);
 }
 
 /* Hide sidebar on the homepage */
