@@ -364,13 +364,37 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         Making call to check "action_breakdowns" and "breakdowns" combinations
         https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
+
+        We constrain the request to a single-day time_range to avoid hitting
+        Facebook's data-volume limits on synchronous insight calls.  High-cardinality
+        breakdowns such as ``product_id`` can return thousands of rows per day; without
+        the date constraint the default date range causes the API to reject the request
+        with "Please reduce the amount of data you're asking for".
+
+        If the API *still* returns a "reduce the amount of data" error even for a
+        single day (e.g. extremely large product catalogs), we treat that as a
+        non-fatal condition: the breakdown combination itself is valid and will work
+        fine during actual syncs which use async jobs with per-day slicing.
         """
+        today = date.today().strftime("%Y-%m-%d")
         params = {
             "action_breakdowns": self.action_breakdowns,
             "breakdowns": self.breakdowns,
             "fields": ["account_id"],
+            "time_range": {"since": today, "until": today},
         }
-        self._api.get_account(account_id=account_id).get_insights(params=params, is_async=False)
+        try:
+            self._api.get_account(account_id=account_id).get_insights(params=params, is_async=False)
+        except FacebookRequestError as e:
+            if "reduce the amount of data" in str(e):
+                logger.warning(
+                    "Breakdown validation exceeded Facebook API data-volume limit for account %s. "
+                    "This is expected for high-cardinality breakdowns (e.g. product_id) and does not indicate an "
+                    "invalid breakdown combination. The actual sync uses async jobs which handle large result sets.",
+                    account_id,
+                )
+            else:
+                raise
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
         """
