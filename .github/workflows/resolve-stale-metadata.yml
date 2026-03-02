@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   generate-connector-registries:
@@ -34,6 +35,8 @@ jobs:
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Check for unpublished connector versions
+        id: check-unpublished
+        continue-on-error: true
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         shell: bash
@@ -44,4 +47,34 @@ jobs:
             --repo-path "${{ github.workspace }}" \
             --unpublished \
             --bucket prod \
-            --assert-none
+            --assert-none \
+            2>&1 | tee /tmp/unpublished-report.txt
+
+      - name: Create or update tracking issue
+        if: steps.check-unpublished.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_TITLE: "[Automated] Unpublished connector versions detected"
+          ISSUE_LABEL: auto-audit
+        shell: bash
+        run: |
+          # Search for existing open issue by label
+          EXISTING=$(gh issue list --repo "${{ github.repository }}" \
+            --label "${ISSUE_LABEL}" --state open --json number -q '.[0].number')
+
+          BODY="The following connector versions exist on master but are not published to GCS:
+
+          \`\`\`
+          $(cat /tmp/unpublished-report.txt)
+          \`\`\`
+
+          _Updated by [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})_"
+
+          if [ -n "$EXISTING" ]; then
+            gh issue edit "$EXISTING" --repo "${{ github.repository }}" --body "$BODY"
+            echo "Updated existing issue #${EXISTING}"
+          else
+            gh issue create --repo "${{ github.repository }}" \
+              --title "${ISSUE_TITLE}" --label "${ISSUE_LABEL}" --body "$BODY"
+            echo "Created new tracking issue"
+          fi
