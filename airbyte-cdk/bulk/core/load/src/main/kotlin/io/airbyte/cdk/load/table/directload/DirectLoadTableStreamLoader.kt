@@ -90,7 +90,21 @@ class DirectLoadTableDedupStreamLoader(
         logger.info { "DedupStreamLoader starting for stream: ${stream.mappedDescriptor}" }
 
         if (initialStatus.tempTable != null) {
-            schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+            if (initialStatus.tempTable.isEmpty) {
+                schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+            } else {
+                // Recreate non-empty temp tables to prevent accumulating records
+                // from prior failed sync attempts on retry.
+                logger.info {
+                    "Recreating non-empty temp table: ${tempTableName.toPrettyString()} for stream: ${stream.mappedDescriptor}"
+                }
+                tableOperationsClient.createTable(
+                    stream,
+                    tempTableName,
+                    columnNameMapping,
+                    replace = true,
+                )
+            }
         } else {
             logger.info {
                 "Creating new temp table: ${tempTableName.toPrettyString()} for stream: ${stream.mappedDescriptor}"
@@ -166,24 +180,17 @@ class DirectLoadTableAppendTruncateStreamLoader(
             if (initialStatus.tempTable.isEmpty) {
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
-                val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
-                    schemaEvolutionClient.ensureSchemaMatches(
-                        stream,
-                        tempTableName,
-                        columnNameMapping,
-                    )
-                } else {
-                    logger.info {
-                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
-                    }
-                    tableOperationsClient.createTable(
-                        stream,
-                        tempTableName,
-                        columnNameMapping,
-                        replace = true,
-                    )
+                // Recreate non-empty temp tables to prevent accumulating records
+                // from prior failed sync attempts on retry.
+                logger.info {
+                    "Recreating non-empty temp table ${tempTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
                 }
+                tableOperationsClient.createTable(
+                    stream,
+                    tempTableName,
+                    columnNameMapping,
+                    replace = true,
+                )
             }
             isWritingToTemporaryTable = true
             streamStateStore.put(
@@ -292,24 +299,17 @@ class DirectLoadTableDedupTruncateStreamLoader(
             if (initialStatus.tempTable.isEmpty) {
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
-                val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
-                    schemaEvolutionClient.ensureSchemaMatches(
-                        stream,
-                        tempTableName,
-                        columnNameMapping,
-                    )
-                } else {
-                    logger.info {
-                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
-                    }
-                    tableOperationsClient.createTable(
-                        stream,
-                        tempTableName,
-                        columnNameMapping,
-                        replace = true,
-                    )
+                // Recreate non-empty temp tables to prevent accumulating records
+                // from prior failed sync attempts on retry.
+                logger.info {
+                    "Recreating non-empty temp table ${tempTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
                 }
+                tableOperationsClient.createTable(
+                    stream,
+                    tempTableName,
+                    columnNameMapping,
+                    replace = true,
+                )
             }
             shouldCheckRealTableGeneration = false
         } else {

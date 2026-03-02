@@ -1,3 +1,7 @@
+## Version 0.2.9
+
+Fix DirectLoad temp table reuse on retry to prevent duplicate records in destinations
+
 
 # Bulk CDK
 
