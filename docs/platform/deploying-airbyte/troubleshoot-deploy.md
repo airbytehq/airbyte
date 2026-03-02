@@ -38,18 +38,6 @@ Make sure the target directory exists and is in your `PATH`.
 
 ---
 
-### Installer environment variables
-
-The installer script supports the following environment variables for customization.
-
-| Variable | Default | Description |
-| --- | --- | --- |
-| `DIR_INSTALL` | `/usr/local/bin` | Directory where the `abctl` binary is placed. |
-| `RELEASE_TAG` | latest | Specific abctl release tag to install (e.g. `v0.19.0`). |
-| `DEBUG` | unset | Set to any value to enable verbose installer output. |
-
----
-
 ## Common Errors
 
 ### Airbyte Bootloader failed to start
