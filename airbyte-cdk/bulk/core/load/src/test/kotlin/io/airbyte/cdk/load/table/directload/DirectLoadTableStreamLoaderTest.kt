@@ -40,7 +40,8 @@ class DirectLoadTableStreamLoaderTest {
     private val columnNameMapping = ColumnNameMapping(emptyMap())
     private val schemaEvolutionClient = mockk<TableSchemaEvolutionClient>(relaxed = true)
     private val tableOperationsClient = mockk<TableOperationsClient>(relaxed = true)
-    private val streamStateStore = mockk<StreamStateStore<DirectLoadTableExecutionConfig>>(relaxed = true)
+    private val streamStateStore =
+        mockk<StreamStateStore<DirectLoadTableExecutionConfig>>(relaxed = true)
     private val tempTableNameGenerator = mockk<TempTableNameGenerator>(relaxed = true)
 
     // --- DedupStreamLoader tests ---
@@ -69,7 +70,12 @@ class DirectLoadTableStreamLoaderTest {
 
         // Should recreate the non-empty temp table, not just ensure schema matches
         coVerify(exactly = 1) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
         coVerify(exactly = 0) {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
@@ -103,7 +109,12 @@ class DirectLoadTableStreamLoaderTest {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
         }
         coVerify(exactly = 0) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
     }
 
@@ -133,7 +144,12 @@ class DirectLoadTableStreamLoaderTest {
 
         // Should recreate the non-empty temp table, not just ensure schema matches
         coVerify(exactly = 1) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
         coVerify(exactly = 0) {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
@@ -167,7 +183,12 @@ class DirectLoadTableStreamLoaderTest {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
         }
         coVerify(exactly = 0) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
     }
 
@@ -200,7 +221,12 @@ class DirectLoadTableStreamLoaderTest {
 
         // Should recreate the non-empty temp table, not just ensure schema matches
         coVerify(exactly = 1) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
         coVerify(exactly = 0) {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
@@ -235,7 +261,12 @@ class DirectLoadTableStreamLoaderTest {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
         }
         coVerify(exactly = 0) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
     }
 
@@ -264,7 +295,12 @@ class DirectLoadTableStreamLoaderTest {
 
         // Should create a fresh temp table
         coVerify(exactly = 1) {
-            tableOperationsClient.createTable(stream, tempTableName, columnNameMapping, replace = true)
+            tableOperationsClient.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true
+            )
         }
     }
 }
