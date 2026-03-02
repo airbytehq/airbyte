@@ -3122,11 +3122,6 @@ schemas:
         type:
           - "null"
           - integer
-      segments.ad_network_type:
-        description: The type of ad network.
-        type:
-          - "null"
-          - string
       metrics.all_conversions:
         description: Total number of conversions for all actions.
         type:
