@@ -220,7 +220,7 @@ If your sync fails with `BigQueryException: 400 Bad Request` and the message
 - **Retry the sync.** In most cases the error resolves on the next attempt.
 - If the error recurs on every sync, the underlying causes can be complex. Google does not
   publicly document this specific error. The following steps may help narrow the issue:
-  - If you Self-manage Airbyte, check whether a proxy, VPN, or firewall is modifying HTTP
+  - If you self-manage Airbyte, check whether a proxy, VPN, or firewall is modifying HTTP
     headers on requests to `bigquery.googleapis.com`.
   - Verify the service account key has not been rotated or revoked since the connection was
     configured.
