@@ -195,22 +195,6 @@ The HMAC key is wrong.
 - Make sure the HMAC key is created for the BigQuery service account, and the service account has
   permission to access the GCS bucket and path.
 
-### "Socket file not created" timeout
-
-If your sync fails with an error containing `Socket file ... not created after 900000 ms`,
-the Airbyte platform was unable to set up an internal data channel before the connector
-timed out. This is not caused by your BigQuery configuration or credentials.
-
-- **Retry the sync.** The issue is often transient, caused by temporary resource pressure, and resolves
-  on the next attempt.
-- **Stagger concurrent syncs.** Running many connections to the same destination at the same
-  time increases the chance of this error. Spacing out sync schedules can help.
-- **Airbyte Cloud:** If the error persists after retrying, contact
-  [Airbyte Support](https://support.airbyte.com) with the connection ID and job ID.
-- **Self-managed:** Make sure your Airbyte platform is up to date. Check
-  the worker or pod logs for out-of-memory events or container restarts around the time of
-  the failure.
-
 ### HTTP 400 "Request had invalid euc header" during upload
 
 If your sync fails with `BigQueryException: 400 Bad Request` and the message
@@ -227,26 +211,14 @@ If your sync fails with `BigQueryException: 400 Bad Request` and the message
   - Try reducing the **Google BigQuery Client Chunk Size** from the default 15 MiB to a
     smaller value (for example, 5 MiB).
 
-### Broken pipe errors
-
-If your sync fails with a `Broken pipe` error on the destination side:
-
-- This is a transport-level error caused by a network interruption between the Airbyte worker
-  and the BigQuery API.
-- **Reduce chunk size:** In the connector settings, decrease the **Google BigQuery Client Chunk
-  Size** to 5 MiB or less. Smaller uploads complete faster and are less susceptible to
-  connection timeouts.
-- **Check network infrastructure:** Firewalls, NAT gateways, and cloud load balancers may
-  terminate idle or long-lived connections. Ensure outbound HTTPS to `*.googleapis.com` is not
-  subject to aggressive idle timeouts.
-- **Retry the sync.** Broken pipe errors are typically transient.
-
 ### Load job timeouts
 
 If your sync fails with `Fail to complete a load job in big query`:
 
 - BigQuery load jobs have a 30-minute wait timeout. Very large batches or high BigQuery queue
   contention can exceed this limit.
+- Running concurrent syncs that load into the same BigQuery table is not supported and can
+  also trigger this timeout.
 - Try reducing the volume per sync by using incremental sync mode or reducing the number of
   streams per connection.
 
