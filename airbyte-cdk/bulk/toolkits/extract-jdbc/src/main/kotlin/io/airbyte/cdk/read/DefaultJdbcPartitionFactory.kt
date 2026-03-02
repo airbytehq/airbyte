@@ -16,6 +16,7 @@ import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.output.ResetStream
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
@@ -265,10 +266,15 @@ class DefaultJdbcPartitionFactory(
         }
     }
 
+    private val log = KotlinLogging.logger {}
+
     private fun DefaultJdbcCursorIncrementalPartition.split(
         splitPointValues: List<DefaultJdbcStreamStateValue>
     ): List<DefaultJdbcCursorIncrementalPartition> {
-        val inners: List<JsonNode> = splitPointValues.mapNotNull { it.cursorPair(stream)?.second }
+        val inners: List<JsonNode> = splitPointValues.mapNotNull {
+            log.info { "*** $it" }
+            it.cursorPair(stream)?.second
+        }
         val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners
         val ubs: List<JsonNode> = inners + listOf(cursorUpperBound)
         return lbs.zip(ubs).mapIndexed { idx: Int, (lowerBound, upperBound) ->
