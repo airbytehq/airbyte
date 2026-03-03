@@ -1552,6 +1552,14 @@ schemas:
         type:
           - string
           - "null"
+      email:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
       id:
         type: string
       name:
