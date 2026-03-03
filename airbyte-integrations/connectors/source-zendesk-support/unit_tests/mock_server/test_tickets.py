@@ -53,21 +53,26 @@ class TestTicketsStreamFullRefresh(TestCase):
     def test_given_two_pages_when_read_tickets_then_return_all_records(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
 
-        # Create the next page request - this URL will be used in links.next
-        next_page_http_request = (
+        # Build a dummy next-page request to make the first response signal has_more=true.
+        # CursorBasedPaginationStrategy sets has_more based on whether next_page_url is provided.
+        next_page_request = (
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_after_cursor("after-cursor").build()
         )
 
+        # Combine both page responses into a single mock as a list so they are consumed
+        # sequentially. Using separate http_mocker.get() calls with with_any_query_params()
+        # causes an infinite loop because it matches all requests including the second page.
         http_mocker.get(
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_any_query_params().build(),
-            TicketsResponseBuilder.tickets_response(next_page_http_request)
-            .with_record(TicketsRecordBuilder.tickets_record().with_id(1))
-            .with_pagination()
-            .build(),
-        )
-        http_mocker.get(
-            next_page_http_request,
-            TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_id(2)).build(),
+            [
+                TicketsResponseBuilder.tickets_response(next_page_request)
+                .with_record(TicketsRecordBuilder.tickets_record().with_id(1))
+                .with_pagination()
+                .build(),
+                TicketsResponseBuilder.tickets_response()
+                .with_record(TicketsRecordBuilder.tickets_record().with_id(2))
+                .build(),
+            ],
         )
 
         output = read_stream("tickets", SyncMode.full_refresh, self._config)
