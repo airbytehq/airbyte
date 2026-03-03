@@ -121,7 +121,7 @@ See the official [Sendgrid API reference](https://docs.sendgrid.com/api-referenc
 
 ## Version information
 
-- **Package version:** 0.1.3
+- **Package version:** 0.1.5
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 7bd29cadd2220a5f26191e78acd5832fac497c81
+- **Generated with Connector SDK commit SHA:** 258f32e007ab8ea921446afe5d6a68a92d68fa51
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/sendgrid/CHANGELOG.md)
