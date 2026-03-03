@@ -167,7 +167,9 @@ class TestBaseInsightsStream:
             ),
         ],
     )
-    def test_include_incrementality_and_engaged_view(self, api, some_config, include_incrementality, include_engaged_view, expected_windows):
+    def test_include_incrementality_and_engaged_view(
+        self, api, some_config, include_incrementality, include_engaged_view, expected_windows
+    ):
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
