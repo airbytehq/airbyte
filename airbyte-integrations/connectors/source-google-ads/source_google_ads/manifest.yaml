@@ -2080,7 +2080,7 @@ schemas:
         type:
           - "null"
           - boolean
-      campaign.end_date:
+      campaign.end_date_time:
         description: The end date of the campaign.
         type:
           - "null"
@@ -2259,7 +2259,7 @@ schemas:
         type:
           - "null"
           - integer
-      campaign.start_date:
+      campaign.start_date_time:
         description: The start date of the campaign.
         type:
           - "null"
