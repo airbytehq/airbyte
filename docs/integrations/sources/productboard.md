@@ -36,7 +36,7 @@ A manifest only source for Productboard. https://www.productboard.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| 0.1.0 | 2026-03-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `externalId` and `email` fields to `users` stream schema |
+| 0.1.0 | 2026-03-03 | [74271](https://github.com/airbytehq/airbyte/pull/74271) | Add `externalId` and `email` fields to `users` stream schema |
 | 0.0.29 | 2025-06-21 | [61037](https://github.com/airbytehq/airbyte/pull/61037) | Update dependencies |
 | 0.0.28 | 2025-05-24 | [60509](https://github.com/airbytehq/airbyte/pull/60509) | Update dependencies |
 | 0.0.27 | 2025-05-10 | [60147](https://github.com/airbytehq/airbyte/pull/60147) | Update dependencies |
