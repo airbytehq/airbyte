@@ -122,7 +122,7 @@ See the official [Google-Analytics-Data-Api API reference](https://developers.go
 
 ## Version information
 
-- **Package version:** 0.1.0
+- **Package version:** 0.1.4
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 4047b2be8c79b9f3d50547f54e50c8a4b5cc67d8
+- **Generated with Connector SDK commit SHA:** 258f32e007ab8ea921446afe5d6a68a92d68fa51
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-analytics-data-api/CHANGELOG.md)
