@@ -20,8 +20,11 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/sendgrid
   externalDocumentationUrls:
     - title: API overview
-      url: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication
+      url: https://www.twilio.com/docs/sendgrid/api-reference/how-to-use-the-sendgrid-v3-api/authentication
       type: api_reference
+    - title: Twilio SendGrid Changelog
+      url: https://www.twilio.com/en-us/changelog?product=sendgrid-email-api%2Ctwilio-sendgrid-platform%2Cmarketing-campaigns
+      type: api_release_history
     - title: SendGrid API OpenAPI specification
       url: https://github.com/sendgrid/sendgrid-oai
       type: openapi_spec
