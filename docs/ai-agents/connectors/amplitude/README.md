@@ -107,7 +107,7 @@ See the official [Amplitude API reference](https://www.docs.developers.amplitude
 
 ## Version information
 
-- **Package version:** 0.1.0
+- **Package version:** 0.1.1
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 4e9e787296d44914db1c2c21125ccf25dd232b26
+- **Generated with Connector SDK commit SHA:** 258f32e007ab8ea921446afe5d6a68a92d68fa51
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/amplitude/CHANGELOG.md)
