@@ -814,3 +814,146 @@ def test_settings_transformation(test_name, input_record, expected_settings, com
 def test_bulk_stream_state_migration(stream_state, expected_state, components_module):
     migrator = components_module.BulkStreamsStateMigration()
     assert migrator.migrate(stream_state) == expected_state
+
+
+import gzip
+import io
+from types import SimpleNamespace
+
+
+def _make_csv_bytes(rows_text: str, encoding: str = "utf-8") -> bytes:
+    return rows_text.encode(encoding)
+
+
+def _gzip_bytes(data: bytes) -> bytes:
+    buf = io.BytesIO()
+    with gzip.GzipFile(fileobj=buf, mode="wb") as gz:
+        gz.write(data)
+    return buf.getvalue()
+
+
+def _make_raw_stream(data: bytes):
+    stream = io.BytesIO(data)
+    stream.auto_close = True
+    return stream
+
+
+def _make_response(data: bytes):
+    return SimpleNamespace(raw=_make_raw_stream(data))
+
+
+CSV_TWO_ROWS = "name,value\nalice,1\nbob,2\n"
+CSV_SINGLE_ROW = "name,value\nalice,1\n"
+
+
+@pytest.mark.parametrize(
+    "prefix,stream_data,read_size,expected",
+    [
+        pytest.param(b"\x1f\x8b", b"rest", -1, b"\x1f\x8brest", id="unbounded_read"),
+        pytest.param(b"\x1f\x8b", b"rest", 1, b"\x1f", id="bounded_within_prefix"),
+        pytest.param(b"\x1f\x8b", b"rest", 3, b"\x1f\x8br", id="bounded_spanning_prefix_and_stream"),
+        pytest.param(b"\x1f\x8b", b"rest", 2, b"\x1f\x8b", id="bounded_exact_prefix_length"),
+        pytest.param(b"AB", b"", 5, b"AB", id="stream_empty"),
+        pytest.param(b"", b"hello", -1, b"hello", id="empty_prefix"),
+        pytest.param(b"", b"hello", 3, b"hel", id="empty_prefix_bounded"),
+        pytest.param(b"\x1f\x8b", b"rest", 0, b"", id="zero_size"),
+    ],
+)
+def test_prefixed_stream_read(prefix, stream_data, read_size, expected, components_module):
+    stream = components_module._PrefixedStream(prefix, io.BytesIO(stream_data))
+    assert stream.read(read_size) == expected
+
+
+def test_prefixed_stream_sequential_reads(components_module):
+    stream = components_module._PrefixedStream(b"AB", io.BytesIO(b"CDEF"))
+    assert stream.read(1) == b"A"
+    assert stream.read(1) == b"B"
+    assert stream.read(2) == b"CD"
+    assert stream.read(-1) == b"EF"
+    assert stream.read(-1) == b""
+
+
+def test_prefixed_stream_readinto(components_module):
+    stream = components_module._PrefixedStream(b"AB", io.BytesIO(b"CD"))
+    buf = bytearray(4)
+    n = stream.readinto(buf)
+    assert n == 4
+    assert buf == bytearray(b"ABCD")
+
+
+def test_prefixed_stream_readable(components_module):
+    stream = components_module._PrefixedStream(b"", io.BytesIO(b""))
+    assert stream.readable() is True
+
+
+def test_decoder_is_stream_response(components_module):
+    decoder = components_module.BingAdsGzipCsvDecoder()
+    assert decoder.is_stream_response() is True
+
+
+@pytest.mark.parametrize(
+    "csv_text,use_gzip,expected_rows",
+    [
+        pytest.param(
+            CSV_TWO_ROWS,
+            True,
+            [{"name": "alice", "value": "1"}, {"name": "bob", "value": "2"}],
+            id="gzipped_csv",
+        ),
+        pytest.param(
+            CSV_TWO_ROWS,
+            False,
+            [{"name": "alice", "value": "1"}, {"name": "bob", "value": "2"}],
+            id="plain_csv",
+        ),
+        pytest.param(
+            CSV_SINGLE_ROW,
+            True,
+            [{"name": "alice", "value": "1"}],
+            id="gzipped_csv_with_bom",
+        ),
+        pytest.param(
+            CSV_SINGLE_ROW,
+            False,
+            [{"name": "alice", "value": "1"}],
+            id="plain_csv_with_bom",
+        ),
+        pytest.param(
+            "col_a,col_b\n",
+            True,
+            [],
+            id="gzipped_header_only",
+        ),
+        pytest.param(
+            "col_a,col_b\n",
+            False,
+            [],
+            id="plain_header_only",
+        ),
+    ],
+)
+def test_decoder_decode(csv_text, use_gzip, expected_rows, components_module):
+    raw_csv = csv_text.encode("utf-8-sig")
+    data = _gzip_bytes(raw_csv) if use_gzip else raw_csv
+    response = _make_response(data)
+    rows = list(components_module.BingAdsGzipCsvDecoder().decode(response))
+    assert rows == expected_rows
+
+
+def test_decoder_decode_empty_response(components_module):
+    response = _make_response(b"")
+    rows = list(components_module.BingAdsGzipCsvDecoder().decode(response))
+    assert rows == []
+
+
+def test_decoder_closes_raw_stream(components_module):
+    response = _make_response(_gzip_bytes(b"a,b\n1,2\n"))
+    raw = response.raw
+    list(components_module.BingAdsGzipCsvDecoder().decode(response))
+    assert raw.closed
+
+
+def test_decoder_logs_error_and_yields_empty_on_bad_data(components_module):
+    response = _make_response(b"\x1f\x8b not valid gzip at all")
+    rows = list(components_module.BingAdsGzipCsvDecoder().decode(response))
+    assert rows == [{}]
