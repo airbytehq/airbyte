@@ -1,0 +1,775 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - chat_engagement_report
+
+definitions:
+  streams:
+    chat_engagement_report:
+      type: DeclarativeStream
+      name: chat_engagement_report
+      primary_key:
+        - report_date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/chats/engagement
+          http_method: GET
+          request_parameters:
+            timezone: UTC
+            filters.to: "{{ stream_interval['start_time'][:10] }}T23:59:59Z"
+            filters.from: "{{ stream_interval['start_time'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+              - "*"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: report_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_date
+              value: "{{ stream_interval['start_time'][:10] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/chat_engagement_report"
+    queued_visitors_left_report:
+      type: DeclarativeStream
+      name: queued_visitors_left_report
+      primary_key:
+        - chat_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/chats/queued_visitors_left
+          http_method: GET
+          request_parameters:
+            timezone: UTC
+            filters.to: "{{ stream_interval['start_time'][:10] }}T23:59:59Z"
+            filters.from: "{{ stream_interval['start_time'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.FlattenQueuedVisitorsLeft
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: report_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_date
+              value: "{{ stream_interval['start_time'][:10] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/queued_visitors_left_report"
+    chat_greetings_conversion_report:
+      type: DeclarativeStream
+      name: chat_greetings_conversion_report
+      primary_key:
+        - greeting_id
+        - report_date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/chats/greetings_conversion
+          http_method: GET
+          request_parameters:
+            timezone: UTC
+            filters.to: "{{ stream_interval['start_time'][:10] }}T23:59:59Z"
+            filters.from: "{{ stream_interval['start_time'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.FlattenChatGreetingsConversion
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: report_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_date
+              value: "{{ stream_interval['start_time'][:10] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/chat_greetings_conversion_report"
+    total_chats_report:
+      type: DeclarativeStream
+      name: total_chats_report
+      primary_key:
+        - report_date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/chats/total_chats
+          http_method: GET
+          request_parameters:
+            timezone: UTC
+            filters.to: "{{ stream_interval['start_time'][:10] }}T23:59:59Z"
+            filters.from: "{{ stream_interval['start_time'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+              - "*"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: report_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_date
+              value: "{{ stream_interval['start_time'][:10] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/total_chats_report"
+    queued_visitors_report:
+      type: DeclarativeStream
+      name: queued_visitors_report
+      primary_key:
+        - report_date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/chats/queued_visitors
+          http_method: GET
+          request_parameters:
+            timezone: UTC
+            filters.to: "{{ stream_interval['start_time'][:10] }}T23:59:59Z"
+            filters.from: "{{ stream_interval['start_time'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+              - "*"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: report_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_date
+              value: "{{ stream_interval['start_time'][:10] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/queued_visitors_report"
+    agent_availability_report:
+      type: DeclarativeStream
+      name: agent_availability_report
+      primary_key:
+        - report_date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/agents/availability
+          http_method: GET
+          request_parameters:
+            timezone: UTC
+            filters.to: "{{ stream_interval['start_time'][:10] }}T23:59:59Z"
+            filters.from: "{{ stream_interval['start_time'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+              - "*"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: report_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_date
+              value: "{{ stream_interval['start_time'][:10] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agent_availability_report"
+    chat_response_time_report:
+      type: DeclarativeStream
+      name: chat_response_time_report
+      primary_key:
+        - report_date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/chats/response_time
+          http_method: GET
+          request_parameters:
+            timezone: UTC
+            filters.to: "{{ stream_interval['start_time'][:10] }}T23:59:59Z"
+            filters.from: "{{ stream_interval['start_time'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+              - "*"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: report_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_date
+              value: "{{ stream_interval['start_time'][:10] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/chat_response_time_report"
+    chat_first_response_time_report:
+      type: DeclarativeStream
+      name: chat_first_response_time_report
+      primary_key:
+        - report_date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/chats/first_response_time
+          http_method: GET
+          request_parameters:
+            timezone: UTC
+            filters.to: "{{ stream_interval['start_time'][:10] }}T23:59:59Z"
+            filters.from: "{{ stream_interval['start_time'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+              - "*"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: report_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_date
+              value: "{{ stream_interval['start_time'][:10] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/chat_first_response_time_report"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.livechatinc.com/v3.6
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/chat_engagement_report"
+  - $ref: "#/definitions/streams/queued_visitors_left_report"
+  - $ref: "#/definitions/streams/chat_greetings_conversion_report"
+  - $ref: "#/definitions/streams/total_chats_report"
+  - $ref: "#/definitions/streams/queued_visitors_report"
+  - $ref: "#/definitions/streams/agent_availability_report"
+  - $ref: "#/definitions/streams/chat_response_time_report"
+  - $ref: "#/definitions/streams/chat_first_response_time_report"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - start_date
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: Start Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    chat_engagement_report: true
+    queued_visitors_left_report: false
+    chat_greetings_conversion_report: true
+    total_chats_report: true
+    queued_visitors_report: true
+    agent_availability_report: true
+    chat_response_time_report: true
+    chat_first_response_time_report: true
+  testedStreams:
+    chat_engagement_report:
+      streamHash: e11b0de0dd3bdac2bbca702915b0bb990e568f03
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    queued_visitors_left_report:
+      streamHash: ae1a56b4f3a2702f0d80f99d1c5af5166973f65a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    chat_greetings_conversion_report:
+      streamHash: 899079b9c7cf03126ad3ee78737653f201b0e891
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    total_chats_report:
+      streamHash: 9eb3cd5a61505333ea25682900a1de7305b2a8c0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    queued_visitors_report:
+      streamHash: 97adbc2116eeaa626736969339b5b5c8d0031832
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    agent_availability_report:
+      streamHash: 729ff048094523fbb0b2faacc35ca0d1c6e57f5d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    chat_response_time_report:
+      streamHash: 4039300259c2f385e9cc69f09eb39f29a43754ad
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    chat_first_response_time_report:
+      streamHash: 44e56a2e75c6fb4058c3fecc21b4e3a78622bf96
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  chat_engagement_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      report_date:
+        type: string
+      started_by_agent:
+        type:
+          - number
+          - "null"
+      started_by_customer_from_greeting:
+        type:
+          - number
+          - "null"
+      started_by_customer_without_greeting:
+        type:
+          - number
+          - "null"
+    required:
+      - report_date
+  queued_visitors_left_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      chat_id:
+        type: string
+      report_date:
+        type: string
+      prechat_survey:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type: ["string", "null"]
+            value:
+              type: ["string", "null"]
+            id:
+              type: ["string", "null"]
+            type:
+              type: ["string", "null"]
+      visitor:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type: ["string", "null"]
+          name:
+            type: ["string", "null"]
+          email:
+            type: ["string", "null"]
+          ip:
+            type: ["string", "null"]
+          visitor_custom_variables:
+            type: ["array", "null"]
+      queue:
+        type:
+          - object
+          - "null"
+        properties:
+          duration:
+            type: ["number", "null"]
+          url:
+            type: ["string", "null"]
+          group:
+            type: ["number", "null"]
+          start_date:
+            type: ["string", "null"]
+      integration_variables:
+        type: ["array", "null"]
+    required:
+      - chat_id
+      - report_date
+  chat_greetings_conversion_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      greeting_id:
+        type: string
+      report_date:
+        type: string
+      accepted:
+        type:
+          - number
+          - "null"
+      canceled:
+        type:
+          - number
+          - "null"
+      displayed:
+        type:
+          - number
+          - "null"
+      goals:
+        type:
+          - number
+          - "null"
+    required:
+      - greeting_id
+      - report_date
+  total_chats_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      continuous:
+        type:
+          - number
+          - "null"
+      report_date:
+        type: string
+      total:
+        type:
+          - number
+          - "null"
+    required:
+      - report_date
+  queued_visitors_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      entered_chat:
+        type:
+          - object
+          - "null"
+        properties:
+          avg:
+            type:
+              - number
+              - "null"
+          count:
+            type:
+              - number
+              - "null"
+          max:
+            type:
+              - number
+              - "null"
+          min:
+            type:
+              - number
+              - "null"
+      left_queue:
+        type:
+          - object
+          - "null"
+        properties:
+          avg:
+            type:
+              - number
+              - "null"
+          count:
+            type:
+              - number
+              - "null"
+          max:
+            type:
+              - number
+              - "null"
+          min:
+            type:
+              - number
+              - "null"
+      queued:
+        type:
+          - object
+          - "null"
+        properties:
+          avg:
+            type:
+              - number
+              - "null"
+          count:
+            type:
+              - number
+              - "null"
+          max:
+            type:
+              - number
+              - "null"
+          min:
+            type:
+              - number
+              - "null"
+      report_date:
+        type: string
+    required:
+      - report_date
+  agent_availability_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      hours:
+        type:
+          - number
+          - "null"
+      report_date:
+        type: string
+    required:
+      - report_date
+  chat_response_time_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - number
+          - "null"
+      report_date:
+        type: string
+      response_time:
+        type:
+          - number
+          - "null"
+    required:
+      - report_date
+  chat_first_response_time_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - number
+          - "null"
+      first_response_time:
+        type:
+          - number
+          - "null"
+      report_date:
+        type: string
+    required:
+      - report_date

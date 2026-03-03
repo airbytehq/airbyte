@@ -136,7 +136,7 @@ streams:
         additionalProperties: true
     transformations: []
   - type: DeclarativeStream
-    name: attribute-worksheets
+    name: attribute-worksheet-list
     retriever:
       type: SimpleRetriever
       paginator:
@@ -226,6 +226,19 @@ streams:
                       type:
                         - string
                         - "null"
+                    format:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        comma:
+                          type:
+                            - boolean
+                            - "null"
+                        places:
+                          type:
+                            - string
+                            - "null"
                     user_defined:
                       type:
                         - boolean
@@ -259,6 +272,31 @@ streams:
                         - string
                         - "null"
                     parent_column:
+                      type:
+                        - string
+                        - "null"
+                    custom_picklist_options:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          object:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                    option_group_id:
                       type:
                         - string
                         - "null"
@@ -312,7 +350,7 @@ streams:
         additionalProperties: true
     primary_key: id
   - type: DeclarativeStream
-    name: payouts
+    name: payout-dates
     retriever:
       type: SimpleRetriever
       paginator:
@@ -343,7 +381,7 @@ streams:
               - "null"
         additionalProperties: true
   - type: DeclarativeStream
-    name: report-model
+    name: report-models
     retriever:
       type: SimpleRetriever
       paginator:
@@ -369,6 +407,10 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
+          type:
+            type:
+              - string
+              - "null"
           description:
             type:
               - string
@@ -527,14 +569,14 @@ streams:
         additionalProperties: true
     primary_key: id
   - type: DeclarativeStream
-    name: data-worksheets
+    name: data-worksheets-list
     retriever:
       type: SimpleRetriever
       paginator:
         $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
-        url: https://api.captivateiq.com/ciq/v1/data-workbooks
+        url: https://api.captivateiq.com/ciq/v1/data-worksheets
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -552,6 +594,14 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
           object:
             type:
               - string
@@ -562,11 +612,15 @@ streams:
             type:
               - string
               - "null"
-          is_active:
+          workbook:
             type:
-              - boolean
+              - string
               - "null"
-          worksheets:
+          workbook_name:
+            type:
+              - string
+              - "null"
+          columns:
             type:
               - array
               - "null"
@@ -575,10 +629,6 @@ streams:
                 - object
                 - "null"
               properties:
-                type:
-                  type:
-                    - string
-                    - "null"
                 description:
                   type:
                     - string
@@ -594,6 +644,43 @@ streams:
                 name:
                   type:
                     - string
+                    - "null"
+                variant:
+                  type:
+                    - string
+                    - "null"
+                data_type:
+                  type:
+                    - string
+                    - "null"
+                format:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    comma:
+                      type:
+                        - boolean
+                        - "null"
+                    places:
+                      type:
+                        - string
+                        - "null"
+                    currency_code:
+                      type:
+                        - string
+                        - "null"
+                formula:
+                  type:
+                    - string
+                    - "null"
+                read_only:
+                  type:
+                    - boolean
                     - "null"
                 created_at:
                   type:
@@ -1478,7 +1565,7 @@ streams:
         additionalProperties: true
     primary_key: id
   - type: DeclarativeStream
-    name: period-groups
+    name: payout-period-groups
     retriever:
       type: SimpleRetriever
       paginator:
@@ -2483,6 +2570,752 @@ streams:
         field_name: start_date
         inject_into: request_parameter
     primary_key: id
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: >-
+          https://api.captivateiq.com/ciq/v1/attribute-worksheets/{{
+          stream_partition['id'] }}/records
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: Token {{ config['api_token'] }}
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 10
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 401
+                    - 403
+                  failure_type: config_error
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  regex: ([-+]?\d+)
+                  header: Retry-After
+                  max_waiting_time_in_seconds: 3600
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response['next'] }}"
+          stop_condition: "{{ 'next' not in response }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/1"
+            parent_key: id
+            partition_field: id
+            lazy_read_pointer: []
+    name: attribute-worksheet-records
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          start_date:
+            type:
+              - string
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              Employee:
+                type:
+                  - string
+                  - "null"
+              Employee ID:
+                type:
+                  - string
+                  - "null"
+              Employee First Name:
+                type:
+                  - string
+                  - "null"
+              Employee Last Name:
+                type:
+                  - string
+                  - "null"
+              Employee Email:
+                type:
+                  - string
+                  - "null"
+              Employee Last Process Date:
+                type:
+                  - string
+                  - "null"
+              Employee Active:
+                type:
+                  - boolean
+                  - "null"
+              Start Date:
+                type:
+                  - string
+                  - "null"
+              End Date:
+                type:
+                  - string
+                  - "null"
+              Plan:
+                type:
+                  - string
+                  - "null"
+              Plan ID:
+                type:
+                  - string
+                  - "null"
+              Plan Name:
+                type:
+                  - string
+                  - "null"
+              Plan Active:
+                type:
+                  - boolean
+                  - "null"
+              Period Group:
+                type:
+                  - string
+                  - "null"
+              Period Group ID:
+                type:
+                  - string
+                  - "null"
+              Period Group Name:
+                type:
+                  - string
+                  - "null"
+              Period Group Active:
+                type:
+                  - boolean
+                  - "null"
+              SDR Territory:
+                type:
+                  - string
+                  - "null"
+              SDR Territory ID:
+                type:
+                  - string
+                  - "null"
+              SDR Territory Value:
+                type:
+                  - string
+                  - "null"
+              SDR Territory Name:
+                type:
+                  - string
+                  - "null"
+              Geo-factor:
+                type:
+                  - string
+                  - "null"
+              Country Name:
+                type:
+                  - string
+                  - "null"
+              Country Name ID:
+                type:
+                  - string
+                  - "null"
+              Country Name Value:
+                type:
+                  - string
+                  - "null"
+              SDR SubRegion:
+                type:
+                  - string
+                  - "null"
+              SDR Region:
+                type:
+                  - string
+                  - "null"
+          parent_id:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - parent_id
+            value: "{{ stream_partition['id'] }}"
+            value_type: string
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.captivateiq.com/ciq/v1/period-groups
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: Token {{ config['api_token'] }}
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 10
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 401
+                    - 403
+                  failure_type: config_error
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  regex: ([-+]?\d+)
+                  header: Retry-After
+                  max_waiting_time_in_seconds: 3600
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response['next'] }}"
+          stop_condition: "{{ 'next' not in response }}"
+    name: period-groups
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          plan:
+            type:
+              - string
+              - "null"
+          plan_name:
+            type:
+              - string
+              - "null"
+          workbook:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.captivateiq.com/ciq/v1/payouts/plans
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: Token {{ config['api_token'] }}
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 10
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 401
+                    - 403
+                  failure_type: config_error
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  regex: ([-+]?\d+)
+                  header: Retry-After
+                  max_waiting_time_in_seconds: 3600
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response['next'] }}"
+          stop_condition: "{{ 'next' not in response }}"
+    name: payout-plans
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          confetti_enabled:
+            type:
+              - boolean
+              - "null"
+          period_groups:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+          payout_dates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          is_deleted:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: >-
+          https://api.captivateiq.com/ciq/v1/data-worksheets/{{
+          stream_partition['id'] }}/records
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: Token {{ config['api_token'] }}
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 10
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 401
+                    - 403
+                  failure_type: config_error
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  regex: ([-+]?\d+)
+                  header: Retry-After
+                  max_waiting_time_in_seconds: 3600
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response['next'] }}"
+          stop_condition: "{{ 'next' not in response }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/5"
+            parent_key: id
+            partition_field: id
+            lazy_read_pointer: []
+            extra_fields: []
+    name: data-worksheet-records
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              Unique ID:
+                type:
+                  - string
+                  - "null"
+              Opportunity ID:
+                type:
+                  - string
+                  - "null"
+              Line Item ID:
+                type:
+                  - string
+                  - "null"
+              Contract Total:
+                type:
+                  - string
+                  - "null"
+              Invoice Number:
+                type:
+                  - string
+                  - "null"
+              Invoiced Amount:
+                type:
+                  - string
+                  - "null"
+              Invoice Date:
+                type:
+                  - string
+                  - "null"
+              Contract End Date:
+                type:
+                  - string
+                  - "null"
+              ID:
+                type:
+                  - string
+                  - "null"
+              LineItemId2__c:
+                type:
+                  - string
+                  - "null"
+              InstallDate:
+                type:
+                  - string
+                  - "null"
+              UsageEndDate:
+                type:
+                  - string
+                  - "null"
+              ContractId__r.Id:
+                type:
+                  - string
+                  - "null"
+              ContractId__r.ContractNumber:
+                type:
+                  - string
+                  - "null"
+          parent_id:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - parent_id
+            value: "{{ stream_partition['id'] }}"
+            value_type: string
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: >-
+          https://api.captivateiq.com/ciq/v1/hierarchy-groups/{{
+          stream_partition['id'] }}/hierarchies
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: Token {{ config['api_token'] }}
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 10
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 500
+                    - 502
+                    - 503
+                    - 504
+                  failure_type: transient_error
+                - type: HttpResponseFilter
+                  action: FAIL
+                  http_codes:
+                    - 401
+                    - 403
+                  failure_type: config_error
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  regex: ([-+]?\d+)
+                  header: Retry-After
+                  max_waiting_time_in_seconds: 3600
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response['next'] }}"
+          stop_condition: "{{ 'next' not in response }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/7"
+            parent_key: id
+            partition_field: id
+            lazy_read_pointer: []
+            extra_fields: []
+    name: hierarchies
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          object:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          hierarchy_group:
+            type:
+              - string
+              - "null"
+          managing_employee:
+            type:
+              - string
+              - "null"
+          reporting_employee:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          parent_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - parent_id
+            value: "{{ stream_partition['id'] }}"
+            value_type: string
 
 spec:
   type: Spec
@@ -2516,14 +3349,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    payouts:
-      isStale: false
-      hasRecords: true
-      streamHash: 3abc3936f4a4e0f9d1045d4417fa8e2edae613d9
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     uploads:
       isStale: false
       hasRecords: true
@@ -2550,38 +3375,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    report-model:
-      isStale: false
-      hasRecords: true
-      streamHash: 69c06aacb892ecbb29f01ee6580f45f495b76501
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    period-groups:
-      isStale: false
-      hasRecords: true
-      streamHash: decce2d37bf502fc81303d4dc2aba69ac0fafd2e
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    data-workbooks:
-      isStale: false
-      hasRecords: true
-      streamHash: 8f31b052e0ac68b75707d8f3d9d35c532f157bbb
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    data-worksheets:
-      isStale: false
-      hasRecords: true
-      streamHash: 0a1b26c43b3286b31860d52390bdb357b7fa6aa0
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     commission-plans:
       isStale: false
       hasRecords: true
@@ -2598,10 +3391,82 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    attribute-worksheets:
+    attribute-worksheet-records:
+      streamHash: 095ce25ad8359d3e0e7037878194777badb6db98
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    payout-dates:
       isStale: false
       hasRecords: true
-      streamHash: 77c399b15747115a67b4139fe3de93cabec4ed95
+      streamHash: 3abc3936f4a4e0f9d1045d4417fa8e2edae613d9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payout-plans:
+      streamHash: 75a7594c99ac90550c37f5f8ff71dbf528fc5aec
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    attribute-worksheet-list:
+      isStale: false
+      hasRecords: true
+      streamHash: 0e1869c7e2c0a32416614cd9ad50e57b5e5689cd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    data-worksheets-list:
+      isStale: false
+      hasRecords: true
+      streamHash: e2607e4c8b22f65451a4b2ac5e62ac458582962a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    data-worksheet-records:
+      streamHash: 567f6f18e1a9f1283899526613b67dfb16bfcb2a
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    hierarchies:
+      streamHash: 37891d724573432c935268a237dabf9659998737
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transformation-worksheet-records:
+      streamHash: 7121797fb7ab2b0924b4b1a918eaecee8b06d26a
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    data-workbooks:
+      isStale: false
+      hasRecords: true
+      streamHash: da1d0656b1c3266738e5e035eeb753d07a0e9834
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    report-models:
+      isStale: false
+      hasRecords: true
+      streamHash: 192328263488bd0adc443153ab50a56189ac8f33
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -2617,26 +3482,52 @@ metadata:
     transformation-worksheets:
       isStale: false
       hasRecords: true
-      streamHash: 94a9916dd8624070140098537b5c06e415d93380
+      streamHash: 811c8d77c9c10efb4183842a9f40fbf5f835659c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    operiod-groups:
+      isStale: false
+      hasRecords: true
+      streamHash: decce2d37bf502fc81303d4dc2aba69ac0fafd2e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    period-groups:
+      streamHash: 914da74bb1b7add209b2a1b99e12fa9f0dfabba5
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   autoImportSchema:
     users: true
-    payouts: true
     uploads: true
     employees: true
     audit-logs: true
-    report-model: true
-    period-groups: true
-    data-workbooks: true
-    data-worksheets: true
     commission-plans: true
     hierarchy-groups: true
-    attribute-worksheets: true
+    attribute-worksheet-records: true
+    payout-dates: true
+    payout-plans: true
+    attribute-worksheet-list: true
+    report-model-: true
+    data-workbooks-: true
+    data-worksheet-records: true
+    data-worksheets-list: true
+    employee-assumptions-: true
+    hierarchies: true
+    transformation-worksheet-records: true
+    data-workbooks: true
+    report-models: true
     employee-assumptions: true
+    transformation-worksheets-: true
     transformation-worksheets: true
+    operiod-groups: true
+    period-groups: true
 
 concurrency_level:
   type: ConcurrencyLevel

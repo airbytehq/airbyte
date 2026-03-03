@@ -1,4 +1,5 @@
 metadataSpecVersion: "1.0"
+
 data:
   allowedHosts:
     hosts:
@@ -6,30 +7,24 @@ data:
   registryOverrides:
     oss:
       enabled: true
-    cloud:
-      enabled: true
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorType: source
-  dockerImageTag: 0.2.0
-  canonicalImageTag: 0.2.0
-  dockerRepository: airbyte/source-captivateiq
-  githubIssueLabel: source-captivateiq
+  dockerImageTag: 1.0.0
+  canonicalImageTag: 1.0.0
+  dockerRepository: airbyte/source-livechat
+  githubIssueLabel: source-livechat
   icon: icon.svg
   license: MIT
-  name: CaptivateIQ
-  releaseDate: 2026-01-01
+  name: LiveChat
+  releaseDate: 2026-02-20
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/captivateiq
+  documentationUrl: https://docs.airbyte.com/integrations/sources/livechat
+  ab_internal:
+    sl: 100
+    ql: 100
   tags:
     - language:manifest-only
     - cdk:low-code
-  ab_internal:
-    ql: 100
-    sl: 100
-  externalDocumentationUrls:
-    - title: CaptivateIQ API
-      url: https://developers.captivateiq.com
-      type: api_reference
