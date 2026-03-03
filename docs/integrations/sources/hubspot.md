@@ -80,6 +80,8 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `property_history`          | `crm.objects.contacts.read`                                                                                  |
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
+| `deal_splits`               | `crm.objects.deals.read`                                                                                     |
+| `properties`                | `crm.objects.contacts.read`                                                                                  |
 | `account_details`           | `oauth`                                                                                                      |
 | `workflows`                 | `automation`                                                                                                 |
 
@@ -161,6 +163,7 @@ The HubSpot source connector supports the following streams:
 - [Contact Lists](https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch) \(Incremental\)
 - [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
 - [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
+- [Deal Splits](https://developers.hubspot.com/docs/api/crm/deals) \(Incremental\)
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
   - Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
 - [Deals Archived](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
@@ -200,6 +203,7 @@ The HubSpot source connector supports the following streams:
 - [GoalsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
+- [Properties](https://developers.hubspot.com/docs/api-reference/crm-properties-v3/guide) \(Full Refresh\)
 - [Account Details](https://developers.hubspot.com/docs/reference/api/settings/account-information-api#get-%2Faccount-info%2Fv3%2Fdetails) \(Full Refresh\)
 
 ### Entity-Relationship Diagram (ERD)
@@ -269,21 +273,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 ### Troubleshooting
 
-- **Enabling streams:** Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation will only sync the other streams available.
-
-  Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
-
-  ```json
-  {
-    "type": "LOG",
-    "log": {
-      "level": "WARN",
-      "message": "Stream `workflows` cannot be proceed. This API Key (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])"
-    }
-  }
-  ```
-
-- **Hubspot object labels** In Hubspot, a label can be applied to a stream that differs from the original API name of the stream. Hubspot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you are having issues seeing a particular stream your user should have access to, search for the `name` of the Hubspot object instead.
+- **HubSpot object labels:** In HubSpot, a label can be applied to a stream that differs from the original API name of the stream. HubSpot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you have issues finding a particular stream your user should have access to, search for the `name` of the HubSpot object instead.
 
 - **Unnesting top level properties**: Since version 1.5.0, in order to offer users access to nested fields, we also denest the top-level fields into individual fields in the destination. This is most commonly observed in the `properties` field, which is now split into each attribute in the destination.
 
@@ -317,18 +307,18 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 - **403 Forbidden Error**
 
-  - Hubspot has **scopes** for each API call.
+  - HubSpot has **scopes** for each API call.
   - Each stream is tied to a scope and will need access to that scope to sync data.
-  - Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+  - Review the HubSpot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
   - Additional permissions:
 
-    `feedback_submissions`: Service Hub Professional account
-
-    `marketing_emails`: Market Hub Starter account
+    `marketing_emails`: Marketing Hub Starter account
 
     `workflows`: Sales, Service, and Marketing Hub Professional accounts
 
-- Check out common troubleshooting issues for the Hubspot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+  - HubSpot Enterprise accounts that use [Sensitive Data](https://knowledge.hubspot.com/properties/store-sensitive-data) properties may encounter 403 errors on CRM search streams such as `companies`, `contacts`, `deals`, `tickets`, `leads`, `deal_splits`, and engagement streams. This occurs because sensitive properties require additional scopes that are not available on legacy OAuth apps. Upgrade to connector version 6.3.1 or later to resolve this issue.
+
+- Check out common troubleshooting issues for the HubSpot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 - **Missing records** in CRMSearch streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`): 
   - If you notice missing records during incremental syncs, it may be due to irregularities in Hubspot's API behavior.
