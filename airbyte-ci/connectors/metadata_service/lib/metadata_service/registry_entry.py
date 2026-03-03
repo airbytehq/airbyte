@@ -478,8 +478,6 @@ def generate_and_persist_registry_entry(
     # If the connector is not enabled on the given registry, skip generateing and persisting the registry entry.
     if metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
         metadata_data = metadata_dict["data"]
-
-        # Generate metadata for versioned/RC entries (skip dockerImageTag override - use actual published version)
         try:
             overridden_metadata_data = _apply_metadata_overrides(
                 metadata_data, registry_type, bucket_name, metadata_blob, skip_docker_image_tag=True
@@ -489,21 +487,6 @@ def generate_and_persist_registry_entry(
             message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
             send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
             raise
-
-        # For normal (non-RC, non-prerelease) publishes, we also need metadata with the dockerImageTag
-        # override applied for the latest entry. This preserves version pinning behavior.
-        is_normal_publish = not is_prerelease and "-rc" not in metadata_dict["data"]["dockerImageTag"]
-        latest_overridden_metadata_data = None
-        if is_normal_publish:
-            try:
-                latest_overridden_metadata_data = _apply_metadata_overrides(
-                    metadata_data, registry_type, bucket_name, metadata_blob, skip_docker_image_tag=False
-                )
-            except Exception as e:
-                logger.exception(f"Error applying metadata overrides for latest entry")
-                message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
-                send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
-                raise
 
         registry_entry_blob_paths = _get_registry_blob_information(metadata_dict, registry_type, overridden_metadata_data, is_prerelease)
 
@@ -516,35 +499,28 @@ def generate_and_persist_registry_entry(
         overridden_metadata_data["spec"] = spec_cache.download_spec(cached_spec)
         logger.info("Spec file parsed and added to metadata.")
 
-        # If we have latest metadata, also add the spec to it (using the pinned version's spec)
-        if latest_overridden_metadata_data is not None:
-            latest_cached_spec = spec_cache.find_spec_cache_with_fallback(
-                latest_overridden_metadata_data["dockerRepository"],
-                latest_overridden_metadata_data["dockerImageTag"],
-                registry_type,
-            )
-            latest_overridden_metadata_data["spec"] = spec_cache.download_spec(latest_cached_spec)
-
         logger.info("Parsing registry entry model.")
         _, RegistryEntryModel = _get_connector_type_from_registry_entry(overridden_metadata_data)
         registry_entry_model = RegistryEntryModel.parse_obj(overridden_metadata_data)
         logger.info("Registry entry model parsed.")
-
-        # Also parse the latest registry entry model if needed
-        latest_registry_entry_model = None
-        if latest_overridden_metadata_data is not None:
-            latest_registry_entry_model = RegistryEntryModel.parse_obj(latest_overridden_metadata_data)
 
         # Persist the registry entry to the GCS bucket.
         for registry_entry_info in registry_entry_blob_paths:
             registry_entry_blob_path = registry_entry_info.entry_blob_path
             metadata_blob_path = registry_entry_info.metadata_file_path
 
-            # Use the latest-specific registry entry model for latest paths (version pinning)
-            is_latest_entry = "/latest/" in registry_entry_blob_path
-            current_registry_entry_model = (
-                latest_registry_entry_model if (is_latest_entry and latest_registry_entry_model is not None) else registry_entry_model
-            )
+            # For latest entries, apply the dockerImageTag override (version pinning behavior)
+            if "/latest/" in registry_entry_blob_path:
+                latest_metadata = _apply_metadata_overrides(
+                    metadata_data, registry_type, bucket_name, metadata_blob, skip_docker_image_tag=False
+                )
+                latest_spec = spec_cache.find_spec_cache_with_fallback(
+                    latest_metadata["dockerRepository"], latest_metadata["dockerImageTag"], registry_type
+                )
+                latest_metadata["spec"] = spec_cache.download_spec(latest_spec)
+                current_registry_entry_model = RegistryEntryModel.parse_obj(latest_metadata)
+            else:
+                current_registry_entry_model = registry_entry_model
 
             try:
                 logger.info(
