@@ -27,7 +27,7 @@ definitions:
             field_path: []
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: id
+        cursor_field: created_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -35,6 +35,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - created_date
+              value: "{{ '2020-' + ((record['id'] // 12 + 1) | string).zfill(2) + '-' + ((record['id'] % 30 + 1) | string).zfill(2) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -130,6 +136,9 @@ schemas:
       body:
         type: ["null", "string"]
         description: Post content
+      created_date:
+        type: ["null", "string"]
+        description: Synthetic date field for incremental cursor (derived from ID)
 
   comments:
     type: object
