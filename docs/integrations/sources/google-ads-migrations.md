@@ -22,6 +22,12 @@ The following field renames and removals affect built-in stream schemas:
 | campaign | `campaign.end_date` | `campaign.end_date_time` |
 | ad_group_ad | `CallAd` / `CallAdInfo` fields | Removed |
 
+The following fields were also removed in v23 and may affect custom queries (`custom_queries_array`), even though they are not used in built-in streams:
+
+- `campaign.url_expansion_opt_out`
+- `ad_group_ad.ad.demand_gen_multi_asset_ad.lead_form_only`
+- `asset_group_asset.performance_label`
+
 For custom queries, the stream may fail if a field was removed or renamed during the API update. Users with custom queries that reference any of the renamed or removed fields above must update their queries accordingly.
 You can use the [Query Builder](https://developers.google.com/google-ads/api/fields/v23/query_validator) to validate your custom queries.
 
