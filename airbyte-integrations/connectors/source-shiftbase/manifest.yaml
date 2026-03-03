@@ -86,6 +86,7 @@ definitions:
     name: employees
     primary_key:
     - - id
+    - - department_id
     - - account_id
     retriever:
       type: SimpleRetriever
@@ -173,8 +174,6 @@ definitions:
           Content-Type: application/json
           Accept: application/json
           Authorization: "API {{ stream_partition.parent_slice.parent_slice.account.access_token }}"
-        request_parameters:
-          year: "{{ stream_slice.start_time[:4] }}"
         error_handler:
           type: DefaultErrorHandler
           backoff_strategies:
@@ -210,16 +209,22 @@ definitions:
             $ref: "#/definitions/employees_stream"
     incremental_sync:
       type: DatetimeBasedCursor
+      # _year_partition is a synthetic cursor field used to partition API requests by year.
+      # It does not exist in the API response but is added via transformation to enable year-by-year iteration.
       cursor_field: _year_partition
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%d"
-      datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y"
       cursor_datetime_formats:
-      - "%Y-%m-%d"
+      - "%Y"
       step: P1Y
       cursor_granularity: P1Y
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: year
       is_data_feed: true
     transformations:
     - type: AddFields
@@ -235,7 +240,7 @@ definitions:
         value: "{{ stream_partition.employee_id }}"
       - path:
         - year
-        value: "{{ stream_slice.start_time[:4] }}"
+        value: "{{ stream_slice.start_time }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
