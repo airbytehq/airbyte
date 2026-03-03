@@ -121,7 +121,6 @@ This error may indicate that you are connecting with a DuckDB client version tha
 
 For information about migrating between different versions of DuckDB, please see the [DuckDB Migration Guide](./duckdb-migrations).
 
-
 ## Changelog
 
 <details>
