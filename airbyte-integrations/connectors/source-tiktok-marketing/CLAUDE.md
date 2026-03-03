@@ -11,3 +11,4 @@ See [BEHAVIOR.md](BEHAVIOR.md) for the most important non-obvious gotchas in thi
 - Empty metric values returned as "-" strings that must be transformed to null
 - Rate limit detection via response body code (not HTTP 429)
 - Smart+ ads filtered out when missing modify_time values
+- Sandbox account rate limit (10 RPS) with credential lockout on overuse
