@@ -41,9 +41,7 @@ class TestTicketsStreamFullRefresh(TestCase):
     def test_given_one_page_when_read_tickets_then_return_records(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
-            .with_any_query_params()
-            .build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_any_query_params().build(),
             TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record()).build(),
         )
 
@@ -57,15 +55,11 @@ class TestTicketsStreamFullRefresh(TestCase):
 
         # Create the next page request - this URL will be used in links.next
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
-            .with_after_cursor("after-cursor")
-            .build()
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_after_cursor("after-cursor").build()
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
-            .with_any_query_params()
-            .build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_any_query_params().build(),
             TicketsResponseBuilder.tickets_response(next_page_http_request)
             .with_record(TicketsRecordBuilder.tickets_record().with_id(1))
             .with_pagination()
@@ -105,9 +99,7 @@ class TestTicketsStreamIncremental(TestCase):
         cursor_value = 1723660897
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
-            .with_any_query_params()
-            .build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_any_query_params().build(),
             TicketsResponseBuilder.tickets_response()
             .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("generated_timestamp"), cursor_value))
             .build(),
@@ -128,9 +120,7 @@ class TestTicketsStreamIncremental(TestCase):
         new_cursor_value = int(state_cursor_value.add(timedelta(days=1)).timestamp())
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
-            .with_any_query_params()
-            .build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_any_query_params().build(),
             TicketsResponseBuilder.tickets_response()
             .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("generated_timestamp"), new_cursor_value))
             .build(),
