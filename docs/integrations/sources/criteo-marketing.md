@@ -26,6 +26,7 @@ https://developers.criteo.com/marketing-solutions/reference/getadsetreport
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2026-03-03 | [74165](https://github.com/airbytehq/airbyte/pull/74165) | Update dependencies |
 | 0.0.1 | 2026-02-04 | | Initial release by [@mvfc](https://github.com/mvfc) via Connector Builder |
 
 </details>
