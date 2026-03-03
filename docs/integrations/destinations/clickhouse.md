@@ -23,6 +23,8 @@ Version 2.0.0 represents a complete architectural redesign of the ClickHouse des
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
+Deduplication leverages ClickHouse's [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree) table engine. See [Deduplication](#deduplication) below for details.
+
 ## Deduplication
 
 For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
