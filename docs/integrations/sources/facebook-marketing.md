@@ -236,26 +236,26 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.include_incrementality">
-   11. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. Behaves the same as the global **Include Incrementality** setting described above, but applies only to this specific custom insight.
+   11. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. When enabled, action metrics such as `actions`, `action_values`, and `cost_per_action_type` include an `incrementality` field. This setting applies only to this specific custom insight. For more details, see the global **Include Incrementality** setting described below.
 </FieldAnchor>
 
 <FieldAnchor field="page_size">
-11. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
+10. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
 </FieldAnchor>
 
 <FieldAnchor field="insights_lookback_window">
-12. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+11. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 </FieldAnchor>
 
 <FieldAnchor field="insights_job_timeout">
-13. (Optional) For **Insights Job Timeout**, you may set a custom value in range from 10 to 60. It establishes the maximum amount of time (in minutes) of waiting for the report job to complete.
+12. (Optional) For **Insights Job Timeout**, you may set a custom value in range from 10 to 60. It establishes the maximum amount of time (in minutes) of waiting for the report job to complete.
 </FieldAnchor>
 
 <FieldAnchor field="include_incrementality">
-14. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"incrementality"` to the `action_attribution_windows` parameter sent to the Facebook API. Action metrics (such as `actions`, `action_values`, and `cost_per_action_type`) will then include an `incrementality` field containing the incremental lift value attributed to the ad. This field is only populated for ad accounts that have active [Conversion Lift](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) studies configured in Facebook. For accounts without lift studies, the field will be `null`. Disabled by default to preserve backward compatibility.
+13. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"incrementality"` to the `action_attribution_windows` parameter sent to the Facebook API. Action metrics such as `actions`, `action_values`, and `cost_per_action_type` then include an `incrementality` field containing the incremental lift value attributed to the ad. This field is only populated for ad accounts that have active [Conversion Lift](https://developers.facebook.com/docs/marketing-api/guides/lift-studies/) studies configured in Facebook. For accounts without lift studies, the field is `null`. Disabled by default. For more details on the `incrementality` attribution window, refer to the [Ads Action Stats](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) API reference.
 </FieldAnchor>
 
-15. Click **Set up source** and wait for the tests to complete.
+14. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
