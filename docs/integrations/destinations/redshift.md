@@ -123,10 +123,12 @@ destination configuration.
 The Redshift destination connector supports the following
 [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
 
-- Full Refresh - Overwrite
-- Full Refresh - Append
-- Incremental - Append
-- Incremental - Append + Deduped
+| Sync Mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) | Yes |
 
 ## Performance considerations
 
