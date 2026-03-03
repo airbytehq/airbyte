@@ -1084,7 +1084,7 @@ definitions:
         fields:
           - path:
               - "generated_timestamp"
-            value: "{{ record['generated_timestamp'] if record.get('generated_timestamp') else (record['updated_at'] | int) if record.get('updated_at', '').isdigit() else format_datetime(record['updated_at'], '%s') if record.get('updated_at') else None }}"
+            value: "{{ format_datetime(record['updated_at'], '%s') }}"
             value_type: "integer"
     schema_loader:
       type: InlineSchemaLoader
