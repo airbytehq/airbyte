@@ -123,23 +123,22 @@ class TestTicketMetricsIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
-        # Note: The stateful ticket_metrics stream uses the parent's generated_timestamp as the cursor
-        # (see manifest.yaml transformation: record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'])
-        # So the cursor value is the parent's timestamp, not the child's updated_at
-        # Flexible assertion: generated_timestamp can be int or string depending on environment
+        # The parent tickets stream uses DatetimeBasedCursor with datetime_format: "%Y-%m-%dT%H:%M:%SZ".
+        # Even though generated_timestamp is synthesized as a Unix integer, the DatetimeBasedCursor
+        # normalizes cursor values to ISO format when storing state.
         state_dict = output.most_recent_state.stream_state.__dict__
-        expected_timestamp = int(parent_cursor_value.timestamp())
+        expected_parent_cursor_iso = parent_cursor_value.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         assert state_dict["lookback_window"] == 0
         assert state_dict["use_global_cursor"] == False
         assert "_ab_updated_at" in state_dict["state"]
         assert len(state_dict["states"]) == 1
 
-        # Check parent_state timestamp (can be int or string)
+        # Parent state cursor is stored in ISO format by DatetimeBasedCursor
         actual_generated_ts = state_dict["parent_state"]["tickets"]["generated_timestamp"]
-        assert actual_generated_ts == expected_timestamp or actual_generated_ts == str(
-            expected_timestamp
-        ), f"Expected {expected_timestamp} or '{expected_timestamp}', got {actual_generated_ts}"
+        assert actual_generated_ts == expected_parent_cursor_iso, (
+            f"Expected ISO format '{expected_parent_cursor_iso}', got {actual_generated_ts}"
+        )
 
 
 @freezegun.freeze_time(_NOW.isoformat())
