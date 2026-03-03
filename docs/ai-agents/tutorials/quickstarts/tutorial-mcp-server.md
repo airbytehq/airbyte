@@ -1,6 +1,6 @@
 ---
-sidebar_label: "MCP server"
-sidebar_position: 2
+sidebar_label: "Agent Engine MCP"
+sidebar_position: 4
 ---
 
 import Tabs from '@theme/Tabs';
