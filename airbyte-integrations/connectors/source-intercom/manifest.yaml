@@ -54,17 +54,27 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
-        lookback_window: P{{ config.get('lookback_window', 0) }}D
         cursor_datetime_formats:
           - "%s"
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_time_option:
           type: RequestOption
           field_name: created_at_after
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: created_at_before
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
@@ -415,8 +425,13 @@ definitions:
             Intercom-Version: "2.11"
           request_body_json:
             query: >-
-              { 'operator': 'OR', 'value': [ { 'field': 'updated_at', 'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} }, { 'field': 'updated_at', 'operator': '=', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} } ] }
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
+              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
+              {"field" : "updated_at", "operator" : ">", "value" : {{
+              stream_interval['start_time'] }} }, {"field" : "updated_at",
+              "operator" : "=", "value" : {{ stream_interval['start_time'] }}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
+              stream_interval['end_time'] }} } ]}
+            sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -453,14 +468,20 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
-          datetime_format: "%s"
-        datetime_format: "%s"
-        lookback_window: P{{ config.get('lookback_window', 0) }}D
         cursor_datetime_formats:
           - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
@@ -481,14 +502,14 @@ definitions:
             Accept: application/json
             Intercom-Version: "2.11"
           request_body_json:
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
+            sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
             query: >-
-              { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
-              format_datetime(config['start_date'], '%s') }} }, { 'field':
-              'updated_at', 'operator': '=', 'value': {{
-              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
-              '%s') }} }, ], }
+              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
+              {"field" : "updated_at", "operator" : ">", "value" : {{
+              stream_interval['start_time'] }} }, {"field" : "updated_at",
+              "operator" : "=", "value" : {{ stream_interval['start_time'] }}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
+              stream_interval['end_time'] }} } ]}
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -525,14 +546,20 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
-          datetime_format: "%s"
-        datetime_format: "%s"
-        lookback_window: P{{ config.get('lookback_window', 0) }}D
         cursor_datetime_formats:
           - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
