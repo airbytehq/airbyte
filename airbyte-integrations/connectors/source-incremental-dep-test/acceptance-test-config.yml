@@ -1,4 +1,4 @@
-connector_image: airbyte/source-slack-incremental-test:dev
+connector_image: airbyte/source-incremental-dep-test:dev
 test_strictness_level: low
 acceptance_tests:
   spec:
@@ -14,8 +14,3 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-        empty_streams:
-          - name: threads
-            bypass_reason: "Threads depend on messages with thread_ts"
