@@ -306,6 +306,8 @@ definitions:
           - type: ParentStreamConfig
             parent_key: id
             partition_field: department_id
+            extra_fields:
+              - - account_id
             stream:
               $ref: "#/definitions/departments_stream"
     transformations:
@@ -317,6 +319,9 @@ definitions:
           - path:
               - account_name
             value: "{{ stream_partition.parent_slice.account.account_name }}"
+          - path:
+              - account_id
+            value: "{{ stream_partition.extra_fields.account_id }}"
           - path:
               - team_id
             value: "{{ record.teamId }}"
@@ -342,6 +347,10 @@ definitions:
               - "null"
               - string
           type:
+            type:
+              - "null"
+              - string
+          account_id:
             type:
               - "null"
               - string
@@ -399,6 +408,8 @@ definitions:
           - type: ParentStreamConfig
             parent_key: id
             partition_field: employee_id
+            extra_fields:
+              - - account_id
             stream:
               $ref: "#/definitions/employees_stream"
     incremental_sync:
@@ -420,6 +431,9 @@ definitions:
           - path:
               - account_name
             value: "{{ stream_partition.parent_slice.parent_slice.account.account_name }}"
+          - path:
+              - account_id
+            value: "{{ stream_partition.extra_fields.account_id }}"
           - path:
               - employee_id
             value: "{{ stream_partition.employee_id }}"
@@ -467,6 +481,10 @@ definitions:
                   type:
                     - "null"
                     - integer
+          account_id:
+            type:
+              - "null"
+              - string
           account_name:
             type:
               - "null"
