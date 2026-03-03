@@ -404,8 +404,9 @@ class Leads(MarketoExportBase):
         """Fetch all field descriptions from the leads/describe.json endpoint.
 
         Results are cached to avoid redundant API calls during schema generation
-        and export field selection.  Returns an empty list on HTTP errors so that
-        callers can fall back to the static schema gracefully.
+        and export field selection.  Returns an empty list on request failures
+        (HTTP errors, network issues, malformed responses) so that callers can
+        fall back to the static schema gracefully.
         """
         if self._describe_cache is None:
             try:
@@ -415,8 +416,8 @@ class Leads(MarketoExportBase):
                 )
                 resp.raise_for_status()
                 self._describe_cache = resp.json().get("result", [])
-            except requests.HTTPError:
-                self.logger.warning("leads/describe.json endpoint returned an HTTP error, falling back to static schema")
+            except (requests.RequestException, ValueError):
+                self.logger.warning("leads/describe.json request failed, falling back to static schema")
                 self._describe_cache = []
         return self._describe_cache
 

@@ -423,11 +423,27 @@ def test_leads_describe_http_error_falls_back_to_static_schema(config, requests_
 
     # Should fall back to static schema field names
     assert len(fields) > 0
-    assert "leads/describe.json endpoint returned an HTTP error" in caplog.text
+    assert "leads/describe.json request failed" in caplog.text
 
     # Schema should also fall back to static schema (no custom fields added)
     schema = leads_stream.get_json_schema()
     assert "email" in schema["properties"]
+
+
+def test_leads_describe_connection_error_falls_back_to_static_schema(config, requests_mock, caplog):
+    # If the describe endpoint is unreachable, fall back to static schema gracefully
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        exc=requests.ConnectionError("DNS resolution failed"),
+    )
+
+    caplog.set_level("WARNING")
+    leads_stream = Leads(config)
+    fields = leads_stream.stream_fields
+
+    # Should fall back to static schema field names
+    assert len(fields) > 0
+    assert "leads/describe.json request failed" in caplog.text
 
 
 def test_leads_dynamic_schema_includes_custom_fields(config, requests_mock):
