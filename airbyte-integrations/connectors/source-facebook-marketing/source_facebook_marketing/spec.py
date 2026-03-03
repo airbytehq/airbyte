@@ -6,13 +6,15 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Literal, Optional, Set, Union
 
-from airbyte_cdk.sources.config import BaseConfig
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from pydantic.v1 import BaseModel, Field, PositiveInt, constr, validator
+
+from airbyte_cdk.sources.config import BaseConfig
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
+
 
 logger = logging.getLogger("airbyte")
 
@@ -20,11 +22,7 @@ logger = logging.getLogger("airbyte")
 # Those fields were removed as there were causing `Tried accessing nonexisting field on node type` error from Meta
 # For more information, see https://github.com/airbytehq/airbyte/pull/38860
 _REMOVED_FIELDS = ["conversion_lead_rate", "cost_per_conversion_lead", "adset_start"]
-adjusted_ads_insights_fields = {
-    key: value
-    for key, value in AdsInsights.Field.__dict__.items()
-    if key not in _REMOVED_FIELDS
-}
+adjusted_ads_insights_fields = {key: value for key, value in AdsInsights.Field.__dict__.items() if key not in _REMOVED_FIELDS}
 ValidFields = Enum("ValidEnums", adjusted_ads_insights_fields)
 
 # Copy public breakdowns from the library
@@ -33,9 +31,7 @@ base_breakdowns = dict(AdsInsights.Breakdowns.__dict__)
 # Add the missing one: https://github.com/airbytehq/oncall/issues/9525
 base_breakdowns["user_segment_key"] = "user_segment_key"
 ValidBreakdowns = Enum("ValidBreakdowns", base_breakdowns)
-ValidActionBreakdowns = Enum(
-    "ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__
-)
+ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
 ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
 ValidAdStatuses = Enum("ValidAdStatuses", Ad.EffectiveStatus.__dict__)
@@ -177,14 +173,8 @@ class InsightConfig(BaseModel):
     def validate_time_increment_mutual_exclusion(cls, time_increment_period, values):
         """Ensure time_increment and time_increment_period are not both explicitly set."""
         time_increment = values.get("time_increment")
-        if (
-            time_increment_period is not None
-            and time_increment is not None
-            and time_increment != 1
-        ):
-            raise ValueError(
-                "Fields 'time_increment' and 'time_increment_period' are mutually exclusive. Set only one."
-            )
+        if time_increment_period is not None and time_increment is not None and time_increment != 1:
+            raise ValueError("Fields 'time_increment' and 'time_increment_period' are mutually exclusive. Set only one.")
         return time_increment_period
 
     start_date: Optional[datetime] = Field(
@@ -320,17 +310,15 @@ class ConnectorConfig(BaseConfig):
         description="Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
     )
 
-    default_ads_insights_action_breakdowns: Optional[List[ValidActionBreakdowns]] = (
-        Field(
-            title="Action breakdowns for the Built-in Ads Insight stream",
-            order=8,
-            default=[
-                AdsInsights.ActionBreakdowns.action_type,
-                AdsInsights.ActionBreakdowns.action_target_id,
-                AdsInsights.ActionBreakdowns.action_destination,
-            ],
-            description="Action breakdowns for the Built-in Ads Insights stream that will be used in the request. You can override default values or remove them to make it empty if needed.",
-        )
+    default_ads_insights_action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
+        title="Action breakdowns for the Built-in Ads Insight stream",
+        order=8,
+        default=[
+            AdsInsights.ActionBreakdowns.action_type,
+            AdsInsights.ActionBreakdowns.action_target_id,
+            AdsInsights.ActionBreakdowns.action_destination,
+        ],
+        description="Action breakdowns for the Built-in Ads Insights stream that will be used in the request. You can override default values or remove them to make it empty if needed.",
     )
 
     custom_insights: Optional[List[InsightConfig]] = Field(

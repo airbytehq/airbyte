@@ -7,31 +7,56 @@ from datetime import timedelta
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
-from airbyte_cdk.models import (AdvancedAuth, AuthFlowType,
-                                ConnectorSpecification, DestinationSyncMode,
-                                FailureType, OAuthConfigSpecification)
+
+from airbyte_cdk.models import (
+    AdvancedAuth,
+    AuthFlowType,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    FailureType,
+    OAuthConfigSpecification,
+)
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.utils.datetime_helpers import (AirbyteDateTime,
-                                                ab_datetime_now,
-                                                ab_datetime_parse)
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig, ValidAdStatuses
 from source_facebook_marketing.streams import (
-    Activities, AdAccount, AdCreatives, Ads, AdSets, AdsInsights,
-    AdsInsightsActionCarouselCard, AdsInsightsActionConversionDevice,
-    AdsInsightsActionProductID, AdsInsightsActionReaction,
-    AdsInsightsActionType, AdsInsightsActionVideoSound,
-    AdsInsightsActionVideoType, AdsInsightsAgeAndGender, AdsInsightsCountry,
-    AdsInsightsDeliveryDevice, AdsInsightsDeliveryPlatform,
-    AdsInsightsDeliveryPlatformAndDevicePlatform, AdsInsightsDemographicsAge,
-    AdsInsightsDemographicsCountry, AdsInsightsDemographicsDMARegion,
-    AdsInsightsDemographicsGender, AdsInsightsDma,
-    AdsInsightsPlatformAndDevice, AdsInsightsRegion, Campaigns,
-    CustomAudiences, CustomConversions, Images, Videos)
+    Activities,
+    AdAccount,
+    AdCreatives,
+    Ads,
+    AdSets,
+    AdsInsights,
+    AdsInsightsActionCarouselCard,
+    AdsInsightsActionConversionDevice,
+    AdsInsightsActionProductID,
+    AdsInsightsActionReaction,
+    AdsInsightsActionType,
+    AdsInsightsActionVideoSound,
+    AdsInsightsActionVideoType,
+    AdsInsightsAgeAndGender,
+    AdsInsightsCountry,
+    AdsInsightsDeliveryDevice,
+    AdsInsightsDeliveryPlatform,
+    AdsInsightsDeliveryPlatformAndDevicePlatform,
+    AdsInsightsDemographicsAge,
+    AdsInsightsDemographicsCountry,
+    AdsInsightsDemographicsDMARegion,
+    AdsInsightsDemographicsGender,
+    AdsInsightsDma,
+    AdsInsightsPlatformAndDevice,
+    AdsInsightsRegion,
+    Campaigns,
+    CustomAudiences,
+    CustomConversions,
+    Images,
+    Videos,
+)
 
 from .utils import validate_end_date, validate_start_date
+
 
 logger = logging.getLogger("airbyte")
 UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
@@ -53,9 +78,7 @@ class SourceFacebookMarketing(AbstractSource):
             if config.default_ads_insights_action_breakdowns is not None
             else AdsInsights.action_breakdowns
         )
-        config.default_ads_insights_action_breakdowns = (
-            default_ads_insights_action_breakdowns
-        )
+        config.default_ads_insights_action_breakdowns = default_ads_insights_action_breakdowns
 
         if config.start_date:
             config.start_date = AirbyteDateTime.from_datetime(config.start_date)
@@ -67,9 +90,7 @@ class SourceFacebookMarketing(AbstractSource):
 
         return config
 
-    def check_connection(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         :param logger: source logger
@@ -94,13 +115,9 @@ class SourceFacebookMarketing(AbstractSource):
 
             for account_id in config.account_ids:
                 # Get Ad Account to check creds
-                logger.info(
-                    f"Attempting to retrieve information for account with ID: {account_id}"
-                )
+                logger.info(f"Attempting to retrieve information for account with ID: {account_id}")
                 ad_account = api.get_account(account_id=account_id)
-                logger.info(
-                    f"Successfully retrieved account information for account: {ad_account}"
-                )
+                logger.info(f"Successfully retrieved account information for account: {ad_account}")
 
                 # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
                 for stream in self.get_custom_insights_streams(api, config):
@@ -129,16 +146,12 @@ class SourceFacebookMarketing(AbstractSource):
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
         if config.credentials is not None:
-            api = API(
-                access_token=config.credentials.access_token, page_size=config.page_size
-            )
+            api = API(access_token=config.credentials.access_token, page_size=config.page_size)
         else:
             api = API(access_token=config.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
-        report_start_date = config.start_date or (
-            ab_datetime_now() - timedelta(days=365 * 2)
-        )
+        report_start_date = config.start_date or (ab_datetime_now() - timedelta(days=365 * 2))
 
         insights_args = dict(
             api=api,
@@ -178,8 +191,7 @@ class SourceFacebookMarketing(AbstractSource):
                 page_size=config.page_size,
                 action_breakdowns=config.default_ads_insights_action_breakdowns,
                 # in case user input is an empty list of action_breakdowns we allow empty breakdowns
-                action_breakdowns_allow_empty=config.default_ads_insights_action_breakdowns
-                == [],
+                action_breakdowns_allow_empty=config.default_ads_insights_action_breakdowns == [],
                 **insights_args,
             ),
             AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
@@ -189,23 +201,17 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
             AdsInsightsActionType(page_size=config.page_size, **insights_args),
             AdsInsightsActionCarouselCard(page_size=config.page_size, **insights_args),
-            AdsInsightsActionConversionDevice(
-                page_size=config.page_size, **insights_args
-            ),
+            AdsInsightsActionConversionDevice(page_size=config.page_size, **insights_args),
             AdsInsightsActionProductID(page_size=config.page_size, **insights_args),
             AdsInsightsActionReaction(page_size=config.page_size, **insights_args),
             AdsInsightsActionVideoSound(page_size=config.page_size, **insights_args),
             AdsInsightsActionVideoType(page_size=config.page_size, **insights_args),
             AdsInsightsDeliveryDevice(page_size=config.page_size, **insights_args),
             AdsInsightsDeliveryPlatform(page_size=config.page_size, **insights_args),
-            AdsInsightsDeliveryPlatformAndDevicePlatform(
-                page_size=config.page_size, **insights_args
-            ),
+            AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsAge(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsCountry(page_size=config.page_size, **insights_args),
-            AdsInsightsDemographicsDMARegion(
-                page_size=config.page_size, **insights_args
-            ),
+            AdsInsightsDemographicsDMARegion(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
             Campaigns(
                 api=api,
@@ -309,9 +315,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
         )
 
-    def get_custom_insights_streams(
-        self, api: API, config: ConnectorConfig
-    ) -> List[Type[Stream]]:
+    def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
         """return custom insights streams"""
         streams = []
         for insight in config.custom_insights or []:
@@ -336,14 +340,10 @@ class SourceFacebookMarketing(AbstractSource):
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
                 time_increment_period=insight.time_increment_period,
-                start_date=insight.start_date
-                or config.start_date
-                or (ab_datetime_now() - timedelta(days=365 * 2)),
+                start_date=insight.start_date or config.start_date or (ab_datetime_now() - timedelta(days=365 * 2)),
                 end_date=insight.end_date or config.end_date,
-                insights_lookback_window=insight.insights_lookback_window
-                or config.insights_lookback_window,
-                insights_job_timeout=insight.insights_job_timeout
-                or config.insights_job_timeout,
+                insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
+                insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
                 include_incrementality=insight.include_incrementality,
             )
