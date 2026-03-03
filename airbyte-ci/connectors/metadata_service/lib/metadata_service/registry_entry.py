@@ -117,9 +117,8 @@ def _apply_overrides_from_registry(metadata_data: dict, override_registry_key: s
         metadata_data: The metadata data field.
         override_registry_key: The key of the registry to override the metadata with.
         skip_docker_image_tag: If True (default), skip applying dockerImageTag override.
-            This should be True for versioned and RC entries (which should reflect the actual
-            version being published), and False for latest entries (which should reflect
-            the pinned version for version pinning behavior).
+            This should be True for the version being published, and False for latest
+            entries (which should reflect the overridden/pinned version, if applicable).
 
     Returns:
         The metadata data field with the overrides applied.
@@ -130,9 +129,6 @@ def _apply_overrides_from_registry(metadata_data: dict, override_registry_key: s
     # remove any None values from the override registry
     override_registry = {k: v for k, v in override_registry.items() if v is not None}
 
-    # Skip dockerImageTag override unless explicitly requested (for latest entries).
-    # Versioned and RC registry entries should always reflect the actual version being
-    # published, not a pinned version. Only latest entries should use the pinned version.
     if skip_docker_image_tag and "dockerImageTag" in override_registry:
         del override_registry["dockerImageTag"]
 
@@ -206,7 +202,7 @@ def _apply_package_info_fields(metadata_data: dict, bucket_name: str) -> dict:
                 if package.get("package_name") == "airbyte-cdk":
                     # Note: Prefix the version with the python slug as the python cdk is the only one we have
                     # versions available for.
-                    cdk_version = f'{PYTHON_CDK_SLUG}:{package.get("version")}'
+                    cdk_version = f"{PYTHON_CDK_SLUG}:{package.get('version')}"
                     break
             package_info_fields = set_with(package_info_fields, "cdk_version", cdk_version, default_none_to_dict)
     except Exception as e:
