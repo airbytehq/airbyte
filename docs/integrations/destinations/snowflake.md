@@ -240,10 +240,16 @@ This connector supports automatic schema evolution. When the source schema chang
 
 The Snowflake destination supports the following sync modes:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+| Sync mode | Description |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/) | Replaces all data in the destination table with the new data from each sync. |
+| [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append) | Appends all source data to the destination table. Does not remove previously synced data. |
+| [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) | Appends only new or updated records to the destination table since the last sync. |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) | Appends new or updated records and deduplicates the final table using the configured primary key and cursor fields. |
+
+:::note
+In **Legacy raw tables** mode, deduplication is not performed. All sync modes that would normally deduplicate instead append records to the raw table without deduplication.
+:::
 
 ## Snowflake tutorials
 
