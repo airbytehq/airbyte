@@ -36,13 +36,13 @@ The server supports two execution modes:
 
 - **Hosted mode**: The server calls the Airbyte Cloud API, which manages credentials and provides additional capabilities like indexed search through the [context store](../platform/context-store).
 
-A command line tool called `adp` manages the full lifecycle:
+A command line tool called `agent-engine` manages the full lifecycle:
 
-1. **Discover** connectors with `adp connectors list-oss` or `adp connectors list-cloud`.
+1. **Discover** connectors with `agent-engine connectors list-oss` or `agent-engine connectors list-cloud`.
 
-2. **Configure** a connector with `adp connectors configure`, which generates a YAML config file.
+2. **Configure** a connector with `agent-engine connectors configure`, which generates a YAML config file.
 
-3. **Register** the server with your AI tool using `adp mcp add-to`.
+3. **Register** the server with your AI tool using `agent-engine mcp add-to`.
 
 4. **Use** the server by prompting your AI tool with natural language questions.
 
