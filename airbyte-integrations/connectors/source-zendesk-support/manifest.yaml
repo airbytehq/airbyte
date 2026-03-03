@@ -1054,9 +1054,8 @@ definitions:
         $ref: "#/definitions/retriever/requester"
         path: "search/export"
         request_parameters:
-          query: "type:ticket updated_at>{{ stream_interval['start_time'] }} updated_at<{{ stream_interval['end_time'] }}"
-          sort_by: "updated_at"
-          sort_order: "asc"
+          query: "updated_at>{{ stream_interval['start_time'] }} updated_at<{{ stream_interval['end_time'] }}"
+          "filter[type]": "ticket"
       paginator:
         $ref: "#/definitions/export_search_paginator"
       record_selector:
