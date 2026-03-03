@@ -223,8 +223,7 @@ class BigQueryRecordFormatter(
             // Truncate to avoid "Invalid datetime string" errors from sources
             // that provide nanosecond or higher precision (e.g. Snowflake).
             return DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                (value.abValue as TimestampWithTimezoneValue).value
-                    .truncatedTo(ChronoUnit.MICROS)
+                (value.abValue as TimestampWithTimezoneValue).value.truncatedTo(ChronoUnit.MICROS)
             )
         }
 
@@ -233,7 +232,8 @@ class BigQueryRecordFormatter(
             // Truncate to avoid "Invalid datetime string" errors from sources
             // that provide nanosecond or higher precision (e.g. Snowflake).
             return DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                (value.abValue as TimestampWithoutTimezoneValue).value
+                (value.abValue as TimestampWithoutTimezoneValue)
+                    .value
                     .truncatedTo(ChronoUnit.MICROS)
             )
         }
