@@ -23,7 +23,7 @@ data:
   dockerRepository: airbyte/source-serpstat
   githubIssueLabel: source-serpstat
   icon: serpstat.svg
-  license: MIT
+  license: ELv2
   name: Serpstat
   releaseDate: 2023-08-21
   releaseStage: alpha
@@ -39,4 +39,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Serpstat API documentation
+      url: https://serpstat.com/api/
+      type: api_reference
 metadataSpecVersion: "1.0"

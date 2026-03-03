@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql.v2.config
@@ -90,7 +90,9 @@ internal class DataSourceFactoryTest {
                 password = "super secure o//",
                 jdbcUrlParams = null,
                 sslMethod = Unencrypted(),
-                MSSQLLoadTypeConfiguration(InsertLoadTypeConfiguration())
+                ssh = null,
+                mssqlLoadTypeConfiguration =
+                    MSSQLLoadTypeConfiguration(InsertLoadTypeConfiguration()),
             )
     }
 }

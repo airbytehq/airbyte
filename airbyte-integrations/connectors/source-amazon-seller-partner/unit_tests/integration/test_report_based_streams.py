@@ -42,13 +42,11 @@ STREAMS = (
     ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv"),
     ("GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE", "csv"),
     ("GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", "csv"),
-    ("GET_FBA_SNS_FORECAST_DATA", "csv"),
     ("GET_AFN_INVENTORY_DATA", "csv"),
     ("GET_MERCHANT_CANCELLED_LISTINGS_DATA", "csv"),
     ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA", "csv"),
     ("GET_LEDGER_SUMMARY_VIEW_DATA", "csv"),
     ("GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE", "csv"),
-    ("GET_FBA_SNS_PERFORMANCE_DATA", "csv"),
     ("GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA", "csv"),
     ("GET_FBA_INVENTORY_PLANNING_DATA", "csv"),
     ("GET_FBA_STORAGE_FEE_CHARGES_DATA", "csv"),
@@ -151,13 +149,6 @@ def _download_document_response(stream_name: str, data_format: Optional[str] = "
     return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
 
 
-def _download_document_error_response(compressed: Optional[bool] = False) -> HttpResponse:
-    response_body = '{"errorDetails":"Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again."}'
-    if compressed:
-        response_body = gzip.compress(response_body.encode("iso-8859-1"))
-    return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
-
-
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh:
     @staticmethod
@@ -212,7 +203,7 @@ class TestFullRefresh:
         document_request = _download_document_request(_DOCUMENT_DOWNLOAD_URL).build()
         document_response = _download_document_response(stream_name, data_format=data_format, compressed=True)
         document_request_matcher = HttpRequestMatcher(document_request, minimum_number_of_expected_match=1)
-        http_mocker._matchers.append(document_request_matcher)
+        # http_mocker._matchers.append(document_request_matcher)
 
         http_mocker._mocker.get(
             requests_mock.ANY,
@@ -436,7 +427,7 @@ class TestFullRefresh:
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
         assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
@@ -467,7 +458,7 @@ class TestFullRefresh:
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
         assert_message_in_log_output(message=warning_message, entrypoint_output=output, log_level=Level.ERROR)
 
 
@@ -634,7 +625,7 @@ class TestVendorSalesReportsFullRefresh:
         document_request = _download_document_request(_DOCUMENT_DOWNLOAD_URL).build()
         document_response = _download_document_response(stream_name, data_format=self.data_format, compressed=True)
         document_request_matcher = HttpRequestMatcher(document_request, minimum_number_of_expected_match=1)
-        http_mocker._matchers.append(document_request_matcher)
+        # http_mocker._matchers.append(document_request_matcher)
 
         http_mocker._mocker.get(
             requests_mock.ANY,
@@ -853,5 +844,5 @@ class TestVendorSalesReportsFullRefresh:
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
         assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)

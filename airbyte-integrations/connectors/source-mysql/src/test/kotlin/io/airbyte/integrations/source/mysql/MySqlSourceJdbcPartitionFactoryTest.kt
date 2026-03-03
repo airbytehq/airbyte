@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql
@@ -18,9 +18,13 @@ import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.StateManager
 import io.airbyte.cdk.read.Stream
@@ -130,6 +134,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 mockSelectQuerier,
                 DefaultJdbcConstants(),
                 ConcurrencyResource(configuration),
+                ResourceAcquirer(emptyList())
             )
         }
 
@@ -150,10 +155,23 @@ class MySqlSourceJdbcPartitionFactoryTest {
                             stream: Stream,
                             recordData: ObjectNode
                         ) {}
+
+                        override fun decorateRecordData(
+                            timestamp: OffsetDateTime,
+                            globalStateValue: OpaqueStateValue?,
+                            stream: Stream,
+                            recordData: NativeRecordPayload
+                        ) {
+                            // no-op
+                        }
                     },
                 stateManager =
                     StateManager(initialStreamStates = mapOf(stream to incumbentStateValue)),
                 stream,
+                DataChannelFormat.JSONL,
+                DataChannelMedium.STDIO,
+                8192,
+                ClockFactory().fixed(),
             )
     }
 

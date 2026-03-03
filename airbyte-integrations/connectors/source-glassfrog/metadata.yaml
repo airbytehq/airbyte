@@ -6,16 +6,16 @@ data:
     hosts:
       - api.glassfrog.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.56.1@sha256:579dece55029aa9552884a8eedc6aababb981625daa54ca01f3bacb398dd4973
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.1@sha256:bd69f6b52bdd92ce06c30786d67546427b828ffb553363c8950b2816c552d6e0
   connectorSubtype: api
   connectorType: source
   definitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
-  dockerImageTag: 0.3.25
+  dockerImageTag: 0.3.46
   dockerRepository: airbyte/source-glassfrog
   documentationUrl: https://docs.airbyte.com/integrations/sources/glassfrog
   githubIssueLabel: source-glassfrog
   icon: glassfrog.svg
-  license: MIT
+  license: ELv2
   name: Glassfrog
   registryOverrides:
     cloud:
@@ -44,4 +44,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: GlassFrog API documentation
+      url: https://documenter.getpostman.com/view/1014385/glassfrog-api-v3/2SJViY
+      type: api_reference
 metadataSpecVersion: "1.0"

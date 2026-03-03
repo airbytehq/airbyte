@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -45,7 +45,8 @@ class DefaultJdbcPartitionFactory(
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
 
         // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
-        // to read it
+        // to read it. This relies on the fact that cursor columns cannot contain nulls, so we won't
+        // see a null value from the DB.
         if (opaqueStateValue?.isNull == true) {
             return null
         }

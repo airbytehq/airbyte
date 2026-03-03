@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/destination-kafka
   githubIssueLabel: destination-kafka
   icon: kafka.svg
-  license: MIT
+  license: ELv2
   name: Kafka
   registryOverrides:
     cloud:
@@ -27,4 +27,14 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: Apache Kafka documentation
+      url: https://kafka.apache.org/documentation/
+      type: api_reference
+    - title: Security
+      url: https://kafka.apache.org/documentation/#security
+      type: authentication_guide
+    - title: Quotas
+      url: https://kafka.apache.org/documentation/#design_quotas
+      type: rate_limits
 metadataSpecVersion: "1.0"

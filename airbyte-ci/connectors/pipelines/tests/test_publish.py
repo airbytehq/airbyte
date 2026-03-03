@@ -164,7 +164,6 @@ class TestUploadSpecToCache:
 
 
 STEPS_TO_PATCH = [
-    (publish_pipeline, "MetadataValidation"),
     (publish_pipeline, "MetadataUpload"),
     (publish_pipeline, "CheckConnectorImageDoesNotExist"),
     (publish_pipeline, "UploadSpecToCache"),
@@ -174,34 +173,6 @@ STEPS_TO_PATCH = [
     (publish_pipeline, "CheckPythonRegistryPackageDoesNotExist"),
     (publish_pipeline, "UploadSbom"),
 ]
-
-
-@pytest.mark.parametrize("pre_release", [True, False])
-async def test_run_connector_publish_pipeline_when_failed_validation(mocker, pre_release):
-    """We validate that no other steps are called if the metadata validation step fails."""
-    for module, to_mock in STEPS_TO_PATCH:
-        mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
-
-    run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
-    run_metadata_validation.return_value = mocker.Mock(status=StepStatus.FAILURE)
-
-    context = mocker.MagicMock(pre_release=pre_release, rollout_mode=RolloutMode.PUBLISH)
-    semaphore = anyio.Semaphore(1)
-    report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
-    run_metadata_validation.assert_called_once()
-
-    # Check that nothing else is called
-    for module, to_mock in STEPS_TO_PATCH:
-        if to_mock != "MetadataValidation":
-            getattr(module, to_mock).return_value.run.assert_not_called()
-
-    assert (
-        report.steps_results
-        == context.report.steps_results
-        == [
-            run_metadata_validation.return_value,
-        ]
-    )
 
 
 @pytest.mark.parametrize(
@@ -224,9 +195,6 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 
-    run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
-    run_metadata_validation.return_value = mocker.Mock(status=StepStatus.SUCCESS)
-
     # ensure spec and sbom upload always succeeds
     run_upload_spec_to_cache = publish_pipeline.UploadSpecToCache.return_value.run
     run_upload_spec_to_cache.return_value = mocker.Mock(status=StepStatus.SUCCESS)
@@ -240,12 +208,11 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
 
     semaphore = anyio.Semaphore(1)
     report = await publish_pipeline.run_connector_publish_pipeline(publish_context, semaphore)
-    run_metadata_validation.assert_called_once()
     run_check_connector_image_does_not_exist.assert_called_once()
 
     # Check that nothing else is called
     for module, to_mock in STEPS_TO_PATCH:
-        if to_mock not in ["MetadataValidation", "MetadataUpload", "CheckConnectorImageDoesNotExist", "UploadSpecToCache", "UploadSbom"]:
+        if to_mock not in ["MetadataUpload", "CheckConnectorImageDoesNotExist", "UploadSpecToCache", "UploadSbom"]:
             getattr(module, to_mock).return_value.run.assert_not_called()
 
     if check_image_exists_status is StepStatus.SKIPPED and not pre_release:
@@ -254,7 +221,6 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
             report.steps_results
             == publish_context.report.steps_results
             == [
-                run_metadata_validation.return_value,
                 run_check_connector_image_does_not_exist.return_value,
                 run_upload_spec_to_cache.return_value,
                 run_upload_sbom.return_value,
@@ -271,7 +237,6 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
             report.steps_results
             == publish_context.report.steps_results
             == [
-                run_metadata_validation.return_value,
                 run_check_connector_image_does_not_exist.return_value,
             ]
         )
@@ -301,9 +266,6 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     """We check that the full pipeline is executed as expected when the connector image does not exist and the metadata validation passed."""
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
-    publish_pipeline.MetadataValidation.return_value.run.return_value = mocker.Mock(
-        name="metadata_validation_result", status=StepStatus.SUCCESS
-    )
     publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run.return_value = mocker.Mock(
         name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS
     )
@@ -336,7 +298,6 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
 
     steps_to_run = [
-        publish_pipeline.MetadataValidation.return_value.run,
         publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run,
         publish_pipeline.steps.run_connector_build,
         publish_pipeline.PushConnectorImageToRegistry.return_value.run,
@@ -393,7 +354,6 @@ async def test_run_connector_python_registry_publish_pipeline(
     )
 
     for step in [
-        publish_pipeline.MetadataValidation,
         publish_pipeline.CheckConnectorImageDoesNotExist,
         publish_pipeline.UploadSpecToCache,
         publish_pipeline.MetadataUpload,

@@ -72,7 +72,7 @@ class StreamGenerationTest(TestCase):
         with pytest.raises(AirbyteTracedException) as exception:
             self._source.streams(self._config)
 
-        assert exception.value.failure_type == FailureType.system_error
+        assert exception.value.failure_type == FailureType.transient_error  # 406 is considered a transient error
 
     def test_read_stream_with_malformed_json_response_error_then_raise_exception(self) -> None:
         mock_response = Mock()

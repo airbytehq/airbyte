@@ -810,12 +810,14 @@ streams:
   - "#/definitions/annotations_stream"
   - "#/definitions/cohort_members_stream"
   - "#/definitions/funnels_stream"
-  - "#/definitions/export_stream"
+# TODO: export stream is using old python implementation
+# see https://github.com/airbytehq/airbyte-internal-issues/issues/13587 for more context
+#  - "#/definitions/export_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - revenue
+    - cohorts
 
 api_budget:
   type: HTTPAPIBudget
@@ -834,5 +836,5 @@ api_budget:
 # A maximum of 5 concurrent queries and 60 queries per hour.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 25

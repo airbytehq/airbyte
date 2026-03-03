@@ -94,7 +94,7 @@ Available fields are limited by what is presented in the static schema.
 
 - **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)**: Contains info about your Marketo static lists.
 - **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs.
-- **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo programs.
+- **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo segmentations.
 
 ## Performance considerations
 
@@ -121,6 +121,20 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.4.40 | 2026-02-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix KeyError and TypeError when Marketo API responses lack 'result' key in export status and create endpoints |
+| 1.4.39 | 2026-01-26 | [71849](https://github.com/airbytehq/airbyte/pull/71849) | Add error handling for type conversion in format_value |
+| 1.4.38 | 2025-10-21 | [68475](https://github.com/airbytehq/airbyte/pull/68475) | Update dependencies |
+| 1.4.37 | 2025-10-14 | [67858](https://github.com/airbytehq/airbyte/pull/67858) | Update dependencies |
+| 1.4.36 | 2025-10-07 | [67394](https://github.com/airbytehq/airbyte/pull/67394) | Update dependencies |
+| 1.4.35 | 2025-09-30 | [66352](https://github.com/airbytehq/airbyte/pull/66352) | Update dependencies |
+| 1.4.34 | 2025-09-09 | [65855](https://github.com/airbytehq/airbyte/pull/65855) | Update dependencies |
+| 1.4.33 | 2025-08-23 | [65168](https://github.com/airbytehq/airbyte/pull/65168) | Update dependencies |
+| 1.4.32 | 2025-08-16 | [64988](https://github.com/airbytehq/airbyte/pull/64988) | Update dependencies |
+| 1.4.31 | 2025-08-09 | [64729](https://github.com/airbytehq/airbyte/pull/64729) | Update dependencies |
+| 1.4.30 | 2025-08-02 | [64262](https://github.com/airbytehq/airbyte/pull/64262) | Update dependencies |
+| 1.4.29 | 2025-07-26 | [63912](https://github.com/airbytehq/airbyte/pull/63912) | Update dependencies |
+| 1.4.28 | 2025-07-12 | [63152](https://github.com/airbytehq/airbyte/pull/63152) | Update dependencies |
+| 1.4.27 | 2025-07-05 | [61142](https://github.com/airbytehq/airbyte/pull/61142) | Update dependencies |
 | 1.4.26 | 2025-05-28 | [60823](https://github.com/airbytehq/airbyte/pull/60823) | Fix Attribute Errors on `Leads` stream |
 | 1.4.25 | 2025-05-24 | [60693](https://github.com/airbytehq/airbyte/pull/60693) | Update dependencies |
 | 1.4.24 | 2025-05-10 | [59770](https://github.com/airbytehq/airbyte/pull/59770) | Update dependencies |

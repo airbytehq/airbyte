@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/recreation
   githubIssueLabel: source-recreation
   icon: recreation.svg
-  license: MIT
+  license: ELv2
   name: Recreation
   registryOverrides:
     cloud:
@@ -40,4 +40,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Recreation.gov API
+      url: https://ridb.recreation.gov/docs
+      type: api_reference
 metadataSpecVersion: "1.0"

@@ -30,7 +30,7 @@ data:
   dockerRepository: airbyte/source-aws-cloudtrail
   githubIssueLabel: source-aws-cloudtrail
   icon: aws-cloudtrail.svg
-  license: MIT
+  license: ELv2
   name: Aws Cloudtrail
   releaseStage: alpha
   releaseDate: 2021-06-23
@@ -52,4 +52,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: CloudTrail API reference
+      url: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-authentication.html
+      type: authentication_guide
+    - title: Service quotas
+      url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/WhatIsCloudTrail-Limits.html
+      type: rate_limits
 metadataSpecVersion: "1.0"

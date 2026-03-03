@@ -68,6 +68,26 @@ The Freshsales connector should not run into Freshsales API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 1.1.44 | 2026-03-03 | [74194](https://github.com/airbytehq/airbyte/pull/74194) | Update dependencies |
+| 1.1.43 | 2026-02-17 | [73402](https://github.com/airbytehq/airbyte/pull/73402) | Update dependencies |
+| 1.1.42 | 2026-02-10 | [73146](https://github.com/airbytehq/airbyte/pull/73146) | Update dependencies |
+| 1.1.41 | 2026-01-20 | [71662](https://github.com/airbytehq/airbyte/pull/71662) | Update dependencies |
+| 1.1.40 | 2025-12-18 | [70592](https://github.com/airbytehq/airbyte/pull/70592) | Update dependencies |
+| 1.1.39 | 2025-11-25 | [69496](https://github.com/airbytehq/airbyte/pull/69496) | Update dependencies |
+| 1.1.38 | 2025-10-29 | [68776](https://github.com/airbytehq/airbyte/pull/68776) | Update dependencies |
+| 1.1.37 | 2025-10-21 | [68423](https://github.com/airbytehq/airbyte/pull/68423) | Update dependencies |
+| 1.1.36 | 2025-10-14 | [68041](https://github.com/airbytehq/airbyte/pull/68041) | Update dependencies |
+| 1.1.35 | 2025-10-07 | [67311](https://github.com/airbytehq/airbyte/pull/67311) | Update dependencies |
+| 1.1.34 | 2025-09-30 | [66775](https://github.com/airbytehq/airbyte/pull/66775) | Update dependencies |
+| 1.1.33 | 2025-09-24 | [65792](https://github.com/airbytehq/airbyte/pull/65792) | Update dependencies |
+| 1.1.32 | 2025-08-23 | [65299](https://github.com/airbytehq/airbyte/pull/65299) | Update dependencies |
+| 1.1.31 | 2025-08-09 | [64790](https://github.com/airbytehq/airbyte/pull/64790) | Update dependencies |
+| 1.1.30 | 2025-08-02 | [64337](https://github.com/airbytehq/airbyte/pull/64337) | Update dependencies |
+| 1.1.29 | 2025-07-26 | [63971](https://github.com/airbytehq/airbyte/pull/63971) | Update dependencies |
+| 1.1.28 | 2025-07-19 | [63543](https://github.com/airbytehq/airbyte/pull/63543) | Update dependencies |
+| 1.1.27 | 2025-07-12 | [62972](https://github.com/airbytehq/airbyte/pull/62972) | Update dependencies |
+| 1.1.26 | 2025-07-05 | [62782](https://github.com/airbytehq/airbyte/pull/62782) | Update dependencies |
+| 1.1.25 | 2025-06-28 | [62427](https://github.com/airbytehq/airbyte/pull/62427) | Update dependencies |
 | 1.1.24 | 2025-06-22 | [61994](https://github.com/airbytehq/airbyte/pull/61994) | Update dependencies |
 | 1.1.23 | 2025-06-14 | [61289](https://github.com/airbytehq/airbyte/pull/61289) | Update dependencies |
 | 1.1.22 | 2025-05-24 | [59971](https://github.com/airbytehq/airbyte/pull/59971) | Update dependencies |

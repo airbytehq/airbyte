@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-lokalise
   githubIssueLabel: source-lokalise
   icon: lokalise.svg
-  license: MIT
+  license: ELv2
   name: Lokalise
   remoteRegistries:
     pypi:
@@ -42,4 +42,14 @@ data:
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
+  externalDocumentationUrls:
+    - title: Lokalise API reference
+      url: https://developers.lokalise.com/reference/api-introduction
+      type: api_reference
+    - title: Lokalise authentication
+      url: https://developers.lokalise.com/reference/api-authentication
+      type: authentication_guide
+    - title: Lokalise rate limits
+      url: https://developers.lokalise.com/reference/api-rate-limits
+      type: rate_limits
 metadataSpecVersion: "1.0"

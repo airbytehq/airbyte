@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read.cdc
@@ -14,6 +14,7 @@ import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -61,6 +62,7 @@ class CdcPartitionsCreatorTest {
         get() =
             CdcPartitionsCreator(
                 concurrencyResource,
+                ResourceAcquirer(listOf()),
                 globalFeedBootstrap,
                 creatorOps,
                 readerOps,
@@ -133,5 +135,31 @@ class CdcPartitionsCreatorTest {
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns
             AbortDebeziumWarmStartState("boom")
         assertThrows(ConfigErrorException::class.java) { runBlocking { creator.run() } }
+    }
+
+    // Verifies that ResetDebeziumWarmStartState triggers a synthetic snapshot
+    @Test
+    fun testCreateWithResetState() {
+        every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
+        every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
+        every { globalFeedBootstrap.resetAll() } returns Unit
+        every { creatorOps.deserializeState(Jsons.objectNode()) } returns
+            ResetDebeziumWarmStartState(
+                "Saved offset no longer present on the server, auto-resetting"
+            )
+        upperBoundReference.set(null)
+
+        val readers: List<PartitionReader> = runBlocking { creator.run() }
+
+        // Should return a synthetic partition reader
+        Assertions.assertEquals(1, readers.size)
+        val reader = readers.first() as CdcPartitionReader<*>
+        Assertions.assertTrue(reader.isInputStateSynthetic)
+        Assertions.assertEquals(syntheticOffset, reader.startingOffset)
+        // resetReason should be set
+        Assertions.assertEquals(
+            "Saved offset no longer present on the server, auto-resetting",
+            reset.get()
+        )
     }
 }

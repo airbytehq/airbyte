@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql.typing_deduping
@@ -22,7 +22,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatterBuilder
 import java.util.Locale
 import java.util.Optional
 import java.util.function.Function
@@ -404,7 +403,8 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
             .getSQL(ParamType.INLINED)
 
     override fun formatTimestampLiteral(instant: Instant): String {
-        return TIMESTAMP_FORMATTER.format(instant.atOffset(ZoneOffset.UTC))
+        // Format as UTC, compatible with MariaDB and MySQL
+        return TIMESTAMP_FORMATTER.format(instant.atZone(ZoneOffset.UTC))
     }
 
     private fun extractColumnAsJson(column: ColumnId): Field<Any> {
@@ -428,11 +428,9 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
                 "json",
             )
 
+        // Use MySQL/MariaDB compatible timestamp format
         val TIMESTAMP_FORMATTER: DateTimeFormatter =
-            DateTimeFormatterBuilder()
-                .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME) // 2024-01-23T12:34:56
-                .appendOffset("+HH:MM", "+00:00") // produce +00:00 instead of Z
-                .toFormatter()
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
 
         private val MYSQL_TYPE_NAME_TO_JDBC_TYPE: Map<String, String> =
             ImmutableMap.of(

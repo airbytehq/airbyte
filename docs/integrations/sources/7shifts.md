@@ -33,6 +33,18 @@ Generate an Access Token by navigating to "Company Settings", then "Developer To
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.36 | 2026-02-24 | [73765](https://github.com/airbytehq/airbyte/pull/73765) | Update dependencies |
+| 0.0.35 | 2026-02-10 | [73015](https://github.com/airbytehq/airbyte/pull/73015) | Update dependencies |
+| 0.0.34 | 2026-01-27 | [72370](https://github.com/airbytehq/airbyte/pull/72370) | Update dependencies |
+| 0.0.33 | 2026-01-14 | [71522](https://github.com/airbytehq/airbyte/pull/71522) | Update dependencies |
+| 0.0.32 | 2025-12-19 | [70938](https://github.com/airbytehq/airbyte/pull/70938) | Update dependencies |
+| 0.0.31 | 2025-11-25 | [69914](https://github.com/airbytehq/airbyte/pull/69914) | Update dependencies |
+| 0.0.30 | 2025-10-29 | [69066](https://github.com/airbytehq/airbyte/pull/69066) | Update dependencies |
+| 0.0.29 | 2025-10-14 | [65634](https://github.com/airbytehq/airbyte/pull/65634) | Update dependencies |
+| 0.0.28 | 2025-07-26 | [63784](https://github.com/airbytehq/airbyte/pull/63784) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63455](https://github.com/airbytehq/airbyte/pull/63455) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [63092](https://github.com/airbytehq/airbyte/pull/63092) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [60637](https://github.com/airbytehq/airbyte/pull/60637) | Update dependencies |
 | 0.0.24 | 2025-05-10 | [59906](https://github.com/airbytehq/airbyte/pull/59906) | Update dependencies |
 | 0.0.23 | 2025-05-03 | [59328](https://github.com/airbytehq/airbyte/pull/59328) | Update dependencies |
 | 0.0.22 | 2025-04-26 | [58688](https://github.com/airbytehq/airbyte/pull/58688) | Update dependencies |

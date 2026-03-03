@@ -1,0 +1,13 @@
+{
+  "list": [
+    {
+      "event": {
+        "id": "ev_002",
+        "event_type": "subscription_updated",
+        "occurred_at": 1705312800,
+        "cf_source_system": "Web",
+        "cf_event_category": "Billing"
+      }
+    }
+  ]
+}

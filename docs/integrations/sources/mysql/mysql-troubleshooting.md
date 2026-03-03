@@ -66,7 +66,7 @@ Normally under the CDC mode, the MySQL source will first run a full refresh sync
 
 The root causes is that the binglogs needed for the incremental sync have been removed by MySQL. This can occur under the following scenarios:
 
-- When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
+- When there are lots of database updates resulting in binary log files expiring before a sync could be made. This scenario is preventable. Possible solutions include:
   - Sync the data source more frequently.
   - For standard MySQL installations: Set a higher `binlog_expire_logs_seconds`. It's recommended to set this value to a time period of 7 days. See [MySQL binary log documentation](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_expire_logs_seconds) for details.
   - For Amazon RDS MySQL instances: Set the `binlog retention hours` parameter to at least 24 hours (or higher). This parameter defaults to 0, causing binlogs to be removed immediately. Use the RDS-specific procedure described in the [AWS documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/mysql-stored-proc-configuring.html). For example:
@@ -81,10 +81,23 @@ When a sync runs for the first time using CDC, Airbyte performs an initial consi
 
 If seeing `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following _MySql server_ timeout values by running:
 
+**For MySQL 8.0.26 and later:**
+
+```sql
+SET GLOBAL replica_net_timeout = 120;
+SET GLOBAL thread_pool_idle_timeout = 120;
 ```
-set global slave_net_timeout = 120;
-set global thread_pool_idle_timeout = 120;
+
+**For MySQL versions before 8.0.26:**
+
+```sql
+SET GLOBAL slave_net_timeout = 120;
+SET GLOBAL thread_pool_idle_timeout = 120;
 ```
+
+:::note
+`slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version.
+:::
 
 ### (Advanced) Enable GTIDs
 

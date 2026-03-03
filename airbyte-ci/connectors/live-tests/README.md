@@ -16,6 +16,7 @@ This project contains utilities for running connector tests against live data.
 poetry install
 ```
 
+Note that `poetry lock` + `poetry install` didn't seem to have impact on the version of connection_retriever. In order to update this dependency to the latest, I had to `poetry add git+https://github.com/airbytehq/airbyte-platform-internal.git@master#subdirectory=tools/connection-retriever`. 
 
 ## Regression tests
 

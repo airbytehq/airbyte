@@ -50,6 +50,27 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.3.49 | 2026-02-24 | [73538](https://github.com/airbytehq/airbyte/pull/73538) | Update dependencies |
+| 0.3.48 | 2026-02-10 | [73153](https://github.com/airbytehq/airbyte/pull/73153) | Update dependencies |
+| 0.3.47 | 2026-02-03 | [72078](https://github.com/airbytehq/airbyte/pull/72078) | Update dependencies |
+| 0.3.46 | 2026-01-14 | [71486](https://github.com/airbytehq/airbyte/pull/71486) | Update dependencies |
+| 0.3.45 | 2025-12-18 | [70687](https://github.com/airbytehq/airbyte/pull/70687) | Update dependencies |
+| 0.3.44 | 2025-11-25 | [70137](https://github.com/airbytehq/airbyte/pull/70137) | Update dependencies |
+| 0.3.43 | 2025-11-18 | [69645](https://github.com/airbytehq/airbyte/pull/69645) | Update dependencies |
+| 0.3.42 | 2025-10-29 | [68951](https://github.com/airbytehq/airbyte/pull/68951) | Update dependencies |
+| 0.3.41 | 2025-10-21 | [68372](https://github.com/airbytehq/airbyte/pull/68372) | Update dependencies |
+| 0.3.40 | 2025-10-14 | [67963](https://github.com/airbytehq/airbyte/pull/67963) | Update dependencies |
+| 0.3.39 | 2025-10-07 | [67319](https://github.com/airbytehq/airbyte/pull/67319) | Update dependencies |
+| 0.3.38 | 2025-10-01 | [66453](https://github.com/airbytehq/airbyte/pull/66453) | Update dependencies |
+| 0.3.37 | 2025-09-09 | [65673](https://github.com/airbytehq/airbyte/pull/65673) | Update dependencies |
+| 0.3.36 | 2025-08-24 | [65454](https://github.com/airbytehq/airbyte/pull/65454) | Update dependencies |
+| 0.3.35 | 2025-08-10 | [64823](https://github.com/airbytehq/airbyte/pull/64823) | Update dependencies |
+| 0.3.34 | 2025-08-02 | [64314](https://github.com/airbytehq/airbyte/pull/64314) | Update dependencies |
+| 0.3.33 | 2025-07-26 | [64057](https://github.com/airbytehq/airbyte/pull/64057) | Update dependencies |
+| 0.3.32 | 2025-07-19 | [63646](https://github.com/airbytehq/airbyte/pull/63646) | Update dependencies |
+| 0.3.31 | 2025-07-12 | [63201](https://github.com/airbytehq/airbyte/pull/63201) | Update dependencies |
+| 0.3.30 | 2025-07-05 | [62742](https://github.com/airbytehq/airbyte/pull/62742) | Update dependencies |
+| 0.3.29 | 2025-06-28 | [62203](https://github.com/airbytehq/airbyte/pull/62203) | Update dependencies |
 | 0.3.28 | 2025-06-21 | [61781](https://github.com/airbytehq/airbyte/pull/61781) | Update dependencies |
 | 0.3.27 | 2025-06-15 | [61216](https://github.com/airbytehq/airbyte/pull/61216) | Update dependencies |
 | 0.3.26 | 2025-05-24 | [60751](https://github.com/airbytehq/airbyte/pull/60751) | Update dependencies |

@@ -22,7 +22,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
   icon: pipedrive.svg
-  license: MIT
+  license: ELv2
   name: Pipedrive
   releases:
     breakingChanges:
@@ -64,4 +64,17 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.33.1@sha256:06468f2b0acdb0126a29757f67025f8f837014f70e3f079e10e304b0e1a6be4b
+  externalDocumentationUrls:
+    - title: Pipedrive API reference
+      url: https://developers.pipedrive.com/docs/api/v1
+      type: api_reference
+    - title: Changelog
+      url: https://developers.pipedrive.com/changelog
+      type: api_release_history
+    - title: Pipedrive authentication
+      url: https://pipedrive.readme.io/docs/core-api-concepts-authentication
+      type: authentication_guide
+    - title: Pipedrive rate limits
+      url: https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

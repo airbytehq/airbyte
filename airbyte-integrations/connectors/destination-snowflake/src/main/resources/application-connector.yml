@@ -1,0 +1,16 @@
+airbyte:
+  destination:
+    core:
+      types:
+        unions: DEFAULT
+
+logger:
+  levels:
+    com.zaxxer.hikari: ERROR
+    com.zaxxer.hikari.pool: ERROR
+    net.snowflake: ERROR
+
+micronaut:
+  caches:
+    table-columns:
+      maximum-size: 100

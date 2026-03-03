@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/destination-starburst-galaxy
   githubIssueLabel: destination-starburst-galaxy
   icon: starburst-galaxy.svg
-  license: MIT
+  license: ELv2
   name: Starburst Galaxy
   registryOverrides:
     cloud:
@@ -33,4 +33,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Starburst Galaxy documentation
+      url: https://docs.starburst.io/starburst-galaxy/
+      type: api_reference
+    - title: SQL reference
+      url: https://docs.starburst.io/latest/sql.html
+      type: sql_reference
 metadataSpecVersion: "1.0"

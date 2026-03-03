@@ -1,9 +1,11 @@
 // Import the original mapper
+import { AgentConnectorTitle } from "@site/src/components/AgentConnectorTitle";
 import { AppliesTo } from "@site/src/components/AppliesTo";
 import { Arcade } from "@site/src/components/Arcade";
 import { FieldAnchor } from "@site/src/components/FieldAnchor";
 import { HeaderDecoration } from "@site/src/components/HeaderDecoration";
 import { HideInUI } from "@site/src/components/HideInUI";
+import { Navattic } from "@site/src/components/Navattic";
 import { ProductInformation } from "@site/src/components/ProductInformation";
 import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
 import { SpecSchema } from "@site/src/components/SpecSchema";
@@ -19,11 +21,13 @@ import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 export default {
   // Re-use the default mapping
   ...MDXComponents,
+  AgentConnectorTitle,
   Arcade,
   AppliesTo,
   FieldAnchor,
   HideInUI,
   HeaderDecoration,
+  Navattic,
   SpecSchema,
   PyAirbyteExample,
   ProductInformation,

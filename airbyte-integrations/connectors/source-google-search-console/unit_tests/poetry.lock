@@ -2,25 +2,26 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.55.1"
+version = "6.59.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
-    {file = "airbyte_cdk-6.55.1-py3-none-any.whl", hash = "sha256:1e9b331c288e4f47830818ed887e19a5e797a70d72d6eee2dcd5ca4adb7d0323"},
-    {file = "airbyte_cdk-6.55.1.tar.gz", hash = "sha256:97a5709da2ebdb1118fcf09382fd9dee39c8e8a4344f20a7f59e6ba68c3a4a19"},
+    {file = "airbyte_cdk-6.59.0-py3-none-any.whl", hash = "sha256:c6f36d0c5e13874d2c2b514d3eacb5c6a290a356d14f35a89f704edbb03f667a"},
+    {file = "airbyte_cdk-6.59.0.tar.gz", hash = "sha256:68c5b13b5681e2f0bc99ff9e051b3b3c176864780c5130786af4fc5749949e71"},
 ]
 
 [package.dependencies]
-airbyte-protocol-models-dataclasses = ">=0.15,<0.16"
+airbyte-protocol-models-dataclasses = ">=0.17.1,<0.18.0"
 anyascii = ">=0.3.2,<0.4.0"
 backoff = "*"
 boltons = ">=25.0.0,<26.0.0"
 cachetools = "*"
 click = ">=8.1.8,<9.0.0"
 cryptography = ">=44.0.0,<45.0.0"
+dateparser = ">=1.2.2,<2.0.0"
 dpath = ">=2.1.6,<3.0.0"
 dunamai = ">=1.22.0,<2.0.0"
 genson = "1.3.0"
@@ -51,6 +52,7 @@ rich-click = ">=1.8.8,<2.0.0"
 serpyco-rs = ">=1.10.2,<2.0.0"
 setuptools = ">=80.9.0,<81.0.0"
 typing-extensions = "*"
+unidecode = ">=1.3.8,<2.0.0"
 wcmatch = "10.0"
 whenever = ">=0.6.16,<0.7.0"
 xmltodict = ">=0.13,<0.15"
@@ -63,15 +65,15 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
-version = "0.15.0"
+version = "0.17.1"
 description = "Declares the Airbyte Protocol using Python Dataclasses. Dataclasses in Python have less performance overhead compared to Pydantic models, making them a more efficient choice for scenarios where speed and memory usage are critical"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
-    {file = "airbyte_protocol_models_dataclasses-0.15.0-py3-none-any.whl", hash = "sha256:0fe8d7c2863c348b350efcf5f1af5872dc9071060408285e4708d97a9be5e2fb"},
-    {file = "airbyte_protocol_models_dataclasses-0.15.0.tar.gz", hash = "sha256:a5bad4ee7ae0a04f1436967b7afd3306d28e1cd2e5acedf0cce588f0c80ed001"},
+    {file = "airbyte_protocol_models_dataclasses-0.17.1-py3-none-any.whl", hash = "sha256:ef83ac56de6208afe0a21ce05bcfbcfc98b98300a76fb3cdf4db2e7f720f1df0"},
+    {file = "airbyte_protocol_models_dataclasses-0.17.1.tar.gz", hash = "sha256:cbccfdf84fabd0b6e325cc57fa0682ae9d386fce8fcb5943faa5df2b7e599919"},
 ]
 
 [[package]]
@@ -526,6 +528,30 @@ test = ["certifi (>=2024)", "cryptography-vectors (==44.0.3)", "pretend (>=0.7)"
 test-randomorder = ["pytest-randomly"]
 
 [[package]]
+name = "dateparser"
+version = "1.2.2"
+description = "Date parsing library designed to parse dates from HTML pages"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+files = [
+    {file = "dateparser-1.2.2-py3-none-any.whl", hash = "sha256:5a5d7211a09013499867547023a2a0c91d5a27d15dd4dbcea676ea9fe66f2482"},
+    {file = "dateparser-1.2.2.tar.gz", hash = "sha256:986316f17cb8cdc23ea8ce563027c5ef12fc725b6fb1d137c14ca08777c5ecf7"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.7.0"
+pytz = ">=2024.2"
+regex = ">=2024.9.11"
+tzlocal = ">=0.2"
+
+[package.extras]
+calendars = ["convertdate (>=2.2.1)", "hijridate"]
+fasttext = ["fasttext (>=0.9.1)", "numpy (>=1.19.3,<2)"]
+langdetect = ["langdetect (>=1.0.0)"]
+
+[[package]]
 name = "dpath"
 version = "2.2.0"
 description = "Filesystem-like pathing and searching for dictionaries"
@@ -572,6 +598,22 @@ typing-extensions = {version = ">=4.6.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
 test = ["pytest (>=6)"]
+
+[[package]]
+name = "freezegun"
+version = "1.5.5"
+description = "Let your Python tests travel through time"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+files = [
+    {file = "freezegun-1.5.5-py3-none-any.whl", hash = "sha256:cd557f4a75cf074e84bc374249b9dd491eaeacd61376b9eb3c423282211619d2"},
+    {file = "freezegun-1.5.5.tar.gz", hash = "sha256:ac7742a6cc6c25a2c35e9292dfd554b897b517d2dec26891a2e8debf205cb94a"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.7"
 
 [[package]]
 name = "genson"
@@ -657,6 +699,7 @@ python-versions = ">=3.7"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
+    {file = "google_cloud_secret_manager-2.24.0-py3-none-any.whl", hash = "sha256:9bea1254827ecc14874bc86c63b899489f8f50bfe1442bfb2517530b30b3a89b"},
     {file = "google_cloud_secret_manager-2.24.0.tar.gz", hash = "sha256:ce573d40ffc2fb7d01719243a94ee17aa243ea642a6ae6c337501e58fbf642b5"},
 ]
 
@@ -2517,6 +2560,38 @@ files = [
 ]
 
 [[package]]
+name = "tzlocal"
+version = "5.3.1"
+description = "tzinfo object for the local timezone"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+files = [
+    {file = "tzlocal-5.3.1-py3-none-any.whl", hash = "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d"},
+    {file = "tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd"},
+]
+
+[package.dependencies]
+tzdata = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+devenv = ["check-manifest", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)", "zest.releaser"]
+
+[[package]]
+name = "unidecode"
+version = "1.4.0"
+description = "ASCII transliterations of Unicode text"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+files = [
+    {file = "Unidecode-1.4.0-py3-none-any.whl", hash = "sha256:c3c7606c27503ad8d501270406e345ddb480a7b5f38827eafe4fa82a137f0021"},
+    {file = "Unidecode-1.4.0.tar.gz", hash = "sha256:ce35985008338b676573023acc382d62c264f307c8f7963733405add37ea2b23"},
+]
+
+[[package]]
 name = "url-normalize"
 version = "1.4.3"
 description = "URL normalization for Python"
@@ -2668,4 +2743,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.13"
-content-hash = "609489605cac30fc09ac3736f594a1ae4f2022f7122b73914300531a0c562e3a"
+content-hash = "cf6b6a9d8e27aacab8d9b932e5db4b9d245d4ca803388e528ce2ffb1f7acbf00"

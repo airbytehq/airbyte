@@ -10,12 +10,12 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
-  dockerImageTag: 1.2.6
+  dockerImageTag: 1.2.7
   dockerRepository: airbyte/source-prestashop
   documentationUrl: https://docs.airbyte.com/integrations/sources/prestashop
   githubIssueLabel: source-prestashop
   icon: prestashop.svg
-  license: MIT
+  license: ELv2
   name: PrestaShop
   registryOverrides:
     cloud:
@@ -32,6 +32,14 @@ data:
     - cdk:low-code
     - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: acceptanceTests
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: PrestaShop Web Service API
+      url: https://devdocs.prestashop-project.org/8/webservice/
+      type: api_reference
+    - title: PrestaShop authentication
+      url: https://devdocs.prestashop-project.org/8/webservice/tutorials/creating-access/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

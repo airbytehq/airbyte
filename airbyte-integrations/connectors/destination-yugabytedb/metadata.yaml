@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-yugabytedb
   githubIssueLabel: destination-yugabytedb
   icon: yugabytedb.svg
-  license: MIT
+  license: ELv2
   name: YugabyteDB
   registryOverrides:
     cloud:
@@ -21,4 +21,14 @@ data:
     sl: 100
     ql: 100
   supportLevel: archived
+  externalDocumentationUrls:
+    - title: YugabyteDB documentation
+      url: https://docs.yugabyte.com/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.yugabyte.com/preview/secure/authentication/
+      type: authentication_guide
+    - title: YSQL reference
+      url: https://docs.yugabyte.com/preview/api/ysql/
+      type: sql_reference
 metadataSpecVersion: "1.0"

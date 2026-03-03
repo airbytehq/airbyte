@@ -1,0 +1,28 @@
+{
+  "request_status": "SUCCESS",
+  "request_id": "test_request_id",
+  "organizations": [
+    {
+      "sub_request_status": "SUCCESS",
+      "organization": {
+        "id": "test_org_123",
+        "updated_at": "2024-01-15T10:00:00.000Z",
+        "created_at": "2023-01-01T00:00:00.000Z",
+        "name": "Test Organization",
+        "address_line_1": "123 Test St",
+        "locality": "Test City",
+        "administrative_district_level_1": "CA",
+        "country": "US",
+        "postal_code": "12345",
+        "type": "ENTERPRISE",
+        "state": "ACTIVE",
+        "configuration_settings": {},
+        "accepted_term_version": "1",
+        "contact_name": "Test Contact",
+        "contact_email": "test@example.com",
+        "contact_phone": "+1234567890",
+        "roles": ["ADMIN"]
+      }
+    }
+  ]
+}

@@ -518,13 +518,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
         async with context:
             results = []
 
-            metadata_validation_results = await MetadataValidation(context).run()
-            results.append(metadata_validation_results)
-
-            # Exit early if the metadata file is invalid.
-            if metadata_validation_results.status is not StepStatus.SUCCESS:
-                return create_connector_report(results, context)
-
             # Check if the connector image is already published to the registry.
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
             results.append(check_connector_image_results)
@@ -653,7 +646,7 @@ def get_rollback_pr_creation_arguments(
             "branch_id": f"{context.connector.technical_name}/rollback-{release_candidate_version}",
             "commit_message": "[auto-publish] "  # << We can skip Vercel builds if this is in the commit message
             + "; ".join(step_result.step.title for step_result in step_results if step_result.success),
-            "pr_title": f"🐙 {context.connector.technical_name}: Stop progressive rollout for {release_candidate_version}",
+            "pr_title": f"revert({context.connector.technical_name}): 🐙 stop progressive rollout for {release_candidate_version}",
             "pr_body": f"The release candidate version {release_candidate_version} has been deemed unstable. This PR stops its progressive rollout. This PR will be automatically merged as part of the `auto-merge` workflow. This workflow runs every 2 hours.",
         },
     )
@@ -721,7 +714,7 @@ def get_promotion_pr_creation_arguments(
             "branch_id": f"{context.connector.technical_name}/{promoted_version}",
             "commit_message": "[auto-publish] "  # << We can skip Vercel builds if this is in the commit message
             + "; ".join(step_result.step.title for step_result in step_results if step_result.success),
-            "pr_title": f"🐙 {context.connector.technical_name}: release {promoted_version}",
+            "pr_title": f"release({context.connector.technical_name}): 🐙 promote {promoted_version}",
             "pr_body": f"The release candidate version {release_candidate_version} has been deemed stable and is now ready to be promoted to an official release ({promoted_version}). This PR will be automatically merged as part of the `auto-merge` workflow. This workflow runs every 2 hours.",
         },
     )

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -31,9 +31,11 @@ interface JdbcPartition<S : JdbcStreamState<*>> {
         streamState.sharedState.tryAcquireResourcesForCreator()
 
     /** Tries to acquire resources for [JdbcPartitionReader]. */
-    fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? =
+    fun tryAcquireResourcesForReader(
+        resourceTypes: List<ResourceType>
+    ): Map<ResourceType, JdbcPartitionReader.AcquiredResource>? =
         // Acquire global resources by default.
-        streamState.sharedState.tryAcquireResourcesForReader()
+        streamState.sharedState.tryAcquireResourcesForReader(resourceTypes)
 }
 
 /** A [JdbcPartition] which can be subdivided. */

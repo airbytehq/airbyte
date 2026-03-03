@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-meilisearch
   githubIssueLabel: destination-meilisearch
   icon: meilisearch.svg
-  license: MIT
+  license: ELv2
   name: MeiliSearch
   registryOverrides:
     cloud:
@@ -33,4 +33,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Meilisearch documentation
+      url: https://www.meilisearch.com/docs
+      type: api_reference
+    - title: Authentication
+      url: https://www.meilisearch.com/docs/learn/security/master_api_keys
+      type: authentication_guide
 metadataSpecVersion: "1.0"

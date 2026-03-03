@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.write.bulk_loader
@@ -42,7 +42,7 @@ data class BigqueryBulkLoadConfiguration(
     ObjectStorageCompressionConfigurationProvider<BufferedOutputStream> {
     override val objectStoragePathConfiguration: ObjectStoragePathConfiguration
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration =
-        CSVFormatConfiguration()
+        CSVFormatConfiguration(rootLevelFlattening = !bigQueryConfiguration.legacyRawTablesOnly)
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration()
     override val s3BucketConfiguration: S3BucketConfiguration

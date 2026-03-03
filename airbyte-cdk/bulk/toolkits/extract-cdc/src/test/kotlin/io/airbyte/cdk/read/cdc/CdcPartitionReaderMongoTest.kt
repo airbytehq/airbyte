@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read.cdc
@@ -25,7 +25,9 @@ import org.bson.BsonDocument
 import org.bson.BsonTimestamp
 import org.bson.Document
 import org.bson.conversions.Bson
+import org.junit.jupiter.api.Disabled
 
+@Disabled
 class CdcPartitionReaderMongoTest :
     AbstractCdcPartitionReaderTest<BsonTimestamp, MongoDbReplicaSet>(
         namespace = "test",

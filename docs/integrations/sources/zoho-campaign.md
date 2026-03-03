@@ -32,6 +32,29 @@ The Zoho Campaigns connector enables seamless integration of mailing lists, camp
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-02-24 | [73992](https://github.com/airbytehq/airbyte/pull/73992) | Update dependencies |
+| 0.0.46 | 2026-02-17 | [73593](https://github.com/airbytehq/airbyte/pull/73593) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [73216](https://github.com/airbytehq/airbyte/pull/73216) | Update dependencies |
+| 0.0.44 | 2026-02-03 | [72076](https://github.com/airbytehq/airbyte/pull/72076) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71689](https://github.com/airbytehq/airbyte/pull/71689) | Update dependencies |
+| 0.0.42 | 2025-12-18 | [70800](https://github.com/airbytehq/airbyte/pull/70800) | Update dependencies |
+| 0.0.41 | 2025-11-25 | [70141](https://github.com/airbytehq/airbyte/pull/70141) | Update dependencies |
+| 0.0.40 | 2025-11-18 | [69541](https://github.com/airbytehq/airbyte/pull/69541) | Update dependencies |
+| 0.0.39 | 2025-10-29 | [68937](https://github.com/airbytehq/airbyte/pull/68937) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68464](https://github.com/airbytehq/airbyte/pull/68464) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67994](https://github.com/airbytehq/airbyte/pull/67994) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67247](https://github.com/airbytehq/airbyte/pull/67247) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66840](https://github.com/airbytehq/airbyte/pull/66840) | Update dependencies |
+| 0.0.34 | 2025-09-24 | [66470](https://github.com/airbytehq/airbyte/pull/66470) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [65683](https://github.com/airbytehq/airbyte/pull/65683) | Update dependencies |
+| 0.0.32 | 2025-08-24 | [65411](https://github.com/airbytehq/airbyte/pull/65411) | Update dependencies |
+| 0.0.31 | 2025-08-10 | [64809](https://github.com/airbytehq/airbyte/pull/64809) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64404](https://github.com/airbytehq/airbyte/pull/64404) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [64073](https://github.com/airbytehq/airbyte/pull/64073) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63618](https://github.com/airbytehq/airbyte/pull/63618) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63200](https://github.com/airbytehq/airbyte/pull/63200) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62675](https://github.com/airbytehq/airbyte/pull/62675) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62214](https://github.com/airbytehq/airbyte/pull/62214) | Update dependencies |
 | 0.0.24 | 2025-06-21 | [61773](https://github.com/airbytehq/airbyte/pull/61773) | Update dependencies |
 | 0.0.23 | 2025-06-15 | [61189](https://github.com/airbytehq/airbyte/pull/61189) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60759](https://github.com/airbytehq/airbyte/pull/60759) | Update dependencies |

@@ -13,7 +13,7 @@ data:
   dockerRepository: airbyte/destination-chroma
   githubIssueLabel: destination-chroma
   icon: chroma.svg
-  license: MIT
+  license: ELv2
   name: Chroma
   releaseDate: "2023-09-13"
   releaseStage: alpha
@@ -25,4 +25,11 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: Chroma documentation
+      url: https://docs.trychroma.com/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.trychroma.com/deployment/auth
+      type: authentication_guide
 metadataSpecVersion: "1.0"

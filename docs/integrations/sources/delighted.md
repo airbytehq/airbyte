@@ -54,6 +54,21 @@ This source is capable of syncing the following core streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.4.38 | 2026-03-03 | [74151](https://github.com/airbytehq/airbyte/pull/74151) | Update dependencies |
+| 0.4.37 | 2026-01-14 | [71572](https://github.com/airbytehq/airbyte/pull/71572) | Update dependencies |
+| 0.4.36 | 2025-12-19 | [70939](https://github.com/airbytehq/airbyte/pull/70939) | Update dependencies |
+| 0.4.35 | 2025-11-25 | [69921](https://github.com/airbytehq/airbyte/pull/69921) | Update dependencies |
+| 0.4.34 | 2025-10-07 | [67158](https://github.com/airbytehq/airbyte/pull/67158) | Update dependencies |
+| 0.4.33 | 2025-09-30 | [66950](https://github.com/airbytehq/airbyte/pull/66950) | Update dependencies |
+| 0.4.32 | 2025-09-09 | [65754](https://github.com/airbytehq/airbyte/pull/65754) | Update dependencies |
+| 0.4.31 | 2025-08-23 | [65257](https://github.com/airbytehq/airbyte/pull/65257) | Update dependencies |
+| 0.4.30 | 2025-08-09 | [64697](https://github.com/airbytehq/airbyte/pull/64697) | Update dependencies |
+| 0.4.29 | 2025-08-02 | [64313](https://github.com/airbytehq/airbyte/pull/64313) | Update dependencies |
+| 0.4.28 | 2025-07-26 | [64043](https://github.com/airbytehq/airbyte/pull/64043) | Update dependencies |
+| 0.4.27 | 2025-07-19 | [63573](https://github.com/airbytehq/airbyte/pull/63573) | Update dependencies |
+| 0.4.26 | 2025-07-12 | [62990](https://github.com/airbytehq/airbyte/pull/62990) | Update dependencies |
+| 0.4.25 | 2025-07-05 | [62824](https://github.com/airbytehq/airbyte/pull/62824) | Update dependencies |
+| 0.4.24 | 2025-06-28 | [62330](https://github.com/airbytehq/airbyte/pull/62330) | Update dependencies |
 | 0.4.23 | 2025-06-22 | [62002](https://github.com/airbytehq/airbyte/pull/62002) | Update dependencies |
 | 0.4.22 | 2025-06-14 | [61285](https://github.com/airbytehq/airbyte/pull/61285) | Update dependencies |
 | 0.4.21 | 2025-05-24 | [60389](https://github.com/airbytehq/airbyte/pull/60389) | Update dependencies |

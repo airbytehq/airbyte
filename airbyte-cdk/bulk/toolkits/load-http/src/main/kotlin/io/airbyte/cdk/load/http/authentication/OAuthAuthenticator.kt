@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.http.authentication
 
 import com.fasterxml.jackson.databind.JsonNode
-import dev.failsafe.RetryPolicy
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.Request
 import io.airbyte.cdk.load.http.RequestMethod
@@ -24,8 +23,7 @@ class OAuthAuthenticator(
     private val clientId: String,
     private val clientSecret: String,
     private val refreshToken: String,
-    private val httpClient: HttpClient =
-        AirbyteOkHttpClient(OkHttpClient.Builder().build(), RetryPolicy.ofDefaults())
+    private val httpClient: HttpClient = AirbyteOkHttpClient(OkHttpClient.Builder().build())
 ) : Interceptor {
     object Constants {
         const val CLIENT_ID_FIELD_NAME: String = "client_id"

@@ -77,12 +77,12 @@
       "period": "lifetime",
       "values": [
         {
-          "value": 2006
+          "value": 200
         }
       ],
-      "title": "Views",
-      "description": "The number of times your video was viewed.",
-      "id": "09894619573775123/insights/views/lifetime"
+      "title": "Views title",
+      "description": "Views description.",
+      "id": "3874523487643/insights/views/lifetime"
     }
   ]
 }

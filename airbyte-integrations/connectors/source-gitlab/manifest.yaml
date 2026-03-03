@@ -1,0 +1,5165 @@
+version: 6.56.7
+type: DeclarativeSource
+
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/gitlab
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Source Gitlab Spec
+    type: object
+    required:
+    - credentials
+    additionalProperties: true
+    properties:
+      credentials:
+        title: Authorization Method
+        type: object
+        order: 0
+        oneOf:
+        - type: object
+          title: OAuth2.0
+          required:
+          - client_id
+          - client_secret
+          - refresh_token
+          - access_token
+          - token_expiry_date
+          properties:
+            auth_type:
+              type: string
+              const: oauth2.0
+            client_id:
+              type: string
+              description: The API ID of the Gitlab developer application.
+              airbyte_secret: true
+            client_secret:
+              type: string
+              description: The API Secret the Gitlab developer application.
+              airbyte_secret: true
+            access_token:
+              type: string
+              description: Access Token for making authenticated requests.
+              airbyte_secret: true
+            token_expiry_date:
+              type: string
+              description: The date-time when the access token should be refreshed.
+              format: date-time
+            refresh_token:
+              type: string
+              description: The key to refresh the expired access_token.
+              airbyte_secret: true
+        - title: Private Token
+          type: object
+          required:
+          - access_token
+          properties:
+            auth_type:
+              type: string
+              const: access_token
+            access_token:
+              type: string
+              title: Private Token
+              description: Log into your Gitlab account and then generate a personal
+                Access Token.
+              airbyte_secret: true
+      start_date:
+        type: string
+        title: Start Date
+        description: The date from which you'd like to replicate data for GitLab API,
+          in the format YYYY-MM-DDT00:00:00Z. Optional. If not set, all data will be
+          replicated. All data generated after this date will be replicated.
+        examples:
+        - '2021-03-01T00:00:00Z'
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+        format: date-time
+      api_url:
+        type: string
+        examples:
+        - gitlab.com
+        - https://gitlab.com
+        - https://gitlab.company.org
+        title: API URL
+        default: gitlab.com
+        description: Please enter your basic URL from GitLab instance.
+        order: 2
+      groups:
+        type: string
+        examples:
+        - airbyte.io
+        title: Groups
+        description: '[DEPRECATED] Space-delimited list of groups. e.g. airbyte.io.'
+        airbyte_hidden: true
+      groups_list:
+        type: array
+        items:
+          type: string
+        examples:
+        - airbyte.io
+        title: Groups
+        description: List of groups. e.g. airbyte.io.
+        order: 3
+      projects:
+        type: string
+        title: Projects
+        examples:
+        - airbyte.io/documentation
+        description: '[DEPRECATED] Space-delimited list of projects. e.g. airbyte.io/documentation
+          meltano/tap-gitlab.'
+        airbyte_hidden: true
+      projects_list:
+        type: array
+        items:
+          type: string
+        title: Projects
+        examples:
+        - airbyte.io/documentation
+        description: Space-delimited list of projects. e.g. airbyte.io/documentation
+          meltano/tap-gitlab.
+        order: 4
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+    - credentials
+    - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        properties:
+          domain:
+            type: string
+            path_in_connector_config:
+            - api_url
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+            - credentials
+            - token_expiry_date
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        descriptions: Migrates `groups` key to `groups_list` key.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["groups_list"]
+                value: "{{ config.get('groups').split(' ') if config.get('groups') else [] }}"
+            condition: "{{ not config.get('groups_list', False) }}"
+      - type: ConfigMigration
+        descriptions: Migrates `projects` key to `projects_list` key.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["projects_list"]
+                value: "{{ config.get('projects').split(' ') if config.get('projects') else [] }}"
+            condition: "{{ not config.get('projects_list', False) }}"
+    validations:
+      - type: DpathValidator
+        field_path: ["api_url"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateApiUrl
+
+definitions:
+  # Authenticators
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    token_refresh_endpoint: "https://{{ config.get('api_url', 'gitlab.com') }}/oauth/token"
+    refresh_token_updater:
+      refresh_token_error_status_codes: [400, 401]
+      refresh_token_error_key: "error"
+      refresh_token_error_values: ["invalid_grant"]
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2.0: "#/definitions/oauth_authenticator"
+      access_token: "#/definitions/bearer_authenticator"
+
+  # Requester
+  requester:
+    type: HttpRequester
+    url_base: >-
+      {% set parts = config.get('api_url', 'gitlab.com').split('://') %}
+      {{ parts[0] if parts|length > 1 else 'https' }}://{{ parts[1] if parts[1] else parts[0] }}/api/v4/
+    http_method: GET
+    authenticator: "#/definitions/authenticator"
+    use_cache: true
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes: [403]
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [401]
+          error_message: Unable to refresh the `access_token`, please re-authenticate in Sources > Settings.
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes: [500]
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [404]
+          error_message: Groups and/or projects that you provide are invalid or you don't have permission to view it.
+    request_parameters: "{{ parameters.get('request_parameters', {}) }}"
+
+  # Selector
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  # Paginator
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 50
+      start_from_page: 1
+      inject_on_first_request: false
+    page_size_option:
+      type: RequestOption
+      field_name: per_page
+      inject_into: request_parameter
+    page_token_option:
+      type: RequestOption
+      field_name: page
+      inject_into: request_parameter
+
+  # Retrievers
+  retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/requester"
+    paginator: "#/definitions/paginator"
+
+  group_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: CustomPartitionRouter
+      class_name: source_declarative_manifest.components.GroupStreamsPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_list_stream"
+          partition_field: "id"
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/include_descendant_groups_stream"
+          partition_field: "id"
+
+  group_child_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_stream"
+          partition_field: "id"
+
+  projects_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: CustomPartitionRouter
+      class_name: source_declarative_manifest.components.ProjectStreamsPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_stream"
+          partition_field: "id"
+
+  projects_child_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/projects_stream"
+          partition_field: "id"
+
+  pipelines_child_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/pipelines_stream"
+          partition_field: "id"
+
+  # Transformations
+  add_project_id_field:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: ["project_id"]
+        value: "{{ stream_slice.id }}"
+
+  add_group_id_field:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: ["group_id"]
+        value: "{{ stream_slice.id }}"
+
+  # Service streams
+  base_full_refresh_stream:
+    type: DeclarativeStream
+    primary_key: "id"
+
+  base_groups_child_stream:
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/group_child_streams_retriever"
+
+  base_projects_child_stream:
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/projects_child_streams_retriever"
+
+  base_projects_incremental_child_stream:
+    $ref: "#/definitions/base_projects_child_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field', 'updated_at') }}"
+      start_datetime: "{{ config.get('start_date', '2014-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: "PT1S"
+      step: "P180DT1S"
+      start_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('lower_bound_filter', 'updated_after') }}"
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('upper_bound_filter', 'updated_before') }}"
+        inject_into: request_parameter
+
+  groups_list_stream:
+    name: "groups_list"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/retriever"
+    $parameters:
+      path: "groups"
+      request_parameters: {}
+
+  include_descendant_groups_stream:
+    name: "include_descendant_groups"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: "slice"
+        values: |
+          {% set slices = [] %}
+          {% for group_id in config.get('groups_list', []) %}
+          {% set _ = slices.append({'path': 'groups/' + group_id}) %}
+          {% set _ = slices.append({'path': 'groups/' + group_id + '/descendant_groups'}) %}
+          {% endfor %}
+          {{ slices }}
+    $parameters:
+      path: "{{ stream_slice.slice.path }}"
+      request_parameters: {}
+
+  # Full refresh streams
+  ## Groups-based streams
+  groups_stream:
+    name: "groups"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/group_streams_retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - projects
+            value: |
+              {% set projects = [] %}
+              {% for project in (record.get('projects') or []): %}
+              {% set _ = projects.append({'id': project['id'], 'path_with_namespace': project['path_with_namespace']}) %}
+              {% endfor %}
+              {{ projects }}
+    $parameters:
+      path: "groups/{{ stream_slice.id }}"
+      request_parameters: {}
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/groups"
+
+  group_milestones_stream:
+    name: "group_milestones"
+    $ref: "#/definitions/base_groups_child_stream"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/milestones"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/group_milestones"
+
+  group_members_stream:
+    name: "group_members"
+    $ref: "#/definitions/base_groups_child_stream"
+    primary_key: ["group_id", "id"]
+    transformations:
+      - "#/definitions/add_group_id_field"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/members"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/group_members"
+
+  group_labels_stream:
+    name: "group_labels"
+    $ref: "#/definitions/base_groups_child_stream"
+    primary_key: ["group_id", "id"]
+    transformations:
+      - "#/definitions/add_group_id_field"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/labels"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/group_labels"
+
+  group_issue_boards_stream:
+    name: "group_issue_boards"
+    $ref: "#/definitions/base_groups_child_stream"
+    transformations:
+      - "#/definitions/add_group_id_field"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/boards"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/group_issue_boards"
+
+  epics_stream:
+    name: "epics"
+    $ref: "#/definitions/base_groups_child_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+    primary_key: "iid"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/epics"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/epics"
+
+  epic_issues_stream:
+    name: "epic_issues"
+    $ref: "#/definitions/base_groups_child_stream"
+    primary_key: "iid"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["milestone_id"]
+            value: "{{ (record.get('milestone') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignee_id"]
+            value: "{{ (record.get('assignee') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignees"]
+            value: |
+              {% set ids = [] %}
+              {% for data in (record.get('assignees') or []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "iid"
+            stream: "#/definitions/epics_stream"
+            partition_field: "iid"
+    $parameters:
+      path: "groups/{{ stream_slice.parent_slice.id }}/epics/{{ stream_slice.iid }}/issues"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/epic_issues"
+
+  ## Projects-based streams
+  projects_stream:
+    name: "projects"
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/projects_streams_retriever"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}"
+      request_parameters:
+        statistics: 1
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/projects"
+
+  project_milestones_stream:
+    name: "project_milestones"
+    $ref: "#/definitions/base_projects_child_stream"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/milestones"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/project_milestones"
+
+  project_members_stream:
+    name: "project_members"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id", "id"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/members"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/project_members"
+
+  project_labels_stream:
+    name: "project_labels"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id", "id"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/labels"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/project_labels"
+
+  branches_stream:
+    name: "branches"
+    $ref: "#/definitions/base_projects_child_stream"
+    transformations:
+      - "#/definitions/add_project_id_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+    primary_key: ["project_id", "name"]
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/repository/branches"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/branches"
+
+  releases_stream:
+    name: "releases"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: "name"
+    transformations:
+      - "#/definitions/add_project_id_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["milestones"]
+            value: |
+              {% set ids = [] %}
+              {% for data in record.get('milestones', []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/releases"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/releases"
+
+  tags_stream:
+    name: "tags"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id", "name"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/repository/tags"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/tags"
+
+  users_stream:
+    name: "users"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: "name"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/users"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/users"
+
+  deployments_stream:
+    name: "deployments"
+    $ref: "#/definitions/base_projects_child_stream"
+    transformations:
+      - "#/definitions/add_project_id_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["user_username"]
+            value: "{{ (record.get('user') or {}).get('username') }}"
+          - type: AddedFieldDefinition
+            path: ["user_full_name"]
+            value: "{{ (record.get('user') or {}).get('name') }}"
+          - type: AddedFieldDefinition
+            path: ["environment_name"]
+            value: "{{ (record.get('environment') or {}).get('name') }}"
+          - type: AddedFieldDefinition
+            path: ["user_id"]
+            value: "{{ (record.get('user') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["environment_id"]
+            value: "{{ (record.get('environment') or {}).get('id') }}"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/deployments"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/deployments"
+
+  merge_request_commits_stream:
+    name: "merge_request_commits"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "iid"
+            stream: "#/definitions/merge_requests_stream"
+            partition_field: "iid"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.parent_slice.id }}"
+          - type: AddedFieldDefinition
+            path: ["merge_request_iid"]
+            value: "{{ stream_slice.iid }}"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/merge_requests/{{ stream_slice.iid }}/commits"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/merge_request_commits"
+
+  pipelines_extended_stream:
+    name: "pipelines_extended"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever: "#/definitions/pipelines_child_streams_retriever"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/pipelines_extended"
+
+  jobs_stream:
+    name: "jobs"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever: "#/definitions/pipelines_child_streams_retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.parent_slice.id }}"
+          - type: AddedFieldDefinition
+            path: ["user_id"]
+            value: "{{ (record.get('user') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["pipeline_id"]
+            value: "{{ (record.get('pipeline') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["runner_id"]
+            value: "{{ (record.get('runner') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/jobs"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/jobs"
+
+  # Incremental streams
+  commits_stream:
+    name: "commits"
+    $ref: "#/definitions/base_projects_incremental_child_stream"
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/repository/commits"
+      cursor_field: "created_at"
+      lower_bound_filter: "since"
+      upper_bound_filter: "until"
+      request_parameters:
+        with_stats: "true"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/commits"
+
+  issues_stream:
+    name: "issues"
+    $ref: "#/definitions/base_projects_incremental_child_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignee_id"]
+            value: "{{ (record.get('assignee') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["closed_by_id"]
+            value: "{{ (record.get('closed_by') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["milestone_id"]
+            value: "{{ (record.get('milestone') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignees"]
+            value: |
+              {% set ids = [] %}
+              {% for data in record.get('assignees', []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/issues"
+      request_parameters:
+        scope: "all"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/issues"
+
+  merge_requests_stream:
+    name: "merge_requests"
+    $ref: "#/definitions/base_projects_incremental_child_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ (record.get('author') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignee_id"]
+            value: "{{ (record.get('assignee') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["closed_by_id"]
+            value: "{{ (record.get('closed_by') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["milestone_id"]
+            value: "{{ (record.get('milestone') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["merged_by_id"]
+            value: "{{ (record.get('merged_by') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignees"]
+            value: |
+              {% set ids = [] %}
+              {% for data in record.get('assignees', []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/merge_requests"
+      request_parameters:
+        scope: "all"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/merge_requests"
+
+  pipelines_stream:
+    name: "pipelines"
+    $ref: "#/definitions/base_projects_incremental_child_stream"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/pipelines"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/pipelines"
+
+
+
+streams:
+  # Groups-based streams
+  - "#/definitions/groups_stream"
+  - "#/definitions/group_milestones_stream"
+  - "#/definitions/group_members_stream"
+  - "#/definitions/group_labels_stream"
+  - "#/definitions/group_issue_boards_stream"
+  - "#/definitions/epics_stream"
+  - "#/definitions/epic_issues_stream"
+
+  # Projects-based streams
+  - "#/definitions/projects_stream"
+  - "#/definitions/project_milestones_stream"
+  - "#/definitions/project_members_stream"
+  - "#/definitions/project_labels_stream"
+  - "#/definitions/branches_stream"
+  - "#/definitions/releases_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/deployments_stream"
+  - "#/definitions/commits_stream"
+  - "#/definitions/issues_stream"
+  - "#/definitions/merge_requests_stream"
+  - "#/definitions/merge_request_commits_stream"
+  - "#/definitions/pipelines_stream"
+  - "#/definitions/pipelines_extended_stream"
+  - "#/definitions/jobs_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - groups
+
+schemas:
+  branches:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      project_id:
+        description: ID of the project to which this branch belongs.
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Name of the branch.
+        type:
+        - 'null'
+        - string
+      merged:
+        description: Indicates if the changes in this branch have been merged into another
+          branch.
+        type:
+        - 'null'
+        - boolean
+      protected:
+        description: Indicates if the branch is protected to prevent direct pushes.
+        type:
+        - 'null'
+        - boolean
+      developers_can_push:
+        description: Indicates if developers can push changes to this branch.
+        type:
+        - 'null'
+        - boolean
+      developers_can_merge:
+        description: Indicates if developers can merge changes to this branch.
+        type:
+        - 'null'
+        - boolean
+      can_push:
+        description: Indicates if the user has permission to push changes to this branch.
+        type:
+        - 'null'
+        - boolean
+      default:
+        description: Indicates if this is the default branch of the project.
+        type:
+        - 'null'
+        - boolean
+      web_url:
+        description: URL to view the branch in a web browser.
+        type:
+        - 'null'
+        - string
+      commit_id:
+        description: ID of the commit associated with this branch.
+        type:
+        - 'null'
+        - string
+      commit:
+        description: Details about the commit associated with this branch.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+  commits:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      project_id:
+        description: ID of the project to which the commit belongs.
+        type:
+        - 'null'
+        - integer
+      id:
+        description: Unique identifier of the commit.
+        type:
+        - 'null'
+        - string
+      short_id:
+        description: Shortened version of the commit's unique identifier.
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: Date and time when the commit record was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      parent_ids:
+        description: Array of unique identifiers of parent commits if the commit has multiple
+          parents.
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      title:
+        description: Title or summary of the commit message.
+        type:
+        - 'null'
+        - string
+      message:
+        description: Description or text message associated with the commit.
+        type:
+        - 'null'
+        - string
+      author_name:
+        description: Name of the author who created the commit.
+        type:
+        - 'null'
+        - string
+      author_email:
+        description: Email of the author who created the commit.
+        type:
+        - 'null'
+        - string
+      authored_date:
+        description: Date and time when the commit was authored.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      extended_trailers:
+        description: 'Additional information or metadata added to the commit. Eg: ''Cc''
+          field for carbon copy email addresses.'
+        type:
+        - 'null'
+        - object
+        properties:
+          Cc:
+            description: Carbon copy email addresses associated with the commit.
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+      committer_name:
+        description: Name of the committer who committed the changes.
+        type:
+        - 'null'
+        - string
+      committer_email:
+        description: Email of the committer who committed the changes.
+        type:
+        - 'null'
+        - string
+      committed_date:
+        description: Date and time when the commit was committed.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      trailers:
+        description: Metadata information provided below the commit message.
+        type:
+        - 'null'
+        - object
+      web_url:
+        description: URL link to view the commit details in a web browser.
+        type:
+        - 'null'
+        - string
+      stats:
+        description: Statistics related to the commit changes like additions, deletions,
+          and total changes.
+        type:
+        - 'null'
+        - object
+        properties:
+          additions:
+            description: Number of lines added in the commit.
+            type:
+            - 'null'
+            - integer
+          deletions:
+            description: Number of lines deleted in the commit.
+            type:
+            - 'null'
+            - integer
+          total:
+            description: Total number of lines changed in the commit.
+            type:
+            - 'null'
+            - integer
+  deployments:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: Unique identifier of the deployment
+        type:
+        - 'null'
+        - integer
+      iid:
+        description: Identification number of the deployment
+        type:
+        - 'null'
+        - integer
+      status:
+        description: Status of the deployment
+        type:
+        - 'null'
+        - string
+      ref:
+        description: Reference of the deployment
+        type:
+        - 'null'
+        - string
+      sha:
+        description: SHA of the deployment
+        type:
+        - 'null'
+        - string
+      environment_name:
+        description: Name of the environment
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: The timestamp when the deployment was created
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: Timestamp when the deployment was last updated
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user:
+        description: User associated with the deployment
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      user_full_name:
+        description: Full name of the user associated with the deployment
+        type:
+        - 'null'
+        - string
+      user_username:
+        description: Username of the user associated with the deployment
+        type:
+        - 'null'
+        - string
+      user_id:
+        description: Unique identifier of the user associated with the deployment
+        type:
+        - 'null'
+        - integer
+      environment:
+        description: Environment information of the deployment
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      environment_id:
+        description: Unique identifier of the environment
+        type:
+        - 'null'
+        - integer
+      project_id:
+        description: Unique identifier of the project
+        type:
+        - 'null'
+        - integer
+      deployable:
+        description: Details of the deployment job
+        type:
+        - 'null'
+        - object
+        properties:
+          commit:
+            description: Information about the commit associated with the deployment
+            type:
+            - 'null'
+            - object
+            properties:
+              author_email:
+                description: Email of the author of the commit
+                type:
+                - 'null'
+                - string
+              author_name:
+                description: Name of the author of the commit
+                type:
+                - 'null'
+                - string
+              created_at:
+                description: Timestamp when the commit was created
+                type:
+                - 'null'
+                - string
+                format: date-time
+              id:
+                description: Unique identifier of the commit
+                type:
+                - 'null'
+                - string
+              message:
+                description: Message associated with the commit
+                type:
+                - 'null'
+                - string
+              short_id:
+                description: Short identifier of the commit
+                type:
+                - 'null'
+                - string
+              title:
+                description: Title of the commit
+                type:
+                - 'null'
+                - string
+          coverage:
+            description: Coverage information of the deployment
+            type:
+            - 'null'
+            - string
+          created_at:
+            description: Timestamp when the deployment was created
+            type:
+            - 'null'
+            - string
+            format: date-time
+          finished_at:
+            description: Timestamp when the deployment was finished
+            type:
+            - 'null'
+            - string
+            format: date-time
+          id:
+            description: Unique identifier of the deployment
+            type:
+            - 'null'
+            - integer
+          name:
+            description: Name of the deployment
+            type:
+            - 'null'
+            - string
+          ref:
+            description: Reference of the deployment
+            type:
+            - 'null'
+            - string
+          runner:
+            description: Runner information for the deployment
+            type:
+            - 'null'
+            - string
+          stage:
+            description: Stage of the deployment
+            type:
+            - 'null'
+            - string
+          started_at:
+            description: Timestamp when the deployment was started
+            type:
+            - 'null'
+            - string
+            format: date-time
+          status:
+            description: Status of the deployment
+            type:
+            - 'null'
+            - string
+          tag:
+            description: Tag information for the deployment
+            type:
+            - 'null'
+            - boolean
+          project:
+            description: Details of the project where the deployment occurred
+            type:
+            - 'null'
+            - object
+            properties:
+              ci_job_token_scope_enabled:
+                description: Flag indicating if the CI job token scope is enabled for
+                  the project
+                type:
+                - 'null'
+                - boolean
+          user:
+            description: User associated with the deployment
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                description: Unique identifier of the user
+                type:
+                - 'null'
+                - integer
+              name:
+                description: Name of the user
+                type:
+                - 'null'
+                - string
+              username:
+                description: Username of the user
+                type:
+                - 'null'
+                - string
+              state:
+                description: State information of the user
+                type:
+                - 'null'
+                - string
+              avatar_url:
+                description: URL of the user's avatar
+                type:
+                - 'null'
+                - string
+              web_url:
+                description: URL for accessing the user's information
+                type:
+                - 'null'
+                - string
+              created_at:
+                description: Timestamp when the user was created
+                type:
+                - 'null'
+                - string
+                format: date-time
+              bio:
+                description: Bio information of the user
+                type:
+                - 'null'
+                - string
+              location:
+                description: Location information of the user
+                type:
+                - 'null'
+                - string
+              public_email:
+                description: Public email of the user
+                type:
+                - 'null'
+                - string
+              skype:
+                description: Skype ID of the user
+                type:
+                - 'null'
+                - string
+              linkedin:
+                description: Linkedin profile of the user
+                type:
+                - 'null'
+                - string
+              twitter:
+                description: Twitter handle of the user
+                type:
+                - 'null'
+                - string
+              website_url:
+                description: URL for the user's website
+                type:
+                - 'null'
+                - string
+              organization:
+                description: Organization information of the user
+                type:
+                - 'null'
+                - string
+          pipeline:
+            description: Details of the pipeline used for the deployment
+            type:
+            - 'null'
+            - object
+            properties:
+              created_at:
+                description: Timestamp when the pipeline associated with the deployment
+                  was created
+                type:
+                - 'null'
+                - string
+                format: date-time
+              id:
+                description: Unique identifier of the pipeline
+                type:
+                - 'null'
+                - integer
+              ref:
+                description: Reference of the pipeline
+                type:
+                - 'null'
+                - string
+              sha:
+                description: SHA of the pipeline
+                type:
+                - 'null'
+                - string
+              status:
+                description: Status of the pipeline
+                type:
+                - 'null'
+                - string
+              updated_at:
+                description: Timestamp when the pipeline associated with the deployment
+                  was last updated
+                type:
+                - 'null'
+                - string
+                format: date-time
+              web_url:
+                description: URL for accessing the pipeline in a web browser
+                type:
+                - 'null'
+                - string
+  epic_issues:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: ID of the epic issue.
+        type:
+        - 'null'
+        - integer
+      iid:
+        description: Internal ID of the epic issue.
+        type:
+        - 'null'
+        - integer
+      project_id:
+        description: ID of the project the epic issue belongs to.
+        type:
+        - 'null'
+        - integer
+      title:
+        description: Title of the epic issue.
+        type:
+        - 'null'
+        - string
+      description:
+        description: Description of the epic issue.
+        type:
+        - 'null'
+        - string
+      state:
+        description: State of the epic issue.
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: Timestamp when the epic issue was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: Timestamp when the epic issue was last updated.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      closed_at:
+        description: Timestamp when the epic issue was closed.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      labels:
+        description: List of labels associated with the epic issue.
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      milestone:
+        description: Information about the milestone associated with the epic issue.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      milestone_id:
+        description: ID of the milestone associated with the epic issue.
+        type:
+        - 'null'
+        - integer
+      assignees:
+        description: List of users assigned to the epic issue.
+        type:
+        - 'null'
+        - array
+        items:
+          description: Information about an assignee.
+          type:
+          - 'null'
+          - integer
+      assignee:
+        description: Information about the user assigned to the epic issue.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      assignee_id:
+        description: ID of the user assigned to the epic issue.
+        type:
+        - 'null'
+        - integer
+      author:
+        description: Information about the user who authored the epic issue.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      author_id:
+        description: ID of the user who authored the epic issue.
+        type:
+        - 'null'
+        - integer
+      user_notes_count:
+        description: Number of user notes added to the epic issue.
+        type:
+        - 'null'
+        - integer
+      upvotes:
+        description: Number of upvotes received for the epic issue.
+        type:
+        - 'null'
+        - integer
+      downvotes:
+        description: Number of downvotes received for the epic issue.
+        type:
+        - 'null'
+        - integer
+      due_date:
+        description: Due date set for the epic issue.
+        type:
+        - 'null'
+        - string
+        format: date
+      confidential:
+        description: Indicates if the epic issue is confidential.
+        type:
+        - 'null'
+        - boolean
+      weight:
+        description: Weight assigned to the epic issue.
+        type:
+        - 'null'
+        - integer
+      discussion_locked:
+        description: Indicates if the discussion on the epic issue is locked.
+        type:
+        - 'null'
+        - boolean
+      web_url:
+        description: URL link to access the epic issue.
+        type:
+        - 'null'
+        - string
+      time_stats:
+        description: Time-related statistics for the epic issue.
+        type:
+        - 'null'
+        - object
+      _links:
+        description: Links related to the epic issue.
+        type:
+        - 'null'
+        - object
+      epic_issue_id:
+        description: ID of the epic issue.
+        type:
+        - 'null'
+        - integer
+      merge_requests_count:
+        description: Number of merge requests related to the epic issue.
+        type:
+        - 'null'
+        - integer
+      type:
+        description: Type of the epic issue.
+        type:
+        - 'null'
+        - string
+      task_status:
+        description: Status of tasks associated with the epic issue.
+        type:
+        - 'null'
+        - string
+      moved_to_id:
+        description: ID of the epic issue it was moved to.
+        type:
+        - 'null'
+        - integer
+      iteration:
+        description: Information about the iteration associated with the epic issue.
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          iid:
+            type:
+            - 'null'
+            - integer
+          sequence:
+            type:
+            - 'null'
+            - integer
+          group_id:
+            type:
+            - 'null'
+            - integer
+          title:
+            type:
+            - 'null'
+            - string
+          description:
+            type:
+            - 'null'
+            - string
+          state:
+            type:
+            - 'null'
+            - integer
+          created_at:
+            description: Timestamp when the iteration was created.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          updated_at:
+            description: Timestamp when the iteration was last updated.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          start_date:
+            description: Start date of the iteration.
+            type:
+            - 'null'
+            - string
+            format: date
+          due_date:
+            description: Due date set for the iteration.
+            type:
+            - 'null'
+            - string
+            format: date
+          web_url:
+            type:
+            - 'null'
+            - string
+      has_tasks:
+        description: Indicates if the epic issue has associated tasks.
+        type:
+        - 'null'
+        - boolean
+      blocking_issues_count:
+        description: Number of blocking issues related to the epic issue.
+        type:
+        - 'null'
+        - integer
+      closed_by:
+        description: Information about the user who closed the epic issue.
+        type:
+        - 'null'
+        - object
+        properties:
+          state:
+            type:
+            - 'null'
+            - string
+          web_url:
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            type:
+            - 'null'
+            - string
+          username:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+          name:
+            type:
+            - 'null'
+            - string
+      references:
+        description: References related to the epic issue.
+        type:
+        - 'null'
+        - object
+        properties:
+          full:
+            type:
+            - 'null'
+            - string
+          relative:
+            type:
+            - 'null'
+            - string
+          short:
+            type:
+            - 'null'
+            - string
+      epic:
+        description: Information about the epic that the issue belongs to.
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          iid:
+            type:
+            - 'null'
+            - integer
+          title:
+            type:
+            - 'null'
+            - string
+          url:
+            type:
+            - 'null'
+            - string
+          group_id:
+            type:
+            - 'null'
+            - integer
+          human_readable_end_date:
+            type:
+            - 'null'
+            - string
+          human_readable_timestamp:
+            type:
+            - 'null'
+            - string
+      issue_type:
+        description: Type of the epic issue.
+        type:
+        - 'null'
+        - string
+      severity:
+        description: Severity level of the epic issue.
+        type:
+        - 'null'
+        - string
+      service_desk_reply_to:
+        description: ID of the service desk reply related to the epic issue.
+        type:
+        - 'null'
+        - string
+      task_completion_status:
+        description: Status of task completion for the epic issue.
+        type:
+        - 'null'
+        - object
+        properties:
+          count:
+            description: Total count of tasks.
+            type:
+            - 'null'
+            - integer
+          completed_count:
+            description: Number of completed tasks.
+            type:
+            - 'null'
+            - integer
+      relative_position:
+        description: Relative position of the epic issue.
+        type:
+        - 'null'
+        - integer
+      epic_iid:
+        description: Internal ID of the epic the issue belongs to.
+        type:
+        - 'null'
+        - integer
+  epics:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: Unique ID of the epic
+        type:
+        - 'null'
+        - integer
+      iid:
+        description: Internal ID of the epic
+        type:
+        - 'null'
+        - integer
+      group_id:
+        description: ID of the group to which the epic belongs
+        type:
+        - 'null'
+        - integer
+      parent_id:
+        description: ID of the parent epic, if any
+        type:
+        - 'null'
+        - integer
+      title:
+        description: Title of the epic
+        type:
+        - 'null'
+        - string
+      description:
+        description: Description of the epic
+        type:
+        - 'null'
+        - string
+      state:
+        description: Current state of the epic
+        type:
+        - 'null'
+        - string
+      confidential:
+        description: Flag indicating if the epic is confidential
+        type:
+        - 'null'
+        - boolean
+      web_url:
+        description: URL for viewing the epic in a web browser
+        type:
+        - 'null'
+        - string
+      reference:
+        description: Reference for the epic
+        type:
+        - 'null'
+        - string
+      references:
+        description: References associated with the epic
+        type:
+        - 'null'
+        - object
+      author:
+        description: Author of the epic
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      author_id:
+        description: ID of the author
+        type:
+        - 'null'
+        - integer
+      start_date:
+        description: Start date of the epic
+        type:
+        - 'null'
+        - string
+      start_date_is_fixed:
+        description: Flag indicating if the start date is fixed
+        type:
+        - 'null'
+        - boolean
+      start_date_fixed:
+        description: Fixed start date of the epic
+        type:
+        - 'null'
+        - string
+        format: date
+      start_date_from_inherited_source:
+        description: Start date inherited from another source
+        type:
+        - 'null'
+        - string
+        - boolean
+      end_date:
+        description: End date of the epic
+        type:
+        - 'null'
+        - string
+      due_date:
+        description: Due date of the epic
+        type:
+        - 'null'
+        - string
+      due_date_is_fixed:
+        description: Flag indicating if the due date is fixed
+        type:
+        - 'null'
+        - boolean
+      due_date_fixed:
+        description: Fixed due date of the epic
+        type:
+        - 'null'
+        - string
+        format: date
+      due_date_from_inherited_source:
+        description: Due date inherited from another source
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: Date and time when the epic was created
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: Date and time when the epic was last updated
+        type:
+        - 'null'
+        - string
+        format: date-time
+      closed_at:
+        description: Date and time when the epic was closed
+        type:
+        - 'null'
+        - string
+        format: date-time
+      labels:
+        description: Labels associated with the epic
+        type:
+        - 'null'
+        - array
+      upvotes:
+        description: Number of upvotes received by the epic
+        type:
+        - 'null'
+        - integer
+      downvotes:
+        description: Number of downvotes received by the epic
+        type:
+        - 'null'
+        - integer
+      parent_iid:
+        description: Internal ID of the parent epic
+        type:
+        - 'null'
+        - integer
+      color:
+        description: Color associated with the epic
+        type:
+        - 'null'
+        - string
+      text_color:
+        description: Text color associated with the epic
+        type:
+        - 'null'
+        - string
+      web_edit_url:
+        description: URL for editing the epic in a web browser
+        type:
+        - 'null'
+        - string
+      due_date_from_milestones:
+        description: Due date linked to milestone
+        type:
+        - 'null'
+        - string
+        format: date
+      _links:
+        description: Contains links to related resources for the epic
+        type:
+        - 'null'
+        - object
+        properties:
+          self:
+            description: Link to the epic resource itself
+            type:
+            - 'null'
+            - string
+          epic_issues:
+            description: Link to the list of issues associated with the epic
+            type:
+            - 'null'
+            - string
+          group:
+            description: Link to the group to which the epic belongs
+            type:
+            - 'null'
+            - string
+          parent:
+            description: Link to the parent epic, if any
+            type:
+            - 'null'
+            - string
+      start_date_from_milestones:
+        description: Start date linked to milestone
+        type:
+        - 'null'
+        - string
+        format: date
+  group_issue_boards:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: The unique identifier of the board.
+        type:
+        - 'null'
+        - integer
+      name:
+        description: The name of the board.
+        type:
+        - 'null'
+        - string
+      hide_backlog_list:
+        description: Flag indicating whether the backlog list is hidden.
+        type:
+        - 'null'
+        - boolean
+      hide_closed_list:
+        description: Flag indicating whether the closed list is hidden.
+        type:
+        - 'null'
+        - boolean
+      project:
+        description: Additional information or settings related to the project.
+        type:
+        - 'null'
+        - integer
+      lists:
+        description: A collection of lists on the issue board.
+        type:
+        - 'null'
+        - array
+        items:
+          description: Information about a specific list in the issue board.
+          type:
+          - 'null'
+          - object
+          properties:
+            id:
+              description: The ID of the list in the board.
+              type:
+              - 'null'
+              - integer
+            label:
+              description: The label or title of the list.
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  description: The unique identifier of the list label.
+                  type:
+                  - 'null'
+                  - integer
+                name:
+                  description: The name of the list label.
+                  type:
+                  - 'null'
+                  - string
+                description:
+                  description: The description of the list label.
+                  type:
+                  - 'null'
+                  - string
+                description_html:
+                  description: The HTML formatted description of the list label.
+                  type:
+                  - 'null'
+                  - string
+                text_color:
+                  description: The text color of the list label.
+                  type:
+                  - 'null'
+                  - string
+                color:
+                  description: The color associated with the list label.
+                  type:
+                  - 'null'
+                  - string
+            position:
+              description: The position of the list in the board.
+              type:
+              - 'null'
+              - integer
+      group_id:
+        description: The ID of the group to which the board belongs.
+        type:
+        - 'null'
+        - integer
+      group:
+        description: Details of the group to which the issue board belongs.
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            description: The ID of the group to which the board belongs.
+            type:
+            - 'null'
+            - integer
+          name:
+            description: The name of the group to which the board belongs.
+            type:
+            - 'null'
+            - string
+          web_url:
+            description: The URL of the group's web interface.
+            type:
+            - 'null'
+            - string
+  group_labels:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      group_id:
+        description: The unique identifier of the group to which the label belongs.
+        type:
+        - 'null'
+        - integer
+      id:
+        description: The unique identifier of the group label.
+        type:
+        - 'null'
+        - integer
+      name:
+        description: The name of the group label.
+        type:
+        - 'null'
+        - string
+      color:
+        description: The color associated with the group label for visual identification.
+        type:
+        - 'null'
+        - string
+      description:
+        description: The short description of the group label.
+        type:
+        - 'null'
+        - string
+      description_html:
+        description: The HTML formatted description of the group label.
+        type:
+        - 'null'
+        - string
+      text_color:
+        description: The text color used for the group label.
+        type:
+        - 'null'
+        - string
+      subscribed:
+        description: Indicates if the user is subscribed to notifications for this group
+          label.
+        type:
+        - 'null'
+        - boolean
+      open_issues_count:
+        description: The total number of open issues in the group label.
+        type:
+        - 'null'
+        - integer
+      closed_issues_count:
+        description: The total number of closed issues in the group label.
+        type:
+        - 'null'
+        - integer
+      open_merge_requests_count:
+        description: The total number of open merge requests in the group label.
+        type:
+        - 'null'
+        - integer
+  group_members:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      group_id:
+        type:
+        - 'null'
+        - integer
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        type:
+        - 'null'
+        - string
+      username:
+        type:
+        - 'null'
+        - string
+      state:
+        type:
+        - 'null'
+        - string
+      membership_state:
+        type:
+        - 'null'
+        - string
+      avatar_url:
+        type:
+        - 'null'
+        - string
+      web_url:
+        type:
+        - 'null'
+        - string
+      access_level:
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      expires_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      created_by:
+        avatar_url:
+          type:
+          - 'null'
+          - string
+        id:
+          type:
+          - 'null'
+          - integer
+        name:
+          type:
+          - 'null'
+          - string
+        state:
+          type:
+          - 'null'
+          - string
+        username:
+          type:
+          - 'null'
+          - string
+        web_url:
+          type:
+          - 'null'
+          - string
+      locked:
+        type:
+        - 'null'
+        - boolean
+  group_milestones:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: The unique identifier of the milestone
+        type:
+        - 'null'
+        - integer
+      iid:
+        description: The internal identifier of the milestone
+        type:
+        - 'null'
+        - integer
+      group_id:
+        description: The unique identifier of the group to which the milestone belongs
+        type:
+        - 'null'
+        - integer
+      title:
+        description: The title or name of the milestone
+        type:
+        - 'null'
+        - string
+      description:
+        description: The detailed description of the milestone
+        type:
+        - 'null'
+        - string
+      state:
+        description: The current state of the milestone (e.g., open, closed)
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: The datetime when the milestone was created
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: The datetime when the milestone was last updated
+        type:
+        - 'null'
+        - string
+        format: date-time
+      due_date:
+        description: The date by which the milestone is expected to be completed
+        type:
+        - 'null'
+        - string
+        format: date
+      start_date:
+        description: The date when the milestone is scheduled to start
+        type:
+        - 'null'
+        - string
+        format: date
+      expired:
+        description: Indicates whether the milestone has expired
+        type:
+        - 'null'
+        - boolean
+      web_url:
+        description: The URL to access the milestone in the web interface
+        type:
+        - 'null'
+        - string
+  groups:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      projects:
+        description: List of projects within the group.
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+          properties:
+            id:
+              description: Unique identifier of the project.
+              type:
+              - 'null'
+              - integer
+            path_with_namespace:
+              description: Path with namespace of the project.
+              type:
+              - 'null'
+              - string
+      id:
+        description: Unique identifier for the group.
+        type:
+        - 'null'
+        - integer
+      organization_id:
+        description: Identifier of the organization to which the group belongs.
+        type:
+        - 'null'
+        - integer
+      default_branch_protection_defaults:
+        description: Default branch protection settings for the group.
+        type:
+        - 'null'
+        - object
+        properties:
+          allow_force_push:
+            description: Indicates if force push is allowed.
+            type:
+            - 'null'
+            - boolean
+          allowed_to_merge:
+            description: List of users/groups allowed to merge code.
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                access_level:
+                  description: Access level for merging code.
+                  type:
+                  - 'null'
+                  - integer
+          allowed_to_push:
+            description: List of users/groups allowed to push code.
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                access_level:
+                  description: Access level for pushing code.
+                  type:
+                  - 'null'
+                  - integer
+      web_url:
+        description: URL for accessing the group via web.
+        type:
+        - 'null'
+        - string
+      name:
+        description: Name of the group.
+        type:
+        - 'null'
+        - string
+      path:
+        description: Path of the group.
+        type:
+        - 'null'
+        - string
+      description:
+        description: Description of the group.
+        type:
+        - 'null'
+        - string
+      visibility:
+        description: Visibility level of the group.
+        type:
+        - 'null'
+        - string
+        - integer
+        - boolean
+      share_with_group_lock:
+        description: Indicates if sharing with group is locked.
+        type:
+        - 'null'
+        - boolean
+      require_two_factor_authentication:
+        description: Indicates if two-factor authentication is required.
+        type:
+        - 'null'
+        - boolean
+      two_factor_grace_period:
+        description: Grace period for two-factor authentication.
+        type:
+        - 'null'
+        - integer
+      project_creation_level:
+        description: Project creation level for the group.
+        type:
+        - 'null'
+        - string
+      auto_devops_enabled:
+        description: Indicates if Auto DevOps is enabled for this group.
+        type:
+        - 'null'
+        - boolean
+      subgroup_creation_level:
+        description: Subgroup creation level for the group.
+        type:
+        - 'null'
+        - string
+      enabled_git_access_protocol:
+        description: Indicates the enabled Git access protocol for the group.
+        type:
+        - 'null'
+        - string
+      emails_disabled:
+        description: Indicates if emails are disabled for the group.
+        type:
+        - 'null'
+        - boolean
+      emails_enabled:
+        description: Indicates if emails are enabled for the group.
+        type:
+        - 'null'
+        - boolean
+      mentions_disabled:
+        description: Indicates if mentions are disabled for the group.
+        type:
+        - 'null'
+        - boolean
+      lfs_enabled:
+        description: Indicates if LFS is enabled for the group.
+        type:
+        - 'null'
+        - boolean
+      default_branch_protection:
+        description: Indicates the default branch protection level for the group.
+        type:
+        - 'null'
+        - integer
+      avatar_url:
+        description: URL of the group's avatar.
+        type:
+        - 'null'
+        - string
+      request_access_enabled:
+        description: Indicates if request access is enabled for the group.
+        type:
+        - 'null'
+        - boolean
+      full_name:
+        description: Full name of the group.
+        type:
+        - 'null'
+        - string
+      full_path:
+        description: Full path of the group.
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: Timestamp when the group was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      parent_id:
+        description: Identifier of the parent group.
+        type:
+        - 'null'
+        - integer
+      ldap_cn:
+        description: LDAP CN for the group.
+        type:
+        - 'null'
+        - string
+      ldap_access:
+        description: Indicates LDAP access for the group.
+        type:
+        - 'null'
+        - string
+        - integer
+        - boolean
+      shared_with_groups:
+        description: List of groups with which the group is shared.
+        type:
+        - 'null'
+        - array
+      runners_token:
+        description: Token used for shared runners.
+        type:
+        - 'null'
+        - string
+      shared_projects:
+        description: List of shared projects.
+        type:
+        - 'null'
+        - array
+      shared_runners_minutes_limit:
+        description: Shared runners minutes limit for the group.
+        type:
+        - 'null'
+        - integer
+      extra_shared_runners_minutes_limit:
+        description: Extra shared runners minutes limit for the group.
+        type:
+        - 'null'
+        - integer
+      prevent_forking_outside_group:
+        description: Indicates if forking outside the group is prevented.
+        type:
+        - 'null'
+        - boolean
+      wiki_access_level:
+        description: Access level for wiki in the group.
+        type:
+        - 'null'
+        - string
+      marked_for_deletion_on:
+        description: Date when the group was marked for deletion.
+        type:
+        - 'null'
+        - string
+        format: date
+      prevent_sharing_groups_outside_hierarchy:
+        description: Indicates if sharing groups outside hierarchy is prevented.
+        type:
+        - 'null'
+        - boolean
+      membership_lock:
+        description: Indicates if membership is locked for the group.
+        type:
+        - 'null'
+        - boolean
+      ip_restriction_ranges:
+        description: IP restriction ranges for the group.
+        type:
+        - 'null'
+        - string
+      shared_runners_setting:
+        description: Setting for shared runners.
+        type:
+        - 'null'
+        - string
+      service_access_tokens_expiration_enforced:
+        description: Indicates if service access tokens expiration is enforced.
+        type:
+        - 'null'
+        - boolean
+      lock_math_rendering_limits_enabled:
+        description: Indicates if math rendering limits are locked.
+        type:
+        - 'null'
+        - boolean
+      math_rendering_limits_enabled:
+        description: Indicates if math rendering limits are enabled.
+        type:
+        - 'null'
+        - boolean
+  issues:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: ID of the issue.
+        type:
+        - 'null'
+        - integer
+      iid:
+        description: Internal ID of the issue.
+        type:
+        - 'null'
+        - integer
+      project_id:
+        description: ID of the project to which the issue belongs.
+        type:
+        - 'null'
+        - integer
+      title:
+        description: Title of the issue.
+        type:
+        - 'null'
+        - string
+      description:
+        description: Description of the issue.
+        type:
+        - 'null'
+        - string
+      state:
+        description: State of the issue.
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: Date and time when the issue was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: Date and time when the issue was last updated.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      closed_at:
+        description: Date and time when the issue was closed.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      labels:
+        description: Labels associated with the issue.
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      assignees:
+        description: List of users assigned to the issue.
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - integer
+      type:
+        description: Type of the issue.
+        type:
+        - 'null'
+        - string
+      user_notes_count:
+        description: Number of user notes added to the issue.
+        type:
+        - 'null'
+        - integer
+      merge_requests_count:
+        description: Number of merge requests associated with the issue.
+        type:
+        - 'null'
+        - integer
+      upvotes:
+        description: Number of upvotes for the issue.
+        type:
+        - 'null'
+        - integer
+      downvotes:
+        description: Number of downvotes for the issue.
+        type:
+        - 'null'
+        - integer
+      due_date:
+        description: Due date set for the issue.
+        type:
+        - 'null'
+        - string
+      confidential:
+        description: Indicates if the issue is confidential.
+        type:
+        - 'null'
+        - boolean
+      discussion_locked:
+        description: Indicates if discussion is locked for the issue.
+        type:
+        - 'null'
+        - boolean
+      issue_type:
+        description: Type of issue.
+        type:
+        - 'null'
+        - string
+      web_url:
+        description: URL of the issue in GitLab.
+        type:
+        - 'null'
+        - string
+      time_stats:
+        description: Time statistics related to the issue.
+        type:
+        - 'null'
+        - object
+      task_completion_status:
+        description: Task completion status for the issue.
+        type:
+        - 'null'
+        - object
+      blocking_issues_count:
+        description: Number of blocking issues for this issue.
+        type:
+        - 'null'
+        - integer
+      has_tasks:
+        description: Indicates if the issue has tasks.
+        type:
+        - 'null'
+        - boolean
+      _links:
+        description: Links related to the GitLab issue.
+        type:
+        - 'null'
+        - object
+      references:
+        description: References related to the issue.
+        type:
+        - 'null'
+        - object
+      moved_to_id:
+        description: ID of the issue to which this issue has been moved.
+        type:
+        - 'null'
+        - integer
+        - string
+      service_desk_reply_to:
+        description: Service desk reply to information for the issue.
+        type:
+        - 'null'
+        - string
+      author:
+        description: Details of the author of the issue.
+        type:
+        - 'null'
+        - object
+        properties:
+          state:
+            description: State of the author's account.
+            type:
+            - 'null'
+            - string
+          name:
+            description: Name of the author.
+            type:
+            - 'null'
+            - string
+          web_url:
+            description: URL of the author's GitLab profile.
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            description: URL of the author's avatar image.
+            type:
+            - 'null'
+            - string
+          username:
+            description: Username of the author.
+            type:
+            - 'null'
+            - string
+          id:
+            description: ID of the author.
+            type:
+            - 'null'
+            - integer
+          locked:
+            description: Indicates if the author's account is locked.
+            type:
+            - 'null'
+            - boolean
+      author_id:
+        description: ID of the author of the issue.
+        type:
+        - 'null'
+        - integer
+      assignee:
+        description: Details of the user assigned to the issue.
+        type:
+        - 'null'
+        - object
+        properties:
+          state:
+            description: State of the assignee account.
+            type:
+            - 'null'
+            - string
+          name:
+            description: Name of the assignee.
+            type:
+            - 'null'
+            - string
+          web_url:
+            description: URL of the assignee's GitLab profile.
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            description: URL of the assignee's avatar image.
+            type:
+            - 'null'
+            - string
+          username:
+            description: Username of the assignee.
+            type:
+            - 'null'
+            - string
+          id:
+            description: ID of the assignee.
+            type:
+            - 'null'
+            - integer
+          locked:
+            description: Indicates if the assignee account is locked.
+            type:
+            - 'null'
+            - boolean
+      assignee_id:
+        description: ID of the user assigned to the issue.
+        type:
+        - 'null'
+        - integer
+      closed_by:
+        description: Details of the user who closed the issue.
+        type:
+        - 'null'
+        - object
+        properties:
+          state:
+            description: State of the user's account who closed the issue.
+            type:
+            - 'null'
+            - string
+          name:
+            description: Name of the user who closed the issue.
+            type:
+            - 'null'
+            - string
+          web_url:
+            description: URL of the user's GitLab profile who closed the issue.
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            description: URL of the user's avatar image.
+            type:
+            - 'null'
+            - string
+          username:
+            description: Username of the user who closed the issue.
+            type:
+            - 'null'
+            - string
+          human_readable_end_date:
+            description: Human-readable end date of the user.
+            type:
+            - 'null'
+            - string
+          human_readable_timestamp:
+            description: Human-readable timestamp of the user.
+            type:
+            - 'null'
+            - string
+          id:
+            description: ID of the user who closed the issue.
+            type:
+            - 'null'
+            - integer
+          locked:
+            description: Indicates if the user's account is locked.
+            type:
+            - 'null'
+            - boolean
+      closed_by_id:
+        description: ID of the user who closed the issue.
+        type:
+        - 'null'
+        - integer
+      milestone:
+        description: Milestone associated with the issue.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      milestone_id:
+        description: ID of the milestone associated with the issue.
+        type:
+        - 'null'
+        - integer
+      subscribed:
+        description: Indicates if the user is subscribed to the issue.
+        type:
+        - 'null'
+        - boolean
+      weight:
+        description: Weight assigned to the issue.
+        type:
+        - 'null'
+        - integer
+      task_status:
+        description: Status of tasks associated with the issue.
+        type:
+        - 'null'
+        - string
+      severity:
+        description: Severity level of the issue.
+        type:
+        - 'null'
+        - string
+      iteration:
+        description: Details of the iteration to which the issue belongs.
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            description: ID of the iteration.
+            type:
+            - 'null'
+            - integer
+          iid:
+            description: Internal ID of the iteration.
+            type:
+            - 'null'
+            - integer
+          sequence:
+            description: Order sequence of the iteration.
+            type:
+            - 'null'
+            - integer
+          group_id:
+            description: ID of the group to which the iteration belongs.
+            type:
+            - 'null'
+            - integer
+          title:
+            description: Title of the iteration.
+            type:
+            - 'null'
+            - string
+          description:
+            description: Description of the iteration.
+            type:
+            - 'null'
+            - string
+          state:
+            description: State of the iteration.
+            type:
+            - 'null'
+            - integer
+          created_at:
+            description: Date and time when the iteration was created.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          updated_at:
+            description: Date and time when the iteration was last updated.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          start_date:
+            description: Start date of the iteration.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          due_date:
+            description: Due date set for the iteration.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          web_url:
+            description: URL of the iteration in GitLab.
+            type:
+            - 'null'
+            - string
+      epic:
+        description: Details of the epic to which the issue belongs.
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            description: ID of the epic.
+            type:
+            - 'null'
+            - integer
+          iid:
+            description: Internal ID of the epic.
+            type:
+            - 'null'
+            - integer
+          title:
+            description: Title of the epic.
+            type:
+            - 'null'
+            - string
+          url:
+            description: URL of the epic in GitLab.
+            type:
+            - 'null'
+            - string
+          group_id:
+            description: ID of the group to which the epic belongs.
+            type:
+            - 'null'
+            - integer
+          locked:
+            description: Indicates if the epic is locked.
+            type:
+            - 'null'
+            - boolean
+          human_readable_end_date:
+            description: Human-readable end date of the epic.
+            type:
+            - 'null'
+            - string
+          human_readable_timestamp:
+            description: Human-readable timestamp of the epic.
+            type:
+            - 'null'
+            - string
+      epic_iid:
+        description: Internal ID of the epic the issue belongs to.
+        type:
+        - 'null'
+        - integer
+  jobs:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the job.
+        type:
+        - 'null'
+        - integer
+      status:
+        description: Current status of the job.
+        type:
+        - 'null'
+        - string
+      stage:
+        description: Stage to which the job belongs in the pipeline.
+        type:
+        - 'null'
+        - string
+      archived:
+        description: Indicates if the job has been archived.
+        type:
+        - 'null'
+        - boolean
+      name:
+        description: Name of the job.
+        type:
+        - 'null'
+        - string
+      ref:
+        description: Reference or branch for which the job was triggered.
+        type:
+        - 'null'
+        - string
+      tag:
+        description: Indicates if the job is tagged.
+        type:
+        - 'null'
+        - boolean
+      coverage:
+        description: Code coverage achieved by the job.
+        type:
+        - 'null'
+        - number
+        - string
+      allow_failure:
+        description: Specifies if the job is allowed to fail.
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        description: Date and time when the job was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      started_at:
+        description: Date and time when the job execution started.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      finished_at:
+        description: Date and time when the job finished execution.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      duration:
+        description: Duration of the job execution.
+        type:
+        - 'null'
+        - number
+      queued_duration:
+        description: Duration for which the job was in the queue.
+        type:
+        - 'null'
+        - number
+      web_url:
+        description: URL to access the job details on the web platform.
+        type:
+        - 'null'
+        - string
+      artifacts:
+        description: List of artifacts generated by the job.
+        type:
+        - 'null'
+        - array
+      artifacts_expire_at:
+        description: Date and time when artifacts will expire.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      tag_list:
+        description: List of tags associated with the job.
+        type:
+        - 'null'
+        - array
+      user:
+        description: Details of the user who triggered the job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      user_id:
+        description: ID of the user who triggered the job.
+        type:
+        - 'null'
+        - integer
+      pipeline:
+        description: Details of the pipeline to which the job belongs.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      pipeline_id:
+        description: ID of the pipeline to which the job belongs.
+        type:
+        - 'null'
+        - integer
+      runner:
+        description: Details of the runner on which the job is executed.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      runner_id:
+        description: ID of the runner on which the job is executed.
+        type:
+        - 'null'
+        - integer
+      commit:
+        description: Details of the commit associated with the job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      commit_id:
+        description: ID of the commit associated with the job.
+        type:
+        - 'null'
+        - string
+      project_id:
+        description: ID of the project to which the job belongs.
+        type:
+        - 'null'
+        - integer
+      erased_at:
+        description: Date and time when the job was erased.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      failure_reason:
+        description: Reason for job failure, if applicable.
+        type:
+        - 'null'
+        - string
+      project:
+        description: Details of the project to which the job belongs.
+        type:
+        - 'null'
+        - object
+        properties:
+          ci_job_token_scope_enabled:
+            description: Indicates if the CI job token scope is enabled for the project.
+            type:
+            - 'null'
+            - boolean
+  merge_request_commits:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      project_id:
+        description: Identifier of the project where the commit was made
+        type:
+        - 'null'
+        - integer
+      id:
+        description: Unique identifier for the commit
+        type:
+        - 'null'
+        - string
+      short_id:
+        description: Shortened version of the commit ID
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: Date and time when the commit was created
+        type:
+        - 'null'
+        - string
+        format: date-time
+      parent_ids:
+        description: Array of parent commit identifiers
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      title:
+        description: Title of the commit representing the changes made
+        type:
+        - 'null'
+        - string
+      message:
+        description: The commit message describing the changes made
+        type:
+        - 'null'
+        - string
+      author_name:
+        description: Name of the author who made the commit
+        type:
+        - 'null'
+        - string
+      author_email:
+        description: Email of the author who made the commit
+        type:
+        - 'null'
+        - string
+      authored_date:
+        description: Date and time the commit was authored
+        type:
+        - 'null'
+        - string
+        format: date-time
+      extended_trailers:
+        description: Additional information regarding the commit trailers
+        type:
+        - 'null'
+        - object
+        properties:
+          Cc:
+            description: Carbon Copy recipients related to the commit
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+      committer_name:
+        description: Name of the committer who committed the changes
+        type:
+        - 'null'
+        - string
+      committer_email:
+        description: Email of the committer who committed the changes
+        type:
+        - 'null'
+        - string
+      committed_date:
+        description: Date and time the commit was committed
+        type:
+        - 'null'
+        - string
+        format: date-time
+      trailers:
+        description: Additional information or metadata related to the commit
+        type:
+        - 'null'
+        - object
+      web_url:
+        description: URL to view the commit details in a web browser
+        type:
+        - 'null'
+        - string
+      stats:
+        description: Statistics related to the commit changes
+        type:
+        - 'null'
+        - object
+        properties:
+          additions:
+            description: Number of lines added in the commit
+            type:
+            - 'null'
+            - integer
+          deletions:
+            description: Number of lines deleted in the commit
+            type:
+            - 'null'
+            - integer
+          total:
+            description: Total number of lines changed in the commit
+            type:
+            - 'null'
+            - integer
+      merge_request_iid:
+        description: Identifier of the merge request associated with the commit
+        type:
+        - 'null'
+        - integer
+  merge_requests:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: ID of the merge request.
+        type:
+        - 'null'
+        - integer
+      iid:
+        description: Internal ID of the merge request.
+        type:
+        - 'null'
+        - integer
+      project_id:
+        description: ID of the project to which the merge request belongs.
+        type:
+        - 'null'
+        - integer
+      title:
+        description: Title of the merge request.
+        type:
+        - 'null'
+        - string
+      description:
+        description: Description of the merge request.
+        type:
+        - 'null'
+        - string
+      state:
+        description: State of the merge request.
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: Timestamp when the merge request was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      prepared_at:
+        description: Timestamp when the merge request was prepared.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: Timestamp when the merge request was last updated.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      merged_at:
+        description: Timestamp when the merge request was merged.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      closed_at:
+        description: Timestamp when the merge request was closed.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      target_branch:
+        description: Name of the target branch for the merge request.
+        type:
+        - 'null'
+        - string
+      source_branch:
+        description: Name of the source branch for the merge request.
+        type:
+        - 'null'
+        - string
+      user_notes_count:
+        description: Total count of user notes on the merge request.
+        type:
+        - 'null'
+        - integer
+      upvotes:
+        description: Number of upvotes for the merge request.
+        type:
+        - 'null'
+        - integer
+      downvotes:
+        description: Number of downvotes for the merge request.
+        type:
+        - 'null'
+        - integer
+      assignees:
+        description: List of users assigned to this merge request.
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - integer
+      reviewers:
+        description: List of reviewers assigned to the merge request.
+        type:
+        - 'null'
+        - array
+      source_project_id:
+        description: ID of the source project for the merge request.
+        type:
+        - 'null'
+        - integer
+      target_project_id:
+        description: ID of the target project for the merge request.
+        type:
+        - 'null'
+        - integer
+      labels:
+        description: List of labels associated with the merge request.
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      work_in_progress:
+        description: Flag indicating if the merge request is a work in progress.
+        type:
+        - 'null'
+        - boolean
+      merge_when_pipeline_succeeds:
+        description: Flag indicating if the merge should happen when the pipeline succeeds.
+        type:
+        - 'null'
+        - boolean
+      merge_status:
+        description: Status of the merge request.
+        type:
+        - 'null'
+        - string
+      sha:
+        description: SHA of the merge request.
+        type:
+        - 'null'
+        - string
+      merge_commit_sha:
+        description: SHA of the merge commit.
+        type:
+        - 'null'
+        - string
+      squash_commit_sha:
+        description: SHA of the squashed commit.
+        type:
+        - 'null'
+        - string
+      discussion_locked:
+        description: Flag indicating if discussions are locked.
+        type:
+        - 'null'
+        - boolean
+      should_remove_source_branch:
+        description: Flag indicating if the source branch should be removed after merging.
+        type:
+        - 'null'
+        - boolean
+      force_remove_source_branch:
+        description: Flag indicating if the source branch should be removed after merging.
+        type:
+        - 'null'
+        - boolean
+      reference:
+        description: Reference of the merge request.
+        type:
+        - 'null'
+        - string
+      references:
+        description: List of references associated with the merge request.
+        type:
+        - 'null'
+        - object
+      web_url:
+        description: URL to view the merge request in the GitLab UI.
+        type:
+        - 'null'
+        - string
+      time_stats:
+        description: Time statistics related to the merge request.
+        type:
+        - 'null'
+        - object
+      squash:
+        description: Flag indicating if squashing should be performed.
+        type:
+        - 'null'
+        - boolean
+      task_completion_status:
+        description: Status of task completion for the merge request.
+        type:
+        - 'null'
+        - object
+      has_conflicts:
+        description: Flag indicating if the merge request has conflicts.
+        type:
+        - 'null'
+        - boolean
+      blocking_discussions_resolved:
+        description: Flag indicating if all blocking discussions are resolved.
+        type:
+        - 'null'
+        - boolean
+      approvals_before_merge:
+        description: Total number of approvals required before the merge request can be
+          merged.
+        type:
+        - 'null'
+        - boolean
+        - string
+        - object
+      author:
+        description: Author of the merge request.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      author_id:
+        description: ID of the author of the merge request.
+        type:
+        - 'null'
+        - integer
+      assignee:
+        description: User assigned to this merge request.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      assignee_id:
+        description: ID of the user assigned to this merge request.
+        type:
+        - 'null'
+        - integer
+      closed_by:
+        description: User who closed the merge request.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      closed_by_id:
+        description: ID of the user who closed the merge request.
+        type:
+        - 'null'
+        - integer
+      milestone:
+        description: Milestone associated with the merge request.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      milestone_id:
+        description: ID of the milestone associated with the merge request.
+        type:
+        - 'null'
+        - integer
+      merged_by:
+        description: User who merged the merge request.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      merged_by_id:
+        description: ID of the user who merged the merge request.
+        type:
+        - 'null'
+        - integer
+      draft:
+        description: Flag indicating if the merge request is a draft.
+        type:
+        - 'null'
+        - boolean
+      detailed_merge_status:
+        description: Detailed status of the merge request.
+        type:
+        - 'null'
+        - string
+      squash_on_merge:
+        description: Flag indicating if squashing should be done on merge.
+        type:
+        - 'null'
+        - boolean
+      merge_user:
+        description: User who performed the merge.
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            description: ID of the user who performed the merge.
+            type:
+            - 'null'
+            - integer
+          name:
+            description: Name of the user.
+            type:
+            - 'null'
+            - string
+          username:
+            description: Username of the user.
+            type:
+            - 'null'
+            - string
+          state:
+            description: State of the user account.
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            description: URL of the user's avatar.
+            type:
+            - 'null'
+            - string
+          web_url:
+            description: URL to the user's profile.
+            type:
+            - 'null'
+            - string
+          locked:
+            description: Flag indicating if the user account is locked.
+            type:
+            - 'null'
+            - boolean
+  pipelines_extended:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: Unique identifier of the pipeline
+        type:
+        - 'null'
+        - integer
+      iid:
+        description: Internal ID of the pipeline
+        type:
+        - 'null'
+        - integer
+      project_id:
+        description: ID of the project associated with the pipeline
+        type:
+        - 'null'
+        - integer
+      sha:
+        description: The commit SHA of the current state triggering the pipeline
+        type:
+        - 'null'
+        - string
+      source:
+        description: Source that triggered the pipeline (e.g., push, webhook)
+        type:
+        - 'null'
+        - string
+      ref:
+        description: Branch or tag name for which the pipeline was triggered
+        type:
+        - 'null'
+        - string
+      status:
+        description: Current status of the pipeline (e.g., running, success, failed)
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: The date and time when the pipeline was created
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: The date and time when pipeline information was last updated
+        type:
+        - 'null'
+        - string
+        format: date-time
+      web_url:
+        description: URL to view the pipeline details on the web interface
+        type:
+        - 'null'
+        - string
+      before_sha:
+        description: The commit SHA of the previous state before the pipeline was triggered
+        type:
+        - 'null'
+        - string
+      tag:
+        description: Boolean indicating if the pipeline was triggered by a tag
+        type:
+        - 'null'
+        - boolean
+      yaml_errors:
+        description: Any errors encountered in the pipeline configuration YAML
+        type:
+        - 'null'
+        - string
+      user:
+        description: Details of the user associated with the pipeline
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the user
+            type:
+            - 'null'
+            - integer
+          name:
+            description: Name of the user
+            type:
+            - 'null'
+            - string
+          username:
+            description: Username of the user
+            type:
+            - 'null'
+            - string
+          state:
+            description: State of the user account (e.g., active, blocked)
+            type:
+            - 'null'
+            - string
+          avatar_url:
+            description: URL of the user's avatar
+            type:
+            - 'null'
+            - string
+          web_url:
+            description: URL to the user's profile
+            type:
+            - 'null'
+            - string
+          locked:
+            description: Boolean indicating if the user account is locked
+            type:
+            - 'null'
+            - boolean
+      started_at:
+        description: The date and time when the pipeline execution started
+        type:
+        - 'null'
+        - string
+        format: date-time
+      finished_at:
+        description: The date and time when the pipeline execution was finished
+        type:
+        - 'null'
+        - string
+        format: date-time
+      committed_at:
+        description: The date and time when the commit was made
+        type:
+        - 'null'
+        - string
+        format: date-time
+      duration:
+        description: The total duration of the pipeline execution in seconds
+        type:
+        - 'null'
+        - integer
+      queued_duration:
+        description: The duration the pipeline spent in the queue before execution
+        type:
+        - 'null'
+        - number
+        - string
+      coverage:
+        description: The code coverage percentage achieved in the pipeline
+        type:
+        - 'null'
+        - number
+        - string
+      detailed_status:
+        description: Detailed status of the pipeline execution
+        type:
+        - 'null'
+        - object
+      name:
+        description: Name of the pipeline
+        type:
+        - 'null'
+        - string
+  pipelines:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the pipeline
+        type:
+        - 'null'
+        - integer
+      iid:
+        description: Internal identifier for the pipeline within the project
+        type:
+        - 'null'
+        - integer
+      project_id:
+        description: Unique identifier for the project where the pipeline belongs
+        type:
+        - 'null'
+        - integer
+      sha:
+        description: Commit SHA associated with the pipeline
+        type:
+        - 'null'
+        - string
+      source:
+        description: Source that triggered the pipeline (e.g., web, push, schedule)
+        type:
+        - 'null'
+        - string
+      ref:
+        description: Reference (branch or tag) for which the pipeline was triggered
+        type:
+        - 'null'
+        - string
+      status:
+        description: Current status of the pipeline (e.g., running, passed, failed)
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: The timestamp when the pipeline was created
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: The timestamp when the pipeline was last updated
+        type:
+        - 'null'
+        - string
+        format: date-time
+      web_url:
+        description: URL to view the pipeline details on the web interface
+        type:
+        - 'null'
+        - string
+      name:
+        description: Name of the pipeline
+        type:
+        - 'null'
+        - string
+  project_labels:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      project_id:
+        description: The unique identifier of the project to which the label belongs.
+        type:
+        - 'null'
+        - integer
+      id:
+        description: The unique identifier for the label within the project.
+        type:
+        - 'null'
+        - integer
+      name:
+        description: The name or title of the label for easy identification.
+        type:
+        - 'null'
+        - string
+      color:
+        description: The color code representation of the label for visual identification.
+        type:
+        - 'null'
+        - string
+      description:
+        description: The textual description of the label indicating its purpose or meaning.
+        type:
+        - 'null'
+        - string
+      description_html:
+        description: The HTML formatted description of the label for display purposes.
+        type:
+        - 'null'
+        - string
+      text_color:
+        description: The color code representation for the text color of the label for
+          contrast.
+        type:
+        - 'null'
+        - string
+      subscribed:
+        description: A flag indicating whether the user is subscribed to notifications
+          for this label.
+        type:
+        - 'null'
+        - boolean
+      priority:
+        description: The priority level assigned to the label, if applicable.
+        type:
+        - 'null'
+        - integer
+      is_project_label:
+        description: A flag indicating whether the label is specifically created for the
+          project.
+        type:
+        - 'null'
+        - boolean
+      open_issues_count:
+        description: The total count of open issues associated with this label.
+        type:
+        - 'null'
+        - integer
+      closed_issues_count:
+        description: The total count of closed issues associated with this label.
+        type:
+        - 'null'
+        - integer
+      open_merge_requests_count:
+        description: The total count of open merge requests associated with this label.
+        type:
+        - 'null'
+        - integer
+  project_members:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      project_id:
+        type:
+        - 'null'
+        - integer
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        type:
+        - 'null'
+        - string
+      username:
+        type:
+        - 'null'
+        - string
+      state:
+        type:
+        - 'null'
+        - string
+      membership_state:
+        type:
+        - 'null'
+        - string
+      avatar_url:
+        type:
+        - 'null'
+        - string
+      web_url:
+        type:
+        - 'null'
+        - string
+      access_level:
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      expires_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      created_by:
+        avatar_url:
+          type:
+          - 'null'
+          - string
+        id:
+          type:
+          - 'null'
+          - integer
+        name:
+          type:
+          - 'null'
+          - string
+        state:
+          type:
+          - 'null'
+          - string
+        username:
+          type:
+          - 'null'
+          - string
+        web_url:
+          type:
+          - 'null'
+          - string
+      locked:
+        type:
+        - 'null'
+        - boolean
+  project_milestones:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the milestone.
+        type:
+        - 'null'
+        - integer
+      iid:
+        description: Internal identifier for the milestone.
+        type:
+        - 'null'
+        - integer
+      project_id:
+        description: Identifier of the project that the milestone belongs to.
+        type:
+        - 'null'
+        - integer
+      title:
+        description: The title or name of the milestone.
+        type:
+        - 'null'
+        - string
+      description:
+        description: A brief summary or goal of the milestone.
+        type:
+        - 'null'
+        - string
+      state:
+        description: Current state of the milestone (e.g., open, closed).
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: The date and time when the milestone was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: The date and time when the milestone was last updated.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      due_date:
+        description: The target date for completion of the milestone.
+        type:
+        - 'null'
+        - string
+        format: date
+      start_date:
+        description: The date when work on the milestone is scheduled to start.
+        type:
+        - 'null'
+        - string
+        format: date
+      expired:
+        description: Indicates if the milestone has expired or not.
+        type:
+        - 'null'
+        - boolean
+      web_url:
+        description: URL to access the milestone on the web platform.
+        type:
+        - 'null'
+        - string
+  projects:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: ID of the project
+        type:
+        - 'null'
+        - integer
+      description:
+        description: Description of the project
+        type:
+        - 'null'
+        - string
+      description_html:
+        description: HTML formatted project description
+        type:
+        - 'null'
+        - string
+      name:
+        description: Name of the project
+        type:
+        - 'null'
+        - string
+      name_with_namespace:
+        description: Name of the project with namespace
+        type:
+        - 'null'
+        - string
+      path:
+        description: Path of the project
+        type:
+        - 'null'
+        - string
+      path_with_namespace:
+        description: Path of the project with namespace
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: Date and time of project creation
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        description: Date and time of last update
+        type:
+        - 'null'
+        - string
+        format: date-time
+      default_branch:
+        description: Default branch of the project
+        type:
+        - 'null'
+        - string
+      tag_list:
+        description: List of tags associated with the project
+        type:
+        - 'null'
+        - array
+        items:
+          description: Tag item
+          type:
+          - 'null'
+          - string
+      topics:
+        description: Topics associated with the project
+        type:
+        - 'null'
+        - array
+      ssh_url_to_repo:
+        description: SSH URL to project repository
+        type:
+        - 'null'
+        - string
+      http_url_to_repo:
+        description: HTTP URL to project repository
+        type:
+        - 'null'
+        - string
+      web_url:
+        description: URL of the project
+        type:
+        - 'null'
+        - string
+      readme_url:
+        description: URL for project readme
+        type:
+        - 'null'
+        - string
+      avatar_url:
+        description: URL for project avatar
+        type:
+        - 'null'
+        - string
+      forks_count:
+        description: Number of forks for the project
+        type:
+        - 'null'
+        - integer
+      star_count:
+        description: Number of stars for the project
+        type:
+        - 'null'
+        - integer
+      last_activity_at:
+        description: Date and time of last activity
+        type:
+        - 'null'
+        - string
+        format: date-time
+      namespace:
+        description: Namespace details
+        type: object
+        properties:
+          id:
+            description: ID of the namespace
+            type:
+            - 'null'
+            - integer
+          name:
+            description: Name of the namespace
+            type:
+            - 'null'
+            - string
+          path:
+            description: Path of the namespace
+            type:
+            - 'null'
+            - string
+          kind:
+            description: Kind of namespace
+            type:
+            - 'null'
+            - string
+          full_path:
+            description: Full path of the namespace
+            type:
+            - 'null'
+            - string
+          parent_id:
+            description: ID of the parent namespace
+            type:
+            - 'null'
+            - integer
+          avatar_url:
+            description: URL for namespace avatar
+            type:
+            - 'null'
+            - string
+          web_url:
+            description: Web URL of the namespace
+            type:
+            - 'null'
+            - string
+      container_registry_image_prefix:
+        description: Prefix for container registry images
+        type:
+        - 'null'
+        - string
+      _links:
+        description: Links related to the project
+        type: object
+        properties:
+          self:
+            description: URL for the project itself
+            type:
+            - 'null'
+            - string
+          issues:
+            description: URL for project issues
+            type:
+            - 'null'
+            - string
+          merge_requests:
+            description: URL for project merge requests
+            type:
+            - 'null'
+            - string
+          repo_branches:
+            description: URL for project repository branches
+            type:
+            - 'null'
+            - string
+          labels:
+            description: URL for project labels
+            type:
+            - 'null'
+            - string
+          events:
+            description: URL for events related to the project
+            type:
+            - 'null'
+            - string
+          members:
+            description: URL for project members
+            type:
+            - 'null'
+            - string
+          cluster_agents:
+            description: URL for cluster agents
+            type:
+            - 'null'
+            - string
+      packages_enabled:
+        description: Flag indicating if packages are enabled
+        type:
+        - 'null'
+        - boolean
+      empty_repo:
+        description: Flag indicating if repository is empty
+        type:
+        - 'null'
+        - boolean
+      archived:
+        description: Flag indicating if project is archived
+        type:
+        - 'null'
+        - boolean
+      visibility:
+        description: Visibility level of the project
+        type:
+        - 'null'
+        - string
+      resolve_outdated_diff_discussions:
+        description: Resolve outdated diff discussions
+        type:
+        - 'null'
+        - boolean
+      container_registry_enabled:
+        description: Flag indicating if container registry is enabled
+        type:
+        - 'null'
+        - boolean
+      container_expiration_policy:
+        description: Container expiration policy details
+        type:
+        - 'null'
+        - object
+        properties:
+          cadence:
+            description: Expiration cadence
+            type:
+            - 'null'
+            - string
+          enabled:
+            description: Flag indicating if expiration policy is enabled
+            type:
+            - 'null'
+            - boolean
+          keep_n:
+            description: Number of containers to keep
+            type:
+            - 'null'
+            - integer
+          older_than:
+            description: Age threshold for expiration
+            type:
+            - 'null'
+            - string
+          name_regex:
+            description: Regex for container name
+            type:
+            - 'null'
+            - string
+          name_regex_keep:
+            description: Regex for container name to keep
+            type:
+            - 'null'
+            - string
+          next_run_at:
+            description: Next scheduled run for expiration policy
+            type:
+            - 'null'
+            - string
+            format: date-time
+      issues_enabled:
+        description: Flag indicating if issues are enabled
+        type:
+        - 'null'
+        - boolean
+      merge_requests_enabled:
+        description: Flag indicating if merge requests are enabled
+        type:
+        - 'null'
+        - boolean
+      wiki_enabled:
+        description: Flag indicating if wiki is enabled
+        type:
+        - 'null'
+        - boolean
+      jobs_enabled:
+        description: Flag indicating if jobs are enabled
+        type:
+        - 'null'
+        - boolean
+      snippets_enabled:
+        description: Flag indicating if snippets are enabled
+        type:
+        - 'null'
+        - boolean
+      service_desk_enabled:
+        description: Flag indicating if service desk is enabled
+        type:
+        - 'null'
+        - boolean
+      service_desk_address:
+        description: Address for service desk
+        type:
+        - 'null'
+        - string
+      can_create_merge_request_in:
+        description: Locations where merge requests can be created
+        type:
+        - 'null'
+        - boolean
+      issues_access_level:
+        description: Access level for issues
+        type:
+        - 'null'
+        - string
+      repository_access_level:
+        description: Access level for repository
+        type:
+        - 'null'
+        - string
+      merge_requests_access_level:
+        description: Access level for merge requests
+        type:
+        - 'null'
+        - string
+      forking_access_level:
+        description: Access level for forking projects
+        type:
+        - 'null'
+        - string
+      wiki_access_level:
+        description: Access level for wiki
+        type:
+        - 'null'
+        - string
+      builds_access_level:
+        description: Access level for builds
+        type:
+        - 'null'
+        - string
+      snippets_access_level:
+        description: Access level for snippets
+        type:
+        - 'null'
+        - string
+      pages_access_level:
+        description: Access level for project pages
+        type:
+        - 'null'
+        - string
+      operations_access_level:
+        description: Access level for operations
+        type:
+        - 'null'
+        - string
+      analytics_access_level:
+        description: Access level for analytics
+        type:
+        - 'null'
+        - string
+      emails_disabled:
+        description: Flag indicating if emails are disabled
+        type:
+        - 'null'
+        - boolean
+      shared_runners_enabled:
+        description: Flag indicating if shared runners are enabled
+        type:
+        - 'null'
+        - boolean
+      lfs_enabled:
+        description: Flag indicating if Git LFS is enabled
+        type:
+        - 'null'
+        - boolean
+      creator_id:
+        description: ID of the project creator
+        type:
+        - 'null'
+        - integer
+      import_status:
+        description: Status of project import
+        type:
+        - 'null'
+        - string
+      import_error:
+        description: Error message if import failed
+        type:
+        - 'null'
+        - string
+        - boolean
+      open_issues_count:
+        description: Count of open issues
+        type:
+        - 'null'
+        - integer
+      runners_token:
+        description: Token for runners
+        type:
+        - 'null'
+        - string
+      ci_default_git_depth:
+        description: Default git depth for CI
+        type:
+        - 'null'
+        - integer
+      ci_forward_deployment_enabled:
+        description: Flag for forward deployment enabled in CI
+        type:
+        - 'null'
+        - boolean
+      public_jobs:
+        description: Flag indicating if jobs are public
+        type:
+        - 'null'
+        - boolean
+      build_git_strategy:
+        description: Git strategy for build
+        type:
+        - 'null'
+        - string
+      build_timeout:
+        description: Timeout for build
+        type:
+        - 'null'
+        - integer
+      auto_cancel_pending_pipelines:
+        description: Automatically cancel pending pipelines
+        type:
+        - 'null'
+        - string
+      build_coverage_regex:
+        description: Regex for build coverage
+        type:
+        - 'null'
+        - string
+      ci_config_path:
+        description: Path for CI configuration
+        type:
+        - 'null'
+        - string
+      shared_with_groups:
+        description: List of groups with which project is shared
+        type:
+        - 'null'
+        - array
+      only_allow_merge_if_pipeline_succeeds:
+        description: Only allow merge if pipeline succeeds
+        type:
+        - 'null'
+        - boolean
+      allow_merge_on_skipped_pipeline:
+        description: Allow merge on skipped pipeline
+        type:
+        - 'null'
+        - boolean
+      restrict_user_defined_variables:
+        description: Restrict user-defined variables
+        type:
+        - 'null'
+        - boolean
+      request_access_enabled:
+        description: Flag indicating if request access is enabled
+        type:
+        - 'null'
+        - boolean
+      only_allow_merge_if_all_discussions_are_resolved:
+        description: Only allow merge if all discussions are resolved
+        type:
+        - 'null'
+        - boolean
+      remove_source_branch_after_merge:
+        description: Remove source branch after merge
+        type:
+        - 'null'
+        - boolean
+      printing_merge_request_link_enabled:
+        description: Enable printing merge request link
+        type:
+        - 'null'
+        - boolean
+      merge_method:
+        description: Method used for merges
+        type:
+        - 'null'
+        - string
+      suggestion_commit_message:
+        description: Commit message suggestion
+        type:
+        - 'null'
+        - string
+      statistics:
+        description: Project statistics
+        type: object
+        properties:
+          commit_count:
+            description: Number of commits
+            type:
+            - 'null'
+            - integer
+          storage_size:
+            description: Total storage size
+            type:
+            - 'null'
+            - integer
+          repository_size:
+            description: Size of repository
+            type:
+            - 'null'
+            - integer
+          wiki_size:
+            description: Size of wiki
+            type:
+            - 'null'
+            - integer
+          lfs_objects_size:
+            description: Size of LFS objects
+            type:
+            - 'null'
+            - integer
+          job_artifacts_size:
+            description: Size of job artifacts
+            type:
+            - 'null'
+            - integer
+          snippets_size:
+            description: Size of snippets
+            type:
+            - 'null'
+            - integer
+          packages_size:
+            description: Size of packages
+            type:
+            - 'null'
+            - integer
+          container_registry_size:
+            description: Size of container registry
+            type:
+            - 'null'
+            - integer
+          pipeline_artifacts_size:
+            description: Size of pipeline artifacts
+            type:
+            - 'null'
+            - integer
+          uploads_size:
+            description: Size of uploads
+            type:
+            - 'null'
+            - integer
+      auto_devops_enabled:
+        description: Flag indicating if Auto DevOps is enabled
+        type:
+        - 'null'
+        - boolean
+      auto_devops_deploy_strategy:
+        description: Auto DevOps deployment strategy
+        type:
+        - 'null'
+        - string
+      autoclose_referenced_issues:
+        description: Automatically close referenced issues
+        type:
+        - 'null'
+        - boolean
+      external_authorization_classification_label:
+        description: Label for external authorization classification
+        type:
+        - 'null'
+        - string
+      requirements_enabled:
+        description: Flag indicating if requirements are enabled
+        type:
+        - 'null'
+        - boolean
+      security_and_compliance_enabled:
+        description: Flag indicating if security and compliance are enabled
+        type:
+        - 'null'
+        - boolean
+      compliance_frameworks:
+        description: Compliance frameworks associated with the project
+        type:
+        - 'null'
+        - array
+      permissions:
+        description: Permissions for project access
+        type: object
+        properties:
+          project_access:
+            description: Project access level
+            type:
+            - 'null'
+            - object
+            properties:
+              access_level:
+                description: Access level for project
+                type:
+                - 'null'
+                - integer
+              notification_level:
+                description: Notification level for project
+                type:
+                - 'null'
+                - integer
+          group_access:
+            description: Group access level
+            type:
+            - 'null'
+            - object
+            properties:
+              access_level:
+                description: Access level for groups
+                type:
+                - 'null'
+                - integer
+              notification_level:
+                description: Notification level for groups
+                type:
+                - 'null'
+                - integer
+      feature_flags_access_level:
+        description: Access level for feature flags
+        type:
+        - 'null'
+        - string
+      group_runners_enabled:
+        description: Flag indicating if group runners are enabled
+        type:
+        - 'null'
+        - boolean
+      enforce_auth_checks_on_uploads:
+        description: Enforce authentication checks on uploads
+        type:
+        - 'null'
+        - boolean
+      monitor_access_level:
+        description: Access level for monitoring tools
+        type:
+        - 'null'
+        - string
+      container_registry_access_level:
+        description: Access level for container registry
+        type:
+        - 'null'
+        - string
+      import_type:
+        description: Type of project import
+        type:
+        - 'null'
+        - string
+      ci_job_token_scope_enabled:
+        description: Enable job token scope in CI
+        type:
+        - 'null'
+        - boolean
+      requirements_access_level:
+        description: Access level for requirements
+        type:
+        - 'null'
+        - string
+      releases_access_level:
+        description: Access level for project releases
+        type:
+        - 'null'
+        - string
+      runner_token_expiration_interval:
+        description: Token expiration interval for runners
+        type:
+        - 'null'
+        - string
+      squash_option:
+        description: Squash option for merges
+        type:
+        - 'null'
+        - string
+      squash_commit_template:
+        description: Template for squash commits
+        type:
+        - 'null'
+        - string
+      issue_branch_template:
+        description: Template for issue branches
+        type:
+        - 'null'
+        - string
+      keep_latest_artifact:
+        description: Keep latest artifact
+        type:
+        - 'null'
+        - boolean
+      import_url:
+        description: URL for project import
+        type:
+        - 'null'
+        - string
+      ci_separated_caches:
+        description: Use separated caches in CI
+        type:
+        - 'null'
+        - boolean
+      security_and_compliance_access_level:
+        description: Access level for security and compliance
+        type:
+        - 'null'
+        - string
+      infrastructure_access_level:
+        description: Access level for infrastructure settings
+        type:
+        - 'null'
+        - string
+      merge_commit_template:
+        description: Template for merge commits
+        type:
+        - 'null'
+        - string
+      ci_allow_fork_pipelines_to_run_in_parent_project:
+        description: Allow fork pipelines to run in parent project
+        type:
+        - 'null'
+        - boolean
+      environments_access_level:
+        description: Access level for environments
+        type:
+        - 'null'
+        - string
+      approvals_before_merge:
+        description: Number of approvals required before merge
+        type:
+        - 'null'
+        - integer
+      marked_for_deletion_at:
+        description: Date marked for deletion
+        type:
+        - 'null'
+        - string
+        format: date
+      merge_trains_enabled:
+        description: Flag indicating if merge trains are enabled
+        type:
+        - 'null'
+        - boolean
+      mirror:
+        description: Flag indicating if project is mirrored
+        type:
+        - 'null'
+        - boolean
+      issues_template:
+        description: Template for issues
+        type:
+        - 'null'
+        - string
+      merge_pipelines_enabled:
+        description: Flag indicating if merge pipelines are enabled
+        type:
+        - 'null'
+        - boolean
+      merge_requests_template:
+        description: Template for merge requests
+        type:
+        - 'null'
+        - string
+      allow_pipeline_trigger_approve_deployment:
+        description: Allow pipeline trigger to approve deployment
+        type:
+        - 'null'
+        - boolean
+      marked_for_deletion_on:
+        description: Date marked for deletion
+        type:
+        - 'null'
+        - string
+        format: date
+      ci_forward_deployment_rollback_allowed:
+        description: Allow rollback in forward deployment CI
+        type:
+        - 'null'
+        - boolean
+      emails_enabled:
+        description: Flag indicating if emails are enabled
+        type:
+        - 'null'
+        - boolean
+      model_experiments_access_level:
+        description: Access level for model experiments
+        type:
+        - 'null'
+        - string
+      merge_trains_skip_train_allowed:
+        description: Allow skipping merge trains
+        type:
+        - 'null'
+        - boolean
+      code_suggestions:
+        description: Enable code suggestions
+        type:
+        - 'null'
+        - boolean
+      model_registry_access_level:
+        description: Access level for model registry
+        type:
+        - 'null'
+        - string
+      ci_restrict_pipeline_cancellation_role:
+        description: Role allowed to restrict pipeline cancellation in CI
+        type:
+        - 'null'
+        - string
+      repository_object_format:
+        description: Format of repository object
+        type:
+        - 'null'
+        - string
+      warn_about_potentially_unwanted_characters:
+        description: Warn about potentially unwanted characters
+        type:
+        - 'null'
+        - boolean
+  releases:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      name:
+        description: Name of the release
+        type:
+        - 'null'
+        - string
+      tag_name:
+        description: Name of the tag associated with the release
+        type:
+        - 'null'
+        - string
+      description:
+        description: Description of the release
+        type:
+        - 'null'
+        - string
+      created_at:
+        description: Date and time when the release was created
+        type:
+        - 'null'
+        - string
+        format: date-time
+      released_at:
+        description: Date and time when the release was published
+        type:
+        - 'null'
+        - string
+        format: date-time
+      upcoming_release:
+        description: Indicator if the release is an upcoming release
+        type:
+        - 'null'
+        - boolean
+      milestones:
+        description: List of milestones related to the release
+        type:
+        - 'null'
+        - array
+        items:
+          type: integer
+      commit_path:
+        description: Path to the commit related to the release
+        type:
+        - 'null'
+        - string
+      tag_path:
+        description: Path to the tag associated with the release
+        type:
+        - 'null'
+        - string
+      assets:
+        description: Information about assets related to the release
+        type:
+        - 'null'
+        - object
+        properties:
+          count:
+            description: Number of assets in the release
+            type:
+            - 'null'
+            - integer
+          sources:
+            description: List of sources for the assets
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              properties:
+                format:
+                  description: Format of the asset
+                  type:
+                  - 'null'
+                  - string
+                url:
+                  description: URL of the asset file
+                  type:
+                  - 'null'
+                  - string
+          links:
+            description: Links related to the assets
+            type: array
+      evidences:
+        description: Any evidences associated with the release
+        type:
+        - 'null'
+        - array
+      _links:
+        description: Links related to the releases data
+        type:
+        - 'null'
+        - object
+      author:
+        description: Name of the author of the release
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      author_id:
+        description: ID of the author of the release
+        type:
+        - 'null'
+        - integer
+      commit:
+        description: Commit details related to the release
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      commit_id:
+        description: ID of the commit related to the release
+        type:
+        - 'null'
+        - string
+      project_id:
+        description: ID of the project associated with the release
+        type:
+        - 'null'
+        - integer
+  tags:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      name:
+        description: The name of the tag.
+        type:
+        - 'null'
+        - string
+      message:
+        description: The message or description of the tag.
+        type:
+        - 'null'
+        - string
+      target:
+        description: The target or object that the tag points to.
+        type:
+        - 'null'
+        - string
+      release:
+        description: Details about the release associated with the tag.
+        type:
+        - 'null'
+        - object
+        properties:
+          tag_name:
+            description: The name of the release tag.
+            type:
+            - 'null'
+            - string
+          description:
+            description: Description of the release.
+            type:
+            - 'null'
+            - string
+      protected:
+        description: Indicates whether the tag is protected.
+        type:
+        - 'null'
+        - boolean
+      commit:
+        description: Details about the commit associated with the tag.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      commit_id:
+        description: Unique identifier for the commit associated with the tag.
+        type:
+        - 'null'
+        - string
+      project_id:
+        description: Unique identifier of the project to which the tag belongs.
+        type:
+        - 'null'
+        - integer
+  users:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: Unique identification number for the user
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Full name of the user
+        type:
+        - 'null'
+        - string
+      username:
+        description: Unique username chosen by the user
+        type:
+        - 'null'
+        - string
+      state:
+        description: Current state of the user's account (e.g., active, blocked)
+        type:
+        - 'null'
+        - string
+      avatar_url:
+        description: URL of the user's avatar image
+        type:
+        - 'null'
+        - string
+      web_url:
+        description: URL of the user's profile page on the Gitlab platform
+        type:
+        - 'null'
+        - string
+      locked:
+        description: Boolean flag indicating if the user's account is locked
+        type:
+        - 'null'
+        - boolean

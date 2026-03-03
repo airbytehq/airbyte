@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
   githubIssueLabel: source-zoho-crm
   icon: zohocrm.svg
-  license: MIT
+  license: ELv2
   name: ZohoCRM
   remoteRegistries:
     pypi:
@@ -48,4 +48,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Zoho CRM API
+      url: https://www.zoho.com/crm/developer/docs/api/v6/
+      type: api_reference
+    - title: Zoho CRM API changelog
+      url: https://www.zoho.com/crm/developer/docs/api/v6/whats-new.html
+      type: api_release_history
+    - title: Zoho OAuth 2.0
+      url: https://www.zoho.com/crm/developer/docs/api/v6/oauth-overview.html
+      type: authentication_guide
+    - title: Zoho API limits
+      url: https://www.zoho.com/crm/developer/docs/api/v6/api-limits.html
+      type: rate_limits
 metadataSpecVersion: "1.0"

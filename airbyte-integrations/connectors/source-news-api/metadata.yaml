@@ -20,7 +20,7 @@ data:
   dockerRepository: airbyte/source-news-api
   githubIssueLabel: source-news-api
   icon: newsapi.svg
-  license: MIT
+  license: ELv2
   name: News Api
   releaseDate: 2022-10-21
   releaseStage: alpha
@@ -44,4 +44,8 @@ data:
   #         secretStore:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: News API documentation
+      url: https://newsapi.org/docs
+      type: api_reference
 metadataSpecVersion: "1.0"

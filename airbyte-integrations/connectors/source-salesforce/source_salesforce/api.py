@@ -196,6 +196,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
 ]
 
 UNSUPPORTED_FILTERING_STREAMS = [
+    "ActivityFieldHistory",
     "ApiEvent",
     "BulkApiResultEventStore",
     "ContentDocumentLink",

@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-wasabi-stats-api
   githubIssueLabel: source-wasabi-stats-api
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Wasabi
   releaseDate: 2024-10-25
   releaseStage: alpha
@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Wasabi Stats API
+      url: https://docs.wasabi.com/docs/stats-api
+      type: api_reference

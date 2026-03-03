@@ -16,7 +16,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/local-json
   githubIssueLabel: destination-local-json
   icon: file-json.svg
-  license: MIT
+  license: ELv2
   name: Local JSON
   registryOverrides:
     cloud:
@@ -27,4 +27,8 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: JSON specification
+      url: https://www.json.org/
+      type: api_reference
 metadataSpecVersion: "1.0"

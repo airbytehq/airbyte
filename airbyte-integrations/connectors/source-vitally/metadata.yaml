@@ -22,7 +22,7 @@ data:
   dockerRepository: airbyte/source-vitally
   githubIssueLabel: source-vitally
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Vitally
   releaseDate: 2025-02-12
   releaseStage: alpha
@@ -36,3 +36,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Vitally API documentation
+      url: https://docs.vitally.io/pushing-data-to-vitally/rest-api
+      type: api_reference

@@ -23,7 +23,7 @@ data:
   dockerRepository: airbyte/source-pivotal-tracker
   githubIssueLabel: source-pivotal-tracker
   icon: pivotal-tracker.svg
-  license: MIT
+  license: ELv2
   name: Pivotal Tracker
   releaseDate: 2022-04-04
   releaseStage: alpha
@@ -44,4 +44,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Pivotal Tracker API
+      url: https://www.pivotaltracker.com/help/api
+      type: api_reference
 metadataSpecVersion: "1.0"
