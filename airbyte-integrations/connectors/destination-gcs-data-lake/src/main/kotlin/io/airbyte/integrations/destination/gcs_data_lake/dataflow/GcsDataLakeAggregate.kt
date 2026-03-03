@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
-import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
@@ -98,8 +97,6 @@ class GcsDataLakeAggregate(
             fieldName in stringFields && value is ObjectValue ->
                 StringValue(value.serializeToString())
             fieldName in stringFields && value is ArrayValue ->
-                StringValue(value.serializeToString())
-            fieldName in stringFields && value is NumberValue ->
                 StringValue(value.serializeToString())
             else -> value
         }
