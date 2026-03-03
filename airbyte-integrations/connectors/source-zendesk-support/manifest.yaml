@@ -1028,23 +1028,68 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # Export Search Results paginator: uses cursor-based pagination via links.next
+  export_search_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('links', {}).get('next', '') }}"
+      stop_condition: "{{ not response.get('meta', {}).get('has_more', False) }}"
+      page_size: 100
+    page_token_option:
+      type: RequestPath
+    page_size_option:
+      type: RequestOption
+      field_name: "page[size]"
+      inject_into: request_parameter
+
   tickets_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    type: DeclarativeStream
+    name: "tickets"
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "search/export"
+        request_parameters:
+          query: "type:ticket updated_at>{{ stream_interval['start_time'] }} updated_at<{{ stream_interval['end_time'] }}"
+          sort_by: "updated_at"
+          sort_order: "asc"
       paginator:
-        $ref: "#/definitions/after_url_paginator"
+        $ref: "#/definitions/export_search_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["results"]
+        schema_normalization: Default
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%s"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_field: "generated_timestamp"
+      start_datetime:
+        datetime: "{{ config.get('start_date') or day_delta(-730, '%Y-%m-%dT%H:%M:%SZ') }}"
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      step: "P30D"
+      cursor_granularity: "PT1S"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "generated_timestamp"
+            value: "{{ record['generated_timestamp'] if record.get('generated_timestamp') else (record['updated_at'] | int) if record.get('updated_at', '').isdigit() else format_datetime(record['updated_at'], '%s') if record.get('updated_at') else None }}"
+            value_type: "integer"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/tickets"
-    $parameters:
-      name: "tickets"
-      path: "incremental/tickets/cursor.json"
-      cursor_field: "generated_timestamp"
-      cursor_filter: "start_time"
-      primary_key: "id"
 
   ticket_metrics_stream:
     type: StateDelegatingStream
@@ -5704,6 +5749,11 @@ schemas:
         type:
           - "null"
           - boolean
+      result_type:
+        description: The type of search result (added by Export Search Results endpoint).
+        type:
+          - "null"
+          - string
   groups:
     $schema: https://json-schema.org/draft-07/schema#
     type:
