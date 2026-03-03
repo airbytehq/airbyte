@@ -2407,7 +2407,7 @@ schemas:
         type:
           - "null"
           - integer
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views in the campaign.
         type:
           - "null"
@@ -2710,7 +2710,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view
         type:
           - "null"
@@ -2989,12 +2989,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The video view rate
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: The total number of video views
         type:
           - "null"
@@ -3631,7 +3631,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average CPV (Cost Per View) metric.
         type:
           - "null"
@@ -3923,12 +3923,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The video view rate metric.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: The total number of video views metric.
         type:
           - "null"
@@ -4102,7 +4102,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view.
         type:
           - "null"
@@ -4187,12 +4187,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The rate of video views.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views.
         type:
           - "null"
@@ -4483,7 +4483,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view for the campaign.
         type:
           - "null"
@@ -4577,12 +4577,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The view rate for video ads in the campaign.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: The total number of video views for the campaign.
         type:
           - "null"
@@ -4687,7 +4687,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: Average cost per view
         type:
           - "null"
@@ -4861,12 +4861,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: Rate of video views
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views
         type:
           - "null"
@@ -5796,7 +5796,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: Average cost per view.
         type:
           - "null"
@@ -6375,12 +6375,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: Rate of video views.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Number of video views.
         type:
           - "null"
