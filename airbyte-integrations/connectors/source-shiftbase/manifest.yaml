@@ -55,7 +55,7 @@ definitions:
     name: departments
     primary_key:
     - - id
-    - - account_name
+    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -86,7 +86,7 @@ definitions:
     name: employees
     primary_key:
     - - id
-    - - account_name
+    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -161,7 +161,7 @@ definitions:
     primary_key:
     - - employeeId
     - - year
-    - - account_name
+    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -245,7 +245,7 @@ definitions:
     name: absentees
     primary_key:
     - - id
-    - - account_name
+    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -334,7 +334,7 @@ definitions:
     name: shifts
     primary_key:
     - - id
-    - - account_name
+    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -365,7 +365,7 @@ definitions:
     name: users
     primary_key:
     - - id
-    - - account_name
+    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
