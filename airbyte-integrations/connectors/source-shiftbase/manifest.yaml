@@ -91,9 +91,7 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.shiftbase.com/api/
-        http_method: GET
+        $ref: "#/definitions/base_requester"
         path: "hr/departments/{{ stream_partition.department_id }}/employeeList"
         request_headers:
           Content-Type: application/json
@@ -101,21 +99,6 @@ definitions:
           Authorization: "API {{ stream_partition.parent_slice.account.access_token }}"
         request_parameters:
           min_date: "{{ config.start_date }}"
-        error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-          - type: WaitTimeFromHeader
-            header: Retry-After
-          - type: ExponentialBackoffStrategy
-          response_filters:
-          - type: HttpResponseFilter
-            action: RETRY
-            http_codes:
-            - 429
-            - 500
-            - 502
-            - 503
-            - 504
       record_selector:
         type: RecordSelector
         extractor:
@@ -166,29 +149,12 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.shiftbase.com/api/
-        http_method: GET
+        $ref: "#/definitions/base_requester"
         path: "employees/{{ stream_partition.employee_id }}/time_distribution"
         request_headers:
           Content-Type: application/json
           Accept: application/json
           Authorization: "API {{ stream_partition.parent_slice.parent_slice.account.access_token }}"
-        error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-          - type: WaitTimeFromHeader
-            header: Retry-After
-          - type: ExponentialBackoffStrategy
-          response_filters:
-          - type: HttpResponseFilter
-            action: RETRY
-            http_codes:
-            - 429
-            - 500
-            - 502
-            - 503
-            - 504
       record_selector:
         type: RecordSelector
         extractor:
