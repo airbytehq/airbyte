@@ -136,9 +136,9 @@ class TestTicketMetricsIncremental(TestCase):
 
         # Parent state cursor is stored in ISO format by DatetimeBasedCursor
         actual_generated_ts = state_dict["parent_state"]["tickets"]["generated_timestamp"]
-        assert actual_generated_ts == expected_parent_cursor_iso, (
-            f"Expected ISO format '{expected_parent_cursor_iso}', got {actual_generated_ts}"
-        )
+        assert (
+            actual_generated_ts == expected_parent_cursor_iso
+        ), f"Expected ISO format '{expected_parent_cursor_iso}', got {actual_generated_ts}"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
