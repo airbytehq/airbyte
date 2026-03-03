@@ -49,6 +49,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 class ProtoToBigQueryCSVRowGenerator(
@@ -213,31 +214,35 @@ class ProtoToBigQueryCSVRowGenerator(
                         ExtractionResult(null, null)
                     }
                 }
-                is TimestampTypeWithTimezone -> {
-                    val timestampValue = proxy.getTimestampWithTimezone(accessor)
-                    if (timestampValue != null) {
-                        try {
-                            val parsedTimestamp = OffsetDateTime.parse(timestampValue)
-                            if (
-                                parsedTimestamp < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
-                                    parsedTimestamp > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
-                            ) {
-                                ExtractionResult(
-                                    null,
-                                    Meta.Change(
-                                        accessor.name,
-                                        AirbyteRecordMessageMetaChange.Change.NULLED,
-                                        AirbyteRecordMessageMetaChange.Reason
-                                            .DESTINATION_FIELD_SIZE_LIMITATION
+                    is TimestampTypeWithTimezone -> {
+                        val timestampValue = proxy.getTimestampWithTimezone(accessor)
+                        if (timestampValue != null) {
+                            try {
+                                // Truncate to microseconds: BigQuery TIMESTAMP only supports
+                                // 6 fractional digits; sources like Snowflake may send 7+.
+                                val parsedTimestamp =
+                                    OffsetDateTime.parse(timestampValue)
+                                        .truncatedTo(ChronoUnit.MICROS)
+                                if (
+                                    parsedTimestamp < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
+                                        parsedTimestamp > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
+                                ) {
+                                    ExtractionResult(
+                                        null,
+                                        Meta.Change(
+                                            accessor.name,
+                                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                                            AirbyteRecordMessageMetaChange.Reason
+                                                .DESTINATION_FIELD_SIZE_LIMITATION
+                                        )
                                     )
-                                )
-                            } else {
-                                val formattedValue =
-                                    BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                                        parsedTimestamp
-                                    )
-                                ExtractionResult(formattedValue, null)
-                            }
+                                } else {
+                                    val formattedValue =
+                                        BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(
+                                            parsedTimestamp
+                                        )
+                                    ExtractionResult(formattedValue, null)
+                                }
                         } catch (_: Exception) {
                             ExtractionResult(
                                 null,
@@ -253,30 +258,34 @@ class ProtoToBigQueryCSVRowGenerator(
                         ExtractionResult(null, null)
                     }
                 }
-                is TimestampTypeWithoutTimezone -> {
-                    val timestampValue = proxy.getTimestampWithoutTimezone(accessor)
-                    if (timestampValue != null) {
-                        try {
-                            val parsedDateTime = LocalDateTime.parse(timestampValue)
-                            if (
-                                parsedDateTime < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
-                                    parsedDateTime > BigQueryRecordFormatter.DATETIME_MAX_VALUE
-                            ) {
-                                ExtractionResult(
-                                    null,
-                                    Meta.Change(
-                                        accessor.name,
-                                        AirbyteRecordMessageMetaChange.Change.NULLED,
-                                        AirbyteRecordMessageMetaChange.Reason
-                                            .DESTINATION_FIELD_SIZE_LIMITATION
+                    is TimestampTypeWithoutTimezone -> {
+                        val timestampValue = proxy.getTimestampWithoutTimezone(accessor)
+                        if (timestampValue != null) {
+                            try {
+                                // Truncate to microseconds: BigQuery DATETIME only supports
+                                // 6 fractional digits; sources like Snowflake may send 7+.
+                                val parsedDateTime =
+                                    LocalDateTime.parse(timestampValue)
+                                        .truncatedTo(ChronoUnit.MICROS)
+                                if (
+                                    parsedDateTime < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
+                                        parsedDateTime > BigQueryRecordFormatter.DATETIME_MAX_VALUE
+                                ) {
+                                    ExtractionResult(
+                                        null,
+                                        Meta.Change(
+                                            accessor.name,
+                                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                                            AirbyteRecordMessageMetaChange.Reason
+                                                .DESTINATION_FIELD_SIZE_LIMITATION
+                                        )
                                     )
-                                )
-                            } else {
-                                val formattedValue =
-                                    BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER
-                                        .format(parsedDateTime)
-                                ExtractionResult(formattedValue, null)
-                            }
+                                } else {
+                                    val formattedValue =
+                                        BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER
+                                            .format(parsedDateTime)
+                                    ExtractionResult(formattedValue, null)
+                                }
                         } catch (_: Exception) {
                             ExtractionResult(
                                 null,
@@ -480,9 +489,11 @@ class ProtoToBigQueryCSVRowGenerator(
                 }
             }
             is TimestampWithTimezoneValue -> {
+                // Truncate to microseconds for BigQuery compatibility
+                val truncatedValue = coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                 if (
-                    coercedValue.value < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
-                        coercedValue.value > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
+                    truncatedValue < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
+                        truncatedValue > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
                 ) {
                     ExtractionResult(
                         null,
@@ -495,15 +506,17 @@ class ProtoToBigQueryCSVRowGenerator(
                 } else {
                     val formattedValue =
                         BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
+                            truncatedValue
                         )
                     ExtractionResult(formattedValue, null)
                 }
             }
             is TimestampWithoutTimezoneValue -> {
+                // Truncate to microseconds for BigQuery compatibility
+                val truncatedValue = coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                 if (
-                    coercedValue.value < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
-                        coercedValue.value > BigQueryRecordFormatter.DATETIME_MAX_VALUE
+                    truncatedValue < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
+                        truncatedValue > BigQueryRecordFormatter.DATETIME_MAX_VALUE
                 ) {
                     ExtractionResult(
                         null,
@@ -516,7 +529,7 @@ class ProtoToBigQueryCSVRowGenerator(
                 } else {
                     val formattedValue =
                         BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
+                            truncatedValue
                         )
                     ExtractionResult(formattedValue, null)
                 }
