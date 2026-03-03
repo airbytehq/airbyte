@@ -18,8 +18,8 @@ from .utils import read_stream
 
 
 _NOW = ab_datetime_now()
-_START_DATE = _NOW.subtract(timedelta(weeks=104))
-_A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
+# Use a narrow date range (< 30 days) to ensure only 1 partition with P30D step
+_START_DATE = _NOW.subtract(timedelta(days=25))
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -42,7 +42,6 @@ class TestTicketsStreamFullRefresh(TestCase):
         api_token_authenticator = self._get_authenticator(self._config)
         http_mocker.get(
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
-            .with_start_time(self._config["start_date"])
             .with_any_query_params()
             .build(),
             TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record()).build(),
@@ -55,29 +54,25 @@ class TestTicketsStreamFullRefresh(TestCase):
     @HttpMocker()
     def test_given_two_pages_when_read_tickets_then_return_all_records(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
-        first_page_request = (
+
+        # Create the next page request - this URL will be used in links.next
+        next_page_http_request = (
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
-            .with_start_time(self._config["start_date"])
-            .with_any_query_params()
+            .with_after_cursor("after-cursor")
             .build()
         )
 
-        # Build the base URL for cursor-based pagination
-        # Note: EndOfStreamPaginationStrategy appends ?cursor={cursor} to this URL
-        # Must match the path used by tickets_endpoint: incremental/tickets/cursor.json
-        base_url = "https://d3v-airbyte.zendesk.com/api/v2/incremental/tickets/cursor.json"
-
         http_mocker.get(
-            first_page_request,
-            TicketsResponseBuilder.tickets_response(base_url, _A_CURSOR)
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
+            .with_any_query_params()
+            .build(),
+            TicketsResponseBuilder.tickets_response(next_page_http_request)
             .with_record(TicketsRecordBuilder.tickets_record().with_id(1))
             .with_pagination()
             .build(),
         )
-        # The connector uses RequestPath pagination, meaning it uses the full URL from after_url
-        # The after_url only includes the cursor, not per_page
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).build(),
+            next_page_http_request,
             TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_id(2)).build(),
         )
 
@@ -111,7 +106,6 @@ class TestTicketsStreamIncremental(TestCase):
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
-            .with_start_time(self._config["start_date"])
             .with_any_query_params()
             .build(),
             TicketsResponseBuilder.tickets_response()
@@ -129,12 +123,12 @@ class TestTicketsStreamIncremental(TestCase):
     @HttpMocker()
     def test_given_state_when_read_tickets_then_use_state_cursor(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
-        state_cursor_value = _START_DATE.add(timedelta(days=30))
+        # Use a recent state cursor (within 30 days of NOW) to ensure 1 partition
+        state_cursor_value = _NOW.subtract(timedelta(days=5))
         new_cursor_value = int(state_cursor_value.add(timedelta(days=1)).timestamp())
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
-            .with_start_time(state_cursor_value)
             .with_any_query_params()
             .build(),
             TicketsResponseBuilder.tickets_response()
