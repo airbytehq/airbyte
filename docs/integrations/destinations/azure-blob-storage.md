@@ -11,11 +11,11 @@ as `<stream_namespace>/<stream_name>/yyyy_mm_dd_<unix_epoch>_<part_number>.<file
 
 | Sync mode | Supported? |
 | :--- | :--- |
-| [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/) | Yes |
-| [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
-| [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) | Yes |
-| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Configuration
 
