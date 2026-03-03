@@ -57,7 +57,8 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 <!-- /env:oss -->
 
 6. For **Start date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
-7. Click **Set up source** and wait for the tests to complete.
+7. (Optional) For **Lookback window**, enter the number of days to re-sync data for. This shifts the starting point of incremental syncs backward by the specified number of days, which is useful if your source data can be updated after its initial creation. Defaults to 0 (no lookback). For example, setting this to 60 re-syncs the last 60 days of data on each sync.
+8. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -86,7 +87,7 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting).
+The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/docs/references/2.11/rest-api/errors/rate-limiting).
 
 The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
@@ -97,7 +98,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.16-rc.3 | 2026-03-03| [72955](https://github.com/airbytehq/airbyte/pull/72955) | fix(source-intercom): add step size and end_datetime to contacts, conversations, and activity_logs streams |
+| 0.13.16-rc.3 | 2026-03-03 | [72955](https://github.com/airbytehq/airbyte/pull/72955) | Add time-windowed incremental sync (30-day slices) to contacts, conversations, and activity_logs streams |
 | 0.13.16-rc.2 | 2026-02-18 | [73635](https://github.com/airbytehq/airbyte/pull/73635) | fix(source-intercom): bump heartbeat timeout from 6h to 9h |
 | 0.13.16-rc.1 | 2025-12-11 | [70335](https://github.com/airbytehq/airbyte/pull/70335) | Fix pagination on companies stream |
 | 0.13.15 | 2025-11-25 | [69563](https://github.com/airbytehq/airbyte/pull/69563) | Update dependencies |
