@@ -1,5 +1,11 @@
 # source-google-analytics-data-api: Unique Behaviors
 
+## Important: Naming Convention — GA4 vs Universal Analytics
+
+This connector is **Google Analytics 4 (GA4)** with package name `source-google-analytics-data-api`. It is very commonly confused with the legacy connector **Google Analytics (Universal Analytics)** with package name `source-google-analytics-v4`.
+
+The "GA4" identifier in the modern Google Analytics connector and the legacy Universal Analytics API being on "v4" often causes these to be mixed up. Now that the legacy Universal Analytics API was fully deprecated on **July 1, 2024**, no development work will ever be done in the `source-google-analytics-v4` package again. All work should be done in `source-google-analytics-data-api` from now on.
+
 ## 1. Positional Key-Value Array Extraction
 
 GA4's RunReport API returns dimension and metric headers separately from their values. Each row contains `dimensionValues` and `metricValues` as flat arrays of objects (e.g., `[{"value": "20231001"}, {"value": "organic"}]`), not as key-value pairs. The connector uses `KeyValueExtractor` to zip the header names with the flat value stream, chunking by the number of keys to reconstruct individual records.
@@ -57,3 +63,11 @@ When a custom report includes a `cohortSpec` with `enabled: "true"`, the manifes
 This means cohort reports are always full-refresh with no incremental support, and their request body structure is fundamentally different from non-cohort reports.
 
 **Why this matters:** The same stream template produces two structurally different API requests depending on whether cohorts are enabled. Testing or modifying cohort behavior requires tracing through all the `{% if cohort %}` conditionals scattered across multiple component mappings to understand the full impact.
+
+## 6. Rate Limit Quota Cannot Be Self-Service Increased
+
+Most Google APIs allow quota increases through the [API & Services dashboard on GCP](https://console.cloud.google.com/apis/dashboard?project=prod-ab-cloud-proj). However, the Google Analytics Data API is **not** one of them — the quota cannot be self-service increased from the GCP console.
+
+If rate-limited requests increase and a higher quota is needed, you must reach out to the DoIT contact (via Ralph or Davin) to request a quota increase on our behalf.
+
+**Why this matters:** Unlike most Google connectors where rate limit issues can be resolved by bumping quotas in the GCP console, GA4 rate limit issues require an external escalation through DoIT. This means rate limit problems cannot be quickly self-resolved and require coordination with external parties.
