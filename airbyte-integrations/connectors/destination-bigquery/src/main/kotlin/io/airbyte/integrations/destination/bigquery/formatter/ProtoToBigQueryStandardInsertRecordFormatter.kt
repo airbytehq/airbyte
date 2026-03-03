@@ -289,8 +289,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                         // Truncate to microseconds: BigQuery TIMESTAMP only supports
                         // 6 fractional digits; sources like Snowflake may send 7+.
                         val parsedTimestamp =
-                            OffsetDateTime.parse(timestampValue)
-                                .truncatedTo(ChronoUnit.MICROS)
+                            OffsetDateTime.parse(timestampValue).truncatedTo(ChronoUnit.MICROS)
                         if (
                             parsedTimestamp < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
                                 parsedTimestamp > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
@@ -333,8 +332,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                         // Truncate to microseconds: BigQuery DATETIME only supports
                         // 6 fractional digits; sources like Snowflake may send 7+.
                         val parsedDateTime =
-                            LocalDateTime.parse(timestampValue)
-                                .truncatedTo(ChronoUnit.MICROS)
+                            LocalDateTime.parse(timestampValue).truncatedTo(ChronoUnit.MICROS)
                         if (
                             parsedDateTime < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
                                 parsedDateTime > BigQueryRecordFormatter.DATETIME_MAX_VALUE
