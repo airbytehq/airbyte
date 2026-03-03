@@ -5,46 +5,12 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - channels
+    - channel_messages
 
 definitions:
   streams:
-    # Channels stream - needed to get channel IDs
-    channels:
-      type: DeclarativeStream
-      name: channels
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: conversations.list
-          request_parameters:
-            types: "public_channel"
-            limit: "1000"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - channels
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('response_metadata', {}).get('next_cursor', '') }}"
-            stop_condition: "{{ not response.get('response_metadata', {}).get('next_cursor', '') }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/channels"
-
     # Parent stream: channel messages (incremental)
+    # Fetches messages from a single configured channel
     channel_messages:
       type: DeclarativeStream
       name: channel_messages
@@ -58,6 +24,7 @@ definitions:
           path: conversations.history
           request_parameters:
             limit: "1000"
+            channel: "{{ config['channel_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -77,18 +44,6 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('response_metadata', {}).get('next_cursor', '') }}"
             stop_condition: "{{ not response.get('response_metadata', {}).get('next_cursor', '') }}"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: channel
-              request_option:
-                type: RequestOption
-                field_name: channel
-                inject_into: request_parameter
-              stream:
-                $ref: "#/definitions/streams/channels"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: float_ts
@@ -111,7 +66,7 @@ definitions:
               value: "{{ record.ts|float }}"
             - path:
                 - channel_id
-              value: "{{ stream_partition.channel }}"
+              value: "{{ config['channel_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -131,7 +86,7 @@ definitions:
           path: conversations.replies
           request_parameters:
             limit: "1000"
-            channel: "{{ stream_partition.get('parent_slice', {}).get('channel', stream_partition.get('channel')) }}"
+            channel: "{{ config['channel_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -182,7 +137,7 @@ definitions:
               value: "{{ record.ts|float }}"
             - path:
                 - channel_id
-              value: "{{ stream_partition.get('parent_slice', {}).get('channel', stream_partition.get('channel')) }}"
+              value: "{{ config['channel_id'] }}"
             - path:
                 - parent_message_ts
               value: "{{ stream_partition['float_ts'] }}"
@@ -212,7 +167,6 @@ definitions:
           action: RETRY
 
 streams:
-  - $ref: "#/definitions/streams/channels"
   - $ref: "#/definitions/streams/channel_messages"
   - $ref: "#/definitions/streams/threads"
 
@@ -223,44 +177,39 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_token
+      - channel_id
       - start_date
     properties:
       api_token:
         type: string
         title: API Token
-        description: Slack API token with permissions to read channels and messages
+        description: Slack Bot Token (starts with xoxb-) with scopes channels:read and channels:history
         airbyte_secret: true
         order: 0
+      channel_id:
+        type: string
+        title: Channel ID
+        description: Slack channel ID to test with (e.g. C0AG3UM1RQC). Find it in Slack by right-clicking the channel → View channel details → Copy Channel ID
+        examples:
+          - "C0AG3UM1RQC"
+        order: 1
       start_date:
         type: string
         title: Start Date
-        description: Start date for incremental sync
+        description: Start date for incremental sync (use 2020-01-01 to capture all messages)
         format: date-time
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
-          - "2024-01-01T00:00:00Z"
-        order: 1
+          - "2020-01-01T00:00:00Z"
+        order: 2
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    channels: false
     channel_messages: false
     threads: false
 
 schemas:
-  channels:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type: ["null", "string"]
-        description: Channel ID
-      name:
-        type: ["null", "string"]
-        description: Channel name
-
   channel_messages:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

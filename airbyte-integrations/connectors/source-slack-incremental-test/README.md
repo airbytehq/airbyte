@@ -20,16 +20,12 @@ On incremental sync:
 
 ## Streams
 
-### 1. channels
-- Lists Slack channels
-- Needed to provide channel IDs to other streams
-
-### 2. channel_messages (Parent)
+### 1. channel_messages (Parent)
 - Messages posted in Slack channels
 - **Incremental** by timestamp (`float_ts`)
 - On incremental sync: only fetches messages since last sync
 
-### 3. threads (Child)
+### 2. threads (Child)
 - Replies to channel messages (threaded conversations)
 - Uses `SubstreamPartitionRouter` with **`incremental_dependency: true`**
 - **Should** only fetch replies for new messages
@@ -40,19 +36,27 @@ On incremental sync:
 ```json
 {
   "api_token": "xoxb-your-slack-token",
-  "start_date": "2024-01-01T00:00:00Z"
+  "channel_id": "C0AG3UM1RQC",
+  "start_date": "2020-01-01T00:00:00Z"
 }
 ```
 
-### Getting a Slack API Token
+### Getting Configuration Values
 
-1. Go to https://api.slack.com/apps
-2. Create a new app or use existing
-3. Add Bot Token Scopes:
-   - `channels:read`
-   - `channels:history`
-4. Install app to workspace
-5. Copy the "Bot User OAuth Token" (starts with `xoxb-`)
+**1. Slack API Token:**
+- Go to https://api.slack.com/apps
+- Create a new app or use existing
+- Add Bot Token Scopes: `channels:read`, `channels:history`
+- Install app to workspace
+- Copy the "Bot User OAuth Token" (starts with `xoxb-`)
+
+**2. Channel ID:**
+- In Slack, right-click any channel → View channel details
+- Scroll down → Click "Copy Channel ID"
+- Example: `C0AG3UM1RQC`
+
+**3. Workspace:**
+- The token is workspace-specific - it automatically pulls from the correct workspace
 
 ## Testing Locally (OSS Behavior)
 
