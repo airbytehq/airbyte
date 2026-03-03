@@ -54,7 +54,8 @@ definitions:
     type: DeclarativeStream
     name: departments
     primary_key:
-      - id
+      - - id
+      - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -263,7 +264,8 @@ definitions:
     type: DeclarativeStream
     name: employees
     primary_key:
-      - id
+      - - id
+      - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -502,7 +504,8 @@ definitions:
     type: DeclarativeStream
     name: absentees
     primary_key:
-      - id
+      - - id
+      - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -736,7 +739,8 @@ definitions:
     type: DeclarativeStream
     name: availabilities
     primary_key:
-      - id
+      - - id
+      - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -822,7 +826,8 @@ definitions:
     type: DeclarativeStream
     name: shifts
     primary_key:
-      - id
+      - - id
+      - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -951,7 +956,8 @@ definitions:
     type: DeclarativeStream
     name: users
     primary_key:
-      - id
+      - - id
+      - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -1148,7 +1154,8 @@ definitions:
     type: DeclarativeStream
     name: timesheet_detail_report
     primary_key:
-      - timesheetId
+      - - timesheetId
+      - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -1417,7 +1424,8 @@ definitions:
     type: DeclarativeStream
     name: schedule_detail_report
     primary_key:
-      - rosterId
+      - - rosterId
+      - - account_name
     retriever:
       type: SimpleRetriever
       requester:
