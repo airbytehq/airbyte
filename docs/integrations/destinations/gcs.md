@@ -109,7 +109,6 @@ Each stream will be outputted to its dedicated directory according to the config
 - Under Full Refresh Sync mode, old output files will be purged before new files are created.
 - Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
 
-
 ### Avro
 
 [Apache Avro](https://avro.apache.org/) serializes data in a compact binary format. Currently, the Airbyte S3 Avro connector always uses the [binary encoding](https://avro.apache.org/docs/1.12.0/specification/#binary-encoding), and assumes that all data records follow the same schema.
