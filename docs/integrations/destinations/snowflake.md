@@ -243,6 +243,7 @@ The Snowflake destination supports the following sync modes:
 | Sync mode | Description |
 | :--- | :--- |
 | [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/) | Replaces all data in the destination table with the new data from each sync. |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Replaces all data in the destination table and deduplicates the final table using the configured primary key and cursor fields. Useful for avoiding duplicates that can occur during [resumable full refresh](/platform/understanding-airbyte/resumability) syncs. |
 | [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append) | Appends all source data to the destination table. Does not remove previously synced data. |
 | [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) | Appends only new or updated records to the destination table since the last sync. |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) | Appends new or updated records and deduplicates the final table using the configured primary key and cursor fields. |
