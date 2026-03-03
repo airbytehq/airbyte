@@ -81,6 +81,8 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
 | `account_details`           | `oauth`                                                                                                      |
+| `deal_splits`               | `crm.objects.deals.read`                                                                                     |
+| `properties`                | Read scope for each object type (e.g., `crm.objects.contacts.read`, `crm.objects.deals.read`)                |
 | `workflows`                 | `automation`                                                                                                 |
 
 </details>
@@ -161,6 +163,7 @@ The HubSpot source connector supports the following streams:
 - [Contact Lists](https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch) \(Incremental\)
 - [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
 - [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
+- [Deal Splits](https://developers.hubspot.com/docs/api/crm/deals) \(Incremental\)
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
   - Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
 - [Deals Archived](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
@@ -181,6 +184,7 @@ The HubSpot source connector supports the following streams:
 - [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
 - [Owners Archived](https://legacydocs.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
+- [Properties](https://developers.hubspot.com/docs/api/crm/properties) \(Full Refresh\)
 - [Contacts Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Client-Side Incremental\)
 - [Companies Property History](https://legacydocs.hubspot.com/docs/methods/companies/get-all-companies) \(Client-Side Incremental\)
 - [Deals Property History](https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals) \(Client-Side Incremental\)
@@ -343,10 +347,10 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.3.0 | 2026-02-26 | [61703](https://github.com/airbytehq/airbyte/pull/61703) | Add new stream `account_details` |
+| 6.3.0 | 2026-03-03 | [61703](https://github.com/airbytehq/airbyte/pull/61703) | Add new stream `account_details` |
 | 6.2.2 | 2026-02-24 | [73909](https://github.com/airbytehq/airbyte/pull/73909) | Update dependencies |
 | 6.2.1 | 2026-02-17 | [73491](https://github.com/airbytehq/airbyte/pull/73491) | Update dependencies |
-| 6.2.0 | 2026-02-10 | [61704](https://github.com/airbytehq/airbyte/pull/61704) | Add new `properties` stream |
+| 6.2.0 | 2026-02-11 | [73236](https://github.com/airbytehq/airbyte/pull/73236) | Add new `properties` stream |
 | 6.1.1 | 2026-02-10 | [70486](https://github.com/airbytehq/airbyte/pull/70486) | Update dependencies |
 | 6.1.0 | 2026-02-05 | [72906](https://github.com/airbytehq/airbyte/pull/72906) | Promoting release candidate 6.1.0-rc.2 to a main version. |
 | 6.1.0-rc.2  | 2026-02-03 | [72799](https://github.com/airbytehq/airbyte/pull/72799)     | Bump the CDK version which fixed a bug where streams without incremental showed a cursor                                                                                                                                     |
