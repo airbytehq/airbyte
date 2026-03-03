@@ -8,8 +8,9 @@ This page contains the setup guide and reference information for the [Intercom](
 
 ## Prerequisites
 
-- Access to an Intercom account with the data you want to replicate
-- Start date - a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
+- An Intercom account with the data you want to replicate
+- For Airbyte Open Source, an Intercom [access token](https://developers.intercom.com/docs/build-an-integration/learn-more/authentication)
+- A start date for data replication, in the format `YYYY-MM-DDTHH:mm:ssZ`
 
 ## Setup guide
 
@@ -57,7 +58,9 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 <!-- /env:oss -->
 
 6. For **Start date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
-7. Click **Set up source** and wait for the tests to complete.
+7. (Optional) For **Lookback window**, enter the number of days to re-sync data for. This shifts the start date backward by the specified number of days for each sync, which helps capture records updated after initial sync. Defaults to 0.
+8. (Optional) For **Activity logs stream slice step size**, enter the number of days per request window for the Activity Logs stream. Reduce this value if Activity Logs syncs time out. Defaults to 30 and can range from 1 to 91.
+9. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -86,7 +89,7 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting).
+The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/2.11/rest-api/errors/rate-limiting). The default limit is 1,000 API calls per minute for most workspaces. The connector handles rate limiting automatically by reading the `X-RateLimit-Limit` and `X-RateLimit-Remaining` response headers and adjusting request frequency.
 
 The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
@@ -98,7 +101,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
 | 0.13.16-rc.4 | 2026-03-03 | [74143](https://github.com/airbytehq/airbyte/pull/74143) | fix(source-intercom): fix UnboundLocalError in rate limiter when response is not available |
-| 0.13.16-rc.3 | 2026-03-03| [72955](https://github.com/airbytehq/airbyte/pull/72955) | fix(source-intercom): add step size and end_datetime to contacts, conversations, and activity_logs streams |
+| 0.13.16-rc.3 | 2026-03-03 | [72955](https://github.com/airbytehq/airbyte/pull/72955) | fix(source-intercom): add step size and end_datetime to contacts, conversations, and activity_logs streams |
 | 0.13.16-rc.2 | 2026-02-18 | [73635](https://github.com/airbytehq/airbyte/pull/73635) | fix(source-intercom): bump heartbeat timeout from 6h to 9h |
 | 0.13.16-rc.1 | 2025-12-11 | [70335](https://github.com/airbytehq/airbyte/pull/70335) | Fix pagination on companies stream |
 | 0.13.15 | 2025-11-25 | [69563](https://github.com/airbytehq/airbyte/pull/69563) | Update dependencies |
