@@ -70,23 +70,22 @@ The Intercom source connector supports the following [sync modes](https://docs.a
 
 The Intercom source connector supports the following streams:
 
-- [Activity Logs](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/admins/listactivitylogs) \(Incremental\)
-- [Admins](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/admins/listadmins) \(Full table\)
-- [Companies](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies) \(Incremental\)
-  - [Company Segments](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/listattachedsegmentsforcompanies) \(Incremental\)
-- [Company Attributes](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/data-attributes/listdataattributes) \(Full table\)
-- [Contact Attributes](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/data-attributes/listdataattributes) \(Full table\)
-- [Contacts](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/searchcontacts) \(Incremental\)
-- [Conversations](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/searchconversations) \(Incremental\)
-  - [Conversation Parts](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
-- [Segments](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/segments/listsegments) \(Incremental\)
-- [Tags](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tags/listtags) \(Full table\)
-- [Teams](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/teams/listteams) \(Full table\)
-- [Tickets](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tickets/searchtickets) \(Incremental\)
+- [Admins](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/admins/listadmins) \(Full table\)
+- [Companies](https://developers.intercom.com/intercom-api-reference/reference/listallcompanies) \(Incremental\)
+  - [Company Segments](https://developers.intercom.com/intercom-api-reference/reference/listattachedsegmentsforcompanies) \(Incremental\)
+- [Conversations](https://developers.intercom.com/docs/references/2.9/rest-api/api.intercom.io/conversations/listconversations) \(Incremental\)
+  - [Conversation Parts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
+- [Data Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Customer Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Company Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+- [Contacts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/contacts/listcontacts) \(Incremental\)
+- [Segments](https://developers.intercom.com/intercom-api-reference/reference/listsegments) \(Incremental\)
+- [Tags](https://developers.intercom.com/intercom-api-reference/reference/listtags) \(Full table\)
+- [Teams](https://developers.intercom.com/intercom-api-reference/reference/listteams) \(Full table\)
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting).
+The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/intercom-api-reference/reference/rate-limiting).
 
 The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
@@ -97,7 +96,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.16-rc.3 | 2026-02-18 | [72955](https://github.com/airbytehq/airbyte/pull/72955) | fix(source-intercom): add step size and end_datetime to contacts, conversations, and activity_logs streams (AI-Triage PR) |
+| 0.13.16-rc.3 | 2026-03-103| [72955](https://github.com/airbytehq/airbyte/pull/72955) | fix(source-intercom): bump heartbeat timeout from 6h to 9h |
 | 0.13.16-rc.2 | 2026-02-18 | [73635](https://github.com/airbytehq/airbyte/pull/73635) | fix(source-intercom): bump heartbeat timeout from 6h to 9h |
 | 0.13.16-rc.1 | 2025-12-11 | [70335](https://github.com/airbytehq/airbyte/pull/70335) | Fix pagination on companies stream |
 | 0.13.15 | 2025-11-25 | [69563](https://github.com/airbytehq/airbyte/pull/69563) | Update dependencies |
