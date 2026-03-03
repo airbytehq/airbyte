@@ -24,8 +24,7 @@ You'll need the following information to configure the destination:
 - **Snowflake Password** - The password for your Snowflake account
 - **Snowflake Database** - The database name in Snowflake to load data into
 - **Snowflake Warehouse** - The warehouse name in Snowflake to use
-- **Snowflake Role** - The role name in Snowflake to use. 
-
+- **Snowflake Role** - The role name in Snowflake to use.
 
 ## Supported sync modes
 
