@@ -56,7 +56,7 @@ _If you have any questions or want to get started with Cumul.io, don't hesitate 
 | [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append/)                 | Yes                  | /                                                     |
 | [Full Refresh - Replace](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)             | Yes                  | /                                                     |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append/)              | Yes                  | /                                                     |
-| [Incremental - Append + Deduped ](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No                   | Cumul.io's data warehouse does not support dbt (yet). |
+| [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No                   | Cumul.io's data warehouse does not support dbt (yet). |
 
 ### Airbyte Features support
 
