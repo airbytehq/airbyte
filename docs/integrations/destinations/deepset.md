@@ -18,15 +18,6 @@ To make it possible to synchronize data to deepset AI Platform using Airbyte, we
 
 _Note_: The deepset destination connector writes data to your deepset workspace, but does not delete any data from the workspace. If a file with the same name already exists in the destination workspace, it is overwritten.
 
-### Supported Sync Modes
-
-The deepset destination connector supports the following sync modes:
-
-* [Full refresh - append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append/)
-* [Full refresh - overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
-* [Incremental sync - append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append/)
-* [Incremental sync - append + deduped ](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
-
 ## Syncing Data to deepset AI Platform
 
 To use the deepset destination in Airbyte:
