@@ -1,6 +1,6 @@
 ---
 sidebar_label: "FastMCP"
-sidebar_position: 5
+sidebar_position: 3
 ---
 
 import Tabs from '@theme/Tabs';
@@ -9,8 +9,6 @@ import TabItem from '@theme/TabItem';
 # Agent connector tutorial: FastMCP
 
 In this tutorial, you'll create a new Python project with uv, build a FastMCP server that exposes one of Airbyte's agent connectors as an MCP tool, and use it to query GitHub data from any MCP-compatible agent. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
-
-Unlike the [Connector MCP server tutorial](tutorial-mcp-server), which uses Airbyte's pre-built MCP server, this tutorial shows you how to build your own MCP server with [FastMCP](https://gofastmcp.com). This gives you full control over tool definitions, prompt handling, and server behavior.
 
 ## Overview
 
@@ -157,7 +155,7 @@ if __name__ == "__main__":
 
 ## Part 6: Register with your agent
 
-Register the MCP server with your preferred agent. You need to provide the full path to your project's `server.py` file. Replace `/path/to/my-mcp-agent` with the actual path to your project directory.
+Register the MCP server with your preferred agent. Provide the full path to your project's `server.py` file. Replace `/path/to/my-mcp-agent` with the actual path to your project directory.
 
 <Tabs>
 <TabItem value="claude-code" label="Claude Code" default>
@@ -235,6 +233,6 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](https://github.com/airbytehq/airbyte-agent-connectors) to give your MCP server access to more services like Stripe, HubSpot, and Salesforce. You can register multiple tools on the same FastMCP server.
+- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](../../connectors/) to give your MCP server access to more services like Stripe, HubSpot, and Salesforce. You can register multiple tools on the same FastMCP server.
 
 - Consider how you might like to expand your MCP server. For example, you can add [MCP prompts](https://gofastmcp.com/servers/prompts) to provide reusable prompt templates, or [MCP resources](https://gofastmcp.com/servers/resources) to expose data directly. See the [FastMCP documentation](https://gofastmcp.com) for more options.
