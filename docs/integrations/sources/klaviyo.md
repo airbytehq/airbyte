@@ -121,7 +121,8 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.17.0  | 2026-02-19 | [73642](https://github.com/airbytehq/airbyte/pull/73642) | Add new analytics streams: Flow Series Reports and Campaign Values Reports |
+| 2.17.1 | 2026-03-03 | [73958](https://github.com/airbytehq/airbyte/pull/73958) | Update dependencies |
+| 2.17.0 | 2026-02-19 | [73642](https://github.com/airbytehq/airbyte/pull/73642) | Add new analytics streams: Flow Series Reports and Campaign Values Reports |
 | 2.16.15 | 2026-02-17 | [73540](https://github.com/airbytehq/airbyte/pull/73540) | Update dependencies |
 | 2.16.14 | 2026-02-10 | [73058](https://github.com/airbytehq/airbyte/pull/73058) | Update dependencies |
 | 2.16.13 | 2026-02-03 | [72750](https://github.com/airbytehq/airbyte/pull/72750) | Update dependencies |
