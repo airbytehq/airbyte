@@ -1,6 +1,6 @@
 ---
 sidebar_label: "LangChain"
-sidebar_position: 4
+sidebar_position: 2
 ---
 
 # Agent connector tutorial: LangChain
@@ -227,6 +227,6 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](https://github.com/airbytehq/airbyte-agent-connectors) to give your agent access to more services like Stripe, HubSpot, and Salesforce.
+- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](../../connectors/) to give your agent access to more services like Stripe, HubSpot, and Salesforce.
 
 - Consider how you might like to expand your agent's capabilities. For example, you might want to trigger effects like sending a Slack message or an email based on the agent's findings. You aren't limited to the capabilities of Airbyte's agent connectors. You can use other libraries and integrations to build an increasingly robust agent ecosystem.

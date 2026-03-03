@@ -7,8 +7,6 @@ sidebar_position: 1
 
 In this tutorial, you'll create a new Python project with uv, add a Pydantic AI agent, equip it to use one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
 
-Using the Python SDK is more time-consuming than the Connector MCP server, but affords you the most control over the context you send to your agent.
-
 ## Overview
 
 This tutorial is for AI engineers and other technical users who work with data and AI tools. You can complete it in about 15 minutes.
@@ -234,6 +232,6 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](https://github.com/airbytehq/airbyte-agent-connectors) to give your agent access to more services like Stripe, HubSpot, and Salesforce.
+- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](../../connectors) to give your agent access to more services like Stripe, HubSpot, and Salesforce.
 
 - Consider how you might like to expand your agent's capabilities. For example, you might want to trigger effects like sending a Slack message or an email based on the agent's findings. You aren't limited to the capabilities of Airbyte's agent connectors. You can use other libraries and integrations to build an increasingly robust agent ecosystem.
