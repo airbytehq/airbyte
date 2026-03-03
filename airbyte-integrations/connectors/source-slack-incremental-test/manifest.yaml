@@ -1,0 +1,307 @@
+version: 5.17.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - channels
+
+definitions:
+  streams:
+    # Channels stream - needed to get channel IDs
+    channels:
+      type: DeclarativeStream
+      name: channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conversations.list
+          request_parameters:
+            types: "public_channel"
+            limit: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - channels
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('response_metadata', {}).get('next_cursor', '') }}"
+            stop_condition: "{{ not response.get('response_metadata', {}).get('next_cursor', '') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+
+    # Parent stream: channel messages (incremental)
+    channel_messages:
+      type: DeclarativeStream
+      name: channel_messages
+      primary_key:
+        - channel_id
+        - ts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conversations.history
+          request_parameters:
+            limit: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('type') == 'message' and not record.get('subtype') }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('response_metadata', {}).get('next_cursor', '') }}"
+            stop_condition: "{{ not response.get('response_metadata', {}).get('next_cursor', '') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel
+              request_option:
+                type: RequestOption
+                field_name: channel
+                inject_into: request_parameter
+              stream:
+                $ref: "#/definitions/streams/channels"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: float_ts
+        cursor_datetime_formats:
+          - "%s.%f"
+        datetime_format: "%s.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: oldest
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - float_ts
+              value: "{{ record.ts|float }}"
+            - path:
+                - channel_id
+              value: "{{ stream_partition.channel }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_messages"
+
+    # Child stream: threads (with incremental_dependency)
+    threads:
+      type: DeclarativeStream
+      name: threads
+      primary_key:
+        - channel_id
+        - ts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conversations.replies
+          request_parameters:
+            limit: "1000"
+            channel: "{{ stream_partition.get('parent_slice', {}).get('channel', stream_partition.get('channel')) }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('response_metadata', {}).get('next_cursor', '') }}"
+            stop_condition: "{{ not response.get('response_metadata', {}).get('next_cursor', '') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/channel_messages"
+              # This is the KEY setting being tested:
+              # When true, should only iterate over NEW parent records on incremental sync
+              # Works on OSS, broken on Cloud
+              incremental_dependency: true
+              parent_key: ts
+              partition_field: float_ts
+              request_option:
+                type: RequestOption
+                field_name: ts
+                inject_into: request_parameter
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: float_ts
+        cursor_datetime_formats:
+          - "%s.%f"
+        datetime_format: "%s.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - float_ts
+              value: "{{ record.ts|float }}"
+            - path:
+                - channel_id
+              value: "{{ stream_partition.get('parent_slice', {}).get('channel', stream_partition.get('channel')) }}"
+            - path:
+                - parent_message_ts
+              value: "{{ stream_partition['float_ts'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/threads"
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://slack.com/api/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_token'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - error_message_contains: "invalid_auth"
+          action: FAIL
+          error_message: "Authentication failed. Please check your API token."
+        - http_codes: [429]
+          action: RETRY
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+        - http_codes: [500, 503]
+          action: RETRY
+
+streams:
+  - $ref: "#/definitions/streams/channels"
+  - $ref: "#/definitions/streams/channel_messages"
+  - $ref: "#/definitions/streams/threads"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - start_date
+    properties:
+      api_token:
+        type: string
+        title: API Token
+        description: Slack API token with permissions to read channels and messages
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: Start date for incremental sync
+        format: date-time
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2024-01-01T00:00:00Z"
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    channels: false
+    channel_messages: false
+    threads: false
+
+schemas:
+  channels:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: ["null", "string"]
+        description: Channel ID
+      name:
+        type: ["null", "string"]
+        description: Channel name
+
+  channel_messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      channel_id:
+        type: ["null", "string"]
+        description: Channel ID
+      ts:
+        type: ["null", "string"]
+        description: Message timestamp
+      float_ts:
+        type: ["null", "number"]
+        description: Message timestamp as float
+      text:
+        type: ["null", "string"]
+        description: Message text
+      user:
+        type: ["null", "string"]
+        description: User ID who posted the message
+
+  threads:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      channel_id:
+        type: ["null", "string"]
+        description: Channel ID
+      ts:
+        type: ["null", "string"]
+        description: Reply timestamp
+      float_ts:
+        type: ["null", "number"]
+        description: Reply timestamp as float
+      parent_message_ts:
+        type: ["null", "number"]
+        description: Parent message timestamp (which message this is a reply to)
+      text:
+        type: ["null", "string"]
+        description: Reply text
+      user:
+        type: ["null", "string"]
+        description: User ID who posted the reply
