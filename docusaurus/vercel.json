@@ -522,6 +522,36 @@
       "statusCode": 301
     },
     {
+      "source": "/integrations/enterprise-connectors/destination-salesforce",
+      "destination": "/integrations/enterprise-connectors/destination-salesforce-enterprise",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-salesforce-marketing-cloud",
+      "destination": "/integrations/enterprise-connectors/source-salesforce-marketing-cloud-enterprise",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-sap-hana",
+      "destination": "/integrations/enterprise-connectors/source-sap-hana-enterprise",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-service-now",
+      "destination": "/integrations/enterprise-connectors/source-service-now-enterprise",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-workday",
+      "destination": "/integrations/enterprise-connectors/source-workday-enterprise",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-workday-rest",
+      "destination": "/integrations/enterprise-connectors/source-workday-rest-enterprise",
+      "statusCode": 301
+    },
+    {
       "source": "/platform/next/embedded-setup",
       "destination": "/embedded",
       "statusCode": 301
