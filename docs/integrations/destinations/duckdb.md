@@ -63,6 +63,16 @@ This integration will be constrained by the speed at which your filesystem accep
 
 <!-- env:oss -->
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+
 ## Getting Started with Local Database Files
 
 The `destination_path` will always start with `/local` whether it is specified by the user or not. Any directory nesting within local will be mapped onto the local mount.
@@ -109,7 +119,6 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 This error may indicate that you are connecting with a DuckDB client version that is incompatible with your database version. For example, if you are using DuckDB Destination connector version 0.6.0 or later (which uses DuckDB 1.4.x), your database must be compatible with DuckDB 1.4.x. To resolve this, you'll need to manually upgrade your database or revert to a previous version of the DuckDB Destination connector.
 
 For information about migrating between different versions of DuckDB, please see the [DuckDB Migration Guide](./duckdb-migrations).
-
 
 
 ## Changelog
