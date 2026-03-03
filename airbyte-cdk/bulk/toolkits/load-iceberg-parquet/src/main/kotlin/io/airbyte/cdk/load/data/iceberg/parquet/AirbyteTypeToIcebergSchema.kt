@@ -67,7 +67,7 @@ class AirbyteTypeToIcebergSchema {
             is BooleanType -> Types.BooleanType.get()
             is DateType -> Types.DateType.get()
             is IntegerType -> Types.LongType.get()
-            is NumberType -> Types.DoubleType.get()
+            is NumberType -> Types.StringType.get()
             // Schemaless types are converted to string
             is ArrayTypeWithoutSchema,
             is ObjectTypeWithEmptySchema,
@@ -117,13 +117,8 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
                 icebergType,
             ),
         )
-        // Identifier fields must be primitive types, and cannot be float/double.
-        if (
-            isPrimaryKey &&
-                icebergType.isPrimitiveType &&
-                icebergType != Types.DoubleType.get() &&
-                icebergType != Types.FloatType.get()
-        ) {
+        // Identifier fields must be primitive types.
+        if (isPrimaryKey && icebergType.isPrimitiveType) {
             identifierFields.add(id)
         }
     }

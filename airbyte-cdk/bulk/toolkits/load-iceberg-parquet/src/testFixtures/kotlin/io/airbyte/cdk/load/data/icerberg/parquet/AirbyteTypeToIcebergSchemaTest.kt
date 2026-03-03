@@ -101,7 +101,7 @@ class AirbyteTypeToIcebergSchemaTest {
     @Test
     fun `convert handles NumberType`() {
         assertEquals(
-            Types.DoubleType.get(),
+            Types.StringType.get(),
             converter.convert(NumberType, stringifyObjects = false)
         )
     }

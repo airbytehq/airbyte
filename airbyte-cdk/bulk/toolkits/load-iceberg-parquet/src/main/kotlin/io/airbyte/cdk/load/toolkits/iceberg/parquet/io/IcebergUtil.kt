@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -145,6 +146,13 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                 is UnknownType ->
                     // serializing to string is a non-lossy operation, so don't generate a
                     // Meta.Change object.
+                    ChangedValue(
+                        StringValue(element.serializeToString()),
+                        changeDescription = null,
+                    )
+                // NumberType is stored as StringType in Iceberg to allow use as
+                // identifier fields (Iceberg disallows Double/Float identifiers).
+                NumberType ->
                     ChangedValue(
                         StringValue(element.serializeToString()),
                         changeDescription = null,
