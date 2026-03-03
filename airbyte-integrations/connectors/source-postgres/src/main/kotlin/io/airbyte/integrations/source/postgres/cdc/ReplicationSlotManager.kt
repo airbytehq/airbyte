@@ -44,7 +44,8 @@ class ReplicationSlotManager(
                 .withSlotName("\"${cdcConfig.replicationSlot}\"")
                 .withSlotOption("proto_version", 1)
                 .withSlotOption("publication_names", cdcConfig.publication)
-                .withAutomaticFlush(false)
+                // Needed for DBZ 3.3+ with PgJDBC 42.7.7+
+                //.withAutomaticFlush(false)
                 .apply {
                     val serverVersionStr = conn.parameterStatuses["server_version"]
                     if (serverVersionStr == null) {
