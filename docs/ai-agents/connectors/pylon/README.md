@@ -132,7 +132,7 @@ See the official [Pylon API reference](https://docs.usepylon.com/pylon-docs/deve
 
 ## Version information
 
-- **Package version:** 0.1.7
+- **Package version:** 0.1.8
 - **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** a735c402798904c84a7f4df7969653341d95b11d
+- **Generated with Connector SDK commit SHA:** 258f32e007ab8ea921446afe5d6a68a92d68fa51
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/pylon/CHANGELOG.md)
