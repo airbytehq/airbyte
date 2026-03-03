@@ -5,11 +5,24 @@
 This release upgrades the Google Ads API from Version 20 to Version 23. Key changes include:
 
 - New `segments.ad_network_type` support for Performance Max campaigns (channel-level reporting)
-- Removed `CallAd` and `CallAdInfo` support
+- Renamed deprecated video metrics to TrueView equivalents
+- Removed `CallAd` and `CallAdInfo` fields from `ad_group_ad` schema
+- Renamed campaign date fields to datetime equivalents
 - Removed `lead_form_only` field from `DemandGenMultiAssetAdInfo`
 - Removed aggregate asset performance label metrics
 
-For custom queries, the stream may fail if a field was removed during the API update.
+The following field renames and removals affect built-in stream schemas:
+
+| Stream | Previous field name | New field name |
+|---|---|---|
+| Various report streams | `metrics.video_views` | `metrics.video_trueview_views` |
+| Various report streams | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| Various report streams | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| campaign | `campaign.start_date` | `campaign.start_date_time` |
+| campaign | `campaign.end_date` | `campaign.end_date_time` |
+| ad_group_ad | `CallAd` / `CallAdInfo` fields | Removed |
+
+For custom queries, the stream may fail if a field was removed or renamed during the API update. Users with custom queries that reference any of the renamed or removed fields above must update their queries accordingly.
 You can use the [Query Builder](https://developers.google.com/google-ads/api/fields/v23/query_validator) to validate your custom queries.
 
 Users should:
@@ -43,7 +56,6 @@ This will reset the data in your destination and initiate a fresh sync.
 ```
 
 For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
-
 
 ## Upgrading to 4.0.0
 
