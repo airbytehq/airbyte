@@ -124,9 +124,9 @@ class SnowflakeSourceMetadataQuerier(
     /**
      * Lazily computes privilege-checked column metadata for all tables in a single batch.
      *
-     * Instead of checking privileges per-table on each [fields] call (N+1 pattern),
-     * this processes all tables upfront when first accessed. For sources with hundreds
-     * of streams, this avoids hundreds of sequential Snowflake queries during discovery.
+     * Instead of checking privileges per-table on each [fields] call (N+1 pattern), this processes
+     * all tables upfront when first accessed. For sources with hundreds of streams, this avoids
+     * hundreds of sequential Snowflake queries during discovery.
      */
     val memoizedPrivilegeCheckedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
         if (!base.config.checkPrivileges) {
@@ -136,9 +136,7 @@ class SnowflakeSourceMetadataQuerier(
         if (totalTables == 0) {
             return@lazy memoizedColumnMetadata
         }
-        log.info {
-            "Checking access privileges for $totalTables table(s) in batch."
-        }
+        log.info { "Checking access privileges for $totalTables table(s) in batch." }
         val result = mutableMapOf<TableName, List<ColumnMetadata>>()
         var checkedCount = 0
         for ((table, columnMetadata) in memoizedColumnMetadata) {
@@ -148,9 +146,7 @@ class SnowflakeSourceMetadataQuerier(
                 continue
             }
             if (checkedCount % 50 == 0 || checkedCount == totalTables) {
-                log.info {
-                    "Privilege check progress: $checkedCount / $totalTables tables."
-                }
+                log.info { "Privilege check progress: $checkedCount / $totalTables tables." }
             }
             val resultsFromSelectMany: List<ColumnMetadata>? =
                 queryColumnMetadata(
@@ -169,13 +165,12 @@ class SnowflakeSourceMetadataQuerier(
                         queryColumnMetadata(
                             base.conn,
                             selectLimit0(table, listOf(it.name)),
-                        ) ?: listOf()
+                        )
+                            ?: listOf()
                     }
             }
         }
-        log.info {
-            "Privilege check complete for $totalTables table(s)."
-        }
+        log.info { "Privilege check complete for $totalTables table(s)." }
         return@lazy result
     }
 
