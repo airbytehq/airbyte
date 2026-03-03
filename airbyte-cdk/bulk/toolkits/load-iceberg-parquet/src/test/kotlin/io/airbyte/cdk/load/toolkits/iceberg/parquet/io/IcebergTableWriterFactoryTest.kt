@@ -291,11 +291,7 @@ internal class IcebergTableWriterFactoryTest {
                 factory.create(
                     table = table,
                     generationId = generationIdSuffix,
-                    importType =
-                        Dedupe(
-                            primaryKey = listOf(listOf("id")),
-                            cursor = listOf("id")
-                        ),
+                    importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("id")),
                     tableSchema,
                 )
             }
