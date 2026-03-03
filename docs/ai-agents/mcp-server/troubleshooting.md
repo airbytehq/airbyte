@@ -18,7 +18,7 @@ Your agent can't discover the MCP server's tools.
 
 The MCP server fails to start or returns credential errors.
 
-- Verify your `.env` file is in the same directory where you run `adp` commands.
+- Verify your `.env` file is in the same directory where you run `agent-engine` commands.
 - Confirm the variable names in your `.env` file match the `${env.VAR_NAME}` placeholders in your YAML configuration.
 - Check that there are no extra spaces or characters in your `.env` values.
 
@@ -27,7 +27,7 @@ The MCP server fails to start or returns credential errors.
 Authentication failed.
 
 - **Open source mode**: Your API credential is invalid or expired. Generate a new credential from the third-party service and update your `.env` file.
-- **Hosted mode**: Your Agent Engine credentials are invalid. Run `uv run adp login <organization-id>` to re-enter your Client ID and Secret.
+- **Hosted mode**: Your Agent Engine credentials are invalid. Run `uv run agent-engine login <organization-id>` to re-enter your Client ID and Secret.
 
 ## HTTP 403 errors
 
