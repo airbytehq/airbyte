@@ -148,10 +148,10 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 </FieldAnchor>
 
 <FieldAnchor field="start_date">
-2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If the start date is not set, then all data will be replicated except for `Insight` data, which only pulls data for the last 37 months.
+2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If the start date is not set, then all data will be replicated for non-Insight streams, and the last 2 years of data will be replicated for Insight streams.
 
    :::info
-   Insight tables are only able to pull data from the last 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will not succeed for those streams.
+   The Facebook Insights API retains a maximum of 37 months of data. If your start date is older than 37 months, the connector automatically adjusts it to the oldest available date.
    :::
 
 </FieldAnchor>
@@ -426,7 +426,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.1 | 2026-03-03 | [74255](https://github.com/airbytehq/airbyte/pull/74255) | update upgradeDeadline for the v5.0.0 |
+| 5.1.1 | 2026-03-03 | [74255](https://github.com/airbytehq/airbyte/pull/74255) | Update upgrade deadline for v5.0.0 |
 | 5.1.0 | 2026-03-02 | [74134](https://github.com/airbytehq/airbyte/pull/74134) | Add opt-in `include_incrementality` config option to append `incrementality` to action attribution windows |
 | 5.0.1 | 2026-02-24 | [73281](https://github.com/airbytehq/airbyte/pull/73281) | fix(source-facebook-marketing): Fix Facebook Marketing UTC hardcoding with per-account timezone detection |
 | 5.0.0 | 2026-02-20 | [72779](https://github.com/airbytehq/airbyte/pull/72779) | Custom Insights streams now use level-based primary keys; removed deprecated `7d_view` and `28d_view` attribution window columns; removed `wish_bid` field. All users should refresh schema and reset affected streams. |
@@ -462,7 +462,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 3.4.4      | 2025-03-29 | [56467](https://github.com/airbytehq/airbyte/pull/56467) | Update dependencies                                                                                                                                                                                                                                                                               |
 | 3.4.3      | 2025-02-20 | [54171](https://github.com/airbytehq/airbyte/pull/54171) | Fix retry pattern                                                                                                                                                                                                                                                                                 |
 | 3.4.2      | 2025-03-22 | [55991](https://github.com/airbytehq/airbyte/pull/55991) | Update dependencies                                                                                                                                                                                                                                                                               |
-| 3.4.1      | 2024-03-14 | [55760](https://github.com/airbytehq/airbyte/pull/55760) | Fixed KeyError during discovery due to outdated breakdown schema                                                                                                                                                                                                                                  |
+| 3.4.1      | 2025-03-21 | [55760](https://github.com/airbytehq/airbyte/pull/55760) | Fixed KeyError during discovery due to outdated breakdown schema                                                                                                                                                                                                                                  |
 | 3.4.0      | 2024-12-24 | [50418](https://github.com/airbytehq/airbyte/pull/50418) | Add `learning_stage_info` field to `ad_sets` stream                                                                                                                                                                                                                                               |
 | 3.3.35     | 2025-03-08 | [55307](https://github.com/airbytehq/airbyte/pull/55307) | Update dependencies                                                                                                                                                                                                                                                                               |
 | 3.3.34     | 2025-03-01 | [54990](https://github.com/airbytehq/airbyte/pull/54990) | Update dependencies                                                                                                                                                                                                                                                                               |
