@@ -17,7 +17,7 @@ from airbyte_cdk.test.entrypoint_wrapper import discover
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
-from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
+from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, mock_v3_properties, read_from_stream
 from .utils import run_read
 
 
@@ -45,8 +45,11 @@ def test_check_connection_ok(requests_mock, config):
         },
     ]
 
+    properties = [{"name": "hs__migration_soft_delete", "type": "enumeration"}]
+
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    requests_mock.register_uri("GET", "/crm/v3/properties/contact", [{"json": {"results": properties}, "status_code": 200}])
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", {})
     connection_status = get_source(config).check(logger, config=config)
 
@@ -134,6 +137,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     ]
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
+    mock_v3_properties(requests_mock, "contact", [{"name": "hs__migration_soft_delete", "type": "enumeration"}])
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
     source = get_source(config)
     connection_status = source.check(logger=logger, config=config)
@@ -161,6 +165,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
+    mock_v3_properties(requests_mock, "contact", [{"name": "hs__migration_soft_delete", "type": "enumeration"}])
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
     source = get_source(config)
     connection_status = source.check(logger=logger, config=config)
@@ -368,6 +373,14 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     test_stream_url = "https://api.hubapi.com/crm/v3/objects/company/search"
     requests_mock.register_uri("POST", test_stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
+    mock_v3_properties(
+        requests_mock,
+        "company",
+        [
+            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            for property_name in fake_properties_list
+        ],
+    )
     requests_mock.register_uri(
         "POST",
         "/crm/v4/associations/company/contacts/batch/read",
