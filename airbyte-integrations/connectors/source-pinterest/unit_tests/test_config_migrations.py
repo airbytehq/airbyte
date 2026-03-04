@@ -286,9 +286,7 @@ class TestManifestConfigMigrationExists:
         with open(manifest_path, "r") as f:
             manifest = yaml.safe_load(f)
 
-        assert "config_normalization_rules" in manifest["spec"], (
-            "manifest.yaml spec is missing config_normalization_rules"
-        )
+        assert "config_normalization_rules" in manifest["spec"], "manifest.yaml spec is missing config_normalization_rules"
 
     def test_manifest_has_window_days_migration(self):
         """The config_normalization_rules should contain a migration for window_days fields."""
@@ -311,13 +309,11 @@ class TestManifestConfigMigrationExists:
         with open(manifest_path, "r") as f:
             manifest = yaml.safe_load(f)
 
-        custom_report_props = (
-            manifest["spec"]["connection_specification"]["properties"]["custom_reports"]["items"]["properties"]
-        )
+        custom_report_props = manifest["spec"]["connection_specification"]["properties"]["custom_reports"]["items"]["properties"]
 
         for field_name in ("click_window_days", "engagement_window_days", "view_window_days"):
             field = custom_report_props[field_name]
             assert field["type"] == "integer", f"{field_name} should have type 'integer'"
-            assert isinstance(field["default"], int), (
-                f"{field_name} default should be an integer, got {type(field['default'])}: {field['default']}"
-            )
+            assert isinstance(
+                field["default"], int
+            ), f"{field_name} default should be an integer, got {type(field['default'])}: {field['default']}"
