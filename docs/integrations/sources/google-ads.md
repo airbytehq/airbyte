@@ -339,6 +339,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.0 | 2026-03-04 | [73722](https://github.com/airbytehq/airbyte/pull/73722) | Upgrade Google Ads API from v20 to v23 with field renames, removals, and Performance Max ad network type support |
 | 4.1.6 | 2026-02-18 | [73636](https://github.com/airbytehq/airbyte/pull/73636) | Promoting release candidate 4.1.6-rc.1 to a main version. |
 | 4.1.6-rc.1 | 2026-02-16 | [72953](https://github.com/airbytehq/airbyte/pull/72953) | Add HTTPAPIBudget and configurable concurrency level |
 | 4.1.5 | 2026-02-16 | [73363](https://github.com/airbytehq/airbyte/pull/73363) | Promoting release candidate 4.1.5-rc.2 to a main version. |
