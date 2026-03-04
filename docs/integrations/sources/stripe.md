@@ -105,7 +105,7 @@ The Stripe source connector supports the following streams:
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
-- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -124,13 +124,13 @@ The Stripe source connector supports the following streams:
 - [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
 - [Setup Intents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Shipping Rates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
-- [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+- [Subscription Items](https://stripe.com/docs/api/subscription_items/list) \(Incremental\)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
-- [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+- [Transactions](https://stripe.com/docs/api/issuing/transactions/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
-- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
+- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list) \(Incremental\)
 - [Usage Records](https://stripe.com/docs/api/usage_records)
 
 ### Entity-Relationship Diagram (ERD)
@@ -209,11 +209,13 @@ Since the Stripe API does not allow querying objects which were updated since th
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
 
 - `Balance Transactions`
+- `Customer Balance Transactions`
 - `Events`
 - `File Links`
 - `Files`
 - `Setup Attempts`
 - `Shipping Rates`
+- `Transfer Reversals`
 
 On the other hand, the following streams use the `updated` field value as a cursor:
 
@@ -223,6 +225,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 
 :::
 
+- `Accounts`
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
@@ -234,7 +237,6 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Checkout Session Line Items` (cursor field is `checkout_session_updated`)
 - `Coupons`
 - `Credit Notes`
-- `Customer Balance Transactions`
 - `Customers`
 - `Disputes`
 - `Early Fraud Warnings`
@@ -244,6 +246,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Invoice Line Items`
 - `Invoices`
 - `Payment Intents`
+- `Payment Methods`
 - `Payouts`
 - `Payout Balance Transactions`
 - `Promotion Codes`
@@ -291,6 +294,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.15.21-rc.4 | 2026-03-04 | [74290](https://github.com/airbytehq/airbyte/pull/74290) | Lower default concurrency from 25 to 10 and increase default data request time increment from 30 to 365 days to reduce rate limiting |
 | 5.15.21-rc.3 | 2026-03-03 | [74259](https://github.com/airbytehq/airbyte/pull/74259) | Fix cursor age validation to clear state before constructing full refresh stream, ensuring true full refresh from start_date |
 | 5.15.21-rc.2 | 2026-02-25 | [74051](https://github.com/airbytehq/airbyte/pull/74051) | Fix sync failure when unselected parent streams have stale cursor state during cursor age validation |
 | 5.15.21-rc.1 | 2026-02-25 | [73646](https://github.com/airbytehq/airbyte/pull/73646) | Add cursor age validation for StateDelegatingStream streams to prevent data loss when initial sync fails mid-way |
