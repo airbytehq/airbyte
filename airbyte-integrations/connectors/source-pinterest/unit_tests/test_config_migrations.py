@@ -13,11 +13,9 @@ The ConfigMigration in manifest.yaml should automatically convert these array va
 back to integers on config load.
 """
 
-import copy
 from pathlib import Path
 from typing import Any, Dict, List
 
-import pytest
 import yaml
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -55,12 +53,12 @@ def _evaluate_migration(config: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     # Check if the condition evaluates to true
     if condition:
-        condition_result = interpolation.eval(condition, "condition", config=config)
+        condition_result = interpolation.eval(condition, config)
         if not condition_result:
             # Migration should not apply; return original custom_reports
             return config.get("custom_reports", [])
 
-    result = interpolation.eval(template, "migration", config=config)
+    result = interpolation.eval(template, config)
     return result
 
 
