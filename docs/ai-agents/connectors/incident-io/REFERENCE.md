@@ -179,7 +179,7 @@ Search and filter incidents records powered by Airbyte's data sync. This often p
 
 ```python
 await incident_io.incidents.search(
-    query={"filter": {"eq": {"call_url": "<str>"}}}
+    query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
 
@@ -193,7 +193,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "incidents",
     "action": "search",
     "params": {
-        "query": {"filter": {"eq": {"call_url": "<str>"}}}
+        "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
 }'
 ```
@@ -213,7 +213,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `call_url` | `string` | URL of the call associated with the incident |
 | `created_at` | `string` | When the incident was created |
 | `creator` | `object` | The user who created the incident |
 | `custom_field_entries` | `array` | Custom field values for the incident |
@@ -250,7 +249,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.has_more` | `boolean` | Whether additional pages are available |
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
-| `data[].call_url` | `string` | URL of the call associated with the incident |
 | `data[].created_at` | `string` | When the incident was created |
 | `data[].creator` | `object` | The user who created the incident |
 | `data[].custom_field_entries` | `array` | Custom field values for the incident |
@@ -1747,7 +1745,7 @@ Search and filter custom fields records powered by Airbyte's data sync. This oft
 
 ```python
 await incident_io.custom_fields.search(
-    query={"filter": {"eq": {"catalog_type_id": "<str>"}}}
+    query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
 
@@ -1761,7 +1759,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "custom_fields",
     "action": "search",
     "params": {
-        "query": {"filter": {"eq": {"catalog_type_id": "<str>"}}}
+        "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
 }'
 ```
@@ -1781,7 +1779,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `catalog_type_id` | `string` | ID of the catalog type associated with this custom field |
 | `created_at` | `string` | When the custom field was created |
 | `description` | `string` | Description of the custom field |
 | `field_type` | `string` | Type of field |
@@ -1799,7 +1796,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.has_more` | `boolean` | Whether additional pages are available |
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
-| `data[].catalog_type_id` | `string` | ID of the catalog type associated with this custom field |
 | `data[].created_at` | `string` | When the custom field was created |
 | `data[].description` | `string` | Description of the custom field |
 | `data[].field_type` | `string` | Type of field |
@@ -2180,10 +2176,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `config` | `object` | Schedule configuration with rotations |
 | `created_at` | `string` | When the schedule was created |
 | `current_shifts` | `array` | Currently active shifts |
-| `holidays_public_config` | `object` | Public holiday configuration for the schedule |
 | `id` | `string` | Unique identifier for the schedule |
 | `name` | `string` | Name of the schedule |
-| `team_ids` | `array` | IDs of teams associated with this schedule |
 | `timezone` | `string` | Timezone for the schedule |
 | `updated_at` | `string` | When the schedule was last updated |
 
@@ -2201,10 +2195,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].config` | `object` | Schedule configuration with rotations |
 | `data[].created_at` | `string` | When the schedule was created |
 | `data[].current_shifts` | `array` | Currently active shifts |
-| `data[].holidays_public_config` | `object` | Public holiday configuration for the schedule |
 | `data[].id` | `string` | Unique identifier for the schedule |
 | `data[].name` | `string` | Name of the schedule |
-| `data[].team_ids` | `array` | IDs of teams associated with this schedule |
 | `data[].timezone` | `string` | Timezone for the schedule |
 | `data[].updated_at` | `string` | When the schedule was last updated |
 
