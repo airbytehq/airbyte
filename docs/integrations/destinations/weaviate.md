@@ -25,15 +25,16 @@ You'll need the following information to configure the destination:
 - **Weaviate cluster URL** - The URL of the Weaviate cluster to load data into. Airbyte Cloud only supports connecting to your Weaviate Instance instance with TLS encryption.
 - **Weaviate credentials** - The credentials for your Weaviate instance (either API token or username/password)
 
-## Features
+## Supported sync modes
 
-| Feature                        | Supported?\(Yes/No\) | Notes                                                    |
-| :----------------------------- | :------------------- | :------------------------------------------------------- |
-| Full Refresh Sync              | Yes                  |                                                          |
-| Incremental - Append Sync      | Yes                  |                                                          |
-| Incremental - Append + Deduped | Yes                  |                                                          |
-| Namespaces                     | No                   |                                                          |
-| Provide vector                 | Yes                  | Either from field are calculated during the load process |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
 ## Data type mapping
 
