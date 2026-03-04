@@ -4422,6 +4422,34 @@ spec:
           client_secret:
             type: string
             path_in_connector_config: ["credentials", "client_secret"]
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: >-
+          Migrate custom_reports window_days fields from array [30] to integer 30.
+          Prior versions incorrectly declared default: [30] (array) for engagement_window_days
+          and view_window_days, so saved configs may contain array values instead of integers.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["custom_reports"]
+                value: >-
+                  {%- set migrated_reports = [] -%}
+                  {%- for report in config.get('custom_reports', []) -%}
+                    {%- set new_report = {} -%}
+                    {%- for key, val in report.items() -%}
+                      {%- if key in ('click_window_days', 'engagement_window_days', 'view_window_days') and val is iterable and val is not string and val | length > 0 -%}
+                        {%- set _ = new_report.update({key: val[0]}) -%}
+                      {%- else -%}
+                        {%- set _ = new_report.update({key: val}) -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    {%- set _ = migrated_reports.append(new_report) -%}
+                  {%- endfor -%}
+                  {{- migrated_reports -}}
+            condition: "{{ config.get('custom_reports', False) }}"
 
 streams:
   # Full refresh streams
