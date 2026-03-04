@@ -24,14 +24,16 @@ You'll need the following information to configure the destination:
 - **Pinecone Environment** - The name of the Pinecone environment to use
 - **Pinecone Index name** - The name of the Pinecone index to load data into
 
-## Features
+## Supported sync modes
 
-| Feature                        | Supported? | Notes                                                                                                             |
-| :----------------------------- | :--------- | :---------------------------------------------------------------------------------------------------------------- |
-| Full Refresh Sync              | Yes        |                                                                                                                   |
-| Incremental - Append Sync      | Yes        |                                                                                                                   |
-| Incremental - Append + Deduped | Yes        | Deleting records via CDC is not supported (see issue [#29827](https://github.com/airbytehq/airbyte/issues/29827)) |
-| Namespaces                     | Yes        |                                                                                                                   |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Data type mapping
 

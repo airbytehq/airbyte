@@ -43,14 +43,18 @@ Here are the destination objects and their respective operations that are curren
 - [Person](https://docs.customer.io/journeys/create-update-person/): Identifies a person and assigns traits to them.
 - [Person Events](https://docs.customer.io/journeys/events/): Track an event for a user that is known or not by Customer.io. Required fields: `person_email`, `event_name`. Optional fields: `event_id` (for event deduplication), `timestamp`.
 
-### Features
+### Supported sync modes
 
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync            | Yes        |
-| Incremental - Append Sync    | Yes        |
-| Incremental - Dedupe Sync    | Yes        |
-| Namespaces                   | Yes        |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | No |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
+
+This is a [data activation](/platform/move-data/elt-data-activation) destination. In addition to the Airbyte sync modes above, Customer.io supports identify (person) and track (event) operations configured per stream.
 
 ### Restrictions
 
