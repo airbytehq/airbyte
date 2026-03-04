@@ -24,19 +24,21 @@ objects containing 4 fields:
 - `_airbyte_data`: a json blob representing with the extracted data.
 - `sync_time`: a timestamp representing when the sync up task be triggered.
 
-### Features
-
-| Feature                        | Support | Notes                                                                                   |
-| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured DynamoDB table. |
-| Incremental - Append Sync      |   ✅    |                                                                                         |
-| Incremental - Append + Deduped |   ❌    |                                                                                         |
-| Namespaces                     |   ✅    | Namespace will be used as part of the table name.                                       |
-
 ### Performance considerations
 
 This connector by default uses 10 capacity units for both Read and Write in DynamoDB tables. Please
 provision more capacity units in the DynamoDB console when there are performance constraints.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 

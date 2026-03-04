@@ -5,16 +5,6 @@
 The Starburst Galaxy destination syncs data to Starburst Galaxy [great lake catalogs](https://docs.starburst.io/starburst-galaxy/sql/great-lakes.html)
 in [Apache Iceberg](https://iceberg.apache.org/) table format. Each stream is written to its own Iceberg table.
 
-## Features
-
-| Feature          | Supported | Notes                                                                               |
-| :--------------- | :-------: | :---------------------------------------------------------------------------------- |
-| Overwrite Sync   |    ✅     | **Warning**: this mode deletes all previously synced data in the destination table. |
-| Append Sync      |    ✅     |                                                                                     |
-| Append + Deduped |    ❌     |                                                                                     |
-| Namespaces       |    ✅     |                                                                                     |
-| SSL              |    ✅     | SSL is enabled.                                                                     |
-
 ## Data storage
 
 Starburst Galaxy supports various [object storages](https://docs.starburst.io/starburst-galaxy/catalogs/index.html#object-storage);
@@ -84,6 +74,17 @@ Learn more about [how source data is converted to Avro](https://docs.airbyte.io/
 ### Datatype support
 
 Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.io/latest/connector/iceberg.html#iceberg-to-trino-type-mapping).
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 

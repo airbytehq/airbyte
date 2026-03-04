@@ -7,7 +7,7 @@ See your data on the [Convex dashboard](https://dashboard.convex.dev/).
 
 ## Overview
 
-The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Dedup. Note that for Incremental Dedup, Convex does not store a history table like some other destinations that use DBT, but Convex does store a deduped snapshot.
+The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Dedup. Note that for Incremental Dedup, Convex does not store a history table like some other destinations that use DBT, but Convex does store a deduped snapshot. Convex also supports Change Data Capture (CDC) and replicating incremental deletes.
 
 ### Output schema
 
@@ -15,21 +15,21 @@ Each stream will be output into a table in Convex. Convex's table naming rules a
 
 Each record is a [document](https://docs.convex.dev/using/types) in Convex and is assigned `_id` and `_creationTime` fields during sync.
 
-### Features
-
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync             | Yes        |
-| Incremental - Append Sync     | Yes        |
-| Incremental - Dedupe Sync     | Yes        |
-| Replicate Incremental Deletes | Yes        |
-| Change Data Capture           | Yes        |
-| Namespaces                    | Yes        |
-
 ### Performance considerations
 
 Take care to use the appropriate sync method and frequency for the quantity of data streaming from the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental modes when they are supported and especially for large tables.
 If you see performance issues, please reach via email to [Convex support](mailto:support@convex.dev) or on [Discord](https://convex.dev/community).
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 

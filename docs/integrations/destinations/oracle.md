@@ -1,17 +1,5 @@
 # Oracle DB
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes                                                                 |
-| :----------------------------- | :------------------- | :-------------------------------------------------------------------- |
-| Full Refresh Sync              | Yes                  |                                                                       |
-| Incremental - Append Sync      | Yes                  |                                                                       |
-| Incremental - Append + Deduped | Yes                  |                                                                       |
-| Namespaces                     | Yes                  |                                                                       |
-| Basic Normalization            | Yes                  | Doesn't support for nested json yet                                   |
-| SSH Tunnel Connection          | Yes                  |                                                                       |
-| Encryption                     | Yes                  | Support Native Network Encryption (NNE) as well as TLS using SSL cert |
-
 ## Output Schema
 
 By default, each stream will be output into its own table in Oracle. Each table will contain 3 columns:
@@ -21,6 +9,17 @@ By default, each stream will be output into its own table in Oracle. Each table 
 - `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
 
 Enabling normalization will also create normalized, strongly typed tables.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting Started \(Airbyte Cloud\)
 

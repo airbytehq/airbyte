@@ -29,22 +29,21 @@ This section should contain a table mapping each of the connector's data types t
 | numeric          | integer      | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)  |
 | numeric          | number       | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)  |
 
-### Features
-
-This section should contain a table with the following format:
-
-| Feature                       | Supported?(Yes/No) | Notes |
-| :---------------------------- | :----------------- | :---- |
-| Full Refresh Sync             | yes                |       |
-| Incremental Sync              | yes                |       |
-| Replicate Incremental Deletes | no                 |       |
-| SSL connection                | yes                |       |
-| SSH Tunnel Support            | yes                |       |
-
 ### Performance considerations
 
 Batch/bulk writes are performed. Large records may impact performance.  
 The connector should be enhanced to support variable batch sizes.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 

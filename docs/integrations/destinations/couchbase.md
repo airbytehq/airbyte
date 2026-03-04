@@ -18,21 +18,23 @@ Each stream will be output into a collection in Couchbase. The connector follows
   * `stream`: The source stream name
   * `data`: The actual record data
 
-### Features
-
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync            | Yes        |
-| Incremental - Append Sync    | Yes        |
-| Incremental - Dedupe Sync    | Yes        |
-| Namespaces                   | Yes        |
-
 ### Performance considerations
 
 * The connector uses batch operations for better performance
 * Primary indexes are automatically created for each collection
 * For large datasets, consider using incremental sync modes
 * Adjust the batch size if needed (default: 1000 documents)
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 

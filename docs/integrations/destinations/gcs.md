@@ -6,6 +6,17 @@ This destination writes data to GCS bucket.
 
 The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written to its own directory under the bucket.
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
+
 ## Getting started
 
 ### Requirements
@@ -34,17 +45,6 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
   - **Secret Access Key**
     - Corresponding key to the above access ID.
 - Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
-
-### Sync mode support
-
-#### Features
-
-| Feature                        | Support | Notes                                                                                                                                                                                                    |
-| :----------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                     |
-| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/platform/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
-| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                          |
-| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                              |
 
 ## Configuration
 
@@ -97,8 +97,6 @@ Each stream will be outputted to its dedicated directory according to the config
 
 - Under Full Refresh Sync mode, old output files will be purged before new files are created.
 - Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
-
-
 
 ### Avro
 
