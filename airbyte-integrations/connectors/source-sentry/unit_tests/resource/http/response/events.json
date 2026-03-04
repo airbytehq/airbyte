@@ -1,0 +1,20 @@
+[
+  {
+    "id": "abc123def456",
+    "title": "TypeError: Cannot read property 'foo' of undefined",
+    "dateCreated": "2024-01-15T10:00:00Z",
+    "platform": "javascript",
+    "message": "Cannot read property 'foo' of undefined",
+    "type": "error",
+    "groupID": "group123"
+  },
+  {
+    "id": "xyz789ghi012",
+    "title": "Error: Network timeout",
+    "dateCreated": "2024-01-16T12:30:00Z",
+    "platform": "python",
+    "message": "Network request timed out after 30s",
+    "type": "error",
+    "groupID": "group456"
+  }
+]

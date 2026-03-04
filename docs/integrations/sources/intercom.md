@@ -70,22 +70,23 @@ The Intercom source connector supports the following [sync modes](https://docs.a
 
 The Intercom source connector supports the following streams:
 
-- [Admins](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/admins/listadmins) \(Full table\)
-- [Companies](https://developers.intercom.com/intercom-api-reference/reference/listallcompanies) \(Incremental\)
-  - [Company Segments](https://developers.intercom.com/intercom-api-reference/reference/listattachedsegmentsforcompanies) \(Incremental\)
-- [Conversations](https://developers.intercom.com/docs/references/2.9/rest-api/api.intercom.io/conversations/listconversations) \(Incremental\)
-  - [Conversation Parts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
-- [Data Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
-  - [Customer Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
-  - [Company Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
-- [Contacts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/contacts/listcontacts) \(Incremental\)
-- [Segments](https://developers.intercom.com/intercom-api-reference/reference/listsegments) \(Incremental\)
-- [Tags](https://developers.intercom.com/intercom-api-reference/reference/listtags) \(Full table\)
-- [Teams](https://developers.intercom.com/intercom-api-reference/reference/listteams) \(Full table\)
+- [Activity Logs](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/admins/listactivitylogs) \(Incremental\)
+- [Admins](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/admins/listadmins) \(Full table\)
+- [Companies](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies) \(Incremental\)
+  - [Company Segments](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/listattachedsegmentsforcompanies) \(Incremental\)
+- [Company Attributes](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/data-attributes/listdataattributes) \(Full table\)
+- [Contact Attributes](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/data-attributes/listdataattributes) \(Full table\)
+- [Contacts](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/searchcontacts) \(Incremental\)
+- [Conversations](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/searchconversations) \(Incremental\)
+  - [Conversation Parts](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
+- [Segments](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/segments/listsegments) \(Incremental\)
+- [Tags](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tags/listtags) \(Full table\)
+- [Teams](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/teams/listteams) \(Full table\)
+- [Tickets](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tickets/searchtickets) \(Incremental\)
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/intercom-api-reference/reference/rate-limiting).
+The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting).
 
 The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
@@ -96,21 +97,26 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.14     | 2025-11-13 | [69306](https://github.com/airbytehq/airbyte/pull/69306)     | Update custom IntercomScrollRetriever to not use deprecated stream_state parameter                                                   |
-| 0.13.13     | 2025-10-29 | [68767](https://github.com/airbytehq/airbyte/pull/68767) | Update dependencies                                                                                                                  |
-| 0.13.12     | 2025-10-21 | [68477](https://github.com/airbytehq/airbyte/pull/68477) | Update dependencies                                                                                                                  |
-| 0.13.11     | 2025-10-14 | [67933](https://github.com/airbytehq/airbyte/pull/67933) | Update dependencies                                                                                                                  |
-| 0.13.10     | 2025-10-07 | [67364](https://github.com/airbytehq/airbyte/pull/67364) | Update dependencies                                                                                                                  |
-| 0.13.9      | 2025-10-06 | [67104](https://github.com/airbytehq/airbyte/pull/67104) | Increase Heartbeat Timeout to Account for cursor based streams with client side incremental and large record counts for a given day. |
-| 0.13.8      | 2025-09-30 | [66789](https://github.com/airbytehq/airbyte/pull/66789) | Update dependencies                                                                                                                  |
-| 0.13.7      | 2025-09-25 | [66665](https://github.com/airbytehq/airbyte/pull/66665) | Fix Typo on Error Message                                                                                                            |
-| 0.13.6      | 2025-09-09 | [66056](https://github.com/airbytehq/airbyte/pull/66056) | Update dependencies                                                                                                                  |
-| 0.13.5      | 2025-08-23 | [65374](https://github.com/airbytehq/airbyte/pull/65374) | Update dependencies                                                                                                                  |
-| 0.13.4      | 2025-08-09 | [63523](https://github.com/airbytehq/airbyte/pull/63523) | Update dependencies                                                                                                                  |
-| 0.13.3      | 2025-07-12 | [63155](https://github.com/airbytehq/airbyte/pull/63155) | Update dependencies                                                                                                                  |
-| 0.13.2      | 2025-07-05 | [62592](https://github.com/airbytehq/airbyte/pull/62592) | Update dependencies                                                                                                                  |
-| 0.13.1      | 2025-06-28 | [54308](https://github.com/airbytehq/airbyte/pull/54308) | Update dependencies                                                                                                                  |
-| 0.13.0      | 2025-06-25 | [62069](https://github.com/airbytehq/airbyte/pull/62069) | Promoting release candidate 0.13.0-rc.5 to a main version.                                                                           |
+| 0.13.16-rc.4 | 2026-03-03 | [74143](https://github.com/airbytehq/airbyte/pull/74143) | fix(source-intercom): fix UnboundLocalError in rate limiter when response is not available |
+| 0.13.16-rc.3 | 2026-03-03| [72955](https://github.com/airbytehq/airbyte/pull/72955) | fix(source-intercom): add step size and end_datetime to contacts, conversations, and activity_logs streams |
+| 0.13.16-rc.2 | 2026-02-18 | [73635](https://github.com/airbytehq/airbyte/pull/73635) | fix(source-intercom): bump heartbeat timeout from 6h to 9h |
+| 0.13.16-rc.1 | 2025-12-11 | [70335](https://github.com/airbytehq/airbyte/pull/70335) | Fix pagination on companies stream |
+| 0.13.15 | 2025-11-25 | [69563](https://github.com/airbytehq/airbyte/pull/69563) | Update dependencies |
+| 0.13.14 | 2025-11-19 | [69306](https://github.com/airbytehq/airbyte/pull/69306) | Update custom IntercomScrollRetriever to not use deprecated stream_state parameter |
+| 0.13.13 | 2025-10-29 | [68767](https://github.com/airbytehq/airbyte/pull/68767) | Update dependencies |
+| 0.13.12 | 2025-10-21 | [68477](https://github.com/airbytehq/airbyte/pull/68477) | Update dependencies |
+| 0.13.11 | 2025-10-14 | [67933](https://github.com/airbytehq/airbyte/pull/67933) | Update dependencies |
+| 0.13.10 | 2025-10-07 | [67364](https://github.com/airbytehq/airbyte/pull/67364) | Update dependencies |
+| 0.13.9 | 2025-10-06 | [67104](https://github.com/airbytehq/airbyte/pull/67104) | Increase Heartbeat Timeout to Account for cursor based streams with client side incremental and large record counts for a given day. |
+| 0.13.8 | 2025-09-30 | [66789](https://github.com/airbytehq/airbyte/pull/66789) | Update dependencies |
+| 0.13.7 | 2025-09-26 | [66665](https://github.com/airbytehq/airbyte/pull/66665) | Fix Typo on Error Message |
+| 0.13.6 | 2025-09-09 | [66056](https://github.com/airbytehq/airbyte/pull/66056) | Update dependencies |
+| 0.13.5 | 2025-08-23 | [65374](https://github.com/airbytehq/airbyte/pull/65374) | Update dependencies |
+| 0.13.4 | 2025-08-09 | [63523](https://github.com/airbytehq/airbyte/pull/63523) | Update dependencies |
+| 0.13.3 | 2025-07-12 | [63155](https://github.com/airbytehq/airbyte/pull/63155) | Update dependencies |
+| 0.13.2 | 2025-07-05 | [62592](https://github.com/airbytehq/airbyte/pull/62592) | Update dependencies |
+| 0.13.1 | 2025-06-28 | [54308](https://github.com/airbytehq/airbyte/pull/54308) | Update dependencies |
+| 0.13.0 | 2025-06-25 | [62069](https://github.com/airbytehq/airbyte/pull/62069) | Promoting release candidate 0.13.0-rc.5 to a main version. |
 | 0.13.0-rc.5 | 2025-06-11 | [61506](https://github.com/airbytehq/airbyte/pull/61506) | Add better error handling for companies stream, update SDM, & add advanced_auth                                                      |
 | 0.13.0-rc.4 | 2025-05-15 | [60235](https://github.com/airbytehq/airbyte/pull/60235) | Add required custom paginator for 'companies' stream & Fix 500s on `Tickets` stream.                                                 |
 | 0.13.0-rc.3 | 2025-05-09 | [55829](https://github.com/airbytehq/airbyte/pull/55829) | Fix pagination for `conversations`, `tickets`, `companies` & `contacts` and cleanup manifest                                         |

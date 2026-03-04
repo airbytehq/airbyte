@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -106,7 +106,9 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   }
 
   private void initAndStartJdbcContainer() {
-    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:24.8")
+        .withEnv("CLICKHOUSE_USER", "default")
+        .withEnv("CLICKHOUSE_PASSWORD", "test")
         .withNetwork(network)
         .waitingFor(Wait.forHttp("/ping").forPort(8123)
             .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));

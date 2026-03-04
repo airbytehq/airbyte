@@ -54,19 +54,24 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
-- [Attachments](https://developers.asana.com/docs/attachments)
-- [Custom fields](https://developers.asana.com/docs/custom-fields)
-- [Projects](https://developers.asana.com/docs/projects)
-- [Portfolios](https://developers.asana.com/docs/portfolios)
-- [PortfolioMemberships](https://developers.asana.com/reference/portfolio-memberships)
-- [Sections](https://developers.asana.com/docs/sections)
-- [Stories](https://developers.asana.com/docs/stories)
-- [Tags](https://developers.asana.com/docs/tags)
-- [Tasks](https://developers.asana.com/docs/tasks)
-- [Teams](https://developers.asana.com/docs/teams)
-- [Team Memberships](https://developers.asana.com/docs/team-memberships)
-- [Users](https://developers.asana.com/docs/users)
-- [Workspaces](https://developers.asana.com/docs/workspaces)
+- [Attachments](https://developers.asana.com/reference/attachments)
+- [Custom fields](https://developers.asana.com/reference/custom-fields)
+- [Events](https://developers.asana.com/reference/events)
+- [Organization Exports](https://developers.asana.com/reference/organization-exports)
+- [Portfolio Items](https://developers.asana.com/reference/getitemsforportfolio)
+- [Portfolio Memberships](https://developers.asana.com/reference/portfolio-memberships)
+- [Portfolios](https://developers.asana.com/reference/portfolios)
+- [Projects](https://developers.asana.com/reference/projects)
+- [Sections](https://developers.asana.com/reference/sections)
+- [Sections Compact](https://developers.asana.com/reference/sections)
+- [Stories](https://developers.asana.com/reference/stories)
+- [Stories Compact](https://developers.asana.com/reference/stories)
+- [Tags](https://developers.asana.com/reference/tags)
+- [Tasks](https://developers.asana.com/reference/tasks)
+- [Team Memberships](https://developers.asana.com/reference/team-memberships)
+- [Teams](https://developers.asana.com/reference/teams)
+- [Users](https://developers.asana.com/reference/users)
+- [Workspaces](https://developers.asana.com/reference/workspaces)
 
 ## Data type map
 
@@ -106,6 +111,7 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 1.5.1 | 2025-12-09 | [70445](https://github.com/airbytehq/airbyte/pull/70445) | Fix `organization_export_ids` spec to properly define array items type |
 | 1.5.0 | 2025-05-02 | [59224](https://github.com/airbytehq/airbyte/pull/59224) | Adds `portfolio_items` stream to sync items (such as projects and portfolios) in each portfolio ([API reference](https://developers.asana.com/reference/getitemsforportfolio)) |
 | 1.4.0 | 2025-04-25 | [58594](https://github.com/airbytehq/airbyte/pull/58594) | Adds `actual_time_minute` field to the `task` stream |
 | 1.3.10 | 2025-02-15 | [53891](https://github.com/airbytehq/airbyte/pull/53891) | Update dependencies |

@@ -1,0 +1,41 @@
+[
+  {
+    "id": "issue007",
+    "title": "New error from Jan 17",
+    "status": "unresolved",
+    "count": "40",
+    "userCount": 15,
+    "project": {
+      "id": "proj123",
+      "name": "test-project"
+    },
+    "lastSeen": "2024-01-17T10:00:00Z",
+    "firstSeen": "2024-01-17T08:00:00Z"
+  },
+  {
+    "id": "issue008",
+    "title": "At state boundary from Jan 16",
+    "status": "unresolved",
+    "count": "30",
+    "userCount": 12,
+    "project": {
+      "id": "proj123",
+      "name": "test-project"
+    },
+    "lastSeen": "2024-01-16T09:00:00Z",
+    "firstSeen": "2024-01-16T08:00:00Z"
+  },
+  {
+    "id": "issue009",
+    "title": "Old error from Jan 14",
+    "status": "resolved",
+    "count": "20",
+    "userCount": 8,
+    "project": {
+      "id": "proj123",
+      "name": "test-project"
+    },
+    "lastSeen": "2024-01-14T15:00:00Z",
+    "firstSeen": "2024-01-14T10:00:00Z"
+  }
+]

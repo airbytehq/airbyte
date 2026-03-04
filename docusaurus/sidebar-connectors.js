@@ -315,6 +315,12 @@ const destinationPostgres = {
   items: [
     {
       type: "doc",
+      label: "Migration Guide",
+      id: "destinations/postgres-migrations",
+      key: "destinations-postgres-migrations",
+    },
+    {
+      type: "doc",
       label: "Troubleshooting",
       id: "destinations/postgres/postgres-troubleshooting",
       key: "destinations-postgres-troubleshooting",

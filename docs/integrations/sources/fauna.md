@@ -2,7 +2,7 @@
 
 This page guides you through setting up a [Fauna](https://fauna.com/) source.
 
-# Overview
+## Overview
 
 The Fauna source supports the following sync modes:
 

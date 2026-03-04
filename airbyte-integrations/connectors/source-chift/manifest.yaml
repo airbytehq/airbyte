@@ -1,0 +1,577 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: >-
+  Chift is a tool that allows for the integration of financial data into SaaS
+  products.
+
+check:
+  type: CheckStream
+  stream_names:
+    - consumers
+
+definitions:
+  streams:
+    syncs:
+      type: DeclarativeStream
+      name: syncs
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /syncs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - syncid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/syncs"
+    consumers:
+      type: DeclarativeStream
+      name: consumers
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /consumers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - consumerid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/consumers"
+    connections:
+      type: DeclarativeStream
+      name: connections
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /consumers/{{ stream_partition.parent_id }}/connections
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/consumers"
+              parent_key: consumerid
+              partition_field: parent_id
+      primary_key:
+        - connectionid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/connections"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - consumerid
+              value: "{{ stream_partition.parent_id }}"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.chift.eu
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: https://api.chift.eu/token
+        http_method: POST
+        authenticator:
+          type: NoAuth
+        request_headers: {}
+        request_body_json:
+          clientId: "{{ config['client_id'] }}"
+          accountId: "{{ config['account_id'] }}"
+          clientSecret: "{{ config['client_secret'] }}"
+        request_parameters: {}
+      session_token_path:
+        - access_token
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/consumers"
+  - $ref: "#/definitions/streams/connections"
+  - $ref: "#/definitions/streams/syncs"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - account_id
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client Id
+        airbyte_secret: true
+      account_id:
+        type: string
+        order: 2
+        title: Account Id
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client Secret
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    syncs:
+      hasRecords: true
+      streamHash: 9ab33623df884c15f3c8e6fe91c1ba67ada79310
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    consumers:
+      hasRecords: true
+      streamHash: 6a213c13e09695fd2f474616f8eee417f48c4cfd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    connections:
+      hasRecords: true
+      streamHash: 654088bf639287791880bdd88582e496aeef0386
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    syncs: true
+    consumers: true
+    connections: true
+
+schemas:
+  syncs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      flows:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            config:
+              type:
+                - object
+                - "null"
+              properties:
+                datastores:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      status:
+                        type:
+                          - string
+                          - "null"
+                      definition:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          columns:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                type:
+                                  type:
+                                    - string
+                                    - "null"
+                                name:
+                                  type:
+                                    - string
+                                    - "null"
+                                title:
+                                  type:
+                                    - string
+                                    - "null"
+                                optional:
+                                  type:
+                                    - boolean
+                                    - "null"
+                          search_column:
+                            type:
+                              - string
+                              - "null"
+                customFields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                definitionFields:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      data:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            title:
+                              type:
+                                - string
+                                - "null"
+                            value:
+                              type:
+                                - string
+                                - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      title:
+                        type:
+                          - string
+                          - "null"
+                      default:
+                        type:
+                          - string
+                          - "null"
+                      optional:
+                        type:
+                          - boolean
+                          - "null"
+            triggers:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  visible:
+                    type:
+                      - boolean
+                      - "null"
+                  priority:
+                    type:
+                      - string
+                      - "null"
+                  cronschedules:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+      syncid:
+        type:
+          - string
+          - "null"
+      mappings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            sub_mappings:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  source_field:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      values:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            id:
+                              type:
+                                - string
+                                - "null"
+                            label:
+                              type:
+                                - string
+                                - "null"
+                  target_field:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      api_route:
+                        type:
+                          - string
+                          - "null"
+                      display_condition:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          in:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              anyOf:
+                                - type: object
+                                  properties:
+                                    var:
+                                      type: string
+                                - type: array
+                                  items:
+                                    type: string
+                  display_order:
+                    type:
+                      - number
+                      - "null"
+                  display_delete:
+                    type:
+                      - boolean
+                      - "null"
+            display_order:
+              type:
+                - number
+                - "null"
+      consumers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      connections:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            one_api:
+              type:
+                - number
+                - "null"
+            display_order:
+              type:
+                - number
+                - "null"
+            display_hidden:
+              type:
+                - boolean
+                - "null"
+            connection_type:
+              type:
+                - number
+                - "null"
+    additionalProperties: true
+  consumers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - consumerid
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      consumerid:
+        type: string
+      redirect_url:
+        type:
+          - string
+          - "null"
+      internal_reference:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  connections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - connectionid
+    properties:
+      api:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          folder_id:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      consumerid:
+        type:
+          - string
+          - "null"
+      integration:
+        type:
+          - string
+          - "null"
+      connectionid:
+        type: string
+      integrationid:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
