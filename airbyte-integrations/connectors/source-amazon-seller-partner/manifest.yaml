@@ -189,6 +189,7 @@ spec:
               - GET_SALES_AND_TRAFFIC_REPORT
               - GET_SELLER_FEEDBACK_DATA
               - GET_STRANDED_INVENTORY_UI_DATA
+              - GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2
               - GET_VENDOR_FORECASTING_REPORT
               - GET_VENDOR_INVENTORY_REPORT
               - GET_VENDOR_REAL_TIME_INVENTORY_REPORT
@@ -2497,6 +2498,63 @@ definitions:
         schema:
           $ref: "#/schemas/get_merchant_listings_inactive_data"
 
+    get_v2_settlement_report_data_flat_file_v2:
+      type: DeclarativeStream
+      name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        # The GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2 report only allows for a max start of 90 days from now
+        # otherwise it will throw a 400 error
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        type: SimpleRetriever
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/flat_file_settlement_v2_report_helper"
+              parent_key: "reportId"
+              partition_field: "reportId"
+              incremental_dependency: true
+        requester:
+          type: HttpRequester
+          path: "reports/2021-06-30/{{ stream_slice['reportId'] }}"
+          url_base: "{{ config['endpoint'] }}"
+          http_method: GET
+          authenticator: "#/definitions/authenticator"
+          request_headers:
+            content-type: "application/json"
+        decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipCsvDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_v2_settlement_report_data_flat_file_v2"
+
     get_vendor_forecasting_fresh_report:
       type: DeclarativeStream
       name: GET_VENDOR_FORECASTING_FRESH_REPORT
@@ -2963,6 +3021,71 @@ definitions:
       type: DpathExtractor
       field_path: []
 
+  flat_file_settlement_v2_report_helper:
+    type: DeclarativeStream
+    name: flat_file_settlement_v2_report_helper
+    primary_key: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: dataEndTime
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+      step: "P10Y"
+      cursor_granularity: "PT1S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        field_name: "createdSince"
+        inject_into: "request_parameter"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        field_name: "createdUntil"
+        inject_into: "request_parameter"
+    ignore_stream_slicer_parameters_on_paginated_requests: true
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "reports/2021-06-30/reports"
+        http_method: GET
+        request_headers:
+          content-type: "application/json"
+        request_parameters:
+          reportTypes: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["reports"]
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: nextToken
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: pageSize
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.NextToken }}"
+    # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["dataEndTime"]
+            value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -3070,6 +3193,7 @@ streams:
   - $ref: "#/definitions/streams/get_merchant_listings_all_data"
   - $ref: "#/definitions/streams/get_merchant_listings_data"
   - $ref: "#/definitions/streams/get_merchant_listings_inactive_data"
+  - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file_v2"
 
   # Analytics Streams
   - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
@@ -7909,6 +8033,159 @@ schemas:
         - string
       dataEndTime:
         description: End time of the data in date format
+        type:
+        - 'null'
+        - string
+        format: date
+  get_v2_settlement_report_data_flat_file_v2:
+    title: Flat File V2 Settlement Report
+    description: >-
+      A settlement report that replaces the deprecated Flat File Settlement Report
+      (GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE). Price columns are condensed into
+      three general-purpose columns: amount, amount-description, and amount-type.
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      settlement-id:
+        description: The unique identifier for a settlement.
+        type:
+        - 'null'
+        - string
+      settlement-start-date:
+        description: The start date of the settlement period.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      settlement-end-date:
+        description: The end date of the settlement period.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      deposit-date:
+        description: The date and time when the payment was deposited into the seller's
+          account.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      total-amount:
+        description: The total amount in the settlement.
+        type:
+        - 'null'
+        - string
+      currency:
+        description: The currency in which the financial transactions are recorded.
+        type:
+        - 'null'
+        - string
+      transaction-type:
+        description: The type of transaction (e.g., order, refund).
+        type:
+        - 'null'
+        - string
+      order-id:
+        description: The unique identifier for an order.
+        type:
+        - 'null'
+        - string
+      merchant-order-id:
+        description: The unique identifier for a merchant order.
+        type:
+        - 'null'
+        - string
+      adjustment-id:
+        description: The unique identifier for an adjustment made to the settlement.
+        type:
+        - 'null'
+        - string
+      shipment-id:
+        description: The unique identifier for a shipment.
+        type:
+        - 'null'
+        - string
+      marketplace-name:
+        description: The name of the marketplace where the transaction occurred.
+        type:
+        - 'null'
+        - string
+      amount-type:
+        description: The type of charge or fee incurred, indicating whether different
+          fees are related to a common type.
+        type:
+        - 'null'
+        - string
+      amount-description:
+        description: A description of the specific charge or fee within the amount type.
+        type:
+        - 'null'
+        - string
+      amount:
+        description: The monetary value associated with this charge, fee, or credit.
+          Displayed in local currency formats (e.g., 95,00 for EU instead of 95.00).
+        type:
+        - 'null'
+        - string
+      fulfillment-id:
+        description: The unique identifier for the fulfillment of an order.
+        type:
+        - 'null'
+        - string
+      posted-date:
+        description: The date and time when the transaction was posted.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      posted-date-time:
+        description: The date and time when the transaction was posted, with full timestamp.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      order-item-code:
+        description: The code assigned to an order item.
+        type:
+        - 'null'
+        - string
+      merchant-order-item-id:
+        description: The unique identifier for a specific item in a merchant order.
+        type:
+        - 'null'
+        - string
+      merchant-adjustment-item-id:
+        description: The unique identifier for a merchant adjustment item.
+        type:
+        - 'null'
+        - string
+      sku:
+        description: The stock keeping unit for a product.
+        type:
+        - 'null'
+        - string
+      quantity-purchased:
+        description: The quantity of a product purchased in the order.
+        type:
+        - 'null'
+        - string
+      promotion-id:
+        description: The unique identifier for a promotion.
+        type:
+        - 'null'
+        - string
+      promotion-type:
+        description: The type of promotion applied.
+        type:
+        - 'null'
+        - string
+      report_id:
+        description: The unique identifier for a settlement report.
+        type:
+        - 'null'
+        - string
+      dataEndTime:
+        description: The end time of the data in the report.
         type:
         - 'null'
         - string

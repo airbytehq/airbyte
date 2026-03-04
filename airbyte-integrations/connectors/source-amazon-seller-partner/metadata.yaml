@@ -62,7 +62,7 @@ data:
               - GET_FBA_SNS_FORECAST_DATA
               - GET_FBA_SNS_PERFORMANCE_DATA
       6.0.0:
-        message: "Deprecated settlement report type (GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE) has been removed per Amazon SP-API deprecation. See: https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations"
+        message: "Deprecated settlement report type (GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE) has been removed and replaced with GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2 per Amazon SP-API deprecation. The V2 report has a different schema with condensed amount columns. See: https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations"
         upgradeDeadline: "2026-03-25"
         scopedImpact:
           - scopeType: stream
