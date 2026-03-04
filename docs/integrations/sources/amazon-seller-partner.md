@@ -260,6 +260,20 @@ We recommend next steps to overcome the rate limits issue:
 
 This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
 
+### ListFinancialEvents stream incompatible with deduplication on BigQuery
+
+The `ListFinancialEvents` stream does not define a primary key because the Amazon SP-API returns aggregated event lists per time range rather than individual events with unique identifiers. All top-level fields in this stream are arrays, such as `ShipmentEventList` and `RefundEventList`.
+
+BigQuery requires non-JSON, non-array types for its `CLUSTER BY` clause, which Airbyte uses during deduplication. Syncing `ListFinancialEvents` to BigQuery in deduplication mode fails with:
+
+```text
+CLUSTER BY expression must be groupable, but type is JSON.
+```
+
+**Solution:**
+
+Use **Append** sync mode instead of **Dedup** for the `ListFinancialEvents` stream when syncing to BigQuery. If you need deduplicated data, perform deduplication in BigQuery using SQL after the data lands in append mode.
+
 ### InvalidInput error for ListFinancialEvents stream
 
 ```text
