@@ -63,6 +63,8 @@ If you're using an S3 bucket to store rejected records, you also need the follow
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 | Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
+This is a [data activation](/platform/move-data/elt-data-activation) destination. In addition to the Airbyte sync modes above, HubSpot supports per-object write operations (insert, upsert, update, and soft delete) configured in the connection settings.
+
 ## Supported Objects
 
 The HubSpot destination connector supports the following streams:

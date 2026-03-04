@@ -54,6 +54,8 @@ Here are the destination objects and their respective operations that are curren
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 | Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
+This is a [data activation](/platform/move-data/elt-data-activation) destination. In addition to the Airbyte sync modes above, Customer.io supports identify (person) and track (event) operations configured per stream.
+
 ### Restrictions
 
 - Each entry sent to the API needs to be 32kb or smaller
