@@ -55,9 +55,7 @@ class TestTicketsStreamFullRefresh(TestCase):
 
         # Build a dummy next-page request to make the first response signal has_more=true.
         # CursorBasedPaginationStrategy sets has_more based on whether next_page_url is provided.
-        next_page_request = (
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_after_cursor("after-cursor").build()
-        )
+        next_page_request = ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_after_cursor("after-cursor").build()
 
         # Combine both page responses into a single mock as a list so they are consumed
         # sequentially. Using separate http_mocker.get() calls with with_any_query_params()
@@ -69,9 +67,7 @@ class TestTicketsStreamFullRefresh(TestCase):
                 .with_record(TicketsRecordBuilder.tickets_record().with_id(1))
                 .with_pagination()
                 .build(),
-                TicketsResponseBuilder.tickets_response()
-                .with_record(TicketsRecordBuilder.tickets_record().with_id(2))
-                .build(),
+                TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_id(2)).build(),
             ],
         )
 
