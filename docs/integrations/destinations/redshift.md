@@ -63,9 +63,8 @@ and deduping queries on final table are executed over using provided SSH Tunnel 
 4. (Optional)
    [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/)
    connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\).
-5. (Optional)
-   [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
-   staging S3 bucket \(for the COPY strategy\).
+5. [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
+   staging S3 bucket. S3 staging is required for the Redshift destination.
 
 ### Permissions in Redshift
 
@@ -76,7 +75,7 @@ advanced settings. Airbyte also needs to query Redshift's
 [SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for
 metadata about the tables airbyte manages.
 
-To ensure the `airbyte_user` has the correction permissions to:
+To ensure the `airbyte_user` has the correct permissions to:
 
 - create schemas in your database
 - grant usage to any existing schemas you want Airbyte to use
@@ -94,7 +93,7 @@ GRANT SELECT ON TABLE SVV_TABLE_INFO TO airbyte_user; -- add select permission f
 
 This connector supports the use of a Bastion host as a gateway to a private Redshift cluster via SSH
 Tunneling. Setup of the host is beyond the scope of this document but several tutorials are
-available online to fascilitate this task. Enter the bastion host, port and credentials in the
+available online to facilitate this task. Enter the bastion host, port and credentials in the
 destination configuration.
 
 ## Step 2: Set up the destination connector in Airbyte
@@ -106,7 +105,7 @@ destination configuration.
    destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a
    name for this connector.
-4. Fill in all the required fields to use the INSERT or COPY strategy.
+4. Fill in all the required fields to configure S3 staging.
 5. Click `Set up destination`.
 
 **For Airbyte Open Source:**
@@ -116,17 +115,22 @@ destination configuration.
    destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a
    name for this connector.
-4. Fill in all the required fields to use the INSERT or COPY strategy.
+4. Fill in all the required fields to configure S3 staging.
 5. Click `Set up destination`.
 
 ## Supported sync modes
 
 The Redshift destination connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+[sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
-- Full Refresh
-- Incremental - Append Sync
-- Incremental - Append + Deduped
+| Sync Mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Performance considerations
 
@@ -185,7 +189,7 @@ All Redshift connections are encrypted using SSL.
 
 ### Output schema
 
-Each stream will be output into its own raw table in Redshift. Each table will contain 3 columns:
+Each stream will be output into its own raw table in Redshift. Each table will contain the following columns:
 
 - `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
   Redshift is `VARCHAR`.
@@ -193,8 +197,12 @@ Each stream will be output into its own raw table in Redshift. Each table will c
   The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_loaded_at`: a timestamp representing when the row was processed into final table. The
   column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
-- `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is
+- `_airbyte_data`: a JSON blob representing the event data. The column type in Redshift is
   `SUPER`.
+- `_airbyte_meta`: a JSON object containing metadata about the record, such as changes applied
+  during syncing. The column type in Redshift is `SUPER`.
+- `_airbyte_generation_id`: an identifier for the generation of the sync that produced this record.
+  The column type in Redshift is `BIGINT`.
 
 ## Data type map
 
@@ -223,13 +231,13 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 3.5.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
-| 3.5.2 | 2025-01-10 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
-| 3.5.1 | 2024-12-18 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 3.5.2 | 2025-01-14 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
+| 3.5.1 | 2025-01-06 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 3.5.0 | 2024-09-18 | [45435](https://github.com/airbytehq/airbyte/pull/45435) | upgrade all dependencies |
 | 3.4.4 | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476) | Increase message parsing limit to 100mb |
 | 3.4.3 | 2024-08-22 | [44526](https://github.com/airbytehq/airbyte/pull/44526) | Revert protocol compliance fix |
 | 3.4.2 | 2024-08-15 | [42506](https://github.com/airbytehq/airbyte/pull/42506) | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance) |
-| 3.4.1   | 2024-08-13 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)       | Simplify Redshift Options                                                                                                                                                                                        |
+| 3.4.1   | 2024-08-14 | [44020](https://github.com/airbytehq/airbyte/pull/44020)   | Simplify Redshift Options                                                                                                                                                                                        |
 | 3.4.0   | 2024-07-23 | [42445](https://github.com/airbytehq/airbyte/pull/42445)   | Respect the `drop cascade` option on raw tables                                                                                                                                                                  |
 | 3.3.1   | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968)   | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                                                       |
 | 3.3.0   | 2024-07-02 | [40567](https://github.com/airbytehq/airbyte/pull/40567)   | Support for [refreshes](../../platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                 |
