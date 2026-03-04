@@ -41,9 +41,9 @@ jobs:
         shell: bash
         run: |
           # TK-TODO: Revert to GA version before merging: # IGNORE:TK
-          #   uvx --from airbyte-internal-ops airbyte-ops registry compile --bucket prod --with-secrets-mask
+          #   uvx --from airbyte-internal-ops airbyte-ops registry store compile --store coral:prod --with-secrets-mask
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask" \
-            airbyte-ops registry compile --bucket prod --with-secrets-mask
+            airbyte-ops registry store compile --store coral:prod --with-secrets-mask
 
   post-registry-generation:
     name: Post registry generation steps
@@ -68,4 +68,4 @@ jobs:
         run: |
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops registry generate-report \
-            --bucket prod
+            --store coral:prod

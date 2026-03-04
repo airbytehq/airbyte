@@ -61,4 +61,4 @@ jobs:
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops registry rc "${ACTION}" \
             --name "${CONNECTOR_NAME}" \
-            --bucket prod
+            --store coral:prod

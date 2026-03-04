@@ -429,7 +429,7 @@ jobs:
             --name "${{ matrix.connector }}" \
             --version "${{ steps.connector-metadata.outputs.docker-image-tag }}" \
             --artifacts-dir ./registry-artifacts \
-            --bucket prod \
+            --store coral:prod \
             --with-validate
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}

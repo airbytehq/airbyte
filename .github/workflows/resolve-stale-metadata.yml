@@ -45,7 +45,7 @@ jobs:
             airbyte-ops local connector list \
             --repo-path "${{ github.workspace }}" \
             --unpublished \
-            --bucket prod \
+            --store coral:prod \
             --assert-none \
             2>&1 | tee /tmp/unpublished-report.txt
           EXIT_CODE=${PIPESTATUS[0]}
