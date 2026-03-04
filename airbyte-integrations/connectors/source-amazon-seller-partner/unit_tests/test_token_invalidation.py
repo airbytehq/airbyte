@@ -17,10 +17,10 @@ from components import (
 
 @pytest.fixture(autouse=True)
 def reset_authenticator_instance():
-        """Reset the module-level authenticator instances before and after each test."""
-        components._authenticator_instances.clear()
-        yield
-        components._authenticator_instances.clear()
+    """Reset the module-level authenticator instances before and after each test."""
+    components._authenticator_instances.clear()
+    yield
+    components._authenticator_instances.clear()
 
 
 def _create_response(status_code: int, json_body: dict) -> requests.Response:

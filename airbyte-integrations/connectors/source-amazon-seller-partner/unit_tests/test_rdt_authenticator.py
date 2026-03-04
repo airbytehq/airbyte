@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 import components
 import pytest
 import requests
-from components import AmazonSPRdtAuthenticator, _RDT_REFRESH_THRESHOLD_SECONDS
+from components import _RDT_REFRESH_THRESHOLD_SECONDS, AmazonSPRdtAuthenticator
 
 
 @pytest.fixture(autouse=True)
