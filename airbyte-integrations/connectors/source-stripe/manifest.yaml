@@ -92,7 +92,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 30) }}D
+    step: P{{ config.get('slice_range', 365) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -159,7 +159,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 30) }}D
+    step: P{{ config.get('slice_range', 365) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -249,7 +249,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 30) }}D
+    step: P{{ config.get('slice_range', 365) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -1908,7 +1908,7 @@ spec:
       slice_range:
         type: integer
         title: Data request time increment in days
-        default: 30
+        default: 365
         minimum: 1
         examples: [1, 3, 10, 30, 180, 360]
         description: >-
@@ -1921,7 +1921,7 @@ spec:
         title: Number of concurrent workers
         minimum: 2
         maximum: 100
-        default: 25
+        default: 10
         examples: [ 2, 3, 4]
         description: >-
           The number of worker thread to use for the sync.
@@ -1951,7 +1951,7 @@ spec:
 # Each worker handles a different time slice, preventing overlap.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 25) }}"
+  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 10) }}"
   max_concurrency: 100
 
 api_budget:
