@@ -41,7 +41,7 @@ jobs:
         # TK-TODO: Revert to GA version of airbyte-internal-ops before merging. # IGNORE:TK
         run: |
           set +e  # Don't exit on error so we can capture the exit code
-          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask" \
+          uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops local connector list \
             --repo-path "${{ github.workspace }}" \
             --unpublished \
