@@ -79,7 +79,7 @@ The Stripe source connector supports the following [sync modes](https://docs.air
 
 The Stripe source connector supports the following streams:
 
-- [Accounts](https://stripe.com/docs/api/accounts/list)
+- [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
 - [Application Fees](https://stripe.com/docs/api/application_fees) \(Incremental\)
 - [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list) \(Incremental\)
 - [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
@@ -105,7 +105,7 @@ The Stripe source connector supports the following streams:
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
-- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -114,7 +114,7 @@ The Stripe source connector supports the following streams:
   :::note
   This stream is built with a call using payout_id from the payout stream (parent) as a parameter to the balance transaction API to get balance transactions that comprised the actual amount of the payout. Check [the Stripe docs](https://docs.stripe.com/api/balance_transactions/list) for more details.
   :::
-- [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
+- [Promotion Codes](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
 - [Prices](https://stripe.com/docs/api/prices/list) \(Incremental\)
@@ -124,13 +124,13 @@ The Stripe source connector supports the following streams:
 - [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
 - [Setup Intents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Shipping Rates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
-- [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+- [Subscription Items](https://stripe.com/docs/api/subscription_items/list) \(Incremental\)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
 - [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
-- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
+- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list) \(Incremental\)
 - [Usage Records](https://stripe.com/docs/api/usage_records)
 
 ### Entity-Relationship Diagram (ERD)
@@ -151,7 +151,9 @@ Expand to see details about Stripe connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The Stripe connector should not run into Stripe API limitations under normal usage. See Stripe [Rate limits](https://stripe.com/docs/rate-limits) documentation. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Stripe connector automatically manages API rate limits, including retries and backoff for HTTP 429 responses. Stripe enforces a limit of [25 requests per second for sandbox keys and 100 requests per second for live keys](https://stripe.com/docs/rate-limits). The connector respects these limits and adjusts its request rate accordingly.
+
+If you experience rate limiting, you can reduce the **Number of concurrent workers** setting in the connector configuration. The default is 10 for live keys and 4 for sandbox keys. You can also configure a **Max number of API calls per second** to set a stricter limit. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit issues that are not automatically retried successfully.
 
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
