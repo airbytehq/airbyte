@@ -278,8 +278,8 @@ The command produces the private key in PEM format and the public key remains in
 
 ## Configuring Entra authentication
 
-The Airbyte source can be configured to authenticate as a Microsoft Entra service principal. 
-This allows Airbyte to use short-lived identity tokens to authenticate to an Azure Postgres server. 
+The Airbyte source can be configured to authenticate as a Microsoft Entra service principal.
+This allows Airbyte to use short-lived identity tokens to authenticate to an Azure Postgres server.
 Consult the Microsoft [documentation on this topic](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-azure-ad-authentication) for more detail on configuring the server and other Entra resources.
 
 To configure the Airbyte Postgres source with Entra authentication:
