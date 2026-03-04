@@ -165,7 +165,6 @@ The connector uses OAuth 2.0 authentication with your Salesforce Connected App c
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 | Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
-This is a [data activation](/platform/move-data/elt-data-activation) destination. While the underlying implementation supports additional write operations (update, upsert, delete), only append (insert) mode is currently exposed through the connector specification. Contact support if you need additional operations for your use case.
 
 ## Limitations and considerations
 
