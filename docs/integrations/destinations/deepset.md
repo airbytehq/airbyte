@@ -2,20 +2,22 @@
 
 deepset AI Platform is a SaaS platform for building LLM applications and managing them across the whole lifecycle - from early prototyping to large-scale production. For details, see [deepset documentation](https://docs.cloud.deepset.ai/docs/getting-started).
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
+
 ## Data Integration with Airbyte
 
 To make it possible to synchronize data to deepset AI Platform using Airbyte, we've added an Airbyte deepset destination connector. You can use it to stream data into deepset from any Airbyte source that emits records matching the document file type. The synchronized data are available in deepset on the Files page as Markdown files.
 
 _Note_: The deepset destination connector writes data to your deepset workspace, but does not delete any data from the workspace. If a file with the same name already exists in the destination workspace, it is overwritten.
-
-### Supported Sync Modes
-
-The deepset destination connector supports the following sync modes:
-
-* [Full refresh - append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append/)
-* [Full refresh - overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Incremental sync - append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/)
-* [Incremental sync - append + deduped ](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Syncing Data to deepset AI Platform
 
