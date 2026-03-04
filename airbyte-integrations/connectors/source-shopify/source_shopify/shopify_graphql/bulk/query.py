@@ -1611,7 +1611,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
     See: https://github.com/airbytehq/oncall/issues/10991
 
         {
-            fulfillmentOrders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT, includeClosed: true){
+            fulfillmentOrders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT){
                 edges {
                     node {
                         __typename
@@ -1795,7 +1795,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
     }
 
     def query(self, filter_query: Optional[str] = None) -> Query:
-        return self.build(self.query_name, self.query_nodes, filter_query, additional_query_args={"includeClosed": "true"})
+        return self.build(self.query_name, self.query_nodes, filter_query)
 
     def process_fulfillment_order(self, record: MutableMapping[str, Any], shop_id: int) -> MutableMapping[str, Any]:
         # addings
