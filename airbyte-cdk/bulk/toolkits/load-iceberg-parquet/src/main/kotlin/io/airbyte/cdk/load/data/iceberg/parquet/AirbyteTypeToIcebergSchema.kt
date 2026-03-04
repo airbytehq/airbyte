@@ -67,7 +67,7 @@ class AirbyteTypeToIcebergSchema {
             is BooleanType -> Types.BooleanType.get()
             is DateType -> Types.DateType.get()
             is IntegerType -> Types.LongType.get()
-            is NumberType -> Types.StringType.get()
+            is NumberType -> Types.DoubleType.get()
             // Schemaless types are converted to string
             is ArrayTypeWithoutSchema,
             is ObjectTypeWithEmptySchema,
@@ -107,8 +107,16 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
         // There's no _airbyte_data field, because we flatten the fields.
         // But we should leave the _airbyte_meta field as an actual object.
         val stringifyObjects = name != Meta.COLUMN_NAME_AB_META
+        // Primary key NumberType fields are stored as StringType because Iceberg
+        // disallows Double/Float as identifier fields (floating-point equality is
+        // unreliable). Non-PK NumberType fields remain as DoubleType to preserve
+        // analytical query compatibility.
         val icebergType =
-            icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+            if (isPrimaryKey && field.type is NumberType) {
+                Types.StringType.get()
+            } else {
+                icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+            }
         fields.add(
             NestedField.of(
                 id,
@@ -117,8 +125,13 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
                 icebergType,
             ),
         )
-        // Identifier fields must be primitive types.
-        if (isPrimaryKey && icebergType.isPrimitiveType) {
+        // Identifier fields must be primitive types, and cannot be float/double.
+        if (
+            isPrimaryKey &&
+                icebergType.isPrimitiveType &&
+                icebergType != Types.DoubleType.get() &&
+                icebergType != Types.FloatType.get()
+        ) {
             identifierFields.add(id)
         }
     }
