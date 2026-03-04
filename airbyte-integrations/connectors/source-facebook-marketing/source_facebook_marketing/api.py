@@ -142,8 +142,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
         if ads_insights_throttle:
             ads_insights_throttle = json.loads(ads_insights_throttle)
             self._ads_insights_throttle = self.Throttle(
-                per_application=ads_insights_throttle.get("app_id_util_pct", 0),
-                per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
+                per_application=float(ads_insights_throttle.get("app_id_util_pct", 0)),
+                per_account=float(ads_insights_throttle.get("acc_id_util_pct", 0)),
             )
 
     def _should_restore_default_page_size(self, params):

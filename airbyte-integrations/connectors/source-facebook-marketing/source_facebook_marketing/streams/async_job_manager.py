@@ -38,7 +38,7 @@ class APILimit:
         self._api.get_account(account_id=self._account_id).get_insights()
         t = self._api.api.ads_insights_throttle
         # Use the stricter of the two numbers.
-        self._current_throttle = max(getattr(t, "per_account", 0.0), getattr(t, "per_application", 0.0))
+        self._current_throttle = max(float(getattr(t, "per_account", 0.0)), float(getattr(t, "per_application", 0.0)))
 
     @property
     def limit_reached(self) -> bool:
