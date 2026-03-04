@@ -57,17 +57,6 @@ Each table will contain at least the following columns:
 
 In addition, columns specified in the [JSON schema](https://docs.airbyte.com/connector-development/schema-reference) will also be created.
 
-#### Features
-
-| Feature                                                                  | Supported |     |
-| :----------------------------------------------------------------------- | :-------- | :-- |
-| Full Refresh Sync                                                        | Yes       |     |
-| Incremental - Append Sync                                                | Yes       |     |
-| Incremental - Append + Deduped                                           | Yes       |     |
-| [Typing and Deduplication](/platform/using-airbyte/core-concepts/typing-deduping) | Yes       |     |
-| [Namespaces](/platform/using-airbyte/core-concepts/namespaces)                    | No        |     |
-| [Data Generations](/platform/operator-guides/refreshes#data-generations)          | No        |     |
-
 #### Performance consideration
 
 This integration will be constrained by the speed at which your filesystem accepts writes.

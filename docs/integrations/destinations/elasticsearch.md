@@ -29,18 +29,6 @@ This section should contain a table mapping each of the connector's data types t
 | numeric          | integer      | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)  |
 | numeric          | number       | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)  |
 
-### Features
-
-This section should contain a table with the following format:
-
-| Feature                       | Supported?(Yes/No) | Notes |
-| :---------------------------- | :----------------- | :---- |
-| Full Refresh Sync             | yes                |       |
-| Incremental Sync              | yes                |       |
-| Replicate Incremental Deletes | no                 |       |
-| SSL connection                | yes                |       |
-| SSH Tunnel Support            | yes                |       |
-
 ### Performance considerations
 
 Batch/bulk writes are performed. Large records may impact performance.  

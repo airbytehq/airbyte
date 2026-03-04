@@ -2,14 +2,6 @@
 
 This page guides you through the process of setting up the [Qdrant](https://qdrant.tech/documentation/) destination connector.
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
-
 #### Output Schema
 
 Only one stream will exist to collect payload and vectors (optional) from all source streams. This will be in a [collection](https://qdrant.tech/documentation/concepts/collections/) in [Qdrant](https://qdrant.tech/documentation/) whose name will be defined by the user. If the collection does not already exist in the Qdrant instance, a new collection with the same name will be created.

@@ -20,15 +20,6 @@ Each stream will be output into its own file. Each file will a collections of `j
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
 - `_airbyte_data`: a json blob representing with the extracted data.
 
-#### Features
-
-| Feature                        | Supported |     |
-| :----------------------------- | :-------- | :-- |
-| Full Refresh Sync              | Yes       |     |
-| Incremental - Append Sync      | Yes       |     |
-| Incremental - Append + Deduped | No        |     |
-| Namespaces                     | No        |     |
-
 #### Performance considerations
 
 This integration will be constrained by the speed at which your filesystem accepts writes.

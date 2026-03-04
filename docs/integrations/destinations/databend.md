@@ -3,13 +3,6 @@
 This page guides you through the process of setting up the [Databend](https://databend.rs/)
 destination connector.
 
-## Features
-
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | Yes                  |       |
-
 #### Output Schema
 
 Each stream will be output into its own table in Databend. Each table will contain 3 columns:

@@ -13,16 +13,6 @@ This destination is for testing of Airbyte connections. It can be set up as a so
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 | Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
-## Features
-
-| Feature                       | Supported | Notes |
-| :---------------------------- | :-------- | :---- |
-| Full Refresh Sync             | Yes       |       |
-| Incremental Sync              | Yes       |       |
-| Replicate Incremental Deletes | No        |       |
-| SSL connection                | No        |       |
-| SSH Tunnel Support            | No        |       |
-
 ## Mode
 
 ### Silent (`/dev/null`)

@@ -4,15 +4,6 @@
 
 This page guides you through the process of setting up the SurrealDB destination connector.
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | No                  |       |
-| Incremental - Append + Deduped | No                  |       |
-| Namespaces                     | No                  |       |
-
 #### Output Schema
 
 Each stream will be output into its own table in SurrealDB. Each table will contain 3 columns:

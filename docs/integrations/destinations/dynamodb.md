@@ -24,15 +24,6 @@ objects containing 4 fields:
 - `_airbyte_data`: a json blob representing with the extracted data.
 - `sync_time`: a timestamp representing when the sync up task be triggered.
 
-### Features
-
-| Feature                        | Support | Notes                                                                                   |
-| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured DynamoDB table. |
-| Incremental - Append Sync      |   ✅    |                                                                                         |
-| Incremental - Append + Deduped |   ❌    |                                                                                         |
-| Namespaces                     |   ✅    | Namespace will be used as part of the table name.                                       |
-
 ### Performance considerations
 
 This connector by default uses 10 capacity units for both Read and Write in DynamoDB tables. Please

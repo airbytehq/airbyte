@@ -19,15 +19,6 @@ Each stream will be output a RabbitMQ message with properties. The message prope
 
 The `AirbyteRecord` data will be serialized as JSON and set as the RabbitMQ message body.
 
-#### Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
-
 ## Supported sync modes
 
 | Sync mode | Supported? |

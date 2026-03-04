@@ -5,16 +5,6 @@
 The Starburst Galaxy destination syncs data to Starburst Galaxy [great lake catalogs](https://docs.starburst.io/starburst-galaxy/sql/great-lakes.html)
 in [Apache Iceberg](https://iceberg.apache.org/) table format. Each stream is written to its own Iceberg table.
 
-## Features
-
-| Feature          | Supported | Notes                                                                               |
-| :--------------- | :-------: | :---------------------------------------------------------------------------------- |
-| Overwrite Sync   |    ✅     | **Warning**: this mode deletes all previously synced data in the destination table. |
-| Append Sync      |    ✅     |                                                                                     |
-| Append + Deduped |    ❌     |                                                                                     |
-| Namespaces       |    ✅     |                                                                                     |
-| SSL              |    ✅     | SSL is enabled.                                                                     |
-
 ## Data storage
 
 Starburst Galaxy supports various [object storages](https://docs.starburst.io/starburst-galaxy/catalogs/index.html#object-storage);

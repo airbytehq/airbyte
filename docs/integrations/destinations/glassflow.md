@@ -19,15 +19,6 @@ Each stream will be output a GlassFlow message. The message properties will be
 
 The message will be serialized as JSON.
 
-#### Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
-
 ## Supported sync modes
 
 | Sync mode | Supported? |

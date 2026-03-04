@@ -178,15 +178,6 @@ EXAMPLE:
 | :--------------- | :----------- |
 | Any Type         | `string`     |
 
-### Features & Supported sync modes
-
-| Feature                        | Supported?\(Yes/No\) |
-| :----------------------------- | :------------------- |
-| Ful-Refresh Overwrite          | Yes                  |
-| Ful-Refresh Append             | Yes                  |
-| Incremental Append             | Yes                  |
-| Incremental Append-Deduplicate | Yes                  |
-
 ## Changelog
 
 <details>

@@ -5,16 +5,6 @@ There are two flavors of connectors for this destination:
 1. destination-mysql connector. Supports both SSL and non SSL connections.
 2. destination-mysql-strict-encrypt connector. Pretty same as connector above, but supports SSL connections only.
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
-| SSH Tunnel Connection          | Yes                  |       |
-
 ## Supported sync modes
 
 | Sync mode | Supported? |

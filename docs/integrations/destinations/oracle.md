@@ -1,17 +1,5 @@
 # Oracle DB
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes                                                                 |
-| :----------------------------- | :------------------- | :-------------------------------------------------------------------- |
-| Full Refresh Sync              | Yes                  |                                                                       |
-| Incremental - Append Sync      | Yes                  |                                                                       |
-| Incremental - Append + Deduped | Yes                  |                                                                       |
-| Namespaces                     | Yes                  |                                                                       |
-| Basic Normalization            | Yes                  | Doesn't support for nested json yet                                   |
-| SSH Tunnel Connection          | Yes                  |                                                                       |
-| Encryption                     | Yes                  | Support Native Network Encryption (NNE) as well as TLS using SSL cert |
-
 ## Output Schema
 
 By default, each stream will be output into its own table in Oracle. Each table will contain 3 columns:

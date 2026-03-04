@@ -14,15 +14,6 @@ All streams will be output into a single SQS Queue.
 Amazon SQS messages can only contain JSON, XML or text, and this connector supports writing messages
 in all three formats. See the **Writing Text or XML messages** section for more info.
 
-#### Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | No                   |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | No                   |       |
-
 ## Supported sync modes
 
 | Sync mode | Supported? |

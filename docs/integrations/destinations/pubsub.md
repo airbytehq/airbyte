@@ -29,15 +29,6 @@ The data will be a serialized JSON, containing the following fields
 - `_airbyte_emitted_at`: a long timestamp\(ms\) representing when the event was pulled from the data source.
 - `_airbyte_data`: a json string representing source data.
 
-#### Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
-
 ## Supported sync modes
 
 | Sync mode | Supported? |

@@ -3,13 +3,6 @@
 This page guides you through the process of setting up the [Timeplus](https://timeplus.com)
 destination connector.
 
-## Features
-
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Overwrite                 | Yes                  |       |
-| Incremental - Append Sync | Yes                  |       |
-
 #### Output Schema
 
 Each stream will be output into its own stream in Timeplus, with corresponding schema/columns.

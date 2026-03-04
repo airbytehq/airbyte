@@ -24,14 +24,6 @@ All streams will be output into a corpus in Vectara whose name must be specified
 
 Note that there are no restrictions in naming the Vectara corpus and if a corpus with the specified name is not found, a new corpus with that name will be created. Also, if multiple corpora exists with the same name, an error will be returned as Airbyte will be unable to determine the preferred corpus.
 
-### Features
-
-| Feature                   | Supported? |
-| :------------------------ | :--------- |
-| Full Refresh Sync         | Yes        |
-| Incremental - Append Sync | Yes        |
-| Incremental - Dedupe Sync | Yes        |
-
 ## Supported sync modes
 
 | Sync mode | Supported? |

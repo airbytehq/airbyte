@@ -12,15 +12,6 @@ with [Typing and Deduping](https://docs.airbyte.com/using-airbyte/core-concepts/
 not supported.
 :::
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-|:-------------------------------|:---------------------|:------|
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
-| Namespaces                     | Yes                  |       |
-
 ## Supported sync modes
 
 | Sync mode | Supported? |

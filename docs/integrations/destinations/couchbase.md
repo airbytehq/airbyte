@@ -18,15 +18,6 @@ Each stream will be output into a collection in Couchbase. The connector follows
   * `stream`: The source stream name
   * `data`: The actual record data
 
-### Features
-
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync            | Yes        |
-| Incremental - Append Sync    | Yes        |
-| Incremental - Dedupe Sync    | Yes        |
-| Namespaces                   | Yes        |
-
 ### Performance considerations
 
 * The connector uses batch operations for better performance

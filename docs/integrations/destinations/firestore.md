@@ -34,15 +34,6 @@ Google Firestore, officially known as Cloud Firestore, is a flexible, scalable d
 
 Each stream will be output into a BigQuery table.
 
-#### Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | ✅                   |       |
-| Incremental - Append Sync      | ✅                   |       |
-| Incremental - Append + Deduped | ✅                   |       |
-| Namespaces                     | ✅                   |       |
-
 ## Changelog
 
 <details>

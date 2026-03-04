@@ -19,17 +19,6 @@ For the **_hash_** implementation as a Redis data type the keys and the hashes a
 - `_airbyte_emitted_at`: a timestamp representing when the event was received from the data source.
 - `_airbyte_data`: a json text/object representing the data that was received from the data source.
 
-### Features
-
-| Feature                        | Support | Notes                                                                          |
-| :----------------------------- | :-----: | :----------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Existing keys in the Redis cache are deleted and replaced with the new keys.   |
-| Incremental - Append Sync      |   ✅    | New keys are inserted in the same keyspace without touching the existing keys. |
-| Incremental - Append + Deduped |   ❌    |                                                                                |
-| Namespaces                     |   ✅    | Namespaces will be used to determine the correct Redis key.                    |
-| SSH Tunnel Connection          |   ✅    |                                                                                |
-| SSL connection                 |   ✅    |                                                                                |
-
 ### Performance considerations
 
 As long as you have the necessary memory capacity for your cache, Redis should be able to handle even millions of records without any issues since the data is stored in-memory with the option to

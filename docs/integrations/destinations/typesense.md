@@ -14,15 +14,6 @@ With append mode, you have to create the collection first and can use [pre-defin
 
 Each stream will be output into its own collection in Typesense. If an id column is not provided, it will be generated.
 
-#### Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | No                   |       |
-
 ## Supported sync modes
 
 | Sync mode | Supported? |

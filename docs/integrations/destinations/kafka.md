@@ -23,15 +23,6 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 - `_airbyte_data`: a json blob representing with the event data.
 - `_airbyte_stream`: the name of each record's stream.
 
-#### Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | No                   |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
-
 ## Supported sync modes
 
 | Sync mode | Supported? |
