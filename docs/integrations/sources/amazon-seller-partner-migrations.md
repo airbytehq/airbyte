@@ -26,11 +26,7 @@ If you have the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream enabled in your
 2. Select the **Replication** tab.
    1. Select **Refresh source schema**.
    2. Select **OK**.
-
-```note
-The deprecated GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE stream will no longer appear. The new GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2 stream will be available for selection.
-```
-
+   > **Note:** The deprecated `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream will no longer appear. The new `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream will be available for selection.
 3. Enable the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream if needed.
 4. Select **Save changes** at the bottom of the page.
 5. Select **Save connection**.
