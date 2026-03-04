@@ -7,7 +7,7 @@ See your data on the [Convex dashboard](https://dashboard.convex.dev/).
 
 ## Overview
 
-The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Dedup. Note that for Incremental Dedup, Convex does not store a history table like some other destinations that use DBT, but Convex does store a deduped snapshot.
+The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Dedup. Note that for Incremental Dedup, Convex does not store a history table like some other destinations that use DBT, but Convex does store a deduped snapshot. Convex also supports Change Data Capture (CDC) and replicating incremental deletes.
 
 ### Output schema
 

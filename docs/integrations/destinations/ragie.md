@@ -9,6 +9,15 @@ This connector transforms your records into documents and ingests them into Ragi
 
 ---
 
+## Features
+
+- Extracts vector content from specified fields.
+- Attaches custom or static metadata to each document.
+- Assigns document names and external IDs.
+- Supports partitioning into multiple datasets (indexes).
+
+---
+
 ## Supported sync modes
 
 | Sync mode | Supported? |

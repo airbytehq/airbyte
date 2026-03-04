@@ -46,8 +46,6 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
     - Corresponding key to the above access ID.
 - Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
 
-### Sync mode support
-
 ## Configuration
 
 | Parameter          |  Type   | Notes                                                                                                                                                                                                                                                                       |
