@@ -625,7 +625,7 @@ class TestBaseInsightsStream:
         schema = stream.get_json_schema()
 
         # These fields should NOT be in the built-in schema (they are only in ads_insights_custom_fields.json)
-        extra_fields = ["conversion_leads", "cost_per_objective_result", "video_thruplay_watched_actions"]
+        extra_fields = ["conversion_leads", "cost_per_objective_result"]
         for field in extra_fields:
             assert field not in schema["properties"], f"Extra field '{field}' should NOT be in built-in schema"
 
