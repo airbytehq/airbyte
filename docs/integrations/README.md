@@ -1,6 +1,6 @@
 import ConnectorRegistry from '@site/src/components/ConnectorRegistry';
 
-# Connectors
+# Data replication connectors
 
 Airbyte's library of connectors is used by the [data replication platform](/platform). A connector is a tool to pull data from a source or push data to a destination. To learn more about connectors, see [Sources, destinations, and connectors](../platform/move-data/sources-destinations-connectors). To learn how to use a specific connector, find the documentation for the connector you want to use, below.
 

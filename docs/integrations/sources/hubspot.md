@@ -81,6 +81,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
 | `users`                     | `crm.objects.users.read`, `settings.users.read`                                                              |
+| `account_details`           | `oauth`                                                                                                      |
 | `workflows`                 | `automation`                                                                                                 |
 
 </details>
@@ -201,6 +202,7 @@ The HubSpot source connector supports the following streams:
 - [GoalsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
+- [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -343,7 +345,10 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.3.0 | 2026-02-17 | [70920](https://github.com/airbytehq/airbyte/pull/70920) | Add new stream Users |
+| 6.4.0 | 2026-03-04 | [70920](https://github.com/airbytehq/airbyte/pull/70920) | Add new stream Users |
+| 6.3.1-rc.1 | 2026-03-03 | [74032](https://github.com/airbytehq/airbyte/pull/74032) | fix(source-hubspot): use v3 properties API for CRM search streams |
+| 6.3.0 | 2026-02-26 | [61703](https://github.com/airbytehq/airbyte/pull/61703) | Add new stream `account_details` |
+| 6.2.2 | 2026-02-24 | [73909](https://github.com/airbytehq/airbyte/pull/73909) | Update dependencies |
 | 6.2.1 | 2026-02-17 | [73491](https://github.com/airbytehq/airbyte/pull/73491) | Update dependencies |
 | 6.2.0 | 2026-02-10 | [61704](https://github.com/airbytehq/airbyte/pull/61704) | Add new `properties` stream |
 | 6.1.1 | 2026-02-10 | [70486](https://github.com/airbytehq/airbyte/pull/70486) | Update dependencies |
