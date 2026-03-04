@@ -426,6 +426,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.2 | 2026-03-04 | [74280](https://github.com/airbytehq/airbyte/pull/74280) | Cast API throttle/rate-limit header values to float to prevent TypeError when Facebook returns string values |
 | 5.1.1 | 2026-03-03 | [74255](https://github.com/airbytehq/airbyte/pull/74255) | update upgradeDeadline for the v5.0.0 |
 | 5.1.0 | 2026-03-02 | [74134](https://github.com/airbytehq/airbyte/pull/74134) | Add opt-in `include_incrementality` config option to append `incrementality` to action attribution windows |
 | 5.0.1 | 2026-02-24 | [73281](https://github.com/airbytehq/airbyte/pull/73281) | fix(source-facebook-marketing): Fix Facebook Marketing UTC hardcoding with per-account timezone detection |
