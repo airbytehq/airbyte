@@ -40,10 +40,6 @@ definitions:
                   - 403
                 failure_type: config_error
             backoff_strategies:
-              - type: WaitTimeFromHeader
-                regex: ([-+]?\d+)
-                header: Retry-After
-                max_waiting_time_in_seconds: 3600
               - type: ExponentialBackoffStrategy
                 factor: 5
     SimpleRetriever:
@@ -155,11 +151,14 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
           type:
             type:
@@ -169,34 +168,21 @@ streams:
             type:
               - string
               - "null"
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
           name:
             type:
               - string
               - "null"
-          workbook:
+          object:
             type:
-              - object
+              - string
               - "null"
-            properties:
-              id:
-                type:
-                  - string
-                  - "null"
           columns:
             type:
               - object
               - "null"
             properties:
-              object:
-                type:
-                  - string
-                  - "null"
               data:
                 type:
                   - array
@@ -206,23 +192,11 @@ streams:
                     - object
                     - "null"
                   properties:
-                    object:
-                      type:
-                        - string
-                        - "null"
                     id:
                       type:
                         - string
                         - "null"
                     name:
-                      type:
-                        - string
-                        - "null"
-                    variant:
-                      type:
-                        - string
-                        - "null"
-                    data_type:
                       type:
                         - string
                         - "null"
@@ -239,11 +213,27 @@ streams:
                           type:
                             - string
                             - "null"
-                    user_defined:
+                    object:
+                      type:
+                        - string
+                        - "null"
+                    source:
+                      type:
+                        - string
+                        - "null"
+                    variant:
+                      type:
+                        - string
+                        - "null"
+                    data_type:
+                      type:
+                        - string
+                        - "null"
+                    read_only:
                       type:
                         - boolean
                         - "null"
-                    read_only:
+                    user_defined:
                       type:
                         - boolean
                         - "null"
@@ -251,11 +241,23 @@ streams:
                       type:
                         - string
                         - "null"
-                    worksheet_name:
+                    parent_column:
                       type:
                         - string
                         - "null"
                     source_column:
+                      type:
+                        - string
+                        - "null"
+                    is_primary_key:
+                      type:
+                        - boolean
+                        - "null"
+                    worksheet_name:
+                      type:
+                        - string
+                        - "null"
+                    option_group_id:
                       type:
                         - string
                         - "null"
@@ -264,14 +266,6 @@ streams:
                         - string
                         - "null"
                     source_field_label:
-                      type:
-                        - string
-                        - "null"
-                    source:
-                      type:
-                        - string
-                        - "null"
-                    parent_column:
                       type:
                         - string
                         - "null"
@@ -284,10 +278,6 @@ streams:
                           - object
                           - "null"
                         properties:
-                          object:
-                            type:
-                              - string
-                              - "null"
                           id:
                             type:
                               - string
@@ -296,34 +286,35 @@ streams:
                             type:
                               - string
                               - "null"
-                    option_group_id:
-                      type:
-                        - string
-                        - "null"
-                    is_primary_key:
-                      type:
-                        - boolean
-                        - "null"
+                          object:
+                            type:
+                              - string
+                              - "null"
+              object:
+                type:
+                  - string
+                  - "null"
               total_count:
                 type:
                   - number
+                  - "null"
+          pk_type:
+            type:
+              - string
+              - "null"
+          workbook:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
                   - "null"
           is_hidden:
             type:
               - boolean
               - "null"
-          pk_type:
-            type:
-              - string
-              - "null"
-          pk_column_uuids:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
           created_at:
             type:
               - string
@@ -341,14 +332,19 @@ streams:
                 type:
                   - number
                   - "null"
+          pk_column_uuids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
           records_per_page:
             type:
               - number
               - "null"
-        required:
-          - id
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: payout-dates
     retriever:
@@ -401,11 +397,14 @@ streams:
           field_path:
             - data
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
           type:
             type:
@@ -415,13 +414,13 @@ streams:
             type:
               - string
               - "null"
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
           name:
+            type:
+              - string
+              - "null"
+          object:
             type:
               - string
               - "null"
@@ -438,15 +437,15 @@ streams:
                   type:
                     - string
                     - "null"
-                object:
-                  type:
-                    - string
-                    - "null"
                 id:
                   type:
                     - string
                     - "null"
                 name:
+                  type:
+                    - string
+                    - "null"
+                object:
                   type:
                     - string
                     - "null"
@@ -463,10 +462,6 @@ streams:
                 - object
                 - "null"
               properties:
-                object:
-                  type:
-                    - string
-                    - "null"
                 id:
                   type:
                     - string
@@ -475,10 +470,11 @@ streams:
                   type:
                     - string
                     - "null"
-        required:
-          - id
+                object:
+                  type:
+                    - string
+                    - "null"
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: data-workbooks
     retriever:
@@ -499,25 +495,36 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
           name:
             type:
               - string
               - "null"
+          object:
+            type:
+              - string
+              - "null"
           is_active:
             type:
               - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
               - "null"
           worksheets:
             type:
@@ -536,15 +543,15 @@ streams:
                   type:
                     - string
                     - "null"
-                object:
-                  type:
-                    - string
-                    - "null"
                 id:
                   type:
                     - string
                     - "null"
                 name:
+                  type:
+                    - string
+                    - "null"
+                object:
                   type:
                     - string
                     - "null"
@@ -556,18 +563,7 @@ streams:
                   type:
                     - string
                     - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          updated_at:
-            type:
-              - string
-              - "null"
-        required:
-          - id
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: data-worksheets-list
     retriever:
@@ -588,11 +584,14 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
           type:
             type:
@@ -602,21 +601,13 @@ streams:
             type:
               - string
               - "null"
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
           name:
             type:
               - string
               - "null"
-          workbook:
-            type:
-              - string
-              - "null"
-          workbook_name:
+          object:
             type:
               - string
               - "null"
@@ -633,23 +624,11 @@ streams:
                   type:
                     - string
                     - "null"
-                object:
-                  type:
-                    - string
-                    - "null"
                 id:
                   type:
                     - string
                     - "null"
                 name:
-                  type:
-                    - string
-                    - "null"
-                variant:
-                  type:
-                    - string
-                    - "null"
-                data_type:
                   type:
                     - string
                     - "null"
@@ -674,7 +653,19 @@ streams:
                       type:
                         - string
                         - "null"
+                object:
+                  type:
+                    - string
+                    - "null"
                 formula:
+                  type:
+                    - string
+                    - "null"
+                variant:
+                  type:
+                    - string
+                    - "null"
+                data_type:
                   type:
                     - string
                     - "null"
@@ -690,6 +681,10 @@ streams:
                   type:
                     - string
                     - "null"
+          workbook:
+            type:
+              - string
+              - "null"
           created_at:
             type:
               - string
@@ -698,10 +693,11 @@ streams:
             type:
               - string
               - "null"
-        required:
-          - id
+          workbook_name:
+            type:
+              - string
+              - "null"
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: employee-assumptions
     retriever:
@@ -728,55 +724,7 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
-            type:
-              - string
-              - "null"
-          employee:
-            type:
-              - string
-              - "null"
-          display_value:
-            type:
-              - string
-              - "null"
-          period_group:
-            type:
-              - string
-              - "null"
-          start_date:
-            type:
-              - string
-              - "null"
-          end_date:
-            type:
-              - string
-              - "null"
-          payout_currency:
-            type:
-              - string
-              - "null"
-          hierarchy_group_override:
-            type:
-              - string
-              - "null"
-          payout_date_override:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          updated_at:
-            type:
-              - string
-              - "null"
-          statement_template:
             type:
               - string
               - "null"
@@ -785,111 +733,23 @@ streams:
               - object
               - "null"
             properties:
+              OTPR:
+                type:
+                  - string
+                  - "null"
               "null":
                 type:
                   - string
                   - "null"
-              FYV New and Growth NRR Target:
+              OTPR 1:
                 type:
                   - string
                   - "null"
-              MBO Weight Q3:
+              OTPR 2:
                 type:
                   - string
                   - "null"
-              MBO Weight Q2:
-                type:
-                  - string
-                  - "null"
-              OTC (LC):
-                type:
-                  - string
-                  - "null"
-              Hire Date:
-                type:
-                  - string
-                  - "null"
-              USD Conv Rate:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth ARR Target Weight:
-                type:
-                  - string
-                  - "null"
-              MBO Weight Q4:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth ARR Target:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth NRR Target Weight:
-                type:
-                  - string
-                  - "null"
-              MBO Weight Q1:
-                type:
-                  - string
-                  - "null"
-              Employee First Name:
-                type:
-                  - string
-                  - "null"
-              Employee Last Name:
-                type:
-                  - string
-                  - "null"
-              OTC Proration (Months):
-                type:
-                  - string
-                  - "null"
-              ARR Weight %:
-                type:
-                  - string
-                  - "null"
-              Team Member Job Title:
-                type:
-                  - string
-                  - "null"
-              NRR Weight %:
-                type:
-                  - string
-                  - "null"
-              Target Currency:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth ARR Threshold:
-                type:
-                  - string
-                  - "null"
-              FYV NRR Consulting Target Weight:
-                type:
-                  - string
-                  - "null"
-              FYV NRR Consulting Target:
-                type:
-                  - string
-                  - "null"
-              FYV Renewals ARR Target Weight:
-                type:
-                  - string
-                  - "null"
-              FYV Renewals ARR Target:
-                type:
-                  - string
-                  - "null"
-              FYV Renewal ARR Threshold:
-                type:
-                  - string
-                  - "null"
-              Liam's Opp OTPR:
-                type:
-                  - string
-                  - "null"
-              SQL Q3:
+              OTPR 3:
                 type:
                   - string
                   - "null"
@@ -897,23 +757,11 @@ streams:
                 type:
                   - string
                   - "null"
-              Opps Gen Base Rate:
-                type:
-                  - string
-                  - "null"
-              Opps Generated Q4:
-                type:
-                  - string
-                  - "null"
               SQL Q2:
                 type:
                   - string
                   - "null"
-              Opps Generated Q3:
-                type:
-                  - string
-                  - "null"
-              Opps Generated Q2:
+              SQL Q3:
                 type:
                   - string
                   - "null"
@@ -921,15 +769,23 @@ streams:
                 type:
                   - string
                   - "null"
-              Opps Generated Q1:
+              OTC (LC):
                 type:
                   - string
                   - "null"
-              Liam SQL OTPR:
+              SDR Team:
                 type:
                   - string
                   - "null"
-              SQL Outbound multiplier:
+              Hire Date:
+                type:
+                  - string
+                  - "null"
+              FYV Target:
+                type:
+                  - string
+                  - "null"
+              MBO Weight:
                 type:
                   - string
                   - "null"
@@ -941,75 +797,31 @@ streams:
                 type:
                   - string
                   - "null"
-              SQL OTPR (Manager):
+              ARR Weight %:
                 type:
                   - string
                   - "null"
-              SDR Team:
+              NRR Weight %:
                 type:
                   - string
                   - "null"
-              Opp OTPR (Manager):
+              Liam SQL OTPR:
                 type:
                   - string
                   - "null"
-              Booking Target Weight:
+              MBO Weight Q1:
                 type:
                   - string
                   - "null"
-              FYV Device Target:
+              MBO Weight Q2:
                 type:
                   - string
                   - "null"
-              Conversion Rate:
+              MBO Weight Q3:
                 type:
                   - string
                   - "null"
-              OTPR 1:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth Target Weight:
-                type:
-                  - string
-                  - "null"
-              MBO Weight:
-                type:
-                  - string
-                  - "null"
-              Revenue Goal Weight:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth Combined Target Weight:
-                type:
-                  - string
-                  - "null"
-              FYV Target:
-                type:
-                  - string
-                  - "null"
-              FYV Target Weight:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth Team Target Original:
-                type:
-                  - string
-                  - "null"
-              FYV Renewal Target Weight:
-                type:
-                  - string
-                  - "null"
-              FYV Renewal Team Target:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth Team Target:
-                type:
-                  - string
-                  - "null"
-              OTPR:
+              MBO Weight Q4:
                 type:
                   - string
                   - "null"
@@ -1017,35 +829,7 @@ streams:
                 type:
                   - string
                   - "null"
-              FYV Personal Target Weight:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth - Data Center Target:
-                type:
-                  - string
-                  - "null"
-              FYV New and Growth Renewal - Devices Target:
-                type:
-                  - string
-                  - "null"
-              FYV Personal Target:
-                type:
-                  - string
-                  - "null"
-              FYV Data Center Target Weight:
-                type:
-                  - string
-                  - "null"
-              FYV IoT Target Weight:
-                type:
-                  - string
-                  - "null"
-              Devices Team Target Weight:
-                type:
-                  - string
-                  - "null"
-              Devices Team Target:
+              USD Conv Rate:
                 type:
                   - string
                   - "null"
@@ -1053,23 +837,39 @@ streams:
                 type:
                   - string
                   - "null"
-              OTPR 3:
+              Conversion Rate:
                 type:
                   - string
                   - "null"
-              Opps Gen Accelerated Rate (USD):
+              Liam's Opp OTPR:
                 type:
                   - string
                   - "null"
-              Per Lead Rate (USD):
+              Target Currency:
                 type:
                   - string
                   - "null"
-              Opps Gen Base Rate (USD):
+              FYV Device Target:
                 type:
                   - string
                   - "null"
-              OTPR 2:
+              FYV Target Weight:
+                type:
+                  - string
+                  - "null"
+              Opps Generated Q1:
+                type:
+                  - string
+                  - "null"
+              Opps Generated Q2:
+                type:
+                  - string
+                  - "null"
+              Opps Generated Q3:
+                type:
+                  - string
+                  - "null"
+              Opps Generated Q4:
                 type:
                   - string
                   - "null"
@@ -1077,11 +877,207 @@ streams:
                 type:
                   - string
                   - "null"
-          period_group_final_process_date:
+              Employee Last Name:
+                type:
+                  - string
+                  - "null"
+              Opp OTPR (Manager):
+                type:
+                  - string
+                  - "null"
+              Opps Gen Base Rate:
+                type:
+                  - string
+                  - "null"
+              SQL OTPR (Manager):
+                type:
+                  - string
+                  - "null"
+              Devices Team Target:
+                type:
+                  - string
+                  - "null"
+              Employee First Name:
+                type:
+                  - string
+                  - "null"
+              FYV Personal Target:
+                type:
+                  - string
+                  - "null"
+              Per Lead Rate (USD):
+                type:
+                  - string
+                  - "null"
+              Revenue Goal Weight:
+                type:
+                  - string
+                  - "null"
+              Booking Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV IoT Target Weight:
+                type:
+                  - string
+                  - "null"
+              Team Member Job Title:
+                type:
+                  - string
+                  - "null"
+              OTC Proration (Months):
+                type:
+                  - string
+                  - "null"
+              FYV Renewal Team Target:
+                type:
+                  - string
+                  - "null"
+              FYV Renewals ARR Target:
+                type:
+                  - string
+                  - "null"
+              SQL Outbound multiplier:
+                type:
+                  - string
+                  - "null"
+              Opps Gen Base Rate (USD):
+                type:
+                  - string
+                  - "null"
+              FYV NRR Consulting Target:
+                type:
+                  - string
+                  - "null"
+              FYV Renewal ARR Threshold:
+                type:
+                  - string
+                  - "null"
+              FYV Renewal Target Weight:
+                type:
+                  - string
+                  - "null"
+              Devices Team Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV Personal Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV Data Center Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth ARR Target:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth NRR Target:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Team Target:
+                type:
+                  - string
+                  - "null"
+              FYV Renewals ARR Target Weight:
+                type:
+                  - string
+                  - "null"
+              Opps Gen Accelerated Rate (USD):
+                type:
+                  - string
+                  - "null"
+              FYV NRR Consulting Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth ARR Threshold:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth ARR Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth NRR Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth - Data Center Target:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Team Target Original:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Combined Target Weight:
+                type:
+                  - string
+                  - "null"
+              FYV New and Growth Renewal - Devices Target:
+                type:
+                  - string
+                  - "null"
+          object:
+            type:
+              - string
+              - "null"
+          employee:
+            type:
+              - string
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          period_group:
+            type:
+              - string
+              - "null"
+          display_value:
             type:
               - string
               - "null"
           assignment_type:
+            type:
+              - string
+              - "null"
+          payout_currency:
+            type:
+              - string
+              - "null"
+          statement_template:
+            type:
+              - string
+              - "null"
+          payout_date_override:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          hierarchy_group_override:
+            type:
+              - string
+              - "null"
+          period_group_final_process_date:
             type:
               - string
               - "null"
@@ -1106,19 +1102,22 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
           name:
+            type:
+              - string
+              - "null"
+          object:
             type:
               - string
               - "null"
@@ -1134,10 +1133,7 @@ streams:
             type:
               - string
               - "null"
-        required:
-          - id
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: transformation-worksheets
     retriever:
@@ -1158,17 +1154,16 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
           type:
-            type:
-              - string
-              - "null"
-          object:
             type:
               - string
               - "null"
@@ -1178,11 +1173,7 @@ streams:
             type:
               - string
               - "null"
-          workbook:
-            type:
-              - string
-              - "null"
-          workbook_name:
+          object:
             type:
               - string
               - "null"
@@ -1195,23 +1186,11 @@ streams:
                 - object
                 - "null"
               properties:
-                object:
-                  type:
-                    - string
-                    - "null"
                 id:
                   type:
                     - string
                     - "null"
                 name:
-                  type:
-                    - string
-                    - "null"
-                variant:
-                  type:
-                    - string
-                    - "null"
-                data_type:
                   type:
                     - string
                     - "null"
@@ -1232,7 +1211,19 @@ streams:
                       type:
                         - string
                         - "null"
+                object:
+                  type:
+                    - string
+                    - "null"
                 formula:
+                  type:
+                    - string
+                    - "null"
+                variant:
+                  type:
+                    - string
+                    - "null"
+                data_type:
                   type:
                     - string
                     - "null"
@@ -1248,6 +1239,10 @@ streams:
                   type:
                     - string
                     - "null"
+          workbook:
+            type:
+              - string
+              - "null"
           created_at:
             type:
               - string
@@ -1256,10 +1251,11 @@ streams:
             type:
               - string
               - "null"
-        required:
-          - id
+          workbook_name:
+            type:
+              - string
+              - "null"
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: uploads
     retriever:
@@ -1280,49 +1276,32 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
           url:
             type:
               - string
               - "null"
-          object_type:
-            type:
-              - string
-              - "null"
-          file_name:
-            type:
-              - string
-              - "null"
-          encoding:
-            type:
-              - string
-              - "null"
-          date_format:
-            type:
-              - string
-              - "null"
-          delimiter:
-            type:
-              - string
-              - "null"
-          status:
+          object:
             type:
               - string
               - "null"
           params:
             type:
               - object
+              - "null"
+          status:
+            type:
+              - string
               - "null"
           details:
             type:
@@ -1333,6 +1312,18 @@ streams:
                 type:
                   - string
                   - "null"
+          encoding:
+            type:
+              - string
+              - "null"
+          delimiter:
+            type:
+              - string
+              - "null"
+          file_name:
+            type:
+              - string
+              - "null"
           created_at:
             type:
               - string
@@ -1341,10 +1332,15 @@ streams:
             type:
               - string
               - "null"
-        required:
-          - id
+          date_format:
+            type:
+              - string
+              - "null"
+          object_type:
+            type:
+              - string
+              - "null"
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: users
     retriever:
@@ -1365,19 +1361,30 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
-          object:
+          id:
+            type: string
+          role:
             type:
               - string
               - "null"
-          id:
-            type: string
           email:
+            type:
+              - string
+              - "null"
+          locale:
+            type:
+              - string
+              - "null"
+          object:
             type:
               - string
               - "null"
@@ -1385,31 +1392,39 @@ streams:
             type:
               - string
               - "null"
-          first_name:
+          timezone:
             type:
               - string
+              - "null"
+          is_active:
+            type:
+              - boolean
               - "null"
           last_name:
             type:
               - string
               - "null"
-          role:
+          created_at:
             type:
               - string
               - "null"
-          timezone:
+          first_name:
             type:
               - string
               - "null"
-          enable_inquiry_notifications:
+          updated_at:
             type:
-              - boolean
+              - string
               - "null"
-          enable_statement_notifications:
+          last_activity:
             type:
-              - boolean
+              - string
               - "null"
-          eligible_to_receive_inquiries:
+          linked_employee:
+            type:
+              - string
+              - "null"
+          is_organization_admin:
             type:
               - boolean
               - "null"
@@ -1417,11 +1432,15 @@ streams:
             type:
               - boolean
               - "null"
-          enable_payout_processing_notifications:
+          enable_inquiry_notifications:
             type:
               - boolean
               - "null"
-          enable_connector_sync_email_notifications:
+          eligible_to_receive_inquiries:
+            type:
+              - boolean
+              - "null"
+          enable_statement_notifications:
             type:
               - boolean
               - "null"
@@ -1433,38 +1452,15 @@ streams:
             type:
               - boolean
               - "null"
-          is_organization_admin:
+          enable_payout_processing_notifications:
             type:
               - boolean
               - "null"
-          is_active:
+          enable_connector_sync_email_notifications:
             type:
               - boolean
               - "null"
-          linked_employee:
-            type:
-              - string
-              - "null"
-          last_activity:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          updated_at:
-            type:
-              - string
-              - "null"
-          locale:
-            type:
-              - string
-              - "null"
-        required:
-          - id
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: commission-plans
     retriever:
@@ -1485,51 +1481,24 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
-          period_groups:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                id:
-                  type:
-                    - string
-                    - "null"
-          payout_dates:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                id:
-                  type:
-                    - string
-                    - "null"
           name:
             type:
               - string
               - "null"
-          confetti_enabled:
+          object:
             type:
-              - boolean
+              - string
               - "null"
           is_active:
             type:
@@ -1543,6 +1512,32 @@ streams:
             type:
               - string
               - "null"
+          payout_dates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+          period_groups:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
           preview_config:
             type:
               - object
@@ -1556,14 +1551,15 @@ streams:
                 type:
                   - string
                   - "null"
+          confetti_enabled:
+            type:
+              - boolean
+              - "null"
           attainment_display_setting:
             type:
               - string
               - "null"
-        required:
-          - id
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: payout-period-groups
     retriever:
@@ -1584,31 +1580,26 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
-          object:
+          id:
+            type: string
+          name:
             type:
               - string
               - "null"
-          id:
-            type: string
           plan:
             type:
               - string
               - "null"
-          payout_dates:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          name:
+          object:
             type:
               - string
               - "null"
@@ -1620,10 +1611,15 @@ streams:
             type:
               - boolean
               - "null"
-        required:
-          - id
+          payout_dates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
         additionalProperties: true
-    primary_key: id
   - type: DeclarativeStream
     name: audit-logs
     retriever:
@@ -1644,11 +1640,15 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - created_at
         properties:
           version:
             type:
@@ -1656,52 +1656,6 @@ streams:
               - "null"
           id:
             type: string
-          object:
-            type:
-              - string
-              - "null"
-          organization_id:
-            type:
-              - string
-              - "null"
-          organization_name:
-            type:
-              - string
-              - "null"
-          user_id:
-            type:
-              - string
-              - "null"
-          user_name:
-            type:
-              - string
-              - "null"
-          user_email:
-            type:
-              - string
-              - "null"
-          logged_in_user_id:
-            type:
-              - string
-              - "null"
-          logged_in_user_name:
-            type:
-              - string
-              - "null"
-          logged_in_user_email:
-            type:
-              - string
-              - "null"
-          ip_address:
-            type:
-              - string
-              - "null"
-          created_at:
-            type: string
-          event_type:
-            type:
-              - string
-              - "null"
           data:
             type:
               - object
@@ -1724,6 +1678,115 @@ streams:
                     type:
                       - string
                       - "null"
+                  data:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      OTPR:
+                        type:
+                          - string
+                          - "null"
+                      Ramp:
+                        type:
+                          - string
+                          - "null"
+                      Notes:
+                        type:
+                          - string
+                          - "null"
+                      End Tier:
+                        type:
+                          - string
+                          - "null"
+                      OTC (LC):
+                        type:
+                          - string
+                          - "null"
+                      OTPR ARR:
+                        type:
+                          - string
+                          - "null"
+                      Vertical:
+                        type:
+                          - string
+                          - "null"
+                      Flat Rate:
+                        type:
+                          - string
+                          - "null"
+                      Unique ID:
+                        type:
+                          - string
+                          - "null"
+                      FYV Target:
+                        type:
+                          - string
+                          - "null"
+                      MBO Weight:
+                        type:
+                          - string
+                          - "null"
+                      Start Date:
+                        type:
+                          - string
+                          - "null"
+                      Start Tier:
+                        type:
+                          - string
+                          - "null"
+                      Table Name:
+                        type:
+                          - string
+                          - "null"
+                      Accel start:
+                        type:
+                          - string
+                          - "null"
+                      Accelerator:
+                        type:
+                          - string
+                          - "null"
+                      Employee ID:
+                        type:
+                          - string
+                          - "null"
+                      Tier Number:
+                        type:
+                          - string
+                          - "null"
+                      Employee Name:
+                        type:
+                          - string
+                          - "null"
+                      Vertical gate:
+                        type:
+                          - string
+                          - "null"
+                      Effective Date:
+                        type:
+                          - string
+                          - "null"
+                      Local Currency:
+                        type:
+                          - string
+                          - "null"
+                      FYV Renewals Target:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Growth Target:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Expansion Target:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Growth Target Weight:
+                        type:
+                          - string
+                          - "null"
                   name:
                     type:
                       - string
@@ -1745,6 +1808,31 @@ streams:
                           type:
                             - string
                             - "null"
+                  format:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      comma:
+                        type:
+                          - boolean
+                          - "null"
+                      places:
+                        type:
+                          - string
+                          - "null"
+                  formula:
+                    type:
+                      - string
+                      - "null"
+                  plan_id:
+                    type:
+                      - string
+                      - "null"
                   sources:
                     type:
                       - array
@@ -1810,9 +1898,33 @@ streams:
                                 type:
                                   - string
                                   - "null"
+                  variant:
+                    type:
+                      - string
+                      - "null"
+                  employee:
+                    type:
+                      - string
+                      - "null"
+                  end_date:
+                    type:
+                      - string
+                      - "null"
+                  data_type:
+                    type:
+                      - string
+                      - "null"
+                  file_name:
+                    type:
+                      - string
+                      - "null"
                   is_hidden:
                     type:
                       - boolean
+                      - "null"
+                  start_date:
+                    type:
+                      - string
                       - "null"
                   connections:
                     type:
@@ -1861,101 +1973,6 @@ streams:
                                 type:
                                   - string
                                   - "null"
-                  terminal_filters:
-                    type:
-                      - array
-                      - "null"
-                  transformation_columns:
-                    type:
-                      - array
-                      - "null"
-                    items:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        name:
-                          type:
-                            - string
-                            - "null"
-                        source_id:
-                          type:
-                            - string
-                            - "null"
-                        column_uuid:
-                          type:
-                            - string
-                            - "null"
-                        mapping_type:
-                          type:
-                            - string
-                            - "null"
-                        transformed_column_uuid:
-                          type:
-                            - string
-                            - "null"
-                        merged_columns:
-                          type:
-                            - array
-                            - "null"
-                          items:
-                            type:
-                              - object
-                              - "null"
-                            properties:
-                              name:
-                                type:
-                                  - string
-                                  - "null"
-                              source_id:
-                                type:
-                                  - string
-                                  - "null"
-                              column_uuid:
-                                type:
-                                  - string
-                                  - "null"
-                              mapping_type:
-                                type:
-                                  - string
-                                  - "null"
-                              transformed_column_uuid:
-                                type:
-                                  - string
-                                  - "null"
-                  formula:
-                    type:
-                      - string
-                      - "null"
-                  format:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      type:
-                        type:
-                          - string
-                          - "null"
-                      comma:
-                        type:
-                          - boolean
-                          - "null"
-                      places:
-                        type:
-                          - string
-                          - "null"
-                  variant:
-                    type:
-                      - string
-                      - "null"
-                  data_type:
-                    type:
-                      - string
-                      - "null"
-                  file_name:
-                    type:
-                      - string
-                      - "null"
                   object_name:
                     type:
                       - string
@@ -1964,120 +1981,11 @@ streams:
                     type:
                       - string
                       - "null"
-                  upload_mode:
+                  payout_date:
                     type:
                       - string
                       - "null"
-                  data:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      OTPR:
-                        type:
-                          - string
-                          - "null"
-                      Ramp:
-                        type:
-                          - string
-                          - "null"
-                      OTC (LC):
-                        type:
-                          - string
-                          - "null"
-                      Start Date:
-                        type:
-                          - string
-                          - "null"
-                      Accel start:
-                        type:
-                          - string
-                          - "null"
-                      Accelerator:
-                        type:
-                          - string
-                          - "null"
-                      Employee ID:
-                        type:
-                          - string
-                          - "null"
-                      Employee Name:
-                        type:
-                          - string
-                          - "null"
-                      Local Currency:
-                        type:
-                          - string
-                          - "null"
-                      FYV New and Expansion Target:
-                        type:
-                          - string
-                          - "null"
-                      Notes:
-                        type:
-                          - string
-                          - "null"
-                      End Tier:
-                        type:
-                          - string
-                          - "null"
-                      Flat Rate:
-                        type:
-                          - string
-                          - "null"
-                      Unique ID:
-                        type:
-                          - string
-                          - "null"
-                      Start Tier:
-                        type:
-                          - string
-                          - "null"
-                      Table Name:
-                        type:
-                          - string
-                          - "null"
-                      Tier Number:
-                        type:
-                          - string
-                          - "null"
-                      FYV Target:
-                        type:
-                          - string
-                          - "null"
-                      OTPR ARR:
-                        type:
-                          - string
-                          - "null"
-                      Vertical:
-                        type:
-                          - string
-                          - "null"
-                      MBO Weight:
-                        type:
-                          - string
-                          - "null"
-                      Vertical gate:
-                        type:
-                          - string
-                          - "null"
-                      Effective Date:
-                        type:
-                          - string
-                          - "null"
-                      FYV New and Growth Target:
-                        type:
-                          - string
-                          - "null"
-                      FYV New and Growth Target Weight:
-                        type:
-                          - string
-                          - "null"
-                      FYV Renewals Target:
-                        type:
-                          - string
-                          - "null"
-                  employee:
+                  upload_mode:
                     type:
                       - string
                       - "null"
@@ -2111,14 +2019,6 @@ streams:
                               type:
                                 - string
                                 - "null"
-                            email:
-                              type:
-                                - string
-                                - "null"
-                            roleName:
-                              type:
-                                - string
-                                - "null"
                             tabs:
                               type:
                                 - object
@@ -2141,27 +2041,15 @@ streams:
                                         type:
                                           - string
                                           - "null"
-                  docusign_account_id:
-                    type:
-                      - string
-                      - "null"
-                  docusign_envelope_id:
-                    type:
-                      - string
-                      - "null"
-                  end_date:
-                    type:
-                      - string
-                      - "null"
-                  start_date:
-                    type:
-                      - string
-                      - "null"
-                  plan_id:
-                    type:
-                      - string
-                      - "null"
-                  payout_date:
+                            email:
+                              type:
+                                - string
+                                - "null"
+                            roleName:
+                              type:
+                                - string
+                                - "null"
+                  hierarchy_group:
                     type:
                       - string
                       - "null"
@@ -2169,9 +2057,9 @@ streams:
                     type:
                       - string
                       - "null"
-                  hierarchy_group:
+                  terminal_filters:
                     type:
-                      - string
+                      - array
                       - "null"
                   managing_employee:
                     type:
@@ -2181,6 +2069,72 @@ streams:
                     type:
                       - string
                       - "null"
+                  docusign_account_id:
+                    type:
+                      - string
+                      - "null"
+                  docusign_envelope_id:
+                    type:
+                      - string
+                      - "null"
+                  transformation_columns:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        source_id:
+                          type:
+                            - string
+                            - "null"
+                        column_uuid:
+                          type:
+                            - string
+                            - "null"
+                        mapping_type:
+                          type:
+                            - string
+                            - "null"
+                        merged_columns:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                              source_id:
+                                type:
+                                  - string
+                                  - "null"
+                              column_uuid:
+                                type:
+                                  - string
+                                  - "null"
+                              mapping_type:
+                                type:
+                                  - string
+                                  - "null"
+                              transformed_column_uuid:
+                                type:
+                                  - string
+                                  - "null"
+                        transformed_column_uuid:
+                          type:
+                            - string
+                            - "null"
               before:
                 type:
                   - object
@@ -2190,7 +2144,129 @@ streams:
                     type:
                       - string
                       - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  data:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      OTPR:
+                        type:
+                          - string
+                          - "null"
+                      Ramp:
+                        type:
+                          - string
+                          - "null"
+                      OTC (LC):
+                        type:
+                          - string
+                          - "null"
+                      OTPR ARR:
+                        type:
+                          - string
+                          - "null"
+                      Template:
+                        type:
+                          - string
+                          - "null"
+                      Vertical:
+                        type:
+                          - string
+                          - "null"
+                      Unique ID:
+                        type:
+                          - string
+                          - "null"
+                      FYV Target:
+                        type:
+                          - string
+                          - "null"
+                      MBO Weight:
+                        type:
+                          - string
+                          - "null"
+                      Start Date:
+                        type:
+                          - string
+                          - "null"
+                      Accel start:
+                        type:
+                          - string
+                          - "null"
+                      Employee ID:
+                        type:
+                          - string
+                          - "null"
+                      RampUp_Days:
+                        type:
+                          - string
+                          - "null"
+                      Employee Name:
+                        type:
+                          - string
+                          - "null"
+                      Vertical gate:
+                        type:
+                          - string
+                          - "null"
+                      Effective Date:
+                        type:
+                          - string
+                          - "null"
+                      Local Currency:
+                        type:
+                          - string
+                          - "null"
+                      FYV Renewals Target:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Growth Target:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Expansion Target:
+                        type:
+                          - string
+                          - "null"
+                      FYV New and Growth Target Weight:
+                        type:
+                          - string
+                          - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  column:
+                    type:
+                      - string
+                      - "null"
+                  format:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      comma:
+                        type:
+                          - boolean
+                          - "null"
+                      places:
+                        type:
+                          - string
+                          - "null"
                   formula:
+                    type:
+                      - string
+                      - "null"
+                  plan_id:
                     type:
                       - string
                       - "null"
@@ -2259,178 +2335,27 @@ streams:
                                 type:
                                   - string
                                   - "null"
-                  data:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      OTPR:
-                        type:
-                          - string
-                          - "null"
-                      Ramp:
-                        type:
-                          - string
-                          - "null"
-                      OTC (LC):
-                        type:
-                          - string
-                          - "null"
-                      Start Date:
-                        type:
-                          - string
-                          - "null"
-                      Accel start:
-                        type:
-                          - string
-                          - "null"
-                      Employee ID:
-                        type:
-                          - string
-                          - "null"
-                      Employee Name:
-                        type:
-                          - string
-                          - "null"
-                      Local Currency:
-                        type:
-                          - string
-                          - "null"
-                      FYV New and Expansion Target:
-                        type:
-                          - string
-                          - "null"
-                      FYV Target:
-                        type:
-                          - string
-                          - "null"
-                      OTPR ARR:
-                        type:
-                          - string
-                          - "null"
-                      Template:
-                        type:
-                          - string
-                          - "null"
-                      Effective Date:
-                        type:
-                          - string
-                          - "null"
-                      FYV New and Growth Target:
-                        type:
-                          - string
-                          - "null"
-                      Vertical:
-                        type:
-                          - string
-                          - "null"
-                      MBO Weight:
-                        type:
-                          - string
-                          - "null"
-                      Vertical gate:
-                        type:
-                          - string
-                          - "null"
-                      FYV New and Growth Target Weight:
-                        type:
-                          - string
-                          - "null"
-                      Unique ID:
-                        type:
-                          - string
-                          - "null"
-                      RampUp_Days:
-                        type:
-                          - string
-                          - "null"
-                      FYV Renewals Target:
-                        type:
-                          - string
-                          - "null"
-                  transformation_columns:
-                    type:
-                      - array
-                      - "null"
-                    items:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        name:
-                          type:
-                            - string
-                            - "null"
-                        source_id:
-                          type:
-                            - string
-                            - "null"
-                        column_uuid:
-                          type:
-                            - string
-                            - "null"
-                        mapping_type:
-                          type:
-                            - string
-                            - "null"
-                        transformed_column_uuid:
-                          type:
-                            - string
-                            - "null"
-                  name:
+                  variant:
                     type:
                       - string
-                      - "null"
-                  format:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      type:
-                        type:
-                          - string
-                          - "null"
-                      comma:
-                        type:
-                          - boolean
-                          - "null"
-                      places:
-                        type:
-                          - string
-                          - "null"
-                  is_hidden:
-                    type:
-                      - boolean
                       - "null"
                   end_date:
                     type:
                       - string
                       - "null"
-                  start_date:
-                    type:
-                      - string
-                      - "null"
-                  id:
-                    type:
-                      - string
-                      - "null"
-                  plan_id:
-                    type:
-                      - string
-                      - "null"
-                  payout_date:
-                    type:
-                      - string
-                      - "null"
-                  period_group_id:
-                    type:
-                      - string
-                      - "null"
-                  variant:
+                  column_id:
                     type:
                       - string
                       - "null"
                   data_type:
+                    type:
+                      - string
+                      - "null"
+                  is_hidden:
+                    type:
+                      - boolean
+                      - "null"
+                  start_date:
                     type:
                       - string
                       - "null"
@@ -2481,11 +2406,7 @@ streams:
                                 type:
                                   - string
                                   - "null"
-                  managing_employee:
-                    type:
-                      - string
-                      - "null"
-                  reporting_employee:
+                  payout_date:
                     type:
                       - string
                       - "null"
@@ -2493,15 +2414,15 @@ streams:
                     type:
                       - string
                       - "null"
-                  column:
-                    type:
-                      - string
-                      - "null"
-                  column_id:
+                  period_group_id:
                     type:
                       - string
                       - "null"
                   data_variable_id:
+                    type:
+                      - string
+                      - "null"
+                  managing_employee:
                     type:
                       - string
                       - "null"
@@ -2513,6 +2434,39 @@ streams:
                     type:
                       - string
                       - "null"
+                  reporting_employee:
+                    type:
+                      - string
+                      - "null"
+                  transformation_columns:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        source_id:
+                          type:
+                            - string
+                            - "null"
+                        column_uuid:
+                          type:
+                            - string
+                            - "null"
+                        mapping_type:
+                          type:
+                            - string
+                            - "null"
+                        transformed_column_uuid:
+                          type:
+                            - string
+                            - "null"
               source:
                 type:
                   - string
@@ -2521,7 +2475,33 @@ streams:
                 type:
                   - boolean
                   - "null"
+          object:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
           object_id:
+            type:
+              - string
+              - "null"
+          user_name:
+            type:
+              - string
+              - "null"
+          created_at:
+            type: string
+          event_type:
+            type:
+              - string
+              - "null"
+          ip_address:
+            type:
+              - string
+              - "null"
+          user_email:
             type:
               - string
               - "null"
@@ -2554,9 +2534,26 @@ streams:
                   type:
                     - string
                     - "null"
-        required:
-          - id
-          - created_at
+          organization_id:
+            type:
+              - string
+              - "null"
+          logged_in_user_id:
+            type:
+              - string
+              - "null"
+          organization_name:
+            type:
+              - string
+              - "null"
+          logged_in_user_name:
+            type:
+              - string
+              - "null"
+          logged_in_user_email:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     incremental_sync:
       type: DatetimeBasedCursor
@@ -2569,71 +2566,28 @@ streams:
         type: RequestOption
         field_name: start_date
         inject_into: request_parameter
-    primary_key: id
   - type: DeclarativeStream
+    name: attribute-worksheet-records
     retriever:
       type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.captivateiq.com/ciq/v1/attribute-worksheets/{{
+          stream_partition['id'] }}/records
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - data
-      requester:
-        type: HttpRequester
-        http_method: GET
-        url: >-
-          https://api.captivateiq.com/ciq/v1/attribute-worksheets/{{
-          stream_partition['id'] }}/records
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: Authorization
-          api_token: Token {{ config['api_token'] }}
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 10
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 401
-                    - 403
-                  failure_type: config_error
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  regex: ([-+]?\d+)
-                  header: Retry-After
-                  max_waiting_time_in_seconds: 3600
-                - type: ExponentialBackoffStrategy
-                  factor: 5
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response['next'] }}"
-          stop_condition: "{{ 'next' not in response }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -2643,7 +2597,7 @@ streams:
             parent_key: id
             partition_field: id
             lazy_read_pointer: []
-    name: attribute-worksheet-records
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2784,7 +2738,6 @@ streams:
         required:
           - id
         additionalProperties: true
-    primary_key: id
     transformations:
       - type: AddFields
         fields:
@@ -2794,91 +2747,32 @@ streams:
             value: "{{ stream_partition['id'] }}"
             value_type: string
   - type: DeclarativeStream
+    name: period-groups
     retriever:
       type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/period-groups
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - data
-      requester:
-        type: HttpRequester
-        http_method: GET
-        url: https://api.captivateiq.com/ciq/v1/period-groups
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: Authorization
-          api_token: Token {{ config['api_token'] }}
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 10
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 401
-                    - 403
-                  failure_type: config_error
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  regex: ([-+]?\d+)
-                  header: Retry-After
-                  max_waiting_time_in_seconds: 3600
-                - type: ExponentialBackoffStrategy
-                  factor: 5
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response['next'] }}"
-          stop_condition: "{{ 'next' not in response }}"
-    name: period-groups
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
-            type:
-              - string
-              - "null"
-          plan:
-            type:
-              - string
-              - "null"
-          plan_name:
-            type:
-              - string
-              - "null"
-          workbook:
             type:
               - string
               - "null"
@@ -2886,9 +2780,25 @@ streams:
             type:
               - string
               - "null"
+          plan:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          workbook:
+            type:
+              - string
+              - "null"
           is_active:
             type:
               - boolean
+              - "null"
+          plan_name:
+            type:
+              - string
               - "null"
           created_at:
             type:
@@ -2900,78 +2810,31 @@ streams:
               - "null"
         additionalProperties: true
   - type: DeclarativeStream
+    name: payout-plans
     retriever:
       type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.captivateiq.com/ciq/v1/payouts/plans
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - data
-      requester:
-        type: HttpRequester
-        http_method: GET
-        url: https://api.captivateiq.com/ciq/v1/payouts/plans
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: Authorization
-          api_token: Token {{ config['api_token'] }}
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 10
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 401
-                    - 403
-                  failure_type: config_error
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  regex: ([-+]?\d+)
-                  header: Retry-After
-                  max_waiting_time_in_seconds: 3600
-                - type: ExponentialBackoffStrategy
-                  factor: 5
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response['next'] }}"
-          stop_condition: "{{ 'next' not in response }}"
-    name: payout-plans
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
             type:
               - string
@@ -2980,10 +2843,26 @@ streams:
             type:
               - string
               - "null"
-          confetti_enabled:
+          object:
+            type:
+              - string
+              - "null"
+          is_active:
             type:
               - boolean
               - "null"
+          is_deleted:
+            type:
+              - boolean
+              - "null"
+          payout_dates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
           period_groups:
             type:
               - array
@@ -2997,87 +2876,33 @@ streams:
                   type:
                     - string
                     - "null"
-          payout_dates:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          is_active:
-            type:
-              - boolean
-              - "null"
-          is_deleted:
+          confetti_enabled:
             type:
               - boolean
               - "null"
         additionalProperties: true
   - type: DeclarativeStream
+    name: data-worksheet-records
     retriever:
       type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.captivateiq.com/ciq/v1/data-worksheets/{{
+          stream_partition['id'] }}/records
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - data
-      requester:
-        type: HttpRequester
-        http_method: GET
-        url: >-
-          https://api.captivateiq.com/ciq/v1/data-worksheets/{{
-          stream_partition['id'] }}/records
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: Authorization
-          api_token: Token {{ config['api_token'] }}
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 10
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 401
-                    - 403
-                  failure_type: config_error
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  regex: ([-+]?\d+)
-                  header: Retry-After
-                  max_waiting_time_in_seconds: 3600
-                - type: ExponentialBackoffStrategy
-                  factor: 5
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response['next'] }}"
-          stop_condition: "{{ 'next' not in response }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -3085,10 +2910,10 @@ streams:
             stream:
               $ref: "#/streams/5"
             parent_key: id
+            extra_fields: []
             partition_field: id
             lazy_read_pointer: []
-            extra_fields: []
-    name: data-worksheet-records
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3106,46 +2931,12 @@ streams:
               - string
               - "null"
           updated_at:
-            type:
-              - string
-              - "null"
+            type: string
           data:
             type:
               - object
               - "null"
             properties:
-              Unique ID:
-                type:
-                  - string
-                  - "null"
-              Opportunity ID:
-                type:
-                  - string
-                  - "null"
-              Line Item ID:
-                type:
-                  - string
-                  - "null"
-              Contract Total:
-                type:
-                  - string
-                  - "null"
-              Invoice Number:
-                type:
-                  - string
-                  - "null"
-              Invoiced Amount:
-                type:
-                  - string
-                  - "null"
-              Invoice Date:
-                type:
-                  - string
-                  - "null"
-              Contract End Date:
-                type:
-                  - string
-                  - "null"
               ID:
                 type:
                   - string
@@ -3176,8 +2967,8 @@ streams:
               - "null"
         required:
           - id
+          - updated_at
         additionalProperties: true
-    primary_key: id
     transformations:
       - type: AddFields
         fields:
@@ -3186,70 +2977,41 @@ streams:
               - parent_id
             value: "{{ stream_partition['id'] }}"
             value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_datetime_formats: []
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: updated_at_after
   - type: DeclarativeStream
+    name: hierarchies
     retriever:
       type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.captivateiq.com/ciq/v1/hierarchy-groups/{{
+          stream_partition['id'] }}/hierarchies
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - data
-      requester:
-        type: HttpRequester
-        http_method: GET
-        url: >-
-          https://api.captivateiq.com/ciq/v1/hierarchy-groups/{{
-          stream_partition['id'] }}/hierarchies
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: Authorization
-          api_token: Token {{ config['api_token'] }}
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 10
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-                  failure_type: transient_error
-                - type: HttpResponseFilter
-                  action: FAIL
-                  http_codes:
-                    - 401
-                    - 403
-                  failure_type: config_error
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  regex: ([-+]?\d+)
-                  header: Retry-After
-                  max_waiting_time_in_seconds: 3600
-                - type: ExponentialBackoffStrategy
-                  factor: 5
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response['next'] }}"
-          stop_condition: "{{ 'next' not in response }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -3257,21 +3019,40 @@ streams:
             stream:
               $ref: "#/streams/7"
             parent_key: id
+            extra_fields: []
             partition_field: id
             lazy_read_pointer: []
-            extra_fields: []
-    name: hierarchies
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
+          id:
+            type:
+              - string
+              - "null"
           object:
             type:
               - string
               - "null"
-          id:
+          end_date:
+            type:
+              - string
+              - "null"
+          parent_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          updated_at:
             type:
               - string
               - "null"
@@ -3284,26 +3065,6 @@ streams:
               - string
               - "null"
           reporting_employee:
-            type:
-              - string
-              - "null"
-          start_date:
-            type:
-              - string
-              - "null"
-          end_date:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          updated_at:
-            type:
-              - string
-              - "null"
-          parent_id:
             type:
               - string
               - "null"
@@ -3361,16 +3122,72 @@ metadata:
       streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
     employees:
       isStale: false
-      hasRecords: true
-      streamHash: 481e16d964596db66f1d8870b8f485ce0b4687cd
+      hasRecords: false
+      streamHash: 0078db3130c24e34ec5b3543c8c3e3d888ada966
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      responsesAreSuccessful: false
     audit-logs:
       isStale: false
       hasRecords: true
       streamHash: 2964ffcb8047d60c3ece4fa5c64e2dce9a61f58d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    hierarchies:
+      isStale: false
+      hasRecords: true
+      streamHash: 37891d724573432c935268a237dabf9659998737
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payout-dates:
+      isStale: false
+      hasRecords: true
+      streamHash: 3abc3936f4a4e0f9d1045d4417fa8e2edae613d9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payout-plans:
+      isStale: false
+      hasRecords: true
+      streamHash: 75a7594c99ac90550c37f5f8ff71dbf528fc5aec
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    period-groups:
+      isStale: false
+      hasRecords: true
+      streamHash: 914da74bb1b7add209b2a1b99e12fa9f0dfabba5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    report-models:
+      isStale: false
+      hasRecords: true
+      streamHash: 192328263488bd0adc443153ab50a56189ac8f33
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    data-workbooks:
+      isStale: false
+      hasRecords: true
+      streamHash: da1d0656b1c3266738e5e035eeb753d07a0e9834
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    operiod-groups:
+      isStale: false
+      hasRecords: true
+      streamHash: decce2d37bf502fc81303d4dc2aba69ac0fafd2e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -3391,82 +3208,10 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    attribute-worksheet-records:
-      streamHash: 095ce25ad8359d3e0e7037878194777badb6db98
-      isStale: false
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    payout-dates:
-      isStale: false
-      hasRecords: true
-      streamHash: 3abc3936f4a4e0f9d1045d4417fa8e2edae613d9
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    payout-plans:
-      streamHash: 75a7594c99ac90550c37f5f8ff71dbf528fc5aec
-      isStale: false
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    attribute-worksheet-list:
-      isStale: false
-      hasRecords: true
-      streamHash: 0e1869c7e2c0a32416614cd9ad50e57b5e5689cd
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     data-worksheets-list:
       isStale: false
       hasRecords: true
       streamHash: e2607e4c8b22f65451a4b2ac5e62ac458582962a
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    data-worksheet-records:
-      streamHash: 567f6f18e1a9f1283899526613b67dfb16bfcb2a
-      isStale: false
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    hierarchies:
-      streamHash: 37891d724573432c935268a237dabf9659998737
-      isStale: false
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    transformation-worksheet-records:
-      streamHash: 7121797fb7ab2b0924b4b1a918eaecee8b06d26a
-      isStale: false
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    data-workbooks:
-      isStale: false
-      hasRecords: true
-      streamHash: da1d0656b1c3266738e5e035eeb753d07a0e9834
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    report-models:
-      isStale: false
-      hasRecords: true
-      streamHash: 192328263488bd0adc443153ab50a56189ac8f33
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -3479,6 +3224,22 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    data-worksheet-records:
+      isStale: false
+      hasRecords: true
+      streamHash: f5ce55453f564ca4a99ff9ecda1a04f928a6e024
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    attribute-worksheet-list:
+      isStale: false
+      hasRecords: true
+      streamHash: 0e1869c7e2c0a32416614cd9ad50e57b5e5689cd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     transformation-worksheets:
       isStale: false
       hasRecords: true
@@ -3487,47 +3248,49 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    operiod-groups:
-      isStale: false
+    attribute-worksheet-records:
+      isStale: true
       hasRecords: true
-      streamHash: decce2d37bf502fc81303d4dc2aba69ac0fafd2e
+      streamHash: 076e7eb3890ab2c1528da4527be16bcea4a2906b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    period-groups:
-      streamHash: 914da74bb1b7add209b2a1b99e12fa9f0dfabba5
+    transformation-worksheet-records:
       isStale: false
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 7121797fb7ab2b0924b4b1a918eaecee8b06d26a
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payout-period-groups:
+      streamHash: 47d4984ba9bce6e8a87e11d3ec0927be732fed5d
   autoImportSchema:
     users: true
     uploads: true
     employees: true
     audit-logs: true
-    commission-plans: true
-    hierarchy-groups: true
-    attribute-worksheet-records: true
+    hierarchies: true
     payout-dates: true
     payout-plans: true
-    attribute-worksheet-list: true
-    report-model-: true
-    data-workbooks-: true
-    data-worksheet-records: true
-    data-worksheets-list: true
-    employee-assumptions-: true
-    hierarchies: true
-    transformation-worksheet-records: true
-    data-workbooks: true
-    report-models: true
-    employee-assumptions: true
-    transformation-worksheets-: true
-    transformation-worksheets: true
-    operiod-groups: true
     period-groups: true
+    report-model-: true
+    report-models: true
+    data-workbooks: true
+    operiod-groups: true
+    data-workbooks-: true
+    commission-plans: true
+    hierarchy-groups: true
+    data-worksheets-list: true
+    employee-assumptions: true
+    employee-assumptions-: true
+    data-worksheet-records: true
+    attribute-worksheet-list: true
+    transformation-worksheets: true
+    transformation-worksheets-: true
+    attribute-worksheet-records: true
+    transformation-worksheet-records: true
 
 concurrency_level:
   type: ConcurrencyLevel
