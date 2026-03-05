@@ -306,13 +306,11 @@ class PostgresRawDataDumper(
                 // We use the stream schema to get the original field names, then transform them
                 // using the postgres name transformation logic
                 val finalToInputColumnNames = mutableMapOf<String, String>()
-                if (stream.schema is ObjectType) {
-                    val objectSchema = stream.schema as ObjectType
-                    for (fieldName in objectSchema.properties.keys) {
-                        val transformedName = fieldName.toPostgresCompatibleName()
-                        // Map transformed name back to original name
-                        finalToInputColumnNames[transformedName] = fieldName
-                    }
+                val inputSchema = stream.tableSchema.columnSchema.inputSchema
+                for (fieldName in inputSchema.keys) {
+                    val transformedName = fieldName.toPostgresCompatibleName()
+                    // Map transformed name back to original name
+                    finalToInputColumnNames[transformedName] = fieldName
                 }
                 // Also check if inputToFinalColumnNames mapping is available
                 val inputToFinalColumnNames =
@@ -354,79 +352,78 @@ class PostgresRawDataDumper(
                             // object
                             val properties = linkedMapOf<String, AirbyteValue>()
 
-                            if (stream.schema is ObjectType) {
-                                val objectSchema = stream.schema as ObjectType
+                            val schemaFields = stream.tableSchema.columnSchema.inputSchema
 
-                                // Build a map of lowercase column names to actual column names from
-                                // the result set
-                                val columnMap = mutableMapOf<String, String>()
-                                for (i in 1..resultSet.metaData.getColumnCount()) {
-                                    val actualColumnName = resultSet.metaData.getColumnName(i)
-                                    columnMap[actualColumnName.lowercase()] = actualColumnName
-                                }
+                            // Build a map of lowercase column names to actual column names from
+                            // the result set
+                            val columnMap = mutableMapOf<String, String>()
+                            for (i in 1..resultSet.metaData.getColumnCount()) {
+                                val actualColumnName = resultSet.metaData.getColumnName(i)
+                                columnMap[actualColumnName.lowercase()] = actualColumnName
+                            }
 
-                                for ((fieldName, fieldType) in objectSchema.properties) {
-                                    try {
-                                        // Map input field name to the transformed final column name
-                                        // First check the inputToFinalColumnNames mapping, then
-                                        // fall
-                                        // back to applying postgres transformation directly
-                                        val transformedColumnName =
-                                            inputToFinalColumnNames[fieldName]
-                                                ?: fieldName.toPostgresCompatibleName()
+                            for ((fieldName, fieldType) in schemaFields) {
+                                try {
+                                    // Map input field name to the transformed final column name
+                                    // First check the inputToFinalColumnNames mapping, then
+                                    // fall
+                                    // back to applying postgres transformation directly
+                                    val transformedColumnName =
+                                        inputToFinalColumnNames[fieldName]
+                                            ?: fieldName.toPostgresCompatibleName()
 
-                                        // Try to find the actual column name (case-insensitive
-                                        // lookup)
-                                        val actualColumnName =
-                                            columnMap[transformedColumnName.lowercase()]
-                                                ?: transformedColumnName
-                                        val columnValue = resultSet.getObject(actualColumnName)
-                                        properties[fieldName] =
-                                            when (columnValue) {
-                                                null -> NullValue
-                                                is org.postgresql.util.PGobject -> {
-                                                    // JSONB columns (for arrays, objects, unknown
-                                                    // types)
-                                                    columnValue.value
-                                                        ?.deserializeToNode()
-                                                        ?.toAirbyteValue()
-                                                        ?: NullValue
-                                                }
-                                                else -> {
-                                                    // Primitive types - convert directly
-                                                    when (fieldType.type) {
-                                                        is io.airbyte.cdk.load.data.IntegerType ->
-                                                            io.airbyte.cdk.load.data.IntegerValue(
-                                                                (columnValue as Number).toLong()
-                                                            )
-                                                        is io.airbyte.cdk.load.data.NumberType ->
-                                                            io.airbyte.cdk.load.data.NumberValue(
-                                                                (columnValue
-                                                                        as java.math.BigDecimal)
-                                                                    .toDouble()
-                                                                    .toBigDecimal()
-                                                            )
-                                                        is io.airbyte.cdk.load.data.BooleanType ->
-                                                            io.airbyte.cdk.load.data.BooleanValue(
-                                                                columnValue as Boolean
-                                                            )
-                                                        is io.airbyte.cdk.load.data.StringType ->
-                                                            StringValue(columnValue.toString())
-                                                        else -> StringValue(columnValue.toString())
-                                                    }
+                                    // Try to find the actual column name (case-insensitive
+                                    // lookup)
+                                    val actualColumnName =
+                                        columnMap[transformedColumnName.lowercase()]
+                                            ?: transformedColumnName
+                                    val columnValue = resultSet.getObject(actualColumnName)
+                                    properties[fieldName] =
+                                        when (columnValue) {
+                                            null -> NullValue
+                                            is org.postgresql.util.PGobject -> {
+                                                // JSONB columns (for arrays, objects, unknown
+                                                // types)
+                                                columnValue.value
+                                                    ?.deserializeToNode()
+                                                    ?.toAirbyteValue()
+                                                    ?: NullValue
+                                            }
+                                            else -> {
+                                                // Primitive types - convert directly
+                                                when (fieldType.type) {
+                                                    is io.airbyte.cdk.load.data.IntegerType ->
+                                                        io.airbyte.cdk.load.data.IntegerValue(
+                                                            (columnValue as Number).toLong()
+                                                        )
+                                                    is io.airbyte.cdk.load.data.NumberType ->
+                                                        io.airbyte.cdk.load.data.NumberValue(
+                                                            (columnValue as java.math.BigDecimal)
+                                                                .toDouble()
+                                                                .toBigDecimal()
+                                                        )
+                                                    is io.airbyte.cdk.load.data.BooleanType ->
+                                                        io.airbyte.cdk.load.data.BooleanValue(
+                                                            columnValue as Boolean
+                                                        )
+                                                    is io.airbyte.cdk.load.data.StringType ->
+                                                        StringValue(columnValue.toString())
+                                                    else -> StringValue(columnValue.toString())
                                                 }
                                             }
-                                    } catch (e: Exception) {
-                                        // Column doesn't exist or error reading it, set to null
-                                        properties[fieldName] = NullValue
-                                    }
+                                        }
+                                } catch (e: Exception) {
+                                    // Column doesn't exist or error reading it, set to null
+                                    properties[fieldName] = NullValue
                                 }
                             }
 
                             ObjectValue(properties)
                         }
 
-                    val coercedData = coerceValue(rawData, stream.schema)
+                    val schemaAsType =
+                        ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
+                    val coercedData = coerceValue(rawData, schemaAsType)
 
                     val outputRecord =
                         OutputRecord(

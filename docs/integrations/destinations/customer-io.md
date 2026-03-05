@@ -43,14 +43,17 @@ Here are the destination objects and their respective operations that are curren
 - [Person](https://docs.customer.io/journeys/create-update-person/): Identifies a person and assigns traits to them.
 - [Person Events](https://docs.customer.io/journeys/events/): Track an event for a user that is known or not by Customer.io. Required fields: `person_email`, `event_name`. Optional fields: `event_id` (for event deduplication), `timestamp`.
 
-### Features
+### Supported sync modes
 
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync            | Yes        |
-| Incremental - Append Sync    | Yes        |
-| Incremental - Dedupe Sync    | Yes        |
-| Namespaces                   | Yes        |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | No |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+
+This is a [data activation](/platform/move-data/elt-data-activation) destination. In addition to the Airbyte sync modes above, Customer.io supports identify (person) and track (event) operations configured per stream.
 
 ### Restrictions
 
@@ -70,12 +73,17 @@ In order to configure this connector, you need to generate your Track API Key an
 
 **Object Storage for Rejected Records**: This connector supports data activation and can optionally store [rejected records](/platform/move-data/rejected-records) in object storage (such as S3). Configure object storage in the connector settings to capture records that couldn't be synced to Customer.io due to schema validation issues or other errors.
 
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                   |
 |:--------|:-----------|:----------------------------------------------------------|:----------------------------------------------------------|
-| 0.0.9 | 2026-01-26 | [72303](https://github.com/airbytehq/airbyte/pull/72303) | Upgrade CDK to 0.2.0 |
-| 0.0.8 | 2025-11-05 | [69132](https://github.com/airbytehq/airbyte/pull/69132) | Upgrade to Bulk CDK 0.1.61. |
+| 0.0.10  | 2026-02-09 | [72973](https://github.com/airbytehq/airbyte/pull/72973) | Upgrade CDK to 1.0.1                                      |
+| 0.0.9   | 2026-01-26 | [72303](https://github.com/airbytehq/airbyte/pull/72303) | Upgrade CDK to 0.2.0                                      |
+| 0.0.8   | 2025-11-05 | [69132](https://github.com/airbytehq/airbyte/pull/69132) | Upgrade to Bulk CDK 0.1.61.                               |
 | 0.0.7   | 2025-09-23 | [66571](https://github.com/airbytehq/airbyte/pull/66571)      | Fix person_identify in incremental mode                   |
 | 0.0.6   | 2025-09-18 | [66238](https://github.com/airbytehq/airbyte/pull/66238)  | Use low-code discover definition and pin to a CDK version |
 | 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)  | Update following breaking changes on spec                 |
