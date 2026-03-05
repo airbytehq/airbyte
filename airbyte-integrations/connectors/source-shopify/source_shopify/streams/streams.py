@@ -10,6 +10,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
+    CollectionProduct,
     CustomerAddresses,
     CustomerJourney,
     DeliveryProfile,
@@ -323,6 +324,21 @@ class MetafieldCollections(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldCollection = MetafieldCollection
 
 
+class CollectionProducts(IncrementalShopifyGraphQlBulkStream):
+    """
+    Stream that returns all products associated with each collection, including both
+    custom collections and smart collections. Unlike the Collects stream which only
+    returns manually associated products, this stream returns all products that belong
+    to a collection (including those matched by smart collection rules).
+
+    https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection#field-Collection.fields.products
+    """
+
+    bulk_query: CollectionProduct = CollectionProduct
+    cursor_field = "collection_updated_at"
+    primary_key = ["collection_id", "product_id"]
+
+
 class BalanceTransactions(IncrementalShopifyStream):
     """
     PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
@@ -471,6 +487,17 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
 
     query = DeliveryProfile
     response_field = "deliveryProfiles"
+
+    def stream_slices(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(stream_state=stream_state, **kwargs):
+            parent = stream_slice.get("parent", {})
+            profile_location_groups = parent.get("profile_location_groups", [])
+            if profile_location_groups:
+                yield stream_slice
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json().get("data", {})

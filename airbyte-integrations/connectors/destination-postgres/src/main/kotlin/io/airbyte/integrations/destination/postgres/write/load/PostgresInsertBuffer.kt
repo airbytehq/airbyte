@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.write.load
 
-import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
@@ -30,9 +29,9 @@ class PostgresInsertBuffer(
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
-    @VisibleForTesting internal var csvFilePath: Path? = null
+    internal var csvFilePath: Path? = null
 
-    @VisibleForTesting internal var recordCount = 0
+    internal var recordCount = 0
 
     private var csvPrinter: CSVPrinter? = null
 

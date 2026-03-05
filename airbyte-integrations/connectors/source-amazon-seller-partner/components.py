@@ -28,12 +28,21 @@ from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now,
 
 logger = logging.getLogger("airbyte")
 
+# Module-level reference to the authenticator instance for token invalidation on 403 errors
+_authenticator_instance: Optional["AmazonSPOauthAuthenticator"] = None
+
+# Error message that indicates the access token has expired (returned by Amazon SP API)
+TOKEN_EXPIRED_ERROR_MESSAGE = "The access token you provided has expired."
+
 
 @dataclass
 class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
     """
     This class extends the DeclarativeOauth2Authenticator functionality
-    and allows to pass custom headers to the refresh access token requests
+    and allows to pass custom headers to the refresh access token requests.
+
+    It also supports reactive token refresh when the Amazon SP API returns a 403 error
+    indicating the access token has expired.
     """
 
     host: Union[InterpolatedString, str] = None
@@ -41,6 +50,9 @@ class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self._host = InterpolatedString.create(self.host, parameters=parameters)
+        # Register this instance for token invalidation by the backoff strategy
+        global _authenticator_instance
+        _authenticator_instance = self
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {
@@ -53,6 +65,16 @@ class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
     def get_refresh_request_headers(self) -> Mapping[str, Any]:
         return {"Content-Type": "application/x-www-form-urlencoded"}
 
+    def invalidate_token(self) -> None:
+        """
+        Force the token to appear expired so that the next call to get_access_token()
+        will trigger a refresh. This is called when the Amazon SP API returns a 403 error
+        with a message indicating the access token has expired.
+        """
+        # Set the token expiry date to the past to force a refresh
+        self.set_token_expiry_date(ab_datetime_parse("1970-01-01T00:00:00Z"))
+        logger.info("Access token invalidated due to 403 'token expired' response from Amazon SP API")
+
 
 @dataclass
 class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBackoffStrategy):
@@ -60,6 +82,10 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
     This strategy is designed for scenarios where the server communicates retry-after durations
     through HTTP headers. The wait time is derived by taking the reciprocal of the value extracted
     from the header. If the header does not provide a valid time, a default backoff time is used.
+
+    Additionally, this strategy detects when the Amazon SP API returns a 403 error with a message
+    indicating the access token has expired, and invalidates the token so that the next retry
+    will use a fresh token.
     """
 
     default_backoff_time: Optional[float] = 10
@@ -69,11 +95,47 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
         response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
         attempt_count: int,
     ) -> Optional[float]:
+        # Check if this is a token expiration error and invalidate the token if so
+        self._check_and_invalidate_expired_token(response_or_exception)
+
         time_from_header = super().backoff_time(response_or_exception, attempt_count)
         if time_from_header:
             return 1 / float(time_from_header)
         else:
             return self.default_backoff_time
+
+    @staticmethod
+    def _check_and_invalidate_expired_token(
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+    ) -> None:
+        """
+        Check if the response contains the specific "access token expired" error message
+        from Amazon SP API and invalidate the token if so.
+
+        The error message can appear in either the 'message' or 'details' field of the
+        error response, so we check both fields.
+        """
+        if not isinstance(response_or_exception, requests.Response):
+            return
+
+        if response_or_exception.status_code != 403:
+            return
+
+        try:
+            response_json = response_or_exception.json()
+            errors = response_json.get("errors", [])
+            for error in errors:
+                # Check both 'message' and 'details' fields as Amazon SP API may return
+                # the token expiration error in either field
+                message = error.get("message", "")
+                details = error.get("details", "")
+                if TOKEN_EXPIRED_ERROR_MESSAGE in message or TOKEN_EXPIRED_ERROR_MESSAGE in details:
+                    if _authenticator_instance is not None:
+                        _authenticator_instance.invalidate_token()
+                    return
+        except (json.JSONDecodeError, AttributeError, TypeError):
+            # If we can't parse the response, don't invalidate
+            pass
 
 
 @dataclass

@@ -97,6 +97,7 @@ The connector implements retry logic with exponential backoff for rate limiting 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.54 | 2026-03-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Filter duplicate records in export streams during incremental syncs |
 | 0.6.53 | 2025-10-21 | [68545](https://github.com/airbytehq/airbyte/pull/68545) | Update dependencies |
 | 0.6.52 | 2025-10-14 | [67947](https://github.com/airbytehq/airbyte/pull/67947) | Update dependencies |
 | 0.6.51 | 2025-10-10 | [67602](https://github.com/airbytehq/airbyte/pull/67602) | Fix array schema definitions |
@@ -167,7 +168,7 @@ The connector implements retry logic with exponential backoff for rate limiting 
 | 0.3.0 | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures |
 | 0.2.2 | 2024-02-12 | [35150](https://github.com/airbytehq/airbyte/pull/35150) | Manage dependencies with Poetry. |
 | 0.2.1 | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib |
-| 0.2.0   | 2023-09-29 | [28457](https://github.com/airbytehq/airbyte/pull/30931) | Added `userId` to `email_bounce`, `email_click`, `email_complaint`, `email_open`, `email_send` `email_send_skip`, `email_subscribe`, `email_unsubscribe`, `events` streams |
+| 0.2.0   | 2023-09-29 | [30931](https://github.com/airbytehq/airbyte/pull/30931) | Added `userId` to `email_bounce`, `email_click`, `email_complaint`, `email_open`, `email_send` `email_send_skip`, `email_subscribe`, `email_unsubscribe`, `events` streams |
 | 0.1.31  | 2023-12-06 | [33106](https://github.com/airbytehq/airbyte/pull/33106) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                            |
 | 0.1.30  | 2023-07-19 | [28457](https://github.com/airbytehq/airbyte/pull/28457) | Fixed TypeError for StreamSlice in debug mode                                                                                                                              |
 | 0.1.29  | 2023-05-24 | [26459](https://github.com/airbytehq/airbyte/pull/26459) | Added requests reading timeout 300 seconds                                                                                                                                 |

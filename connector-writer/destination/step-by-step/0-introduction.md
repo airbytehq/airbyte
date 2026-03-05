@@ -105,6 +105,7 @@
 | **5-advanced-features.md** | Advanced 1-3 | All features | TableSchemaEvolutionSuite | Guide 4 |
 | **6-testing.md** | Testing 1 | All tests pass | BasicFunctionalityIntegrationTest | Guide 5 |
 | **7-troubleshooting.md** | Reference | Debug help | - | Any |
+| **8-validation.md** | Checklist | Final verification | 9 test classes, 21+ tests | Guide 6 |
 
 ---
 

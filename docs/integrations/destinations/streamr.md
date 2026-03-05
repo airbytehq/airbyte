@@ -7,7 +7,6 @@
 | Full Refresh Sync              |   ❌    | Warning: this mode deletes all previously synced data in the configured bucket path. |
 | Incremental - Append Sync      |   ✅    |                                                                                      |
 | Incremental - Append + Deduped |   ❌    |                                                                                      |
-| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.          |
 
 The Streamr destination allows you to sync data to Streamr - The decentralized
 real‑time data network.
@@ -32,6 +31,10 @@ All json data is output at Streamr
 ## Data schema
 
 Any json data schema will work
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). However, setting a specific bucket path is equivalent to having separate namespaces.
 
 ## Changelog
 
