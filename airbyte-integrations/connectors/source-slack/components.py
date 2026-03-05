@@ -110,15 +110,25 @@ class ChannelsRetriever(SimpleRetriever):
 
     def is_channel_included(self, config: Mapping[str, Any], record: Record) -> bool:
         """
-        Returns True if the channel should be included in the sync.
-        - include_external_channels controls whether external shared channels are included (default: True)
-        - channel_exclude_filter (blacklist) takes precedence over channel_filter (whitelist)
-        - Both support wildcard patterns (e.g. 'acme-*')
-        """
-        channel_name = record.get("name", "")
+        Returns True if the channel should be included in the sync based on channel type toggles and name filters.
 
-        if record.get("is_ext_shared") and not config.get("include_external_channels", True):
+        Channel type toggles (all default to True except include_private_channels):
+        - include_shared_channels: externally shared channels (is_ext_shared=True)
+        - include_public_channels: standard public channels (not externally shared)
+        - include_private_channels: private channels
+
+        Name filters (both support wildcard patterns, e.g. 'acme-*'):
+        - channel_exclude_filter (blacklist) takes precedence over channel_filter (whitelist)
+        """
+        is_ext_shared = record.get("is_ext_shared", False)
+        is_private = record.get("is_private", False)
+
+        if is_ext_shared and not config.get("include_shared_channels", True):
             return False
+        if not is_ext_shared and not is_private and not config.get("include_public_channels", True):
+            return False
+
+        channel_name = record.get("name", "")
 
         exclude_filter = config.get("channel_exclude_filter") or []
         if exclude_filter and matches_any_pattern(channel_name, exclude_filter):

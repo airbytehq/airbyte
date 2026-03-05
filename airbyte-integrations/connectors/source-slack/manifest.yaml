@@ -142,7 +142,13 @@ definitions:
             - type: "WaitTimeFromHeader"
               header: "Retry-After"
         request_parameters:
-          types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
+          types: >-
+            {{
+              ','.join(
+                (['public_channel'] if config.get('include_public_channels', True) or config.get('include_shared_channels', True) else []) +
+                (['private_channel'] if config.get('include_private_channels', False) else [])
+              )
+            }}
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
@@ -413,11 +419,21 @@ spec:
         default: true
         title: Join all channels
         description: Whether to join all channels or to sync data only from channels the bot is already in.  If false, you''ll need to manually add the bot to all the channels from which you''d like to sync messages.
+      include_public_channels:
+        type: boolean
+        default: true
+        title: Include standard public channels
+        description: Whether to include standard public channels (within your workspace only). Defaults to true.
+      include_shared_channels:
+        type: boolean
+        default: true
+        title: Include externally shared channels
+        description: Whether to include channels shared with external Slack workspaces. Defaults to true.
       include_private_channels:
         type: boolean
         default: false
         title: Include private channels
-        description: Whether to read information from private channels that the bot is already in.  If false, only public channels will be read.  If true, the bot must be manually added to private channels.
+        description: Whether to include private channels the bot has been manually added to.
       channel_filter:
         type: array
         default: []
@@ -440,11 +456,6 @@ spec:
         examples:
           - ext-*
           - archived-channel
-      include_external_channels:
-        type: boolean
-        default: true
-        title: Include external shared channels
-        description: Whether to include external shared channels (shared with other Slack workspaces) in the sync. Defaults to true for backward compatibility.
       credentials:
         title: Authentication mechanism
         description: Choose how to authenticate into Slack
