@@ -67,7 +67,7 @@ class AirbyteTypeToIcebergSchema {
             is BooleanType -> Types.BooleanType.get()
             is DateType -> Types.DateType.get()
             is IntegerType -> Types.LongType.get()
-            is NumberType -> Types.DoubleType.get()
+            is NumberType -> Types.DecimalType.of(38, 18)
             // Schemaless types are converted to string
             is ArrayTypeWithoutSchema,
             is ObjectTypeWithEmptySchema,
