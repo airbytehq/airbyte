@@ -233,10 +233,41 @@ class MySqlSourceDebeziumOperations(
 
         // newGtidSet is gtids from server that hasn't been seen by this connector yet. If the set
         // exists, check that they are not purged, or we may lose those data.
-        val newGtidSet = availableGtidSet.subtract(savedGtidSet)
+        // Note: MySqlGtidSet.subtract() can throw a NullPointerException when the available
+        // GTID set contains server UUIDs not present in the saved GTID set (e.g., after a
+        // MySQL failover or topology change on managed MySQL). We catch this and treat it as
+        // a CDC state invalidation requiring a sync abort/reset.
+        val newGtidSet: MySqlGtidSet =
+            try {
+                availableGtidSet.subtract(savedGtidSet) as MySqlGtidSet
+            } catch (e: NullPointerException) {
+                log.warn(e) {
+                    "GTID set subtraction failed due to mismatched server UUIDs. " +
+                        "Available: $availableGtidSet, Saved: $savedGtidSet"
+                }
+                return abortCdcSync(
+                    "MySQL server GTID set contains server UUIDs not present in saved CDC state. " +
+                        "This typically occurs after a MySQL failover or topology change. " +
+                        "Available GTIDs: $availableGtidSet, Saved GTIDs: $savedGtidSet"
+                )
+            }
         if (!newGtidSet.isEmpty) {
             val purgedGtidSet = queryPurgedIds()
-            if (!purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
+            val remainingGtidSet: MySqlGtidSet =
+                try {
+                    newGtidSet.subtract(purgedGtidSet) as MySqlGtidSet
+                } catch (e: NullPointerException) {
+                    log.warn(e) {
+                        "GTID set subtraction failed during purge check. " +
+                            "New: $newGtidSet, Purged: $purgedGtidSet"
+                    }
+                    return abortCdcSync(
+                        "MySQL server GTID set contains server UUIDs not present in saved CDC state. " +
+                            "This typically occurs after a MySQL failover or topology change. " +
+                            "New GTIDs: $newGtidSet, Purged GTIDs: $purgedGtidSet"
+                    )
+                }
+            if (!purgedGtidSet.isEmpty && !remainingGtidSet.equals(newGtidSet)) {
                 return abortCdcSync(
                     "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
                 )
