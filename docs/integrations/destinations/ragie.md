@@ -150,4 +150,3 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.1.0   | Initial release with overwrite/append support and field mapping. |
 
 ---
-
