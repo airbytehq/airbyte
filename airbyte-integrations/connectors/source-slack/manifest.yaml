@@ -440,11 +440,11 @@ spec:
         examples:
           - ext-*
           - archived-channel
-      join_external_channels:
+      include_external_channels:
         type: boolean
-        default: false
-        title: Join external shared channels
-        description: Whether to automatically join external shared channels (is_ext_shared=true). Requires join_channels to be false; use this to target only external channels specifically.
+        default: true
+        title: Include external shared channels
+        description: Whether to include external shared channels (shared with other Slack workspaces) in the sync. Defaults to true for backward compatibility.
       credentials:
         title: Authentication mechanism
         description: Choose how to authenticate into Slack

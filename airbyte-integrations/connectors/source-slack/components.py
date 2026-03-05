@@ -108,12 +108,18 @@ class ChannelsRetriever(SimpleRetriever):
         super().__post_init__(parameters)
         self.record_selector.transformations = []
 
-    def is_channel_included(self, config: Mapping[str, Any], channel_name: str) -> bool:
+    def is_channel_included(self, config: Mapping[str, Any], record: Record) -> bool:
         """
-        Returns True if the channel should be included based on channel_filter (whitelist) and
-        channel_exclude_filter (blacklist). Both support fnmatch wildcards (e.g. 'acme-*').
-        Exclude takes precedence over include.
+        Returns True if the channel should be included in the sync.
+        - include_external_channels controls whether external shared channels are included (default: True)
+        - channel_exclude_filter (blacklist) takes precedence over channel_filter (whitelist)
+        - Both support wildcard patterns (e.g. 'acme-*')
         """
+        channel_name = record.get("name", "")
+
+        if record.get("is_ext_shared") and not config.get("include_external_channels", True):
+            return False
+
         exclude_filter = config.get("channel_exclude_filter") or []
         if exclude_filter and matches_any_pattern(channel_name, exclude_filter):
             return False
@@ -128,21 +134,8 @@ class ChannelsRetriever(SimpleRetriever):
         """
         The `is_member` property indicates whether the API Bot is already assigned / joined to the channel.
         https://api.slack.com/types/conversation#booleans
-        The bot joins a channel if:
-        - join_channels is True and the bot is not yet a member, OR
-        - join_external_channels is True, the channel is an external shared channel, and the bot is not yet a member
         """
-        is_member = record.get("is_member", False)
-        if is_member:
-            return False
-
-        if config.get("join_channels"):
-            return True
-
-        if config.get("join_external_channels") and record.get("is_ext_shared"):
-            return True
-
-        return False
+        return config["join_channels"] and not record.get("is_member")
 
     def make_join_channel_slice(self, channel: Mapping[str, Any]) -> Mapping[str, Any]:
         channel_id: str = channel.get("id")
@@ -178,8 +171,7 @@ class ChannelsRetriever(SimpleRetriever):
         )
 
         for stream_data in self._read_pages(record_generator, _slice):
-            channel_name = stream_data.get("name", "") if isinstance(stream_data, dict) else ""
-            if not self.is_channel_included(self.config, channel_name):
+            if not self.is_channel_included(self.config, stream_data):
                 continue
 
             if self.should_join_to_channel(self.config, stream_data):
