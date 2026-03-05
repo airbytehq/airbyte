@@ -106,7 +106,7 @@ Share the following with Airbyte:
 
 - Your endpoint service name (for example, `com.amazonaws.vpce.us-west-2.vpce-svc-05df72d695c09fbb5`)
 - The AWS region your service is deployed in
-- The type of data source or destination (for example, PostgreSQL, Snowflake, MySQL)
+- The type of data source or destination (for example, PostgreSQL, Snowflake, MySQL). Some services, such as Snowflake, require additional DNS configuration on Airbyte's side. Providing the service type up front ensures Airbyte can complete the full setup.
 
 Airbyte creates a VPC endpoint that connects to your service.
 
