@@ -26,6 +26,7 @@ Each replicated stream from Airbyte will output data into a corresponding event 
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | Yes                  |       |
 | Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | No                   |       |
 
 ## Getting started
 
@@ -76,10 +77,6 @@ Now, you should have all the parameters needed to configure Keen destination.
 Connect your first source and then head to the Keen application. You can seamlessly run [custom analysis](https://keen.io/docs/compute/data-explorer-guide/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) on your data and [build interactive dashboards](https://keen.io/docs/visualize/dashboard-creator/dashboard-edition/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) for key stakeholders.
 
 If you have any questions, please reach out to us at team@keen.io and we’ll be happy to help!
-
-## Namespace support
-
-This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

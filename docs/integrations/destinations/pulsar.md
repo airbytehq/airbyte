@@ -30,6 +30,7 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 | Full Refresh Sync              | No                   |       |
 | Incremental - Append Sync      | Yes                  |       |
 | Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | Yes                  |       |
 
 ## Getting started
 
@@ -88,10 +89,6 @@ You should now have all the requirements needed to configure Pulsar as a destina
 - **Block if queue is full**
 
 More info about this can be found in the [Pulsar producer configs documentation site](https://pulsar.apache.org/docs/en/client-libraries-java/#producer).
-
-## Namespace support
-
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is incorporated into the topic name based on the configured topic tenant and topic namespace.
 
 ## Changelog
 

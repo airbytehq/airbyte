@@ -141,6 +141,7 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | No                   |       |
 | Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | No                   |       |
 
 ## Schema map
 
@@ -154,10 +155,6 @@ Each stream will be mapped to a separate table in Vertica. Each table will conta
   The column type in Vertica is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Vertica
   is `JSONB`.
-
-## Namespace support
-
-This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

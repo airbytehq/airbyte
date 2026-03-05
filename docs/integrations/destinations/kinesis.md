@@ -22,6 +22,7 @@ This connector maps an incoming data from a namespace and stream to a unique Kin
 | Full Refresh Sync              |   ❌    |                                                                                   |
 | Incremental - Append Sync      |   ✅    | Incoming messages are streamed/appended to a Kinesis stream as they are received. |
 | Incremental - Append + Deduped |   ❌    |                                                                                   |
+| Namespaces                     |   ✅    | Namespaces will be used to determine the Kinesis stream name.                     |
 
 ### Performance considerations
 
@@ -42,10 +43,6 @@ The connector buffer size should also be tweaked according to your data size and
   - **_bufferSize_**: Buffer size used to increase throughput by sending data in a single request.
 
 ### Setup guide
-
-## Namespace support
-
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is used to determine the Kinesis stream name.
 
 ## Changelog
 

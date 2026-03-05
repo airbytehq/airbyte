@@ -53,10 +53,6 @@ You need to prepare tables that will be used to store synced data from Airbyte, 
 - **Password**
 - **Database**
 
-## Namespace support
-
-This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
-
 ## Changelog
 
 <details>

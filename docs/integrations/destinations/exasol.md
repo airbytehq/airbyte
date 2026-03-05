@@ -22,6 +22,7 @@ The Exasol destination supports the following features:
 | Incremental - Append Sync      | Yes                 |       |
 | Incremental - Append + Deduped | No                  |       |
 | Normalization                  | No                  |       |
+| Namespaces                     | Yes                 |       |
 | SSL connection                 | Yes                 | TLS   |
 | SSH Tunnel Support             | No                  |       |
 
@@ -63,10 +64,6 @@ You should now have all the requirements needed to configure Exasol as a destina
 - Fingerprint of the Exasol server's TLS certificate (if the database uses a self-signed certificate)
 - Username
 - Password
-
-## Namespace support
-
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to an Exasol schema.
 
 ## Changelog
 

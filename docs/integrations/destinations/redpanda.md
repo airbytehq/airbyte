@@ -32,6 +32,7 @@ This section should contain a table with the following format:
 | Full Refresh Sync              | No                   |       |
 | Incremental - Append Sync      | Yes                  |       |
 | Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | Yes                  |       |
 
 ### Performance considerations
 
@@ -56,10 +57,6 @@ Granted you have enough Redpanda nodes/partitions the cluster should be able to 
 More info about this can be found in the [Redpanda producer configs documentation site](https://docs.confluent.io/platform/current/installation/configuration/producer-configs.html).
 
 _NOTE_: Configurations for SSL are not available yet.
-
-## Namespace support
-
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is used as a prefix in the topic name with the format `{namespace}_{stream}`.
 
 ## Changelog
 

@@ -11,6 +11,7 @@ This page guides you through the process of setting up the TiDB destination conn
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | Yes                  |       |
 | Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | Yes                  |       |
 | SSH Tunnel Connection          | Yes                  |       |
 
 #### Output Schema
@@ -93,10 +94,6 @@ Using this feature requires additional configuration, when creating the destinat
 5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the TiDB username.
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the TiDB password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
-
-## Namespace support
-
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). TiDB doesn't differentiate between a database and schema. The configured database acts as the default namespace.
 
 ## Changelog
 
