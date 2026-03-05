@@ -64,8 +64,7 @@ def apply_airbyte_entrypoint(connector_container: Container, connector: Connecto
     entrypoint = get_entrypoint(connector)
 
     return (
-        connector_container
-        .with_env_variable("DD_PROFILING_ENABLED", "true")
+        connector_container.with_env_variable("DD_PROFILING_ENABLED", "true")
         .with_env_variable("DD_PROFILING_TIMELINE_ENABLED", "true")
         .with_env_variable("DD_TRACE_SQLITE3_ENABLED", "false")
         .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
