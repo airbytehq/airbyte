@@ -107,13 +107,14 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
         // There's no _airbyte_data field, because we flatten the fields.
         // But we should leave the _airbyte_meta field as an actual object.
         val stringifyObjects = name != Meta.COLUMN_NAME_AB_META
-        var icebergType =
-            icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
-        // Override PK NumberType fields to StringType so they can be used as
-        // Iceberg identifier fields (float/double are disallowed as identifiers).
-        if (isPrimaryKey && field.type is NumberType) {
-            icebergType = Types.StringType.get()
-        }
+        val icebergType =
+            if (isPrimaryKey && field.type is NumberType) {
+                // Override PK NumberType fields to StringType so they can be used as
+                // Iceberg identifier fields (float/double are disallowed as identifiers).
+                Types.StringType.get()
+            } else {
+                icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+            }
         fields.add(
             NestedField.of(
                 id,
