@@ -156,6 +156,7 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.3-rc.1 | 2026-03-03 | [74085](https://github.com/airbytehq/airbyte/pull/74085) | Add missing video engagement metrics to audience report streams |
 | 5.0.2 | 2026-03-03 | [73111](https://github.com/airbytehq/airbyte/pull/73111) | Update dependencies |
 | 5.0.1 | 2026-02-24 | [73633](https://github.com/airbytehq/airbyte/pull/73633) | fix(source-tiktok-marketing): Fix UTC timezone mismatch causing data loss for ahead-of-UTC accounts (AI-Triage PR) |
 | 5.0.0 | 2026-02-17 | [73357](https://github.com/airbytehq/airbyte/pull/73357) | Fix `currency` field type from `boolean` to `string` in pixels events schema |
