@@ -1,3 +1,7 @@
+## Version 1.0.1
+
+Bump transitive deps with CVEs in unmaintained json schema lib (mbknor-jackson-jsonschema): upgrade classgraph to 4.8.112 (CVE-2021-47621, XXE) and scala-library to 2.13.9 (CVE-2022-36944, deserialization gadget chain).
+
 ## Version 1.0.0
 
 Initial independent release of bulk-cdk-core-base.

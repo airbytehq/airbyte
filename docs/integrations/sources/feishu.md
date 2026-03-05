@@ -71,6 +71,7 @@ The **records** stream returns all records from the specified Bitable table. Eac
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.2 | 2026-02-24 | [73777](https://github.com/airbytehq/airbyte/pull/73777) | Update dependencies |
 | 0.0.1 | 2026-02-19 | [71256](https://github.com/airbytehq/airbyte/pull/71256) | Initial release by [@WYW-min](https://github.com/WYW-min) via Connector Builder |
 
 </details>

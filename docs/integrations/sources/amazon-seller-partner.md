@@ -260,6 +260,20 @@ We recommend next steps to overcome the rate limits issue:
 
 This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
 
+### ListFinancialEvents stream incompatible with deduplication on BigQuery
+
+The `ListFinancialEvents` stream does not define a primary key because the Amazon SP-API returns aggregated event lists per time range rather than individual events with unique identifiers. All top-level fields in this stream are arrays, such as `ShipmentEventList` and `RefundEventList`.
+
+BigQuery requires non-JSON, non-array types for its `CLUSTER BY` clause, which Airbyte uses during deduplication. Syncing `ListFinancialEvents` to BigQuery in deduplication mode fails with:
+
+```text
+CLUSTER BY expression must be groupable, but type is JSON.
+```
+
+**Solution:**
+
+Use **Append** sync mode instead of **Dedup** for the `ListFinancialEvents` stream when syncing to BigQuery. If you need deduplicated data, perform deduplication in BigQuery using SQL after the data lands in append mode.
+
 ### InvalidInput error for ListFinancialEvents stream
 
 ```text
@@ -286,6 +300,9 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.5.1 | 2026-02-26 | [72961](https://github.com/airbytehq/airbyte/pull/72961) | Add time-windowed partitioning to Orders stream for proper state checkpointing of OrderItems substream |
+| 5.5.0 | 2026-02-25 | [72258](https://github.com/airbytehq/airbyte/pull/72258) | feat(source-amazon-seller-partner): Add GET_SALES_AND_TRAFFIC_REPORT_BY_DATE stream |
+| 5.4.1 | 2026-02-24 | [73757](https://github.com/airbytehq/airbyte/pull/73757) | Update dependencies |
 | 5.4.0 | 2026-02-20 | [72837](https://github.com/airbytehq/airbyte/pull/72837) | Add marketplaceId to GET_SALES_AND_TRAFFIC_REPORT stream and add new GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH stream for monthly granularity |
 | 5.3.1 | 2026-02-10 | [73006](https://github.com/airbytehq/airbyte/pull/73006) | Update dependencies |
 | 5.3.0 | 2026-02-02 | [72259](https://github.com/airbytehq/airbyte/pull/72259) | Add configurable MaxResultsPerPage for ListFinancialEvents stream with InvalidInput error handling |

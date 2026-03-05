@@ -11,13 +11,23 @@ This connector transforms your records into documents and ingests them into Ragi
 
 ## Features
 
-- 🔁 Supports **append**, **overwrite**, and **append + dedup** sync modes.
-- 🧠 Extracts vector content from specified fields.
-- 📎 Attaches custom or static metadata to each document.
-- 🏷️ Assigns document names and external IDs.
-- 📦 Supports partitioning into multiple datasets (indexes).
+- Extracts vector content from specified fields.
+- Attaches custom or static metadata to each document.
+- Assigns document names and external IDs.
+- Supports partitioning into multiple datasets (indexes).
 
 ---
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Prerequisites
 
