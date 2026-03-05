@@ -425,7 +425,7 @@ spec:
           type: string
           minLength: 0
         title: Channel name filter
-        description: A list of channel names (without leading '#') to sync. Supports fnmatch wildcards (e.g. 'acme-*'). Empty list means no filter.
+        description: A list of channel names (without leading '#') to sync. Supports wildcard patterns (e.g. 'acme-*'). Empty list means no filter.
         examples:
           - channel_one
           - acme-*
@@ -436,7 +436,7 @@ spec:
           type: string
           minLength: 0
         title: Channel name exclude filter
-        description: A list of channel names (without leading '#') to exclude from syncing. Supports fnmatch wildcards (e.g. 'ext-*'). Exclusions take precedence over channel_filter.
+        description: A list of channel names (without leading '#') to exclude from syncing. Supports wildcard patterns (e.g. 'ext-*'). Exclusions take precedence over channel_filter.
         examples:
           - ext-*
           - archived-channel
