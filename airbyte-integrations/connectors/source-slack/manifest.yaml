@@ -145,9 +145,6 @@ definitions:
           types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
       record_selector:
         $ref: "#/definitions/selector"
-        record_filter:
-          type: RecordFilter
-          condition: "{{ record.name in config.channel_filter or not config.channel_filter }}"
       paginator:
         $ref: "#/definitions/default_paginator"
         $parameters:
@@ -428,10 +425,26 @@ spec:
           type: string
           minLength: 0
         title: Channel name filter
-        description: A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter.
+        description: A list of channel names (without leading '#') to sync. Supports fnmatch wildcards (e.g. 'acme-*'). Empty list means no filter.
         examples:
           - channel_one
-          - channel_two
+          - acme-*
+      channel_exclude_filter:
+        type: array
+        default: []
+        items:
+          type: string
+          minLength: 0
+        title: Channel name exclude filter
+        description: A list of channel names (without leading '#') to exclude from syncing. Supports fnmatch wildcards (e.g. 'ext-*'). Exclusions take precedence over channel_filter.
+        examples:
+          - ext-*
+          - archived-channel
+      join_external_channels:
+        type: boolean
+        default: false
+        title: Join external shared channels
+        description: Whether to automatically join external shared channels (is_ext_shared=true). Requires join_channels to be false; use this to target only external channels specifically.
       credentials:
         title: Authentication mechanism
         description: Choose how to authenticate into Slack
