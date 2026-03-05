@@ -30,7 +30,6 @@ Each record will contain in its payload these 4 fields:
 | Full Refresh Sync              | No                   |       |
 | Incremental - Append Sync      | Yes                  |       |
 | Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
 
 ## Getting started
 
@@ -80,6 +79,11 @@ You should now have all the requirements needed to configure MQTT as a destinati
 More info about this can be found in the [OASIS MQTT standard site](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html).
 
 _NOTE_: MQTT version 5 is not supported yet.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is incorporated into the topic name via the `{namespace}` variable in the `topic_pattern` configuration.
+
 
 ## Changelog
 

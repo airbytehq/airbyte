@@ -61,7 +61,6 @@ If you're using an S3 bucket to store rejected records, you also need the follow
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
 This is a [data activation](/platform/move-data/elt-data-activation) destination. In addition to the Airbyte sync modes above, HubSpot supports per-object write operations (insert, upsert, update, and soft delete) configured in the connection settings.
 
@@ -107,6 +106,11 @@ During app the app installation, you might see scopes related to objects we don'
 ### 403 Forbidden Error
 
 Hubspot has **scopes** for each API call. Each stream is tied to a scope and will need access to that scope to sync data. Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 
 ## Changelog
 

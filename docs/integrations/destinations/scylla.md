@@ -24,7 +24,6 @@ columns.
 | Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured DynamoDB table. |
 | Incremental - Append Sync      |   ✅    |                                                                                         |
 | Incremental - Append + Deduped |   ❌    |                                                                                         |
-| Namespaces                     |   ✅    | Namespace will be used as part of the table name.                                       |
 
 ### Performance considerations
 
@@ -46,6 +45,11 @@ and handle any amount of data from the connector.
   - Replication [optional] [default: 1]
 
 ### Setup guide
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Scylla keyspace and is used as part of the table name.
+
 
 ## Changelog
 

@@ -11,7 +11,6 @@
 | Full Refresh Sync              |   ✅    |
 | Incremental - Append Sync      |   ✅    |
 | Incremental - Append + Deduped |   ❌    |
-| Namespaces                     |   ❌    |
 
 ## Troubleshooting
 
@@ -28,6 +27,11 @@
 #### Requirements
 
 1. Rockset api key with appropriate read and write credentials
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 
 ## Changelog
 

@@ -21,7 +21,6 @@ used internally by Airbyte to prevent records from getting overwritten and can b
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | Yes                  |       |
 | Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | No                   |       |
 
 ## Getting started
 
@@ -40,6 +39,11 @@ set for your MeiliSearch instance, then this field can be left blank. If it is s
 value for your API by following these
 [instructions](https://docs.meilisearch.com/reference/features/authentication.html#master-key). in
 the MeiliSearch docs.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 
 ## Changelog
 
