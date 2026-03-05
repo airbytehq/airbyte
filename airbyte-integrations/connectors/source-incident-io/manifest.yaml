@@ -113,7 +113,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v1/incident_roles
+          path: /v2/incident_roles
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -389,6 +389,42 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/alerts"
+    escalations:
+      type: DeclarativeStream
+      name: escalations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/escalations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - escalations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 25
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/escalations"
   base_requester:
     type: HttpRequester
     url_base: https://api.incident.io
@@ -411,6 +447,7 @@ streams:
   - $ref: "#/definitions/streams/schedules"
   - $ref: "#/definitions/streams/incidents"
   - $ref: "#/definitions/streams/alerts"
+  - $ref: "#/definitions/streams/escalations"
 
 spec:
   type: Spec
@@ -445,6 +482,7 @@ metadata:
     schedules: false
     incidents: true
     alerts: true
+    escalations: true
   testedStreams:
     actions:
       streamHash: 66bd85de048e14ed758adfad4f83d9ab9ef62b7e
@@ -1859,6 +1897,265 @@ schemas:
         type:
           - string
           - "null"
+      status:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  escalations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          alert:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              title:
+                type:
+                  - string
+                  - "null"
+          user:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              slack_user_id:
+                type:
+                  - string
+                  - "null"
+          workflow:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+      escalation_path_id:
+        type:
+          - string
+          - "null"
+      events:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            channels:
+              type:
+                - array
+                - "null"
+              items:
+                type: object
+                additionalProperties: true
+                properties:
+                  microsoft_teams_channel_id:
+                    type:
+                      - string
+                      - "null"
+                  microsoft_teams_team_id:
+                    type:
+                      - string
+                      - "null"
+                  slack_channel_id:
+                    type:
+                      - string
+                      - "null"
+                  slack_team_id:
+                    type:
+                      - string
+                      - "null"
+            event:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            occurred_at:
+              type:
+                - string
+                - "null"
+            urgency:
+              type:
+                - string
+                - "null"
+            users:
+              type:
+                - array
+                - "null"
+              items:
+                type: object
+                additionalProperties: true
+                properties:
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  role:
+                    type:
+                      - string
+                      - "null"
+                  slack_user_id:
+                    type:
+                      - string
+                      - "null"
+      id:
+        type: string
+      priority:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      related_alerts:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            alert_source_id:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            deduplication_key:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            resolved_at:
+              type:
+                - string
+                - "null"
+            source_url:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      related_incidents:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            external_id:
+              type:
+                - integer
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            reference:
+              type:
+                - string
+                - "null"
+            status_category:
+              type:
+                - string
+                - "null"
+            summary:
+              type:
+                - string
+                - "null"
+            visibility:
+              type:
+                - string
+                - "null"
       status:
         type:
           - string
