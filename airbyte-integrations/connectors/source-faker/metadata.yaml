@@ -47,6 +47,7 @@ data:
       7.0.0:
         message: This is a test breaking change to validate breaking change infrastructure.
         upgradeDeadline: "2026-03-19"
+        deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
