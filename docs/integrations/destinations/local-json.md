@@ -33,7 +33,6 @@ This integration will be constrained by the speed at which your filesystem accep
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
 ## Getting Started
 
@@ -72,6 +71,10 @@ docker cp airbyte-server:/tmp/airbyte_local/{destination_path}/{filename}.jsonl 
 ```
 
 Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination) for an alternative approach.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

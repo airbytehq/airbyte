@@ -60,7 +60,6 @@ will contain below columns:
 
 ## Schema map
 
-
 ### Performance considerations
 
 ## Supported sync modes
@@ -72,7 +71,6 @@ will contain below columns:
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 
@@ -111,6 +109,10 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 9. To customize the [query band](https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#BGEGBBAA), specify set of name-value pairs in the **Query Band** field that can be set to the current database session.
 
    
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Teradata database.
 
 ## Changelog
 

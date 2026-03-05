@@ -24,7 +24,6 @@ This integration will be constrained by the connection speed to the SFTP server 
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
 ## Getting Started
 
@@ -37,6 +36,10 @@ The `filename` **should not** have an extension in the configuration, as `.jsonl
 If `destination_path` is set to `/myfolder/files` and `filename` is set to `mydata`, the resulting file will be `/myfolder/files/mydata.jsonl`.
 
 These files can then be accessed by creating an SFTP connection to the server and navigating to the `destination_path`.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

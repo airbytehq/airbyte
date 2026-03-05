@@ -29,7 +29,6 @@ If you see performance issues, please reach via email to [Convex support](mailto
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 
@@ -49,6 +48,10 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 2. Copy the "Deployment URL" from the settings page to the `deployment_url` field in Airbyte.
 3. Click "Generate a deploy key".
 4. Copy the generated deploy key into the `access_key` field in Airbyte.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

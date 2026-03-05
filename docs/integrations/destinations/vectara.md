@@ -33,7 +33,6 @@ Note that there are no restrictions in naming the Vectara corpus and if a corpus
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 
@@ -63,6 +62,10 @@ In addition, in the connector UI you define two set of fields for this connector
 - `text_fields` define the source fields which are turned into text in the Vectara side and are used for query or summarization.
 - `title_field` define the source field which will be used as a title of the document on the Vectara side
 - `metadata_fields` define the source fields which will be added to each document as meta-data.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

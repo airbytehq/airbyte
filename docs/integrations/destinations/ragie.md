@@ -27,7 +27,6 @@ This connector transforms your records into documents and ingests them into Ragi
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Prerequisites
 
@@ -140,6 +139,10 @@ This will be merged with each document’s metadata.
 
 ---
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 | Version | Changes                                                          |
@@ -147,5 +150,3 @@ This will be merged with each document’s metadata.
 | 0.1.0   | Initial release with overwrite/append support and field mapping. |
 
 ---
-
-

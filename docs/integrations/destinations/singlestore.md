@@ -21,7 +21,6 @@ not supported.
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting Started
 
@@ -93,7 +92,6 @@ Final table schema:
 * `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source. The column type in SingleStore is TIMESTAMP(6).
 * `_airbyte_meta`: column containing the warnings occurred during data normalization. 
 
-
 ### Final Table Data type mapping
 
 | Airbyte Type               | SingleStore Type |
@@ -120,3 +118,7 @@ longer than 63 characters, they will be truncated to this length.
 | Version | Date       | Pull Request                                             | Subject                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------|
 | 0.1.0   | 2024-05-23 | [38600](https://github.com/airbytehq/airbyte/pull/38600) | Implement SingleStore destination V2 |
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a SingleStore database.

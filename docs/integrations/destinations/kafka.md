@@ -32,7 +32,6 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 
@@ -99,6 +98,10 @@ You should now have all the requirements needed to configure Kafka as a destinat
 More info about this can be found in the [Kafka producer configs documentation site](https://kafka.apache.org/documentation/#producerconfigs).
 
 _NOTE_: Some configurations for SSL are not available yet.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is incorporated into the topic name via the `{namespace}` variable in the `topic_pattern` configuration.
 
 ## Changelog
 

@@ -33,7 +33,6 @@ You'll need the following information to configure the destination:
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Data type mapping
 
@@ -73,6 +72,10 @@ For testing purposes, it's also possible to use the [Fake embeddings](https://py
 To get started, use the [Pinecone web UI or API](https://docs.pinecone.io/docs/quickstart) to create a project and an index before running the destination. All streams will be indexed into the same index, the `_ab_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document.
 
 OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere embeddings produce vectors with 1024 dimensions. Make sure to configure the index accordingly.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

@@ -247,7 +247,6 @@ The Snowflake destination supports the following sync modes:
 | [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Supports namespaces | Yes |
 
 :::note
 In **Legacy raw tables** mode, deduplication is not performed. All sync modes that would normally deduplicate instead append records to the raw table without deduplication.
@@ -276,6 +275,10 @@ result in the connection trying to write to a `PUBLIC` schema.
 A quick fix could be to edit your connection's 'Replication' settings from `Mirror source structure`
 to `Destination Default`. Otherwise, make sure to grant the role the required permissions in the
 desired namespace.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Snowflake schema.
 
 ## Changelog
 

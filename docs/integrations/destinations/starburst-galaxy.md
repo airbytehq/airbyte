@@ -84,7 +84,6 @@ Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 
@@ -94,6 +93,10 @@ Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.
 - A [Starburst Galaxy S3 catalog](https://docs.starburst.io/starburst-galaxy/catalogs/s3.html) created within the Galaxy domain, and [attached to a running cluster](https://docs.starburst.io/starburst-galaxy/catalogs/index.html#add-a-catalog-to-a-cluster).
 - [Credentials for S3 bucket](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
 - Grant S3 bucket [location privileges](https://docs.starburst.io/starburst-galaxy/security/privileges.html#location-privileges-) to the role user is assigned to.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Starburst Galaxy schema.
 
 ## Changelog
 

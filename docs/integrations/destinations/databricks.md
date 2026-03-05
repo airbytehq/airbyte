@@ -70,7 +70,6 @@ to generate a client ID and secret.
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Output Schema
 
@@ -85,6 +84,10 @@ Each table will have the following columns, in addition to your whatever columns
 
 Airbyte will also produce "raw tables" (by default in the `airbyte_internal` schema). We do not recommend directly interacting
 with the raw tables, and their format is subject to change without notice.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Databricks schema.
 
 ## Changelog
 

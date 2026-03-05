@@ -17,7 +17,6 @@ For each record, a UUID string is generated and used as the document id. The emb
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting Started \(Airbyte Open Source\)
 
@@ -72,6 +71,10 @@ You should now have all the requirements needed to configure Chroma as a destina
   - **OpenAI API key** if using OpenAI for embedding
   - **Cohere API key** if using Cohere for embedding
   - Embedding **Field name** and **Embedding dimensions** if getting the embeddings from stream records
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

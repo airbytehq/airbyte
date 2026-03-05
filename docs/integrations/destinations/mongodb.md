@@ -21,7 +21,6 @@ Each stream will be output into its own collection in MongoDB. Each collection w
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting Started \(Airbyte Cloud\)
 
@@ -114,6 +113,10 @@ Collection names should begin with an underscore or a letter character, and cann
 - be an empty string \(e.g. ""\).
 - contain the null character.
 - begin with the system. prefix. \(Reserved for internal use.\)
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a MongoDB database.
 
 ## Changelog
 

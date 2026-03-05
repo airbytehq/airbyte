@@ -38,7 +38,6 @@ provision more capacity units in the DynamoDB console when there are performance
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 
@@ -73,6 +72,10 @@ provision more capacity units in the DynamoDB console when there are performance
     [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/access-control-overview.html).
   - The easiest way to verify if Airbyte is able to connect to your DynamoDB tables is via the check
     connection tool in the UI.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

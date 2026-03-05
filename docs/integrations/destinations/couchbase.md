@@ -34,7 +34,6 @@ Each stream will be output into a collection in Couchbase. The connector follows
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Getting started
 
@@ -117,6 +116,10 @@ Each stream will be output into a collection in Couchbase. The connector follows
 | Password        | Database password                                                                                | `password`                                         |
 | Bucket          | The name of the bucket to sync data to                                                          | `mybucket`                                         |
 | Scope           | The scope within the bucket (optional, defaults to `_default`)                                   | `_default`                                         |
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
