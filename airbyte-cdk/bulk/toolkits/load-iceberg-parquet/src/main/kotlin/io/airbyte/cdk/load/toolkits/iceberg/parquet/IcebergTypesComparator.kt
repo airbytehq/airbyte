@@ -223,9 +223,9 @@ class IcebergTypesComparator {
                 true
             }
             Type.TypeID.DECIMAL -> {
-                require(
-                    existingType is Types.DecimalType && incomingType is Types.DecimalType
-                ) { "Expected DECIMAL types, got $existingType and $incomingType." }
+                require(existingType is Types.DecimalType && incomingType is Types.DecimalType) {
+                    "Expected DECIMAL types, got $existingType and $incomingType."
+                }
                 existingType.precision() == incomingType.precision() &&
                     existingType.scale() == incomingType.scale()
             }
