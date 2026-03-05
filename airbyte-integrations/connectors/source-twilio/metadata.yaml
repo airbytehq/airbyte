@@ -9,11 +9,11 @@ data:
       - chat.twilio.com
       - trunking.twilio.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.0.1@sha256:ff1e701c8f913cf24a0220f62c8e64cc1c3011ba0a636985f4db47fdab1391b6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 0.17.1
+  dockerImageTag: 0.17.4
   dockerRepository: airbyte/source-twilio
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   githubIssueLabel: source-twilio
@@ -34,6 +34,10 @@ data:
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
+  suggestedStreams:
+    streams:
+      - calls
+      - messages
   supportLevel: certified
   tags:
     - language:manifest-only
@@ -58,4 +62,23 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Twilio API reference
+      url: https://www.twilio.com/docs/usage/api
+      type: api_reference
+    - title: Twilio Changelog
+      url: https://www.twilio.com/en-us/changelog
+      type: api_release_history
+    - title: Twilio authentication
+      url: https://www.twilio.com/docs/iam/api-keys
+      type: authentication_guide
+    - title: Twilio API OpenAPI specification
+      url: https://github.com/twilio/twilio-oai
+      type: openapi_spec
+    - title: Twilio rate limits
+      url: https://www.twilio.com/docs/usage/api#rate-limiting
+      type: rate_limits
+    - title: Twilio Status
+      url: https://status.twilio.com/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -44,4 +44,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Yandex Metrica API
+      url: https://yandex.com/dev/metrica/
+      type: api_reference
 metadataSpecVersion: "1.0"

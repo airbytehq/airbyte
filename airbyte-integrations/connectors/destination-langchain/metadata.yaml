@@ -38,4 +38,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: LangChain documentation
+      url: https://python.langchain.com/docs/get_started/introduction
+      type: api_reference
 metadataSpecVersion: "1.0"

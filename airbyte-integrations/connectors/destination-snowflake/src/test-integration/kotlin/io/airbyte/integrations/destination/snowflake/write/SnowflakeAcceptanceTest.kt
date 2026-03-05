@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write
@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.NameMapper
+import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -21,6 +23,7 @@ import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_IGNORE_CASING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfigPath
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
@@ -31,6 +34,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal val CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING)
+internal val CONFIG_IGNORE_CASING_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_IGNORE_CASING)
 internal val RAW_CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE)
 
 class SnowflakeInsertAcceptanceTest :
@@ -41,10 +45,49 @@ class SnowflakeInsertAcceptanceTest :
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
         recordMapper = SnowflakeExpectedRecordMapper,
+        nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
-    override fun testFunkyCharactersDedup() {
-        super.testFunkyCharactersDedup()
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
+    }
+}
+
+class SnowflakeInsertIgnoreCasingAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_IGNORE_CASING_PATH,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper,
+        nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
+class SnowflakeInsertProtoAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_PATH,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper,
+        nameMapper = SnowflakeNameMapper(),
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
     }
 }
 
@@ -56,14 +99,46 @@ class SnowflakeRawInsertAcceptanceTest :
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
         recordMapper = SnowflakeExpectedRawRecordMapper,
+        nameMapper = NoopNameMapper,
         isStreamSchemaRetroactive = false,
         dedupBehavior = null,
         nullEqualsUnset = false,
         coercesLegacyUnions = false,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
     override fun testFunkyCharacters() {
         super.testFunkyCharacters()
+    }
+}
+
+class SnowflakeRawInsertProtoAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = RAW_CONFIG_PATH,
+        dataDumper =
+            SnowflakeRawDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRawRecordMapper,
+        nameMapper = NoopNameMapper,
+        isStreamSchemaRetroactive = false,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        dedupBehavior = null,
+        nullEqualsUnset = false,
+        coercesLegacyUnions = false,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15495")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
     }
 }
 
@@ -73,10 +148,13 @@ abstract class SnowflakeAcceptanceTest(
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     dataDumper: DestinationDataDumper,
     recordMapper: ExpectedRecordMapper,
+    nameMapper: NameMapper,
     isStreamSchemaRetroactive: Boolean = true,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     dedupBehavior: DedupBehavior? = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
     nullEqualsUnset: Boolean = true,
     coercesLegacyUnions: Boolean = false,
+    unknownTypesBehavior: UnknownTypesBehavior,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
@@ -84,13 +162,14 @@ abstract class SnowflakeAcceptanceTest(
         dataDumper = dataDumper,
         destinationCleaner = SnowflakeDataCleaner,
         isStreamSchemaRetroactive = isStreamSchemaRetroactive,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = dedupBehavior,
-        stringifySchemalessObjects = true,
+        stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
         stringifyUnionObjects = false,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = false,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
@@ -101,7 +180,7 @@ abstract class SnowflakeAcceptanceTest(
                 numberCanBeLarge = true,
                 nestedFloatLosesPrecision = false,
             ),
-        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+        unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         dedupChangeUsesDefault = false,
         testSpeedModeStatsEmission = true,
@@ -110,15 +189,9 @@ abstract class SnowflakeAcceptanceTest(
         dataChannelFormat = dataChannelFormat,
         mismatchedTypesUnrepresentable = false,
         recordMangler = recordMapper,
+        nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
-    ) {
-
-    @Disabled override fun testUnions() {}
-
-    @Disabled override fun testAppendJsonSchemaEvolution() {}
-
-    @Disabled override fun testContainerTypes() {}
-}
+    )
 
 fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
     if (metaAsString.isNullOrEmpty()) {

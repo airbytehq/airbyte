@@ -1,0 +1,17 @@
+{
+  "list": [
+    {
+      "item_family": {
+        "id": "item_family_001",
+        "name": "Test Item Family",
+        "description": "A test item family",
+        "status": "active",
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "item_family",
+        "cf_business_unit": "SaaS",
+        "cf_revenue_category": "Recurring"
+      }
+    }
+  ]
+}

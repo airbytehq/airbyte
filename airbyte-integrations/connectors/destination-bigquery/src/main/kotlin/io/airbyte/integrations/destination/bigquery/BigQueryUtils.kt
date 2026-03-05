@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.integrations.destination.bigquery
 
@@ -177,3 +177,5 @@ object BigQueryUtils {
                 .map { name: String -> name.replace("airbyte/", "").replace(":", "/") }
                 .orElse("destination-bigquery")
 }
+
+fun TableId.toPrettyString() = "${this.dataset}.${this.table}"

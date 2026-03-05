@@ -1,6 +1,6 @@
-import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
-
 # Asana Migration Guide
+
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 1.0.0
 

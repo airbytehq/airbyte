@@ -20,7 +20,7 @@ def logger(func):
         for response in responses:
             # github return 3 success status code 200, 201 and 204, we should check all of them
             logging.info(
-                f'Response status: {response.status_code}, response body: {"Success" if response.status_code in [200, 201, 204] else response.content}'
+                f"Response status: {response.status_code}, response body: {'Success' if response.status_code in [200, 201, 204] else response.content}"
             )
 
     return wrapper
@@ -69,7 +69,7 @@ class GitHubFiller:
 
         for branch in self.branches:
             create_pr_data = {
-                "title": f'New PR from {branch.get("name")}',
+                "title": f"New PR from {branch.get('name')}",
                 "head": branch.get("name"),
                 "base": "master",
             }
@@ -80,7 +80,7 @@ class GitHubFiller:
             if response.status_code == 200 or 201:
                 # create review for PR
                 create_review_data = {
-                    "body": f'Review commit for branch {branch.get("name")}',
+                    "body": f"Review commit for branch {branch.get('name')}",
                     "event": "COMMENT",
                 }
                 review_url = f"{self.BASE_URL}/repos/{self.repository}/pulls/{response.json().get('number')}/reviews"
@@ -89,7 +89,7 @@ class GitHubFiller:
 
                 # create comment for commit
                 create_comment_data = {
-                    "body": f'comment for {branch.get("commit").get("sha")} branch',
+                    "body": f"comment for {branch.get('commit').get('sha')} branch",
                 }
                 commit_url = f"https://api.github.com/repos/{self.repository}/commits/{branch.get('commit').get('sha')}/comments"
                 response = self.session.post(url=commit_url, data=json.dumps(create_comment_data))
@@ -106,7 +106,7 @@ class GitHubFiller:
 
         for branch in self.branches:
             data = {
-                "title": f'Issue for branch {branch.get("name")}',
+                "title": f"Issue for branch {branch.get('name')}",
                 "head": branch.get("name"),
                 "labels": labels,
                 "milestone": milestone,

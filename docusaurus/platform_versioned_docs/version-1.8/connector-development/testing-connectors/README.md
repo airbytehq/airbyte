@@ -4,7 +4,7 @@ Multiple tests suites compose the Airbyte connector testing pyramid
 
 ## Tests run by our CI pipeline
 
-- [Connector QA Checks](https://docs.airbyte.com/contributing-to-airbyte/resources/qa-checks): Static asset checks that validate that a connector is correctly packaged to be successfully released to production.
+- [Connector QA Checks](/community/contributing-to-airbyte/resources/qa-checks): Static asset checks that validate that a connector is correctly packaged to be successfully released to production.
 - Unit Tests: Connector-specific tests written by the connector developer which don’t require access to the source/destination.
 - Integration Tests: Connector-specific tests written by the connector developer which _may_ require access to the source/destination.
 - [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/): Connector-agnostic tests that verify that a connector adheres to the [Airbyte protocol](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol). Credentials to a source/destination sandbox account are **required**.
@@ -40,9 +40,7 @@ poetry run pytest
 ### ☕ Java connectors
 
 :::warning
-Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in 2024.
-We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/platform/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
-For this reason, Airbyte is not reviewing/accepting new Java connectors for now.
+Airbyte is revamping its core Java destinations codebase. We're not reviewing/accepting new Java connectors at this time.
 :::
 
 We run Java connector tests with gradle.

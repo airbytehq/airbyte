@@ -11,7 +11,7 @@ Users who do not have this stream enabled will not be affected and can safely up
 3. Disable the `pull_requests` stream
 4. In the main navbar, navigate to the **Sources** tab and select the affected Jira source. Set the `enable_experimental_streams` field to false and save your changes.
 
-If you're a self-managed user and can't upgrade to the new version yet, you can pin the connector to a specific version. [Help managing upgrades](/platform/next/managing-airbyte/connector-updates).
+If you're a self-managed user and can't upgrade to the new version yet, you can pin the connector to a specific version. [Help managing upgrades](/platform/managing-airbyte/connector-updates).
 
 ## Upgrading to 3.0.0
 

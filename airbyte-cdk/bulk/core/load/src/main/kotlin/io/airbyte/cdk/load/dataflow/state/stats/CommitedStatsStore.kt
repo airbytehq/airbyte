@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.state.stats
@@ -51,8 +51,8 @@ class CommittedStatsStore {
     internal fun removeLiveStats(s: DestinationStream.Descriptor, p: PartitionKey): EmissionStats? =
         liveStats[s]?.let {
             EmissionStats(
-                count = it.counts.remove(p) ?: 0,
-                bytes = it.bytes.remove(p) ?: 0,
+                count = it.counts.remove(p)?.toLong() ?: 0,
+                bytes = it.bytes.remove(p)?.toLong() ?: 0,
             )
         }
 }

@@ -1,0 +1,18 @@
+{
+  "results": [
+    {
+      "id": "seg-123-abc",
+      "name": "Active Users",
+      "contacts_count": 500,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-15T10:30:00Z",
+      "sample_updated_at": "2024-01-15T10:30:00Z",
+      "next_sample_update": "2024-01-16T10:30:00Z",
+      "parent_list_ids": [],
+      "query_version": "2.0",
+      "status": {
+        "query_validation": "valid"
+      }
+    }
+  ]
+}

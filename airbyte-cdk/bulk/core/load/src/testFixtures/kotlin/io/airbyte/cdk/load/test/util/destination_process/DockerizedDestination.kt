@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.test.util.destination_process
@@ -402,11 +402,18 @@ class DockerizedDestination(
             }
     }
 
-    override suspend fun sendMessage(message: InputMessage, broadcast: Boolean) {
+    override suspend fun sendMessage(
+        message: InputMessage,
+        broadcast: Boolean,
+        useSingleSocket: Boolean
+    ) {
         awaitReadyForSendingMessages()
         val dataChannels =
             if (broadcast) {
                 destinationDataChannels
+            } else if (useSingleSocket) {
+                // Use only the first socket to preserve message ordering
+                arrayOf(destinationDataChannels[0])
             } else {
                 arrayOf(
                     destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)]

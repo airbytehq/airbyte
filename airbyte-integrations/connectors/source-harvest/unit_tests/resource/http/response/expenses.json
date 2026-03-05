@@ -1,0 +1,50 @@
+{
+  "expenses": [
+    {
+      "id": 15296442,
+      "spent_date": "2024-01-15",
+      "user_id": 1782884,
+      "client_id": 5735776,
+      "project_id": 14307913,
+      "expense_category_id": 4195926,
+      "units": 1.0,
+      "total_cost": 49.99,
+      "notes": "Taxi to client meeting",
+      "billable": true,
+      "is_closed": false,
+      "is_locked": false,
+      "is_billed": false,
+      "locked_reason": null,
+      "created_at": "2024-01-15T14:00:00Z",
+      "updated_at": "2024-01-15T14:00:00Z",
+      "user": {
+        "id": 1782884,
+        "name": "John Doe"
+      },
+      "client": {
+        "id": 5735776,
+        "name": "ABC Corp"
+      },
+      "project": {
+        "id": 14307913,
+        "name": "Online Store - Phase 1"
+      },
+      "expense_category": {
+        "id": 4195926,
+        "name": "Transportation"
+      },
+      "receipt": null,
+      "invoice": null
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {
+    "first": "https://api.harvestapp.com/v2/expenses?page=1&per_page=50",
+    "last": "https://api.harvestapp.com/v2/expenses?page=1&per_page=50",
+    "previous": null,
+    "next": null
+  }
+}

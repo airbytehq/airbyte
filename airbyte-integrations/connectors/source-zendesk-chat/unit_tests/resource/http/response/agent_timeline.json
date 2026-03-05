@@ -1,0 +1,12 @@
+{
+  "agent_timeline": [
+    {
+      "agent_id": 1001,
+      "start_time": "2021-01-01T00:00:00Z",
+      "status": "online",
+      "duration": 3600
+    }
+  ],
+  "count": 1,
+  "next_page": null
+}

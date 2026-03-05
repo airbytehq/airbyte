@@ -4,6 +4,9 @@ The Bulk CDK is the "new java CDK" that's currently incubating.
 As the name suggests, its purpose is to help develop connectors which extract or load data in bulk.
 The Bulk CDK is written in Kotlin and uses the Micronaut framework for dependency injection.
 
+- **API Reference Docs**: [Kotlin CDK API Reference](https://airbyte-kotlin-cdk.vercel.app/)
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Structure
 
 The Bulk CDK consists of a _core_ and a bunch of _toolkits_.
@@ -93,17 +96,15 @@ Some legacy versions don't follow the SemVer format. Any CDK version with 0.x e.
 Artifact publication happens via a [github workflow](../../.github/workflows/publish-bulk-cdk.yml)
 which gets triggered by any push to the master branch, i.e. after merging a pull request.
 
-The contributor needs to manually bump the version and populate the [changelog](changelog.md) before merging.
+The bulk CDK is split into three independently versioned packages: base, extract, and load.
+Each package has its own `version.properties` file:
+- `core/base/version.properties`
+- `core/extract/version.properties`
+- `core/load/version.properties`
 
-In the build process, we are checking that the version of the bulk CDK doesn't exist already.
+The contributor needs to manually bump the version in the appropriate `version.properties` file before merging.
 
-A utility Gradle task exists to update both of those files:
-```shell
-./gradlew :airbyte-cdk:bulk:bumpVersion --<major|minor|patch> [--changelog 'My cool CDK update']
-```
-If invoked without the `--changelog` flag, it will prompt for a changelog entry via stdin.
-
-This task can also be invoked by commenting on your Github PR: `/bump-bulk-cdk-version bump=<major|minor|patch> changelog="My cool CDK update"`.
+In the build process, we check that the version doesn't already exist in the Maven repository.
 
 ## Licensing
 

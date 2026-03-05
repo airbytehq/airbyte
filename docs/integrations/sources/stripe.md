@@ -105,7 +105,7 @@ The Stripe source connector supports the following streams:
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
-- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -124,13 +124,13 @@ The Stripe source connector supports the following streams:
 - [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
 - [Setup Intents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Shipping Rates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
-- [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+- [Subscription Items](https://stripe.com/docs/api/subscription_items/list) \(Incremental\)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
-- [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+- [Transactions](https://stripe.com/docs/api/issuing/transactions/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
-- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
+- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list) \(Incremental\)
 - [Usage Records](https://stripe.com/docs/api/usage_records)
 
 ### Entity-Relationship Diagram (ERD)
@@ -158,18 +158,64 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
 
+#### Cursor age validation and automatic full refresh
+
+To prevent data loss caused by the 30-day Events API retention limit, the connector validates the age of each stream's cursor before choosing between incremental and full refresh sync. If a stream's cursor is older than 30 days, the connector automatically falls back to a full refresh for that stream instead of using the Events API, which would only return the last 30 days of data.
+
+This means that streams with no new records in the source within the last 30 days will perform a full refresh on subsequent syncs. This is expected behavior and ensures that all records are read from the source, given the Events API's 30-day data limitation. The impact is low, as it only affects streams where no records have been created or updated in the last 30 days.
+
+The following streams are affected by cursor age validation:
+
+- `Accounts`
+- `Application Fees`
+- `Application Fee Refunds`
+- `Authorizations`
+- `Bank Accounts`
+- `Cardholders`
+- `Cards`
+- `Charges`
+- `Checkout Sessions`
+- `Coupons`
+- `Credit Notes`
+- `Customers`
+- `Disputes`
+- `Early Fraud Warnings`
+- `External Account Bank Accounts`
+- `External Account Cards`
+- `Invoice Items`
+- `Invoice Line Items`
+- `Invoices`
+- `Payment Intents`
+- `Payment Methods`
+- `Payouts`
+- `Persons`
+- `Plans`
+- `Prices`
+- `Products`
+- `Promotion Codes`
+- `Refunds`
+- `Reviews`
+- `Setup Intents`
+- `Subscription Items`
+- `Subscription Schedule`
+- `Subscriptions`
+- `Top Ups`
+- `Transactions`
+- `Transfers`
+
 ### Troubleshooting
 
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
 
 - `Balance Transactions`
+- `Customer Balance Transactions`
 - `Events`
 - `File Links`
 - `Files`
-- `Refunds`
 - `Setup Attempts`
 - `Shipping Rates`
+- `Transfer Reversals`
 
 On the other hand, the following streams use the `updated` field value as a cursor:
 
@@ -179,6 +225,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 
 :::
 
+- `Accounts`
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
@@ -190,7 +237,6 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Checkout Session Line Items` (cursor field is `checkout_session_updated`)
 - `Coupons`
 - `Credit Notes`
-- `Customer Balance Transactions`
 - `Customers`
 - `Disputes`
 - `Early Fraud Warnings`
@@ -200,6 +246,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Invoice Line Items`
 - `Invoices`
 - `Payment Intents`
+- `Payment Methods`
 - `Payouts`
 - `Payout Balance Transactions`
 - `Promotion Codes`
@@ -207,6 +254,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Plans`
 - `Prices`
 - `Products`
+- `Refunds`
 - `Reviews`
 - `Setup Intents`
 - `Subscription Schedule`
@@ -246,13 +294,30 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.15.21-rc.4 | 2026-03-04 | [74290](https://github.com/airbytehq/airbyte/pull/74290) | Lower default concurrency from 25 to 10 and increase default data request time increment from 30 to 365 days to reduce rate limiting |
+| 5.15.21-rc.3 | 2026-03-03 | [74259](https://github.com/airbytehq/airbyte/pull/74259) | Fix cursor age validation to clear state before constructing full refresh stream, ensuring true full refresh from start_date |
+| 5.15.21-rc.2 | 2026-02-25 | [74051](https://github.com/airbytehq/airbyte/pull/74051) | Fix sync failure when unselected parent streams have stale cursor state during cursor age validation |
+| 5.15.21-rc.1 | 2026-02-25 | [73646](https://github.com/airbytehq/airbyte/pull/73646) | Add cursor age validation for StateDelegatingStream streams to prevent data loss when initial sync fails mid-way |
+| 5.15.20 | 2026-02-24 | [73944](https://github.com/airbytehq/airbyte/pull/73944) | Update dependencies |
+| 5.15.19 | 2026-02-17 | [73466](https://github.com/airbytehq/airbyte/pull/73466) | Update dependencies |
+| 5.15.18 | 2026-02-12 | [73318](https://github.com/airbytehq/airbyte/pull/73318) | Promoting release candidate 5.15.18-rc.1 to a main version. |
+| 5.15.18-rc.1 | 2026-02-04 | [72432](https://github.com/airbytehq/airbyte/pull/72432) | fix(source-stripe):  Fix Missing ConcurrencyLevel & Reduce Default Step Size |
+| 5.15.17 | 2026-01-27 | [72363](https://github.com/airbytehq/airbyte/pull/72363) | fix(source-stripe): Add date filtering for checkout_sessions full refresh |
+| 5.15.16 | 2026-01-20 | [72106](https://github.com/airbytehq/airbyte/pull/72106) | Update dependencies |
+| 5.15.15 | 2026-01-14 | [71614](https://github.com/airbytehq/airbyte/pull/71614) | Update dependencies |
+| 5.15.14 | 2025-12-18 | [70638](https://github.com/airbytehq/airbyte/pull/70638) | Update dependencies |
+| 5.15.13 | 2025-11-25 | [70048](https://github.com/airbytehq/airbyte/pull/70048) | Update dependencies |
+| 5.15.12 | 2025-11-18 | [69580](https://github.com/airbytehq/airbyte/pull/69580) | Update dependencies |
+| 5.15.11 | 2025-10-29 | [68994](https://github.com/airbytehq/airbyte/pull/68994) | Update dependencies |
+| 5.15.10 | 2025-10-21 | [68527](https://github.com/airbytehq/airbyte/pull/68527) | Update dependencies |
+| 5.15.9 | 2025-10-14 | [67472](https://github.com/airbytehq/airbyte/pull/67472) | Update dependencies |
 | 5.15.8 | 2025-09-30 | [66891](https://github.com/airbytehq/airbyte/pull/66891) | Update dependencies |
-| 5.15.7 | 2025-09-23 | [66367](https://github.com/airbytehq/airbyte/pull/66367) | Update dependencies |
+| 5.15.7 | 2025-09-24 | [66367](https://github.com/airbytehq/airbyte/pull/66367) | Update dependencies |
 | 5.15.6 | 2025-09-09 | [66115](https://github.com/airbytehq/airbyte/pull/66115) | Update dependencies |
 | 5.15.5 | 2025-08-24 | [65489](https://github.com/airbytehq/airbyte/pull/65489) | Update dependencies |
-| 5.15.4 | 2025-08-09 | [64840](https://github.com/airbytehq/airbyte/pull/64840) | Update dependencies |
+| 5.15.4 | 2025-08-10 | [64840](https://github.com/airbytehq/airbyte/pull/64840) | Update dependencies |
 | 5.15.3 | 2025-08-04 | [64484](https://github.com/airbytehq/airbyte/pull/64484) | Fix memory issue by moving schema loaders out of $parameters |
-| 5.15.2 | 2025-08-02 | [64439](https://github.com/airbytehq/airbyte/pull/64439) | Update dependencies |
+| 5.15.2 | 2025-08-03 | [64439](https://github.com/airbytehq/airbyte/pull/64439) | Update dependencies |
 | 5.15.1 | 2025-07-26 | [60561](https://github.com/airbytehq/airbyte/pull/60561) | Update dependencies |
 | 5.15.0 | 2025-07-23 | [63743](https://github.com/airbytehq/airbyte/pull/63743) | Promoting release candidate 5.15.0-rc.1 to a main version. |
 | 5.15.0-rc.1 | 2025-07-21 | [63370](https://github.com/airbytehq/airbyte/pull/63370)     | Migrate to manifest-only format.                                                                                                                                                                                              |
@@ -415,7 +480,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | 0.1.11      | 2021-05-30 | [3744](https://github.com/airbytehq/airbyte/pull/3744)       | Fix types in schema                                                                                                                                                                                                           |
 | 0.1.10      | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728)       | Update data types to be number instead of int                                                                                                                                                                                 |
 | 0.1.9       | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367)       | Add acceptance tests for connected accounts                                                                                                                                                                                   |
-| 0.1.8       | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368)       | Bump CDK connectors                                                                                                                                                                                                           |
+| 0.1.8       | 2021-05-11 | [3368](https://github.com/airbytehq/airbyte/pull/3368)       | Bump CDK connectors                                                                                                                                                                                                           |
 
 </details>
 
