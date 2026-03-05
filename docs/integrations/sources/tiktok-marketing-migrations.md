@@ -1,28 +1,21 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # TikTok Marketing Migration Guide
 
 ## Upgrading to 5.0.0
 
 The `currency` field in the `pixels` stream's `events` array has been corrected from `boolean` to `string` type. The TikTok API returns currency as a string value (e.g. `"USD"`), so the previous `boolean` type was incorrect and caused transform errors during syncs.
 
-### Migration Steps
-
-1. Select **Connections** in the main nav bar.
-   1. Select the connection(s) affected by the update.
-2. Select the **Schema** tab.
-   1. Select **Refresh source schema**.
-   2. Select **OK** and **Save changes**.
-3. Select the **Status** tab.
-   1. In the **Enabled streams** list, click the three dots on the right side of the `pixels` stream and select **Clear Data**.
-
-After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+Users syncing the `pixels` stream must refresh the source schema and clear data for that stream after upgrading.
 
 ## Upgrading to 4.0.0
 
-We're continuously striving to enhance the quality and reliability of our connectors at Airbyte. As part of our commitment to delivering exceptional service, we are transitioning source TikTok Marketing from the Python Connector Development Kit (CDK) to our innovative low-code framework. This is part of a strategic move to streamline many processes across connectors, bolstering maintainability and freeing us to focus more of our efforts on improving the performance and features of our evolving platform and growing catalog. However, due to differences between the Python and low-code CDKs, this migration constitutes a breaking change.
+This version migrates source TikTok Marketing from the Python CDK to the low-code framework. Due to differences between the Python and low-code CDKs, this migration is a breaking change.
 
-We’ve evolved and standardized how state is managed for incremental streams that are nested within a parent stream. This change impacts how individual states are tracked and stored for each partition, using a more structured approach to ensure the most granular and flexible state management. 
+### State format changes
 
-This change will affect the following streams:
+The state format has changed for incremental streams that are nested within a parent stream. This change impacts how individual states are tracked and stored for each partition. The following streams are affected:
+
 - `ad_group_audience_reports_by_country_daily`
 - `ad_group_audience_reports_by_platform_daily`
 - `ad_group_audience_reports_daily`
@@ -50,41 +43,14 @@ This change will affect the following streams:
 - `creative_assets_images`
 - `creative_assets_videos`
 
-See `Clearing data` to update your connection.
+After upgrading, clear data for each affected stream that your connection uses.
 
-Schema changes for `advertiser_ids` stream. 
-Type of advertiser_id field was changed from integer to string to use actual data types as it's declared in API docs. Users will need to refresh stream schema.
+### Schema changes
 
-See `Refresh schemas` to update your connection.
+The `advertiser_id` field in the `advertiser_ids` stream changed from `integer` to `string` to match the type declared in the TikTok API. After upgrading, refresh the source schema and clear data for the `advertiser_ids` stream.
 
-## Migration Steps
+## Connector upgrade guide
 
-### Refresh schemas
-
-Refreshing `advertiser_ids` schema is required in order to continue syncing `advertiser_ids` stream data. To refresh schema follow the steps below:
-
-1. Select **Connections** in the main navbar.
-   1. Select the connection(s) affected by the update.
-2. Select the **Schema** tab.
-   1. Select **Refresh source schema**.
-   2. Select **OK** and **Save changes**.
-3. Select **Connections** in the main nav bar.
-   1. Select the connection(s) affected by the update.
-4. Select the **Status** tab.
-   1. In the **Enabled streams** list, click the three dots on the right side of the `advertiser_ids` stream and select **Clear Data**.
-
-Important: If you were using `advertiser_ids` without provided advertiser_id in the source configuration you should firstly refresh source schema for `advertiser_ids` stream and then clear data for affected streams from the list above.
-
-### Clearing data 
-
-Clearing your data is required in order to continue syncing affected stream from list above successfully. To clear your data for the streams, follow the steps below:
-
-1. Select **Connections** in the main nav bar.
-   1. Select the connection(s) affected by the update.
-2. Select the **Status** tab.
-   1. In the **Enabled streams** list, click the three dots on the right side of the impacted stream and select **Clear Data**.
-3. Do the same steps from 1-2.1 for all streams in your connection that were affected by this update. 
-
-After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+<MigrationGuide />
 
 

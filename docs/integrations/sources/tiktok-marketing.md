@@ -127,8 +127,8 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | PixelEventsStatistics                     | Prod         | -                                          | No          |
 | AdsReportsByCountryDaily                  | Prod         | ad_id, stat_time_day, country_code         | Yes         |
 | AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | Yes         |
-| AdGroupsByCountryDaily                    | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
-| AdGroupsByCountryHourly                   | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
+| AdGroupsReportsByCountryDaily             | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
+| AdGroupsReportsByCountryHourly            | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
 
 :::info
 
@@ -142,7 +142,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 ## Performance considerations
 
-The connector is restricted by [requests limitation](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Upgrading
 
