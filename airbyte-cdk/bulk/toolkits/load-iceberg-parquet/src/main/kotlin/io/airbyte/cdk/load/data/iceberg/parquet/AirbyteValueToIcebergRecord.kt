@@ -65,8 +65,8 @@ class AirbyteValueToIcebergRecord {
             is NullValue -> return null
             is NumberValue ->
                 return when (type.typeId()) {
-                    // PK NumberType fields are stored as StringType in Iceberg.
-                    Type.TypeID.STRING -> airbyteValue.value.toPlainString()
+                    // NumberType is mapped to DecimalType in Iceberg.
+                    Type.TypeID.DECIMAL -> airbyteValue.value
                     else -> airbyteValue.value.toDouble()
                 }
             is StringValue -> return airbyteValue.value

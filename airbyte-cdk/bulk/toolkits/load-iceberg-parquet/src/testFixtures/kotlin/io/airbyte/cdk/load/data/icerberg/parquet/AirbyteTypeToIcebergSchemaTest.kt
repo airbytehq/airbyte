@@ -101,7 +101,7 @@ class AirbyteTypeToIcebergSchemaTest {
     @Test
     fun `convert handles NumberType`() {
         assertEquals(
-            Types.DoubleType.get(),
+            Types.DecimalType.of(38, 18),
             converter.convert(NumberType, stringifyObjects = false)
         )
     }
@@ -215,7 +215,7 @@ class AirbyteTypeToIcebergSchemaTest {
     }
 
     @Test
-    fun `toIcebergSchema maps PK NumberType to StringType for identifier compatibility`() {
+    fun `toIcebergSchema maps PK NumberType to DecimalType for identifier compatibility`() {
         val objectType =
             ObjectType(
                 linkedMapOf(
@@ -229,17 +229,17 @@ class AirbyteTypeToIcebergSchemaTest {
         val idColumn = schema.findField("id")
         val amountColumn = schema.findField("amount")
 
-        // PK NumberType field should be StringType (for Iceberg identifier compatibility)
+        // PK NumberType field should be DecimalType (for Iceberg identifier compatibility)
         assertNotNull(idColumn)
         assertFalse(idColumn!!.isOptional)
-        assertEquals(Types.StringType.get(), idColumn.type())
+        assertEquals(Types.DecimalType.of(38, 18), idColumn.type())
 
-        // Non-PK NumberType field should remain DoubleType (for analytical queries)
+        // Non-PK NumberType field should also be DecimalType
         assertNotNull(amountColumn)
         assertTrue(amountColumn!!.isOptional)
-        assertEquals(Types.DoubleType.get(), amountColumn.type())
+        assertEquals(Types.DecimalType.of(38, 18), amountColumn.type())
 
-        // PK field should be in identifier fields
+        // PK field should be in identifier fields (DecimalType is allowed)
         val identifierFieldIds = schema.identifierFieldIds()
         assertEquals(1, identifierFieldIds.size)
         assertTrue(identifierFieldIds.contains(idColumn.fieldId()))
