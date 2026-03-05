@@ -50,6 +50,16 @@ def bulk_retry_on_exception(more_exceptions: Optional[Tuple[Type[Exception], ...
                         f"Stream: `{self.http_client.name}`, the BULK concurrency limit has reached. Waiting {self._concurrent_interval} sec before retry, attempt: {self._concurrent_attempt}.",
                     )
                     sleep(self._concurrent_interval)
+                except ShopifyBulkExceptions.BulkJobCreationFailedRateLimitError:
+                    current_retries += 1
+                    if current_retries > self._job_max_retries:
+                        LOGGER.error("Exceeded retry limit for bulk operation rate limit. Giving up.")
+                        raise
+                    LOGGER.warning(
+                        f"Stream: `{self.http_client.name}`, Shopify bulk operation rate limit reached. "
+                        f"Retrying {current_retries}/{self._job_max_retries} after {self._concurrent_interval} seconds.",
+                    )
+                    sleep(self._concurrent_interval)
                 except ShopifyBulkExceptions.BulkJobRedirectToOtherShopError:
                     LOGGER.warning(
                         f"Stream: `{self.http_client.name}`, the `shop name` differs from the provided in `input configuration`. Switching to the `{self._tools.shop_name_from_url(self.base_url)}`.",
