@@ -7,6 +7,13 @@ check:
   stream_names:
     - tags
 
+stream_groups:
+  companies_group:
+    streams:
+      - $ref: "#/definitions/streams/companies"
+    action:
+      type: BlockSimultaneousSyncsAction
+
 definitions:
   streams:
     activity_logs:
@@ -247,7 +254,6 @@ definitions:
     companies:
       type: DeclarativeStream
       name: "companies"
-      block_simultaneous_read: "companies"
       primary_key:
         - id
       retriever:
