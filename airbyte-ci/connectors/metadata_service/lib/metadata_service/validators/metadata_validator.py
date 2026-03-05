@@ -149,6 +149,7 @@ def validate_docs_path_exists(metadata_definition: ConnectorMetadataDefinitionV0
 _REQUIRED_DESTINATION_SYNC_MODES = [
     "Full Refresh - Overwrite",
     "Full Refresh - Append",
+    "Full Refresh - Overwrite + Deduped",
     "Incremental Sync - Append",
     "Incremental Sync - Append + Deduped",
 ]

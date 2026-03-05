@@ -173,6 +173,7 @@ The destination supports the following sync modes:
 | :--- | :---: |
 | [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
 | [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
@@ -188,6 +189,7 @@ Some intro text.
 | :--- | :---: |
 | Full Refresh - Overwrite | Yes |
 | Full Refresh - Append | Yes |
+| Full Refresh - Overwrite + Deduped | Yes |
 | Incremental Sync - Append | Yes |
 | Incremental Sync - Append + Deduped | Yes |
 """
@@ -209,6 +211,7 @@ MISSING_SYNC_MODES_DOC = """\
 | :--- | :---: |
 | Full Refresh - Overwrite | Yes |
 | Full Refresh - Append | Yes |
+| Full Refresh - Overwrite + Deduped | Yes |
 """
 
 
