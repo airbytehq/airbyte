@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dev_null
 
-import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 

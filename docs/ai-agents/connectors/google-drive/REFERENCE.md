@@ -8,7 +8,8 @@ The Google-Drive connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Files | [List](#files-list), [Get](#files-get), [Download](#files-download) |
+| Files | [List](#files-list), [Get](#files-get), [Create](#files-create), [Update](#files-update), [Delete](#files-delete), [Download](#files-download) |
+| Files Upload | [Create](#files-upload-create) |
 | Files Export | [Download](#files-export-download) |
 | Drives | [List](#drives-list), [Get](#drives-get) |
 | Permissions | [List](#permissions-list), [Get](#permissions-get) |
@@ -19,22 +20,22 @@ The Google-Drive connector supports the following entities and actions.
 | Changes Start Page Token | [Get](#changes-start-page-token-get) |
 | About | [Get](#about-get) |
 
-### Files
+## Files
 
-#### Files List
+### Files List
 
 Lists the user's files. Returns a paginated list of files.
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.files.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -44,7 +45,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -63,7 +64,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -133,7 +134,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `videoMediaMetadata` | `object \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -142,11 +143,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Files Get
+### Files Get
 
 Gets a file's metadata by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.files.get(
@@ -154,10 +155,10 @@ await google_drive.files.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -170,7 +171,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -182,7 +183,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -254,14 +255,306 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Files Download
+### Files Create
+
+Creates a new file or folder in Google Drive (metadata only, no content).
+To create a folder, set mimeType to 'application/vnd.google-apps.folder'.
+To create a Google Doc, use 'application/vnd.google-apps.document'.
+To create a Google Sheet, use 'application/vnd.google-apps.spreadsheet'.
+
+
+#### Python SDK
+
+```python
+await google_drive.files.create(
+    name="<str>",
+    mime_type="<str>",
+    parents=[],
+    description="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files",
+    "action": "create",
+    "params": {
+        "name": "<str>",
+        "mimeType": "<str>",
+        "parents": [],
+        "description": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | Yes | The name of the file or folder |
+| `mimeType` | `string` | No | The MIME type of the file. Use 'application/vnd.google-apps.folder' for folders,
+'application/vnd.google-apps.document' for Google Docs,
+'application/vnd.google-apps.spreadsheet' for Google Sheets.
+ |
+| `parents` | `array<string>` | No | The IDs of the parent folders. If not specified, the file is placed in My Drive root. |
+| `description` | `string` | No | A short description of the file |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `mimeType` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `starred` | `boolean \| null` |  |
+| `trashed` | `boolean \| null` |  |
+| `explicitlyTrashed` | `boolean \| null` |  |
+| `parents` | `array \| null` |  |
+| `properties` | `object \| null` |  |
+| `appProperties` | `object \| null` |  |
+| `spaces` | `array \| null` |  |
+| `version` | `string \| null` |  |
+| `webContentLink` | `string \| null` |  |
+| `webViewLink` | `string \| null` |  |
+| `iconLink` | `string \| null` |  |
+| `hasThumbnail` | `boolean \| null` |  |
+| `thumbnailLink` | `string \| null` |  |
+| `thumbnailVersion` | `string \| null` |  |
+| `viewedByMe` | `boolean \| null` |  |
+| `viewedByMeTime` | `string \| null` |  |
+| `createdTime` | `string \| null` |  |
+| `modifiedTime` | `string \| null` |  |
+| `modifiedByMeTime` | `string \| null` |  |
+| `modifiedByMe` | `boolean \| null` |  |
+| `sharedWithMeTime` | `string \| null` |  |
+| `sharingUser` | `object \| any` |  |
+| `owners` | `array \| null` |  |
+| `owners[].kind` | `string \| null` |  |
+| `owners[].displayName` | `string \| null` |  |
+| `owners[].photoLink` | `string \| null` |  |
+| `owners[].me` | `boolean \| null` |  |
+| `owners[].permissionId` | `string \| null` |  |
+| `owners[].emailAddress` | `string \| null` |  |
+| `driveId` | `string \| null` |  |
+| `lastModifyingUser` | `object \| any` |  |
+| `shared` | `boolean \| null` |  |
+| `ownedByMe` | `boolean \| null` |  |
+| `capabilities` | `object \| null` |  |
+| `viewersCanCopyContent` | `boolean \| null` |  |
+| `copyRequiresWriterPermission` | `boolean \| null` |  |
+| `writersCanShare` | `boolean \| null` |  |
+| `permissionIds` | `array \| null` |  |
+| `folderColorRgb` | `string \| null` |  |
+| `originalFilename` | `string \| null` |  |
+| `fullFileExtension` | `string \| null` |  |
+| `fileExtension` | `string \| null` |  |
+| `md5Checksum` | `string \| null` |  |
+| `sha1Checksum` | `string \| null` |  |
+| `sha256Checksum` | `string \| null` |  |
+| `size` | `string \| null` |  |
+| `quotaBytesUsed` | `string \| null` |  |
+| `headRevisionId` | `string \| null` |  |
+| `isAppAuthorized` | `boolean \| null` |  |
+| `exportLinks` | `object \| null` |  |
+| `shortcutDetails` | `object \| null` |  |
+| `contentRestrictions` | `array \| null` |  |
+| `resourceKey` | `string \| null` |  |
+| `linkShareMetadata` | `object \| null` |  |
+| `labelInfo` | `object \| null` |  |
+| `trashedTime` | `string \| null` |  |
+| `trashingUser` | `object \| any` |  |
+| `imageMediaMetadata` | `object \| null` |  |
+| `videoMediaMetadata` | `object \| null` |  |
+
+
+</details>
+
+### Files Update
+
+Updates a file's metadata. Use addParents/removeParents query parameters
+to move a file between folders.
+
+
+#### Python SDK
+
+```python
+await google_drive.files.update(
+    name="<str>",
+    description="<str>",
+    mime_type="<str>",
+    file_id="<str>",
+    add_parents="<str>",
+    remove_parents="<str>",
+    supports_all_drives=True
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files",
+    "action": "update",
+    "params": {
+        "name": "<str>",
+        "description": "<str>",
+        "mimeType": "<str>",
+        "fileId": "<str>",
+        "addParents": "<str>",
+        "removeParents": "<str>",
+        "supportsAllDrives": True
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | No | The new name of the file |
+| `description` | `string` | No | A new description for the file |
+| `mimeType` | `string` | No | The new MIME type of the file |
+| `fileId` | `string` | Yes | The ID of the file to update |
+| `addParents` | `string` | No | Comma-separated list of parent IDs to add |
+| `removeParents` | `string` | No | Comma-separated list of parent IDs to remove |
+| `supportsAllDrives` | `boolean` | No | Whether the requesting application supports both My Drives and shared drives |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `mimeType` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `starred` | `boolean \| null` |  |
+| `trashed` | `boolean \| null` |  |
+| `explicitlyTrashed` | `boolean \| null` |  |
+| `parents` | `array \| null` |  |
+| `properties` | `object \| null` |  |
+| `appProperties` | `object \| null` |  |
+| `spaces` | `array \| null` |  |
+| `version` | `string \| null` |  |
+| `webContentLink` | `string \| null` |  |
+| `webViewLink` | `string \| null` |  |
+| `iconLink` | `string \| null` |  |
+| `hasThumbnail` | `boolean \| null` |  |
+| `thumbnailLink` | `string \| null` |  |
+| `thumbnailVersion` | `string \| null` |  |
+| `viewedByMe` | `boolean \| null` |  |
+| `viewedByMeTime` | `string \| null` |  |
+| `createdTime` | `string \| null` |  |
+| `modifiedTime` | `string \| null` |  |
+| `modifiedByMeTime` | `string \| null` |  |
+| `modifiedByMe` | `boolean \| null` |  |
+| `sharedWithMeTime` | `string \| null` |  |
+| `sharingUser` | `object \| any` |  |
+| `owners` | `array \| null` |  |
+| `owners[].kind` | `string \| null` |  |
+| `owners[].displayName` | `string \| null` |  |
+| `owners[].photoLink` | `string \| null` |  |
+| `owners[].me` | `boolean \| null` |  |
+| `owners[].permissionId` | `string \| null` |  |
+| `owners[].emailAddress` | `string \| null` |  |
+| `driveId` | `string \| null` |  |
+| `lastModifyingUser` | `object \| any` |  |
+| `shared` | `boolean \| null` |  |
+| `ownedByMe` | `boolean \| null` |  |
+| `capabilities` | `object \| null` |  |
+| `viewersCanCopyContent` | `boolean \| null` |  |
+| `copyRequiresWriterPermission` | `boolean \| null` |  |
+| `writersCanShare` | `boolean \| null` |  |
+| `permissionIds` | `array \| null` |  |
+| `folderColorRgb` | `string \| null` |  |
+| `originalFilename` | `string \| null` |  |
+| `fullFileExtension` | `string \| null` |  |
+| `fileExtension` | `string \| null` |  |
+| `md5Checksum` | `string \| null` |  |
+| `sha1Checksum` | `string \| null` |  |
+| `sha256Checksum` | `string \| null` |  |
+| `size` | `string \| null` |  |
+| `quotaBytesUsed` | `string \| null` |  |
+| `headRevisionId` | `string \| null` |  |
+| `isAppAuthorized` | `boolean \| null` |  |
+| `exportLinks` | `object \| null` |  |
+| `shortcutDetails` | `object \| null` |  |
+| `contentRestrictions` | `array \| null` |  |
+| `resourceKey` | `string \| null` |  |
+| `linkShareMetadata` | `object \| null` |  |
+| `labelInfo` | `object \| null` |  |
+| `trashedTime` | `string \| null` |  |
+| `trashingUser` | `object \| any` |  |
+| `imageMediaMetadata` | `object \| null` |  |
+| `videoMediaMetadata` | `object \| null` |  |
+
+
+</details>
+
+### Files Delete
+
+Permanently deletes a file owned by the user without moving it to the trash.
+
+#### Python SDK
+
+```python
+await google_drive.files.delete(
+    file_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files",
+    "action": "delete",
+    "params": {
+        "fileId": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `fileId` | `string` | Yes | The ID of the file to delete |
+| `supportsAllDrives` | `boolean` | No | Whether the requesting application supports both My Drives and shared drives |
+
+
+### Files Download
 
 Downloads the binary content of a file. This works for non-Google Workspace files
 (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
 use the export action instead.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in google_drive.files.download(    file_id="<str>",    alt="<str>"):# Process each chunk (e.g., write to file)
@@ -270,10 +563,10 @@ async for chunk in google_drive.files.download(    file_id="<str>",    alt="<str
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -287,7 +580,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -298,9 +591,145 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Files Export
+## Files Upload
 
-#### Files Export Download
+### Files Upload Create
+
+Uploads a new file to Google Drive with both metadata and file content.
+The file content must be base64-encoded in the file_content parameter.
+Suitable for files up to 5MB. For larger files, use the Drive UI.
+
+
+#### Python SDK
+
+```python
+await google_drive.files_upload.create(
+    name="<str>",
+    file_content="<str>",
+    mime_type="<str>",
+    parents=[],
+    description="<str>",
+    file_mime_type="<str>",
+    upload_type="<str>",
+    supports_all_drives=True
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files_upload",
+    "action": "create",
+    "params": {
+        "name": "<str>",
+        "file_content": "<str>",
+        "mimeType": "<str>",
+        "parents": [],
+        "description": "<str>",
+        "file_mime_type": "<str>",
+        "uploadType": "<str>",
+        "supportsAllDrives": True
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | Yes | The name of the file |
+| `file_content` | `string` | Yes | Base64-encoded file content to upload |
+| `mimeType` | `string` | No | The MIME type for the file metadata in Google Drive |
+| `parents` | `array<string>` | No | The IDs of the parent folders |
+| `description` | `string` | No | A short description of the file |
+| `file_mime_type` | `string` | No | The MIME type of the actual file content (e.g., 'application/pdf', 'image/png'). Defaults to 'application/octet-stream'. |
+| `uploadType` | `"multipart"` | No | The type of upload request (must be 'multipart') |
+| `supportsAllDrives` | `boolean` | No | Whether the requesting application supports both My Drives and shared drives |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `mimeType` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `starred` | `boolean \| null` |  |
+| `trashed` | `boolean \| null` |  |
+| `explicitlyTrashed` | `boolean \| null` |  |
+| `parents` | `array \| null` |  |
+| `properties` | `object \| null` |  |
+| `appProperties` | `object \| null` |  |
+| `spaces` | `array \| null` |  |
+| `version` | `string \| null` |  |
+| `webContentLink` | `string \| null` |  |
+| `webViewLink` | `string \| null` |  |
+| `iconLink` | `string \| null` |  |
+| `hasThumbnail` | `boolean \| null` |  |
+| `thumbnailLink` | `string \| null` |  |
+| `thumbnailVersion` | `string \| null` |  |
+| `viewedByMe` | `boolean \| null` |  |
+| `viewedByMeTime` | `string \| null` |  |
+| `createdTime` | `string \| null` |  |
+| `modifiedTime` | `string \| null` |  |
+| `modifiedByMeTime` | `string \| null` |  |
+| `modifiedByMe` | `boolean \| null` |  |
+| `sharedWithMeTime` | `string \| null` |  |
+| `sharingUser` | `object \| any` |  |
+| `owners` | `array \| null` |  |
+| `owners[].kind` | `string \| null` |  |
+| `owners[].displayName` | `string \| null` |  |
+| `owners[].photoLink` | `string \| null` |  |
+| `owners[].me` | `boolean \| null` |  |
+| `owners[].permissionId` | `string \| null` |  |
+| `owners[].emailAddress` | `string \| null` |  |
+| `driveId` | `string \| null` |  |
+| `lastModifyingUser` | `object \| any` |  |
+| `shared` | `boolean \| null` |  |
+| `ownedByMe` | `boolean \| null` |  |
+| `capabilities` | `object \| null` |  |
+| `viewersCanCopyContent` | `boolean \| null` |  |
+| `copyRequiresWriterPermission` | `boolean \| null` |  |
+| `writersCanShare` | `boolean \| null` |  |
+| `permissionIds` | `array \| null` |  |
+| `folderColorRgb` | `string \| null` |  |
+| `originalFilename` | `string \| null` |  |
+| `fullFileExtension` | `string \| null` |  |
+| `fileExtension` | `string \| null` |  |
+| `md5Checksum` | `string \| null` |  |
+| `sha1Checksum` | `string \| null` |  |
+| `sha256Checksum` | `string \| null` |  |
+| `size` | `string \| null` |  |
+| `quotaBytesUsed` | `string \| null` |  |
+| `headRevisionId` | `string \| null` |  |
+| `isAppAuthorized` | `boolean \| null` |  |
+| `exportLinks` | `object \| null` |  |
+| `shortcutDetails` | `object \| null` |  |
+| `contentRestrictions` | `array \| null` |  |
+| `resourceKey` | `string \| null` |  |
+| `linkShareMetadata` | `object \| null` |  |
+| `labelInfo` | `object \| null` |  |
+| `trashedTime` | `string \| null` |  |
+| `trashingUser` | `object \| any` |  |
+| `imageMediaMetadata` | `object \| null` |  |
+| `videoMediaMetadata` | `object \| null` |  |
+
+
+</details>
+
+## Files Export
+
+### Files Export Download
 
 Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
 Common export formats:
@@ -313,7 +742,7 @@ Common export formats:
 Note: Export has a 10MB limit. For larger files, use the Drive UI.
 
 
-**Python SDK**
+#### Python SDK
 
 ```python
 async for chunk in google_drive.files_export.download(    file_id="<str>",    mime_type="<str>"):# Process each chunk (e.g., write to file)
@@ -322,10 +751,10 @@ async for chunk in google_drive.files_export.download(    file_id="<str>",    mi
 
 > **Note**: Download operations return an async iterator of bytes chunks for memory-efficient streaming. Use `async for` to process chunks as they arrive.
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -339,7 +768,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -355,22 +784,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
-### Drives
+## Drives
 
-#### Drives List
+### Drives List
 
 Lists the user's shared drives
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.drives.list()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -380,7 +809,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -393,7 +822,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -411,7 +840,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `orgUnitId` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -419,11 +848,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Drives Get
+### Drives Get
 
 Gets a shared drive's metadata by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.drives.get(
@@ -431,10 +860,10 @@ await google_drive.drives.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -447,7 +876,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -458,7 +887,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -478,13 +907,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Permissions
+## Permissions
 
-#### Permissions List
+### Permissions List
 
 Lists a file's or shared drive's permissions
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.permissions.list(
@@ -492,10 +921,10 @@ await google_drive.permissions.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -508,7 +937,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -522,7 +951,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -543,7 +972,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `pendingOwner` | `boolean \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -551,11 +980,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Permissions Get
+### Permissions Get
 
 Gets a permission by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.permissions.get(
@@ -564,10 +993,10 @@ await google_drive.permissions.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -581,7 +1010,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -594,7 +1023,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -617,13 +1046,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Comments
+## Comments
 
-#### Comments List
+### Comments List
 
 Lists a file's comments
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.comments.list(
@@ -631,10 +1060,10 @@ await google_drive.comments.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -647,7 +1076,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -662,7 +1091,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -691,7 +1120,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `assigneeEmailAddress` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -699,11 +1128,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Comments Get
+### Comments Get
 
 Gets a comment by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.comments.get(
@@ -712,10 +1141,10 @@ await google_drive.comments.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -729,7 +1158,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -742,7 +1171,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -773,13 +1202,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Replies
+## Replies
 
-#### Replies List
+### Replies List
 
 Lists a comment's replies
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.replies.list(
@@ -788,10 +1217,10 @@ await google_drive.replies.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -805,7 +1234,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -820,7 +1249,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -835,7 +1264,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `action` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -843,11 +1272,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Replies Get
+### Replies Get
 
 Gets a reply by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.replies.get(
@@ -857,10 +1286,10 @@ await google_drive.replies.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -875,7 +1304,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -889,7 +1318,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -906,13 +1335,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Revisions
+## Revisions
 
-#### Revisions List
+### Revisions List
 
 Lists a file's revisions
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.revisions.list(
@@ -920,10 +1349,10 @@ await google_drive.revisions.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -936,7 +1365,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -948,7 +1377,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -968,7 +1397,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `exportLinks` | `object \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -976,11 +1405,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-#### Revisions Get
+### Revisions Get
 
 Gets a revision's metadata by ID
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.revisions.get(
@@ -989,10 +1418,10 @@ await google_drive.revisions.get(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1006,7 +1435,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1017,7 +1446,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1039,13 +1468,13 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Changes
+## Changes
 
-#### Changes List
+### Changes List
 
 Lists the changes for a user or shared drive
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.changes.list(
@@ -1053,10 +1482,10 @@ await google_drive.changes.list(
 )
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1069,7 +1498,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1086,7 +1515,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 <details>
 <summary><b>Response Schema</b></summary>
 
-**Records**
+#### Records
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1101,7 +1530,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `changeType` | `string \| null` |  |
 
 
-**Meta**
+#### Meta
 
 | Field Name | Type | Description |
 |------------|------|-------------|
@@ -1110,22 +1539,22 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 </details>
 
-### Changes Start Page Token
+## Changes Start Page Token
 
-#### Changes Start Page Token Get
+### Changes Start Page Token Get
 
 Gets the starting pageToken for listing future changes
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.changes_start_page_token.get()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1135,7 +1564,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1143,22 +1572,35 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 | `supportsAllDrives` | `boolean` | No | Whether the requesting application supports both My Drives and shared drives |
 
 
-### About
+<details>
+<summary><b>Response Schema</b></summary>
 
-#### About Get
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `startPageToken` | `string` |  |
+
+
+</details>
+
+## About
+
+### About Get
 
 Gets information about the user, the user's Drive, and system capabilities
 
-**Python SDK**
+#### Python SDK
 
 ```python
 await google_drive.about.get()
 ```
 
-**API**
+#### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1168,59 +1610,34 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Parameters**
+#### Parameters
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `fields` | `string` | No | Fields to include in the response (use * for all fields) |
 
 
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `kind` | `string \| null` |  |
+| `user` | `object \| any` |  |
+| `storageQuota` | `object \| null` |  |
+| `importFormats` | `object \| null` |  |
+| `exportFormats` | `object \| null` |  |
+| `maxImportSizes` | `object \| null` |  |
+| `maxUploadSize` | `string \| null` |  |
+| `appInstalled` | `boolean \| null` |  |
+| `folderColorPalette` | `array \| null` |  |
+| `driveThemes` | `array \| null` |  |
+| `canCreateDrives` | `boolean \| null` |  |
+| `canCreateTeamDrives` | `boolean \| null` |  |
+| `teamDriveThemes` | `array \| null` |  |
 
 
-## Authentication
-
-The Google-Drive connector supports the following authentication methods.
-
-
-### OAuth 2.0 Authentication
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `access_token` | `str` | No | Your Google OAuth2 Access Token (optional, will be obtained via refresh) |
-| `refresh_token` | `str` | Yes | Your Google OAuth2 Refresh Token |
-| `client_id` | `str` | Yes | Your Google OAuth2 Client ID |
-| `client_secret` | `str` | Yes | Your Google OAuth2 Client Secret |
-
-#### Example
-
-**Python SDK**
-
-```python
-GoogleDriveConnector(
-  auth_config=GoogleDriveAuthConfig(
-    access_token="<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
-    refresh_token="<Your Google OAuth2 Refresh Token>",
-    client_id="<Your Google OAuth2 Client ID>",
-    client_secret="<Your Google OAuth2 Client Secret>"
-  )
-)
-```
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "connector_definition_id": "9f8dda77-1048-4368-815b-269bf54ee9b8",
-  "auth_config": {
-    "access_token": "<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
-    "refresh_token": "<Your Google OAuth2 Refresh Token>",
-    "client_id": "<Your Google OAuth2 Client ID>",
-    "client_secret": "<Your Google OAuth2 Client Secret>"
-  },
-  "name": "My Google-Drive Connector"
-}'
-```
+</details>
 

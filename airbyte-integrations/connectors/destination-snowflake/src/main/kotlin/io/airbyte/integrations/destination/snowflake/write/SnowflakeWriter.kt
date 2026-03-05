@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write
@@ -57,7 +57,7 @@ class SnowflakeWriter(
             ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)
         return when (stream.minimumGenerationId) {
             0L ->
-                when (stream.importType) {
+                when (stream.tableSchema.importType) {
                     is Dedupe ->
                         if (!snowflakeConfiguration.legacyRawTablesOnly) {
                             DirectLoadTableDedupStreamLoader(
@@ -95,7 +95,7 @@ class SnowflakeWriter(
                         )
                 }
             stream.generationId ->
-                when (stream.importType) {
+                when (stream.tableSchema.importType) {
                     is Dedupe ->
                         if (!snowflakeConfiguration.legacyRawTablesOnly) {
                             DirectLoadTableDedupTruncateStreamLoader(
