@@ -17,6 +17,7 @@ definitions:
         type: CompositeErrorHandler
         error_handlers:
           - type: DefaultErrorHandler
+            max_retries: 10
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
@@ -29,7 +30,6 @@ definitions:
                 http_codes:
                   - 429
                   - 502
-            max_retries: 10
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -74,14 +74,14 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-    primary_key: id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - id
+          - node_id
         properties:
           type:
             type:
@@ -92,7 +92,9 @@ streams:
               - string
               - "null"
           id:
-            type: number
+            type:
+              - number
+              - "null"
           url:
             type:
               - string
@@ -167,9 +169,7 @@ streams:
                   - string
                   - "null"
           node_id:
-            type:
-              - string
-              - "null"
+            type: string
           privacy:
             type:
               - string
@@ -220,7 +220,7 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-    primary_key: id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -325,9 +325,7 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-    primary_key:
-      - name
-      - id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -817,9 +815,7 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key:
-      - repository
-      - id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -945,9 +941,7 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key:
-      - repository
-      - name
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1018,9 +1012,7 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key:
-      - repository
-      - login
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1340,7 +1332,7 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key: id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1457,6 +1449,39 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                color:
+                  type:
+                    - string
+                    - "null"
+                default:
+                  type:
+                    - boolean
+                    - "null"
+                node_id:
+                  type:
+                    - string
+                    - "null"
           locked:
             type:
               - boolean
@@ -1643,6 +1668,87 @@ streams:
                   type:
                     - string
                     - "null"
+          closed_by:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              login:
+                type:
+                  - string
+                  - "null"
+              node_id:
+                type:
+                  - string
+                  - "null"
+              html_url:
+                type:
+                  - string
+                  - "null"
+              gists_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
+              gravatar_id:
+                type:
+                  - string
+                  - "null"
+              starred_url:
+                type:
+                  - string
+                  - "null"
+              followers_url:
+                type:
+                  - string
+                  - "null"
+              following_url:
+                type:
+                  - string
+                  - "null"
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              subscriptions_url:
+                type:
+                  - string
+                  - "null"
+              received_events_url:
+                type:
+                  - string
+                  - "null"
           reactions:
             type:
               - object
@@ -1706,10 +1812,6 @@ streams:
               - "null"
           updated_at:
             type: string
-          label_names:
-            type:
-              - string
-              - "null"
           comments_url:
             type:
               - string
@@ -1735,6 +1837,10 @@ streams:
                 type:
                   - string
                   - "null"
+          state_reason:
+            type:
+              - string
+              - "null"
           timeline_url:
             type:
               - string
@@ -1805,8 +1911,10 @@ streams:
         type: RequestOption
         field_name: since
         inject_into: request_parameter
+      cursor_granularity: PT1S
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
+      step: P1M
   - type: DeclarativeStream
     name: issue_labels
     retriever:
@@ -1839,9 +1947,7 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key:
-      - repository
-      - name
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1919,20 +2025,19 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key:
-      - repository
-      - name
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - repository
-          - name
+          - node_id
         properties:
           name:
-            type: string
+            type:
+              - string
+              - "null"
           commit:
             type:
               - object
@@ -1947,11 +2052,11 @@ streams:
                   - string
                   - "null"
           node_id:
+            type: string
+          repository:
             type:
               - string
               - "null"
-          repository:
-            type: string
           tarball_url:
             type:
               - string
@@ -2329,9 +2434,11 @@ streams:
         type: RequestOption
         field_name: since
         inject_into: request_parameter
+      cursor_granularity: PT1S
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: P1M
   - type: DeclarativeStream
     name: deployments
     retriever:
@@ -2367,9 +2474,7 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key:
-      - repository
-      - id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2692,7 +2797,6 @@ streams:
             value: "{{ stream_slice.repo }}"
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
       cursor_field: created_at
       start_datetime:
         type: MinMaxDatetime
@@ -2703,6 +2807,7 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: P1M
   - type: DeclarativeStream
     name: pull_requests
     retriever:
@@ -2740,9 +2845,7 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key:
-      - repository
-      - id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4258,7 +4361,6 @@ streams:
             value: "{{ stream_slice.repo }}"
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
@@ -4269,6 +4371,7 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: P1M
   - type: DeclarativeStream
     name: reviews
     retriever:
@@ -4468,7 +4571,6 @@ streams:
             value: "{{ stream_slice.repo }}"
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
       cursor_field: submitted_at
       start_datetime:
         type: MinMaxDatetime
@@ -4479,6 +4581,7 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: P1M
   - type: DeclarativeStream
     name: workflows
     retriever:
@@ -4515,9 +4618,6 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key:
-      - repository
-      - id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4576,7 +4676,6 @@ streams:
             value: "{{ stream_slice.repo }}"
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
@@ -4586,6 +4685,7 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: P1M
   - type: DeclarativeStream
     name: workflow_jobs
     retriever:
@@ -4619,15 +4719,13 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/14"
+              $ref: "#/streams/16"
             parent_key: id
             extra_fields:
               - - repository
             partition_field: workflow_run
             lazy_read_pointer: []
-    primary_key:
-      - run_id
-      - id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4743,7 +4841,6 @@ streams:
             value: "{{ stream_slice.repo }}"
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
       cursor_field: started_at
       start_datetime:
         type: MinMaxDatetime
@@ -4753,6 +4850,7 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: P1M
   - type: DeclarativeStream
     name: workflow_runs
     retriever:
@@ -4791,8 +4889,7 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key:
-      - id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5757,7 +5854,6 @@ streams:
     transformations: []
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
       cursor_field: created_at
       start_datetime:
         type: MinMaxDatetime
@@ -5767,6 +5863,7 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: P1M
   - type: DeclarativeStream
     name: deployment_statuses
     retriever:
@@ -5805,17 +5902,14 @@ streams:
               - - repository
             partition_field: deployment_id
             lazy_read_pointer: []
-    primary_key:
-      - deployment_id
-      - id
+    primary_key: node_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - deployment_id
-          - id
+          - node_id
           - updated_at
         properties:
           description:
@@ -5823,7 +5917,9 @@ streams:
               - string
               - "null"
           id:
-            type: number
+            type:
+              - number
+              - "null"
           url:
             type:
               - string
@@ -5918,9 +6014,7 @@ streams:
               - string
               - "null"
           node_id:
-            type:
-              - string
-              - "null"
+            type: string
           created_at:
             type:
               - string
@@ -5940,7 +6034,9 @@ streams:
               - string
               - "null"
           deployment_id:
-            type: number
+            type:
+              - number
+              - "null"
           deployment_url:
             type:
               - string
@@ -5967,7 +6063,6 @@ streams:
             value: "{{ stream_slice.deployment_id }}"
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
@@ -5977,8 +6072,9 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: P1M
   - type: DeclarativeStream
-    name: commit_comments
+    name: issue_comments
     retriever:
       type: SimpleRetriever
       decoder:
@@ -5989,8 +6085,8 @@ streams:
         type: HttpRequester
         url: >-
           https://api.github.com/repos/{{ config['organization'] }}/{{
-          stream_slice.extra_fields.repository }}/commits/{{
-          stream_slice.commit_sha }}/comments
+          stream_slice.extra_fields.repository }}/issues/{{
+          stream_slice.issue_number }}/comments
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -6001,16 +6097,19 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['updated_at'] > stream_interval.start_time }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/10"
-            parent_key: sha
+              $ref: "#/streams/7"
+            parent_key: number
             extra_fields:
               - - repository
-            partition_field: commit_sha
+            partition_field: issue_number
             lazy_read_pointer: []
     primary_key: node_id
     schema_loader:
@@ -6019,16 +6118,21 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - sha
-          - author_datetime
+          - node_id
         properties:
-          sha:
-            type: string
+          id:
+            type:
+              - number
+              - "null"
           url:
             type:
               - string
               - "null"
-          author:
+          body:
+            type:
+              - string
+              - "null"
+          user:
             type:
               - object
               - "null"
@@ -6109,134 +6213,26 @@ streams:
                 type:
                   - string
                   - "null"
-          commit:
-            type:
-              - object
-              - "null"
-            properties:
-              url:
-                type:
-                  - string
-                  - "null"
-              tree:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  sha:
-                    type:
-                      - string
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-              author:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  date:
-                    type:
-                      - string
-                      - "null"
-                  name:
-                    type:
-                      - string
-                      - "null"
-                  email:
-                    type:
-                      - string
-                      - "null"
-              message:
-                type:
-                  - string
-                  - "null"
-              committer:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  date:
-                    type:
-                      - string
-                      - "null"
-                  name:
-                    type:
-                      - string
-                      - "null"
-                  email:
-                    type:
-                      - string
-                      - "null"
-              verification:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  reason:
-                    type:
-                      - string
-                      - "null"
-                  payload:
-                    type:
-                      - string
-                      - "null"
-                  verified:
-                    type:
-                      - boolean
-                      - "null"
-                  signature:
-                    type:
-                      - string
-                      - "null"
-                  verified_at:
-                    type:
-                      - string
-                      - "null"
-              comment_count:
-                type:
-                  - number
-                  - "null"
           node_id:
-            type:
-              - string
-              - "null"
-          parents:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                sha:
-                  type:
-                    - string
-                    - "null"
-                url:
-                  type:
-                    - string
-                    - "null"
-                html_url:
-                  type:
-                    - string
-                    - "null"
+            type: string
           html_url:
             type:
               - string
               - "null"
-          committer:
+          issue_url:
+            type:
+              - string
+              - "null"
+          reactions:
             type:
               - object
               - "null"
             properties:
-              type:
+              "+1":
                 type:
-                  - string
+                  - number
                   - "null"
-              id:
+              "-1":
                 type:
                   - number
                   - "null"
@@ -6244,80 +6240,54 @@ streams:
                 type:
                   - string
                   - "null"
-              login:
+              eyes:
                 type:
-                  - string
+                  - number
                   - "null"
-              node_id:
+              heart:
                 type:
-                  - string
+                  - number
                   - "null"
-              html_url:
+              laugh:
                 type:
-                  - string
+                  - number
                   - "null"
-              gists_url:
+              hooray:
                 type:
-                  - string
+                  - number
                   - "null"
-              repos_url:
+              rocket:
                 type:
-                  - string
+                  - number
                   - "null"
-              avatar_url:
+              confused:
                 type:
-                  - string
+                  - number
                   - "null"
-              events_url:
+              total_count:
                 type:
-                  - string
+                  - number
                   - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
-              gravatar_id:
-                type:
-                  - string
-                  - "null"
-              starred_url:
-                type:
-                  - string
-                  - "null"
-              followers_url:
-                type:
-                  - string
-                  - "null"
-              following_url:
-                type:
-                  - string
-                  - "null"
-              user_view_type:
-                type:
-                  - string
-                  - "null"
-              organizations_url:
-                type:
-                  - string
-                  - "null"
-              subscriptions_url:
-                type:
-                  - string
-                  - "null"
-              received_events_url:
-                type:
-                  - string
-                  - "null"
+          created_at:
+            type:
+              - string
+              - "null"
           repository:
             type:
               - string
               - "null"
-          comments_url:
+          updated_at:
             type:
               - string
               - "null"
-          author_datetime:
-            type: string
+          issue_number:
+            type:
+              - number
+              - "null"
+          author_association:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -6328,8 +6298,258 @@ streams:
             value: "{{ stream_slice.extra_fields.repository }}"
           - type: AddedFieldDefinition
             path:
-              - commit_sha
-            value: "{{ stream_slice.commit_sha }}"
+              - issue_number
+            value: "{{ stream_slice.issue_number }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: PT1S
+      step: P1M
+  - type: DeclarativeStream
+    name: pr_comments
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.github.com/repos/{{ config['organization'] }}/{{
+          stream_slice.extra_fields.repository }}/issues/{{
+          stream_slice.pr_number }}/comments
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['updated_at'] > stream_interval.start_time }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/12"
+            parent_key: number
+            extra_fields:
+              - - repository
+            partition_field: pr_number
+            lazy_read_pointer: []
+    primary_key: node_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - url
+          - node_id
+          - updated_at
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          url:
+            type: string
+          body:
+            type:
+              - string
+              - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              login:
+                type:
+                  - string
+                  - "null"
+              node_id:
+                type:
+                  - string
+                  - "null"
+              html_url:
+                type:
+                  - string
+                  - "null"
+              gists_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
+              gravatar_id:
+                type:
+                  - string
+                  - "null"
+              starred_url:
+                type:
+                  - string
+                  - "null"
+              followers_url:
+                type:
+                  - string
+                  - "null"
+              following_url:
+                type:
+                  - string
+                  - "null"
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              subscriptions_url:
+                type:
+                  - string
+                  - "null"
+              received_events_url:
+                type:
+                  - string
+                  - "null"
+          node_id:
+            type: string
+          html_url:
+            type:
+              - string
+              - "null"
+          issue_url:
+            type:
+              - string
+              - "null"
+          pr_number:
+            type:
+              - number
+              - "null"
+          reactions:
+            type:
+              - object
+              - "null"
+            properties:
+              "+1":
+                type:
+                  - number
+                  - "null"
+              "-1":
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              eyes:
+                type:
+                  - number
+                  - "null"
+              heart:
+                type:
+                  - number
+                  - "null"
+              laugh:
+                type:
+                  - number
+                  - "null"
+              hooray:
+                type:
+                  - number
+                  - "null"
+              rocket:
+                type:
+                  - number
+                  - "null"
+              confused:
+                type:
+                  - number
+                  - "null"
+              total_count:
+                type:
+                  - number
+                  - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          repository:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          author_association:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - pr_number
+            value: "{{ stream_slice.pr_number }}"
+          - type: AddedFieldDefinition
+            path:
+              - repository
+            value: "{{ stream_slice.extra_fields.repository }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1M
+      cursor_field: updated_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        min_datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
 
 spec:
   type: Spec
@@ -6361,17 +6581,17 @@ spec:
 metadata:
   testedStreams:
     tags:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 2cd0ad0f50bc32347d68a76a601fab8ea78ab0a8
+      streamHash: bb1da086a94cea8d33ebe5ba3e73d8dd89ee3740
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     teams:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 61acf1802ab383ef33b084a3f1d811dedc16c1c8
+      streamHash: 8059ccfefb72b9b4bc7b024cf2783915b377e357
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6387,7 +6607,7 @@ metadata:
     issues:
       isStale: true
       hasRecords: true
-      streamHash: 5d763283ad7460881452158f2fc4162d9733f4b3
+      streamHash: 7036799fd58c540fc9d8389f25d6d1a9829aba71
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6427,9 +6647,9 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     workflows:
-      isStale: true
+      isStale: false
       hasRecords: false
-      streamHash: c18b81b2ab3d301e81917eadd906fac8dae5fb31
+      streamHash: 9dd09c855876b877dbe39ed4af0a0307e14d29cb
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6438,6 +6658,14 @@ metadata:
       isStale: true
       hasRecords: true
       streamHash: 87ff47cfa03ad119a9326bb582779c4879018f9c
+      hasResponse: true
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    pr_comments:
+      isStale: true
+      hasRecords: true
+      streamHash: bd121f7032b338bcb8a9a378bdd2f1ef3b66958e
       hasResponse: true
       primaryKeysAreUnique: false
       primaryKeysArePresent: true
@@ -6469,7 +6697,7 @@ metadata:
     pull_requests:
       isStale: true
       hasRecords: true
-      streamHash: fa6b0b65f0ebce6e524651855816b16f501a7332
+      streamHash: 5ae6df341382c89214c36ade61bcda7ed24fdfe1
       hasResponse: true
       primaryKeysAreUnique: false
       primaryKeysArePresent: true
@@ -6490,10 +6718,10 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    commit_comments:
+    issue_comments:
       isStale: true
-      hasRecords: false
-      streamHash: c6a270771dd01fa84fe41d60246c4374f470e2c1
+      hasRecords: true
+      streamHash: c8f03625630700e2bace725ef023864316c5c973
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6501,7 +6729,7 @@ metadata:
     deployment_statuses:
       isStale: true
       hasRecords: true
-      streamHash: df1cc9cee325ea8f92663868d50117221f48cde3
+      streamHash: 806d3fd440587c3a712e3f10973ddc328e0b4d82
       hasResponse: true
       primaryKeysAreUnique: false
       primaryKeysArePresent: true
@@ -6509,7 +6737,7 @@ metadata:
     contributor_activity:
       isStale: true
       hasRecords: true
-      streamHash: 83a1c7d43bc9f734311c9b54f2e712771dcf8014
+      streamHash: 978db063757ad9aa6722ecaad9163f7fc4433748
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6524,18 +6752,20 @@ metadata:
     branches: true
     assignees: true
     workflows: true
+    i_comments: true
     deployments: true
+    pr_comments: true
     issue_labels: true
     repositories: true
     collaborators: true
     pull_requests: true
     workflow_jobs: true
     workflow_runs: true
-    commit_comments: true
+    issue_comments: true
     deployment_statuses: true
     contributor_activity: true
     contributor_activity_2: true
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 1
+  default_concurrency: 2
