@@ -18,6 +18,7 @@ from source_google_ads.components import (
 )
 
 from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.types import StreamSlice
@@ -775,6 +776,18 @@ _DEFAULT_CONFIG = {
     "custom_queries_array": [],
 }
 
+_DYNAMIC_STREAM_CONFIG = {
+    **_DEFAULT_CONFIG,
+    "custom_queries_array": [
+        {
+            "query": "SELECT campaign.name FROM campaign",
+            "primary_key": None,
+            "cursor_field": None,
+            "table_name": "test_custom_query",
+        }
+    ],
+}
+
 
 def _get_google_ads_retriever_streams():
     source = get_source(_DEFAULT_CONFIG)
@@ -788,6 +801,17 @@ def _get_google_ads_retriever_streams():
     return streams
 
 
+def _get_built_streams_with_google_ads_retriever(config):
+    source = get_source(config)
+    result = []
+    for stream in source.streams(config):
+        factory = stream._stream_partition_generator._partition_factory
+        retriever = factory._retriever
+        if isinstance(retriever, GoogleAdsRetriever):
+            result.append((stream.name, retriever))
+    return result
+
+
 @pytest.mark.parametrize(
     "stream_name,datetime_format",
     [pytest.param(name, fmt, id=name) for name, fmt in _get_google_ads_retriever_streams()],
@@ -796,4 +820,32 @@ def test_custom_retriever_streams_have_expected_date_format(stream_name, datetim
     assert datetime_format == GoogleAdsRetriever.DATE_FORMAT, (
         f"Stream {stream_name} uses datetime_format={datetime_format!r} "
         f"but GoogleAdsRetriever.DATE_FORMAT={GoogleAdsRetriever.DATE_FORMAT!r}"
+    )
+
+
+@pytest.mark.parametrize(
+    "stream_name,retriever",
+    [pytest.param(name, ret, id=name) for name, ret in _get_built_streams_with_google_ads_retriever(_DEFAULT_CONFIG)],
+)
+def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
+    extractor = retriever.record_selector.extractor
+    assert isinstance(extractor, DpathExtractor), f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
+    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
+        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
+    )
+
+
+@pytest.mark.parametrize(
+    "stream_name,retriever",
+    [
+        pytest.param(name, ret, id=name)
+        for name, ret in _get_built_streams_with_google_ads_retriever(_DYNAMIC_STREAM_CONFIG)
+        if name == "test_custom_query"
+    ],
+)
+def test_dynamic_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
+    extractor = retriever.record_selector.extractor
+    assert isinstance(extractor, DpathExtractor), f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
+    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
+        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
     )

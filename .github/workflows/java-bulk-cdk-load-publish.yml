@@ -2,6 +2,13 @@
 
 name: Publish Bulk CDK Load
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - "airbyte-cdk/bulk/core/load/**"
+      - "airbyte-cdk/bulk/toolkits/load-*/**"
+      - "airbyte-cdk/bulk/toolkits/legacy-task-load*/**"
   workflow_dispatch:
 
 permissions:

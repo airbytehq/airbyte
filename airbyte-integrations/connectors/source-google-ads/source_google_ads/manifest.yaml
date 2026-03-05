@@ -1259,7 +1259,21 @@ dynamic_streams:
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 3) }}"
-  max_concurrency: 40
+  max_concurrency: 25
+
+# Rate limits: https://developers.google.com/google-ads/api/docs/best-practices/quotas
+# https://developers.google.com/google-ads/api/docs/productionize/rate-limits
+# Google Ads API uses a Token Bucket algorithm for rate limiting per CID and developer token.
+# No fixed per-second QPS is published; limits are dynamic based on server load.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT1S
+      matchers: []
+  status_codes_for_ratelimit_hit: [429]
 
 schemas:
   ad_group:
