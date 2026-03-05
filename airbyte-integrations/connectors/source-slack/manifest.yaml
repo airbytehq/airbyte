@@ -418,7 +418,7 @@ spec:
         type: boolean
         default: true
         title: Join channels
-        description: Whether to automatically join channels of the enabled types. If false, only channels the bot has already been added to will be synced.
+        description: Whether to automatically join channels. If false, only channels the bot has already been added to will be synced.
       include_public_channels:
         type: boolean
         default: true
