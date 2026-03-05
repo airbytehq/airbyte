@@ -222,13 +222,7 @@ class IcebergTypesComparator {
                 // but for this function's purpose, we only check the existing fields.
                 true
             }
-            Type.TypeID.DECIMAL -> {
-                require(existingType is Types.DecimalType && incomingType is Types.DecimalType) {
-                    "Expected DECIMAL types, got $existingType and $incomingType."
-                }
-                existingType.precision() == incomingType.precision() &&
-                    existingType.scale() == incomingType.scale()
-            }
+            Type.TypeID.DECIMAL,
             Type.TypeID.BINARY,
             Type.TypeID.FIXED,
             Type.TypeID.UUID,

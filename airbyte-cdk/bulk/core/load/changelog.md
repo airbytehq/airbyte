@@ -9,6 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 | Version | Date       | Pull Request | Subject                                                                                         |
 |---------|------------|--------------|-------------------------------------------------------------------------------------------------|
+| 1.0.4   | 2026-03-05 | [#74328](https://github.com/airbytehq/airbyte/pull/74328) | Fix iceberg dedup: map PK NumberType to StringType instead of DecimalType for identifier field compatibility. |
 | 1.0.3   | 2026-03-05 | [#74272](https://github.com/airbytehq/airbyte/pull/74272) | Fix iceberg dedup.                                                                              |
 | 1.0.2   | 2026-02-24 | | Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944).         |
 | 1.0.1   | 2026-02-09 | [#72959](https://github.com/airbytehq/airbyte/pull/72959) | Fix: CVE-2026-25526 (Jinjava dependency bump).                                                  |

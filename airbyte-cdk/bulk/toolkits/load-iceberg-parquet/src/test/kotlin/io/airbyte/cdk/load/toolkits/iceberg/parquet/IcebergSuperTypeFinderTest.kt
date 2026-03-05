@@ -126,30 +126,11 @@ class IcebergSuperTypeFinderTest {
     }
 
     @Test
-    fun testIdenticalDecimalTypes() {
-        val decimalType = Types.DecimalType.of(38, 18)
-        val result = superTypeFinder.findSuperType(decimalType, decimalType, "column_name")
-
-        // Identical decimals => return existing
-        assertThat(result).isSameAs(decimalType)
-    }
-
-    @Test
-    fun testDecimalPrecisionWidening() {
-        val narrowDecimal = Types.DecimalType.of(10, 2)
-        val wideDecimal = Types.DecimalType.of(20, 2)
-
-        val result = superTypeFinder.findSuperType(narrowDecimal, wideDecimal, "column_name")
-        // Wider precision should be returned
-        assertThat(result).isSameAs(wideDecimal)
-    }
-
-    @Test
-    fun testDecimalToIntIsNotAllowed() {
+    fun testDecimalIsUnsupported() {
         val decimalType = Types.DecimalType.of(10, 2)
         val intType = Types.IntegerType.get()
 
-        // Decimal to Int promotion is not allowed by Iceberg
+        // Fails in validateTypeIds => DECIMAL is not supported
         assertThatThrownBy { superTypeFinder.findSuperType(decimalType, intType, "column_name") }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
