@@ -6,12 +6,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-from pendulum.datetime import DateTime
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from pendulum.datetime import DateTime
+
 from source_exact.api import ExactAPI
 
 
@@ -376,7 +376,7 @@ class PayrollActiveEmployments(ExactOtherStream):
 class ProjectEmploymentInternalRates(ExactOtherStream):
     """Stream to sync the endpoint `/project/EmploymentInternalRates`"""
 
-    endpoint = "/project/EmploymentInternalRates"
+    endpoint = "project/EmploymentInternalRates"
 
 
 class SyncCashflowPaymentTerms(ExactSyncStream):
