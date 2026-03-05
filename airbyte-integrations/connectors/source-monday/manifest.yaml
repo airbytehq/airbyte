@@ -873,6 +873,14 @@ schemas:
               type:
                 - "null"
                 - string
+            linked_item_ids:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
       created_at:
         type:
           - "null"
