@@ -23,7 +23,6 @@ Each stream will be output into its own table in Databend. Each table will conta
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | No |
 
 ## Getting Started (Airbyte Cloud)
 
@@ -68,6 +67,10 @@ You'll need the following information to configure the Databend destination:
 
 If your databend version >= v0.9.0 or later, you need to use databend-sqlalchemy version >= v0.1.0.
 And the [Databend Cloud](https://app.databend.com/) will only support databend version > 0.9.0.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

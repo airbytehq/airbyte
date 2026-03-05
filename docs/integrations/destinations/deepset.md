@@ -11,7 +11,6 @@ deepset AI Platform is a SaaS platform for building LLM applications and managin
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-| Support [Namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) | Yes |
 
 ## Data Integration with Airbyte
 
@@ -38,6 +37,10 @@ To use the deepset destination in Airbyte:
     - `Retry count`: The number of times to retry syncing a record before marking it as failed. Defaults to 5 times.
 
 After you connect a source and the first stream synchronization succeeds, your records are available in deepset AI Platform on the Files page as Markdown files.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
