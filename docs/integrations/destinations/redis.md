@@ -52,7 +52,7 @@ save snapshots periodically on disk.
 
 ### Setup guide
 
-######TODO: more info, screenshots?, etc...
+This section has not been written.
 
 ## Namespace support
 
