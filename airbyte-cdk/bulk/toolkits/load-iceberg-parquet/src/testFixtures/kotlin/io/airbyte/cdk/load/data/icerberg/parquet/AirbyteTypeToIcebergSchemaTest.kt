@@ -101,7 +101,7 @@ class AirbyteTypeToIcebergSchemaTest {
     @Test
     fun `convert handles NumberType`() {
         assertEquals(
-            Types.DecimalType.of(38, 18),
+            Types.DoubleType.get(),
             converter.convert(NumberType, stringifyObjects = false)
         )
     }
@@ -234,10 +234,10 @@ class AirbyteTypeToIcebergSchemaTest {
         assertFalse(idColumn!!.isOptional)
         assertEquals(Types.DecimalType.of(38, 18), idColumn.type())
 
-        // Non-PK NumberType field should also be DecimalType
+        // Non-PK NumberType field should remain DoubleType (for analytical queries)
         assertNotNull(amountColumn)
         assertTrue(amountColumn!!.isOptional)
-        assertEquals(Types.DecimalType.of(38, 18), amountColumn.type())
+        assertEquals(Types.DoubleType.get(), amountColumn.type())
 
         // PK field should be in identifier fields (DecimalType is allowed)
         val identifierFieldIds = schema.identifierFieldIds()
