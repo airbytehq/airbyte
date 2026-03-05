@@ -92,7 +92,6 @@ Final table schema:
 * `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source. The column type in SingleStore is TIMESTAMP(6).
 * `_airbyte_meta`: column containing the warnings occurred during data normalization. 
 
-
 ### Final Table Data type mapping
 
 | Airbyte Type               | SingleStore Type |

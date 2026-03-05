@@ -159,7 +159,6 @@ Each stream will be mapped to a separate table in Vertica. Each table will conta
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

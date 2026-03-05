@@ -61,7 +61,6 @@ _NOTE_: Configurations for SSL are not available yet.
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is used as a prefix in the topic name with the format `{namespace}_{stream}`.
 
-
 ## Changelog
 
 <details>

@@ -42,7 +42,6 @@ To connect a Typesense with HA, you can type multiple hosts on the host field us
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

@@ -280,7 +280,6 @@ desired namespace.
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Snowflake schema.
 
-
 ## Changelog
 
 <details>

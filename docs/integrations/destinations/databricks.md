@@ -89,7 +89,6 @@ with the raw tables, and their format is subject to change without notice.
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Databricks schema.
 
-
 ## Changelog
 
 <details>

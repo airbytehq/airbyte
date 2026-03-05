@@ -76,7 +76,6 @@ Using this feature requires additional configuration, when creating the destinat
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

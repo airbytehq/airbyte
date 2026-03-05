@@ -41,7 +41,6 @@ To use the GlassFlow destination, you'll need:
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

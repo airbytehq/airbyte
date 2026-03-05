@@ -53,7 +53,6 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

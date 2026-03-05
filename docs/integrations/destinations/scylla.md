@@ -50,7 +50,6 @@ and handle any amount of data from the connector.
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Scylla keyspace and is used as part of the table name.
 
-
 ## Changelog
 
 <details>

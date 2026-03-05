@@ -211,7 +211,6 @@ If compaction runs simultaneously with the sync, it would delete files from the 
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

@@ -68,7 +68,6 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a MotherDuck schema.
 
-
 ## Changelog
 
 <details>

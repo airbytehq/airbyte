@@ -54,7 +54,6 @@ For each major cloud provider we support, also add a follow-along guide for sett
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a YugabyteDB schema (Postgres-compatible).
 
-
 ## Changelog
 
 <details>

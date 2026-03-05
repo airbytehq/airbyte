@@ -87,7 +87,6 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

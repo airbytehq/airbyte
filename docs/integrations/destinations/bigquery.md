@@ -211,7 +211,6 @@ tutorials:
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a BigQuery dataset.
 
-
 ## Changelog
 
 <details>

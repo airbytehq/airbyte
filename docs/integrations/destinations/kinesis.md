@@ -47,7 +47,6 @@ The connector buffer size should also be tweaked according to your data size and
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is used to determine the Kinesis stream name.
 
-
 ## Changelog
 
 <details>

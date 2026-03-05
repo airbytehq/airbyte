@@ -93,7 +93,6 @@ More info about this can be found in the [Pulsar producer configs documentation 
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is incorporated into the topic name based on the configured topic tenant and topic namespace.
 
-
 ## Changelog
 
 <details>

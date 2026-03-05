@@ -103,7 +103,6 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is incorporated into the topic name via the `{namespace}` variable in the `topic_pattern` configuration.
 
-
 ## Changelog
 
 <details>

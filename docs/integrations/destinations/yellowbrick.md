@@ -193,7 +193,6 @@ Each table will contain 3 columns:
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Yellowbrick schema.
 
-
 ## Changelog
 
 <details>

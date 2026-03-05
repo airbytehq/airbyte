@@ -155,7 +155,6 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

@@ -60,7 +60,6 @@ will contain below columns:
 
 ## Schema map
 
-
 ### Performance considerations
 
 ## Supported sync modes
@@ -114,7 +113,6 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 ## Namespace support
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Teradata database.
-
 
 ## Changelog
 

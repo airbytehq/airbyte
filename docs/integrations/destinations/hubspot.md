@@ -94,7 +94,6 @@ To create a unique value property in HubSpot:
 * Click on `Create property`
 * When entering the rules, check `Require unique values for this property`
 
-
 ### App Verification
 
 In order to verify our HubSpot application, HubSpot expects some usage i.e. [more than 60 installations](https://developers.hubspot.com/docs/guides/apps/marketplace/certification-requirements#value). Hence, when installing the app, you might see the message "You're connecting to an unverified app". This is expected for our first users. Once we have enough traffic on the application, we will be able to verify the app which will remove this warning.
@@ -110,7 +109,6 @@ Hubspot has **scopes** for each API call. Each stream is tied to a scope and wil
 ## Namespace support
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
-
 
 ## Changelog
 

@@ -77,11 +77,9 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 - page_content (string) - the text content of the chunk
 - embedding (vector) - the embedding of the chunk, stored as a list of floats
 
-
 ## Namespace support
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
-
 
 ## Changelog
 

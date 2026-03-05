@@ -68,7 +68,6 @@ You should now have all the requirements needed to configure Exasol as a destina
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to an Exasol schema.
 
-
 ## Changelog
 
 <details>

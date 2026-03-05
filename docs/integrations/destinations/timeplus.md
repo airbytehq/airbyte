@@ -39,7 +39,6 @@ You'll need the following information to configure the Timeplus destination:
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

@@ -81,7 +81,6 @@ If you have any questions, please reach out to us at team@keen.io and we’ll be
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
-
 ## Changelog
 
 <details>

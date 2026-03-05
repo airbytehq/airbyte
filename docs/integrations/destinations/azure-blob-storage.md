@@ -137,7 +137,6 @@ With root level flattening, the output JSONL is:
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is used as part of the output path structure.
 
-
 ## Changelog
 
 <details>

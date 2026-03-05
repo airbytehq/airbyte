@@ -105,7 +105,6 @@ tables are replaced with underscores.
 
 :::
 
-
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **new
    destination**.
@@ -126,7 +125,6 @@ The schema names are case sensitive. The 'public' schema is set by default.
 
 7. For **User** and **Password**, enter the username and password you created in
    [Step 1](#step-1-optional-create-a-dedicated-read-only-user).
-
 
 ## Supported sync modes
 
@@ -183,7 +181,6 @@ All streams will be indexed/stored into a table with the same name. The table wi
 - document_content (string) - the text content of the chunk
 - embedding (vector) - the embedding of the chunk, stored as a list of floats
 
-
 ## Limitations & troubleshooting
 
 ### psycopg2.OperationalError could not translate host name something@hostname to address
@@ -193,7 +190,6 @@ Given your password contains the character `@`, it is likely that the connection
 ## Namespace support
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
-
 
 ## Changelog
 

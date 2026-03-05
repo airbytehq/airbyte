@@ -226,7 +226,6 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Redshift schema.
 
-
 ## Changelog
 
 <details>
