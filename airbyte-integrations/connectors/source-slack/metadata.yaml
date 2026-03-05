@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 3.1.11
+  dockerImageTag: 3.1.12
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   externalDocumentationUrls:
@@ -41,6 +41,12 @@ data:
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
+    migrationDocumentationUrl: https://docs.airbyte.com/integrations/sources/slack-migrations
+    changelog:
+      - version: 3.1.12
+        date: "2025-03-05"
+        pullRequestNumber: 74321
+        subject: Add channel exclude filter, wildcard pattern support in channel filters, and include_external_channels option
     breakingChanges:
       3.0.0:
         message: This update fixes a bug that prevented incremental syncs from progressing for some connections containing the `threads` stream. Affected users should perform a stream refresh. See the [Slack Migration Guide](https://docs.airbyte.com/integrations/sources/slack-migrations) for instructions on identifying impacted connections and refreshing the stream.
