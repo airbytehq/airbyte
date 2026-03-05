@@ -2,96 +2,36 @@
 
 ## Sync overview
 
-The Sample Data source generates sample data using the python
-[`mimesis`](https://mimesis.name/en/master/) package.
+The Sample Data source generates sample data using the Python
+[`mimesis`](https://mimesis.name/en/master/) library.
 
 ### Output schema
 
-This source will generate an "e-commerce-like" dataset with users, products, and purchases. Here's
-what is produced at a Postgres destination connected to this source:
+This source generates an e-commerce-like dataset with three streams: `users`, `products`, and `purchases`.
 
-```sql
-CREATE TABLE "public"."users" (
-    "address" jsonb,
-    "occupation" text,
-    "gender" text,
-    "academic_degree" text,
-    "weight" int8,
-    "created_at" timestamptz,
-    "language" text,
-    "telephone" text,
-    "title" text,
-    "updated_at" timestamptz,
-    "nationality" text,
-    "blood_type" text,
-    "name" text,
-    "id" float8,
-    "age" int8,
-    "email" text,
-    "height" text,
-    -- "_airbyte_ab_id" varchar,
-    -- "_airbyte_emitted_at" timestamptz,
-    -- "_airbyte_normalized_at" timestamptz,
-    -- "_airbyte_users_hashid" text
-);
+#### Users
 
-CREATE TABLE "public"."users_address" (
-    "_airbyte_users_hashid" text,
-    "country_code" text,
-    "province" text,
-    "city" text,
-    "street_number" text,
-    "state" text,
-    "postal_code" text,
-    "street_name" text,
-    -- "_airbyte_ab_id" varchar,
-    -- "_airbyte_emitted_at" timestamptz,
-    -- "_airbyte_normalized_at" timestamptz,
-    -- "_airbyte_address_hashid" text
-);
+Each user record contains identity and demographic fields such as `name`, `email`, `age`, `gender`, `occupation`, `nationality`, and an embedded `address` object. The number of user records is controlled by the `count` configuration option. User records use `id` as their primary key and `updated_at` as the cursor field for incremental syncs.
 
-CREATE TABLE "public"."products" (
-    "id" float8,
-    "make" text,
-    "year" float8,
-    "model" text,
-    "price" float8,
-    "created_at" timestamptz,
-    -- "_airbyte_ab_id" varchar,
-    -- "_airbyte_emitted_at" timestamptz,
-    -- "_airbyte_normalized_at" timestamptz,
-    -- "_airbyte_dev_products_hashid" text,
-);
+#### Products
 
-CREATE TABLE "public"."purchases" (
-    "id" float8,
-    "user_id" float8,
-    "product_id" float8,
-    "purchased_at" timestamptz,
-    "added_to_cart_at" timestamptz,
-    "returned_at" timestamptz,
-    -- "_airbyte_ab_id" varchar,
-    -- "_airbyte_emitted_at" timestamptz,
-    -- "_airbyte_normalized_at" timestamptz,
-    -- "_airbyte_dev_purchases_hashid" text,
-);
+Product records represent vehicles with fields including `make`, `model`, `year`, and `price`. The products stream draws from a fixed catalog of 100 products. The `count` configuration option limits how many of those 100 products are emitted; setting `count` higher than 100 still produces at most 100 products. Product records use `id` as their primary key and `updated_at` as the cursor field.
 
-```
+#### Purchases
+
+Purchase records link users to products and include timestamps for `added_to_cart_at`, `purchased_at`, and `returned_at`. The connector generates roughly one purchase per user, so the total number of purchases scales with `count`. Purchase records use `id` as their primary key and `updated_at` as the cursor field.
 
 ### Features
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | Yes                  |       |
-| Namespaces        | No                   |       |
+| Feature           | Supported? | Notes |
+| :---------------- | :--------- | :---- |
+| Full Refresh Sync | Yes        |       |
+| Incremental Sync  | Yes        |       |
+| Namespaces        | No         |       |
 
-Of note, if you choose `Incremental Sync`, state will be maintained between syncs, and once you hit
-`count` records, no new records will be added.
+When using incremental sync, the connector maintains state between syncs. If `always_updated` is set to `false`, the connector stops emitting records after the initial sync produces `count` records. If `always_updated` is `true` (the default), every sync emits all records with fresh `updated_at` timestamps.
 
-You can choose a specific `seed` (integer) as an option for this connector which will guarantee that
-the same fake records are generated each time. Otherwise, random data will be created on each
-subsequent sync.
+You can set a specific `seed` value to guarantee that the same records are generated on each sync. Leave `seed` at its default value of `-1` to generate random data on each sync.
 
 ### Requirements
 
@@ -126,7 +66,7 @@ None!
 | 6.2.21      | 2025-03-11 | [55705](https://github.com/airbytehq/airbyte/pull/55705) | Promoting release candidate 6.2.21-rc.1 to a main version.                                                      |
 | 6.2.21-rc.1 | 2024-11-13 | [48013](https://github.com/airbytehq/airbyte/pull/48013) | Update for testing.                                                                                             |
 | 6.2.20      | 2024-10-30 | [48013](https://github.com/airbytehq/airbyte/pull/48013) | Promoting release candidate 6.2.20-rc.1 to a main version.                                                      |
-| 6.2.20-rc.1 | 2024-10-21 | [47221](https://github.com/airbytehq/airbyte/pull/46678)                                                              | Testing release candidate with RC suffix versioning.                                                            |
+| 6.2.20-rc.1 | 2024-10-21 | [46678](https://github.com/airbytehq/airbyte/pull/46678)                                                              | Testing release candidate with RC suffix versioning.                                                            |
 | 6.2.19-rc.1 | 2024-10-21 | [47221](https://github.com/airbytehq/airbyte/pull/47221)                                                              | Testing release candidate with RC suffix versioning.                                                            |
 | 6.2.18-rc.1 | 2024-10-09 | [46678](https://github.com/airbytehq/airbyte/pull/46678)                                                              | Testing release candidate with RC suffix versioning.                                                            |
 | 6.2.17      | 2024-10-05 | [46398](https://github.com/airbytehq/airbyte/pull/46398)                                                              | Update dependencies                                                                                             |
