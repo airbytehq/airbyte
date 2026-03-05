@@ -4,6 +4,7 @@
 
 import logging
 import pathlib
+import re
 from dataclasses import dataclass
 from typing import Callable, List, Optional, Tuple, Union
 
@@ -138,6 +139,81 @@ def validate_docs_path_exists(metadata_definition: ConnectorMetadataDefinitionV0
     """Ensure that the doc_path exists."""
     if not pathlib.Path(validator_opts.docs_path).exists():
         return False, f"Could not find {validator_opts.docs_path}."
+
+    return True, None
+
+
+# The set of sync modes that every destination connector doc must list in its
+# "Supported sync modes" table.  The check is intentionally case-insensitive and
+# tolerates minor formatting differences (extra whitespace, markdown links, etc.).
+_REQUIRED_DESTINATION_SYNC_MODES = [
+    "Full Refresh - Overwrite",
+    "Full Refresh - Append",
+    "Incremental Sync - Append",
+    "Incremental Sync - Append + Deduped",
+]
+
+
+def _is_destination_enabled(metadata_definition: ConnectorMetadataDefinitionV0) -> bool:
+    """Return True if the connector is a destination that is enabled in at least one registry (OSS or Cloud)."""
+    if get(metadata_definition, "data.connectorType") != "destination":
+        return False
+    oss_enabled = get(metadata_definition, "data.registryOverrides.oss.enabled", False)
+    cloud_enabled = get(metadata_definition, "data.registryOverrides.cloud.enabled", False)
+    return bool(oss_enabled or cloud_enabled)
+
+
+def validate_docs_has_supported_sync_modes_table(
+    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
+) -> ValidationResult:
+    """Ensure that destination connector docs contain a 'Supported sync modes' section with
+    a markdown table that lists all required sync modes.
+
+    This validator only applies to destination connectors that are enabled in at least one
+    registry (OSS or Cloud).  Source connectors and archived/disabled destinations are skipped.
+    """
+    if not _is_destination_enabled(metadata_definition):
+        return True, None
+
+    docs_path = pathlib.Path(validator_opts.docs_path)
+    if not docs_path.exists():
+        # validate_docs_path_exists will catch this separately
+        return True, None
+
+    docs_content = docs_path.read_text()
+
+    # Check for the "Supported sync modes" heading (## or ### level, case-insensitive)
+    if not re.search(r"^#{2,3}\s+Supported sync modes", docs_content, re.IGNORECASE | re.MULTILINE):
+        return (
+            False,
+            f"Destination docs at {validator_opts.docs_path} must contain a '## Supported sync modes' section "
+            f"with a markdown table listing supported sync modes.",
+        )
+
+    # Check for the table header row ("| Sync mode | Supported") allowing minor formatting variations
+    if not re.search(r"\|\s*Sync mode\s*\|", docs_content, re.IGNORECASE):
+        return (
+            False,
+            f"Destination docs at {validator_opts.docs_path} has a 'Supported sync modes' heading but is missing "
+            f"the expected markdown table with '| Sync mode | Supported' columns.",
+        )
+
+    # Check that each required sync mode appears somewhere in the table
+    missing_modes = []
+    for mode in _REQUIRED_DESTINATION_SYNC_MODES:
+        # Match the mode name in a table row, allowing markdown links and extra whitespace
+        # e.g. "| [Full Refresh - Overwrite](https://...) | Yes |" or "| Full Refresh - Overwrite | Yes |"
+        pattern = re.escape(mode)
+        if not re.search(pattern, docs_content, re.IGNORECASE):
+            missing_modes.append(mode)
+
+    if missing_modes:
+        return (
+            False,
+            f"Destination docs at {validator_opts.docs_path} is missing the following sync modes "
+            f"in the 'Supported sync modes' table: {', '.join(missing_modes)}. "
+            f"Each destination must document support for all standard sync modes.",
+        )
 
     return True, None
 
@@ -293,6 +369,7 @@ PRE_UPLOAD_VALIDATORS = [
     validate_at_least_one_language_tag,
     validate_major_version_bump_has_breaking_change_entry,
     validate_docs_path_exists,
+    validate_docs_has_supported_sync_modes_table,
     validate_metadata_base_images_in_dockerhub,
     validate_pypi_only_for_python,
     validate_docker_image_tag_is_not_decremented,
