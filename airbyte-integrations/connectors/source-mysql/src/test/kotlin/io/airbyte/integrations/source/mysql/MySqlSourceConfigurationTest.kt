@@ -83,7 +83,7 @@ class MySqlSourceConfigurationTest {
 
         val cdcCursor = config.incrementalConfiguration as CdcIncrementalConfiguration
 
-        //CONFIG_V1 initiate "initial_waiting_seconds" to 301
+        // CONFIG_V1 initiate "initial_waiting_seconds" to 301
         Assertions.assertEquals(cdcCursor.initialWaitingSeconds, Duration.ofSeconds(301))
 
         Assertions.assertEquals(cdcCursor.initialLoadTimeout, Duration.ofHours(9))
@@ -106,12 +106,14 @@ class MySqlSourceConfigurationTest {
         fun testInvalidInitialWaitingSeconds() {
             val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
 
-            val exception = Assertions.assertThrows(ConfigErrorException::class.java) {
-                factory.makeWithoutExceptionHandling(pojo)
-            }
-            Assertions.assertTrue(exception.message!!.contains("Initial Waiting Time must be between"))
+            val exception =
+                Assertions.assertThrows(ConfigErrorException::class.java) {
+                    factory.makeWithoutExceptionHandling(pojo)
+                }
+            Assertions.assertTrue(
+                exception.message!!.contains("Initial Waiting Time must be between")
+            )
         }
-
     }
 
     @Test
@@ -297,6 +299,5 @@ class MySqlSourceConfigurationTest {
   }
 }
 """
-
     }
 }
