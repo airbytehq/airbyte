@@ -46,7 +46,11 @@ Airbyte Cloud is multi-tenant cloud software, regardless of whether you use Priv
 | Azure          | Private Endpoint / Private Link | No        |
 | GCP            | Private Service Connect         | No        |
 
-We currently offer regions in the US and EU.
+Airbyte maintains PrivateLink infrastructure in the US (`us-east-1`) and EU (`eu-west-3`). Your service can be in any AWS region. Airbyte uses [cross-region PrivateLink](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-cross-region-connectivity-for-aws-privatelink/) to connect to services outside of these regions, so you don't need to relocate your infrastructure.
+
+### Cross-region connectivity
+
+Airbyte's PrivateLink endpoints are located in `us-east-1` (US) and `eu-west-3` (EU). If your VPC endpoint service is in a different AWS region, AWS cross-region PrivateLink transparently bridges the connection. For this to work, you must enable cross-region support on your VPC endpoint service and add Airbyte's region to your service's supported regions list. See [Cross-Region Connectivity for AWS PrivateLink](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-cross-region-connectivity-for-aws-privatelink/) for details.
 
 ### Limitations
 
@@ -86,7 +90,9 @@ For a complete overview of sharing services through AWS PrivateLink, see [Share 
 
 2. Create a VPC endpoint service configuration that points to your Network Load Balancer. See [Create an endpoint service](https://docs.aws.amazon.com/vpc/latest/privatelink/create-endpoint-service.html) in the AWS documentation.
 
-3. Note your endpoint service name. It follows the format `com.amazonaws.vpce.{region}.vpce-svc-{id}`. You provide this to Airbyte in Step 4.
+3. If your service is in a different region than Airbyte's PrivateLink infrastructure (`us-east-1` for US, `eu-west-3` for EU), enable cross-region support on your VPC endpoint service and add Airbyte's region to the supported regions list. See [Cross-region connectivity](#cross-region-connectivity) for more information.
+
+4. Note your endpoint service name. It follows the format `com.amazonaws.vpce.{region}.vpce-svc-{id}`. You provide this to Airbyte in Step 5.
 
 ### Step 3: Configure permissions for Airbyte
 
@@ -96,15 +102,45 @@ See [Manage permissions](https://docs.aws.amazon.com/vpc/latest/privatelink/conf
 
 ### Step 4: Provide your endpoint service name to Airbyte
 
-Share your endpoint service name with Airbyte. Airbyte creates its own VPC endpoint and complete the connection setup. Once configured, your PrivateLink connection is ready to use with your Airbyte connections.
+Share the following with Airbyte:
+
+- Your endpoint service name (for example, `com.amazonaws.vpce.us-west-2.vpce-svc-05df72d695c09fbb5`)
+- The AWS region your service is deployed in
+- The type of data source or destination (for example, PostgreSQL, Snowflake, MySQL)
+
+Airbyte creates a VPC endpoint that connects to your service.
+
+### Step 5: Accept the connection request
+
+After Airbyte creates the VPC endpoint, the connection appears as **Pending Acceptance** in your AWS console under **VPC > Endpoint Services > Endpoint Connections**. You must accept this connection request before the PrivateLink connection becomes active.
+
+Once you accept the request, the connection status changes to **Available** and your PrivateLink connection is ready to use with your Airbyte connections.
 
 ## Using PrivateLink with Managed Services
 
 Managed AWS services like Amazon RDS and Aurora don't natively support VPC endpoint services. To use PrivateLink with these services, you need to set up additional infrastructure to expose them via a Network Load Balancer.
 
-The general approach is almost identical to the steps above. You create an NLB that targets your RDS or Aurora endpoint, then creating a VPC endpoint service that points to that NLB.
+The general approach is almost identical to the steps above. You create an NLB that targets your RDS or Aurora endpoint, then create a VPC endpoint service that points to that NLB.
 
 AWS provides a guide for this configuration: [Access Amazon RDS across VPCs using AWS PrivateLink and Network Load Balancer](https://aws.amazon.com/blogs/database/access-amazon-rds-across-vpcs-using-aws-privatelink-and-network-load-balancer/).
+
+When setting up the NLB and related infrastructure, keep the following requirements in mind:
+
+- **NLB scheme must be `internal`**: Do not use `internet-facing`. An internet-facing NLB creates public IPs and is incompatible with PrivateLink.
+- **NLB must be in a private subnet**: The subnet's route table must not have a route to an Internet Gateway.
+- **Target group targets must be healthy**: Register the IP address of your RDS or Aurora endpoint in the target group (resolve the DNS endpoint to an IP address using `nslookup`). Verify that targets show as **Healthy** in the AWS console.
+- **Database security group must allow NLB traffic**: Add an inbound rule to your database's security group allowing TCP traffic on the database port from the NLB's subnet CIDR. A self-referencing security group rule alone is not sufficient.
+
+### Using PrivateLink with Snowflake
+
+Snowflake on AWS requires additional DNS configuration to work with PrivateLink, because Airbyte connectors connect using `*.snowflakecomputing.com` domain names.
+
+To set up Snowflake with PrivateLink:
+
+1. Run [`SYSTEM$GET_PRIVATELINK_CONFIG`](https://docs.snowflake.com/en/sql-reference/functions/system_get_privatelink_config) in your Snowflake account and share the output with Airbyte.
+2. Airbyte configures the necessary DNS entries to route Snowflake traffic through the PrivateLink connection.
+
+For background on the DNS configuration involved, see [How to configure Route 53 to access Snowflake via PrivateLink](https://community.snowflake.com/s/article/How-to-configure-the-AWS-DNS-service-Route-53-to-access-Snowflake-via-a-PrivateLink) in the Snowflake community documentation.
 
 ## IP allowlist (rare)
 
