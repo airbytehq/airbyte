@@ -165,7 +165,7 @@ data less frequently** rather than _smaller amounts of data more frequently_!
 
 ## Namespace support
 
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). A concatenation of the namespace and stream name is used as a unique identifier for the related Cumul.io dataset. Using namespaces is highly recommended to ensure identically named destination streams from different connections do not overlap.
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
