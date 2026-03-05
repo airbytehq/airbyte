@@ -269,11 +269,11 @@ def validate_rc_suffix_and_rollout_configuration(
                 "The dockerImageTag has an -rc.<RC #> suffix for a major version. Release candidates for major version (with breaking changes) are not allowed.",
             )
 
-        # Release candidates must have progressive rollout set to True or False
-        if is_rc_version and enabled_progressive_rollout is None:
+        # Release candidates must have progressive rollout enabled
+        if is_rc_version and enabled_progressive_rollout is not True:
             return (
                 False,
-                "The dockerImageTag field has an -rc.<RC #> suffix but the connector is not set to use progressive rollout (releases.rolloutConfiguration.enableProgressiveRollout).",
+                "The dockerImageTag field has an -rc.<RC #> suffix but progressive rollout is not enabled (releases.rolloutConfiguration.enableProgressiveRollout must be true).",
             )
 
         # Progressive rollout can be enabled only for release candidates
