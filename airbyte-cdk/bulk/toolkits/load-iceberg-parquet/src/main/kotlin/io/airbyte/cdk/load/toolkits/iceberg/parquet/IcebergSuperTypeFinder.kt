@@ -23,7 +23,7 @@ import org.apache.iceberg.types.Types.*
  */
 @Singleton
 class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesComparator) {
-    private val unsupportedTypeIds = setOf(BINARY, DECIMAL, FIXED, UUID, MAP, TIMESTAMP_NANO)
+    private val unsupportedTypeIds = setOf(BINARY, FIXED, UUID, MAP, TIMESTAMP_NANO)
 
     /**
      * Returns a supertype for [existingType] and [incomingType] if one exists.
@@ -64,7 +64,7 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
     }
 
     /**
-     * Checks whether either type is unsupported or unmapped (e.g. BINARY, DECIMAL, FIXED, etc.).
+     * Checks whether either type is unsupported or unmapped (e.g. BINARY, FIXED, UUID, etc.).
      *
      * @throws ConfigErrorException if either type is unsupported.
      */
@@ -106,6 +106,16 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
         // If both are the same type ID, we just use the existing type
         if (existingTypeId == incomingTypeId) {
             // For timestamps, you'd want to reconcile UTC. This is simplified here.
+            // For decimals, return the wider precision (Iceberg allows widening precision).
+            if (existingTypeId == DECIMAL) {
+                val existingDecimal = existingType as DecimalType
+                val incomingDecimal = incomingType as DecimalType
+                return if (incomingDecimal.precision() > existingDecimal.precision()) {
+                    incomingType
+                } else {
+                    existingType
+                }
+            }
             return existingType
         }
 

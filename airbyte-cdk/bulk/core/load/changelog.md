@@ -7,10 +7,11 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request | Subject                                                                                                                                                           |
-|---------|------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.2   | 2026-02-24 | | Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944). |
-| 1.0.1   | 2026-02-09 | [#72959](https://github.com/airbytehq/airbyte/pull/72959) | Fix: CVE-2026-25526 (Jinjava dependency bump). |
+| Version | Date       | Pull Request | Subject                                                                                         |
+|---------|------------|--------------|-------------------------------------------------------------------------------------------------|
+| 1.0.3   | 2026-03-05 | [#74272](https://github.com/airbytehq/airbyte/pull/74272) | Fix iceberg dedup.                                                                              |
+| 1.0.2   | 2026-02-24 | | Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944).         |
+| 1.0.1   | 2026-02-09 | [#72959](https://github.com/airbytehq/airbyte/pull/72959) | Fix: CVE-2026-25526 (Jinjava dependency bump).                                                  |
 | 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376) | Initial independent release of bulk-cdk-core-load. Separate versioning for load package begins. |
 
 </details>
