@@ -391,7 +391,7 @@ class IcebergTypesComparatorTest {
     }
 
     @Test
-    fun testDecimalTypesEqual() {
+    fun testDecimalTypeIsUnsupported() {
         val existingSchema =
             buildSchema(
                 field("decimal_col", Types.DecimalType.of(10, 2), false),
@@ -401,52 +401,10 @@ class IcebergTypesComparatorTest {
                 field("decimal_col", Types.DecimalType.of(10, 2), false),
             )
 
-        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
-
-        assertThat(diff.newColumns).isEmpty()
-        assertThat(diff.updatedDataTypes).isEmpty()
-        assertThat(diff.removedColumns).isEmpty()
-        assertThat(diff.newlyOptionalColumns).isEmpty()
-    }
-
-    @Test
-    fun testDecimalTypesDifferentPrecision() {
-        val existingSchema =
-            buildSchema(
-                field("decimal_col", Types.DecimalType.of(10, 2), false),
-            )
-        val incomingSchema =
-            buildSchema(
-                field("decimal_col", Types.DecimalType.of(20, 2), false),
-            )
-
-        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
-
-        // Different precision means the type has been updated
-        assertThat(diff.updatedDataTypes).containsExactly("decimal_col")
-        assertThat(diff.newColumns).isEmpty()
-        assertThat(diff.removedColumns).isEmpty()
-        assertThat(diff.newlyOptionalColumns).isEmpty()
-    }
-
-    @Test
-    fun testDecimalTypesDifferentScale() {
-        val existingSchema =
-            buildSchema(
-                field("decimal_col", Types.DecimalType.of(10, 2), false),
-            )
-        val incomingSchema =
-            buildSchema(
-                field("decimal_col", Types.DecimalType.of(10, 5), false),
-            )
-
-        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
-
-        // Different scale means the type has been updated
-        assertThat(diff.updatedDataTypes).containsExactly("decimal_col")
-        assertThat(diff.newColumns).isEmpty()
-        assertThat(diff.removedColumns).isEmpty()
-        assertThat(diff.newlyOptionalColumns).isEmpty()
+        // The code in typesAreEqual() throws for TypeID.DECIMAL
+        assertThatThrownBy { comparator.compareSchemas(incomingSchema, existingSchema) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("Unsupported or unmapped Iceberg type: DECIMAL")
     }
 
     @Test

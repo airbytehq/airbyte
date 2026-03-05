@@ -67,7 +67,7 @@ class AirbyteTypeToIcebergSchema {
             is BooleanType -> Types.BooleanType.get()
             is DateType -> Types.DateType.get()
             is IntegerType -> Types.LongType.get()
-            is NumberType -> Types.DecimalType.of(38, 18)
+            is NumberType -> Types.DoubleType.get()
             // Schemaless types are converted to string
             is ArrayTypeWithoutSchema,
             is ObjectTypeWithEmptySchema,
@@ -107,8 +107,13 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
         // There's no _airbyte_data field, because we flatten the fields.
         // But we should leave the _airbyte_meta field as an actual object.
         val stringifyObjects = name != Meta.COLUMN_NAME_AB_META
-        val icebergType =
+        var icebergType =
             icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+        // Override PK NumberType fields to StringType so they can be used as
+        // Iceberg identifier fields (float/double are disallowed as identifiers).
+        if (isPrimaryKey && field.type is NumberType) {
+            icebergType = Types.StringType.get()
+        }
         fields.add(
             NestedField.of(
                 id,
