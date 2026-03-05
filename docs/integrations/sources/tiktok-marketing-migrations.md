@@ -52,5 +52,3 @@ The `advertiser_id` field in the `advertiser_ids` stream changed from `integer` 
 ## Connector upgrade guide
 
 <MigrationGuide />
-
-
