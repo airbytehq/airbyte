@@ -362,7 +362,7 @@ data object UserDefinedCursor : IncrementalConfigurationSpecification
 @JsonSchemaDescription(
     "<i>Recommended</i> - " +
         "Incrementally reads new inserts, updates, and deletes using MySQL's <a href=" +
-        "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
+        "\"https://docs.airbyte.com/integrations/sources/mysql#change-data-capture-cdc\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
 class Cdc : IncrementalConfigurationSpecification {
@@ -374,6 +374,15 @@ class Cdc : IncrementalConfigurationSpecification {
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
     var serverTimezone: String? = null
 
+    @JsonProperty("initial_waiting_seconds")
+    @JsonSchemaTitle("Initial Waiting Time in Seconds (Advanced)")
+    @JsonPropertyDescription(
+        "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 3600 seconds. Read about <a href=\"https://docs.airbyte.com/platform/understanding-airbyte/cdc-best-practices#source-configuration\">initial waiting time</a>"
+    )
+    @JsonSchemaDefault("300")
+    @JsonSchemaInject(json = """{"order":2,"min": 120, "max": 3600, "always_show":true}""")
+    var initialWaitingSeconds: Int? = 300
+
     @JsonProperty("invalid_cdc_cursor_position_behavior")
     @JsonSchemaTitle("Invalid CDC Position Behavior (Advanced)")
     @JsonPropertyDescription(
@@ -381,7 +390,7 @@ class Cdc : IncrementalConfigurationSpecification {
     )
     @JsonSchemaDefault("Fail sync")
     @JsonSchemaInject(
-        json = """{"order":2,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
+        json = """{"order":3,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
     )
     var invalidCdcCursorPositionBehavior: String? = "Fail sync"
 
@@ -391,7 +400,7 @@ class Cdc : IncrementalConfigurationSpecification {
         "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
     )
     @JsonSchemaDefault("8")
-    @JsonSchemaInject(json = """{"order":3, "max": 24, "min": 4,"always_show": true}""")
+    @JsonSchemaInject(json = """{"order":4, "max": 24, "min": 4,"always_show": true}""")
     var initialLoadTimeoutHours: Int? = 8
 }
 

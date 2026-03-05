@@ -87,16 +87,23 @@
           },
           {
             "additionalProperties": true,
-            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using MySQL's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using MySQL's <a href=\"https://docs.airbyte.com/integrations/sources/mysql#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
             "properties": {
-              "initial_load_timeout_hours": {
+              "server_timezone": {
                 "always_show": true,
-                "default": 8,
-                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
-                "max": 24,
-                "min": 4,
-                "order": 3,
-                "title": "Initial Load Timeout in Hours (Advanced)",
+                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
+                "order": 1,
+                "title": "Configured server timezone for the MySQL source (Advanced)",
+                "type": "string"
+              },
+              "initial_waiting_seconds": {
+                "always_show": true,
+                "default": 300,
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 3600 seconds. Read about <a href=\"https://docs.airbyte.com/platform/understanding-airbyte/cdc-best-practices#source-configuration\">initial waiting time</a>",
+                "max": 3600,
+                "min": 120,
+                "order": 2,
+                "title": "Initial Waiting Time in Seconds (Advanced)",
                 "type": "integer"
               },
               "invalid_cdc_cursor_position_behavior": {
@@ -104,20 +111,23 @@
                 "default": "Fail sync",
                 "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value in the mined logs. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
                 "enum": ["Fail sync", "Re-sync data"],
-                "order": 2,
+                "order": 3,
                 "title": "Invalid CDC Position Behavior (Advanced)",
                 "type": "string"
+              },
+              "initial_load_timeout_hours": {
+                "always_show": true,
+                "default": 8,
+                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
+                "max": 24,
+                "min": 4,
+                "order": 4,
+                "title": "Initial Load Timeout in Hours (Advanced)",
+                "type": "integer"
               },
               "method": {
                 "default": "CDC",
                 "enum": ["CDC"],
-                "type": "string"
-              },
-              "server_timezone": {
-                "always_show": true,
-                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
-                "order": 1,
-                "title": "Configured server timezone for the MySQL source (Advanced)",
                 "type": "string"
               }
             },

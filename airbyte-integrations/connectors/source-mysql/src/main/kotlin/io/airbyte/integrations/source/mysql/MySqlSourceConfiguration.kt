@@ -73,6 +73,7 @@ sealed interface IncrementalConfiguration
 data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
 
 data class CdcIncrementalConfiguration(
+    val initialWaitingSeconds: Duration,
     val initialLoadTimeout: Duration,
     val serverTimezone: String?,
     val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior
@@ -220,6 +221,13 @@ constructor(
         when (incrementalSpec) {
             UserDefinedCursor -> UserDefinedCursorIncrementalConfiguration
             is Cdc -> {
+                val initialWaitingSeconds: Duration =
+                    Duration.ofSeconds(incrementalSpec.initialWaitingSeconds?.toLong() ?: 300L)
+                if (initialWaitingSeconds.seconds < 120 || initialWaitingSeconds.seconds > 3600) {
+                    throw ConfigErrorException(
+                        "Initial Waiting Time must be between 120 and 3600 seconds. Got: ${initialWaitingSeconds.seconds}s"
+                    )
+                }
                 val initialLoadTimeout: Duration =
                     Duration.ofHours(incrementalSpec.initialLoadTimeoutHours!!.toLong())
                 val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior =
@@ -229,6 +237,7 @@ constructor(
                         InvalidCdcCursorPositionBehavior.RESET_SYNC
                     }
                 CdcIncrementalConfiguration(
+                    initialWaitingSeconds = initialWaitingSeconds,
                     initialLoadTimeout,
                     incrementalSpec.serverTimezone,
                     invalidCdcCursorPositionBehavior,
