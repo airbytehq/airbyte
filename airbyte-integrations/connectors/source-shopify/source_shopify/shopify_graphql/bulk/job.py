@@ -460,7 +460,10 @@ class ShopifyBulkManager:
                 if isinstance(error, dict):
                     error_code = error.get("code", "")
                     error_message = error.get("message", "")
-                    if error_code == BulkOperationUserErrorCode.INVALID.value and "too many recent bulk operations" in error_message.lower():
+                    if (
+                        error_code == BulkOperationUserErrorCode.INVALID.value
+                        and "too many recent bulk operations" in error_message.lower()
+                    ):
                         return True
         return False
 
