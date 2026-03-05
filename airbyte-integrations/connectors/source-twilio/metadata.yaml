@@ -9,7 +9,7 @@ data:
       - chat.twilio.com
       - trunking.twilio.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.1.post4.dev22725667788@sha256:908d6bd50af893e90419766eb1452f204389b4a704424def8f2787f4bd2e43a5
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.1.post5.dev22731250562@sha256:20ed97734e5078a1fd8101d9d2df5b3f790e58f96bb680d4320250e31bcc04ad
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
