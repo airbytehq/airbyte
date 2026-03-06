@@ -1981,13 +1981,7 @@ spec:
             - transactions
             - transfers
         uniqueItems: true
-        default:
-          - charges
-          - invoice_items
-          - invoice_line_items
-          - invoices
-          - payment_intents
-          - payouts
+        default: []
         order: 7
   config_normalization_rules:
     type: ConfigNormalizationRules
