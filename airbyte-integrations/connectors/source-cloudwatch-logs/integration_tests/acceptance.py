@@ -22,6 +22,9 @@ def connector_setup() -> Iterable[None]:
     config_file_path = "secrets/config_iam_role.json"
     acceptance_test_config_file_path = "acceptance-test-config.yml"
 
+    if not Path(config_file_path).exists():
+        pytest.skip("No credentials found, skipping acceptance tests")
+
     # Read environment variables from the JSON file
     with open(config_file_path, "r") as file:
         config = json.load(file)
