@@ -213,4 +213,35 @@ class AirbyteTypeToIcebergSchemaTest {
         assertEquals(1, identifierFieldIds.size)
         assertEquals(true, identifierFieldIds.contains(ageColumn.fieldId()))
     }
+
+    @Test
+    fun `toIcebergSchema maps PK NumberType to StringType for identifier compatibility`() {
+        val objectType =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(NumberType, false),
+                    "amount" to FieldType(NumberType, true),
+                ),
+            )
+        val schema = objectType.toIcebergSchema(mutableListOf(mutableListOf("id")))
+
+        assertEquals(2, schema.columns().size)
+        val idColumn = schema.findField("id")
+        val amountColumn = schema.findField("amount")
+
+        // PK NumberType field should be StringType (for Iceberg identifier compatibility)
+        assertNotNull(idColumn)
+        assertFalse(idColumn!!.isOptional)
+        assertEquals(Types.StringType.get(), idColumn.type())
+
+        // Non-PK NumberType field should remain DoubleType
+        assertNotNull(amountColumn)
+        assertTrue(amountColumn!!.isOptional)
+        assertEquals(Types.DoubleType.get(), amountColumn.type())
+
+        // PK field should be in identifier fields (StringType is allowed)
+        val identifierFieldIds = schema.identifierFieldIds()
+        assertEquals(1, identifierFieldIds.size)
+        assertTrue(identifierFieldIds.contains(idColumn.fieldId()))
+    }
 }
