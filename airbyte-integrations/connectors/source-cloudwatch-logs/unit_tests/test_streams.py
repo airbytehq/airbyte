@@ -9,6 +9,17 @@ import pytest
 from source_cloudwatch_logs.streams import Logs
 
 
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def mock_session():
+    session = MagicMock()
+    session.client.return_value = MagicMock()
+    return session
+
+
 @pytest.fixture
 def log_stream():
     mock_session = MagicMock()
@@ -42,80 +53,297 @@ def fake_events():
     ]
 
 
-def test_name(log_stream):
-    assert log_stream.name == "/aws/lambda/test-func"
+# ---------------------------------------------------------------------------
+# __init__ parameter handling
+# ---------------------------------------------------------------------------
+
+class TestInit:
+    def test_log_stream_names_added_to_kwargs(self, mock_session):
+        stream = Logs(
+            region_name="us-east-1",
+            log_group_name="/aws/lambda/test-func",
+            session=mock_session,
+            log_stream_names=["stream-a", "stream-b"],
+        )
+        assert stream.kwargs["logStreamNames"] == ["stream-a", "stream-b"]
+
+    def test_filter_pattern_added_to_kwargs(self, mock_session):
+        stream = Logs(
+            region_name="us-east-1",
+            log_group_name="/aws/lambda/test-func",
+            session=mock_session,
+            filter_pattern="ERROR",
+        )
+        assert stream.kwargs["filterPattern"] == "ERROR"
+
+    def test_no_optional_kwargs_by_default(self, log_stream):
+        assert log_stream.kwargs == {}
+
+    def test_start_date_parsed_to_milliseconds(self, mock_session):
+        stream = Logs(
+            region_name="us-east-1",
+            log_group_name="/aws/lambda/test-func",
+            session=mock_session,
+            start_date="2026-01-01T00:00:00Z",
+        )
+        assert stream.start_date == 1767225600000
+
+    def test_no_start_date_is_none(self, log_stream):
+        assert log_stream.start_date is None
 
 
-def test_read_records(log_stream, fake_events):
-    # Mock boto3 client and response
-    log_stream.client.filter_log_events.return_value = {
-        "events": fake_events,
-        "nextToken": None,
-    }
+# ---------------------------------------------------------------------------
+# name property
+# ---------------------------------------------------------------------------
 
-    stream_slice = {
-        "start_time": fake_events[0]["timestamp"] - 1000,
-        "end_time": fake_events[-1]["timestamp"] + 1000,
-    }
+class TestName:
+    def test_name_defaults_to_log_group_name(self, log_stream):
+        assert log_stream.name == "/aws/lambda/test-func"
 
-    records = list(log_stream.read_records(sync_mode=None, stream_slice=stream_slice))
-
-    assert len(records) == len(fake_events)
-    assert records[0]["message"] == "First log message"
-    assert records[1]["eventId"] == "evt2"
-
-
-def test_setting_existing_state(log_stream):
-    # Provide previous state
-    log_stream.state = {"timestamp": 1234567890}
-    assert log_stream._cursor_value == 1234567890
+    def test_custom_name_overrides_log_group_name(self, mock_session):
+        stream = Logs(
+            region_name="us-east-1",
+            log_group_name="/aws/lambda/test-func",
+            session=mock_session,
+            name="my-custom-name",
+        )
+        assert stream.name == "my-custom-name"
 
 
-@patch(
-    "source_cloudwatch_logs.streams.dt.datetime",
-    return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
-)
-def test_stream_slices_one_slice(mock_datetime, log_stream):
-    # Stream slices splits the time range into 1 day slices. For a 1h range, it should return 1 slice
+# ---------------------------------------------------------------------------
+# state property
+# ---------------------------------------------------------------------------
 
-    mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
-    # 2026-01-01 00:00:00 UTC in milliseconds
-    current_time = 1767225600000
-    # 1 hour before current time
-    stream_state = {"timestamp": current_time - 3600000}
+class TestState:
+    def test_state_is_empty_when_cursor_is_none(self, log_stream):
+        assert log_stream.state == {}
 
-    slices = list(log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
+    def test_state_returns_cursor_value_after_set(self, log_stream):
+        log_stream.state = {"timestamp": 9999999}
+        assert log_stream.state == {"timestamp": 9999999}
 
-    assert slices == [
-        {
-            "start_time": current_time - 3600000,
-            "end_time": current_time,
-        },
-    ]
+    def test_state_setter_ignores_missing_cursor_field(self, log_stream):
+        log_stream.state = {}
+        assert log_stream._cursor_value is None
+        assert log_stream.state == {}
 
 
-@patch(
-    "source_cloudwatch_logs.streams.dt.datetime",
-    return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
-)
-def test_stream_slices_many_slices(mock_datetime, log_stream):
-    # Stream slices splits the time range into 1 day slices. For a 2-day range, it should return 2 slices
-    mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+# ---------------------------------------------------------------------------
+# _get_start_timestamp
+# ---------------------------------------------------------------------------
 
-    # 2026-01-01 00:00:00 UTC in milliseconds
-    current_time = 1767225600000
-    # 2 days - 1ms before current time
-    stream_state = {"timestamp": current_time - 172800000 + 1}
+class TestGetStartTimestamp:
+    def test_returns_none_when_no_events(self, log_stream):
+        log_stream.client.filter_log_events.return_value = {"events": []}
+        assert log_stream._get_start_timestamp() is None
 
-    slices = list(log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
+    def test_returns_earliest_timestamp_when_events_exist(self, log_stream):
+        log_stream.client.filter_log_events.return_value = {
+            "events": [{"timestamp": 1234567890000}]
+        }
+        assert log_stream._get_start_timestamp() == 1234567890000
 
-    assert slices == [
-        {
-            "start_time": current_time - 172800000 + 1,
-            "end_time": current_time - 86400000,
-        },
-        {
-            "start_time": current_time - 86400000 + 1,
-            "end_time": current_time,
-        },
-    ]
+    def test_queries_from_time_zero(self, log_stream):
+        log_stream.client.filter_log_events.return_value = {"events": []}
+        log_stream._get_start_timestamp()
+        call_kwargs = log_stream.client.filter_log_events.call_args
+        assert call_kwargs.kwargs.get("startTime") == 0 or call_kwargs[1].get("startTime") == 0
+
+
+# ---------------------------------------------------------------------------
+# stream_slices
+# ---------------------------------------------------------------------------
+
+class TestStreamSlices:
+    CURRENT_TIME = 1767225600000  # 2026-01-01 00:00:00 UTC in ms
+    ONE_DAY_MS = 86400000
+
+    @patch(
+        "source_cloudwatch_logs.streams.dt.datetime",
+        return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
+    )
+    def test_stream_slices_one_slice(self, mock_datetime, log_stream):
+        # Stream slices splits the time range into 1 day slices. For a 1h range, it should return 1 slice
+
+        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+        # 2026-01-01 00:00:00 UTC in milliseconds
+        current_time = 1767225600000
+        # 1 hour before current time
+        stream_state = {"timestamp": current_time - 3600000}
+
+        slices = list(log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
+
+        assert slices == [
+            {
+                "start_time": current_time - 3600000,
+                "end_time": current_time,
+            },
+        ]
+
+    @patch(
+        "source_cloudwatch_logs.streams.dt.datetime",
+        return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
+    )
+    def test_stream_slices_many_slices(self, mock_datetime, log_stream):
+        # Stream slices splits the time range into 1 day slices. For a 2-day range, it should return 2 slices
+        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+
+        # 2026-01-01 00:00:00 UTC in milliseconds
+        current_time = 1767225600000
+        # 2 days - 1ms before current time
+        stream_state = {"timestamp": current_time - 172800000 + 1}
+
+        slices = list(log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
+
+        assert slices == [
+            {
+                "start_time": current_time - 172800000 + 1,
+                "end_time": current_time - 86400000,
+            },
+            {
+                "start_time": current_time - 86400000 + 1,
+                "end_time": current_time,
+            },
+        ]
+
+    @patch("source_cloudwatch_logs.streams.dt.datetime")
+    def test_no_state_no_start_date_no_events_returns_empty(self, mock_datetime, log_stream):
+        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+        log_stream.client.filter_log_events.return_value = {"events": []}
+
+        slices = list(log_stream.stream_slices(sync_mode=None, stream_state={}))
+
+        assert slices == []
+
+    @patch("source_cloudwatch_logs.streams.dt.datetime")
+    def test_uses_start_date_when_no_state(self, mock_datetime, mock_session):
+        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+
+        stream = Logs(
+            region_name="us-east-1",
+            log_group_name="/aws/lambda/test-func",
+            session=mock_session,
+            start_date="2026-01-01T00:00:00Z",
+        )
+
+        slices = list(stream.stream_slices(sync_mode=None, stream_state={}))
+
+        # start_date == current_time, so one slice with start == end
+        assert len(slices) == 1
+        assert slices[0]["start_time"] == self.CURRENT_TIME
+
+    @patch("source_cloudwatch_logs.streams.dt.datetime")
+    def test_start_time_equals_current_time_yields_one_slice(self, mock_datetime, log_stream):
+        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+        stream_state = {"timestamp": self.CURRENT_TIME}
+
+        slices = list(log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
+
+        assert len(slices) == 1
+        assert slices[0]["start_time"] == self.CURRENT_TIME
+        assert slices[0]["end_time"] == self.CURRENT_TIME
+
+    @patch("source_cloudwatch_logs.streams.dt.datetime")
+    def test_falls_back_to_get_start_timestamp_when_no_state_or_start_date(
+        self, mock_datetime, log_stream
+    ):
+        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+        # 1 hour before current_time
+        earliest_ts = self.CURRENT_TIME - 3600000
+        log_stream.client.filter_log_events.return_value = {
+            "events": [{"timestamp": earliest_ts}]
+        }
+
+        slices = list(log_stream.stream_slices(sync_mode=None, stream_state={}))
+
+        assert len(slices) == 1
+        assert slices[0]["start_time"] == earliest_ts
+
+
+# ---------------------------------------------------------------------------
+# read_records
+# ---------------------------------------------------------------------------
+class TestReadRecords:
+    def test_read_records(self, log_stream, fake_events):
+        # Mock boto3 client and response
+        log_stream.client.filter_log_events.return_value = {
+            "events": fake_events,
+            "nextToken": None,
+        }
+
+        stream_slice = {
+            "start_time": fake_events[0]["timestamp"] - 1000,
+            "end_time": fake_events[-1]["timestamp"] + 1000,
+        }
+
+        records = list(log_stream.read_records(sync_mode=None, stream_slice=stream_slice))
+
+        assert len(records) == len(fake_events)
+        assert records[0]["message"] == "First log message"
+        assert records[1]["eventId"] == "evt2"
+
+    def test_yields_no_records_for_empty_events(self, log_stream):
+        log_stream.client.filter_log_events.return_value = {"events": [], "nextToken": None}
+        records = list(log_stream.read_records(sync_mode=None, stream_slice={}))
+        assert records == []
+
+    def test_cursor_value_set_to_max_timestamp(self, log_stream, fake_events):
+        # Ensure max is taken even if events arrive out of order
+        out_of_order = [fake_events[1], fake_events[0]]  # higher ts first
+        log_stream.client.filter_log_events.return_value = {
+            "events": out_of_order,
+            "nextToken": None,
+        }
+        list(log_stream.read_records(sync_mode=None, stream_slice={}))
+        assert log_stream._cursor_value == fake_events[1]["timestamp"]  # the max
+
+    def test_cursor_set_for_single_event(self, log_stream, fake_events):
+        log_stream.client.filter_log_events.return_value = {
+            "events": [fake_events[0]],
+            "nextToken": None,
+        }
+        list(log_stream.read_records(sync_mode=None, stream_slice={}))
+        assert log_stream._cursor_value == fake_events[0]["timestamp"]
+
+    def test_pagination_fetches_all_pages(self, log_stream, fake_events):
+        log_stream.client.filter_log_events.side_effect = [
+            {"events": [fake_events[0]], "nextToken": "token-abc"},
+            {"events": [fake_events[1]], "nextToken": None},
+        ]
+        records = list(log_stream.read_records(sync_mode=None, stream_slice={}))
+        assert len(records) == 2
+        assert log_stream.client.filter_log_events.call_count == 2
+
+    def test_pagination_passes_next_token(self, log_stream, fake_events):
+        log_stream.client.filter_log_events.side_effect = [
+            {"events": [fake_events[0]], "nextToken": "token-xyz"},
+            {"events": [fake_events[1]], "nextToken": None},
+        ]
+        list(log_stream.read_records(sync_mode=None, stream_slice={}))
+        second_call_kwargs = log_stream.client.filter_log_events.call_args_list[1][1]
+        assert second_call_kwargs.get("nextToken") == "token-xyz"
+
+    def test_extra_kwargs_passed_to_filter_log_events(self, mock_session, fake_events):
+        stream = Logs(
+            region_name="us-east-1",
+            log_group_name="/aws/lambda/test-func",
+            session=mock_session,
+            filter_pattern="ERROR",
+            log_stream_names=["stream-a"],
+        )
+        stream.client.filter_log_events.return_value = {"events": fake_events, "nextToken": None}
+        list(stream.read_records(sync_mode=None, stream_slice={}))
+
+        call_kwargs = stream.client.filter_log_events.call_args[1]
+        assert call_kwargs.get("filterPattern") == "ERROR"
+        assert call_kwargs.get("logStreamNames") == ["stream-a"]
+
+    def test_cursor_not_regressed_by_older_event(self, log_stream, fake_events):
+        # Start with a high cursor value; reading older events should not lower it
+        log_stream._cursor_value = fake_events[1]["timestamp"]
+        log_stream.client.filter_log_events.return_value = {
+            "events": [fake_events[0]],  # older timestamp
+            "nextToken": None,
+        }
+        list(log_stream.read_records(sync_mode=None, stream_slice={}))
+        assert log_stream._cursor_value == fake_events[1]["timestamp"]
