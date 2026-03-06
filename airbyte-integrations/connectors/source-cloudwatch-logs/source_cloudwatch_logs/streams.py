@@ -55,6 +55,9 @@ class Logs(Stream, IncrementalMixin):
         if filter_pattern:
             self.kwargs["filterPattern"] = filter_pattern
 
+        self.logger.debug(f"Start date: {self.start_date}")
+        self.logger.debug(f"Querying logs with parameters: {self.kwargs}")
+
     @property
     def name(self) -> str:
         if self._name:
