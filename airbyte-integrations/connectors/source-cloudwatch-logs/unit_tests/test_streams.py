@@ -229,8 +229,12 @@ class TestStreamSlices:
         slices = list(stream.stream_slices(sync_mode=None, stream_state={}))
 
         # start_date == current_time, so one slice with start == end
-        assert len(slices) == 1
-        assert slices[0]["start_time"] == self.CURRENT_TIME
+        assert slices == [
+            {
+                "start_time": self.CURRENT_TIME,
+                "end_time": self.CURRENT_TIME,
+            },
+        ]
 
     @patch("source_cloudwatch_logs.streams.dt.datetime")
     def test_start_time_equals_current_time_yields_one_slice(self, mock_datetime, mock_log_stream):
@@ -239,9 +243,12 @@ class TestStreamSlices:
 
         slices = list(mock_log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
 
-        assert len(slices) == 1
-        assert slices[0]["start_time"] == self.CURRENT_TIME
-        assert slices[0]["end_time"] == self.CURRENT_TIME
+        assert slices == [
+            {
+                "start_time": self.CURRENT_TIME,
+                "end_time": self.CURRENT_TIME,
+            },
+        ]
 
     @patch("source_cloudwatch_logs.streams.dt.datetime")
     def test_falls_back_to_get_start_timestamp_when_no_state_or_start_date(
@@ -256,8 +263,12 @@ class TestStreamSlices:
 
         slices = list(mock_log_stream.stream_slices(sync_mode=None, stream_state={}))
 
-        assert len(slices) == 1
-        assert slices[0]["start_time"] == earliest_ts
+        assert slices == [
+            {
+                "start_time": earliest_ts,
+                "end_time": self.CURRENT_TIME,
+            },
+        ]
 
 
 # ---------------------------------------------------------------------------
