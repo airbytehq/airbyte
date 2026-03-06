@@ -1799,7 +1799,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
 
     @property
     def _should_include_closed(self) -> bool:
-        return self.config.get("fulfillment_orders_include_closed", True)
+        return self.config.get("fulfillment_orders_include_closed", False)
 
     def query(self, filter_query: Optional[str] = None) -> Query:
         additional_query_args = {"includeClosed": "true"} if self._should_include_closed else None
