@@ -969,8 +969,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `campaign.id` | `integer` | Campaign ID |
-| `campaign_label.campaign` | `string` | Campaign resource name |
-| `campaign_label.label` | `string` | Label resource name |
 | `campaign_label.resource_name` | `string` | Resource name of the campaign label |
 | `label.id` | `integer` | Label ID |
 | `label.name` | `string` | Label name |
@@ -987,8 +985,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].campaign.id` | `integer` | Campaign ID |
-| `data[].campaign_label.campaign` | `string` | Campaign resource name |
-| `data[].campaign_label.label` | `string` | Label resource name |
 | `data[].campaign_label.resource_name` | `string` | Resource name of the campaign label |
 | `data[].label.id` | `integer` | Label ID |
 | `data[].label.name` | `string` | Label name |
@@ -1152,8 +1148,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `ad_group.id` | `integer` | Ad group ID |
-| `ad_group_label.ad_group` | `string` | Ad group resource name |
-| `ad_group_label.label` | `string` | Label resource name |
 | `ad_group_label.resource_name` | `string` | Resource name of the ad group label |
 | `label.id` | `integer` | Label ID |
 | `label.name` | `string` | Label name |
@@ -1170,8 +1164,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].ad_group.id` | `integer` | Ad group ID |
-| `data[].ad_group_label.ad_group` | `string` | Ad group resource name |
-| `data[].ad_group_label.label` | `string` | Label resource name |
 | `data[].ad_group_label.resource_name` | `string` | Resource name of the ad group label |
 | `data[].label.id` | `integer` | Label ID |
 | `data[].label.name` | `string` | Label name |
@@ -1282,8 +1274,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `ad_group_ad.ad.id` | `integer` | Ad ID |
-| `ad_group_ad_label.ad_group_ad` | `string` | Ad group ad resource name |
-| `ad_group_ad_label.label` | `string` | Label resource name |
 | `ad_group_ad_label.resource_name` | `string` | Resource name of the ad group ad label |
 | `label.id` | `integer` | Label ID |
 | `label.name` | `string` | Label name |
@@ -1300,8 +1290,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].ad_group_ad.ad.id` | `integer` | Ad ID |
-| `data[].ad_group_ad_label.ad_group_ad` | `string` | Ad group ad resource name |
-| `data[].ad_group_ad_label.label` | `string` | Label resource name |
 | `data[].ad_group_ad_label.resource_name` | `string` | Resource name of the ad group ad label |
 | `data[].label.id` | `integer` | Label ID |
 | `data[].label.name` | `string` | Label name |

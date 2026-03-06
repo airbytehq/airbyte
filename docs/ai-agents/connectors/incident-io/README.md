@@ -124,7 +124,7 @@ See the official [Incident-Io API reference](https://api-docs.incident.io/).
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 7cd2cc4e688e626633336d4f04a0999d41718d2b
+- **Package version:** 0.1.4
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** e50d6dd2afcab025208f4c255431a51c213a1c5c
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/incident-io/CHANGELOG.md)
