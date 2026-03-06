@@ -12,6 +12,7 @@ from datetime import datetime as dt
 from io import StringIO
 from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Optional, Union
 
+import backoff
 import dateparser
 import requests
 import xmltodict
@@ -24,7 +25,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -103,6 +106,7 @@ class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
         self._rdt_token: Optional[str] = None
         self._rdt_fetch_time: Optional[float] = None
         self._rdt_fallback_to_lwa: bool = False
+        self._version = "2021-03-01"
 
     def get_auth_header(self) -> Mapping[str, Any]:
         include_pii = self.config.get("include_pii", False)
@@ -132,20 +136,28 @@ class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
                 return self._rdt_token
         return self._fetch_rdt_token()
 
+    @backoff.on_exception(
+        backoff.expo,
+        DefaultBackoffException,
+        on_backoff=lambda details: logger.info(
+            f"RDT request: retryable error after {details['tries']} tries. Waiting {details['wait']:.1f}s then retrying..."
+        ),
+        max_time=300,
+    )
     def _fetch_rdt_token(self) -> Optional[str]:
-        """Request a new Restricted Data Token from the Amazon Tokens API."""
-        endpoint = self.config.get("endpoint", "")
-        tokens_url = f"{endpoint}/tokens/2021-03-01/restrictedDataToken"
+        """Request a new RDT from the Amazon Tokens API."""
 
-        restricted_resources = []
-        for path in self.restricted_resource_paths or []:
-            restricted_resources.append(
-                {
-                    "method": "GET",
-                    "path": path,
-                    "dataElements": ["buyerInfo", "shippingAddress"],
-                }
-            )
+        endpoint = self.config.get("endpoint", "")
+        tokens_url = f"{endpoint}/tokens/{self._version}/restrictedDataToken"
+
+        restricted_resources = [
+            {
+                "method": "GET",
+                "path": path,
+                "dataElements": ["buyerInfo", "shippingAddress"],
+            }
+            for path in self.restricted_resource_paths or []
+        ]
 
         lwa_token = self.get_access_token()
         headers = {
@@ -162,43 +174,37 @@ class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
                 json={"restrictedResources": restricted_resources},
                 headers=headers,
             )
-        except requests.RequestException as exc:
+
+            if response.status_code == 403:
+                logger.warning(
+                    "RDT request returned HTTP 403 (PII access is not available). Falling back to standard LWA token."
+                )
+                self._rdt_fallback_to_lwa = True
+                return None
+
+            if not response.ok:
+                response.raise_for_status()
+
+            data = response.json()
+            self._rdt_token = data["restrictedDataToken"]
+            add_to_secrets(self._rdt_token)
+            self._rdt_fetch_time = time.monotonic()
+            logger.info("Successfully obtained a RDT for PII access.")
+            return self._rdt_token
+
+        except requests.exceptions.RequestException as exc:
+            if exc.response is not None and (exc.response.status_code == 429 or exc.response.status_code >= 500):
+                raise DefaultBackoffException(
+                    request=exc.response.request,
+                    response=exc.response,
+                    failure_type=FailureType.transient_error,
+                )
             raise AirbyteTracedException(
                 message=(
-                    f"Failed to request a Restricted Data Token from Amazon SP-API: {exc}. "
-                    "Please verify your Amazon SP-API credentials and that your developer profile "
-                    "has an approved Restricted Role (Direct-to-Consumer Shipping or Tax Invoicing)."
+                    f"Failed to request a RDT from Amazon SP-API: {exc}."
                 ),
                 failure_type=FailureType.config_error,
             ) from exc
-
-        if response.status_code == 403:
-            logger.warning(
-                "RDT request returned HTTP 403 — PII access is not available (missing Restricted Role). "
-                "Falling back to standard LWA token; BuyerInfo and ShippingAddress PII fields will remain empty."
-            )
-            self._rdt_fallback_to_lwa = True
-            return None
-
-        if not response.ok:
-            error_msg = f"Failed to obtain a Restricted Data Token from Amazon SP-API (HTTP {response.status_code})"
-            try:
-                errors = response.json().get("errors", [])
-                if errors:
-                    details = "; ".join(e.get("message", str(e)) for e in errors)
-                    error_msg += f": {details}"
-            except (ValueError, KeyError):
-                error_msg += f": {response.text}"
-            raise AirbyteTracedException(
-                message=error_msg,
-                failure_type=FailureType.config_error,
-            )
-
-        data = response.json()
-        self._rdt_token = data["restrictedDataToken"]
-        self._rdt_fetch_time = time.monotonic()
-        logger.info("Successfully obtained a Restricted Data Token for PII access on Orders endpoints.")
-        return self._rdt_token
 
 
 @dataclass
