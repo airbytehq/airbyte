@@ -53,7 +53,7 @@ data:
         upgradeDeadline: "2025-08-19"
       5.0.0:
         message: This release upgrades the Google Ads API to v23, which introduces new features including Performance Max ad network type breakdown. Some schemas may change. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
-        upgradeDeadline: "2026-04-30"
+        upgradeDeadline: "2026-05-30"
   suggestedStreams:
     streams:
       - campaigns
