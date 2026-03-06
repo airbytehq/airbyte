@@ -3,7 +3,7 @@
 #
 
 import datetime as dt
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from source_cloudwatch_logs.streams import Logs
@@ -42,6 +42,10 @@ def fake_events():
     ]
 
 
+def test_name(log_stream):
+    assert log_stream.name == "/aws/lambda/test-func"
+
+
 def test_read_records(log_stream, fake_events):
     # Mock boto3 client and response
     log_stream.client.filter_log_events.return_value = {
@@ -67,13 +71,49 @@ def test_setting_existing_state(log_stream):
     assert log_stream._cursor_value == 1234567890
 
 
-def test_stream_slices(log_stream):
-    current_time = int(dt.datetime.now(dt.UTC).timestamp() * 1000)
+@patch(
+    "source_cloudwatch_logs.streams.dt.datetime.now",
+    return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
+)
+def test_stream_slices_one_slice(mock_datetime_now, log_stream):
+    # Stream slices splits the time range into 1 day slices. For a 1h range, it should return 1 slice
+
+    # 2026-01-01 00:00:00 UTC in milliseconds
+    current_time = 1767225600000
+    # 1 hour before current time
     stream_state = {"timestamp": current_time - 3600000}
 
     slices = list(log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
 
-    assert len(slices) == 1
-    assert "start_time" in slices[0]
-    assert "end_time" in slices[0]
-    assert slices[0]["start_time"] >= stream_state["timestamp"]
+    assert slices == [
+        {
+            "start_time": current_time - 3600000,
+            "end_time": current_time,
+        },
+    ]
+
+
+@patch(
+    "source_cloudwatch_logs.streams.dt.datetime.now",
+    return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
+)
+def test_stream_slices_many_slices(mock_datetime_now, log_stream):
+    # Stream slices splits the time range into 1 day slices. For a 2-day range, it should return 2 slices
+
+    # 2026-01-01 00:00:00 UTC in milliseconds
+    current_time = 1767225600000
+    # 2 days - 1ms before current time
+    stream_state = {"timestamp": current_time - 172800000 + 1}
+
+    slices = list(log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
+
+    assert slices == [
+        {
+            "start_time": current_time - 172800000 + 1,
+            "end_time": current_time - 86400000,
+        },
+        {
+            "start_time": current_time - 86400000 + 1,
+            "end_time": current_time,
+        },
+    ]
