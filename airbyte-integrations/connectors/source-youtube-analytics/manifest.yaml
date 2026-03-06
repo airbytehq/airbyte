@@ -1,4 +1,4 @@
-version: 6.41.1
+version: 6.42.0
 
 type: DeclarativeSource
 
@@ -418,7 +418,8 @@ definitions:
           $ref: "#/schemas/playlist_traffic_source_a2"
 
   base_requester:
-    type: HttpRequester
+    type: CustomRequester
+    class_name: source_declarative_manifest.components.ContentOwnerRequester
     url_base: https://youtubereporting.googleapis.com/v1/
     authenticator:
       type: OAuthAuthenticator
@@ -511,6 +512,15 @@ spec:
       - credentials
     additionalProperties: true
     properties:
+      content_owner_id:
+        type: string
+        title: Content Owner ID
+        description: >-
+          The ID of the content owner for whom the API request is being made.
+          This is useful if you manage multiple YouTube channels and need to
+          specify which content owner's data to retrieve. If not provided, the
+          API will use the channel associated with your OAuth credentials.
+        order: 0
       credentials:
         type: object
         title: Authenticate via OAuth 2.0

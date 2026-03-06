@@ -1,0 +1,17 @@
+{
+  "list": [
+    {
+      "invoice": {
+        "id": "inv_001",
+        "customer_id": "cust_123",
+        "subscription_id": "sub_123",
+        "status": "paid",
+        "total": 10000,
+        "updated_at": 1705312800,
+        "date": 1705312800,
+        "cf_payment_terms": "Net30",
+        "cf_billing_contact": "billing@example.com"
+      }
+    }
+  ]
+}

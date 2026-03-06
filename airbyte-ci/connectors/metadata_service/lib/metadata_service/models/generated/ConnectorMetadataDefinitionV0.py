@@ -251,7 +251,7 @@ class DataChannel(BaseModel):
         extra = Extra.forbid
 
     version: str
-    supportedSerialization: List[Literal["JSONL", "PROTOBUF", "FLATBUFFERS"]]
+    supportedSerialization: List[Literal["JSONL", "PROTOBUF"]]
     supportedTransport: List[Literal["STDIO", "SOCKET"]]
 
 
