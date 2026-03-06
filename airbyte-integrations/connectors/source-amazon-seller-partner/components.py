@@ -6,6 +6,7 @@ import csv
 import gzip
 import json
 import logging
+import threading
 import time
 from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
@@ -101,6 +102,7 @@ class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
 
     restricted_resource_paths: Optional[List[str]] = None
     _RDT_API_VERSION: str = "2021-03-01"
+    _rdt_lock: threading.Lock = threading.Lock()
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
@@ -129,12 +131,23 @@ class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
     # ------------------------------------------------------------------
 
     def _get_rdt_token(self) -> Optional[str]:
-        """Return a cached RDT if still fresh, otherwise fetch a new one."""
+        """Return a cached RDT if still fresh, otherwise fetch a new one.
+
+        Uses double-checked locking to prevent multiple threads from
+        refreshing the token simultaneously (see airbyte-python-cdk#883).
+        """
         current_time = time.monotonic()
         if self._rdt_token and self._rdt_fetch_time is not None:
             if current_time - self._rdt_fetch_time <= _RDT_REFRESH_THRESHOLD_SECONDS:
                 return self._rdt_token
-        return self._fetch_rdt_token()
+
+        with self._rdt_lock:
+            # Re-check after acquiring the lock; another thread may have refreshed already.
+            current_time = time.monotonic()
+            if self._rdt_token and self._rdt_fetch_time is not None:
+                if current_time - self._rdt_fetch_time <= _RDT_REFRESH_THRESHOLD_SECONDS:
+                    return self._rdt_token
+            return self._fetch_rdt_token()
 
     @backoff.on_exception(
         backoff.expo,

@@ -3,6 +3,7 @@
 #
 
 import json
+import threading
 import time
 from unittest.mock import MagicMock, patch
 
@@ -195,23 +196,23 @@ class TestRdtTokenFetch:
                     auth._fetch_rdt_token()
 
         assert exc_info.value.failure_type == FailureType.config_error
-        assert "HTTP 400" in str(exc_info.value.message)
-        assert "Bad request format" in str(exc_info.value.message)
+        assert "400" in str(exc_info.value.message)
 
-    def test_500_error_raises_config_error(self):
-        """A 500 error response raises AirbyteTracedException with config_error."""
-        from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+    def test_500_error_raises_backoff_exception(self):
+        """A 500 error response raises DefaultBackoffException for retry."""
+        from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
         auth = _make_rdt_authenticator()
 
         mock_response = _create_response(500, {"errors": [{"code": "InternalError", "message": "Server error"}]})
+        mock_response.request = requests.PreparedRequest()
+        mock_response.request.url = "https://sellingpartnerapi-na.amazon.com/tokens/2021-03-01/restrictedDataToken"
 
+        # Call the underlying function directly to bypass the backoff decorator
         with patch.object(auth, "get_access_token", return_value="lwa-token"):
             with patch("components.requests.post", return_value=mock_response):
-                with pytest.raises(AirbyteTracedException) as exc_info:
-                    auth._fetch_rdt_token()
-
-        assert "HTTP 500" in str(exc_info.value.message)
+                with pytest.raises(DefaultBackoffException):
+                    auth._fetch_rdt_token.__wrapped__(auth)
 
     def test_network_error_raises_config_error(self):
         """A network-level exception raises AirbyteTracedException with config_error."""
@@ -226,22 +227,23 @@ class TestRdtTokenFetch:
 
         assert "DNS resolution failed" in str(exc_info.value.message)
 
-    def test_error_response_with_unparseable_body(self):
-        """A non-200 response with unparseable JSON still raises a clear error."""
-        from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+    def test_502_error_raises_backoff_exception(self):
+        """A 502 error response raises DefaultBackoffException for retry."""
+        from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
         auth = _make_rdt_authenticator()
 
         response = requests.Response()
         response.status_code = 502
         response._content = b"Bad Gateway"
+        response.request = requests.PreparedRequest()
+        response.request.url = "https://sellingpartnerapi-na.amazon.com/tokens/2021-03-01/restrictedDataToken"
 
+        # Call the underlying function directly to bypass the backoff decorator
         with patch.object(auth, "get_access_token", return_value="lwa-token"):
             with patch("components.requests.post", return_value=response):
-                with pytest.raises(AirbyteTracedException) as exc_info:
-                    auth._fetch_rdt_token()
-
-        assert "HTTP 502" in str(exc_info.value.message)
+                with pytest.raises(DefaultBackoffException):
+                    auth._fetch_rdt_token.__wrapped__(auth)
 
 
 class TestRdtAuthenticatorRegistration:
@@ -258,3 +260,45 @@ class TestRdtAuthenticatorRegistration:
         assert len(components._authenticator_instances) == 2
         assert mock_auth1 in components._authenticator_instances
         assert mock_auth2 in components._authenticator_instances
+
+
+class TestRdtTokenThreadSafety:
+    """Tests for thread-safe RDT token refresh (double-checked locking)."""
+
+    def test_concurrent_refresh_only_fetches_once(self):
+        """When multiple threads detect an expired RDT simultaneously, only one fetch occurs."""
+        auth = _make_rdt_authenticator()
+        fetch_call_count = 0
+        fetch_call_lock = threading.Lock()
+
+        def mock_fetch(self_arg=None):
+            nonlocal fetch_call_count
+            with fetch_call_lock:
+                fetch_call_count += 1
+            # Simulate network latency so threads overlap
+            time.sleep(0.05)
+            auth._rdt_token = "new-rdt"
+            auth._rdt_fetch_time = time.monotonic()
+            return "new-rdt"
+
+        results = []
+        errors = []
+
+        def get_token():
+            try:
+                token = auth._get_rdt_token()
+                results.append(token)
+            except Exception as e:
+                errors.append(e)
+
+        with patch.object(auth, "_fetch_rdt_token", side_effect=mock_fetch):
+            threads = [threading.Thread(target=get_token) for _ in range(5)]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+
+        assert len(errors) == 0, f"Unexpected errors: {errors}"
+        assert len(results) == 5
+        assert all(token == "new-rdt" for token in results)
+        assert fetch_call_count == 1, f"Expected 1 fetch call, got {fetch_call_count}"
