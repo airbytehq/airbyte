@@ -67,12 +67,12 @@ def test_join_channels_make_join_channel_slice(token_config, components_module):
     "join_response, log_message",
     (
         (
-            {"ok": True, "channel": {"is_member": True, "id": "channel 2", "name": "test channel"}},
-            "Successfully joined channel: test channel",
+            {"ok": True, "channel": {"is_member": True, "id": "good-reads", "name": "good-reads"}},
+            "Successfully joined channel: good-reads",
         ),
         (
             {"ok": False, "error": "missing_scope", "needed": "channels:write"},
-            "Unable to joined channel: test channel. Reason: {'ok': False, 'error': " "'missing_scope', 'needed': 'channels:write'}",
+            "Unable to joined channel: good-reads. Reason: {'ok': False, 'error': " "'missing_scope', 'needed': 'channels:write'}",
         ),
     ),
     ids=["successful_join_to_channel", "failed_join_to_channel"],
@@ -81,14 +81,67 @@ def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, 
     mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
     requests_mock.get(
         url="https://slack.com/api/conversations.list",
-        json={"channels": [{"is_member": True, "id": "channel 1"}, {"is_member": False, "id": "channel 2", "name": "test channel"}]},
+        json={"channels": [
+            {"is_member": True, "id": "airbyte-for-beginners", "name": "airbyte-for-beginners"},
+            {"is_member": False, "id": "good-reads", "name": "good-reads"},
+        ]},
     )
 
     retriever = get_channels_retriever_instance(token_config, components_module)
     assert len(list(retriever.read_records(records_schema={}))) == 2
     assert mocked_request.called
-    assert mocked_request.last_request._request.body == b'{"channel": "channel 2"}'
+    assert mocked_request.last_request._request.body == b'{"channel": "good-reads"}'
     assert log_message in caplog.text
+
+
+@pytest.mark.parametrize(
+    "config_overrides, record, expected",
+    (
+        # Default: all public channels included
+        ({}, {"name": "general", "is_ext_shared": False, "is_private": False}, True),
+        # include_public_channels=False: standard public channels excluded
+        ({"include_public_channels": False}, {"name": "general", "is_ext_shared": False, "is_private": False}, False),
+        # include_public_channels=False: external shared channels still included
+        ({"include_public_channels": False}, {"name": "ext-acme", "is_ext_shared": True, "is_private": False}, True),
+        # include_shared_channels=False: external shared channels excluded
+        ({"include_shared_channels": False}, {"name": "ext-acme", "is_ext_shared": True, "is_private": False}, False),
+        # include_shared_channels=False: standard public channels still included
+        ({"include_shared_channels": False}, {"name": "general", "is_ext_shared": False, "is_private": False}, True),
+        # channel_filter whitelist with exact match
+        ({"channel_filter": ["acme", "globetech"]}, {"name": "acme", "is_ext_shared": False, "is_private": False}, True),
+        # channel_filter whitelist no match
+        ({"channel_filter": ["acme"]}, {"name": "random", "is_ext_shared": False, "is_private": False}, False),
+        # channel_filter with wildcard
+        ({"channel_filter": ["acme-*"]}, {"name": "acme-sales", "is_ext_shared": False, "is_private": False}, True),
+        # channel_filter with wildcard no match
+        ({"channel_filter": ["acme-*"]}, {"name": "globetech-sales", "is_ext_shared": False, "is_private": False}, False),
+        # channel_exclude_filter blacklist
+        ({"channel_exclude_filter": ["random"]}, {"name": "random", "is_ext_shared": False, "is_private": False}, False),
+        # channel_exclude_filter with wildcard
+        ({"channel_exclude_filter": ["ext-*"]}, {"name": "ext-acme", "is_ext_shared": True, "is_private": False}, False),
+        # exclude takes precedence over include
+        ({"channel_filter": ["acme"], "channel_exclude_filter": ["acme"]}, {"name": "acme", "is_ext_shared": False, "is_private": False}, False),
+    ),
+    ids=[
+        "default_public_included",
+        "no_public_channels",
+        "no_public_channels_but_shared_included",
+        "no_shared_channels",
+        "no_shared_channels_but_public_included",
+        "whitelist_exact_match",
+        "whitelist_no_match",
+        "wildcard_match",
+        "wildcard_no_match",
+        "blacklist_exact",
+        "blacklist_wildcard",
+        "exclude_takes_precedence",
+    ],
+)
+def test_is_channel_included(token_config, components_module, config_overrides, record, expected):
+    # Start with empty filters to avoid interference from base config's channel_filter
+    config = {**token_config, "channel_filter": [], "channel_exclude_filter": [], **config_overrides}
+    retriever = get_channels_retriever_instance(token_config, components_module)
+    assert retriever.is_channel_included(config, record) is expected
 
 
 @pytest.mark.parametrize(
