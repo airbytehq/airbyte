@@ -6,6 +6,7 @@ import io
 import json
 import logging
 import re
+import socket
 import threading
 import time
 from dataclasses import dataclass, field
@@ -603,7 +604,7 @@ class GoogleAdsRetriever(SimpleRetriever):
                 time.monotonic() - page_start,
                 slice_desc,
             )
-        except requests.exceptions.ChunkedEncodingError:
+        except (requests.exceptions.ChunkedEncodingError, socket.timeout):
             sub_slices = self._split_slice(stream_slice)
 
             if sub_slices is None:
@@ -1090,31 +1091,41 @@ class GoogleAdsStreamingDecoder(Decoder):
     def is_stream_response(self) -> bool:
         return True
 
+    # Read timeout (seconds) for iter_content() to prevent indefinite blocking
+    # when the HTTP response stream never terminates in Cloud environments.
+    stream_read_timeout: float = 300.0  # 5 minutes
+
     def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
         decode_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
         decode_start = time.monotonic()
+        resp_id = f"{id(response):x}"[-8:]
         decode_logger.info(
-            "Decoder START: url=%s, status=%s",
+            "Decoder START [resp=%s]: url=%s, status=%s",
+            resp_id,
             response.url[:120] if response.url else "N/A",
             response.status_code,
         )
-        data, complete = self._buffer_up_to_limit(response)
+        self._set_socket_timeout(response, self.stream_read_timeout)
+        data, complete = self._buffer_up_to_limit(response, resp_id)
         buffer_elapsed = time.monotonic() - decode_start
         if complete:
             decode_logger.info(
-                "Decoder: buffered complete response (%d bytes) in %.1fs, decoding via fast path",
+                "Decoder [resp=%s]: buffered complete response (%d bytes) in %.1fs, decoding via fast path",
+                resp_id,
                 len(data) if isinstance(data, (bytes, bytearray)) else -1,
                 buffer_elapsed,
             )
             yield from self.parser.parse(io.BytesIO(data))
             decode_logger.info(
-                "Decoder DONE (fast path) in %.1fs",
+                "Decoder DONE [resp=%s] (fast path) in %.1fs",
+                resp_id,
                 time.monotonic() - decode_start,
             )
             return
 
         decode_logger.info(
-            "Decoder: response exceeds %d bytes after %.1fs, switching to streaming path",
+            "Decoder [resp=%s]: response exceeds %d bytes after %.1fs, switching to streaming path",
+            resp_id,
             self.max_direct_decode_bytes,
             buffer_elapsed,
         )
@@ -1130,12 +1141,13 @@ class GoogleAdsStreamingDecoder(Decoder):
         if records_batch:
             yield {"results": records_batch}
         decode_logger.info(
-            "Decoder DONE (streaming path): %d records in %.1fs",
+            "Decoder DONE [resp=%s] (streaming path): %d records in %.1fs",
+            resp_id,
             total_records,
             time.monotonic() - decode_start,
         )
 
-    def _buffer_up_to_limit(self, response: requests.Response) -> Tuple[Union[bytes, Iterable[bytes]], bool]:
+    def _buffer_up_to_limit(self, response: requests.Response, resp_id: str = "") -> Tuple[Union[bytes, Iterable[bytes]], bool]:
         buf_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
         buf = bytearray()
         response_stream = response.iter_content(chunk_size=self.chunk_size)
@@ -1148,7 +1160,8 @@ class GoogleAdsStreamingDecoder(Decoder):
             chunk_elapsed = time.monotonic() - chunk_start
             if chunk is None:
                 buf_logger.info(
-                    "Buffer: stream ended after %d chunks, total_bytes=%d, total_time=%.1fs",
+                    "Buffer [resp=%s]: stream ended after %d chunks, total_bytes=%d, total_time=%.1fs",
+                    resp_id,
                     chunk_count,
                     len(buf),
                     time.monotonic() - buf_start,
@@ -1158,7 +1171,8 @@ class GoogleAdsStreamingDecoder(Decoder):
             buf.extend(chunk)
             if chunk_elapsed > 5.0 or chunk_count <= 2:
                 buf_logger.info(
-                    "Buffer: chunk #%d received, chunk_bytes=%d, total_bytes=%d, chunk_wait=%.1fs",
+                    "Buffer [resp=%s]: chunk #%d received, chunk_bytes=%d, total_bytes=%d, chunk_wait=%.1fs",
+                    resp_id,
                     chunk_count,
                     len(chunk),
                     len(buf),
@@ -1166,13 +1180,29 @@ class GoogleAdsStreamingDecoder(Decoder):
                 )
             if len(buf) >= self.max_direct_decode_bytes:
                 buf_logger.info(
-                    "Buffer: exceeded limit (%d bytes) after %d chunks in %.1fs, switching to streaming",
+                    "Buffer [resp=%s]: exceeded limit (%d bytes) after %d chunks in %.1fs, switching to streaming",
+                    resp_id,
                     len(buf),
                     chunk_count,
                     time.monotonic() - buf_start,
                 )
                 return (self._chain_prefix_and_stream(bytes(buf), response_stream), False)
         return (bytes(buf), True)
+
+    @staticmethod
+    def _set_socket_timeout(response: requests.Response, timeout: float) -> None:
+        """Set a socket-level read timeout on the response to prevent iter_content() from blocking forever."""
+        try:
+            raw = response.raw
+            if hasattr(raw, "_fp") and raw._fp and hasattr(raw._fp, "fp") and raw._fp.fp:
+                underlying = raw._fp.fp
+                # Works for both regular sockets and SSL-wrapped sockets
+                if hasattr(underlying, "settimeout"):
+                    underlying.settimeout(timeout)
+                elif hasattr(underlying, "_sock") and hasattr(underlying._sock, "settimeout"):
+                    underlying._sock.settimeout(timeout)
+        except (AttributeError, OSError):
+            pass  # Best effort — some response types may not support this
 
     @staticmethod
     def _chain_prefix_and_stream(prefix: bytes, rest_stream: Iterable[bytes]) -> Iterable[bytes]:
