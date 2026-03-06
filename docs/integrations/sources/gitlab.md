@@ -112,6 +112,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.17-rc.1 | 2026-03-06 | [70858](https://github.com/airbytehq/airbyte/pull/70858) | feat(source-gitlab): Add HTTPAPIBudget and concurrency_level (AI-Triage PR) (do not merge) |
 | 4.4.16 | 2025-11-25 | [69875](https://github.com/airbytehq/airbyte/pull/69875) | Update dependencies |
 | 4.4.15 | 2025-11-18 | [69411](https://github.com/airbytehq/airbyte/pull/69411) | Update dependencies |
 | 4.4.14 | 2025-10-29 | [69030](https://github.com/airbytehq/airbyte/pull/69030) | Update dependencies |
