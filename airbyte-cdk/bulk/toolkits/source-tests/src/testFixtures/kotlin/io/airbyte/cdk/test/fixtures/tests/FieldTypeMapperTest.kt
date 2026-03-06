@@ -355,6 +355,13 @@ object AnsiSql {
             "'23:59:59'" to "\"23:59:59.000000\"",
         )
 
+    val timeTzValues =
+        mapOf(
+            "null" to "null",
+            "'00:00:00+00'" to "\"00:00:00.000000Z\"",
+            "'23:59:59+00'" to "\"23:59:59.000000Z\"",
+        )
+
     val timestampValues =
         mapOf(
             "null" to "null",

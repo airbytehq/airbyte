@@ -4,14 +4,14 @@
 
 package io.airbyte.integrations.source.postgres.cdc
 
-import io.airbyte.cdk.discover.CdcStringMetaFieldType
+import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.MetaField
 
 enum class PostgresSourceCdcMetaFields(
     override val type: FieldType,
 ) : MetaField {
-    CDC_LSN(CdcStringMetaFieldType),
+    CDC_LSN(CdcIntegerMetaFieldType),
     ;
 
     override val id: String

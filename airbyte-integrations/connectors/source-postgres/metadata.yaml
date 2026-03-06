@@ -20,10 +20,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 3.7.0
+      dockerImageTag: 3.7.2
     oss:
       enabled: true
-      dockerImageTag: 3.7.0
+      dockerImageTag: 3.7.2
   releaseStage: generally_available
   supportLevel: certified
   tags:

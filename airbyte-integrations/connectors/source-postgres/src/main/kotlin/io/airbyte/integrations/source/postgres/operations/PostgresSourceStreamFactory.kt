@@ -8,8 +8,8 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.discover.AirbyteStreamFactory
+import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
-import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.DiscoveredStream
@@ -63,14 +63,14 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         val offset: DebeziumOffset =
             PostgresSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue)
         val position: PostgresSourceCdcPosition = PostgresSourceDebeziumOperations.position(offset)
-        val lsn = position.lsn?.asString()
+        val lsn = position.lsn?.asLong()
         if (lsn != null) {
             recordData.set<JsonNode>(
                 PostgresSourceCdcMetaFields.CDC_LSN.id,
                 // TODO: Duplicates CDC_LSN.type.
                 //  Unable to use the reference due to * star projection.
                 //  Note: the same is true in the MySQL connector.
-                CdcStringMetaFieldType.jsonEncoder.encode(lsn),
+                CdcIntegerMetaFieldType.jsonEncoder.encode(lsn),
             )
         }
     }
@@ -89,7 +89,7 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
             )
         recordData[PostgresSourceCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
-                0.toDouble(),
+                0.toLong(),
                 PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
             )
         if (globalStateValue == null) {
@@ -100,7 +100,7 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         val position: PostgresSourceCdcPosition = PostgresSourceDebeziumOperations.position(offset)
         recordData[PostgresSourceCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
-                position.lsn,
+                position.lsn?.asLong(),
                 PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
             )
     }
