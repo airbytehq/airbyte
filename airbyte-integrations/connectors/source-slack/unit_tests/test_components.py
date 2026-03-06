@@ -21,9 +21,9 @@ def test_channel_members_extractor(token_config, components_module):
     response_mock = MagicMock()
     members_data = {"members": ["U023BECGF", "U061F7AUR", "W012A3CDE"]}
     response_mock.content = json.dumps(members_data).encode("utf-8")
-    records = components_module.ChannelMembersExtractor(
-        config=token_config, parameters={}, field_path=["members"]
-    ).extract_records(response=response_mock)
+    records = components_module.ChannelMembersExtractor(config=token_config, parameters={}, field_path=["members"]).extract_records(
+        response=response_mock
+    )
     assert records == [
         {"member_id": "U023BECGF"},
         {"member_id": "U061F7AUR"},
@@ -39,9 +39,7 @@ def test_join_channels(token_config, requests_mock, joined_channel, components_m
     token = token_config["credentials"]["api_token"]
     authenticator = TokenAuthenticator(token)
     channel_filter = token_config["channel_filter"]
-    stream = components_module.JoinChannelsStream(
-        authenticator=authenticator, channel_filter=channel_filter
-    )
+    stream = components_module.JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
     records = stream.read_records(
         sync_mode=SyncMode.full_refresh,
         stream_slice={"channel": "C061EG9SL", "channel_name": "general"},
@@ -61,9 +59,7 @@ def get_channels_retriever_instance(token_config, components_module):
             parameters={},
         ),
         record_selector=RecordSelector(
-            extractor=DpathExtractor(
-                field_path=["channels"], config=token_config, parameters={}
-            ),
+            extractor=DpathExtractor(field_path=["channels"], config=token_config, parameters={}),
             config=token_config,
             parameters={},
             schema_normalization=None,
@@ -81,10 +77,7 @@ def test_join_channels_should_join_to_channel(token_config, components_module):
 def test_join_channels_make_join_channel_slice(token_config, components_module):
     retriever = get_channels_retriever_instance(token_config, components_module)
     expected_slice = {"channel": "C061EG9SL", "channel_name": "general"}
-    assert (
-        retriever.make_join_channel_slice({"id": "C061EG9SL", "name": "general"})
-        == expected_slice
-    )
+    assert retriever.make_join_channel_slice({"id": "C061EG9SL", "name": "general"}) == expected_slice
 
 
 @pytest.mark.parametrize(
@@ -103,8 +96,7 @@ def test_join_channels_make_join_channel_slice(token_config, components_module):
         ),
         (
             {"ok": False, "error": "missing_scope", "needed": "channels:write"},
-            "Unable to joined channel: good-reads. Reason: {'ok': False, 'error': "
-            "'missing_scope', 'needed': 'channels:write'}",
+            "Unable to joined channel: good-reads. Reason: {'ok': False, 'error': 'missing_scope', 'needed': 'channels:write'}",
         ),
     ),
     ids=["successful_join_to_channel", "failed_join_to_channel"],
@@ -118,9 +110,7 @@ def test_join_channel_read(
     log_message,
     components_module,
 ):
-    mocked_request = requests_mock.post(
-        url="https://slack.com/api/conversations.join", json=join_response
-    )
+    mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
     requests_mock.get(
         url="https://slack.com/api/conversations.list",
         json={
@@ -229,9 +219,7 @@ def test_join_channel_read(
         "exclude_takes_precedence",
     ],
 )
-def test_is_channel_included(
-    token_config, components_module, config_overrides, record, expected
-):
+def test_is_channel_included(token_config, components_module, config_overrides, record, expected):
     # Start with empty filters to avoid interference from base config's channel_filter
     config = {
         **token_config,
@@ -293,18 +281,13 @@ def test_is_channel_included(
     ),
     ids=["no_state", "old_format_state", "new_format_state"],
 )
-def test_threads_state_migration(
-    token_config, threads_stream_state, expected_parent_state
-):
+def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name(
         "threads",
         token_config,
         StateBuilder().with_stream_state("threads", threads_stream_state).build(),
     )
-    assert (
-        stream.cursor.state.get("parent_state", {}).get("channel_messages", None)
-        == expected_parent_state
-    )
+    assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
 
 
 @pytest.mark.parametrize(
@@ -365,13 +348,9 @@ def tesadfst_threads_and_messages_api_budget(
     token_config,
     requests_mock,
 ):
-    stream = get_stream_by_name(
-        "threads", oauth_config if config == "oauth" else token_config
-    )
+    stream = get_stream_by_name("threads", oauth_config if config == "oauth" else token_config)
     retriever = stream._stream_partition_generator._partition_factory._retriever
-    assert len(retriever.requester._http_client._api_budget._policies) == (
-        1 if config == "oauth" else 0
-    )
+    assert len(retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
     if config == "oauth":
         assert isinstance(
             retriever.requester._http_client._api_budget._policies[0],
@@ -396,16 +375,8 @@ def tesadfst_threads_and_messages_api_budget(
         [{"json": {"messages": messages}}, {"json": {"messages": []}}],
     )
 
-    list(
-        record
-        for partition in stream.generate_partitions()
-        for record in partition.read()
-    )
+    list(record for partition in stream.generate_partitions() for record in partition.read())
 
-    assert len(retriever.requester._http_client._api_budget._policies) == (
-        1 if config == "oauth" else 0
-    )
+    assert len(retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
     if config == "oauth":
-        assert isinstance(
-            retriever.requester._http_client._api_budget._policies[0], expected_policy
-        )
+        assert isinstance(retriever.requester._http_client._api_budget._policies[0], expected_policy)
