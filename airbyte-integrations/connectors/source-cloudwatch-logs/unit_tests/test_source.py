@@ -11,7 +11,6 @@ from source_cloudwatch_logs.source import SourceCloudwatchLogs
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
-
 @pytest.fixture
 def source():
     return SourceCloudwatchLogs()
@@ -44,7 +43,6 @@ def mock_sts_response():
 # ---------------------------------------------------------------------------
 # _assume_role_session
 # ---------------------------------------------------------------------------
-
 class TestAssumeRoleSession:
     @patch("source_cloudwatch_logs.source.boto3.Session")
     def test_no_role_arn_returns_base_session(self, mock_boto_session, base_config):
@@ -111,7 +109,6 @@ class TestAssumeRoleSession:
 # ---------------------------------------------------------------------------
 # _check_config
 # ---------------------------------------------------------------------------
-
 class TestCheckConfig:
     def test_no_custom_log_reports_key_does_not_raise(self, base_config):
         SourceCloudwatchLogs._check_config(base_config)  # should not raise
@@ -144,7 +141,6 @@ class TestCheckConfig:
 # ---------------------------------------------------------------------------
 # check_connection
 # ---------------------------------------------------------------------------
-
 class TestCheckConnection:
     @patch("source_cloudwatch_logs.source.boto3.Session")
     def test_uses_describe_log_streams_when_prefix_given(self, mock_boto_session, source):
@@ -199,7 +195,6 @@ class TestCheckConnection:
 # ---------------------------------------------------------------------------
 # _get_log_group_names
 # ---------------------------------------------------------------------------
-
 class TestGetLogGroupNames:
     def _make_session(self, pages):
         mock_session = MagicMock()
@@ -247,7 +242,6 @@ class TestGetLogGroupNames:
 # ---------------------------------------------------------------------------
 # streams
 # ---------------------------------------------------------------------------
-
 class TestStreams:
     @patch.object(SourceCloudwatchLogs, "_get_log_group_names", return_value=["group1", "group2"])
     @patch.object(SourceCloudwatchLogs, "_assume_role_session")
@@ -300,9 +294,7 @@ class TestStreams:
 
     @patch.object(SourceCloudwatchLogs, "_get_log_group_names", return_value=["group1"])
     @patch.object(SourceCloudwatchLogs, "_assume_role_session")
-    def test_no_custom_log_reports_returns_only_discovered_streams(
-        self, mock_session, mock_groups, source, base_config
-    ):
+    def test_no_custom_log_reports_returns_only_discovered_streams(self, mock_session, mock_groups, source, base_config):
         streams = source.streams(base_config)
 
         assert len(streams) == 1
