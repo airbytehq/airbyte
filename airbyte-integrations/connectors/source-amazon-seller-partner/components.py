@@ -100,13 +100,13 @@ class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
     """
 
     restricted_resource_paths: Optional[List[str]] = None
+    _RDT_API_VERSION: str = "2021-03-01"
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self._rdt_token: Optional[str] = None
         self._rdt_fetch_time: Optional[float] = None
         self._rdt_fallback_to_lwa: bool = False
-        self._version = "2021-03-01"
 
     def get_auth_header(self) -> Mapping[str, Any]:
         include_pii = self.config.get("include_pii", False)
@@ -148,7 +148,7 @@ class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
         """Request a new RDT from the Amazon Tokens API."""
 
         endpoint = self.config.get("endpoint", "")
-        tokens_url = f"{endpoint}/tokens/{self._version}/restrictedDataToken"
+        tokens_url = f"{endpoint}/tokens/{self._RDT_API_VERSION}/restrictedDataToken"
 
         restricted_resources = [
             {
