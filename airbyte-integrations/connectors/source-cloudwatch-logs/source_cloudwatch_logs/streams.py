@@ -55,9 +55,6 @@ class Logs(Stream, IncrementalMixin):
         if filter_pattern:
             self.kwargs["filterPattern"] = filter_pattern
 
-        self._logger = logging.getLogger(f"airbyte.source.cloudwatch.{log_group_name}")
-        self._logger.debug(f"Querying logs with parameters: {self.kwargs}")
-
     @property
     def name(self) -> str:
         if self._name:
@@ -75,10 +72,13 @@ class Logs(Stream, IncrementalMixin):
 
         last_state = stream_state.get(self.cursor_field)
         if last_state:
+            self.logger.info(f"Resuming from last state: {last_state}")
             start_timestamp = last_state
         elif self.start_date:
+            self.logger.info(f"No state found, using configured start_date: {self.start_date}")
             start_timestamp = self.start_date
         else:
+            self.logger.info("No state or start_date found, determining earliest log event timestamp")
             start_timestamp = self._get_start_timestamp()
 
         if not start_timestamp:
@@ -108,6 +108,7 @@ class Logs(Stream, IncrementalMixin):
             self.logger.info(f"Earliest log event timestamp: {earliest_timestamp}")
             return earliest_timestamp
         else:
+            self.logger.info("No log events found in the log group, starting from current time")
             return None
 
     @lru_cache(maxsize=None)
@@ -136,7 +137,7 @@ class Logs(Stream, IncrementalMixin):
 
         start_time = stream_slice.get("start_time", 0)
         end_time = stream_slice.get("end_time")
-        self._logger.info(f"Fetching logs from: {start_time} to {end_time} for group: {self.log_group_name}")
+        self.logger.info(f"Fetching logs from: {start_time} to {end_time} for group: {self.log_group_name}")
 
         next_token = None
         while True:
