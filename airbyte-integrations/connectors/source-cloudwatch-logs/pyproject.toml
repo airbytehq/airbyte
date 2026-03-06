@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.1.0"
-name = "source-clouwatch-logs"
+name = "source-cloudwatch-logs"
 description = "Source connector for AWS Cloudwatch logs"
 authors = [
     "marie"
