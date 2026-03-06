@@ -19,22 +19,35 @@ logger = logging.getLogger("airbyte")
 @pytest.fixture(scope="session", autouse=True)
 def connector_setup() -> Iterable[None]:
     """This fixture is responsible for configuring AWS credentials that are used for assuming role during the IAM role based authentication."""
-    config_file_path = "secrets/config_iam_role.json"
+    iam_role_config_file_path = "secrets/config_iam_role.json"
+    config_file_path = "secrets/config.json"
     acceptance_test_config_file_path = "acceptance-test-config.yml"
 
     if not Path(config_file_path).exists():
+        pytest.skip("No config found, skipping acceptance tests")
+
+    # Read config from the JSON file
+    with open(config_file_path, "r") as file:
+        config = json.load(file)
+
+    if config.get("aws_access_key_id") and config.get("aws_secret_access_key"):
+        logger.info("AWS credentials found in config.json, skipping IAM role configuration.")
+        return
+
+    # Configure AWS credentials using IAM role if not found in config.json
+    if not Path(iam_role_config_file_path).exists():
         pytest.skip("No credentials found, skipping acceptance tests")
 
     # Read environment variables from the JSON file
-    with open(config_file_path, "r") as file:
-        config = json.load(file)
+    with open(iam_role_config_file_path, "r") as file:
+        credentials = json.load(file)
 
     # Prepare environment variables to append to the YAML file
     env_vars = {
         "custom_environment_variables": {
-            "AWS_ACCESS_KEY_ID": config["AccessKeyId"],
-            "AWS_SECRET_ACCESS_KEY": config["SecretAccessKey"],
-            "AWS_SESSION_TOKEN": config["SessionToken"],
+            "AWS_ACCESS_KEY_ID": credentials["AccessKeyId"],
+            "AWS_SECRET_ACCESS_KEY": credentials["SecretAccessKey"],
+            "AWS_SESSION_TOKEN": credentials["SessionToken"],
         }
     }
 
