@@ -5,7 +5,7 @@ type: DeclarativeSource
 description: >-
   Interzoid is an AI-powered API platform providing data quality, data matching,
   and data enrichment capabilities that help Airbyte pipelines deliver higher
-  data ROI. This connector enables you to call Interzoid’s APIs directly from
+  data ROI. This connector enables you to call Interzoid's APIs directly from
   your Airbyte workflows to match records, enrich attributes, normalize and
   standardize fields, or verify data as part of your extraction and loading
   processes. The result is cleaner, more consistent, and more actionable
@@ -48,8 +48,8 @@ streams:
             field_name: license
             inject_into: request_parameter
         request_parameters:
-          company: ibm
-          algorithm: model-v4-wide
+          company: "{{ config['company'] }}"
+          algorithm: "{{ config['company_match_algorithm'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -90,7 +90,7 @@ streams:
             field_name: license
             inject_into: request_parameter
         request_parameters:
-          fullname: John Smith
+          fullname: "{{ config['fullname'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -131,8 +131,8 @@ streams:
             field_name: license
             inject_into: request_parameter
         request_parameters:
-          address: 100 Main Street Apt 2A
-          algorithm: model-v3-narrow
+          address: "{{ config['address'] }}"
+          algorithm: "{{ config['address_match_algorithm'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -173,7 +173,7 @@ streams:
             field_name: license
             inject_into: request_parameter
         request_parameters:
-          org: intl bus machines
+          org: "{{ config['org'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -211,7 +211,40 @@ spec:
         type: string
         order: 0
         title: API Key
+        description: Your Interzoid API key.
         airbyte_secret: true
+      company:
+        type: string
+        order: 1
+        title: Company Name
+        description: Company name for the Company Name Matching stream.
+      company_match_algorithm:
+        type: string
+        order: 2
+        title: Company Match Algorithm
+        description: Algorithm for company name matching (e.g. model-v4-wide).
+        default: "model-v4-wide"
+      fullname:
+        type: string
+        order: 3
+        title: Full Name
+        description: Full name for the Individual Name Matching stream.
+      address:
+        type: string
+        order: 4
+        title: Street Address
+        description: Street address for the Street Address Matching stream.
+      address_match_algorithm:
+        type: string
+        order: 5
+        title: Address Match Algorithm
+        description: Algorithm for address matching (e.g. model-v3-narrow).
+        default: "model-v3-narrow"
+      org:
+        type: string
+        order: 6
+        title: Organization Name
+        description: Organization name for the Standardize Company Names stream.
     additionalProperties: true
 
 metadata:
