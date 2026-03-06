@@ -6,6 +6,7 @@ import io
 import json
 import logging
 import re
+import queue as queue_module
 import socket
 import threading
 import time
@@ -1093,6 +1094,8 @@ class GoogleAdsStreamingDecoder(Decoder):
 
     # Read timeout (seconds) for iter_content() to prevent indefinite blocking
     # when the HTTP response stream never terminates in Cloud environments.
+    # This is an application-level timeout: if no chunk arrives within this
+    # window, socket.timeout is raised to trigger retry / slice-splitting.
     stream_read_timeout: float = 300.0  # 5 minutes
 
     def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
@@ -1105,8 +1108,11 @@ class GoogleAdsStreamingDecoder(Decoder):
             response.url[:120] if response.url else "N/A",
             response.status_code,
         )
-        self._set_socket_timeout(response, self.stream_read_timeout)
-        data, complete = self._buffer_up_to_limit(response, resp_id)
+        # Use application-level timeout wrapper around iter_content().
+        # Socket-level timeouts do not work in Cloud because a sidecar proxy
+        # keeps the local socket alive while the upstream connection hangs.
+        timeout_stream = self._iter_content_with_timeout(response, self.chunk_size, self.stream_read_timeout, resp_id)
+        data, complete = self._buffer_up_to_limit(timeout_stream, resp_id)
         buffer_elapsed = time.monotonic() - decode_start
         if complete:
             decode_logger.info(
@@ -1147,10 +1153,9 @@ class GoogleAdsStreamingDecoder(Decoder):
             time.monotonic() - decode_start,
         )
 
-    def _buffer_up_to_limit(self, response: requests.Response, resp_id: str = "") -> Tuple[Union[bytes, Iterable[bytes]], bool]:
+    def _buffer_up_to_limit(self, response_stream: Iterable[bytes], resp_id: str = "") -> Tuple[Union[bytes, Iterable[bytes]], bool]:
         buf_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
         buf = bytearray()
-        response_stream = response.iter_content(chunk_size=self.chunk_size)
         chunk_count = 0
         buf_start = time.monotonic()
 
@@ -1190,19 +1195,58 @@ class GoogleAdsStreamingDecoder(Decoder):
         return (bytes(buf), True)
 
     @staticmethod
-    def _set_socket_timeout(response: requests.Response, timeout: float) -> None:
-        """Set a socket-level read timeout on the response to prevent iter_content() from blocking forever."""
-        try:
-            raw = response.raw
-            if hasattr(raw, "_fp") and raw._fp and hasattr(raw._fp, "fp") and raw._fp.fp:
-                underlying = raw._fp.fp
-                # Works for both regular sockets and SSL-wrapped sockets
-                if hasattr(underlying, "settimeout"):
-                    underlying.settimeout(timeout)
-                elif hasattr(underlying, "_sock") and hasattr(underlying._sock, "settimeout"):
-                    underlying._sock.settimeout(timeout)
-        except (AttributeError, OSError):
-            pass  # Best effort — some response types may not support this
+    def _iter_content_with_timeout(
+        response: requests.Response,
+        chunk_size: int,
+        timeout: float,
+        resp_id: str = "",
+    ) -> Generator[bytes, None, None]:
+        """Wrap response.iter_content() with an application-level read timeout.
+
+        A background daemon thread reads chunks from the HTTP response into a
+        bounded queue.  The caller consumes from the queue with a timeout.  If
+        no chunk arrives within *timeout* seconds, ``socket.timeout`` is raised
+        so that the existing retry / slice-splitting logic can kick in.
+
+        This is necessary in Cloud because a sidecar proxy keeps the local
+        socket alive even when the upstream connection to Google hangs, which
+        means socket-level ``settimeout()`` never fires.
+        """
+        chunk_queue: queue_module.Queue = queue_module.Queue(maxsize=20)
+        _DONE = None  # sentinel: stream finished normally
+
+        to_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
+
+        def _reader() -> None:
+            try:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    chunk_queue.put(("chunk", chunk))
+                chunk_queue.put(("done", _DONE))
+            except Exception as exc:
+                chunk_queue.put(("error", exc))
+
+        reader_thread = threading.Thread(target=_reader, daemon=True, name=f"iter-content-{resp_id}")
+        reader_thread.start()
+
+        while True:
+            try:
+                msg_type, payload = chunk_queue.get(timeout=timeout)
+            except queue_module.Empty:
+                to_logger.warning(
+                    "Timeout [resp=%s]: no data received for %.0fs, raising socket.timeout",
+                    resp_id,
+                    timeout,
+                )
+                raise socket.timeout(
+                    f"iter_content() produced no data for {timeout}s [resp={resp_id}]"
+                )
+
+            if msg_type == "done":
+                return
+            if msg_type == "error":
+                raise payload  # type: ignore[misc]
+            # msg_type == "chunk"
+            yield payload  # type: ignore[misc]
 
     @staticmethod
     def _chain_prefix_and_stream(prefix: bytes, rest_stream: Iterable[bytes]) -> Iterable[bytes]:
