@@ -176,9 +176,7 @@ class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
             )
 
             if response.status_code == 403:
-                logger.warning(
-                    "RDT request returned HTTP 403 (PII access is not available). Falling back to standard LWA token."
-                )
+                logger.warning("RDT request returned HTTP 403 (PII access is not available). Falling back to standard LWA token.")
                 self._rdt_fallback_to_lwa = True
                 return None
 
@@ -200,9 +198,7 @@ class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
                     failure_type=FailureType.transient_error,
                 )
             raise AirbyteTracedException(
-                message=(
-                    f"Failed to request a RDT from Amazon SP-API: {exc}."
-                ),
+                message=(f"Failed to request a RDT from Amazon SP-API: {exc}."),
                 failure_type=FailureType.config_error,
             ) from exc
 
