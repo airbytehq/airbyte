@@ -8,7 +8,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.discover.AirbyteStreamFactory
-import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
+import io.airbyte.cdk.discover.CdcNumberMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.DataOrMetaField
@@ -70,7 +70,7 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
                 // TODO: Duplicates CDC_LSN.type.
                 //  Unable to use the reference due to * star projection.
                 //  Note: the same is true in the MySQL connector.
-                CdcIntegerMetaFieldType.jsonEncoder.encode(lsn),
+                CdcNumberMetaFieldType.jsonEncoder.encode(lsn),
             )
         }
     }
