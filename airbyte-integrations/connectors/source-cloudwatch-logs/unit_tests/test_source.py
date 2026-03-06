@@ -51,7 +51,6 @@ def test_check_connection_failure(mock_session, source, sample_config):
     assert "Auth failed" in str(error)
 
 
-
 # Patch _get_log_group_names to simulate multiple log groups
 @patch.object(SourceCloudwatchLogs, "_get_log_group_names", return_value=["group1", "group2"])
 def test_streams_dynamic_log_groups(mock_get_log_groups, source, sample_config):
