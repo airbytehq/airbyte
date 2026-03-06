@@ -148,7 +148,7 @@ class TestGetStartTimestamp:
         mock_log_stream.client.filter_log_events.return_value = {"events": []}
         mock_log_stream._get_start_timestamp()
         call_kwargs = mock_log_stream.client.filter_log_events.call_args
-        assert call_kwargs.kwargs.get("startTime") == 0 or call_kwargs[1].get("startTime") == 0
+        assert mock_log_stream.client.filter_log_events.call_args.kwargs["startTime"] == 0
 
 
 # ---------------------------------------------------------------------------
