@@ -177,34 +177,6 @@ class HubspotPropertyHistoryExtractor(RecordExtractor):
 
 
 @dataclass
-class AddFieldsFromEndpointTransformation(RecordTransformation):
-    """
-    Makes request to provided endpoint and updates record with retrieved data.
-
-    requester: Requester
-    record_selector: HttpSelector
-    """
-
-    requester: Requester
-    record_selector: HttpSelector
-
-    def transform(
-        self,
-        record: Dict[str, Any],
-        config: Optional[Config] = None,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-    ) -> None:
-        additional_data_response = self.requester.send_request(
-            stream_slice=StreamSlice(partition={"parent_id": record["id"]}, cursor_slice={})
-        )
-        additional_data = self.record_selector.select_records(response=additional_data_response, stream_state={}, records_schema={})
-
-        for data in additional_data:
-            record.update(data)
-
-
-@dataclass
 class MarketingEmailStatisticsTransformation(RecordTransformation):
     """
     Custom transformation for HubSpot Marketing Emails that fetches statistics from the v3 API.

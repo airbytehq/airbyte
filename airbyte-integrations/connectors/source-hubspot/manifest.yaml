@@ -1081,19 +1081,6 @@ definitions:
       schema:
         $ref: "#/schemas/campaigns"
     transformations:
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.AddFieldsFromEndpointTransformation
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: "/email/public/v1/campaigns/{{ stream_slice['parent_id'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        $parameters:
-          # Requester and Selector require stream name as a param.
-          name: campaigns
       - type: DpathFlattenFields
         field_path:
           - counters
