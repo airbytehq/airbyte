@@ -23,7 +23,7 @@ def log_stream():
 
 @pytest.fixture
 def fake_events():
-    now = int(dt.datetime.utcnow().timestamp() * 1000)
+    now = int(dt.datetime.now(datetime.UTC).timestamp() * 1000)
     return [
         {
             "timestamp": now - 10000,
@@ -68,7 +68,7 @@ def test_setting_existing_state(log_stream):
 
 
 def test_stream_slices(log_stream):
-    current_time = int(dt.datetime.utcnow().timestamp() * 1000)
+    current_time = int(dt.datetime.now(datetime.UTC).timestamp() * 1000)
     stream_state = {"timestamp": current_time - 3600000}
 
     slices = list(log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
