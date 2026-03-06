@@ -101,20 +101,16 @@ into character-bounded chunks.
 
 ---
 
-## 6. Per-Record API Enrichment (Campaigns and Marketing Emails)
+## 6. Per-Record API Enrichment (Marketing Emails)
 
-Two streams make **additional API calls during record transformation** to enrich each record:
+The marketing emails stream makes **additional API calls during record transformation** to enrich
+each record:
 
-- **Campaigns:** HubSpot's campaign list endpoint (`/email/public/v1/campaigns`) only returns a
-  summary with `id`, `appId`, `appName`, and `lastUpdatedTime`. To get full campaign details
-  (subject, counters, etc.), the connector makes a separate GET request to
-  `/email/public/v1/campaigns/{id}` for each record. This is a limitation of HubSpot's email campaign
-  API which has no "list with full details" endpoint.
 - **Marketing Emails:** HubSpot's v3 email API separates content data and performance statistics into
   different endpoints. For every email record, the connector makes a GET request to
   `/marketing/v3/emails/{emailId}/statistics` to fetch performance metrics.
 
-**Why this matters:** Unlike the association extractor (which batches per page), these enrichments make one extra HTTP call per individual record. A sync of 50,000 campaigns means 50,000 additional API calls on top of the pagination calls. This is the most API-intensive pattern in the connector and the most likely to hit rate limits on large accounts.
+**Why this matters:** Unlike the association extractor (which batches per page), this enrichment makes one extra HTTP call per individual record. A sync of many marketing emails means an equal number of additional API calls on top of the pagination calls. This is one of the most API-intensive patterns in the connector and likely to hit rate limits on large accounts.
 
 ---
 
