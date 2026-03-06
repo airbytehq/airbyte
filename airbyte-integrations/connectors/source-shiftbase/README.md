@@ -14,9 +14,9 @@ The Shiftbase connector supports the following data streams:
 | `departments` | Full Refresh | Internal departments within the Shiftbase account. |
 | `employees` | Full Refresh | List of employees. **Note:** The `name` field has been removed to minimize PII. |
 | `absentees` | Incremental | Records of employee absences and leave. |
-| `employee_time_distribution` | Full Refresh | Distribution of worked and planned hours per employee. |
+| `employee_time_distribution` | Incremental | Distribution of worked and planned hours per employee. |
 | `availabilities` | Incremental | Employee availability slots and preferences. |
-| `shifts` | Incremental | Scheduled work shifts and roster details. |
+| `shifts` | Full Refresh | Scheduled work shifts and roster details. |
 | `users` | Full Refresh | User account details. **Note:** This stream is **flattened** and excludes all **PII** (names, emails, phones, addresses, etc.). |
 
 ---

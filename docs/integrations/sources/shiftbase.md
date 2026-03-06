@@ -72,13 +72,13 @@ The Shiftbase source connector supports the following [sync modes](https://docs.
 | [Departments](https://developer.shiftbase.com/docs/core/510254d159b47-list-departments) | Full Refresh | Internal departments within the Shiftbase account |
 | [Employees](https://developer.shiftbase.com/docs/core/75d0181c0add8-list-employees-in-department) | Full Refresh | List of employees (PII fields like name are excluded) |
 | [Absentees](https://developer.shiftbase.com/docs/core/2e1fba402f9bb-list-absentees) | Full Refresh, Incremental | Records of employee absences and leave |
-| [Employee Time Distribution](https://developer.shiftbase.com/docs/core/9ceb4dce3acb8-list-employee-time-distribution) | Full Refresh | Distribution of worked and planned hours per employee |
+| [Employee Time Distribution](https://developer.shiftbase.com/docs/core/9ceb4dce3acb8-list-employee-time-distribution) | Full Refresh, Incremental | Distribution of worked and planned hours per employee |
 | [Availabilities](https://developer.shiftbase.com/docs/core/0b8b4f51ba73a-list-availabilities) | Full Refresh, Incremental | Employee availability slots and preferences |
 | [Shifts](https://developer.shiftbase.com/docs/core/c8dbe25e28719-list-shifts) | Full Refresh | Scheduled work shifts and roster details |
 | [Users](https://developer.shiftbase.com/docs/core/7b22ead2360d9-list-users) | Full Refresh | User account details (PII excluded, flattened structure) |
 | [Employees Report](https://developer.shiftbase.com/docs/core/4d05f64e94419-employees-report) | Full Refresh | Employees report data |
-| [Timesheet Detail Report](https://developer.shiftbase.com/docs/core/5612d41bb72b1-timesheet-detail-report) | Full Refresh | Detailed timesheet report data |
-| [Schedule Detail Report](https://developer.shiftbase.com/docs/core/122ab05b95b82-schedule-detail-report) | Full Refresh | Detailed schedule report data |
+| [Timesheet Detail Report](https://developer.shiftbase.com/docs/core/5612d41bb72b1-timesheet-detail-report) | Full Refresh, Incremental | Detailed timesheet report data |
+| [Schedule Detail Report](https://developer.shiftbase.com/docs/core/122ab05b95b82-schedule-detail-report) | Full Refresh, Incremental | Detailed schedule report data |
 
 ## Performance considerations
 
