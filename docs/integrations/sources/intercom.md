@@ -85,9 +85,14 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/intercom-api-reference/reference/rate-limiting).
+The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting):
 
-The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+- **API limit**: 10,000 requests per minute per app, 25,000 per workspace
+- **Burst limit**: Distributed into 10-second windows (~1,666 requests per 10 seconds)
+
+The connector includes built-in rate limiting (`HTTPAPIBudget`) to proactively manage these limits and avoid HTTP 429 errors.
+
+You can configure the number of concurrent workers using the `num_workers` parameter (default: 10, maximum: 40). Higher values may improve sync speed but increase API usage.
 
 ## Changelog
 
@@ -96,6 +101,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.16-rc.1 | 2026-03-06 | [70859](https://github.com/airbytehq/airbyte/pull/70859) | Add HTTPAPIBudget, concurrency_level, and configurable num_workers parameter |
 | 0.13.15 | 2025-11-25 | [69563](https://github.com/airbytehq/airbyte/pull/69563) | Update dependencies |
 | 0.13.14 | 2025-11-13 | [69306](https://github.com/airbytehq/airbyte/pull/69306) | Update custom IntercomScrollRetriever to not use deprecated stream_state parameter |
 | 0.13.13 | 2025-10-29 | [68767](https://github.com/airbytehq/airbyte/pull/68767) | Update dependencies |

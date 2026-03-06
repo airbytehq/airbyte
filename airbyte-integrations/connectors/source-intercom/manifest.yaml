@@ -832,6 +832,14 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2020-11-16T00:00:00Z"
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: Number of concurrent threads for syncing. Higher values can speed up syncs. Adjust based on your API tier.
+        default: 10
+        minimum: 2
+        maximum: 40
+        order: 6
     additionalProperties: true
   advanced_auth:
       auth_flow_type: "oauth2.0"
@@ -3692,6 +3700,7 @@ schemas:
 # which dynamically adjusts backoff based on rate limit headers. This HTTPAPIBudget configuration
 # provides an additional layer of proactive rate limiting to prevent hitting 429 errors.
 
+# Rate limits: https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -3706,6 +3715,8 @@ api_budget:
         - limit: 8000
           interval: PT1M
       matchers: []
+  ratelimit_reset_header: "X-RateLimit-Reset"
+  ratelimit_remaining_header: "X-RateLimit-Remaining"
   status_codes_for_ratelimit_hit:
     - 429
 
@@ -3719,5 +3730,5 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
-  max_concurrency: 25
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 40
