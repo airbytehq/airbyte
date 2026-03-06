@@ -7,4 +7,4 @@ include = [
 ]
 
 [tasks]
-install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]==7.6.1.post28.dev22724700845'"
+install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]==7.10.2.post31.dev22785446959'"
