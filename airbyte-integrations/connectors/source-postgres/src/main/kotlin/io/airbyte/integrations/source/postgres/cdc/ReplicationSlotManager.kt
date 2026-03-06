@@ -132,7 +132,7 @@ class ReplicationSlotManager(
     private fun getSlotInfo(): ReplicationSlotInfo {
         // SELECT * so we can gracefully handle columns that don't exist in older PG versions:
         //   confirmed_flush_lsn added in 9.6
-        //   wal_status, safe_wal_size added in 13
+        //   wal_status added in 13
         //   invalidation_reason added in 17
         val sql =
             """
