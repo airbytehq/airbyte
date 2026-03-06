@@ -3,7 +3,8 @@
 #
 
 import datetime as dt
-from unittest.mock import MagicMock, patch
+from freezegun import freeze_time
+from unittest.mock import MagicMock
 
 import pytest
 from source_cloudwatch_logs.streams import Logs
@@ -158,14 +159,9 @@ class TestStreamSlices:
     CURRENT_TIME = 1767225600000  # 2026-01-01 00:00:00 UTC in ms
     ONE_DAY_MS = 86400000
 
-    @patch(
-        "source_cloudwatch_logs.streams.dt.datetime",
-        return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
-    )
-    def test_stream_slices_one_slice(self, mock_datetime, mock_log_stream):
+    @freeze_time("2026-01-01 00:00:00+00:00")
+    def test_stream_slices_one_slice(self, mock_log_stream):
         # Stream slices splits the time range into 1 day slices. For a 1h range, it should return 1 slice
-
-        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
         # 2026-01-01 00:00:00 UTC in milliseconds
         current_time = 1767225600000
         # 1 hour before current time
@@ -180,14 +176,9 @@ class TestStreamSlices:
             },
         ]
 
-    @patch(
-        "source_cloudwatch_logs.streams.dt.datetime",
-        return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
-    )
-    def test_stream_slices_many_slices(self, mock_datetime, mock_log_stream):
+    @freeze_time("2026-01-01 00:00:00+00:00")
+    def test_stream_slices_many_slices(self, mock_log_stream):
         # Stream slices splits the time range into 1 day slices. For a 2-day range, it should return 2 slices
-        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
-
         # 2026-01-01 00:00:00 UTC in milliseconds
         current_time = 1767225600000
         # 2 days - 1ms before current time
@@ -206,19 +197,16 @@ class TestStreamSlices:
             },
         ]
 
-    @patch("source_cloudwatch_logs.streams.dt.datetime")
-    def test_no_state_no_start_date_no_events_returns_empty(self, mock_datetime, mock_log_stream):
-        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+    @freeze_time("2026-01-01 00:00:00+00:00")
+    def test_no_state_no_start_date_no_events_returns_empty(self, mock_log_stream):
         mock_log_stream.client.filter_log_events.return_value = {"events": []}
 
         slices = list(mock_log_stream.stream_slices(sync_mode=None, stream_state={}))
 
         assert slices == []
 
-    @patch("source_cloudwatch_logs.streams.dt.datetime")
-    def test_uses_start_date_when_no_state(self, mock_datetime, mock_session):
-        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
-
+    @freeze_time("2026-01-01 00:00:00+00:00")
+    def test_uses_start_date_when_no_state(self, mock_session):
         stream = Logs(
             region_name="us-east-1",
             log_group_name="/aws/lambda/test-func",
@@ -236,9 +224,8 @@ class TestStreamSlices:
             },
         ]
 
-    @patch("source_cloudwatch_logs.streams.dt.datetime")
-    def test_start_time_equals_current_time_yields_one_slice(self, mock_datetime, mock_log_stream):
-        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+    @freeze_time("2026-01-01 00:00:00+00:00")
+    def test_start_time_equals_current_time_yields_one_slice(self, mock_log_stream):
         stream_state = {"timestamp": self.CURRENT_TIME}
 
         slices = list(mock_log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
@@ -250,11 +237,10 @@ class TestStreamSlices:
             },
         ]
 
-    @patch("source_cloudwatch_logs.streams.dt.datetime")
+    @freeze_time("2026-01-01 00:00:00+00:00")
     def test_falls_back_to_get_start_timestamp_when_no_state_or_start_date(
-        self, mock_datetime, mock_log_stream
+        self, mock_log_stream
     ):
-        mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
         # 1 hour before current_time
         earliest_ts = self.CURRENT_TIME - 3600000
         mock_log_stream.client.filter_log_events.return_value = {
