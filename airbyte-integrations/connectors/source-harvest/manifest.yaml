@@ -2682,6 +2682,7 @@ streams:
   - $ref: "#/definitions/streams/billable_rates"
   - $ref: "#/definitions/streams/cost_rates"
 
+# Rate limits: https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -2699,11 +2700,14 @@ api_budget:
         - limit: 100
           interval: PT15S
       matchers: []
+  ratelimit_reset_header: "Retry-After"
+  status_codes_for_ratelimit_hit:
+    - 429
 
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
-  max_concurrency: 30
+  max_concurrency: 40
 
 spec:
   type: Spec
@@ -2747,16 +2751,12 @@ spec:
         airbyte_hidden: true
       num_workers:
         type: integer
-        title: Number of concurrent workers
-        description: The number of worker threads to use for the sync. More workers can improve sync speed but may increase API rate limit usage.
-        minimum: 1
-        maximum: 30
+        title: Number of Concurrent Workers
+        description: Number of concurrent threads for syncing. Higher values can speed up syncs. Adjust based on your API tier.
+        minimum: 2
+        maximum: 40
         default: 10
         order: 3
-        examples:
-          - 5
-          - 10
-          - 20
       credentials:
         type: object
         description: Choose how to authenticate to Harvest.
