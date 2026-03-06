@@ -1610,11 +1610,11 @@ class FulfillmentOrder(ShopifyBulkQuery):
     connections that can cause some fulfillment orders to be missing when queried through orders.
     See: https://github.com/airbytehq/oncall/issues/10991
 
-    The `includeClosed` parameter is configurable via `fulfillment_orders_include_closed` (default: true).
+    The `includeClosed` parameter is configurable via `fulfillment_orders_include_closed` (default: false).
     When enabled, closed fulfillment orders are included in the results.
 
         {
-            fulfillmentOrders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT, includeClosed: true){
+            fulfillmentOrders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT){
                 edges {
                     node {
                         __typename
