@@ -9,7 +9,6 @@ import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.discover.AirbyteStreamFactory
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
-import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.DiscoveredStream
@@ -46,6 +45,8 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         )
 
     val viewsBySchema: MutableMap<String, List<String>> = mutableMapOf()
+
+    @Suppress("UNCHECKED_CAST")
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
@@ -63,14 +64,14 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         val offset: DebeziumOffset =
             PostgresSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue)
         val position: PostgresSourceCdcPosition = PostgresSourceDebeziumOperations.position(offset)
-        val lsn = position.lsn?.asString()
+        // Legacy Airbyte type is Number but values are all Long. Here we convert.
+        val lsn = position.lsn?.asLong()?.toBigDecimal()
         if (lsn != null) {
             recordData.set<JsonNode>(
                 PostgresSourceCdcMetaFields.CDC_LSN.id,
-                // TODO: Duplicates CDC_LSN.type.
-                //  Unable to use the reference due to * star projection.
-                //  Note: the same is true in the MySQL connector.
-                CdcStringMetaFieldType.jsonEncoder.encode(lsn),
+                (PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>).encode(
+                    lsn
+                )
             )
         }
     }
@@ -89,7 +90,8 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
             )
         recordData[PostgresSourceCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
-                0.toDouble(),
+                // Legacy Airbyte type is Number but values are all Long. Here we convert.
+                0.toBigDecimal(),
                 PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
             )
         if (globalStateValue == null) {
@@ -100,7 +102,8 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         val position: PostgresSourceCdcPosition = PostgresSourceDebeziumOperations.position(offset)
         recordData[PostgresSourceCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
-                position.lsn,
+                // Legacy Airbyte type is Number but values are all Long. Here we convert.
+                position.lsn?.asLong()?.toBigDecimal(),
                 PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
             )
     }

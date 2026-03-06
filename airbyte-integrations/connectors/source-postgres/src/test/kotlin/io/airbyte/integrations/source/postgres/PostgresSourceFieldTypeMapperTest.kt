@@ -38,20 +38,41 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray("SMALLINT", LeafAirbyteSchemaType.INTEGER, AnsiSql.smallIntValues)
         scalarAndArray("INTEGER", LeafAirbyteSchemaType.INTEGER, AnsiSql.intValues)
         scalarAndArray("INT", LeafAirbyteSchemaType.INTEGER, AnsiSql.intValues)
-        scalarAndArray(
-            "OID",
-            LeafAirbyteSchemaType.INTEGER,
-            // unsigned type - nonnegative values only
-            mapOf(
-                "0" to "0",
-                "3000000000::oid" to "3000000000" // requires unsigned: bigger than an int can hold
+
+        add(
+            testCase(
+                "OID",
+                LeafAirbyteSchemaType.INTEGER,
+                // unsigned type - nonnegative values only
+                mapOf(
+                    "null" to "null",
+                    "0" to "0",
+                    // requires unsigned: bigger than an int can hold
+                    "3000000000::oid" to "3000000000"
+                ),
+                "OID"
             )
         )
+        add(
+            testCase(
+                "OID[]",
+                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15946):
+                //  Legacy array mapping inconsistent with scalar. Should be ARRAY<INTEGER>.
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.NUMBER),
+                // unsigned type - nonnegative values only
+                mapOf(
+                        "null" to "null",
+                        "0" to "0",
+                        // requires unsigned: bigger than an int can hold
+                        "3000000000::oid" to "3000000000"
+                    )
+                    .toArrayVals("OID[]", false),
+                "OID ARRAY"
+            )
+        )
+
         scalarAndArray("BIGINT", LeafAirbyteSchemaType.INTEGER, AnsiSql.bigIntValues)
-        // TODO: Fix type handling for numeric arrays.
-        //  Requires fetching the correct scale and precision of array elements from another source.
-        //  https://github.com/airbytehq/airbyte-internal-issues/issues/15879
-        /*scalarAndArray(
+        scalarAndArray(
             "DECIMAL",
             LeafAirbyteSchemaType.NUMBER,
             AnsiSql.decimalValues,
@@ -63,8 +84,26 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             nulledInfinities.plus(nulledNaN),
             arrayIsNulled = true,
             baseTestName = "DECIMAL UNSUPPORTED VALS"
-        )*/
-        scalarAndArray("DECIMAL(20,0)", LeafAirbyteSchemaType.INTEGER, AnsiSql.intValues)
+        )
+        add(
+            testCase(
+                "DECIMAL(20,0)",
+                LeafAirbyteSchemaType.INTEGER,
+                AnsiSql.intValues,
+                "DECIMAL(20,0)"
+            )
+        )
+        add(
+            testCase(
+                "DECIMAL(20,0)[]",
+                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15879):
+                //  Fix type handling for numeric arrays.
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.NUMBER),
+                AnsiSql.intValues.toArrayVals("DECIMAL(20,0)[]"),
+                "DECIMAL(20,0) ARRAY"
+            )
+        )
+
         scalarAndArray("DECIMAL(20,9)", LeafAirbyteSchemaType.NUMBER, AnsiSql.decimalValues)
         scalarAndArray("NUMERIC(20,9)", LeafAirbyteSchemaType.NUMBER, AnsiSql.decimalValues)
         scalarAndArray(
@@ -102,32 +141,72 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "'A'" to "\"A\"",
             )
         )
-        scalarAndArray(
-            "BIT(1)",
-            LeafAirbyteSchemaType.STRING,
-            mapOf("B'0'" to "\"0\"", "B'1'" to "\"1\"")
-        )
-        scalarAndArray(
-            "BIT(10)",
-            LeafAirbyteSchemaType.STRING,
-            mapOf(
-                "B'0000000000'" to "\"0000000000\"",
-                "B'1111111111'" to "\"1111111111\"",
+        add(
+            testCase(
+                "BIT(1)",
+                LeafAirbyteSchemaType.STRING,
+                mapOf("B'0'" to "\"0\"", "B'1'" to "\"1\""),
+                "BIT"
             )
         )
-        scalarAndArray(
-            "BIT VARYING",
-            LeafAirbyteSchemaType.STRING,
-            mapOf(
-                "B'00000'" to "\"00000\"",
-                "B'11111'" to "\"11111\"",
+        add(
+            testCase(
+                "BIT(1)[]",
+                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15946):
+                //  Legacy array mapping inconsistent with scalar.
+                //  Currently: bit(1) -> STRING; _bit(1) -> ARRAY<BOOLEAN>
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.BOOLEAN),
+                mapOf("B'0'" to "false", "B'1'" to "true").toArrayVals("BIT[]", false),
+                "BIT(1) ARRAY"
+            )
+        )
+        add(
+            testCase(
+                "BIT(10)",
+                LeafAirbyteSchemaType.STRING,
+                mapOf("B'0000000000'" to "\"0000000000\"", "B'1111111111'" to "\"1111111111\""),
+                "BIT"
+            )
+        )
+        add(
+            testCase(
+                "BIT(10)[]",
+                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15946):
+                //  Legacy array mapping inconsistent with scalar.
+                //  Currently: bit(10) -> STRING; _bit(10) -> ARRAY<BOOLEAN>
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.BOOLEAN),
+                // TODO: Legacy mapping only maps "1" to true, all else are false
+                mapOf("B'0000000000'" to "false", "B'1111111111'" to "false")
+                    .toArrayVals("BIT(10)[]", false),
+                "BIT(10) ARRAY"
+            )
+        )
+        add(
+            testCase(
+                "BIT VARYING",
+                LeafAirbyteSchemaType.STRING,
+                mapOf("B'0000000000'" to "\"0000000000\"", "B'1111111111'" to "\"1111111111\""),
+                "BIT VARYING"
+            )
+        )
+        add(
+            testCase(
+                "BIT VARYING[]",
+                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15946):
+                //  Legacy array mapping inconsistent with scalar.
+                //  Currently: varbit -> STRING; _varbit -> ARRAY<BOOLEAN>
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.BOOLEAN),
+                // TODO: Legacy mapping only maps "1" to true, all else are false
+                mapOf("B'0000000000'" to "false", "B'1111111111'" to "false")
+                    .toArrayVals("BIT VARYING[]", false),
+                "BIT VARYING ARRAY"
             )
         )
         scalarAndArray(
             "BYTEA",
-            LeafAirbyteSchemaType.BINARY,
+            LeafAirbyteSchemaType.STRING,
             mapOf(
-                "decode('someBase64xx', 'base64')" to "\"someBase64xx\"",
+                "decode('someBase64xx', 'base64')" to "\"\\\\xb2899e05ab1eeb8c71\"",
             )
         )
 
@@ -178,6 +257,11 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             "TIME",
             LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
             AnsiSql.timeValues.mapKeys { "${it.key}::time" }
+        )
+        scalarAndArray(
+            "TIMETZ",
+            LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
+            AnsiSql.timeTzValues.mapKeys { "${it.key}::timetz" }
         )
         scalarAndArray(
             "TIMESTAMP",

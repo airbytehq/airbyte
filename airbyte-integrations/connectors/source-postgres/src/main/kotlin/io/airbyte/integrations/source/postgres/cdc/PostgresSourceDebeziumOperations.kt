@@ -276,7 +276,7 @@ class PostgresSourceDebeziumOperations(
             )
         resultRow[PostgresSourceCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
-                source[LSN].asText(),
+                source[LSN].asLong(),
                 PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>,
             )
 
