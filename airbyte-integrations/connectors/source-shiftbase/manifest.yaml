@@ -1601,10 +1601,14 @@ spec:
               title: Access Token
               description: Access Token generated from Shiftbase App Center.
               airbyte_secret: true
+              minLength: 1
+              order: 0
             account_name:
               type: string
               title: Account Name
               description: Account name for tracking purposes.
+              minLength: 1
+              order: 1
       start_date:
         type: string
         title: Start Date
