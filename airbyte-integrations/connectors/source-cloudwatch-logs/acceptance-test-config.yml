@@ -2,6 +2,12 @@
 # for more information about how to configure these tests
 connector_image: airbyte/source-cloudwatch-logs:dev
 acceptance_tests:
+  connection_check:
+    tests:
+      - config_path: secrets/config.json
+        status: succeed
+        pytest_marks:
+          - name: requires_creds
   spec:
     tests:
       - spec_path: "source_cloudwatch_logs/spec.json"
@@ -9,6 +15,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
+        pytest_marks:
+          - name: requires_creds
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
@@ -16,15 +24,23 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
           disable_for_version: "0.1.0"
+        pytest_marks:
+          - name: requires_creds
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        pytest_marks:
+          - name: requires_creds
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        pytest_marks:
+          - name: requires_creds
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        pytest_marks:
+          - name: requires_creds
