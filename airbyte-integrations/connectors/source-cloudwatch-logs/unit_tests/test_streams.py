@@ -13,7 +13,6 @@ from source_cloudwatch_logs.streams import Logs
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
-
 @pytest.fixture
 def mock_session():
     session = MagicMock()
@@ -57,7 +56,6 @@ def mock_events():
 # ---------------------------------------------------------------------------
 # __init__ parameter handling
 # ---------------------------------------------------------------------------
-
 class TestInit:
     def test_log_stream_names_added_to_kwargs(self, mock_session):
         stream = Logs(
@@ -96,7 +94,6 @@ class TestInit:
 # ---------------------------------------------------------------------------
 # name property
 # ---------------------------------------------------------------------------
-
 class TestName:
     def test_name_defaults_to_log_group_name(self, mock_log_stream):
         assert mock_log_stream.name == "/aws/lambda/test-func"
@@ -114,7 +111,6 @@ class TestName:
 # ---------------------------------------------------------------------------
 # state property
 # ---------------------------------------------------------------------------
-
 class TestState:
     def test_state_is_empty_when_cursor_is_none(self, mock_log_stream):
         assert mock_log_stream.state == {}
@@ -132,7 +128,6 @@ class TestState:
 # ---------------------------------------------------------------------------
 # _get_start_timestamp
 # ---------------------------------------------------------------------------
-
 class TestGetStartTimestamp:
     def test_returns_none_when_no_events(self, mock_log_stream):
         mock_log_stream.client.filter_log_events.return_value = {"events": []}
@@ -151,7 +146,6 @@ class TestGetStartTimestamp:
 # ---------------------------------------------------------------------------
 # stream_slices
 # ---------------------------------------------------------------------------
-
 class TestStreamSlices:
     CURRENT_TIME = 1767225600000  # 2026-01-01 00:00:00 UTC in ms
     ONE_DAY_MS = 86400000
