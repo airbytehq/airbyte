@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch
@@ -27,7 +27,7 @@ class PersonIdentifyBatchEntryAssembler : BatchEntryAssembler {
         batchEntry.putObject("identifiers").put("email", personEmail)
 
         val attributes = batchEntry.putObject("attributes")
-        (recordAsJson as ObjectNode).fields().forEach { (key, value) ->
+        (recordAsJson as ObjectNode).properties().forEach { (key, value) ->
             if (key !in EXPECTED_PROPERTIES) {
                 attributes.replace(key, value)
             }

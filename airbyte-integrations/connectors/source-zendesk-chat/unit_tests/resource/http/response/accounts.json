@@ -1,0 +1,11 @@
+{
+  "account_key": "test_account_key_123",
+  "create_date": "2021-01-01T00:00:00Z",
+  "status": "active",
+  "plan": {
+    "name": "Enterprise"
+  },
+  "billing": {
+    "extra_info": null
+  }
+}
