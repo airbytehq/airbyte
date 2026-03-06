@@ -18,7 +18,7 @@ definitions:
         type: CompositeErrorHandler
         error_handlers:
           - type: DefaultErrorHandler
-            max_retries: 10
+            max_retries: 20
             response_filters:
               - type: HttpResponseFilter
                 action: RETRY
@@ -84,30 +84,18 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
-        required:
-          - employee_id
         properties:
-          id:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
           object:
             type:
               - string
               - "null"
-          is_active:
-            type:
-              - boolean
-              - "null"
-          last_name:
+          id:
             type:
               - string
               - "null"
-          created_at:
+          employee_id:
+            type: string
+          email:
             type:
               - string
               - "null"
@@ -115,13 +103,7 @@ streams:
             type:
               - string
               - "null"
-          updated_at:
-            type:
-              - string
-              - "null"
-          employee_id:
-            type: string
-          linked_user:
+          last_name:
             type:
               - string
               - "null"
@@ -129,6 +111,24 @@ streams:
             type:
               - string
               - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          linked_user:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+        required:
+          - employee_id
         additionalProperties: true
     transformations: []
   - type: DeclarativeStream
@@ -590,8 +590,6 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
-        required:
-          - id
         properties:
           type:
             type:
@@ -601,13 +599,21 @@ streams:
             type:
               - string
               - "null"
+          object:
+            type:
+              - string
+              - "null"
           id:
             type: string
           name:
             type:
               - string
               - "null"
-          object:
+          workbook:
+            type:
+              - string
+              - "null"
+          workbook_name:
             type:
               - string
               - "null"
@@ -624,11 +630,23 @@ streams:
                   type:
                     - string
                     - "null"
+                object:
+                  type:
+                    - string
+                    - "null"
                 id:
                   type:
                     - string
                     - "null"
                 name:
+                  type:
+                    - string
+                    - "null"
+                variant:
+                  type:
+                    - string
+                    - "null"
+                data_type:
                   type:
                     - string
                     - "null"
@@ -653,19 +671,7 @@ streams:
                       type:
                         - string
                         - "null"
-                object:
-                  type:
-                    - string
-                    - "null"
                 formula:
-                  type:
-                    - string
-                    - "null"
-                variant:
-                  type:
-                    - string
-                    - "null"
-                data_type:
                   type:
                     - string
                     - "null"
@@ -681,10 +687,6 @@ streams:
                   type:
                     - string
                     - "null"
-          workbook:
-            type:
-              - string
-              - "null"
           created_at:
             type:
               - string
@@ -693,10 +695,8 @@ streams:
             type:
               - string
               - "null"
-          workbook_name:
-            type:
-              - string
-              - "null"
+        required:
+          - id
         additionalProperties: true
   - type: DeclarativeStream
     name: employee-assumptions
@@ -2603,62 +2603,16 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
-          start_date:
-            type:
-              - string
-              - "null"
-          end_date:
-            type:
-              - string
-              - "null"
           data:
             type:
               - object
               - "null"
             properties:
-              Employee:
-                type:
-                  - string
-                  - "null"
-              Employee ID:
-                type:
-                  - string
-                  - "null"
-              Employee First Name:
-                type:
-                  - string
-                  - "null"
-              Employee Last Name:
-                type:
-                  - string
-                  - "null"
-              Employee Email:
-                type:
-                  - string
-                  - "null"
-              Employee Last Process Date:
-                type:
-                  - string
-                  - "null"
-              Employee Active:
-                type:
-                  - boolean
-                  - "null"
-              Start Date:
-                type:
-                  - string
-                  - "null"
-              End Date:
-                type:
-                  - string
-                  - "null"
               Plan:
                 type:
                   - string
@@ -2667,43 +2621,15 @@ streams:
                 type:
                   - string
                   - "null"
+              Employee:
+                type:
+                  - string
+                  - "null"
+              End Date:
+                type:
+                  - string
+                  - "null"
               Plan Name:
-                type:
-                  - string
-                  - "null"
-              Plan Active:
-                type:
-                  - boolean
-                  - "null"
-              Period Group:
-                type:
-                  - string
-                  - "null"
-              Period Group ID:
-                type:
-                  - string
-                  - "null"
-              Period Group Name:
-                type:
-                  - string
-                  - "null"
-              Period Group Active:
-                type:
-                  - boolean
-                  - "null"
-              SDR Territory:
-                type:
-                  - string
-                  - "null"
-              SDR Territory ID:
-                type:
-                  - string
-                  - "null"
-              SDR Territory Value:
-                type:
-                  - string
-                  - "null"
-              SDR Territory Name:
                 type:
                   - string
                   - "null"
@@ -2711,15 +2637,27 @@ streams:
                 type:
                   - string
                   - "null"
+              SDR Region:
+                type:
+                  - string
+                  - "null"
+              Start Date:
+                type:
+                  - string
+                  - "null"
+              Employee ID:
+                type:
+                  - string
+                  - "null"
+              Plan Active:
+                type:
+                  - boolean
+                  - "null"
               Country Name:
                 type:
                   - string
                   - "null"
-              Country Name ID:
-                type:
-                  - string
-                  - "null"
-              Country Name Value:
+              Period Group:
                 type:
                   - string
                   - "null"
@@ -2727,16 +2665,78 @@ streams:
                 type:
                   - string
                   - "null"
-              SDR Region:
+              SDR Territory:
                 type:
                   - string
                   - "null"
+              Employee Email:
+                type:
+                  - string
+                  - "null"
+              Country Name ID:
+                type:
+                  - string
+                  - "null"
+              Employee Active:
+                type:
+                  - boolean
+                  - "null"
+              Period Group ID:
+                type:
+                  - string
+                  - "null"
+              SDR Territory ID:
+                type:
+                  - string
+                  - "null"
+              Period Group Name:
+                type:
+                  - string
+                  - "null"
+              Country Name Value:
+                type:
+                  - string
+                  - "null"
+              Employee Last Name:
+                type:
+                  - string
+                  - "null"
+              SDR Territory Name:
+                type:
+                  - string
+                  - "null"
+              Employee First Name:
+                type:
+                  - string
+                  - "null"
+              Period Group Active:
+                type:
+                  - boolean
+                  - "null"
+              SDR Territory Value:
+                type:
+                  - string
+                  - "null"
+              Employee Last Process Date:
+                type:
+                  - string
+                  - "null"
+          object:
+            type:
+              - string
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
           parent_id:
             type:
               - string
               - "null"
-        required:
-          - id
+          start_date:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -2931,12 +2931,46 @@ streams:
               - string
               - "null"
           updated_at:
-            type: string
+            type:
+              - string
+              - "null"
           data:
             type:
               - object
               - "null"
             properties:
+              Unique ID:
+                type:
+                  - string
+                  - "null"
+              Opportunity ID:
+                type:
+                  - string
+                  - "null"
+              Line Item ID:
+                type:
+                  - string
+                  - "null"
+              Contract Total:
+                type:
+                  - string
+                  - "null"
+              Invoice Number:
+                type:
+                  - string
+                  - "null"
+              Invoiced Amount:
+                type:
+                  - string
+                  - "null"
+              Invoice Date:
+                type:
+                  - string
+                  - "null"
+              Contract End Date:
+                type:
+                  - string
+                  - "null"
               ID:
                 type:
                   - string
@@ -2967,7 +3001,6 @@ streams:
               - "null"
         required:
           - id
-          - updated_at
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -2977,19 +3010,6 @@ streams:
               - parent_id
             value: "{{ stream_partition['id'] }}"
             value_type: string
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%d"
-      datetime_format: "%Y-%m-%d"
-      cursor_datetime_formats: []
-      start_time_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: updated_at_after
   - type: DeclarativeStream
     name: hierarchies
     retriever:
@@ -3122,12 +3142,12 @@ metadata:
       streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
     employees:
       isStale: false
-      hasRecords: false
-      streamHash: 0078db3130c24e34ec5b3543c8c3e3d888ada966
+      hasRecords: true
+      streamHash: 256ccc852f98c517eccc8a33e3d8c7e65ef11fe5
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: false
+      responsesAreSuccessful: true
     audit-logs:
       isStale: false
       hasRecords: true
@@ -3211,7 +3231,7 @@ metadata:
     data-worksheets-list:
       isStale: false
       hasRecords: true
-      streamHash: e2607e4c8b22f65451a4b2ac5e62ac458582962a
+      streamHash: a8275411396360136d489e0dbe9dacf272cf4225
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -3224,10 +3244,12 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    payout-period-groups:
+      streamHash: 47d4984ba9bce6e8a87e11d3ec0927be732fed5d
     data-worksheet-records:
       isStale: false
       hasRecords: true
-      streamHash: f5ce55453f564ca4a99ff9ecda1a04f928a6e024
+      streamHash: 9b7077c923627b1b49d1ab230c66d942b7d523ba
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -3264,8 +3286,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    payout-period-groups:
-      streamHash: 47d4984ba9bce6e8a87e11d3ec0927be732fed5d
   autoImportSchema:
     users: true
     uploads: true
